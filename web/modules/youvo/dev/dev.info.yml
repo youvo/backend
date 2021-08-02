@@ -1,0 +1,6 @@
+name: 'Youvo Dev'
+type: module
+description: 'Custom module developed by youvo which provides developer functions.'
+core: 9.x
+version: 9.x-0.0.0.1
+package: 'youvo'

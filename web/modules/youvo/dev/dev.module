@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Function printing variable contents
+ */
+function dvp($var) {
+	$message = '<pre>'.print_r($var,TRUE).'</pre>';
+	$rendered_message = \Drupal\Core\Render\Markup::create($message);
+	\Drupal::messenger()->addMessage($rendered_message);
+}
