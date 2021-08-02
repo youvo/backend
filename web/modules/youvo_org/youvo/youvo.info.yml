@@ -1,0 +1,13 @@
+name: 'Youvo Base'
+description: 'Custom module developed by youvo_org which provides base framework for platform.'
+package: 'youvo_org'
+
+type: module
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - drupal:taxonomy (>= 8.8.0)
+  - drupal:field (>= 8.8.0)
+  - drupal:user (>= 8.8.0)
+  - filefield_paths
+

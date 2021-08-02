@@ -1,8 +1,0 @@
-name: 'Youvo Dev'
-description: 'Custom module developed by youvo which provides developer functions.'
-package: 'youvo'
-
-type: module
-core: 8.x
-core_version_requirement: ^8 || ^9
-
