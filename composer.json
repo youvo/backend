@@ -20,6 +20,7 @@
         "drupal/core-project-message": "^9.2",
         "drupal/core-recommended": "^9.2",
         "drupal/devel": "^4.1",
+        "drupal/filefield_paths": "^1.0@beta",
         "drupal/mail_login": "^2.4"
     },
     "conflict": {
