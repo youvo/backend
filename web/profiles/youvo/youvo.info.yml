@@ -1,0 +1,14 @@
+name: youvo
+type: profile
+description: 'Configuration profile for initial install of a youvo environment.'
+core: 8.x
+core_version_requirement: ^8 || ^9
+
+install:
+  - node
+  - block
+  - dblog
+  - page_cache
+  - dynamic_page_cache
+themes:
+  - stark
