@@ -1,14 +1,40 @@
 name: youvo
 type: profile
-description: 'Configuration profile for initial install of a youvo environment.'
+description: 'Configuration profile for initial install of a youvo_org environment.'
 core: 8.x
 core_version_requirement: ^8 || ^9
 
 install:
-  - node
+  # Core
   - block
+  - config
+  - datetime
+  - datetime_range
   - dblog
-  - page_cache
   - dynamic_page_cache
+  - field
+  - field_ui
+  - file
+  - image
+  - jsonapi
+  - link
+  - menu_link_content
+  - menu_ui
+  - node
+  - options
+  - page_cache
+  - path
+  - serialization
+  - taxonomy
+  - telephone
+  - text
+  - workflows
+  # Contrib
+  - devel
+  - filefield_paths
+  - mail_login
+  # Custom
+  - dev
+  - youvo
 themes:
-  - stark
+  - claro
