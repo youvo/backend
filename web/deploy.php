@@ -67,7 +67,7 @@ switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 		break;
 
 	case 'push':
-		echo shell_exec('bash ./scripts/deploy.sh 2>&1');
+		echo shell_exec('cd .. && bash ./scripts/deploy.sh 2>&1');
 		break;
 
 //	case 'create':
