@@ -13,6 +13,11 @@ services:
 #    volumes:
 #      - ./mariadb-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
 #      - /path/to/mariadb/data/on/host:/var/lib/mysql # Use bind mount
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.${PROJECT_NAME}_mariadb.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.${PROJECT_NAME}_mariadb.loadbalancer.server.port=3306"
+      - "traefik.tcp.routers.${PROJECT_NAME}_mariadb.entrypoints=mysql"
 
   php:
     image: wodby/drupal-php:$PHP_TAG
@@ -281,10 +286,11 @@ services:
   traefik:
     image: traefik:v2.0
     container_name: "${PROJECT_NAME}_traefik"
-    command: --api.insecure=true --providers.docker
+    command: --api.insecure=true --providers.docker --entrypoints.http.address=:80 --entrypoints.mysql.address=:3306
     ports:
     - '8000:80'
-#    - '8080:8080' # Dashboard
+    - '8080:8080' # Dashboard
+    - '3306:3306'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
