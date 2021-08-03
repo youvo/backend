@@ -1,0 +1,7 @@
+langcode: de
+status: true
+dependencies: {  }
+name: Kategorie
+vid: causes
+description: ''
+weight: 0
