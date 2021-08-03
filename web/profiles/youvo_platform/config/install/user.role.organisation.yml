@@ -1,0 +1,8 @@
+langcode: de
+status: true
+dependencies: {  }
+id: organisation
+label: Organisation
+weight: 4
+is_admin: null
+permissions: {  }
