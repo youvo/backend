@@ -9,4 +9,4 @@ git reset --hard origin/$(git branch | grep \* | cut -d ' ' -f2)
 git clean -df
 
 # Install Composer dependecies.
-composer install --no-dev --no-interaction --no-progress --no-suggest
+composer install --no-dev --no-interaction --no-progress
