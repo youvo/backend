@@ -6,3 +6,4 @@
  sudo rm -rf files
  mkdir files
  chmod 0777 files
+ echo "Sites reset!"
