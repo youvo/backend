@@ -1,0 +1,9 @@
+langcode: de
+status: true
+dependencies: {  }
+id: manager
+label: 'Manager'
+weight: 7
+is_admin: false
+permissions:
+  - 'access content'

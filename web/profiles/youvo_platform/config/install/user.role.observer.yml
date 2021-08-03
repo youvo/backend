@@ -1,0 +1,9 @@
+langcode: de
+status: true
+dependencies: {  }
+id: observer
+label: 'Observer'
+weight: 5
+is_admin: false
+permissions:
+  - 'access content'

@@ -1,0 +1,9 @@
+langcode: de
+status: true
+dependencies: {  }
+id: supervisor
+label: 'Supervisor'
+weight: 8
+is_admin: false
+permissions:
+  - 'access content'
