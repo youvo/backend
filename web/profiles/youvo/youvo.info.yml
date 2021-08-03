@@ -1,6 +1,6 @@
 name: youvo
 type: profile
-description: 'Configuration profile for initial install of a youvo_org environment.'
+description: 'Configuration profile for initial install of youvo.'
 core: 8.x
 core_version_requirement: ^8 || ^9
 
@@ -8,6 +8,7 @@ install:
   # Core
   - block
   - config
+  - content_translation
   - datetime
   - datetime_range
   - dblog
