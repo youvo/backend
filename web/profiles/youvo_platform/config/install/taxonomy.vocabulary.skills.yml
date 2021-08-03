@@ -1,0 +1,7 @@
+langcode: de
+status: true
+dependencies: {  }
+name: Tätigkeitsfeld
+vid: skills
+description: ''
+weight: 0
