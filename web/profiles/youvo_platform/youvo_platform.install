@@ -1,0 +1,74 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the youvo install profile.
+ */
+
+use Drupal\taxonomy\Entity\Term;
+
+/**
+ * Implements hook_install().
+ * Perform actions to set up the site for this profile.
+ *
+ * @see system_install()
+ */
+function youvo_platform_install() {
+
+  // Create taxonomy terms for taxonomy skills.
+  $vocabulary = 'skills';
+  $terms = [
+    1 => [
+      'name' => 'Online',
+      'description' => 'Website-Anpassungen, Social Media, Online-Marketing – die Digitalisierung bietet neue Chancen.',
+    ],
+    2 => [
+      'name' => 'Konzept',
+      'description' => 'Wie erreicht man welche Zielgruppe? Mit einem guten Konzept steht und fällt die Öffentlichkeitsarbeit.',
+    ],
+    3 => [
+      'name' => 'Text & PR',
+      'description' => 'Blogeintrag, Dokumentation, Slogan oder Flyertext erklären, was die Organisation wirklich macht.',
+    ],
+    4 => [
+      'name' => 'Design',
+      'description' => 'Design, digital oder gedruckt, ist immer gefragt: ob Wireframes, Icons, Logos, Infografiken oder Flyer.',
+    ],
+    5 => [
+      'name' => 'Video',
+      'description' => 'Mit einem animierten Erklärfilm oder einem klischeefreien Fundraising-Video eröffnen sich neue Möglichkeiten.',
+    ],
+    6 => [
+      'name' => 'Foto',
+      'description' => 'Bilder sagen mehr als Worte: egal ob es um Teamfotos, die Dokumentation einer Veranstaltung oder frische Kampagnenmotive geht.',
+    ],
+  ];
+
+  foreach ($terms as $tid => $term) {
+    Term::create([
+      'parent' => [],
+      'name' => $term['name'],
+      'tid' => $tid,
+      'vid' => $vocabulary,
+      'description' => $term['description'],
+    ])->save();
+  }
+
+  // Create taxonomy terms for taxonomy causes.
+  $vocabulary = 'causes';
+  $terms = [
+    'Bildung',
+    'Entwicklungsarbeit',
+    'Integration',
+    'Medizin',
+    'Umwelt',
+    'Zivilgesellschaft',
+  ];
+
+  foreach ($terms as $term) {
+    Term::create([
+      'parent' => [],
+      'name' => $term,
+      'vid' => $vocabulary,
+    ])->save();
+  }
+}
