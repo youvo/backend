@@ -1,6 +1,6 @@
 name: 'Youvo Base'
-description: 'Custom module developed by youvo_org which provides base framework for platform.'
-package: 'youvo_org'
+description: 'Custom module developed by youvo which provides base framework for platform.'
+package: 'youvo'
 
 type: module
 core_version_requirement: ^8.8 || ^9
