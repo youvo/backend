@@ -1,14 +1,16 @@
 <?php
+
 /**
  * @file
- * Install, update and uninstall functions for the youvo install profile.
+ * Install, update and uninstall functions for the youvo platform profile.
  */
 
 use Drupal\taxonomy\Entity\Term;
 
 /**
- * Implements hook_install().
- * Perform actions to set up the site for this profile.
+ * Implements hook_install() for youvo platform install profile.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
  *
  * @see system_install()
  */
