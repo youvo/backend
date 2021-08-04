@@ -1,0 +1,19 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_xing
+  module:
+    - user
+id: user.user.field_xing
+field_name: field_xing
+entity_type: user
+bundle: user
+label: 'Profil Xing'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
