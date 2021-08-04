@@ -1,10 +1,17 @@
 <?php
 
 /**
- * Function printing variable contents
+ * @file
+ * Custom module developed by youvo which provides developer functions.
+ */
+
+use Drupal\Core\Render\Markup;
+
+/**
+ * Function printing variable contents.
  */
 function dvp($var) {
-	$message = '<pre>'.print_r($var,TRUE).'</pre>';
-	$rendered_message = \Drupal\Core\Render\Markup::create($message);
-	\Drupal::messenger()->addMessage($rendered_message);
+  $message = '<pre>' . print_r($var, TRUE) . '</pre>';
+  $rendered_message = Markup::create($message);
+  \Drupal::messenger()->addMessage($rendered_message);
 }
