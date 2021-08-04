@@ -3,7 +3,10 @@
 ## System
 
 ### Requirements
-`php7.4` `php7.4-mbstring` `composer 2.1.5` `docker 20.10.7`
+`php 7.4` `apache2 2.4.41` `composer 2.1.5` `docker 20.10.7`
+
+### Requirements for dev dependencies
+`php7.4-mbstring`
 
 ### Add to /etc/hosts
 
@@ -18,7 +21,7 @@
 
 ### Composer initialisation
 
-`composer install --no-dev --no-interaction --no-progress`
+`composer install --no-interaction --no-progress`
 
 ### Docker commands
 
@@ -32,13 +35,16 @@
 
 ### URLs of interest local site
 
-http://youvo.localhost:8000
+|                                       |                      |
+| ------------------------------------- | -------------------- | 
+| http://youvo.localhost:8000           | Website              |
+| http://mailhog.youvo.localhost:8000   | Mailhog              |
+| http://adminer.youvo.localhost:8000   | Adminer              |
+| http://portainer.youvo.localhost:8000 | Portainer Dashboard* |
+| http://youvo.localhost:8080           | Traefik Dashboard*   |	
 
-http://maihog.youvo.localhost:8000
+> (*) currently disabled
 
-http://adminer.youvo.localhost:8000
-
-http://portainer.youvo.localhost:8000
 
 ### Delete current drupal installation
 `/scripts/delete-drupal.sh`
@@ -55,3 +61,4 @@ http://portainer.youvo.localhost:8000
 | Database      | youvodb                   |
 | User          | drupal                    |
 | Password      | drupal                    |	
+
