@@ -10,4 +10,3 @@ dependencies:
   - drupal:field (>= 8.8.0)
   - drupal:user (>= 8.8.0)
   - filefield_paths
-
