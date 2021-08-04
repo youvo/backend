@@ -62,3 +62,6 @@
 | User          | drupal                    |
 | Password      | drupal                    |	
 
+### CodeSniffer configuration
+* https://www.drupal.org/node/1419988
+* Set in idea configuration file `<option name="CODING_STANDARD" value="Drupal,DrupalPractice,PHPCompatibility" />`
