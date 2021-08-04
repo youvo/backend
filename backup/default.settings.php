@@ -88,7 +88,16 @@
  * ];
  * @endcode
  */
-$databases = [];
+$databases['default']['default'] = array (
+  'database' => 'youvodb',
+  'username' => 'drupal',
+  'password' => 'drupal',
+  'host' => 'mariadb',
+  'driver' => 'mysql',
+  'port' => '3306',
+  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
+  'prefix' => '',
+);
 
 /**
  * Customizing database settings.
@@ -737,7 +746,9 @@ $settings['container_yamls'][] = $app_root . '/' . $site_path . '/services.yml';
  * will allow the site to run off of all variants of example.com and
  * example.org, with all subdomains included.
  */
-
+$settings['trusted_host_patterns'] = [
+  '^youvo.localhost$',
+];
 /**
  * The default list of directories that will be ignored by Drupal's file API.
  *
@@ -798,7 +809,6 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
  *
  * Keep this code block at the end of this file to take full effect.
  */
-#
-# if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
-#   include $app_root . '/' . $site_path . '/settings.local.php';
-# }
+if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
+  include $app_root . '/' . $site_path . '/settings.local.php';
+}
