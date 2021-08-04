@@ -6,6 +6,7 @@
  */
 
 use Drupal\taxonomy\Entity\Term;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_install() for youvo platform install profile.
@@ -73,4 +74,10 @@ function youvo_platform_install() {
       'vid' => $vocabulary,
     ])->save();
   }
+
+  // Load first user and add creative role.
+  $first_user = User::load(1);
+  $first_user->addRole('creative');
+  $first_user->set('field_name', 'Admin');
+  $first_user->save();
 }
