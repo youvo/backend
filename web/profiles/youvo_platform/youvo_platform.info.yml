@@ -14,13 +14,11 @@ install:
   - dblog
   - dynamic_page_cache
   - field
-  - field_ui
   - file
   - image
   - jsonapi
   - link
   - menu_link_content
-  - menu_ui
   - node
   - options
   - page_cache
@@ -31,11 +29,15 @@ install:
   - text
   - workflows
   # Contrib
-  - devel
   - filefield_paths
   - mail_login
   # Custom
-  - dev
   - youvo
+  # Development
+  - admin_toolbar
+  - dev
+  - devel
+  - field_ui
+  - menu_ui
 themes:
   - claro
