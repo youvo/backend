@@ -33,11 +33,5 @@ install:
   - mail_login
   # Custom
   - youvo
-  # Development
-  - admin_toolbar
-  - dev
-  - devel
-  - field_ui
-  - menu_ui
 themes:
   - claro
