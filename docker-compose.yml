@@ -148,6 +148,7 @@ services:
 #      #      ADMINER_DEFAULT_DB_DRIVER: pgsql
       ADMINER_DEFAULT_DB_HOST: $DB_HOST
       ADMINER_DEFAULT_DB_NAME: $DB_NAME
+      ADMINER_DESIGN: pepa-linha
     labels:
     - "traefik.http.routers.${PROJECT_NAME}_adminer.rule=Host(`adminer.${PROJECT_BASE_URL}`)"
 
