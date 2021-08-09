@@ -33,5 +33,7 @@ install:
   - mail_login
   # Custom
   - youvo
+  # Delete later
+  - youvo_dummy
 themes:
   - claro
