@@ -81,4 +81,7 @@ function youvo_platform_install() {
   $first_user->addRole('creative');
   $first_user->set('field_name', 'Admin');
   $first_user->save();
+
+  // Add dummy content by installing youvo_dummy.
+  Drupal::service('module_installer')->install(['youvo_dummy']);
 }
