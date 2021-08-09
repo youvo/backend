@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Custom module developed by youvo which provides developer functions.
+ * Custom module which provides developer functions.
  */
 
 use Drupal\Core\Render\Markup;
