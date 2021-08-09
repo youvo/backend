@@ -1,10 +1,24 @@
 <?php
 
 /**
- * Implements hook_help().
+ * @file
+ * Custom module which provides implementation of core youvo functionality.
  */
-function youvo_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
 
-  }
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function youvo_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['#submit'][] = 'youvo_user_login_form_submit';
+}
+
+/**
+ * Custom submit handler for the login form.
+ */
+function youvo_user_login_form_submit($form, FormStateInterface $form_state) {
+  $url = Url::fromRoute('system.admin_index');
+  $form_state->setRedirectUrl($url);
 }
