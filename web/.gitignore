@@ -16,7 +16,7 @@ core
 .eslintrc.json
 .gitattributes
 .ht.router.php
-#.htaccess
+.htaccess
 autoload.php
 composer.json
 composer.lock
