@@ -1,5 +1,5 @@
 name: 'Youvo Dev'
-description: 'Custom module developed by youvo which provides developer functions.'
+description: 'Custom module which provides developer functions.'
 package: 'youvo'
 
 type: module

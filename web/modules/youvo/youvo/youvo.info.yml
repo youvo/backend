@@ -1,5 +1,5 @@
 name: 'Youvo Base'
-description: 'Custom module developed by youvo which provides base framework for platform.'
+description: 'Custom module which provides base framework for platform.'
 package: 'youvo'
 
 type: module
