@@ -99,8 +99,8 @@
         "phpcompatibility/php-compatibility": "^9.3"
     },
     "scripts": {
-    	"post-drupal-scaffold-cmd": [
-      		"cd docroot && patch -p1 < ../patches/htaccess-rewritebase.patch"
-    	]
-  	}
+		"post-drupal-scaffold-cmd": [
+		  	"patch -p1 < patches/htaccess-rewritebase.patch"
+		]
+	}
 }
