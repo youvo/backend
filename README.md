@@ -6,7 +6,7 @@
 `php 7.4` `apache2 2.4.41` `composer 2.1.5` `docker 20.10.7`
 
 ### Requirements for dev dependencies
-`php7.4-mbstring`
+`php7.4-mbstring` `php7.4-mysql`
 
 ### Add to /etc/hosts
 
