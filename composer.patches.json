@@ -3,5 +3,10 @@
 		"drupal/core": {
     	  	"Issue #2692403: Introduce base profiles": "patches/drupal/D91x-1356276-656.patch"
 		}
-	}
+	},
+    "scripts": {
+    	"post-drupal-scaffold-cmd": [
+      		"cd docroot && patch -p1 < ../patches/htaccess-rewritebase.patch"
+    	]
+  	}
 }
