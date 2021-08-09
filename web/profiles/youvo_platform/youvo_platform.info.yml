@@ -35,5 +35,7 @@ install:
   - youvo
   # Delete later
   - youvo_dummy
+  # Change later
+  - basic_auth
 themes:
   - claro
