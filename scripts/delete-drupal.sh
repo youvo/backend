@@ -7,7 +7,7 @@
  
  # Set permissions
  cd ../web/sites
- chmod 0644 default
+ chmod 0755 default
  
  # Remove settings file
  cd default
