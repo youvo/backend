@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the youvo development profile.
+ */
+
+use Drupal\path_alias\Entity\PathAlias;
+
+/**
+ * Implements hook_install() for youvo platform install profile.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function youvo_development_install() {
+
+  // Create path aliases for API documentation.
+  $path_alias = PathAlias::create([
+    'path' => '/admin/config/services/openapi/redoc/jsonapi',
+    'alias' => '/apidocs',
+  ]);
+  $path_alias->save();
+}

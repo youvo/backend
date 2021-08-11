@@ -13,3 +13,10 @@ install:
   - devel
   - field_ui
   - menu_ui
+  # OpenAPI for documentation
+  - schemata
+  - schemata_json_schema
+  - openapi
+  - openapi_jsonapi
+  - openapi_ui
+  - openapi_ui_redoc
