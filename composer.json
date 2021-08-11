@@ -96,6 +96,10 @@
         "drupal/admin_toolbar": "^3.0",
         "drupal/coder": "^8.3",
         "drupal/devel": "^4.1",
+        "drupal/openapi": "^2.0@RC",
+        "drupal/openapi_jsonapi": "^3.0",
+        "drupal/openapi_ui": "^1.0@RC",
+        "drupal/openapi_ui_redoc": "^1.0@RC",
         "phpcompatibility/php-compatibility": "^9.3"
     },
     "scripts": {
