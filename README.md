@@ -3,7 +3,7 @@
 ## System
 
 ### Requirements
-`php 7.4` `apache2 2.4.41` `composer 2.1.5` `docker 20.10.7`
+`php 7.4` `apache2 2.4.41` `composer 2.1.5` `docker 20.10.7` `make 4.2.1`
 
 ### Requirements for dev dependencies
 `php7.4-mbstring` `php7.4-mysql`
@@ -23,13 +23,19 @@
 
 `composer install --no-interaction --no-progress`
 
-### Docker commands
+### Make commands
 
-`docker-compose up -d` 
+Start up containers: `make up` 
 
-`docker-compose stop` 
+Start containers without updating: `make start`
 
-`docker-compose down`
+Stop containers: `make stop` 
+
+Destroy containers: `make down`
+
+Display running containers: `make ps`
+
+Executing drush command in php container: `make drush "foo"`
 
 ## Notes
 
@@ -46,19 +52,27 @@
 > (*) currently disabled
 
 
-### Delete current drupal installation
-`/scripts/delete-drupal.sh`
+### Reset current drupal installation
 
-### Deploy scripts for webhook
-`/scripts/deploy.sh`
+Currently installs Drupal with the profile `youvo_development`. For production we will use the installation profile `youvo_platform`.
+
+For online enviroment: `scripts/reset-drupal.sh`
+
+For local enviroment: `scripts/reset-drupal-local.sh`
+
+### Deploy script
+
+`scripts/deploy.sh`
 
 ### TCP connection to database
+
+Note that the docker image for MariaDB serves the database via the host `mariadb`. We enable an additional entrypoint in traefik for PHPStorm.
 
 |               |                           |
 | ------------- | ------------------------- | 
 | Host          | localhost                 |
 | Port          | 3306                      |
-| Database      | youvodb                   |
+| Database      | youvo_test                   |
 | User          | drupal                    |
 | Password      | drupal                    |	
 
