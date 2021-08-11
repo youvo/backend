@@ -45,7 +45,7 @@
  
  # Rebuild Cache
  echo "Rebuilding Cache ..."
- drush cr
+ drush cr > /dev/null 2>&1
  
  # Bye bye
  echo "Exit in 3 seconds!"
