@@ -33,7 +33,7 @@
  # Reinstall drupal
  cd ~
  cd www/$SITE_FOLDER/web
- drush site:install -y youvo_platform \
+ drush site:install -y youvo_development \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="youvo.org" \

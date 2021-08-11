@@ -45,7 +45,7 @@
  
  # Reinstall drupal
  echo "Installing Drupal ..."
- make drush "si -y youvo_platform \
+ make drush "si -y youvo_development \
   --locale=en \
   --db-url=mysql://drupal:drupal@mariadb:3306/youvo_test \
   --site-name=youvo.org \
