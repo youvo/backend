@@ -3,12 +3,8 @@
  # Exit on error.
  set -e
  
- # Check if sudo user.
- if [ "$UID" != "$ROOT_UID" ] 
- then 
-   	echo "Please run using sudo!"
-	exit
- fi
+ # Login sudo.
+ sudo true
  
  # Navigate to directory.
  SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
