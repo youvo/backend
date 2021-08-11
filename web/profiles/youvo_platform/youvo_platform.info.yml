@@ -17,6 +17,7 @@ install:
   - file
   - image
   - jsonapi
+  - jsonapi_extras
   - link
   - menu_link_content
   - node
