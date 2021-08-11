@@ -1,5 +1,8 @@
  #!/bin/bash 
  
+ # Exit on error.
+ set -e
+ 
  SITE_FOLDER=_test-backend
  PATH=$PATH:~/www/$SITE_FOLDER/vendor/bin
 
@@ -7,16 +10,16 @@
  cd www/$SITE_FOLDER
  set -a; source conf/.env; set +a
  
- # Delete database
+ # Delete database.
  mysql -e "DROP DATABASE IF EXISTS ${DB_NAME}"
  mysql -e "CREATE DATABASE ${DB_NAME}"
  echo "Database reset ..."
  
- # Set permissions
+ # Set permissions.
  cd web/sites
  chmod 0755 default
  
- # Remove settings file
+ # Remove settings file.
  cd default
  chmod 0777 settings.php
  rm settings.php
@@ -24,13 +27,13 @@
  chmod 0755 settings.php
  echo "Settings reset ..."
  
- # Reset files folder
+ # Reset files folder.
  rm -rf files
  mkdir files
  chmod 0777 files
  echo "Files folder reset ..."
   
- # Reinstall drupal
+ # Reinstall drupal.
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
@@ -43,11 +46,11 @@
   --account-mail="hello@youvo.org" \
   --account-pass="admin" > /dev/null 2>&1
  
- # Rebuild Cache
+ # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1
  
- # Bye bye
+ # Bye bye.
  echo "Exit in 3 seconds!"
  sleep 3
  
