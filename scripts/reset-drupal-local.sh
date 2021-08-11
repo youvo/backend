@@ -21,15 +21,19 @@
  
  # Remove settings file.
  cd default
- chmod 0777 settings.php
- rm settings.php
+ if test -f "settings.php"; then
+ 	sudo chmod 0777 settings.php
+ 	rm settings.php
+ fi
  cp default.settings.php settings.php
  chmod 0777 settings.php
  echo "Settings reset ..."
  
  # Reset files folder.
- chmod 0777 files
- rm -rf files
+ if test -d "files"; then
+ 	sudo chmod 0777 files
+ 	rm -rf files
+ fi
  mkdir files
  chmod 0777 files
  echo "Files folder reset ..."
