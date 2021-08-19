@@ -130,79 +130,79 @@ resourceFields:
     disabled: false
   field_appreciation:
     fieldName: field_appreciation
-    publicName: field_appreciation
+    publicName: appreciation
     enhancer:
       id: ''
     disabled: false
   field_causes:
     fieldName: field_causes
-    publicName: field_causes
+    publicName: causes
     enhancer:
       id: ''
     disabled: false
   field_city:
     fieldName: field_city
-    publicName: field_city
+    publicName: city
     enhancer:
       id: ''
     disabled: false
   field_deadline:
     fieldName: field_deadline
-    publicName: field_deadline
+    publicName: deadline
     enhancer:
       id: ''
     disabled: false
   field_host:
     fieldName: field_host
-    publicName: field_host
+    publicName: host
     enhancer:
       id: ''
     disabled: false
   field_image:
     fieldName: field_image
-    publicName: field_image
+    publicName: image
     enhancer:
       id: ''
     disabled: false
   field_local:
     fieldName: field_local
-    publicName: field_local
+    publicName: local
     enhancer:
       id: ''
     disabled: false
   field_material:
     fieldName: field_material
-    publicName: field_material
+    publicName: material
     enhancer:
       id: ''
     disabled: false
   field_participants:
     fieldName: field_participants
-    publicName: field_participants
+    publicName: participants
     enhancer:
       id: ''
     disabled: false
   field_result_files:
     fieldName: field_result_files
-    publicName: field_result_files
+    publicName: result_files
     enhancer:
       id: ''
     disabled: false
   field_result_text:
     fieldName: field_result_text
-    publicName: field_result_text
+    publicName: result_text
     enhancer:
       id: ''
     disabled: false
   field_skills:
     fieldName: field_skills
-    publicName: field_skills
+    publicName: skills
     enhancer:
       id: ''
     disabled: false
   field_workload:
     fieldName: field_workload
-    publicName: field_workload
+    publicName: workload
     enhancer:
       id: ''
     disabled: false

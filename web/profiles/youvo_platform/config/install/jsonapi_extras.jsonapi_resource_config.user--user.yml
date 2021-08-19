@@ -112,49 +112,49 @@ resourceFields:
     disabled: false
   field_about:
     fieldName: field_about
-    publicName: field_about
+    publicName: about
     enhancer:
       id: ''
     disabled: false
   field_avatar:
     fieldName: field_avatar
-    publicName: field_avatar
+    publicName: avatar
     enhancer:
       id: ''
     disabled: false
   field_contact:
     fieldName: field_contact
-    publicName: field_contact
+    publicName: contact
     enhancer:
       id: ''
     disabled: false
   field_linkedin:
     fieldName: field_linkedin
-    publicName: field_linkedin
+    publicName: linkedin
     enhancer:
       id: ''
     disabled: false
   field_name:
     fieldName: field_name
-    publicName: field_name
+    publicName: name
     enhancer:
       id: ''
     disabled: false
   field_position:
     fieldName: field_position
-    publicName: field_position
+    publicName: position
     enhancer:
       id: ''
     disabled: false
   field_skills:
     fieldName: field_skills
-    publicName: field_skills
+    publicName: skills
     enhancer:
       id: ''
     disabled: false
   field_xing:
     fieldName: field_xing
-    publicName: field_xing
+    publicName: xing
     enhancer:
       id: ''
     disabled: false
