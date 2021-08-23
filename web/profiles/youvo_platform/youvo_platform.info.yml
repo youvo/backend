@@ -35,6 +35,7 @@ install:
   - mail_login
   # Custom
   - youvo
+  - youvo_lifecycle
   # Change later
   - basic_auth
 themes:
