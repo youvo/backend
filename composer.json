@@ -25,8 +25,7 @@
         "drupal/jsonapi_extras": "^3.19",
         "drupal/jsonapi_include": "^1.4",
         "drupal/mail_login": "^2.4",
-        "drupal/workflows_field": "^2.0@alpha",
-        "drush/drush": "^10.5"
+        "drush/drush": "^10.6"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -99,6 +98,7 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
         "drupal/admin_toolbar": "^3.0",
         "drupal/coder": "^8.3",
+        "drupal/core-dev": "^9.2",
         "drupal/devel": "^4.1",
         "drupal/openapi": "^2.0@RC",
         "drupal/openapi_jsonapi": "^3.0",
