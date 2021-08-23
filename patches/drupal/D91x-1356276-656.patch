@@ -798,7 +798,7 @@ diff --git a/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php b/
 new file mode 100644
 index 0000000000..d5c42adea3
 --- /dev/null
-+++ b/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php
++++ /core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php
 @@ -0,0 +1,58 @@
 +<?php
 +
@@ -892,7 +892,7 @@ diff --git a/core/modules/config/tests/src/Functional/ConfigImportBaseInstallPro
 new file mode 100644
 index 0000000000..583c31153b
 --- /dev/null
-+++ b/core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php
++++ /core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php
 @@ -0,0 +1,96 @@
 +<?php
 +
@@ -1037,7 +1037,7 @@ diff --git a/core/profiles/testing_inherited/config/install/block.block.stable_l
 new file mode 100644
 index 0000000000..3650c6c41a
 --- /dev/null
-+++ b/core/profiles/testing_inherited/config/install/block.block.stable_login.yml
++++ /core/profiles/testing_inherited/config/install/block.block.stable_login.yml
 @@ -0,0 +1,19 @@
 +langcode: en
 +status: true
@@ -1062,7 +1062,7 @@ diff --git a/core/profiles/testing_inherited/config/install/system.theme.yml b/c
 new file mode 100644
 index 0000000000..67aeeeeac7
 --- /dev/null
-+++ b/core/profiles/testing_inherited/config/install/system.theme.yml
++++ /core/profiles/testing_inherited/config/install/system.theme.yml
 @@ -0,0 +1,2 @@
 +# @todo: Remove this file in https://www.drupal.org/node/2352949
 +default: stable
@@ -1070,7 +1070,7 @@ diff --git a/core/profiles/testing_inherited/modules/child_profile_module/child_
 new file mode 100644
 index 0000000000..132b11493f
 --- /dev/null
-+++ b/core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml
++++ /core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Child profile module'
 +type: module
@@ -1081,7 +1081,7 @@ diff --git a/core/profiles/testing_inherited/modules/contrib/contrib_child_profi
 new file mode 100644
 index 0000000000..822c572099
 --- /dev/null
-+++ b/core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml
++++ /core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Contrib child profile module'
 +type: module
@@ -1092,7 +1092,7 @@ diff --git a/core/profiles/testing_inherited/modules/custom/custom_child_profile
 new file mode 100644
 index 0000000000..ef81a8a55b
 --- /dev/null
-+++ b/core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml
++++ /core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Custom child profile module'
 +type: module
@@ -1103,7 +1103,7 @@ diff --git a/core/profiles/testing_inherited/testing_inherited.info.yml b/core/p
 new file mode 100644
 index 0000000000..92e183c86a
 --- /dev/null
-+++ b/core/profiles/testing_inherited/testing_inherited.info.yml
++++ /core/profiles/testing_inherited/testing_inherited.info.yml
 @@ -0,0 +1,17 @@
 +name: Testing Inherited
 +type: profile
@@ -1126,7 +1126,7 @@ diff --git a/core/profiles/testing_inherited/tests/src/Functional/InheritedProfi
 new file mode 100644
 index 0000000000..0af6c4f68d
 --- /dev/null
-+++ b/core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php
++++ /core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php
 @@ -0,0 +1,46 @@
 +<?php
 +
@@ -1178,7 +1178,7 @@ diff --git a/core/profiles/testing_inherited_standard/testing_inherited_standard
 new file mode 100644
 index 0000000000..0728ada2d1
 --- /dev/null
-+++ b/core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml
++++ /core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml
 @@ -0,0 +1,12 @@
 +name: Testing Inherited Standard
 +type: profile
@@ -1196,7 +1196,7 @@ diff --git a/core/profiles/testing_inherited_standard/tests/src/Functional/Inher
 new file mode 100644
 index 0000000000..1bc6b51db0
 --- /dev/null
-+++ b/core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php
++++ /core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php
 @@ -0,0 +1,31 @@
 +<?php
 +
@@ -1233,7 +1233,7 @@ diff --git a/core/profiles/testing_subsubprofile/config/install/system.theme.yml
 new file mode 100644
 index 0000000000..5cb3db7201
 --- /dev/null
-+++ b/core/profiles/testing_subsubprofile/config/install/system.theme.yml
++++ /core/profiles/testing_subsubprofile/config/install/system.theme.yml
 @@ -0,0 +1,2 @@
 +# @todo: Remove this file once https://www.drupal.org/node/2854576 is resolved.
 +default: stable
@@ -1241,7 +1241,7 @@ diff --git a/core/profiles/testing_subsubprofile/modules/grandchild_profile_modu
 new file mode 100644
 index 0000000000..06e0e52d59
 --- /dev/null
-+++ b/core/profiles/testing_subsubprofile/modules/grandchild_profile_module/grandchild_profile_module.info.yml
++++ /core/profiles/testing_subsubprofile/modules/grandchild_profile_module/grandchild_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Grandchild profile module'
 +type: module
@@ -1252,7 +1252,7 @@ diff --git a/core/profiles/testing_subsubprofile/testing_subsubprofile.info.yml 
 new file mode 100644
 index 0000000000..51d083d4e5
 --- /dev/null
-+++ b/core/profiles/testing_subsubprofile/testing_subsubprofile.info.yml
++++ /core/profiles/testing_subsubprofile/testing_subsubprofile.info.yml
 @@ -0,0 +1,11 @@
 +name: Testing SubSubProfile
 +type: profile
@@ -1269,7 +1269,7 @@ diff --git a/core/profiles/testing_subsubprofile/tests/src/Functional/DeepInheri
 new file mode 100644
 index 0000000000..7df6c46fc0
 --- /dev/null
-+++ b/core/profiles/testing_subsubprofile/tests/src/Functional/DeepInheritedProfileTest.php
++++ /core/profiles/testing_subsubprofile/tests/src/Functional/DeepInheritedProfileTest.php
 @@ -0,0 +1,38 @@
 +<?php
 +
@@ -1326,7 +1326,7 @@ diff --git a/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTe
 new file mode 100644
 index 0000000000..0b4bbfa5f4
 --- /dev/null
-+++ b/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php
++++ /core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php
 @@ -0,0 +1,145 @@
 +<?php
 +
