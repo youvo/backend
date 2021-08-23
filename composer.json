@@ -92,7 +92,10 @@
             ]
         },
         "patches-file": "composer.patches.json",
-  		"enable-patching": true
+  		"enable-patching": true,
+  		"patchLevel": {
+		  "drupal/core": "-p2"
+		}
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
