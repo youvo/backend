@@ -27,7 +27,7 @@ class Permissions {
   public function getPermissions(): array {
     $permissions = [];
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    foreach (Workflow::loadMultipleByType('youvo_lifecycle') as $id => $workflow) {
+    foreach (Workflow::loadMultipleByType('youvo_lifecycle') as $workflow) {
       foreach ($workflow->getTypePlugin()->getTransitions() as $transition) {
         $permissions['use ' . $workflow->id() . ' transition ' . $transition->id()] = [
           'title' => $this->t('%workflow workflow: Use %transition transition.', [
