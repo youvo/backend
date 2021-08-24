@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_lifecycle
+    - node.type.project
+  module:
+    - youvo_lifecycle
+id: node.project.field_lifecycle
+field_name: field_lifecycle
+entity_type: node
+bundle: project
+label: Lifecycle
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: draft
+default_value_callback: ''
+settings: {  }
+field_type: youvo_lifecycle_item
