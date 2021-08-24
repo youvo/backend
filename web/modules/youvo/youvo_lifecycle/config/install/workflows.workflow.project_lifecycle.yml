@@ -1,0 +1,91 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - youvo_lifecycle
+id: project_lifecycle
+label: 'Project Lifecycle'
+type: youvo_lifecycle
+type_settings:
+  states:
+    draft:
+      label: Draft
+      weight: 0
+    finished:
+      label: Finished
+      weight: 4
+    ongoing:
+      label: Ongoing
+      weight: 3
+    open:
+      label: Open
+      weight: 2
+    pending:
+      label: Pending
+      weight: 1
+  transitions:
+    project_remain_draft:
+      label: 'Project Remain Draft'
+      from:
+        - draft
+      to: draft
+      weight: 0
+    project_finish:
+      label: 'Project Finish'
+      from:
+        - ongoing
+      to: finished
+      weight: 7
+    project_mediate:
+      label: 'Project Mediate'
+      from:
+        - open
+      to: ongoing
+      weight: 5
+    project_publish:
+      label: 'Project Publish'
+      from:
+        - pending
+      to: open
+      weight: 3
+    project_remain_finished:
+      label: 'Project Remain Finished'
+      from:
+        - finished
+      to: finished
+      weight: 8
+    project_remain_ongoing:
+      label: 'Project Remain Ongoing'
+      from:
+        - ongoing
+      to: ongoing
+      weight: 6
+    project_remain_open:
+      label: 'Project Remain Open'
+      from:
+        - open
+      to: open
+      weight: 4
+    project_remain_pending:
+      label: 'Project Remain Pending'
+      from:
+        - pending
+      to: pending
+      weight: 2
+    project_reset:
+      label: 'Project Reset'
+      from:
+        - finished
+        - ongoing
+        - open
+        - pending
+      to: draft
+      weight: 9
+    project_submit:
+      label: 'Project Submit'
+      from:
+        - draft
+      to: pending
+      weight: 1
+  initial_state: draft
+
