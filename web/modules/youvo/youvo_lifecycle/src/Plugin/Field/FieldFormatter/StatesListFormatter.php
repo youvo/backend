@@ -6,12 +6,13 @@ namespace Drupal\youvo_lifecycle\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Assertion\Inspector;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\StateInterface;
-use Drupal\youvo_lifecycle\Plugin\Field\FieldType\WorkflowsFieldItem;
+use Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Plugin implementation of the 'youvo_lifecycle_state_list' formatter.
@@ -27,10 +28,25 @@ use Drupal\youvo_lifecycle\Plugin\Field\FieldType\WorkflowsFieldItem;
 class StatesListFormatter extends FormatterBase {
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Create an instance of StatesListFormatter.
+   */
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    return array_map(function (WorkflowsFieldItem $item) {
+    return array_map(function (YouvoLifecycleItem $item) {
       return [
         '#theme' => 'item_list__states_list',
         '#context' => ['list_style' => 'workflows-states-list'],
@@ -44,13 +60,13 @@ class StatesListFormatter extends FormatterBase {
   /**
    * Builds the items array for theme item list.
    *
-   * @param \Drupal\youvo_lifecycle\Plugin\Field\FieldType\WorkflowsFieldItem $item
+   * @param \Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem $item
    *   The currently active workflow item.
    *
    * @return array
    *   An array of items for theme item_list.
    */
-  protected function buildItems(WorkflowsFieldItem $item): array {
+  protected function buildItems(YouvoLifecycleItem $item): array {
     $states = $this->getStatesFromWorkflow();
 
     // Remove excluded states.
@@ -105,6 +121,8 @@ class StatesListFormatter extends FormatterBase {
   protected function getStatesFromWorkflow(): array {
     /** @var \Drupal\workflows\WorkflowInterface|null $workflow */
     $workflow = Workflow::load($this->getFieldSetting('workflow'));
+    $workflow = $this->entityTypeManager->getStorage('workflow')
+      ->loadByProperties(['type' => 'project_lifecycle']);
     $type = $workflow->getTypePlugin();
     $states = $type->getStates();
     assert(Inspector::assertAllObjects($states, StateInterface::class));

@@ -8,7 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\youvo_lifecycle\Permissions;
-use Drupal\youvo_lifecycle\Plugin\Field\FieldType\WorkflowsFieldItem;
+use Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -46,8 +46,8 @@ class YouvoLifecycleContraintValidator extends ConstraintValidator implements Co
    * {@inheritdoc}
    */
   public function validate($field, Constraint $constraint): void {
-    assert($field instanceof WorkflowsFieldItem);
-    assert($constraint instanceof WorkflowsFieldContraint);
+    assert($field instanceof YouvoLifecycleItem);
+    assert($constraint instanceof YouvoLifecycleContraint);
 
     $entity = $field->getEntity();
     $workflow_type = $field->getWorkflow()->getTypePlugin();

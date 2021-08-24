@@ -37,7 +37,10 @@ class WorkflowTypeConfigureForm extends WorkflowTypeConfigureFormBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $configuration = $this->workflowType->getConfiguration();
-    $configuration['initial_state'] = $form_state->getValue(['settings', 'initial_state']);
+    $configuration['initial_state'] = $form_state->getValue([
+      'settings',
+      'initial_state',
+    ]);
     $this->workflowType->setConfiguration($configuration);
   }
 
