@@ -1,0 +1,21 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - workflows.workflow.project_lifecycle
+  module:
+    - node
+    - youvo_lifecycle
+id: node.field_lifecycle
+field_name: field_lifecycle
+entity_type: node
+type: youvo_lifecycle_item
+settings:
+  workflow: project_lifecycle
+module: youvo_lifecycle
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
