@@ -1,8 +1,9 @@
-name: youvo_platform
+name: Youvo Platform
 type: profile
 description: 'Configuration profile for initial install of youvo.'
 core: 8.x
 core_version_requirement: ^8 || ^9
+package: 'youvo'
 
 install:
   # Core
