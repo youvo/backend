@@ -1,0 +1,14 @@
+name: 'Youvo Projects'
+description: 'Custom module which handles business logic for project entities.'
+package: 'youvo'
+
+type: module
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - drupal:taxonomy (>= 8.8.0)
+  - drupal:field (>= 8.8.0)
+  - drupal:user (>= 8.8.0)
+  - filefield_paths
+  - workflows
+  - workflows_field
