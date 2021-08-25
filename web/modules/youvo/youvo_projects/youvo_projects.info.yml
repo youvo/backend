@@ -11,4 +11,5 @@ dependencies:
   - drupal:user (>= 8.8.0)
   - filefield_paths
   - workflows
-  - workflows_field
+  - youvo_lifecycle
+  - youvo
