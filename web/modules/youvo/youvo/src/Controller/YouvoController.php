@@ -11,14 +11,17 @@ use Drupal\youvo_projects\Entity\Project;
 class YouvoController extends ControllerBase {
 
   /**
-   * {@inheritdoc}
+   * Simple Dashboard.
    */
   public function dashboard() {
 
     $page = [];
 
-    $project = Project::load(1);
-    dvp($project->get('title')->getValue());
+    $project = $this->entityTypeManager()->getStorage('node')->load(1);
+
+    if ($project instanceof Project) {
+      dvp($project->getState());
+    }
 
     return [
       '#page' => $page,
