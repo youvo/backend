@@ -53,7 +53,7 @@
   --db-url=mysql://drupal:drupal@mariadb:3306/youvo_test \
   --site-name=youvo.org \
   --site-mail=hello@youvo.org \
-  --account-name=admin \
+  --account-name=hello@youvo.org \
   --account-mail=hello@youvo.org \
   --account-pass=admin" > /dev/null 2>&1
  

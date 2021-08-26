@@ -22,17 +22,6 @@ function youvo_dummy_install() {
   // Object for random content.
   $random = new Random();
 
-  // Load first user and add creative role.
-  $administrator = User::load(1);
-  $administrator->addRole('creative');
-  $administrator->set('field_name', 'Admin');
-  try {
-    $administrator->save();
-  }
-  catch (EntityStorageException $e) {
-    watchdog_exception('youvo_dummy', $e, 'An error occurred while adding creative role to admin: "@message" in %function (line %line of %file).', ['@message' => $e->getMessage()]);
-  }
-
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
   $values = [
@@ -121,8 +110,8 @@ function youvo_dummy_install() {
     'field_about' => $random->paragraphs(4),
     'field_contact' => 'Ursula Ursig',
     'field_avatar' => $image_file->id(),
-    'name' => 'hello@youvo.org',
-    'mail' => 'hello@youvo.org',
+    'name' => 'hello@testev.org',
+    'mail' => 'hello@testev.org',
     'roles' => ['organisation'],
     'pass' => 'drupal',
     'status' => 1,
