@@ -17,7 +17,7 @@ class ProjectMediateForm extends FormBase {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Constructs a new ProjectMediateForm object.
@@ -46,7 +46,7 @@ class ProjectMediateForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $nid = '') {
+  public function buildForm(array $form, FormStateInterface $form_state, int $nid = NULL) {
 
     // Store nid for submit handler.
     $form['nid'] = [
@@ -70,7 +70,6 @@ class ProjectMediateForm extends FormBase {
     // Initialize.
     $nid = $form_state->getValues()['nid'];
 
-    // Try to load project.
     /** @var \Drupal\youvo_projects\Entity\Project $project */
     $project = $this->entityTypeManager->getStorage('node')->load($nid);
 

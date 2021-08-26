@@ -17,4 +17,11 @@ class Project extends Node implements ProjectInterface {
     return $this->get('field_lifecycle')->value;
   }
 
+  /**
+   * Implement whatever business logic specific to basic pages.
+   */
+  public function canMediate() {
+    return TRUE;
+  }
+
 }
