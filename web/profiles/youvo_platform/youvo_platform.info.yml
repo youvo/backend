@@ -37,6 +37,7 @@ install:
   # Custom
   - youvo
   - youvo_lifecycle
+  - youvo_projects
   # Change later
   - basic_auth
 themes:
