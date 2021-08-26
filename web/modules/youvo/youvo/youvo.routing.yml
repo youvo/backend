@@ -1,0 +1,7 @@
+youvo.dashboard:
+  path: '/dashboard'
+  defaults:
+    _controller: '\Drupal\youvo\Controller\YouvoController::dashboard'
+    _title: 'Dashboard'
+  requirements:
+    _role: 'authenticated'
