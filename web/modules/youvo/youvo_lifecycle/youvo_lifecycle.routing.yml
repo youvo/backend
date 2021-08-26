@@ -5,6 +5,6 @@ youvo_lifecycle.project.mediate:
     _title: 'Mediate Project'
   requirements:
     _custom_access: '\Drupal\youvo_lifecycle\Controller\AccessTransitionController::accessProjectMediate'
-    _nid: '\d+'
+    nid: \d+
   options:
     _admin_route: TRUE
