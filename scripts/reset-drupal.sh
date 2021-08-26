@@ -42,7 +42,7 @@
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="youvo.org" \
   --site-mail="hello@youvo.org" \
-  --account-name="admin" \
+  --account-name="hello@youvo.org" \
   --account-mail="hello@youvo.org" \
   --account-pass="admin" > /dev/null 2>&1
  
