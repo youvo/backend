@@ -138,11 +138,13 @@ function youvo_dummy_install() {
   }
 
   // Array of cycle states.
-  /*  $cycle_states = [
-  'opened',
-  'brokered',
-  'finished',
-  ];*/
+  $lifecycle_states = [
+    'draft',
+    'pending',
+    'open',
+    'ongoing',
+    'finished',
+  ];
 
   // Create random content.
   for ($i = 1; $i <= 24; $i++) {
@@ -158,6 +160,10 @@ function youvo_dummy_install() {
     $rnd_time = rand($one_year_ago, $current_time);
     $date = Drupal::service('date.formatter')
       ->format($rnd_time, 'custom', 'Y-m-d');
+
+    // Get random state.
+    shuffle($lifecycle_states);
+    $state = $lifecycle_states[0];
 
     // Create node with random information.
     $project = Node::create([
@@ -177,6 +183,7 @@ function youvo_dummy_install() {
       'field_appreciation' => $random->sentences(8),
       'field_skills' => $skills,
       'field_image' => $image_file->id(),
+      'field_lifecycle' => $state,
     ]);
 
     try {
