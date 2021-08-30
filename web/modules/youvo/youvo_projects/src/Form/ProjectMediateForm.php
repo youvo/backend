@@ -4,37 +4,13 @@ namespace Drupal\youvo_projects\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Render\Element\Checkboxes;
+use Drupal\youvo_projects\ProjectInterface;
 
 /**
  * The ProjectMediateForm provides a simple UI for changing lifecycle state.
  */
 class ProjectMediateForm extends FormBase {
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Constructs a new ProjectMediateForm object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static($container->get('entity_type.manager'));
-  }
 
   /**
    * {@inheritdoc}
@@ -46,17 +22,29 @@ class ProjectMediateForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, int $nid = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ProjectInterface $project = NULL) {
 
-    // Store nid for submit handler.
-    $form['nid'] = [
+    // Set title for form.
+    $form['#title'] = $this->t('Mediate Project: %s', [
+      '%s' => $project->getTitle(),
+    ]);
+
+    // Store project for submit handler.
+    $form['project'] = [
       '#type' => 'value',
-      '#value' => $nid,
+      '#value' => $project,
+    ];
+
+    $form['select_participants'] = [
+      '#type' => 'checkboxes',
+      '#options' => $project->getApplicantsAsArray(),
+      '#title' => $this->t('Select Participants'),
+      '#required' => 1,
     ];
 
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Projekt vermitteln'),
+      '#value' => $this->t('Mediate Project'),
     ];
 
     return $form;
@@ -64,21 +52,24 @@ class ProjectMediateForm extends FormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     // Initialize.
-    $nid = $form_state->getValues()['nid'];
+    $project = $form_state->getValues()['project'];
+    $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
-    /** @var \Drupal\youvo_projects\Entity\Project $project */
-    $project = $this->entityTypeManager->getStorage('node')->load($nid);
+    // Mediate project.
+    if ($project->transitionMediate()) {
+      $project->setParticipants($participants, TRUE);
+      $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
+    }
+    else {
+      $this->messenger()->addError($this->t('Could not mediate project.'));
+    }
 
     // Set redirect after submission.
-    $this->messenger()->addMessage($project->getState());
-    $form_state->setRedirect('entity.node.canonical', ['node' => $nid]);
+    $form_state->setRedirect('entity.node.canonical', ['node' => $project->id()]);
   }
 
 }

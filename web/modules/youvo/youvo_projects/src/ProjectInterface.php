@@ -24,6 +24,6 @@ interface ProjectInterface extends NodeInterface {
    * @return bool
    *   FALSE if current cycle could not be determined.
    */
-  public function canMediate();
+  public function canTransitionMediate();
 
 }
