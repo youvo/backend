@@ -3,6 +3,7 @@ status: true
 dependencies:
   config:
     - field.field.node.project.body
+    - field.field.node.project.field_applicants
     - field.field.node.project.field_appreciation
     - field.field.node.project.field_causes
     - field.field.node.project.field_city
@@ -45,6 +46,16 @@ content:
     weight: 3
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_applicants:
+    type: entity_reference_autocomplete
+    weight: 19
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_appreciation:
     type: string_textarea
