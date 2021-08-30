@@ -1,0 +1,9 @@
+id: project_mediate
+plugin_id: project_mediate
+granularity: method
+configuration:
+  GET:
+    supported_formats:
+      - json
+    supported_auth:
+      - basic_auth
