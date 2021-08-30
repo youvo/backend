@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_lifecycle\Controller;
+namespace Drupal\youvo_projects\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
@@ -9,7 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Access controller for transition forms.
  */
-class AccessTransitionController extends ControllerBase {
+class TransitionController extends ControllerBase {
 
   /**
    * Checks access for a specific request.
