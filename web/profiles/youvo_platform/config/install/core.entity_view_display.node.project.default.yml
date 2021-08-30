@@ -37,6 +37,14 @@ content:
     label: above
     settings: {  }
     third_party_settings: {  }
+  field_applicants:
+    type: entity_reference_label
+    weight: 13
+    region: content
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
   field_appreciation:
     type: basic_string
     weight: 1

@@ -128,6 +128,12 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
+  field_applicants:
+    fieldName: field_applicants
+    publicName: applicants
+    enhancer:
+      id: ''
+    disabled: false
   field_appreciation:
     fieldName: field_appreciation
     publicName: appreciation
