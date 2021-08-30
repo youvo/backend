@@ -1,10 +1,14 @@
 youvo_lifecycle.project.mediate:
-  path: '/projects/{nid}/mediate'
+  path: '/projects/{project}/mediate'
   defaults:
     _form: '\Drupal\youvo_projects\Form\ProjectMediateForm'
     _title: 'Mediate Project'
+    transition: 'mediate'
   requirements:
-    _custom_access: '\Drupal\youvo_projects\Controller\TransitionController::accessProjectMediate'
-    nid: \d+
+    _custom_access: '\Drupal\youvo_projects\Controller\TransitionController::accessProjectTransition'
+    project: \d+
   options:
     _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node

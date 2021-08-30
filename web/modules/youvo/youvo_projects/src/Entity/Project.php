@@ -16,6 +16,12 @@ class Project extends Node implements ProjectInterface {
   const STATE_ONGOING = 'ongoing';
   const STATE_COMPLETED = 'completed';
 
+  const TRANSITION_SUBMIT = 'submit';
+  const TRANSITION_PUBLISH = 'publish';
+  const TRANSITION_MEDIATE = 'mediate';
+  const TRANSITION_COMPLETE = 'complete';
+  const TRANSITION_RESET = 'reset';
+
   /**
    * Gets current state of project.
    */
@@ -56,6 +62,31 @@ class Project extends Node implements ProjectInterface {
    */
   public function canReset() {
     return $this->canTransition($this->getState(), self::STATE_DRAFT);
+  }
+
+  /**
+   * Checks if project can transition.
+   */
+  public function canTransitionByName($transition) {
+    switch ($transition) {
+      case self::TRANSITION_SUBMIT:
+        return $this->canSubmit();
+
+      case self::TRANSITION_PUBLISH:
+        return $this->canPublish();
+
+      case self::TRANSITION_MEDIATE:
+        return $this->canMediate();
+
+      case self::TRANSITION_COMPLETE:
+        return $this->canComplete();
+
+      case self::TRANSITION_RESET:
+        return $this->canReset();
+
+      default:
+        return FALSE;
+    }
   }
 
   /**
