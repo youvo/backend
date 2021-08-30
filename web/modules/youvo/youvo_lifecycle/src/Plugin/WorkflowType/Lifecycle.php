@@ -18,7 +18,7 @@ use Drupal\workflows\Plugin\WorkflowTypeBase;
  *   },
  * )
  */
-class YouvoLifecycle extends WorkflowTypeBase {
+class Lifecycle extends WorkflowTypeBase {
 
   /**
    * {@inheritdoc}

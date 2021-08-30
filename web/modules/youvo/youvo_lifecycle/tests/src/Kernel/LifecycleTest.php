@@ -4,14 +4,14 @@ namespace Drupal\Tests\youvo_lifecycle\Kernel;
 
 use Drupal\node\Entity\Node;
 use Drupal\workflows\Entity\Workflow;
-use Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem;
+use Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem;
 
 /**
  * Test the youvo lifecycle.
  *
  * @group youvo_lifecycle
  */
-class YouvoLifecycleTest extends WorkflowsTestBase {
+class LifecycleTest extends WorkflowsTestBase {
 
   /**
    * Test the implementation of OptionsProviderInterface.
@@ -77,7 +77,7 @@ class YouvoLifecycleTest extends WorkflowsTestBase {
   }
 
   /**
-   * @covers \Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem
+   * @covers \Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem
    */
   public function testFieldType() {
     $node = Node::create([
@@ -87,19 +87,19 @@ class YouvoLifecycleTest extends WorkflowsTestBase {
     ]);
     $node->save();
 
-    // Test the dependencies calculation.
+    // Test the dependencies' calculation.
     $this->assertEquals([
       'config' => [
         'workflows.workflow.bureaucracy_workflow',
       ],
-    ], YouvoLifecycleItem::calculateStorageDependencies($node->field_status->getFieldDefinition()->getFieldStorageDefinition()));
+    ], LifecycleItem::calculateStorageDependencies($node->field_status->getFieldDefinition()->getFieldStorageDefinition()));
 
     // Test the getWorkflow method.
     $this->assertEquals('bureaucracy_workflow', $node->field_status[0]->getWorkflow()->id());
   }
 
   /**
-   * @covers \Drupal\youvo_lifecycle\Plugin\WorkflowType\YouvoLifecycle
+   * @covers \Drupal\youvo_lifecycle\Plugin\WorkflowType\Lifecycle
    */
   public function testWorkflowType() {
     // Test the initial state based on the config, despite the state weights.

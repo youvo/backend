@@ -10,11 +10,11 @@ use Symfony\Component\Validator\Constraint;
  * Validation constraint for the youvo lifecycle.
  *
  * @Constraint(
- *   id = "YouvoLifecycleConstraint",
- *   label = @Translation("YouvoLifecyleConstraint provider constraint", context = "Validation"),
+ *   id = "LifecycleConstraint",
+ *   label = @Translation("LifecyleConstraint provider constraint", context = "Validation"),
  * )
  */
-class YouvoLifecycleContraint extends Constraint {
+class LifecycleContraint extends Constraint {
 
   /**
    * Message displayed during an invalid transition.

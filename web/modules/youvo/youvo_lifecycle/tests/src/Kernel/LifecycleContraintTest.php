@@ -9,11 +9,11 @@ use Drupal\node\Entity\Node;
  *
  * @group youvo_lifecycle
  */
-class YouvoLifecycleContraintTest extends WorkflowsTestBase {
+class LifecycleContraintTest extends WorkflowsTestBase {
 
   /**
-   * @covers \Drupal\youvo_lifecycle\Plugin\Validation\Constraint\YouvoLifecycleContraint
-   * @covers \Drupal\youvo_lifecycle\Plugin\Validation\Constraint\YouvoLifecycleContraintValidator
+   * @covers \Drupal\youvo_lifecycle\Plugin\Validation\Constraint\LifecycleContraint
+   * @covers \Drupal\youvo_lifecycle\Plugin\Validation\Constraint\LifecycleContraintValidator
    */
   public function testValidTransitionsNoViolations() {
     $this->container->set('current_user', $this->createUser([

@@ -22,14 +22,14 @@ use Drupal\youvo_lifecycle\Permissions;
  *   id = "youvo_lifecycle_item",
  *   label = @Translation("Workflows"),
  *   description = @Translation("Allows you to store a workflow state."),
- *   constraints = {"YouvoLifecycleConstraint" = {}},
+ *   constraints = {"LifecycleConstraint" = {}},
  *   default_formatter = "list_default",
  *   default_widget = "options_select"
  * )
  *
  * @property string|null $value
  */
-class YouvoLifecycleItem extends FieldItemBase implements OptionsProviderInterface {
+class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
 
   /**
    * {@inheritdoc}
@@ -136,7 +136,7 @@ class YouvoLifecycleItem extends FieldItemBase implements OptionsProviderInterfa
           return TRUE;
         }
 
-        // If we don't have a valid transition or we don't have an account then
+        // If we don't have a valid transition, or we don't have an account then
         // all we care about is whether the transition is valid so return.
         $validTransition = $currentState->canTransitionTo($state->id());
         if (!$validTransition || !$account) {
@@ -157,6 +157,8 @@ class YouvoLifecycleItem extends FieldItemBase implements OptionsProviderInterfa
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    */
   public function applyDefaultValue($notify = TRUE) {
     if ($workflow = $this->getWorkflow()) {
