@@ -34,7 +34,7 @@ type_settings:
       label: 'Project Complete'
       from:
         - ongoing
-      to: finished
+      to: completed
       weight: 7
     project_mediate:
       label: 'Project Mediate'
@@ -51,8 +51,8 @@ type_settings:
     project_remain_completed:
       label: 'Project Remain Completed'
       from:
-        - finished
-      to: finished
+        - completed
+      to: completed
       weight: 8
     project_remain_ongoing:
       label: 'Project Remain Ongoing'
@@ -75,7 +75,7 @@ type_settings:
     project_reset:
       label: 'Project Reset'
       from:
-        - finished
+        - completed
         - ongoing
         - open
         - pending
