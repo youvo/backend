@@ -25,26 +25,56 @@ class Project extends Node implements ProjectInterface {
 
   /**
    * Checks if project can transition to state 'ongoing'.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function canSubmit() {
+    return $this->canTransition($this->getState(), self::STATE_PENDING);
+  }
+
+  /**
+   * Checks if project can transition to state 'open'.
+   */
+  public function canPublish() {
+    return $this->canTransition($this->getState(), self::STATE_OPEN);
+  }
+
+  /**
+   * Checks if project can transition to state 'ongoing'.
    */
   public function canMediate() {
+    return $this->canTransition($this->getState(), self::STATE_ONGOING);
+  }
+
+  /**
+   * Checks if project can transition to state 'completed'.
+   */
+  public function canComplete() {
+    return $this->canTransition($this->getState(), self::STATE_COMPLETED);
+  }
+
+  /**
+   * Checks if project can transition to state 'draft'.
+   */
+  public function canReset() {
+    return $this->canTransition($this->getState(), self::STATE_DRAFT);
+  }
+
+  /**
+   * Abstraction of forward transition flow.
+   */
+  private function canTransition($current_state, $new_state) {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->loadWorkflowForProject();
-    $current_state = $this->getState();
-    return $current_state != self::STATE_ONGOING &&
-      $workflow->getTypePlugin()->hasTransitionFromStateToState($current_state, self::STATE_ONGOING);
+    return $current_state != $new_state &&
+      $workflow->getTypePlugin()->hasTransitionFromStateToState($current_state, $new_state);
   }
 
   /**
    * Loads workflow for current project.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   private function loadWorkflowForProject() {
-    return \Drupal::entityTypeManager()->getStorage('workflow')->load('project_lifecycle');
+    return $this->entityTypeManager()
+      ->getStorage('workflow')
+      ->load('project_lifecycle');
   }
 
 }
