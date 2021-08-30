@@ -11,8 +11,8 @@ type_settings:
     draft:
       label: Draft
       weight: 0
-    finished:
-      label: Finished
+    completed:
+      label: Completed
       weight: 4
     ongoing:
       label: Ongoing
@@ -30,8 +30,8 @@ type_settings:
         - draft
       to: draft
       weight: 0
-    project_finish:
-      label: 'Project Finish'
+    project_complete:
+      label: 'Project Complete'
       from:
         - ongoing
       to: finished
@@ -48,8 +48,8 @@ type_settings:
         - pending
       to: open
       weight: 3
-    project_remain_finished:
-      label: 'Project Remain Finished'
+    project_remain_completed:
+      label: 'Project Remain Completed'
       from:
         - finished
       to: finished
