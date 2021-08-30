@@ -9,7 +9,7 @@ use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\StateInterface;
-use Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem;
+use Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem;
 
 /**
  * Plugin implementation of the 'youvo_lifecycle_state_list' formatter.
@@ -28,7 +28,7 @@ class StatesListFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    return array_map(function (YouvoLifecycleItem $item) {
+    return array_map(function (LifecycleItem $item) {
       return [
         '#theme' => 'item_list__states_list',
         '#context' => ['list_style' => 'workflows-states-list'],
@@ -41,13 +41,13 @@ class StatesListFormatter extends FormatterBase {
   /**
    * Builds the items array for theme item list.
    *
-   * @param \Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem $item
+   * @param \Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem $item
    *   The currently active workflow item.
    *
    * @return array
    *   An array of items for theme item_list.
    */
-  protected function buildItems(YouvoLifecycleItem $item): array {
+  protected function buildItems(LifecycleItem $item): array {
     $states = $this->getStatesFromWorkflow();
 
     // Remove excluded states.

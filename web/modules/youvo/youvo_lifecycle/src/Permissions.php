@@ -44,7 +44,7 @@ class Permissions {
    * Determines whether a user can use a transition.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user account.
+   *   The user accounts.
    * @param string $workflowId
    *   The workflow the transition belongs to.
    * @param \Drupal\workflows\TransitionInterface $transition

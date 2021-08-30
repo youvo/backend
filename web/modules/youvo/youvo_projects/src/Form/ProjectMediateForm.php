@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_lifecycle\Form;
+namespace Drupal\youvo_projects\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -64,6 +64,9 @@ class ProjectMediateForm extends FormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
@@ -74,8 +77,7 @@ class ProjectMediateForm extends FormBase {
     $project = $this->entityTypeManager->getStorage('node')->load($nid);
 
     // Set redirect after submission.
-    $messenger = \Drupal::messenger();
-    $messenger->addMessage($project->getState());
+    $this->messenger()->addMessage($project->getState());
     $form_state->setRedirect('entity.node.canonical', ['node' => $nid]);
   }
 

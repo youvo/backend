@@ -6,7 +6,7 @@ use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\node\Entity\Node;
 
 /**
- * Tests the Youvo Lifecycle formatters.
+ * Tests the Lifecycle formatters.
  *
  * @group youvo_lifecycle
  */

@@ -8,7 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\youvo_lifecycle\Permissions;
-use Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem;
+use Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -16,7 +16,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the workflows field.
  */
-class YouvoLifecycleContraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+class LifecycleContraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
    * Entity type manager.
@@ -44,10 +44,13 @@ class YouvoLifecycleContraintValidator extends ConstraintValidator implements Co
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function validate($field, Constraint $constraint): void {
-    assert($field instanceof YouvoLifecycleItem);
-    assert($constraint instanceof YouvoLifecycleContraint);
+    assert($field instanceof LifecycleItem);
+    assert($constraint instanceof LifecycleContraint);
 
     $entity = $field->getEntity();
     $workflow_type = $field->getWorkflow()->getTypePlugin();
@@ -64,7 +67,7 @@ class YouvoLifecycleContraintValidator extends ConstraintValidator implements Co
       $original_entity = $original_entity->getTranslation($entity->language()->getId());
     }
 
-    /** @var \Drupal\youvo_lifecycle\Plugin\Field\FieldType\YouvoLifecycleItem $originalItem */
+    /** @var \Drupal\youvo_lifecycle\Plugin\Field\FieldType\LifecycleItem $originalItem */
     $originalItem = $original_entity->{$field->getFieldDefinition()->getName()};
     $originalState = $originalItem->value;
 
