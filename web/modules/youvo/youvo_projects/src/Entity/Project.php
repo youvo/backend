@@ -2,6 +2,9 @@
 
 namespace Drupal\youvo_projects\Entity;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\node\Entity\Node;
 use Drupal\youvo_projects\ProjectInterface;
 
@@ -32,35 +35,35 @@ class Project extends Node implements ProjectInterface {
   /**
    * Checks if project can transition to state 'ongoing'.
    */
-  public function canSubmit() {
+  public function canTransitionSubmit() {
     return $this->canTransition($this->getState(), self::STATE_PENDING);
   }
 
   /**
    * Checks if project can transition to state 'open'.
    */
-  public function canPublish() {
+  public function canTransitionPublish() {
     return $this->canTransition($this->getState(), self::STATE_OPEN);
   }
 
   /**
    * Checks if project can transition to state 'ongoing'.
    */
-  public function canMediate() {
+  public function canTransitionMediate() {
     return $this->canTransition($this->getState(), self::STATE_ONGOING);
   }
 
   /**
    * Checks if project can transition to state 'completed'.
    */
-  public function canComplete() {
+  public function canTransitionComplete() {
     return $this->canTransition($this->getState(), self::STATE_COMPLETED);
   }
 
   /**
    * Checks if project can transition to state 'draft'.
    */
-  public function canReset() {
+  public function canTransitionReset() {
     return $this->canTransition($this->getState(), self::STATE_DRAFT);
   }
 
@@ -68,29 +71,53 @@ class Project extends Node implements ProjectInterface {
    * Checks if project can transition.
    */
   public function canTransitionByName($transition) {
-    switch ($transition) {
-      case self::TRANSITION_SUBMIT:
-        return $this->canSubmit();
-
-      case self::TRANSITION_PUBLISH:
-        return $this->canPublish();
-
-      case self::TRANSITION_MEDIATE:
-        return $this->canMediate();
-
-      case self::TRANSITION_COMPLETE:
-        return $this->canComplete();
-
-      case self::TRANSITION_RESET:
-        return $this->canReset();
-
-      default:
-        return FALSE;
-    }
+    return match ($transition) {
+      self::TRANSITION_SUBMIT => $this->canTransitionSubmit(),
+      self::TRANSITION_PUBLISH => $this->canTransitionPublish(),
+      self::TRANSITION_MEDIATE => $this->canTransitionMediate(),
+      self::TRANSITION_COMPLETE => $this->canTransitionComplete(),
+      self::TRANSITION_RESET => $this->canTransitionReset(),
+      default => FALSE,
+    };
   }
 
   /**
-   * Abstraction of forward transition flow.
+   * Submit project.
+   */
+  public function transitionSubmit() {
+    return $this->transition($this->getState(), self::STATE_PENDING);
+  }
+
+  /**
+   * Publish project.
+   */
+  public function transitionPublish() {
+    return $this->transition($this->getState(), self::STATE_OPEN);
+  }
+
+  /**
+   * Mediate project.
+   */
+  public function transitionMediate() {
+    return $this->transition($this->getState(), self::STATE_ONGOING);
+  }
+
+  /**
+   * Complete project.
+   */
+  public function transitionComplete() {
+    return $this->transition($this->getState(), self::STATE_COMPLETED);
+  }
+
+  /**
+   * Reset project.
+   */
+  public function transitionReset() {
+    return $this->transition($this->getState(), self::STATE_DRAFT);
+  }
+
+  /**
+   * Abstraction of forward transition flow check.
    */
   private function canTransition($current_state, $new_state) {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
@@ -100,23 +127,96 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
+   * Set new lifecycle for transition.
+   */
+  private function transition($current_state, $new_state) {
+    if ($this->canTransition($current_state, $new_state)) {
+      $this->set('field_lifecycle', $new_state);
+      try {
+        $this->save();
+        return TRUE;
+      }
+      catch (EntityStorageException $e) {
+        watchdog_exception('Youvo Projects', $e);
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Loads workflow for current project.
    */
   private function loadWorkflowForProject() {
-    return $this->entityTypeManager()
-      ->getStorage('workflow')
-      ->load('project_lifecycle');
+    try {
+      $workflow = $this->entityTypeManager()
+        ->getStorage('workflow')
+        ->load('project_lifecycle');
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      watchdog_exception('Youvo Projects', $e);
+    }
+    return $workflow ?? NULL;
   }
 
   /**
    * Get applicants for current project.
    */
-  public function getApplicants() {
+  public function getApplicantsAsArray() {
     $options = [];
-    foreach ($this->get('field_applicants')->referencedEntities() as $applicant) {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants */
+    $applicants = $this->get('field_applicants');
+    foreach ($applicants->referencedEntities() as $applicant) {
+      /** @var \Drupal\user\Entity\User $applicant */
       $options[$applicant->id()] = $applicant->get('field_name')->value;
     }
     return $options;
+  }
+
+  /**
+   * Set applicants for current project.
+   */
+  public function setApplicants(array $applicants) {
+    foreach ($applicants as $applicant) {
+      $this->get('field_applicants')->appendItem($applicant);
+    }
+    try {
+      $this->save();
+    }
+    catch (EntityStorageException $e) {
+      watchdog_exception('Youvo Projects', $e);
+    }
+  }
+
+  /**
+   * Get participants for current project.
+   */
+  public function getParticipantsAsArray() {
+    $options = [];
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
+    $participants = $this->get('field_participants');
+    foreach ($participants->referencedEntities() as $participant) {
+      /** @var \Drupal\user\Entity\User $participant */
+      $options[$participant->id()] = $participant->get('field_name')->value;
+    }
+    return $options;
+  }
+
+  /**
+   * Set participants for current project.
+   */
+  public function setParticipants(array $participants, bool $reset = FALSE) {
+    if ($reset) {
+      $this->set('field_participants', NULL);
+    }
+    foreach ($participants as $participantId) {
+      $this->get('field_participants')->appendItem($participantId);
+    }
+    try {
+      $this->save();
+    }
+    catch (EntityStorageException $e) {
+      watchdog_exception('Youvo Projects', $e);
+    }
   }
 
 }
