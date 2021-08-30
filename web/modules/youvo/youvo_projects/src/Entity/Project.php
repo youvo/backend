@@ -108,4 +108,15 @@ class Project extends Node implements ProjectInterface {
       ->load('project_lifecycle');
   }
 
+  /**
+   * Get applicants for current project.
+   */
+  public function getApplicants() {
+    $options = [];
+    foreach ($this->get('field_applicants')->referencedEntities() as $applicant) {
+      $options[$applicant->id()] = $applicant->get('field_name')->value;
+    }
+    return $options;
+  }
+
 }
