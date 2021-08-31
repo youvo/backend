@@ -132,7 +132,7 @@ function youvo_dummy_install() {
     'pending',
     'open',
     'ongoing',
-    'finished',
+    'completed',
   ];
 
   // Create random content.
