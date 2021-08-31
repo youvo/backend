@@ -170,6 +170,12 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
+  field_lifecycle:
+    fieldName: field_lifecycle
+    publicName: lifecycle
+    enhancer:
+      id: ''
+    disabled: false
   field_local:
     fieldName: field_local
     publicName: local
