@@ -36,35 +36,36 @@ class Project extends Node implements ProjectInterface {
    * Checks if project can transition to state 'ongoing'.
    */
   public function canTransitionSubmit() {
-    return $this->canTransition($this->getState(), self::STATE_PENDING);
+    return $this->hasTransition($this->getState(), self::STATE_PENDING);
   }
 
   /**
    * Checks if project can transition to state 'open'.
    */
   public function canTransitionPublish() {
-    return $this->canTransition($this->getState(), self::STATE_OPEN);
+    return $this->hasTransition($this->getState(), self::STATE_OPEN);
   }
 
   /**
    * Checks if project can transition to state 'ongoing'.
    */
   public function canTransitionMediate() {
-    return $this->canTransition($this->getState(), self::STATE_ONGOING);
+    return !empty($this->getApplicantsAsArray()) &&
+      $this->hasTransition($this->getState(), self::STATE_ONGOING);
   }
 
   /**
    * Checks if project can transition to state 'completed'.
    */
   public function canTransitionComplete() {
-    return $this->canTransition($this->getState(), self::STATE_COMPLETED);
+    return $this->hasTransition($this->getState(), self::STATE_COMPLETED);
   }
 
   /**
    * Checks if project can transition to state 'draft'.
    */
   public function canTransitionReset() {
-    return $this->canTransition($this->getState(), self::STATE_DRAFT);
+    return $this->hasTransition($this->getState(), self::STATE_DRAFT);
   }
 
   /**
@@ -85,41 +86,41 @@ class Project extends Node implements ProjectInterface {
    * Submit project.
    */
   public function transitionSubmit() {
-    return $this->transition($this->getState(), self::STATE_PENDING);
+    return $this->transition(self::STATE_PENDING);
   }
 
   /**
    * Publish project.
    */
   public function transitionPublish() {
-    return $this->transition($this->getState(), self::STATE_OPEN);
+    return $this->transition(self::STATE_OPEN);
   }
 
   /**
    * Mediate project.
    */
   public function transitionMediate() {
-    return $this->transition($this->getState(), self::STATE_ONGOING);
+    return $this->transition(self::STATE_ONGOING);
   }
 
   /**
    * Complete project.
    */
   public function transitionComplete() {
-    return $this->transition($this->getState(), self::STATE_COMPLETED);
+    return $this->transition(self::STATE_COMPLETED);
   }
 
   /**
    * Reset project.
    */
   public function transitionReset() {
-    return $this->transition($this->getState(), self::STATE_DRAFT);
+    return $this->transition(self::STATE_DRAFT);
   }
 
   /**
    * Abstraction of forward transition flow check.
    */
-  private function canTransition($current_state, $new_state) {
+  private function hasTransition($current_state, $new_state) {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->loadWorkflowForProject();
     return $current_state != $new_state &&
@@ -129,8 +130,8 @@ class Project extends Node implements ProjectInterface {
   /**
    * Set new lifecycle for transition.
    */
-  private function transition($current_state, $new_state) {
-    if ($this->canTransition($current_state, $new_state)) {
+  private function transition($new_state) {
+    if ($this->canTransitionByName($new_state)) {
       $this->set('field_lifecycle', $new_state);
       try {
         $this->save();
