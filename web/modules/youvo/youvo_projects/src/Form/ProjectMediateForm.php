@@ -55,7 +55,7 @@ class ProjectMediateForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    // Initialize.
+    /** @var \Drupal\youvo_projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];
     $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
