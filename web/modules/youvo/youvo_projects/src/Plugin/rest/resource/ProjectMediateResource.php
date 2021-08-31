@@ -9,7 +9,7 @@ use Drupal\rest\ResourceResponse;
  * Provides Project Mediate Resource.
  *
  * @RestResource(
- *   id = "project_mediate",
+ *   id = "youvo_projects:mediate",
  *   label = @Translation("Project Mediate Resource"),
  *   uri_paths = {
  *     "canonical" = "/api/projects/{id}/mediate"

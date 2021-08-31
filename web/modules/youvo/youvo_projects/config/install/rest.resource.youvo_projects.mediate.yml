@@ -1,5 +1,5 @@
-id: project_mediate
-plugin_id: project_mediate
+id: youvo_projects.mediate
+plugin_id: 'youvo_projects:mediate'
 granularity: method
 configuration:
   GET:
