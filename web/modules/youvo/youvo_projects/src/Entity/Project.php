@@ -162,13 +162,14 @@ class Project extends Node implements ProjectInterface {
   /**
    * Get applicants for current project.
    */
-  public function getApplicantsAsArray() {
+  public function getApplicantsAsArray(bool $use_uuid = FALSE) {
     $options = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants */
     $applicants = $this->get('field_applicants');
     foreach ($applicants->referencedEntities() as $applicant) {
       /** @var \Drupal\user\Entity\User $applicant */
-      $options[$applicant->id()] = $applicant->get('field_name')->value;
+      $id = $use_uuid ? $applicant->uuid() : $applicant->id();
+      $options[$id] = $applicant->get('field_name')->value;
     }
     return $options;
   }
@@ -191,13 +192,14 @@ class Project extends Node implements ProjectInterface {
   /**
    * Get participants for current project.
    */
-  public function getParticipantsAsArray() {
+  public function getParticipantsAsArray(bool $use_uuid = FALSE) {
     $options = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
     $participants = $this->get('field_participants');
     foreach ($participants->referencedEntities() as $participant) {
       /** @var \Drupal\user\Entity\User $participant */
-      $options[$participant->id()] = $participant->get('field_name')->value;
+      $id = $use_uuid ? $participant->uuid() : $participant->id();
+      $options[$id] = $participant->get('field_name')->value;
     }
     return $options;
   }
