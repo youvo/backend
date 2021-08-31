@@ -1,4 +1,6 @@
-youvo_lifecycle.project.mediate:
+# REST routes are defined in ProjectMediateResource::routes.
+
+youvo_projects.mediate:
   path: '/projects/{project}/mediate'
   defaults:
     _form: '\Drupal\youvo_projects\Form\ProjectMediateForm'
