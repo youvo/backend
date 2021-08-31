@@ -22,6 +22,9 @@ trait ProjectRestResourceRoutesTrait {
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
     $route_name = strtr($this->pluginId, ':', '.');
+
+    // The base route is not available during installation. Route definition
+    // will be updated during first cache rebuild.
     $base_route = reset(\Drupal::service('router.route_provider')->getRoutesByNames([$route_name])) ?? NULL;
 
     $methods = $this->availableMethods();
