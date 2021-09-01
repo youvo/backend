@@ -9,11 +9,11 @@ path: taxonomy/skills
 resourceType: skill
 resourceFields:
   tid:
+    disabled: true
     fieldName: tid
     publicName: tid
     enhancer:
       id: ''
-    disabled: false
   uuid:
     fieldName: uuid
     publicName: uuid
@@ -33,11 +33,11 @@ resourceFields:
       id: ''
     disabled: false
   vid:
+    disabled: true
     fieldName: vid
     publicName: vid
     enhancer:
       id: ''
-    disabled: false
   revision_created:
     disabled: true
     fieldName: revision_created
@@ -87,11 +87,11 @@ resourceFields:
       id: ''
     disabled: false
   changed:
+    disabled: true
     fieldName: changed
     publicName: changed
     enhancer:
       id: ''
-    disabled: false
   default_langcode:
     fieldName: default_langcode
     publicName: default_langcode
@@ -137,6 +137,12 @@ resourceFields:
   content_translation_created:
     fieldName: content_translation_created
     publicName: content_translation_created
+    enhancer:
+      id: ''
+    disabled: false
+  field_machine_name:
+    fieldName: field_machine_name
+    publicName: machine_name
     enhancer:
       id: ''
     disabled: false
