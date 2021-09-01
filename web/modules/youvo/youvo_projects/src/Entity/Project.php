@@ -9,7 +9,7 @@ use Drupal\node\Entity\Node;
 use Drupal\youvo_projects\ProjectInterface;
 
 /**
- *
+ * Implements lifecycle workflow functionality for Project entities.
  */
 class Project extends Node implements ProjectInterface {
 
@@ -35,7 +35,7 @@ class Project extends Node implements ProjectInterface {
   /**
    * Checks if project can transition.
    */
-  public function canTransitionByName($transition) {
+  public function canTransitionByLabel($transition) {
     return match ($transition) {
       self::TRANSITION_SUBMIT => $this->canTransitionSubmit(),
       self::TRANSITION_PUBLISH => $this->canTransitionPublish(),
@@ -194,7 +194,7 @@ class Project extends Node implements ProjectInterface {
    * Set new lifecycle for transition.
    */
   private function transition($transition, $new_state) {
-    if ($this->canTransitionByName($transition)) {
+    if ($this->canTransitionByLabel($transition)) {
       $this->set('field_lifecycle', $new_state);
       try {
         $this->save();

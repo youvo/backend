@@ -12,9 +12,8 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Method to determine current state of project.
    *
-   * @return string|bool
-   *   String with current cycle of project.
-   *   FALSE if current cycle could not be determined.
+   * @return string
+   *   String with current state of project.
    */
   public function getState();
 

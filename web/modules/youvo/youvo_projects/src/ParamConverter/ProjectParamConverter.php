@@ -20,6 +20,7 @@ class ProjectParamConverter extends EntityConverter implements ParamConverterInt
    */
   public function convert($value, $definition, $name, array $defaults) {
 
+    // Convert request with UUIDs to IDs by querying the database.
     if ($this->isRestRequest($defaults) && Uuid::isValid($value)) {
       $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
       $query = \Drupal::entityQuery($entity_type_id)
