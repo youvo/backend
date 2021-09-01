@@ -107,7 +107,7 @@ class Project extends Node implements ProjectInterface {
       $this->save();
     }
     catch (EntityStorageException $e) {
-      watchdog_exception('Youvo Projects', $e);
+      watchdog_exception('Youvo Projects: Could not set applicants.', $e);
     }
   }
 
@@ -140,7 +140,7 @@ class Project extends Node implements ProjectInterface {
       $this->save();
     }
     catch (EntityStorageException $e) {
-      watchdog_exception('Youvo Projects', $e);
+      watchdog_exception('Youvo Projects: Could not set participants.', $e);
     }
   }
 
@@ -201,7 +201,7 @@ class Project extends Node implements ProjectInterface {
         return TRUE;
       }
       catch (EntityStorageException $e) {
-        watchdog_exception('Youvo Projects', $e);
+        watchdog_exception('Youvo Projects: Could not perform transition.', $e);
       }
     }
     return FALSE;
@@ -217,7 +217,7 @@ class Project extends Node implements ProjectInterface {
         ->load('project_lifecycle');
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      watchdog_exception('Youvo Projects', $e);
+      watchdog_exception('Youvo Projects: Could not load workflow.', $e);
     }
     return $workflow ?? NULL;
   }
