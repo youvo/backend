@@ -1,0 +1,7 @@
+services:
+  paramconverter.project:
+    class: Drupal\youvo_projects\ParamConverter\ProjectParamConverter
+    tags:
+      - { name: paramconverter }
+    arguments:
+      [ '@entity_type.manager', '@entity.repository' ]
