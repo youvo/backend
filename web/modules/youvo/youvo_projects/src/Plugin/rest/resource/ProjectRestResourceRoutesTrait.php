@@ -27,7 +27,7 @@ trait ProjectRestResourceRoutesTrait {
     // The base route is not available during installation. Route definition
     // will be updated during first cache rebuild.
     $base_route_array = \Drupal::service('router.route_provider')->getRoutesByNames([$route_name]);
-    $base_route = $base_route_array ? reset($base_route_array) : NULL;
+    $base_route = !empty($base_route_array) ? reset($base_route_array) : NULL;
 
     $methods = $this->availableMethods();
     foreach ($methods as $method) {
