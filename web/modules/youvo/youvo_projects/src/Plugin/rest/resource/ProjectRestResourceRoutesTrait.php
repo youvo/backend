@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo_projects\Plugin\rest\resource;
 
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -30,16 +31,12 @@ trait ProjectRestResourceRoutesTrait {
     $methods = $this->availableMethods();
     foreach ($methods as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-
-      if ($base_route instanceof Route && !empty($base_route->getDefault('transition'))) {
+      if ($base_route instanceof Route) {
+        if (!$this->baseRouteProper($base_route)) {
+          throw new InvalidParameterException('Transition path has to provide transition default, _custom_access requirement and entity:node parameters.');
+        }
         $route->setDefault('transition', $base_route->getDefault('transition'));
-      }
-
-      if ($base_route instanceof Route && !empty($base_route->getRequirement('_custom_access'))) {
         $route->setRequirement('_custom_access', $base_route->getRequirement('_custom_access'));
-      }
-
-      if ($base_route instanceof Route && !empty($base_route->getOption('parameters'))) {
         $route->addOptions(['parameters' => $base_route->getOption('parameters')]);
       }
 
@@ -47,6 +44,21 @@ trait ProjectRestResourceRoutesTrait {
     }
 
     return $collection;
+  }
+
+  /**
+   * Checks if base route was properly defined in routing.yml.
+   *
+   * @param \Symfony\Component\Routing\Route $base_route
+   *   Base route of transition.
+   */
+  private function baseRouteProper(Route $base_route) {
+    if (empty($base_route->getDefault('transition')) ||
+      empty($base_route->getRequirement('_custom_access')) ||
+      empty($base_route->getOption('parameters'))) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
 }
