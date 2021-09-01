@@ -5,6 +5,7 @@ namespace Drupal\youvo_projects\Plugin\rest\resource;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\youvo_projects\ProjectInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides Project Mediate Resource.
@@ -23,6 +24,9 @@ class ProjectMediateResource extends ResourceBase {
 
   /**
    * Responds GET requests.
+   *
+   * @param \Drupal\youvo_projects\ProjectInterface $project
+   *   The referenced project.
    *
    * @return \Drupal\rest\ResourceResponse
    *   Response.
@@ -59,6 +63,22 @@ class ProjectMediateResource extends ResourceBase {
     $response->addCacheableDependency($project);
 
     return $response;
+  }
+
+  /**
+   * Responds PATCH requests.
+   *
+   * @param \Drupal\youvo_projects\ProjectInterface $project
+   *   The referenced project.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   Contains request data.
+   *
+   * @return \Drupal\rest\ResourceResponse
+   *   Response.
+   */
+  public function patch(ProjectInterface $project, Request $request) {
+
+    return new ResourceResponse(['message' => $project->getTitle()]);
   }
 
 }
