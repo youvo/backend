@@ -89,6 +89,11 @@ class ProjectMediateResource extends ResourceBase {
     // Set preliminary selected_participants variable.
     $selected_participants = array_unique($request_content['selected_participants']);
 
+    // Force at least one selected participant.
+    if (empty($selected_participants)) {
+      return new ResourceResponse('The \'selected_participants\' array in the request body is empty.', 417);
+    }
+
     // The selected_participants is expected to be delivered as a simple array.
     if (count(array_filter(array_keys($selected_participants), 'is_string')) > 0) {
       return new ResourceResponse('The \'selected_participants\' array in the request body is malformed.', 417);
@@ -108,16 +113,15 @@ class ProjectMediateResource extends ResourceBase {
     }
 
     // Now we are finally sure to mediate the project. We get the UIDs by query.
-    if ($project->transitionMediate()) {
-      $selected_participants_ids = \Drupal::entityQuery('user')
-        ->condition('uuid', $selected_participants, 'IN')
-        ->execute();
+    $selected_participants_ids = \Drupal::entityQuery('user')
+      ->condition('uuid', $selected_participants, 'IN')
+      ->execute();
+    if (!empty($selected_participants_ids) && $project->transitionMediate()) {
       $project->setParticipants($selected_participants_ids, TRUE);
       return new ResourceResponse('Project was mediated successfully.');
     }
-    else {
-      return new ResourceResponse('Could not mediate project.', 422);
-    }
+
+    return new ResourceResponse('Could not mediate project.', 422);
   }
 
 }
