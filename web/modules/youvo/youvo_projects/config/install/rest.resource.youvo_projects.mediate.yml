@@ -1,9 +1,11 @@
 id: youvo_projects.mediate
 plugin_id: 'youvo_projects:mediate'
-granularity: method
+granularity: resource
 configuration:
-  GET:
-    supported_formats:
-      - json
-    supported_auth:
-      - basic_auth
+  methods:
+    - GET
+    - PATCH
+  formats:
+    - json
+  authentication:
+    - basic_auth
