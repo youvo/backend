@@ -75,11 +75,11 @@ resourceFields:
       id: ''
     disabled: false
   weight:
-    disabled: true
     fieldName: weight
     publicName: weight
     enhancer:
       id: ''
+    disabled: false
   parent:
     fieldName: parent
     publicName: parent
