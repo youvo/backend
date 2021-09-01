@@ -16,3 +16,4 @@ youvo_projects.mediate:
     parameters:
       project:
         type: entity:node
+        converter: paramconverter.project
