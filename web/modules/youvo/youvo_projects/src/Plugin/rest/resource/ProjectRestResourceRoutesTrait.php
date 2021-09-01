@@ -31,6 +31,8 @@ trait ProjectRestResourceRoutesTrait {
     $methods = $this->availableMethods();
     foreach ($methods as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
+
+      // Bequeath route definition from base route.
       if ($base_route instanceof Route) {
         if (!$this->baseRouteProper($base_route)) {
           throw new InvalidParameterException('Transition path has to provide transition default, _custom_access requirement and entity:node parameters.');
@@ -40,6 +42,7 @@ trait ProjectRestResourceRoutesTrait {
         $route->addOptions(['parameters' => $base_route->getOption('parameters')]);
       }
 
+      // Appended method is crucial for recognition in parameter converter.
       $collection->add("$route_name.$method", $route);
     }
 
