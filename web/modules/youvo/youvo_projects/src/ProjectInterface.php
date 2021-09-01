@@ -18,12 +18,4 @@ interface ProjectInterface extends NodeInterface {
    */
   public function getState();
 
-  /**
-   * Method to determine if mediate transition is possible.
-   *
-   * @return bool
-   *   FALSE if current cycle could not be determined.
-   */
-  public function canTransitionMediate();
-
 }
