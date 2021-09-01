@@ -23,26 +23,32 @@ function youvo_platform_install() {
     1 => [
       'name' => 'Online',
       'description' => 'Website-Anpassungen, Social Media, Online-Marketing – die Digitalisierung bietet neue Chancen.',
+      'machine_name' => 'online',
     ],
     2 => [
       'name' => 'Konzept',
       'description' => 'Wie erreicht man welche Zielgruppe? Mit einem guten Konzept steht und fällt die Öffentlichkeitsarbeit.',
+      'machine_name' => 'concept',
     ],
     3 => [
       'name' => 'Text & PR',
       'description' => 'Blogeintrag, Dokumentation, Slogan oder Flyertext erklären, was die Organisation wirklich macht.',
+      'machine_name' => 'text',
     ],
     4 => [
       'name' => 'Design',
       'description' => 'Design, digital oder gedruckt, ist immer gefragt: ob Wireframes, Icons, Logos, Infografiken oder Flyer.',
+      'machine_name' => 'design',
     ],
     5 => [
       'name' => 'Video',
       'description' => 'Mit einem animierten Erklärfilm oder einem klischeefreien Fundraising-Video eröffnen sich neue Möglichkeiten.',
+      'machine_name' => 'video',
     ],
     6 => [
       'name' => 'Foto',
       'description' => 'Bilder sagen mehr als Worte: egal ob es um Teamfotos, die Dokumentation einer Veranstaltung oder frische Kampagnenmotive geht.',
+      'machine_name' => 'photo',
     ],
   ];
 
@@ -53,6 +59,7 @@ function youvo_platform_install() {
       'tid' => $tid,
       'vid' => $vocabulary,
       'description' => $term['description'],
+      'field_machine_name' => $term['machine_name'],
     ])->save();
   }
 
