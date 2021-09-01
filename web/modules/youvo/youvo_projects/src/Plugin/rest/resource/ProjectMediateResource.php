@@ -78,7 +78,46 @@ class ProjectMediateResource extends ResourceBase {
    */
   public function patch(ProjectInterface $project, Request $request) {
 
-    return new ResourceResponse(['message' => $project->getTitle()]);
+    // Decode content of the request.
+    $request_content = \Drupal::service('serialization.json')->decode($request->getContent());
+
+    // The selected_participants are required to process the request.
+    if (!array_key_exists('selected_participants', $request_content)) {
+      return new ResourceResponse('Request body does not specify \'selected_participants\'.', 417);
+    }
+
+    // Set preliminary selected_participants variable.
+    $selected_participants = array_unique($request_content['selected_participants']);
+
+    // The selected_participants is expected to be delivered as a simple array.
+    if (count(array_filter(array_keys($selected_participants), 'is_string')) > 0) {
+      return new ResourceResponse('The \'selected_participants\' array in the request body is malformed.', 417);
+    }
+
+    // The entries of the selected participants array are expected to be UUIDs.
+    if (count(array_filter($selected_participants,
+        ['Drupal\Component\Uuid\Uuid', 'isValid'])) != count($selected_participants)) {
+      return new ResourceResponse('The entries of the \'selected_participants\' array are not valid UUIDs.', 417);
+    }
+
+    // Get applicants for current project and check if selected_participants are
+    // applicable.
+    $applicants = array_unique(array_keys($project->getApplicantsAsArray(TRUE)));
+    if (count(array_intersect($selected_participants, $applicants)) != count($selected_participants)) {
+      return new ResourceResponse('Some selected participants did not apply for this project.', 409);
+    }
+
+    // Now we are finally sure to mediate the project. We get the UIDs by query.
+    if ($project->transitionMediate()) {
+      $selected_participants_ids = \Drupal::entityQuery('user')
+        ->condition('uuid', $selected_participants, 'IN')
+        ->execute();
+      $project->setParticipants($selected_participants_ids, TRUE);
+      return new ResourceResponse('Project was mediated successfully.');
+    }
+    else {
+      return new ResourceResponse('Could not mediate project.', 422);
+    }
   }
 
 }
