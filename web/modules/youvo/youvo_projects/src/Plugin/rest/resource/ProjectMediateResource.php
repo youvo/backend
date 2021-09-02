@@ -55,7 +55,7 @@ class ProjectMediateResource extends ResourceBase {
         ],
       ],
       'post_required' => [
-        'selected_participants' => 'Array of participants keyed by uuid.',
+        'selected_participants' => 'Array of uuid\'s of participants.',
       ],
     ]);
 
