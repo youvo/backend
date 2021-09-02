@@ -1,8 +1,8 @@
 {
 	"patches": {
 		"drupal/core": {
-    	  	"Issue #2692403: Introduce base profiles (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-1356276-656.patch",
-    	  	"Issue #2570593: Allow entities to be subclassed using bundle classes (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2570593-155.patch" 
+    	  	"Issue #1356276: Introduce base profiles (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-1356276-656.patch",
+    	  	"Issue #2570593: Allow entities to be subclassed using bundle classes (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2570593-163.patch" 
 		}
 	}
 }
