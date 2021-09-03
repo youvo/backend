@@ -111,7 +111,7 @@ function youvo_dummy_install() {
   $values = [
     'field_name' => 'BrückengeherInnen e.V.',
     'field_about' => $random->paragraphs(4),
-    'field_contact' => 'Helga Bügeleisen',
+    'field_contact' => 'Helga Peickert',
     'field_avatar' => $image_file->id(),
     'name' => 'hello@brueckengehen.org',
     'mail' => 'hello@brueckengehen.org',
@@ -155,12 +155,12 @@ function youvo_dummy_install() {
 
   // Values for organisation user.
   $values = [
-    'field_name' => 'Ball-Luftdruck-Korrektiv e.V.',
+    'field_name' => 'Ball-Luftdruck-Korrektiv',
     'field_about' => $random->paragraphs(4),
     'field_contact' => 'Nadir Ongerer',
     'field_avatar' => $image_file->id(),
-    'name' => 'hello@BLK.org',
-    'mail' => 'hello@BLK.org',
+    'name' => 'hello@blk.gov',
+    'mail' => 'hello@blk.gov',
     'roles' => ['organisation'],
     'pass' => 'drupal',
     'status' => 1,
@@ -255,60 +255,6 @@ function youvo_dummy_install() {
     watchdog_exception('youvo_dummy', $e, 'An error occurred while creating dummy projects: "@message" in %function (line %line of %file).', ['@message' => $e->getMessage()]);
   }
 
-  // Set random time in last year.
-  // $current_time = Drupal::time()->getRequestTime();
-  // $one_year_ago = $current_time - 31536000;
-  // $rnd_time = rand($one_year_ago, $current_time);.
-  // Set random states.
-  /*
-  $rnd = rand(0, 100);
-  if ($rnd <= 20) {
-  $project->setState('hidden');
-  }
-  $rnd = rand(0, 100);
-  if ($rnd <= 10) {
-  $project->setState('archived');
-  }
-  $rnd = rand(0, 100);
-  if ($rnd <= 50) {
-  $project->setState('highlighted');
-  }*/
-  // Set current state.
-  // shuffle($cycle_states);
-  // $state = $cycle_states[0];
-  // $project->setState($state, $rnd_time);.
-  // Set random timestamp for prior cycle states.
-  //    while ($prior_state = $project->getPriorState($state)) {
-  //      $cid = youvo_dummy_get_random_creative($creative_ids);
-  //      // Set participant and host if brokered.
-  //      if ($state == 'brokered') {
-  //        $project->setParticipant($cid);
-  //        $project->setHost($cid);
-  //      }
-  //      // Also create events in log.
-  //      if (in_array($state, ['opened', 'brokered', 'finished'])) {
-  //        $log = EventLog::create([
-  //          'type' => 'project' . $state,
-  //          'trigger' => $cid,
-  //          'organisation' => $organisation->id(),
-  //          'creative' => $cid,
-  //          'project' => $project->id(),
-  //          'status' => 1,
-  //          'created' => $rnd_time,
-  //          'changed' => $rnd_time,
-  //        ]);
-  //        try {
-  //          $log->save();
-  //        }
-  //        catch (EntityStorageException $e) {
-  //          watchdog_exception('youvo_dummy', $e, 'An error occurred while creating dummy logs: "@message" in %function (line %line of %file).', ['@message' => $e->getMessage()]);
-  //        }
-  //      }
-  //      // Set new random time between current random time and one year ago.
-  //      $rnd_time = rand($one_year_ago, $rnd_time);
-  //      $project->setState($prior_state, $rnd_time);
-  //      $state = $prior_state;
-  //    }.
 }
 
 /**
