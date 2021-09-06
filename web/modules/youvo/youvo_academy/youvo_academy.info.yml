@@ -1,0 +1,11 @@
+name: Youvo Academy
+type: module
+description: 'Provides a lecture entity.'
+package: youvo
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - youvo
+  - drupal:fields
+  - drupal:text
+configure: entity.lecture.settings
