@@ -37,7 +37,7 @@ class AcademySubscriber implements EventSubscriberInterface {
    *   Response event.
    */
   public function onKernelRequest(RequestEvent $event) {
-    $this->messenger->addStatus(__FUNCTION__);
+    // $this->messenger->addStatus(__FUNCTION__);
   }
 
   /**
@@ -47,7 +47,7 @@ class AcademySubscriber implements EventSubscriberInterface {
    *   Response event.
    */
   public function onKernelResponse(ResponseEvent $event) {
-    $this->messenger->addStatus(__FUNCTION__);
+    // $this->messenger->addStatus(__FUNCTION__);
   }
 
   /**
