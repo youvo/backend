@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_paragraph;
+namespace Drupal\paragraphs;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -25,10 +25,10 @@ interface ParagraphInterface extends ContentEntityInterface, EntityOwnerInterfac
    * @param string $title
    *   The paragraph title.
    *
-   * @return \Drupal\academy_paragraph\ParagraphInterface
+   * @return \Drupal\paragraphs\ParagraphInterface
    *   The called paragraph entity.
    */
-  public function setTitle($title);
+  public function setTitle(string $title);
 
   /**
    * Gets the paragraph creation timestamp.
@@ -44,10 +44,10 @@ interface ParagraphInterface extends ContentEntityInterface, EntityOwnerInterfac
    * @param int $timestamp
    *   The paragraph creation timestamp.
    *
-   * @return \Drupal\academy_paragraph\ParagraphInterface
+   * @return \Drupal\paragraphs\ParagraphInterface
    *   The called paragraph entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime(int $timestamp);
 
   /**
    * Returns the paragraph status.
@@ -63,9 +63,9 @@ interface ParagraphInterface extends ContentEntityInterface, EntityOwnerInterfac
    * @param bool $status
    *   TRUE to enable this paragraph, FALSE to disable.
    *
-   * @return \Drupal\academy_paragraph\ParagraphInterface
+   * @return \Drupal\paragraphs\ParagraphInterface
    *   The called paragraph entity.
    */
-  public function setStatus($status);
+  public function setStatus(bool $status);
 
 }

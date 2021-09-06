@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_paragraph\Form;
+namespace Drupal\paragraphs\Form;
 
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_paragraph;
+namespace Drupal\paragraphs;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 /**
  * Defines a class to build a listing of paragraph type entities.
  *
- * @see \Drupal\academy_paragraph\Entity\ParagraphType
+ * @see \Drupal\paragraphs\Entity\ParagraphType
  */
 class ParagraphTypeListBuilder extends ConfigEntityListBuilder {
 
