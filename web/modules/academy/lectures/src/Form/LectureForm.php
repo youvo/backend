@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_lectures\Form;
+namespace Drupal\lectures\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
@@ -24,11 +24,11 @@ class LectureForm extends ContentEntityForm {
 
     if ($result == SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New lecture %label has been created.', $message_arguments));
-      $this->logger('academy_lecture')->notice('Created new lecture %label', $logger_arguments);
+      $this->logger('lectures')->notice('Created new lecture %label', $logger_arguments);
     }
     else {
       $this->messenger()->addStatus($this->t('The lecture %label has been updated.', $message_arguments));
-      $this->logger('academy_lecture')->notice('Updated new lecture %label.', $logger_arguments);
+      $this->logger('lectures')->notice('Updated new lecture %label.', $logger_arguments);
     }
 
     $form_state->setRedirect('entity.lecture.canonical', ['lecture' => $entity->id()]);

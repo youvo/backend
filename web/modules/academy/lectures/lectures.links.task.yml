@@ -1,0 +1,22 @@
+entity.lectures.settings:
+  title: Settings
+  route_name: entity.lectures.settings
+  base_route: entity.lectures.settings
+entity.lectures.view:
+  title: View
+  route_name: entity.lectures.canonical
+  base_route: entity.lectures.canonical
+entity.lectures.edit_form:
+  title: Edit
+  route_name: entity.lectures.edit_form
+  base_route: entity.lectures.canonical
+entity.lectures.delete_form:
+  title: Delete
+  route_name: entity.lectures.delete_form
+  base_route: entity.lectures.canonical
+  weight: 10
+entity.lectures.collection:
+  title: Lecture
+  route_name: entity.lectures.collection
+  base_route: system.admin_content
+  weight: 10

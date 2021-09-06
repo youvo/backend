@@ -1,5 +1,0 @@
-administer academy_lectures:
-  title: 'Administer Academy Lecture settings'
-  restrict access: true
-access academy_lectures overview:
-  title: 'Access Lectures overview page'

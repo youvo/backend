@@ -1,4 +1,4 @@
-name: Academy Lectures
+name: Lectures
 type: module
 description: 'Provides a lecture entity.'
 package: Academy
@@ -9,4 +9,4 @@ dependencies:
   - drupal:field (>= 8.8.0)
   - drupal:text (>= 8.8.0)
 
-configure: entity.academy_lectures.settings
+configure: entity.lectures.settings

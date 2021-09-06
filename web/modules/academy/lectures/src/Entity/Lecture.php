@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_lectures\Entity;
+namespace Drupal\lectures\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
-use Drupal\academy_lectures\LectureInterface;
+use Drupal\lectures\LectureInterface;
 
 /**
  * Defines the lecture entity class.
@@ -19,21 +19,21 @@ use Drupal\academy_lectures\LectureInterface;
  *   label_collection = @Translation("Lectures"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\academy_lectures\LectureListBuilder",
+ *     "list_builder" = "Drupal\lectures\LectureListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "add" = "Drupal\academy_lectures\Form\LectureForm",
- *       "edit" = "Drupal\academy_lectures\Form\LectureForm",
+ *       "add" = "Drupal\lectures\Form\LectureForm",
+ *       "edit" = "Drupal\lectures\Form\LectureForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "academy_lectures",
- *   data_table = "academy_lectures_field_data",
+ *   base_table = "lectures",
+ *   data_table = "lectures_field_data",
  *   translatable = TRUE,
- *   admin_permission = "administer academy_lectures",
+ *   admin_permission = "administer lectures",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -47,7 +47,7 @@ use Drupal\academy_lectures\LectureInterface;
  *     "delete-form" = "/admin/content/lectures/{lectures}/delete",
  *     "collection" = "/admin/content/lectures"
  *   },
- *   field_ui_base_route = "entity.academy_lectures.settings"
+ *   field_ui_base_route = "entity.lectures.settings"
  * )
  */
 class Lecture extends ContentEntityBase implements LectureInterface {
@@ -60,8 +60,8 @@ class Lecture extends ContentEntityBase implements LectureInterface {
    * When a new lecture entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
    */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    parent::preCreate($storage, $values);
     $values += ['uid' => \Drupal::currentUser()->id()];
   }
 

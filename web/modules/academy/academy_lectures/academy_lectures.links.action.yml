@@ -1,5 +1,0 @@
-academy_lectures.add_form:
-  route_name: entity.academy_lectures.add_form
-  title: 'Add lecture'
-  appears_on:
-    - entity.academy_lectures.collection

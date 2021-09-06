@@ -10,7 +10,7 @@ use Drupal\Core\Render\Element;
 /**
  * Implements hook_theme().
  */
-function academy_lectures_theme() {
+function lectures_theme() {
   return [
     'lecture' => [
       'render element' => 'elements',
@@ -29,7 +29,7 @@ function academy_lectures_theme() {
  *     fields attached to the entity.
  *   - attributes: HTML attributes for the containing element.
  */
-function template_preprocess_academy_lectures(array &$variables) {
+function template_preprocess_lectures(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
