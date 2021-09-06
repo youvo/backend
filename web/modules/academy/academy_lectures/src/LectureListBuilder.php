@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_lectures;
+namespace Drupal\academy_lectures;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
