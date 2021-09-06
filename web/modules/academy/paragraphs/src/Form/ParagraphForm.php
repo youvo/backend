@@ -24,11 +24,11 @@ class ParagraphForm extends ContentEntityForm {
 
     if ($result == SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New paragraph %label has been created.', $message_arguments));
-      $this->logger('academy_paragraph')->notice('Created new paragraph %label', $logger_arguments);
+      $this->logger('paragraphs')->notice('Created new paragraph %label', $logger_arguments);
     }
     else {
       $this->messenger()->addStatus($this->t('The paragraph %label has been updated.', $message_arguments));
-      $this->logger('academy_paragraph')->notice('Updated new paragraph %label.', $logger_arguments);
+      $this->logger('paragraphs')->notice('Updated new paragraph %label.', $logger_arguments);
     }
 
     $form_state->setRedirect('entity.paragraph.canonical', ['paragraph' => $entity->id()]);

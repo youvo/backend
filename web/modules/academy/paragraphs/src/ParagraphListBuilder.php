@@ -2,12 +2,15 @@
 
 namespace Drupal\paragraphs;
 
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Routing\RedirectDestinationInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,11 +26,11 @@ class ParagraphListBuilder extends EntityListBuilder {
   protected $dateFormatter;
 
   /**
-   * The redirect destination service.
+   * The parent entity.
    *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
+   * @var \Drupal\Core\Entity\EntityInterface
    */
-  protected $redirectDestination;
+  protected $parent;
 
   /**
    * Constructs a new ParagraphListBuilder object.
@@ -40,23 +43,54 @@ class ParagraphListBuilder extends EntityListBuilder {
    *   The date formatter service.
    * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
    *   The redirect destination service.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The Child Entity Route Match.
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination, RouteMatchInterface $route_match) {
+    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
+      throw new UnsupportedEntityTypeDefinitionException(
+        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
+    }
+    if (!$entity_type->hasKey('parent')) {
+      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
+    }
+
     parent::__construct($entity_type, $storage);
     $this->dateFormatter = $date_formatter;
     $this->redirectDestination = $redirect_destination;
+    $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('date.formatter'),
-      $container->get('redirect.destination')
+      $container->get('redirect.destination'),
+      $container->get('current_route_match')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityIds() {
+    $query = $this->getStorage()->getQuery()
+      ->sort($this->entityType->getKey('id'))
+      ->condition($this->entityType->getKey('parent'), $this->parent->id());
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
   }
 
   /**
@@ -79,28 +113,19 @@ class ParagraphListBuilder extends EntityListBuilder {
    */
   public function buildHeader() {
     $header['id'] = $this->t('ID');
-    $header['title'] = $this->t('Title');
-    $header['status'] = $this->t('Status');
-    $header['uid'] = $this->t('Author');
-    $header['created'] = $this->t('Created');
-    $header['changed'] = $this->t('Updated');
+    $header['name'] = $this->t('Name');
     return $header + parent::buildHeader();
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\paragraphs\ParagraphInterface $entity */
+    /** @var \Drupal\child_entities\ChildEntityInterface $entity */
     $row['id'] = $entity->id();
-    $row['title'] = $entity->toLink();
-    $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
-    $row['uid']['data'] = [
-      '#theme' => 'username',
-      '#account' => $entity->getOwner(),
-    ];
-    $row['created'] = $this->dateFormatter->format($entity->getCreatedTime());
-    $row['changed'] = $this->dateFormatter->format($entity->getChangedTime());
+    $row['name'] = $entity->toLink();
     return $row + parent::buildRow($entity);
   }
 

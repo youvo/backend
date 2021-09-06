@@ -2,6 +2,7 @@
 
 namespace Drupal\paragraphs\Entity;
 
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -21,17 +22,14 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Paragraph type"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\child_entities\ChildEntityListBuilder",
- *     "views_data" = "Drupal\child_entities\ChildEntityViewsData",
+ *     "list_builder" = "Drupal\paragraphs\ParagraphListBuilder",
+ *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "default" = "Drupal\child_entities\Form\ChildEntityForm",
+ *       "default" = "Drupal\child_entities\Form\ChildContentEntityForm",
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildEntityHtmlRouteProvider",
- *     },
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *   entity_keys = {
- *     "parent" = "lecture",
+ *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
+ *     }
  *   },
  *   base_table = "paragraphs",
  *   data_table = "paragraphs_field_data",
@@ -46,7 +44,8 @@ use Drupal\user\UserInterface;
  *     "langcode" = "langcode",
  *     "bundle" = "bundle",
  *     "label" = "title",
- *     "uuid" = "uuid"
+ *     "uuid" = "uuid",
+ *     "parent" = "lecture"
  *   },
  *   revision_metadata_keys = {
  *     "revision_user" = "revision_uid",
@@ -54,18 +53,18 @@ use Drupal\user\UserInterface;
  *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/paragraph/add/{paragraph_type}",
- *     "add-page" = "/admin/content/paragraph/add",
- *     "canonical" = "/paragraph/{paragraph}",
- *     "edit-form" = "/admin/content/paragraph/{paragraph}/edit",
- *     "delete-form" = "/admin/content/paragraph/{paragraph}/delete",
- *     "collection" = "/admin/content/paragraph"
+ *     "add-form" = "/admin/content/lectures/{lecture}/paragraphs/add/{paragraph_type}",
+ *     "add-page" = "/admin/content/lectures/{lecture}/paragraphs/add",
+ *     "canonical" = "/academy/lectures/{lecture}/{paragraph}",
+ *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/edit",
+ *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/delete",
+ *     "collection" = "/admin/content/lectures/{lecture}/paragraphs"
  *   },
  *   bundle_entity_type = "paragraph_type",
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
  * )
  */
-class Paragraph extends RevisionableContentEntityBase implements ParagraphInterface {
+class Paragraph extends RevisionableContentEntityBase implements ChildEntityInterface, ParagraphInterface {
 
   use ChildEntityTrait{
     urlRouteParameters as childEntityUrlRouteParameters;
