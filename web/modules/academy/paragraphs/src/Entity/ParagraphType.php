@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_paragraph\Entity;
+namespace Drupal\paragraphs\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 

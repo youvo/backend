@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\academy_paragraph\Entity;
+namespace Drupal\paragraphs\Entity;
 
-use Drupal\academy_child_entities\ChildEntityTrait;
+use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\academy_paragraph\ParagraphInterface;
+use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -21,22 +21,22 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Paragraph type"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\academy_child_entities\ChildEntityListBuilder",
- *     "views_data" = "Drupal\academy_child_entities\ChildEntityViewsData",
+ *     "list_builder" = "Drupal\child_entities\ChildEntityListBuilder",
+ *     "views_data" = "Drupal\child_entities\ChildEntityViewsData",
  *     "form" = {
- *       "default" = "Drupal\academy_child_entities\Form\ChildEntityForm",
+ *       "default" = "Drupal\child_entities\Form\ChildEntityForm",
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\academy_child_entities\Routing\ChildEntityHtmlRouteProvider",
+ *       "html" = "Drupal\child_entities\Routing\ChildEntityHtmlRouteProvider",
  *     },
- *     "access" = "Drupal\academy_child_entities\ChildEntityAccessControlHandler",
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *   entity_keys = {
  *     "parent" = "lecture",
  *   },
- *   base_table = "paragraph",
- *   data_table = "paragraph_field_data",
- *   revision_table = "paragraph_revision",
- *   revision_data_table = "paragraph_field_revision",
+ *   base_table = "paragraphs",
+ *   data_table = "paragraphs_field_data",
+ *   revision_table = "paragraphs_revision",
+ *   revision_data_table = "paragraphs_field_revision",
  *   show_revision_ui = TRUE,
  *   translatable = TRUE,
  *   admin_permission = "administer paragraph types",
@@ -93,7 +93,7 @@ class Paragraph extends RevisionableContentEntityBase implements ParagraphInterf
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle(string $title) {
     $this->set('title', $title);
     return $this;
   }
@@ -108,7 +108,7 @@ class Paragraph extends RevisionableContentEntityBase implements ParagraphInterf
   /**
    * {@inheritdoc}
    */
-  public function setStatus($status) {
+  public function setStatus(bool $status) {
     $this->set('status', $status);
     return $this;
   }
@@ -123,7 +123,7 @@ class Paragraph extends RevisionableContentEntityBase implements ParagraphInterf
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
     return $this;
   }

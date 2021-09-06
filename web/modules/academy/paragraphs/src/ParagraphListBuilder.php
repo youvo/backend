@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_paragraph;
+namespace Drupal\paragraphs;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -91,7 +91,7 @@ class ParagraphListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\academy_paragraph\ParagraphInterface */
+    /** @var \Drupal\paragraphs\ParagraphInterface $entity */
     $row['id'] = $entity->id();
     $row['title'] = $entity->toLink();
     $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');

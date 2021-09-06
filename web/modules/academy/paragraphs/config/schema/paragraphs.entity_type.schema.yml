@@ -1,4 +1,4 @@
-academy_paragraphs.paragraph_type.*:
+paragraphs.paragraph_type.*:
   type: config_entity
   label: 'Paragraph type config'
   mapping:

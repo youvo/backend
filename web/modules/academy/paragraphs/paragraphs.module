@@ -10,7 +10,7 @@ use Drupal\Core\Render\Element;
 /**
  * Implements hook_theme().
  */
-function academy_paragraph_theme() {
+function paragraphs_theme() {
   return [
     'paragraph' => [
       'render element' => 'elements',
@@ -25,11 +25,11 @@ function academy_paragraph_theme() {
  *
  * @param array $variables
  *   An associative array containing:
- *   - elements: An associative array containing the paragraph information and any
- *     fields attached to the entity.
+ *   - elements: An associative array containing the paragraph information and
+ *     any fields attached to the entity.
  *   - attributes: HTML attributes for the containing element.
  */
-function template_preprocess_paragraph(array &$variables) {
+function template_preprocess_paragraphs(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
