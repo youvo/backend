@@ -1,0 +1,2 @@
+permission_callbacks:
+  - \Drupal\academy_child_entities\ChildEntityPermissions::generatePermissions

@@ -1,0 +1,10 @@
+name: Academy Paragraphs
+type: module
+description: 'Provides a paragraph entity.'
+core_version_requirement: '^8.8 || ^9'
+package: 'Academy'
+
+dependencies:
+  - academy
+  - drupal:text (>= 8.8.0)
+configure: entity.paragraph_type.collection
