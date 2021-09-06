@@ -29,7 +29,7 @@ function academy_lectures_theme() {
  *     fields attached to the entity.
  *   - attributes: HTML attributes for the containing element.
  */
-function template_preprocess_lecture(array &$variables) {
+function template_preprocess_academy_lectures(array &$variables) {
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }

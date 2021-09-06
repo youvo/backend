@@ -30,10 +30,10 @@ use Drupal\academy_lectures\LectureInterface;
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "lecture",
- *   data_table = "lecture_field_data",
+ *   base_table = "academy_lectures",
+ *   data_table = "academy_lectures_field_data",
  *   translatable = TRUE,
- *   admin_permission = "administer lecture",
+ *   admin_permission = "administer academy_lectures",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -41,13 +41,13 @@ use Drupal\academy_lectures\LectureInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "add-form" = "/academy/module/lecture/add",
- *     "canonical" = "/lecture/{lecture}",
- *     "edit-form" = "/academy/module/lecture/{lecture}/edit",
- *     "delete-form" = "/academy/module/lecture/{lecture}/delete",
- *     "collection" = "/admin/content/lecture"
+ *     "add-form" = "/admin/content/lectures/add",
+ *     "canonical" = "/lectures/{lectures}",
+ *     "edit-form" = "/admin/content/lectures/{lectures}/edit",
+ *     "delete-form" = "/admin/content/lectures/{lectures}/delete",
+ *     "collection" = "/admin/content/lectures"
  *   },
- *   field_ui_base_route = "entity.lecture.settings"
+ *   field_ui_base_route = "entity.academy_lectures.settings"
  * )
  */
 class Lecture extends ContentEntityBase implements LectureInterface {
