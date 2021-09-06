@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_lectures\Entity;
+namespace Drupal\academy_lectures\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
-use Drupal\youvo_lectures\LectureInterface;
+use Drupal\academy_lectures\LectureInterface;
 
 /**
  * Defines the lecture entity class.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_lectures;
+namespace Drupal\academy_lectures;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -25,7 +25,7 @@ interface LectureInterface extends ContentEntityInterface, EntityOwnerInterface,
    * @param string $title
    *   The lecture title.
    *
-   * @return \Drupal\youvo_lectures\LectureInterface
+   * @return \Drupal\academy_lectures\LectureInterface
    *   The called lecture entity.
    */
   public function setTitle(string $title);
@@ -44,7 +44,7 @@ interface LectureInterface extends ContentEntityInterface, EntityOwnerInterface,
    * @param int $timestamp
    *   The lecture creation timestamp.
    *
-   * @return \Drupal\youvo_lectures\LectureInterface
+   * @return \Drupal\academy_lectures\LectureInterface
    *   The called lecture entity.
    */
   public function setCreatedTime(int $timestamp);
@@ -63,7 +63,7 @@ interface LectureInterface extends ContentEntityInterface, EntityOwnerInterface,
    * @param bool $status
    *   TRUE to enable this lecture, FALSE to disable.
    *
-   * @return \Drupal\youvo_lectures\LectureInterface
+   * @return \Drupal\academy_lectures\LectureInterface
    *   The called lecture entity.
    */
   public function setStatus(bool $status);
