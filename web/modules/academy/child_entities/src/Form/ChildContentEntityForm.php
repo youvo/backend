@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\academy_child_entities\Form;
+namespace Drupal\child_entities\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\academy_child_entities\Context\ChildEntityRouteContextTrait;
+use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 
 /**
  *
@@ -16,7 +16,7 @@ class ChildContentEntityForm extends ContentEntityForm {
   /**
    * The entity being used by this form.
    *
-   * @var \Drupal\academy_child_entities\ChildEntityInterface
+   * @var \Drupal\child_entities\ChildEntityInterface
    */
   protected $entity;
 

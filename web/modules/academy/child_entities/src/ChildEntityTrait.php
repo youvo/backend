@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_child_entities;
+namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -97,7 +97,7 @@ trait ChildEntityTrait {
   /**
    * @param array $uri_route_parameters
    *   The Child Route Parameters.
-   * @param \Drupal\academy_child_entities\ChildEntityInterface $parent_entity
+   * @param \Drupal\child_entities\ChildEntityInterface $parent_entity
    *   The Parent Entity.
    *
    * @return array

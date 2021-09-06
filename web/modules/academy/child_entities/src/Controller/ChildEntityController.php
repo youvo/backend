@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\academy_child_entities\Controller;
+namespace Drupal\child_entities\Controller;
 
-use Drupal\academy_child_entities\Context\ChildEntityRouteContextTrait;
-use Drupal\academy_child_entities\ChildEntityInterface;
+use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\Controller\EntityController;
 use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Link;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_child_entities;
+namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
 

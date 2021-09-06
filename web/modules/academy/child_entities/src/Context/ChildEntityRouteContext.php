@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\academy_child_entities\Context;
+namespace Drupal\child_entities\Context;
 
-use Drupal\academy_child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Context\Context;

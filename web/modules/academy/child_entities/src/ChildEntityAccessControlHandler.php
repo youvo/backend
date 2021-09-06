@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_child_entities;
+namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
@@ -11,7 +11,7 @@ use Drupal\Core\Access\AccessResult;
 /**
  * Access controller for the paragraph's entity.
  *
- * @see \Drupal\academy_child_entities\ChildEntityTrait.
+ * @see \Drupal\child_entities\ChildEntityTrait.
  */
 class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
 
@@ -20,7 +20,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     // Allowed when the operation is not view or the status is true.
-    /** @var \Drupal\academy_child_entity\ChildEntityInterface $entity */
+    /** @var \Drupal\child_entities\ChildEntityInterface $entity */
 
     if ($operation === 'view' && is_subclass_of($entity, EntityPublishedInterface::class)) {
       $access_result = AccessResult::allowedIf($entity->isPublished());

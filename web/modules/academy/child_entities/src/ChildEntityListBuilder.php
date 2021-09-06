@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_child_entities;
+namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -93,7 +93,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\academy_child_entities\ChildEntityInterface $entity */
+    /** @var \Drupal\child_entities\ChildEntityInterface $entity */
     $row['id'] = $entity->id();
     $row['name'] = $entity->toLink();
     return $row + parent::buildRow($entity);

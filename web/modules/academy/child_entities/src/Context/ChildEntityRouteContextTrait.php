@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_child_entities\Context;
+namespace Drupal\child_entities\Context;
 
 /**
  * Trait to get the parent entity from the current route.
