@@ -1,6 +1,6 @@
 name: Lectures
 type: module
-description: 'Provides a lecture entity.'
+description: 'Provides a Lecture entity.'
 package: Academy
 core_version_requirement: ^8.8 || ^9
 
