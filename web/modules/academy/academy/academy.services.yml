@@ -1,0 +1,6 @@
+services:
+  academy.event_subscriber:
+    class: Drupal\academy\EventSubscriber\AcademySubscriber
+    arguments: ['@messenger']
+    tags:
+      - { name: event_subscriber }

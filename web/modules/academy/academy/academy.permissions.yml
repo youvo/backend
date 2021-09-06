@@ -1,0 +1,4 @@
+administer academy configuration:
+  title: 'Administer academy configuration'
+  description: 'Optional description.'
+  restrict access: true
