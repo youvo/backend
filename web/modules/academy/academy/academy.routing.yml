@@ -1,0 +1,7 @@
+academy.example:
+  path: '/academy/example'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\academy\Controller\AcademyController::build'
+  requirements:
+    _permission: 'access content'
