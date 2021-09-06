@@ -1,22 +1,22 @@
-entity.lectures.settings:
+entity.lecture.settings:
   title: Settings
-  route_name: entity.lectures.settings
-  base_route: entity.lectures.settings
-entity.lectures.view:
+  route_name: entity.lecture.settings
+  base_route: entity.lecture.settings
+entity.lecture.view:
   title: View
-  route_name: entity.lectures.canonical
-  base_route: entity.lectures.canonical
-entity.lectures.edit_form:
+  route_name: entity.lecture.canonical
+  base_route: entity.lecture.canonical
+entity.lecture.edit_form:
   title: Edit
-  route_name: entity.lectures.edit_form
-  base_route: entity.lectures.canonical
-entity.lectures.delete_form:
+  route_name: entity.lecture.edit_form
+  base_route: entity.lecture.canonical
+entity.lecture.delete_form:
   title: Delete
-  route_name: entity.lectures.delete_form
-  base_route: entity.lectures.canonical
+  route_name: entity.lecture.delete_form
+  base_route: entity.lecture.canonical
   weight: 10
-entity.lectures.collection:
+entity.lecture.collection:
   title: Lecture
-  route_name: entity.lectures.collection
+  route_name: entity.lecture.collection
   base_route: system.admin_content
   weight: 10

@@ -42,9 +42,9 @@ use Drupal\lectures\LectureInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/content/lectures/add",
- *     "canonical" = "/lectures/{lectures}",
- *     "edit-form" = "/admin/content/lectures/{lectures}/edit",
- *     "delete-form" = "/admin/content/lectures/{lectures}/delete",
+ *     "canonical" = "/lectures/{lecture}",
+ *     "edit-form" = "/admin/content/lectures/{lecture}/edit",
+ *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
  *     "collection" = "/admin/content/lectures"
  *   },
  *   field_ui_base_route = "entity.lectures.settings"
