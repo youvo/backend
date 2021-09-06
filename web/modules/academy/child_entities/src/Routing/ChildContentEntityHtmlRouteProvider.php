@@ -57,7 +57,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
         'type' => 'entity:' . $entity_type->getKey('parent'),
       ];
       $route->setOption('parameters', $option_parameters);
-      $this->prepareWithParentEntities($route, $entity_type);
+      // $this->prepareWithParentEntities($route, $entity_type);
       $collection->add($key, $route);
     }
     return $collection;
