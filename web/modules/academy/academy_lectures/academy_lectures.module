@@ -10,7 +10,7 @@ use Drupal\Core\Render\Element;
 /**
  * Implements hook_theme().
  */
-function youvo_academy_theme() {
+function academy_lectures_theme() {
   return [
     'lecture' => [
       'render element' => 'elements',

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_academy\Form;
+namespace Drupal\academy_lectures\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;

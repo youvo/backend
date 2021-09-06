@@ -1,7 +1,7 @@
 entity.lecture.settings:
   path: 'admin/structure/lecture'
   defaults:
-    _form: '\Drupal\youvo_academy\Form\LectureSettingsForm'
+    _form: '\Drupal\academy_lectures\Form\LectureSettingsForm'
     _title: 'Lecture'
   requirements:
     _permission: 'administer lecture'

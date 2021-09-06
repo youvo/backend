@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_academy;
+namespace Drupal\youvo_lectures;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -91,7 +91,7 @@ class LectureListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\youvo_academy\LectureInterface */
+    /** @var \Drupal\youvo_lectures\LectureInterface $entity */
     $row['id'] = $entity->id();
     $row['title'] = $entity->toLink();
     $row['status'] = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
