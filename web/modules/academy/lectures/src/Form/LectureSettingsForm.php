@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy_lectures\Form;
+namespace Drupal\lectures\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
