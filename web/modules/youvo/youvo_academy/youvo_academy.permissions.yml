@@ -1,0 +1,5 @@
+administer lecture:
+  title: 'Administer lecture settings'
+  restrict access: true
+access lecture overview:
+  title: 'Access lecture overview page'
