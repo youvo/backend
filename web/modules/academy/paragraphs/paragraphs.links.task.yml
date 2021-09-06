@@ -16,6 +16,8 @@ entity.paragraph.collection:
   route_name: entity.paragraph.collection
   base_route: system.admin_content
   weight: 10
+  route_parameters:
+    lecture: entity:lecture
 entity.paragraph_type.edit_form:
   title: Edit
   route_name: entity.paragraph_type.edit_form

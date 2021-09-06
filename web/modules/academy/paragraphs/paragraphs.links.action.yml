@@ -7,5 +7,7 @@ paragraph.type_add:
 paragraph.add_page:
   route_name: entity.paragraph.add_page
   title: 'Add paragraph'
+  route_parameters:
+    lecture: entity:lecture
   appears_on:
     - entity.paragraph.collection

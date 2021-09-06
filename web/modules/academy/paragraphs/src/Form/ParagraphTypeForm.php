@@ -42,7 +42,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
       '#default_value' => $entity_type->id(),
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
-        'exists' => ['Drupal\academy_paragraph\Entity\ParagraphType', 'load'],
+        'exists' => ['Drupal\paragraphs\Entity\ParagraphType', 'load'],
         'source' => ['label'],
       ],
       '#description' => $this->t('A unique machine-readable name for this paragraph type. It must only contain lowercase letters, numbers, and underscores.'),

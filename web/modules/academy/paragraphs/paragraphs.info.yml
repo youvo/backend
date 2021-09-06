@@ -1,13 +1,11 @@
 name: Paragraphs
 type: module
-description: 'Provides a bundled paragraph entity as child of lecture entity.'
+description: 'Provides a bundled Paragraph entity as child of Lecture entity.'
 core_version_requirement: '^8.8 || ^9'
 package: Academy
-
 dependencies:
   - academy
   - child_entities
   - drupal:field (>= 8.8.0)
   - drupal:text (>= 8.8.0)
-
 configure: entity.paragraph_type.collection

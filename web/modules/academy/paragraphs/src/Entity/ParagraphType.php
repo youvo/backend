@@ -12,11 +12,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *   label = @Translation("Paragraph type"),
  *   handlers = {
  *     "form" = {
- *       "add" = "Drupal\academy_paragraph\Form\ParagraphTypeForm",
- *       "edit" = "Drupal\academy_paragraph\Form\ParagraphTypeForm",
+ *       "add" = "Drupal\paragraphs\Form\ParagraphTypeForm",
+ *       "edit" = "Drupal\paragraphs\Form\ParagraphTypeForm",
  *       "delete" = "Drupal\Core\Entity\EntityDeleteForm",
  *     },
- *     "list_builder" = "Drupal\academy_paragraph\ParagraphTypeListBuilder",
+ *     "list_builder" = "Drupal\paragraphs\ParagraphTypeListBuilder",
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
