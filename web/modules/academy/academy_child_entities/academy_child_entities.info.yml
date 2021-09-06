@@ -1,8 +1,0 @@
-name: 'Academy Child Entities'
-type: module
-description: 'Entity Trait to create sub entities for developers.'
-core_version_requirement: '^8.8 || ^9'
-package: 'Academy'
-
-dependencies:
-  - academy

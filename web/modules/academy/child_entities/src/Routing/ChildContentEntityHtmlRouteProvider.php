@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\academy_child_entities\Routing;
+namespace Drupal\child_entities\Routing;
 
-use Drupal\academy_child_entities\Controller\ChildEntityController;
-use Drupal\academy_child_entities\ChildEntityInterface;
+use Drupal\child_entities\Controller\ChildEntityController;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
