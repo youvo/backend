@@ -6,4 +6,3 @@ package: 'Academy'
 
 dependencies:
   - academy
-  - entity:entity (>= 8.8.0)
