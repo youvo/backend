@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo_academy\Entity;
+namespace Drupal\youvo_lectures\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
-use Drupal\youvo_academy\LectureInterface;
+use Drupal\youvo_lectures\LectureInterface;
 
 /**
  * Defines the lecture entity class.
@@ -19,11 +19,11 @@ use Drupal\youvo_academy\LectureInterface;
  *   label_collection = @Translation("Lectures"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\youvo_academy\LectureListBuilder",
+ *     "list_builder" = "Drupal\academy_lectures\LectureListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "add" = "Drupal\youvo_academy\Form\LectureForm",
- *       "edit" = "Drupal\youvo_academy\Form\LectureForm",
+ *       "add" = "Drupal\academy_lectures\Form\LectureForm",
+ *       "edit" = "Drupal\academy_lectures\Form\LectureForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
@@ -75,7 +75,7 @@ class Lecture extends ContentEntityBase implements LectureInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle(string $title) {
     $this->set('title', $title);
     return $this;
   }
@@ -90,7 +90,7 @@ class Lecture extends ContentEntityBase implements LectureInterface {
   /**
    * {@inheritdoc}
    */
-  public function setStatus($status) {
+  public function setStatus(bool $status) {
     $this->set('status', $status);
     return $this;
   }
@@ -105,7 +105,7 @@ class Lecture extends ContentEntityBase implements LectureInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
     return $this;
   }

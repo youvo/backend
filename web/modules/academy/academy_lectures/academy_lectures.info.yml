@@ -1,0 +1,12 @@
+name: Academy Lectures
+type: module
+description: 'Provides a lecture entity.'
+package: Academy
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - academy
+  - drupal:fields (>= 8.8.0)
+  - drupal:text (>= 8.8.0)
+  - entity:entity (>= 8.8.0)
+configure: entity.lecture.settings
