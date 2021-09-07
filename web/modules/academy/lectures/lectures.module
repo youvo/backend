@@ -5,7 +5,10 @@
  * Provides a lecture entity type.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
+use Drupal\lectures\Entity\Lecture;
 
 /**
  * Implements hook_theme().
@@ -16,6 +19,21 @@ function lectures_theme() {
       'render element' => 'elements',
     ],
   ];
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function lectures_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity instanceof Lecture) {
+    $operations['add_paragraphs'] = [
+      'title' => t('Paragraphs'),
+      'url' => Url::fromRoute('entity.paragraph.collection', ["lecture" => $entity->id()]),
+      'weight' => 1,
+    ];
+  }
+  return $operations;
 }
 
 /**
