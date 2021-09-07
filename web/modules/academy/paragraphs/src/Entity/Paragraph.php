@@ -102,21 +102,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
   /**
    * {@inheritdoc}
    */
-  public function isEnabled() {
-    return (bool) $this->get('status')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setStatus(bool $status) {
-    $this->set('status', $status);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
@@ -184,47 +169,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
         'label' => 'hidden',
         'type' => 'string',
         'weight' => -5,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setRevisionable(TRUE)
-      ->setLabel(new TranslatableMarkup('Status'))
-      ->setDescription(new TranslatableMarkup('A boolean indicating whether the paragraph is enabled.'))
-      ->setDefaultValue(TRUE)
-      ->setSetting('on_label', 'Enabled')
-      ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
-        'settings' => [
-          'display_label' => FALSE,
-        ],
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'type' => 'boolean',
-        'label' => 'above',
-        'weight' => 0,
-        'settings' => [
-          'format' => 'enabled-disabled',
-        ],
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['description'] = BaseFieldDefinition::create('text_long')
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
-      ->setLabel(new TranslatableMarkup('Description'))
-      ->setDescription(new TranslatableMarkup('A description of the paragraph.'))
-      ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
-        'weight' => 10,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'type' => 'text_default',
-        'label' => 'above',
-        'weight' => 10,
       ])
       ->setDisplayConfigurable('view', TRUE);
 
