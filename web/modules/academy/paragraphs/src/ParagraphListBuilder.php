@@ -3,6 +3,8 @@
 namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -105,24 +107,37 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\ParagraphInterface $entity */
+    $bundle = '';
+    try {
+      $bundle = \Drupal::entityTypeManager()
+        ->getStorage('paragraph_type')
+        ->load($entity->bundle())
+        ->label();
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      watchdog_exception('Paragraphs Collection: Could not fetch bundles.', $e);
+    }
     // Override default values to markup elements.
     $row['#attributes']['class'][] = 'draggable';
-    $row['#weight'] = $entity->get('weight')->getValue()[0]['value'];
-    // Add weight column.
+    $row['#weight'] = $entity->get('weight')->value;
+    // Add content columns.
     $row['name'] = [
       '#markup' => $entity->getTitle(),
     ];
     $row['bundle'] = [
-      '#markup' => $entity->bundle(),
+      '#markup' => $bundle,
     ];
+    // Contains operation column.
     $row = $row + parent::buildRow($entity);
+    // Add weight column.
     $row['weight'] = [
       '#type' => 'weight',
       '#title' => $this->t('Weight for @title', ['@title' => $entity->label()]),
       '#title_display' => 'invisible',
-      '#default_value' => $entity->get('weight')->getValue()[0]['value'],
-      '#attributes' => ['class' => ['table-sort-weight']],
+      '#default_value' => $entity->get('weight')->value,
+      '#attributes' => ['class' => ['weight']],
     ];
     return $row;
   }
@@ -158,7 +173,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
         [
           'action' => 'order',
           'relationship' => 'sibling',
-          'group' => 'table-sort-weight',
+          'group' => 'weight',
         ],
       ],
     ];
@@ -197,13 +212,17 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     foreach ($form_state->getValue('entities') as $id => $value) {
-      if (isset($this->entities[$id]) && $this->entities[$id]->get('weight')->getValue() != $value['weight']) {
+      /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+      $paragraph = $this->entities[$id];
+      if (isset($paragraph) && $paragraph->get('weight')->value != $value['weight']) {
         // Save entity only when its weight was changed.
-        $this->entities[$id]->set('weight', $value['weight']);
-        $this->entities[$id]->save();
+        $paragraph->set('weight', $value['weight']);
+        $paragraph->save();
       }
     }
   }
