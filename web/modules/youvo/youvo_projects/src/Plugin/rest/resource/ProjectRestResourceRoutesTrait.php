@@ -17,12 +17,32 @@ trait ProjectRestResourceRoutesTrait {
   /**
    * {@inheritdoc}
    */
+  abstract public function getPluginId();
+
+  /**
+   * {@inheritdoc}
+   */
+  abstract public function availableMethods();
+
+  /**
+   * {@inheritdoc}
+   */
+  abstract public function getPluginDefinition();
+
+  /**
+   * {@inheritdoc}
+   */
+  abstract protected function getBaseRoute($canonical_path, $method);
+
+  /**
+   * {@inheritdoc}
+   */
   public function routes() {
     $collection = new RouteCollection();
 
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = strtr($this->getPluginId(), ':', '.');
 
     // The base route is not available during installation. Route definition
     // will be updated during first cache rebuild.
