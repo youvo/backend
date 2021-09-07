@@ -49,23 +49,4 @@ interface ParagraphInterface extends ContentEntityInterface, EntityOwnerInterfac
    */
   public function setCreatedTime(int $timestamp);
 
-  /**
-   * Returns the paragraph status.
-   *
-   * @return bool
-   *   TRUE if the paragraph is enabled, FALSE otherwise.
-   */
-  public function isEnabled();
-
-  /**
-   * Sets the paragraph status.
-   *
-   * @param bool $status
-   *   TRUE to enable this paragraph, FALSE to disable.
-   *
-   * @return \Drupal\paragraphs\ParagraphInterface
-   *   The called paragraph entity.
-   */
-  public function setStatus(bool $status);
-
 }
