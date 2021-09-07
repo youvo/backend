@@ -2,13 +2,11 @@
 
 namespace Drupal\paragraphs;
 
-use Drupal\child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a list controller for the paragraph entity type.
  */
-class ParagraphListBuilder extends EntityListBuilder {
+class ParagraphListBuilder extends ChildEntityListBuilder {
 
   /**
    * The date formatter service.
@@ -26,11 +24,11 @@ class ParagraphListBuilder extends EntityListBuilder {
   protected $dateFormatter;
 
   /**
-   * The parent entity.
+   * The redirect destination service.
    *
-   * @var \Drupal\Core\Entity\EntityInterface
+   * @var \Drupal\Core\Routing\RedirectDestinationInterface
    */
-  protected $parent;
+  protected $redirectDestination;
 
   /**
    * Constructs a new ParagraphListBuilder object.
@@ -49,18 +47,9 @@ class ParagraphListBuilder extends EntityListBuilder {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination, RouteMatchInterface $route_match) {
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
-    }
-
-    parent::__construct($entity_type, $storage);
+    parent::__construct($entity_type, $storage, $route_match);
     $this->dateFormatter = $date_formatter;
     $this->redirectDestination = $redirect_destination;
-    $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
 
   /**
@@ -76,21 +65,6 @@ class ParagraphListBuilder extends EntityListBuilder {
       $container->get('redirect.destination'),
       $container->get('current_route_match')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityIds() {
-    $query = $this->getStorage()->getQuery()
-      ->sort($this->entityType->getKey('id'))
-      ->condition($this->entityType->getKey('parent'), $this->parent->id());
-
-    // Only add the pager if a limit is specified.
-    if ($this->limit) {
-      $query->pager($this->limit);
-    }
-    return $query->execute();
   }
 
   /**
@@ -123,7 +97,7 @@ class ParagraphListBuilder extends EntityListBuilder {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\child_entities\ChildEntityInterface $entity */
+    /** @var \Drupal\paragraphs\ParagraphInterface $entity */
     $row['id'] = $entity->id();
     $row['name'] = $entity->toLink();
     return $row + parent::buildRow($entity);

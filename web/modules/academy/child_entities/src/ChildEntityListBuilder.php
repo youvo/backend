@@ -2,10 +2,10 @@
 
 namespace Drupal\child_entities;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -36,9 +36,15 @@ class ChildEntityListBuilder extends EntityListBuilder {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match) {
+    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
+      throw new UnsupportedEntityTypeDefinitionException(
+        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
+    }
+    if (!$entity_type->hasKey('parent')) {
+      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
+    }
 
     parent::__construct($entity_type, $storage);
-
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
 
@@ -68,27 +74,6 @@ class ChildEntityListBuilder extends EntityListBuilder {
       $query->pager($this->limit);
     }
     return $query->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildHeader() {
-    $header['id'] = $this->t('ID');
-    $header['name'] = $this->t('Name');
-    return $header + parent::buildHeader();
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\child_entities\ChildEntityInterface $entity */
-    $row['id'] = $entity->id();
-    $row['name'] = $entity->toLink();
-    return $row + parent::buildRow($entity);
   }
 
 }
