@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
 
@@ -45,7 +46,8 @@ use Drupal\user\UserInterface;
  *     "bundle" = "bundle",
  *     "label" = "title",
  *     "uuid" = "uuid",
- *     "parent" = "lecture"
+ *     "parent" = "lecture",
+ *     "weight" = "weight"
  *   },
  *   revision_metadata_keys = {
  *     "revision_user" = "revision_uid",
@@ -169,8 +171,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
-      ->setLabel(t('Title'))
-      ->setDescription(t('The title of the paragraph entity.'))
+      ->setLabel(new TranslatableMarkup('Title'))
+      ->setDescription(new TranslatableMarkup('The title of the paragraph entity.'))
       ->setRequired(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
@@ -187,8 +189,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setRevisionable(TRUE)
-      ->setLabel(t('Status'))
-      ->setDescription(t('A boolean indicating whether the paragraph is enabled.'))
+      ->setLabel(new TranslatableMarkup('Status'))
+      ->setDescription(new TranslatableMarkup('A boolean indicating whether the paragraph is enabled.'))
       ->setDefaultValue(TRUE)
       ->setSetting('on_label', 'Enabled')
       ->setDisplayOptions('form', [
@@ -212,8 +214,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields['description'] = BaseFieldDefinition::create('text_long')
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
-      ->setLabel(t('Description'))
-      ->setDescription(t('A description of the paragraph.'))
+      ->setLabel(new TranslatableMarkup('Description'))
+      ->setDescription(new TranslatableMarkup('A description of the paragraph.'))
       ->setDisplayOptions('form', [
         'type' => 'text_textarea',
         'weight' => 10,
@@ -229,8 +231,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
-      ->setLabel(t('Author'))
-      ->setDescription(t('The user ID of the paragraph author.'))
+      ->setLabel(new TranslatableMarkup('Author'))
+      ->setDescription(new TranslatableMarkup('The user ID of the paragraph author.'))
       ->setSetting('target_type', 'user')
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -250,9 +252,9 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
+      ->setLabel(new TranslatableMarkup('Authored on'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the paragraph was created.'))
+      ->setDescription(new TranslatableMarkup('The time that the paragraph was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -266,9 +268,27 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
+      ->setLabel(new TranslatableMarkup('Changed'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the paragraph was last edited.'));
+      ->setDescription(new TranslatableMarkup('The time that the paragraph was last edited.'));
+
+    $fields['weight'] = BaseFieldDefinition::create('integer')
+      ->setTranslatable(FALSE)
+      ->setLabel(new TranslatableMarkup('Weight'))
+      ->setDescription(new TranslatableMarkup('The weight of the paragraph.'))
+      ->setDisplayOptions('form', [
+        'type' => 'weight',
+        'weight' => 25,
+      ])
+      ->setDefaultValue(1)
+      ->setRequired(TRUE)
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'type' => 'default_widget',
+        'label' => 'above',
+        'weight' => 25,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
