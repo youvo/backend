@@ -27,7 +27,6 @@ trait ChildEntityTrait {
    *   or if it does not have a "published" entity key.
    */
   public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type) {
-    // @todo Extract this check to a function.
     if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
       throw new UnsupportedEntityTypeDefinitionException(
         'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
@@ -35,7 +34,6 @@ trait ChildEntityTrait {
     if (!$entity_type->hasKey('parent')) {
       throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
     }
-
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
         ->setLabel(new TranslatableMarkup('Parent ID'))
@@ -48,11 +46,13 @@ trait ChildEntityTrait {
           'weight' => -3,
         ])
         ->setDisplayConfigurable('form', FALSE)
-        ->setDisplayConfigurable('view', TRUE),
+        ->setDisplayConfigurable('view', FALSE),
     ];
   }
 
   /**
+   * Checks whether entity is child entity.
+   *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The Child Entity Type.
    *
@@ -65,16 +65,6 @@ trait ChildEntityTrait {
       return TRUE;
     }
     return FALSE;
-  }
-
-  /**
-   * Provide details the missing key.
-   *
-   * @param string $key
-   *   The Key that is missing.
-   */
-  private function reportMissingKey(string $key) {
-    throw new \InvalidArgumentException(sprintf('"%s" key must be set in "entity_keys" of class "%s"', $key, get_class($this)));
   }
 
   /**
@@ -123,7 +113,7 @@ trait ChildEntityTrait {
     if ($this->getEntityType()->hasKey('parent')) {
       return $this->getEntityType()->getKey('parent');
     }
-    $this->reportMissingKey('parent');
+    throw new \InvalidArgumentException(sprintf('"%s" key must be set in "entity_keys" of class "%s"', 'parent', get_class($this)));
   }
 
   /**
@@ -154,7 +144,6 @@ trait ChildEntityTrait {
   public function setParentId($uid) {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $uid);
-
     return $this;
   }
 
@@ -172,7 +161,6 @@ trait ChildEntityTrait {
   public function setParentEntity(EntityInterface $parent) {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $parent);
-
     return $this;
   }
 
