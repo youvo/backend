@@ -179,11 +179,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     ];
 
     $this->entities = $this->load();
-    $delta = 10;
-    $count = count($this->entities);
-    if ($count > 20) {
-      $delta = ceil($count / 2);
-    }
+    $delta = count($this->entities);
 
     foreach ($this->entities as $entity) {
       $row = $this->buildRow($entity);
