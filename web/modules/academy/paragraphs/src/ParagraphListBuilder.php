@@ -7,6 +7,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,7 +16,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a list controller for the paragraph entity type.
  */
-class ParagraphListBuilder extends ChildEntityListBuilder {
+class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterface {
+
+  /**
+   * The entities being listed.
+   *
+   * @var \Drupal\Core\Entity\EntityInterface[]
+   */
+  protected $entities = [];
 
   /**
    * The date formatter service.
@@ -29,6 +38,13 @@ class ParagraphListBuilder extends ChildEntityListBuilder {
    * @var \Drupal\Core\Routing\RedirectDestinationInterface
    */
   protected $redirectDestination;
+
+  /**
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
 
   /**
    * Constructs a new ParagraphListBuilder object.
@@ -71,36 +87,44 @@ class ParagraphListBuilder extends ChildEntityListBuilder {
    * {@inheritdoc}
    */
   public function render() {
-    $build['table'] = parent::render();
-
-    $total = $this->getStorage()
-      ->getQuery()
-      ->count()
-      ->execute();
-
-    $build['summary']['#markup'] = $this->t('Total paragraphs: @total', ['@total' => $total]);
-    return $build;
+    return $this->formBuilder()->getForm($this);
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('ID');
     $header['name'] = $this->t('Name');
-    return $header + parent::buildHeader();
+    $header['bundle'] = $this->t('Type');
+    $header = $header + parent::buildHeader();
+    $header['weight'] = $this->t('Weight');
+    return $header;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\paragraphs\ParagraphInterface $entity */
-    $row['id'] = $entity->id();
-    $row['name'] = $entity->toLink();
-    return $row + parent::buildRow($entity);
+    // Override default values to markup elements.
+    $row['#attributes']['class'][] = 'draggable';
+    $row['#weight'] = $entity->get('weight')->getValue()[0]['value'];
+    // Add weight column.
+    $row['name'] = [
+      '#markup' => $entity->getTitle(),
+    ];
+    $row['bundle'] = [
+      '#markup' => $entity->bundle(),
+    ];
+    $row = $row + parent::buildRow($entity);
+    $row['weight'] = [
+      '#type' => 'weight',
+      '#title' => $this->t('Weight for @title', ['@title' => $entity->label()]),
+      '#title_display' => 'invisible',
+      '#default_value' => $entity->get('weight')->getValue()[0]['value'],
+      '#attributes' => ['class' => ['table-sort-weight']],
+    ];
+    return $row;
   }
 
   /**
@@ -113,6 +137,88 @@ class ParagraphListBuilder extends ChildEntityListBuilder {
       $operations[$key]['query'] = $destination;
     }
     return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'paragraph_collection';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['entities'] = [
+      '#type' => 'table',
+      '#header' => $this->buildHeader(),
+      '#empty' => $this->t('There are no @label yet.', ['@label' => $this->entityType->getPluralLabel()]),
+      '#tabledrag' => [
+        [
+          'action' => 'order',
+          'relationship' => 'sibling',
+          'group' => 'table-sort-weight',
+        ],
+      ],
+    ];
+
+    $this->entities = $this->load();
+    $delta = 10;
+    $count = count($this->entities);
+    if ($count > 20) {
+      $delta = ceil($count / 2);
+    }
+
+    foreach ($this->entities as $entity) {
+      $row = $this->buildRow($entity);
+      if (isset($row['weight'])) {
+        $row['weight']['#delta'] = $delta;
+      }
+      $form['entities'][$entity->id()] = $row;
+    }
+
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Save'),
+      '#button_type' => 'primary',
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // No validation.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    foreach ($form_state->getValue('entities') as $id => $value) {
+      if (isset($this->entities[$id]) && $this->entities[$id]->get('weight')->getValue() != $value['weight']) {
+        // Save entity only when its weight was changed.
+        $this->entities[$id]->set('weight', $value['weight']);
+        $this->entities[$id]->save();
+      }
+    }
+  }
+
+  /**
+   * Returns the form builder.
+   *
+   * @return \Drupal\Core\Form\FormBuilderInterface
+   *   The form builder.
+   */
+  protected function formBuilder() {
+    if (!$this->formBuilder) {
+      $this->formBuilder = \Drupal::formBuilder();
+    }
+    return $this->formBuilder;
   }
 
 }
