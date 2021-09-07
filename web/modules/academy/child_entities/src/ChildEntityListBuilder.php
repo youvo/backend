@@ -65,8 +65,11 @@ class ChildEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   protected function getEntityIds() {
+    $sort_by = $this->entityType->hasKey('weight') ?
+      $this->entityType->getKey('weight') :
+      $this->entityType->getKey('id');
     $query = $this->getStorage()->getQuery()
-      ->sort($this->entityType->getKey('id'))
+      ->sort($sort_by)
       ->condition($this->entityType->getKey('parent'), $this->parent->id());
 
     // Only add the pager if a limit is specified.
