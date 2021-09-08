@@ -34,6 +34,7 @@ use Drupal\lectures\LectureInterface;
  *   base_table = "lectures",
  *   data_table = "lectures_field_data",
  *   translatable = TRUE,
+ *   fieldable = TRUE,
  *   admin_permission = "administer lectures",
  *   entity_keys = {
  *     "id" = "id",
@@ -47,8 +48,7 @@ use Drupal\lectures\LectureInterface;
  *     "edit-form" = "/admin/content/lectures/{lecture}/edit",
  *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
  *     "collection" = "/admin/content/lectures"
- *   },
- *   field_ui_base_route = "entity.lectures.settings"
+ *   }
  * )
  */
 class Lecture extends ContentEntityBase implements LectureInterface {
