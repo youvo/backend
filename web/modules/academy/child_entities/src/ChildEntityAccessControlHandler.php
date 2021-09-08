@@ -26,22 +26,12 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::forbidden()->addCacheableDependency($entity);
     }
 
-    if ($admin_permission = $this->entityType->getAdminPermission()) {
-      $access_result = AccessResult::allowedIfHasPermission($account, $admin_permission);
-    }
-    else {
-      $access_result = AccessResult::neutral();
-    }
-
     if ($entity->getParentEntity() != NULL) {
-      $parent_access = $entity->getParentEntity()->access($operation, $account, TRUE);
-      $access_result = $access_result->andIf($parent_access);
+      return $entity->getParentEntity()->access($operation, $account, TRUE);
     }
     else {
       throw new AccessException('Could not resolve parent access handler.');
     }
-
-    return $access_result;
   }
 
 }
