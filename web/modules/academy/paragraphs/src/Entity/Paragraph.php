@@ -260,4 +260,38 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       return parent::toUrl($rel, $options);
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Remove paragraph from reference field in lecture parent entity.
+      /** @var \Drupal\lectures\Entity\Lecture $parent */
+      $parent = $this->getParentEntity();
+      $paragraphs = $parent->get('paragraphs')->getValue();
+      $index = array_search($this->id(), array_column($paragraphs, 'target_id'));
+      $parent->get('paragraphs')->removeItem($index);
+      $parent->save();
+    }
+    parent::delete();
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage);
+    // Append reference to parent entity. We store these references in a field.
+    // Then we can easily query all paragraphs.
+    if (!$update) {
+      /** @var \Drupal\lectures\Entity\Lecture $parent */
+      $parent = $this->getParentEntity();
+      $parent->get('paragraphs')->appendItem(['target_id' => $this->id()]);
+      $parent->save();
+    }
+  }
+
 }
