@@ -58,7 +58,6 @@ use Drupal\user\UserInterface;
  *   links = {
  *     "add-form" = "/admin/content/lectures/{lecture}/paragraphs/add/{paragraph_type}",
  *     "add-page" = "/admin/content/lectures/{lecture}/paragraphs/add",
- *     "canonical" = "/academy/lectures/{lecture}/{paragraph}",
  *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/edit",
  *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/delete",
  *     "collection" = "/admin/content/lectures/{lecture}/paragraphs"
