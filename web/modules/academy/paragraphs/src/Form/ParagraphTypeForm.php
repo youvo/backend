@@ -63,8 +63,12 @@ class ParagraphTypeForm extends BundleEntityFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function save(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\paragraphs\Entity\ParagraphType $entity_type */
     $entity_type = $this->entity;
 
     $entity_type->set('id', trim($entity_type->id()));
@@ -72,6 +76,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
 
     $status = $entity_type->save();
 
+    $message = '';
     $t_args = ['%name' => $entity_type->label()];
     if ($status == SAVED_UPDATED) {
       $message = $this->t('The paragraph type %name has been updated.', $t_args);
