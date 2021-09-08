@@ -17,7 +17,7 @@ class ParagraphTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['title'] = $this->t('Label');
+    $header['title'] = $this->t('Paragraph type');
 
     return $header + parent::buildHeader();
   }
