@@ -28,7 +28,9 @@ use Drupal\user\UserInterface;
  *     "list_builder" = "Drupal\paragraphs\ParagraphListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "default" = "Drupal\child_entities\Form\ChildContentEntityForm",
+ *       "add" = "Drupal\paragraphs\Form\ParagraphForm",
+ *       "edit" = "Drupal\paragraphs\Form\ParagraphForm",
+ *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
@@ -79,10 +81,15 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
    *
    * When a new paragraph entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
+   *
+   * We set the mandatory lecture value here!
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     parent::preCreate($storage, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
+    $values += [
+      'uid' => \Drupal::currentUser()->id(),
+      'lecture' => \Drupal::service('current_route_match')->getParameter('lecture'),
+    ];
   }
 
   /**

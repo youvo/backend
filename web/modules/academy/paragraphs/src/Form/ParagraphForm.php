@@ -12,15 +12,21 @@ class ParagraphForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function save(array $form, FormStateInterface $form_state) {
+    // Save entity.
+    $result = parent::save($form, $form_state);
 
-    /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
-    $entity = $this->getEntity();
-    $result = $entity->save();
-    $link = $entity->toLink($this->t('View'))->toRenderable();
+    // Load populated entity.
+    /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+    $paragraph = $this->getEntity();
 
-    $message_arguments = ['%label' => $this->entity->label()];
+    // Add status and logger messages.
+    $link = $paragraph->toLink($this->t('View'))->toRenderable();
+
+    $message_arguments = ['%label' => $paragraph->label()];
     $logger_arguments = $message_arguments + ['link' => render($link)];
 
     if ($result == SAVED_NEW) {
@@ -32,7 +38,7 @@ class ParagraphForm extends ContentEntityForm {
       $this->logger('paragraphs')->notice('Updated new paragraph %label.', $logger_arguments);
     }
 
-    $form_state->setRedirect('entity.paragraph.collection', ['lecture' => $entity->getParentEntity()->id()]);
+    $form_state->setRedirect('entity.paragraph.collection', ['lecture' => $paragraph->getParentEntity()->id()]);
   }
 
 }
