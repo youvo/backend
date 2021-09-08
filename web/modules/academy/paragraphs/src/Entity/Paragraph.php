@@ -5,6 +5,7 @@ namespace Drupal\paragraphs\Entity;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
@@ -270,9 +271,10 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       /** @var \Drupal\lectures\Entity\Lecture $parent */
       $parent = $this->getParentEntity();
       $paragraphs = $parent->get('paragraphs')->getValue();
-      $index = array_search($this->id(), array_column($paragraphs, 'target_id'));
-      $parent->get('paragraphs')->removeItem($index);
-      $parent->save();
+      if ($index = array_search($this->id(), array_column($paragraphs, 'target_id'))) {
+        $parent->get('paragraphs')->removeItem($index);
+        $parent->save();
+      }
     }
     parent::delete();
   }
@@ -288,9 +290,13 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     // Then we can easily query all paragraphs.
     if (!$update) {
       /** @var \Drupal\lectures\Entity\Lecture $parent */
-      $parent = $this->getParentEntity();
-      $parent->get('paragraphs')->appendItem(['target_id' => $this->id()]);
-      $parent->save();
+      if ($parent = $this->getParentEntity()) {
+        $parent->get('paragraphs')->appendItem(['target_id' => $this->id()]);
+        $parent->save();
+      }
+      else {
+        throw new EntityStorageException('Could not append reference to parent entity.');
+      }
     }
   }
 
