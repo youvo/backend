@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
 
@@ -239,4 +240,17 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     return $uri_route_parameters;
   }
 
+  /**
+   * Overwrite call toUrl for non-present canonical route.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function toUrl($rel = 'canonical', array $options = []) {
+    if ($rel == 'canonical') {
+      return Url::fromUri('route:<nolink>')->setOptions($options);
+    }
+    else {
+      return parent::toUrl($rel, $options);
+    }
+  }
 }
