@@ -22,6 +22,7 @@ use Drupal\user\UserInterface;
  *   label_collection = @Translation("Paragraphs"),
  *   bundle_label = @Translation("Paragraph type"),
  *   handlers = {
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\paragraphs\ParagraphListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
