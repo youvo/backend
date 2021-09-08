@@ -43,7 +43,7 @@ use Drupal\lectures\LectureInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/content/lectures/add",
- *     "canonical" = "/lectures/{lecture}",
+ *     "canonical" = "/academy/lectures/{lecture}",
  *     "edit-form" = "/admin/content/lectures/{lecture}/edit",
  *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
  *     "collection" = "/admin/content/lectures"
