@@ -8,5 +8,3 @@ dependencies:
   - academy
   - drupal:field (>= 8.8.0)
   - drupal:text (>= 8.8.0)
-
-configure: entity.lecture.settings

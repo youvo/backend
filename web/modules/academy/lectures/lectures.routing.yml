@@ -1,7 +1,1 @@
-entity.lecture.settings:
-  path: 'admin/structure/lectures'
-  defaults:
-    _form: '\Drupal\lectures\Form\LectureSettingsForm'
-    _title: 'Lectures'
-  requirements:
-    _permission: 'administer lectures'
+
