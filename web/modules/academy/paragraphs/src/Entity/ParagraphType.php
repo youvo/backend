@@ -21,7 +21,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   admin_permission = "administer paragraph types",
+ *   admin_permission = "administer paragraphs",
  *   bundle_of = "paragraph",
  *   config_prefix = "paragraph_type",
  *   entity_keys = {
