@@ -1,8 +1,3 @@
-entity.lecture.settings:
-  title: Lecture
-  description: Configure a Lecture entity type
-  route_name:  entity.lecture.settings
-  parent: system.admin_structure
 entity.lecture.collection:
   title: Lectures
   description: List of lectures

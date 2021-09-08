@@ -1,7 +1,3 @@
-entity.lecture.settings:
-  title: Settings
-  route_name: entity.lecture.settings
-  base_route: entity.lecture.settings
 entity.lecture.view:
   title: View
   route_name: entity.lecture.canonical
