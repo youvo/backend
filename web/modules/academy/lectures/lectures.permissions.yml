@@ -1,5 +1,7 @@
+view lectures:
+  title: 'View lectures content'
+manage lectures:
+  title: 'Manage lectures content'
 administer lectures:
-  title: 'Administer Lectures settings'
+  title: 'Administer lectures settings'
   restrict access: true
-access lectures overview:
-  title: 'Access Lectures overview page'

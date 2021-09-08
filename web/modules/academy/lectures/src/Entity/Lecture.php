@@ -18,6 +18,7 @@ use Drupal\lectures\LectureInterface;
  *   label = @Translation("Lecture"),
  *   label_collection = @Translation("Lectures"),
  *   handlers = {
+ *     "access" = "Drupal\lectures\LectureAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\lectures\LectureListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
