@@ -15,6 +15,7 @@ class ParagraphForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
 
+    /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
     $entity = $this->getEntity();
     $result = $entity->save();
     $link = $entity->toLink($this->t('View'))->toRenderable();
@@ -31,7 +32,7 @@ class ParagraphForm extends ContentEntityForm {
       $this->logger('paragraphs')->notice('Updated new paragraph %label.', $logger_arguments);
     }
 
-    $form_state->setRedirect('entity.paragraph.canonical', ['paragraph' => $entity->id()]);
+    $form_state->setRedirect('entity.paragraph.collection', ['lecture' => $entity->getParentEntity()->id()]);
   }
 
 }
