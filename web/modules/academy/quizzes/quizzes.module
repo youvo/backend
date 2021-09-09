@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Alterations for paragraph entity.
+ */
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function quizzes_entity_type_alter(array &$entity_types) {
+  // We alter the default paragraph.{add,edit,delete} form handlers in order
+  // to load a different class than the standard add-, edit- and delete form for
+  // paragraphs.
+  $entity_types['paragraph']->setFormClass('add', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
+  $entity_types['paragraph']->setFormClass('edit', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
+  $entity_types['paragraph']->setFormClass('delete', 'Drupal\\quizzes\\Form\\ParagraphWithQuizDeleteForm');
+}
