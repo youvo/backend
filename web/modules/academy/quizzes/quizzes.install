@@ -5,10 +5,16 @@
  * Install, update and uninstall functions for the Academy module.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\paragraphs\Entity\ParagraphType;
+
 /**
  * Implements hook_install().
  */
 function quizzes_install() {
+  // Add quiz target bundle to paragraph reference in lecture entity.
   $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
   $current_types = $config->get('settings.handler_settings.target_bundles');
   $current_types['quiz'] = 'quiz';
@@ -20,7 +26,27 @@ function quizzes_install() {
  * Implements hook_uninstall().
  */
 function quizzes_uninstall() {
-  \Drupal::messenger()->addStatus(__FUNCTION__);
+  // Remove quiz target bundle to paragraph reference in lecture entity.
+  $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
+  $current_types = $config->get('settings.handler_settings.target_bundles');
+  unset($current_types['quiz']);
+  $config->set('settings.handler_settings.target_bundles', $current_types);
+  $config->save(TRUE);
+
+  // Remove config entity for quiz paragraph type.
+  try {
+    if ($paragraph_type = \Drupal::entityTypeManager()
+      ->getStorage('paragraph_type')
+      ->loadByProperties(['id' => 'quiz'])) {
+      $paragraph_type = reset($paragraph_type);
+      if ($paragraph_type instanceof ParagraphType) {
+        $paragraph_type->delete();
+      }
+    }
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+    watchdog_exception('Quizzes', $e, 'Could not delete quiz paragraph type during uninstall.');
+  }
 }
 
 /**
