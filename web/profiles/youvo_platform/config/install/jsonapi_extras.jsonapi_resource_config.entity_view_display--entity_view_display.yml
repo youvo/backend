@@ -1,4 +1,4 @@
-langcode: de
+langcode: en
 status: true
 dependencies: {  }
 id: entity_view_display--entity_view_display
