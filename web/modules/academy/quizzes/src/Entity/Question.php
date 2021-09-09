@@ -2,6 +2,8 @@
 
 namespace Drupal\quizzes\Entity;
 
+use Drupal\child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -19,43 +21,35 @@ use Drupal\user\UserInterface;
  *   label_collection = @Translation("Questions"),
  *   bundle_label = @Translation("Question type"),
  *   handlers = {
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "view_builder" = "Drupal\quizzes\QuestionViewBuilder",
- *     "list_builder" = "Drupal\quizzes\QuestionListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "add" = "Drupal\quizzes\Form\QuestionForm",
- *       "edit" = "Drupal\quizzes\Form\QuestionForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
+ *       "edit" = "Drupal\quizzes\Form\QuestionForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "question",
- *   data_table = "question_field_data",
+ *   base_table = "questions",
+ *   data_table = "questions_field_data",
  *   translatable = TRUE,
- *   admin_permission = "administer question types",
+ *   admin_permission = "administer questions",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
  *     "bundle" = "bundle",
  *     "label" = "id",
- *     "uuid" = "uuid"
- *   },
- *   links = {
- *     "add-form" = "/admin/content/question/add/{question_type}",
- *     "add-page" = "/admin/content/question/add",
- *     "canonical" = "/question/{question}",
- *     "edit-form" = "/admin/content/question/{question}/edit",
- *     "delete-form" = "/admin/content/question/{question}/delete",
- *     "collection" = "/admin/content/question"
+ *     "uuid" = "uuid",
+ *     "parent" = "paragraph",
+ *     "weight" = "weight"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
  * )
  */
-class Question extends ContentEntityBase implements QuestionInterface {
+class Question extends ContentEntityBase implements ChildEntityInterface, QuestionInterface {
 
+  use ChildEntityTrait;
   use EntityChangedTrait;
 
   /**
@@ -64,9 +58,12 @@ class Question extends ContentEntityBase implements QuestionInterface {
    * When a new question entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
    */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    parent::preCreate($storage, $values);
+    $values += [
+      'uid' => \Drupal::currentUser()->id(),
+      'paragraph' => \Drupal::service('current_route_match')->getParameter('paragraph'),
+    ];
   }
 
   /**
@@ -116,6 +113,8 @@ class Question extends ContentEntityBase implements QuestionInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
@@ -179,6 +178,13 @@ class Question extends ContentEntityBase implements QuestionInterface {
       ->setLabel(t('Changed'))
       ->setTranslatable(TRUE)
       ->setDescription(t('The time that the question was last edited.'));
+
+    $fields['weight'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Weight'))
+      ->setDescription(t('The weight of this term in relation to other terms.'))
+      ->setDefaultValue(0);
+
+    $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
   }

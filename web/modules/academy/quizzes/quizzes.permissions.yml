@@ -1,6 +1,4 @@
-administer question types:
+administer questions:
   title: 'Administer question types'
   description: 'Maintain the types of question entity.'
   restrict access: true
-access question overview:
-  title: 'Access question overview page'
