@@ -17,9 +17,9 @@ class QuizzesUninstallValidator extends ContentUninstallValidator {
   public function validate($module) {
     $reasons = [];
     if ($module == 'quizzes' && count($this->entityTypeManager->getStorage('paragraph')->loadByProperties(['bundle' => 'quiz'])) > 0) {
-      $reasons[] = $this->t('There is content for the entity type: Quiz.');
+      $reasons[] = $this->t('There is content for the paragraph type: Quiz.');
     }
-    return $reasons + parent::validate($module);
+    return $reasons;
   }
 
 }
