@@ -1,0 +1,7 @@
+services:
+  quizzes.uninstall_validator:
+    class: Drupal\quizzes\QuizzesUninstallValidator
+    tags:
+      - { name: module_install.uninstall_validator }
+    arguments: ['@entity_type.manager', '@string_translation']
+    lazy: true
