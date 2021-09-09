@@ -6,7 +6,6 @@ dependencies:
     - paragraphs.paragraph_type.excursus
     - paragraphs.paragraph_type.illustration
     - paragraphs.paragraph_type.picture
-    - paragraphs.paragraph_type.quiz
     - paragraphs.paragraph_type.text
     - paragraphs.paragraph_type.video
 id: lecture.lecture.paragraphs
@@ -26,7 +25,6 @@ settings:
       excursus: excursus
       illustration: illustration
       picture: picture
-      quiz: quiz
       text: text
       video: video
     sort:
