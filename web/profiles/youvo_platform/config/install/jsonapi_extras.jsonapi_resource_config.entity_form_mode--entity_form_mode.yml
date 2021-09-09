@@ -1,4 +1,4 @@
-langcode: de
+langcode: en
 status: true
 dependencies: {  }
 id: entity_form_mode--entity_form_mode

@@ -5,4 +5,4 @@ toolbar_items:
   - devel.field_info_page
   - devel.configs_list
   - devel.route_info
-langcode: de
+langcode: en
