@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\quizzes\QuestionInterface;
 use Drupal\user\UserInterface;
 
@@ -120,26 +121,69 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['description'] = BaseFieldDefinition::create('text_long')
+    $fields['body'] = BaseFieldDefinition::create('text_long')
       ->setTranslatable(TRUE)
-      ->setLabel(t('Description'))
-      ->setDescription(t('A description of the question.'))
+      ->setLabel(new TranslatableMarkup('Question'))
+      ->setDescription(new TranslatableMarkup('The question.'))
       ->setDisplayOptions('form', [
         'type' => 'text_textarea',
+        'rows' => 2,
         'weight' => 10,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'type' => 'text_default',
         'label' => 'above',
         'weight' => 10,
+      ]);
+
+    $fields['help'] = BaseFieldDefinition::create('text_long')
+      ->setTranslatable(TRUE)
+      ->setLabel(new TranslatableMarkup('Help Text'))
+      ->setDescription(new TranslatableMarkup('Further explanation to the question.'))
+      ->setDisplayOptions('form', [
+        'type' => 'text_textarea',
+        'weight' => 11,
       ])
-      ->setDisplayConfigurable('view', TRUE);
+      ->setDisplayOptions('view', [
+        'type' => 'text_default',
+        'label' => 'above',
+        'weight' => 11,
+      ]);
+
+    $fields['options'] = BaseFieldDefinition::create('text_long')
+      ->setTranslatable(TRUE)
+      ->setLabel(new TranslatableMarkup('Answer Options'))
+      ->setDescription(new TranslatableMarkup('Comma separated options for the answers.'))
+      ->setDisplayOptions('form', [
+        'type' => 'text_textarea',
+        'placeholder' => 'Option 1,\nOption 2,\nOption 3',
+        'weight' => 12,
+      ])
+      ->setDisplayOptions('view', [
+        'type' => 'text_default',
+        'label' => 'above',
+        'weight' => 12,
+      ]);
+
+    $fields['answers'] = BaseFieldDefinition::create('text_long')
+      ->setTranslatable(TRUE)
+      ->setLabel(new TranslatableMarkup('Correct Answers'))
+      ->setDescription(new TranslatableMarkup('Comma separated numbers of correct answers. Only one for single-choice question.'))
+      ->setDisplayOptions('form', [
+        'type' => 'text_textfield',
+        'placeholder' => '1, 2, 3',
+        'weight' => 12,
+      ])
+      ->setDisplayOptions('view', [
+        'type' => 'text_default',
+        'label' => 'above',
+        'weight' => 12,
+      ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
-      ->setLabel(t('Author'))
-      ->setDescription(t('The user ID of the question author.'))
+      ->setLabel(new TranslatableMarkup('Author'))
+      ->setDescription(new TranslatableMarkup('The user ID of the question author.'))
       ->setSetting('target_type', 'user')
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -158,10 +202,24 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
+    $fields['explanation'] = BaseFieldDefinition::create('text_long')
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the question was created.'))
+      ->setLabel(new TranslatableMarkup('Explanation'))
+      ->setDescription(new TranslatableMarkup('Explaining the reasoning behind the correct answers.'))
+      ->setDisplayOptions('form', [
+        'type' => 'text_textarea',
+        'weight' => 12,
+      ])
+      ->setDisplayOptions('view', [
+        'type' => 'text_default',
+        'label' => 'above',
+        'weight' => 12,
+      ]);
+
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(new TranslatableMarkup('Authored on'))
+      ->setTranslatable(TRUE)
+      ->setDescription(new TranslatableMarkup('The time that the question was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -175,13 +233,13 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
+      ->setLabel(new TranslatableMarkup('Changed'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the question was last edited.'));
+      ->setDescription(new TranslatableMarkup('The time that the question was last edited.'));
 
     $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Weight'))
-      ->setDescription(t('The weight of this term in relation to other terms.'))
+      ->setLabel(new TranslatableMarkup('Weight'))
+      ->setDescription(new TranslatableMarkup('The weight of this term in relation to other terms.'))
       ->setDefaultValue(0);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
