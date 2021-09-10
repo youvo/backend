@@ -167,7 +167,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Internal Title'))
       ->setDescription(new TranslatableMarkup('The title of the paragraph entity.'))
-      ->setRequired(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
