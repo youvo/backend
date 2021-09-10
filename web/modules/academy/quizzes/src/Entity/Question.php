@@ -165,7 +165,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'weight' => 12,
       ]);
 
-    $fields['answers'] = BaseFieldDefinition::create('text_long')
+    $fields['answers'] = BaseFieldDefinition::create('string')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Correct Answers'))
       ->setDescription(new TranslatableMarkup('Comma separated numbers of correct answers. Only one for single-choice question.'))
