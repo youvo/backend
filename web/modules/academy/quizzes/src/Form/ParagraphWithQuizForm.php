@@ -198,8 +198,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // $question = Question::create(['bundle' => $question_type]);
     $response = new AjaxResponse();
-    $this->disableAllEditButtons($response);
-    $response->addCommand(new invokeCommand('input[data-drupal-selector$="buttons-edit"]', 'addClass', ['hidden']));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-edit]', 'attr', ['disabled', 'true']));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-delete]', 'attr', ['disabled', 'true']));
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-add-question]', 'addClass', ['hidden']));
     $response->addCommand(new invokeCommand('input[name=type]', 'val', [$question_type]));
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-elements]', 'removeClass', ['hidden']));
@@ -230,7 +230,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
    */
   public function resetFieldsets(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
-    $this->enableAllEditButtons($response);
     $this->resetQuestionForm($response);
     return $response;
   }
@@ -240,20 +239,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
    */
   public function rebuildForm(array &$form, FormStateInterface $form_state) {
     $form_state->setRebuild(TRUE);
-  }
-
-  /**
-   * Gives header for table of questions.
-   */
-  protected function disableAllEditButtons(&$response) {
-
-  }
-
-  /**
-   * Gives header for table of questions.
-   */
-  protected function enableAllEditButtons(&$response) {
-
   }
 
   /**
