@@ -14,14 +14,7 @@ use Drupal\quizzes\Entity\Question;
  * Form controller for the paragraph entity with quiz edit forms.
  */
 class ParagraphWithQuizForm extends ParagraphForm {
-
-  /**
-   * Array of questions added to the form.
-   *
-   * @var \Drupal\quizzes\Entity\Question[]
-   */
-  protected array $questions = [];
-
+  
   /**
    * {@inheritdoc}
    */
@@ -233,7 +226,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Adds a question form to the quiz form.
    */
-  public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
+  protected function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
     // We inject the question type into the form_state in order to use it later
     // in the submit-handler.
     $question_type = $form_state->getTriggeringElement()['#data'];
@@ -289,14 +282,14 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Aborts current question and resets quiz form.
    */
-  public function rebuildAjax(array $form, FormStateInterface &$form_state) {
+  protected function rebuildAjax(array $form, FormStateInterface &$form_state) {
     return $form['questions'];
   }
 
   /**
    * Aborts current question and resets quiz form.
    */
-  public function createQuestion(array &$form, FormStateInterface $form_state) {
+  protected function createQuestion(array &$form, FormStateInterface $form_state) {
     // We get the form values and append a newly created question of the
     // requested type to the form_state.
     $questions = $form_state->getValue('entities');
@@ -309,32 +302,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
     ]);
     $form_state->setValue('entities', $questions);
     $form_state->setRebuild();
-  }
-
-  /**
-   * Aborts current question and resets quiz form.
-   */
-  public function resetFieldsets(array &$form, FormStateInterface $form_state) {
-    $response = new AjaxResponse();
-    $this->resetQuestionForm($response);
-    return $response;
-  }
-
-  /**
-   * We need to rebuild to update form_state.
-   */
-  public function rebuildForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setRebuild(TRUE);
-  }
-
-  /**
-   * Gives header for table of questions.
-   */
-  protected function resetQuestionForm(&$response) {
-    $this->enableAllEditButtons($response);
-    $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-elements]', 'addClass', ['hidden']));
-    $response->addCommand(new invokeCommand('input[name=type]', 'val', ['']));
-    $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-add-question]', 'removeClass', ['hidden']));
   }
 
   /**
