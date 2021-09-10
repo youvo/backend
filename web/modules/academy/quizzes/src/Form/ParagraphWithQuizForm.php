@@ -73,19 +73,19 @@ class ParagraphWithQuizForm extends ParagraphForm {
       // Newly created entities do not have an ID yet. Just use an iterator that
       // is larger than the IDs of the persistent entities.
       $largest_id = 1;
-      $id = $largest_id + 1;
+      $temp_id = $largest_id + 1;
 
       // Determine delta for the weight distribution.
       $delta = count($questions);
 
       // Fill the table with row entries.
       foreach ($questions as $question) {
-        $row = $this->buildRow($question);
+        $row = $this->buildRow($question, $temp_id);
         if (isset($row['weight'])) {
           $row['weight']['#delta'] = $delta;
         }
-        $form['questions']['table'][$id] = $row;
-        $id++;
+        $form['questions']['table'][$temp_id] = $row;
+        $temp_id++;
       }
 
       // We load the different question types and append buttons to add a
@@ -160,7 +160,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       $form['questions']['elements']['answers'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Correct Answers'),
+        '#title' => $this->t('Correct Answer(s)'),
         '#description' => $this->t('Comma separated numbers of correct answers. Only one for single-choice question.'),
         '#placeholder' => $this->t('1, 2, 3'),
       ];
@@ -187,7 +187,15 @@ class ParagraphWithQuizForm extends ParagraphForm {
             'type' => 'none',
           ],
         ],
-        '#limit_validation_errors' => [['type'], ['entities']],
+        '#limit_validation_errors' => [
+          ['type'],
+          ['entities'],
+          ['body'],
+          ['help'],
+          ['options'],
+          ['answers'],
+          ['explanation'],
+        ],
       ];
 
       // We can also abort current creation and rebuild the form as it was
@@ -203,7 +211,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
             'type' => 'none',
           ],
         ],
-        '#limit_validation_errors' => [['type'], ['entities']],
+        '#limit_validation_errors' => [
+          ['type'],
+          ['entities'],
+        ],
       ];
 
     }
@@ -270,7 +281,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // Show and hide corresponding fieldsets.
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-add-question]', 'addClass', ['hidden']));
-    $response->addCommand(new invokeCommand('input[name=type]', 'val', [$question_type]));
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-elements]', 'removeClass', ['hidden']));
 
     return $response;
@@ -292,7 +302,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $questions = $form_state->getValue('entities');
     $questions[] = Question::create([
       'bundle' => $form_state->getValue('type'),
-      ''
+      'body' => $form_state->getValue('body'),
+      'help' => $form_state->getValue('help'),
+      'answers' => $form_state->getValue('answers'),
+      'explanation' => $form_state->getValue('explanation'),
     ]);
     $form_state->setValue('entities', $questions);
     $form_state->setRebuild();
@@ -328,8 +341,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
    * Gives header for table of questions.
    */
   protected function buildHeader() {
-    $header['type'] = $this->t('Name');
-    $header['body'] = $this->t('Preview');
+    $header['type'] = $this->t('Type');
+    $header['body'] = $this->t('Question');
     $header['buttons'] = '';
     $header['weight'] = [
       'data' => $this->t('Weight'),
@@ -341,7 +354,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Gives rows for table of questions.
    */
-  protected function buildRow($question) {
+  protected function buildRow($question, $temp_id) {
     // Get bundle for question entity.
     /** @var \Drupal\quizzes\QuestionInterface $question */
     $bundle = '';
@@ -360,17 +373,17 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#markup' => $bundle,
     ];
     $row['body'] = [
-      '#markup' => 'Test Body Description ...',
+      '#markup' => $question->get('body')->value,
     ];
     $row['buttons']['delete'] = [
       '#type' => 'button',
-      '#data' => $question->id(),
+      '#data' => $temp_id,
       '#attributes' => ['class' => ['button--extrasmall align-right']],
       '#value' => $this->t('Delete'),
     ];
     $row['buttons']['edit'] = [
       '#type' => 'button',
-      '#data' => $question->id(),
+      '#data' => $temp_id,
       '#attributes' => ['class' => ['button--extrasmall align-right']],
       '#value' => $this->t('Edit'),
     ];
