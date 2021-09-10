@@ -139,7 +139,36 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       $form['questions']['elements']['body'] = [
         '#type' => 'textarea',
-        '#title' => $this->t('Body'),
+        '#title' => $this->t('Question'),
+        '#description' => $this->t('The question.'),
+        '#rows' => 2,
+        '#required' => TRUE,
+      ];
+
+      $form['questions']['elements']['help'] = [
+        '#type' => 'textarea',
+        '#title' => $this->t('Help Text'),
+        '#description' => $this->t('Further explanation to the question.'),
+      ];
+
+      $form['questions']['elements']['options'] = [
+        '#type' => 'textarea',
+        '#title' => $this->t('Answer Options'),
+        '#description' => $this->t('Comma separated options for the answers.'),
+        '#placeholder' => $this->t('Option 1,&#10;Option 2,&#10;Option 3'),
+      ];
+
+      $form['questions']['elements']['answers'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Correct Answers'),
+        '#description' => $this->t('Comma separated numbers of correct answers. Only one for single-choice question.'),
+        '#placeholder' => $this->t('1, 2, 3'),
+      ];
+
+      $form['questions']['elements']['explanation'] = [
+        '#type' => 'textarea',
+        '#title' => $this->t('Explanation'),
+        '#description' => $this->t('Explaining the reasoning behind the correct answers.'),
       ];
 
       // Trigger a 'submit' for the form elements in the container and create
@@ -194,9 +223,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
    * Adds a question form to the quiz form.
    */
   public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
+    // We inject the question type into the form_state in order to use it later
+    // in the submit-handler.
     $question_type = $form_state->getTriggeringElement()['#data'];
 
-    // $question = Question::create(['bundle' => $question_type]);
     $response = new AjaxResponse();
     $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-edit]', 'attr', ['disabled', 'true']));
     $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-delete]', 'attr', ['disabled', 'true']));
@@ -217,10 +247,13 @@ class ParagraphWithQuizForm extends ParagraphForm {
    * Aborts current question and resets quiz form.
    */
   public function createQuestion(array &$form, FormStateInterface $form_state) {
-
-    $question_type = $form_state->getValue('type');
+    // We get the form values and append a newly created question of the
+    // requested type to the form_state.
     $questions = $form_state->getValue('entities');
-    $questions[] = Question::create(['bundle' => $question_type]);
+    $questions[] = Question::create([
+      'bundle' => $form_state->getValue('type'),
+      ''
+    ]);
     $form_state->setValue('entities', $questions);
     $form_state->setRebuild();
   }
