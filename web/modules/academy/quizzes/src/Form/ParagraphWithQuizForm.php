@@ -14,7 +14,7 @@ use Drupal\quizzes\Entity\Question;
  * Form controller for the paragraph entity with quiz edit forms.
  */
 class ParagraphWithQuizForm extends ParagraphForm {
-  
+
   /**
    * {@inheritdoc}
    */
@@ -32,6 +32,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $form['uid']['#access'] = FALSE;
       $form['created']['#access'] = FALSE;
       $form['changed']['#access'] = FALSE;
+      $form['field_questions']['#access'] = FALSE;
 
       // @todo Target wrapper with drupal-data-selector after
       // https://www.drupal.org/project/drupal/issues/2821793
@@ -56,8 +57,21 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ],
       ];
 
-      // Get current entities from form_state and append to form element.
-      $questions = $form_state->getValue('entities') ?? [];
+      // Get all questions that have this quiz paragraph as a parent.
+      // Or get current entities from form_state and append to form element.
+      if (empty($form_state->getValue('entities'))) {
+        $questions_storage = $this->entityTypeManager->getStorage('question');
+        $questions_query = $questions_storage->getQuery()
+          ->condition('paragraph', $this->entity->id())
+          ->sort('weight')
+          ->execute();
+
+        $questions = $questions_storage->loadMultiple($questions_query);
+      }
+      else {
+        $questions = $form_state->getValue('entities');
+      }
+
       $form['questions']['entities'] = [
         '#type' => 'value',
         '#default_value' => $questions,
@@ -65,7 +79,11 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       // Newly created entities do not have an ID yet. Just use an iterator that
       // is larger than the IDs of the persistent entities.
-      $largest_id = 1;
+      $questions_id = [];
+      foreach ($questions as $question) {
+        $questions_id[] = $question->id() ?? 0;
+      }
+      $largest_id = max($questions_id);
       $temp_id = $largest_id + 1;
 
       // Determine delta for the weight distribution.
@@ -135,7 +153,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#title' => $this->t('Question'),
         '#description' => $this->t('The question.'),
         '#rows' => 2,
-        '#required' => TRUE,
       ];
 
       $form['questions']['elements']['help'] = [
@@ -217,16 +234,29 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function save(array $form, FormStateInterface $form_state) {
-    // Save entity.
-    $result = parent::save($form, $form_state);
+    // Save Quiz as Paragraph.
+    parent::save($form, $form_state);
+
+    $quiz_id = $this->entity->id();
+    $questions = $form_state->getValue('entities');
+    $question_ids = [];
+    foreach ($questions as $question) {
+      $question->set('paragraph', $quiz_id);
+      $question->save();
+      $question_ids[] = ['target_id' => $question->id()];
+    }
+    $this->entity->set('field_questions', $question_ids);
+    $this->entity->save();
   }
 
   /**
    * Adds a question form to the quiz form.
    */
-  protected function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
+  public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
     // We inject the question type into the form_state in order to use it later
     // in the submit-handler.
     $question_type = $form_state->getTriggeringElement()['#data'];
@@ -256,6 +286,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $response->addCommand(new invokeCommand('div[id^=edit-answers]', 'addClass', ['visually-hidden']));
     }
 
+    // Make form element body required.
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-body]', 'attr', ['required', 'true']));
+    $response->addCommand(new invokeCommand('label[for^=edit-body]', 'addClass', ['form-required']));
+
     // Make form elements required for multiple-/single choice questions.
     if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
       $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'attr', ['required', 'true']));
@@ -282,14 +316,14 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Aborts current question and resets quiz form.
    */
-  protected function rebuildAjax(array $form, FormStateInterface &$form_state) {
+  public function rebuildAjax(array $form, FormStateInterface &$form_state) {
     return $form['questions'];
   }
 
   /**
    * Aborts current question and resets quiz form.
    */
-  protected function createQuestion(array &$form, FormStateInterface $form_state) {
+  public function createQuestion(array &$form, FormStateInterface $form_state) {
     // We get the form values and append a newly created question of the
     // requested type to the form_state.
     $questions = $form_state->getValue('entities');
@@ -344,13 +378,13 @@ class ParagraphWithQuizForm extends ParagraphForm {
     ];
     $row['buttons']['delete'] = [
       '#type' => 'button',
-      '#data' => $temp_id,
+      '#data' => $question->id() ?? $temp_id,
       '#attributes' => ['class' => ['button--extrasmall align-right']],
       '#value' => $this->t('Delete'),
     ];
     $row['buttons']['edit'] = [
       '#type' => 'button',
-      '#data' => $temp_id,
+      '#data' => $question->id() ?? $temp_id,
       '#attributes' => ['class' => ['button--extrasmall align-right']],
       '#value' => $this->t('Edit'),
     ];
