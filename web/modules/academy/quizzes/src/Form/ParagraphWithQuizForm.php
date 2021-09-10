@@ -228,11 +228,51 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $question_type = $form_state->getTriggeringElement()['#data'];
 
     $response = new AjaxResponse();
+
+    // Deactivate buttons temporarily in table.
     $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-edit]', 'attr', ['disabled', 'true']));
     $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-delete]', 'attr', ['disabled', 'true']));
+
+    // Empty all field values.
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-body]', 'val', ['']));
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-help]', 'val', ['']));
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'val', ['']));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'val', ['']));
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-explanation]', 'val', ['']));
+
+    // Disable answer options and correct answers for free text question.
+    if ($question_type === 'free_text') {
+      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'attr', ['disabled', 'true']));
+      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('label[for^=edit-options]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('div[id^=edit-options]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['disabled', 'true']));
+      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('label[for^=edit-answers]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('div[id^=edit-answers]', 'addClass', ['visually-hidden']));
+    }
+
+    // Make form elements required for multiple-/single choice questions.
+    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
+      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'attr', ['required', 'true']));
+      $response->addCommand(new invokeCommand('label[for^=edit-options]', 'addClass', ['form-required']));
+      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['required', 'true']));
+      $response->addCommand(new invokeCommand('label[for^=edit-answers]', 'addClass', ['form-required']));
+    }
+
+    // Change placeholder for single choice questions.
+    if ($question_type === 'single_choice') {
+      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['placeholder', '1']));
+    }
+
+    // Set hidden value for type.
+    $response->addCommand(new invokeCommand('input[name=type]', 'val', [$question_type]));
+
+    // Show and hide corresponding fieldsets.
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-add-question]', 'addClass', ['hidden']));
     $response->addCommand(new invokeCommand('input[name=type]', 'val', [$question_type]));
     $response->addCommand(new invokeCommand('fieldset[data-drupal-selector=edit-elements]', 'removeClass', ['hidden']));
+
     return $response;
   }
 
