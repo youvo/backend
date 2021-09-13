@@ -2,18 +2,63 @@
 
 namespace Drupal\quizzes\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form controller for the paragraph entity with quiz edit forms.
  */
 class ParagraphWithQuizForm extends ParagraphForm {
+
+  /**
+   * The field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $fieldManager;
+
+  /**
+   * Constructs a ContentEntityForm object.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   * @param \Drupal\Core\Entity\EntityFieldManager $field_manager
+   *   The field manager service.
+   */
+  public function __construct(EntityRepositoryInterface $entity_repository,
+                              EntityTypeBundleInfoInterface $entity_type_bundle_info,
+                              TimeInterface $time,
+                              EntityFieldManager $field_manager) {
+    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+    $this->fieldManager = $field_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity.repository'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('datetime.time'),
+      $container->get('entity_field.manager'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -83,7 +128,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       foreach ($questions as $question) {
         $questions_id[] = $question->id() ?? 0;
       }
-      $largest_id = max($questions_id);
+      $largest_id = !empty($questions_id) ? max($questions_id) : 0;
       $temp_id = $largest_id + 1;
 
       // Determine delta for the weight distribution.
@@ -135,9 +180,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       // We add form elements to fill the question entity in the submit-handler.
       // These correspond to the fields in a question entity.
-      // Note that we treat Question as a programmatic entity and there is no
-      // other was to edit questions beside this form. Therefore, we must
-      // manually garantuee that all fields are represented here.
       $form['questions']['elements'] = [
         '#type' => 'fieldset',
         '#attributes' => ['class' => ['hidden']],
@@ -148,38 +190,37 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#default_value' => '',
       ];
 
-      $form['questions']['elements']['body'] = [
-        '#type' => 'textarea',
-        '#title' => $this->t('Question'),
-        '#description' => $this->t('The question.'),
-        '#rows' => 2,
+
+
+      // Fetch the base fields from the question entity definition.
+      // We exclude non-content fields and then build the render array manually.
+      $question_fields = $this->fieldManager->getBaseFieldDefinitions('question');
+      $excluded_base_fields = [
+        'id',
+        'uuid',
+        'langcode',
+        'bundle',
+        'uid',
+        'created',
+        'changed',
+        'weight',
+        'paragraph',
+        'default_langcode',
       ];
 
-      $form['questions']['elements']['help'] = [
-        '#type' => 'textarea',
-        '#title' => $this->t('Help Text'),
-        '#description' => $this->t('Further explanation to the question.'),
-      ];
-
-      $form['questions']['elements']['options'] = [
-        '#type' => 'textarea',
-        '#title' => $this->t('Answer Options'),
-        '#description' => $this->t('Comma separated options for the answers.'),
-        '#placeholder' => $this->t('Option 1,&#10;Option 2,&#10;Option 3'),
-      ];
-
-      $form['questions']['elements']['answers'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Correct Answer(s)'),
-        '#description' => $this->t('Comma separated numbers of correct answers. Only one for single-choice question.'),
-        '#placeholder' => $this->t('1, 2, 3'),
-      ];
-
-      $form['questions']['elements']['explanation'] = [
-        '#type' => 'textarea',
-        '#title' => $this->t('Explanation'),
-        '#description' => $this->t('Explaining the reasoning behind the correct answers.'),
-      ];
+      foreach ($question_fields as $question_field) {
+        /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
+        if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
+          $display_options = $question_field->getDisplayOptions('form');
+          $form['questions']['elements'][$question_field->getName()] = [
+            '#title' => $question_field->getLabel()->render(),
+            '#type' => $display_options['type'],
+            '#rows' => $display_options['rows'] ?? '',
+            '#placeholder' => $display_options['placeholder'] ?? '',
+            '#description' => $question_field->getDescription()->render(),
+          ];
+        }
+      }
 
       // Trigger a 'submit' for the form elements in the container and create
       // a question entity. Then represent such question entity in the table
