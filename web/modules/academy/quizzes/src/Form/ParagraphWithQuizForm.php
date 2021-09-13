@@ -99,13 +99,30 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ],
       ];
 
+      // Add a queue for questions to delete to garantuee data persistency.
+      $question_delete_queue = $form_state->getValue('question_delete_queue') ?? [];
+      $form['questions']['question_delete_queue'] = [
+        '#type' => 'value',
+        '#default_value' => $question_delete_queue,
+      ];
+
+      // We compile the ids here to exclude the questions from the table from
+      // the next form build.
+      $question_delete_queue_ids = [0];
+      if (!empty($question_delete_queue)) {
+        $question_delete_queue_ids = array_map(function ($q) {
+          return $q->id();
+        }, $question_delete_queue);
+      }
+
       // Get all questions that have this quiz paragraph as a parent.
       // Or get current entities from form_state and append to form element.
-      if (empty($form_state->getValue('question_entities'))) {
+      if ($form_state->getValue('question_entities') === NULL) {
         $questions_storage = $this->entityTypeManager
           ->getStorage('question');
         $questions_query = $questions_storage->getQuery()
           ->condition('paragraph', $this->entity->id())
+          ->condition('id', $question_delete_queue_ids, 'NOT IN')
           ->sort('weight')
           ->execute();
         $questions = $questions_storage->loadMultiple($questions_query);
@@ -119,8 +136,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#default_value' => $questions,
       ];
 
-      // Newly created entities do not have an ID yet. Just use an iterator that
-      // is larger than the IDs of the persistent entities.
+      // Get the largest ID or temporary ID from already created questions.
+      // Increase by one. This new temporary ID is unique.
       $temp_id = !empty($questions) ?
         max(array_map(function ($q) {
           return $q->id();
@@ -131,12 +148,11 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       // Fill the table with row entries.
       foreach ($questions as $question) {
-        $row = $this->buildRow($question, $temp_id);
+        $row = $this->buildRow($question);
         if (isset($row['weight'])) {
           $row['weight']['#delta'] = $delta;
         }
-        $form['questions']['table'][$temp_id] = $row;
-        $temp_id++;
+        $form['questions']['table'][$question->id()] = $row;
       }
 
       // We load the different question types and append buttons to add a
@@ -190,7 +206,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       // question entities.
       $form['questions']['elements']['temp_id'] = [
         '#type' => 'hidden',
-        '#default_value' => $temp_id,
+        '#value' => $temp_id,
       ];
 
       // Fetch the base fields from the question entity definition.
@@ -227,7 +243,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       // Trigger a 'submit' for the form elements in the container and create
       // a question entity. Then represent such question entity in the table
       // above.
-      $form['questions']['elements']['submit'] = [
+      $form['questions']['elements']['create'] = [
         '#type' => 'submit',
         '#value' => $this->t('Create Question'),
         '#submit' => ['::createQuestion'],
@@ -243,6 +259,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#limit_validation_errors' => [
           ['type'],
           ['question_entities'],
+          ['question_delete_queue'],
           ['body'],
           ['help'],
           ['options'],
@@ -269,6 +286,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#limit_validation_errors' => [
           ['type'],
           ['question_entities'],
+          ['question_delete_queue'],
           ['body'],
           ['help'],
           ['options'],
@@ -276,6 +294,28 @@ class ParagraphWithQuizForm extends ParagraphForm {
           ['explanation'],
           ['temp_id'],
           ['current_id'],
+        ],
+      ];
+
+      // This is a little button to confirm the deletion.
+      $form['questions']['elements']['confirm_delete'] = [
+        '#type' => 'submit',
+        '#submit' => ['::deleteQuestion'],
+        '#attributes' => ['class' => ['button--extrasmall button--danger align-right visually-hidden']],
+        '#value' => $this->t('Confirm Deletion'),
+        '#ajax' => [
+          'callback' => '::rebuildAjax',
+          'disable-refocus' => TRUE,
+          'wrapper' => 'questions-wrapper',
+          'effect' => 'none',
+          'progress' => [
+            'type' => 'none',
+          ],
+        ],
+        '#limit_validation_errors' => [
+          ['question_entities'],
+          ['current_id'],
+          ['question_delete_queue'],
         ],
       ];
 
@@ -293,8 +333,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
           ],
         ],
         '#limit_validation_errors' => [
-          ['type'],
           ['question_entities'],
+          ['question_delete_queue'],
         ],
       ];
 
@@ -312,16 +352,33 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Save Quiz as Paragraph.
     parent::save($form, $form_state);
 
+    // Save the new and persistent questions. Also, the references are attached
+    // to the current quiz paragraph.
     $quiz_id = $this->entity->id();
     $questions = $form_state->getValue('question_entities');
+    $table = $form_state->getValue('table');
     $question_ids = [];
     foreach ($questions as $question) {
+      /** @var \Drupal\quizzes\Entity\Question $question */
+      $weight = $table[$question->id()]['weight'] ?? 0;
+      $question->set('weight', $weight);
       $question->set('paragraph', $quiz_id);
+      // Unset the ID to automatically determine valid ID instead of using the
+      // temporary ID.
+      if ($question->isNew()) {
+        unset($question->id);
+      }
       $question->save();
       $question_ids[] = ['target_id' => $question->id()];
     }
     $this->entity->set('field_questions', $question_ids);
     $this->entity->save();
+
+    // Delete stale questions from the delete queue.
+    $question_delete_queue = $form_state->getValue('question_delete_queue');
+    foreach ($question_delete_queue as $question) {
+      $question->delete();
+    }
   }
 
   /**
@@ -333,6 +390,13 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $question_type = $form_state->getTriggeringElement()['#attributes']['data-type'];
 
     $response = new AjaxResponse();
+
+    // Hide deletion confirm button.
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-confirm-delete]', 'addClass', ['visually-hidden']));
+
+    // Hide modify button and show new button.
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-create]', 'removeClass', ['visually-hidden']));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-modify]', 'addClass', ['visually-hidden']));
 
     // Deactivate buttons temporarily in table.
     $response->addCommand(new invokeCommand('input[data-drupal-selector$=buttons-edit]', 'attr', ['disabled', 'true']));
@@ -391,11 +455,15 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     $response = $this->showQuestionFieldset($form, $form_state);
 
+    // Hide create button and show modify button.
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-create]', 'addClass', ['visually-hidden']));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-modify]', 'removeClass', ['visually-hidden']));
+
     // Identify the requested question.
     $question_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
     $question_type = $form_state->getTriggeringElement()['#attributes']['data-type'];
     $questions = $form_state->getValue('question_entities');
-    $question = $this->getRequestedQuestion($questions, $question_id)['question'];
+    $question = $this->getRequestedQuestion($questions, $question_id);
 
     // Populate form fields.
     $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-body]', 'val', [$question->get('body')->value]));
@@ -435,7 +503,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'id' => $form_state->getValue('temp_id'),
     ]);
     $new_question->enforceIsNew();
-    $questions[] = $new_question;
+    $questions[$new_question->id()] = $new_question;
     $form_state->setValue('question_entities', $questions);
     $form_state->setRebuild();
   }
@@ -447,25 +515,63 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Get the edited question.
     $question_id = $form_state->getValue('current_id');
     $questions = $form_state->getValue('question_entities');
-    $question_request = $this->getRequestedQuestion($questions, $question_id);
-    $question = $question_request['question'];
-    $key = $question_request['key'];
+    $question = $this->getRequestedQuestion($questions, $question_id);
 
     // Just create a new question, if the prior question was new.
     if ($question->isNew()) {
-      $new_question = Question::create([
-        'bundle' => $form_state->getValue('type'),
-        'body' => $form_state->getValue('body'),
-        'help' => $form_state->getValue('help'),
-        'answers' => $form_state->getValue('answers'),
-        'explanation' => $form_state->getValue('explanation'),
-        'id' => $form_state->getValue('temp_id'),
-      ]);
-      $new_question->enforceIsNew();
-      $questions[$key] = $new_question;
+      $form_state->setValue('temp_id', $question_id);
+      $this->createQuestion($form, $form_state);
+    }
+    else {
+      $question->set('bundle', $form_state->getValue('type'));
+      $question->set('body', $form_state->getValue('body'));
+      $question->set('help', $form_state->getValue('help'));
+      $question->set('answers', $form_state->getValue('answers'));
+      $question->set('explanation', $form_state->getValue('explanation'));
+      $questions[$question->id()] = $question;
       $form_state->setValue('question_entities', $questions);
+      $form_state->setRebuild();
+    }
+  }
+
+  /**
+   *
+   */
+  public function prepareDelete(array &$form, FormStateInterface $form_state) {
+
+    $question_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
+
+    $response = new AjaxResponse();
+
+    // Show delete confirm button and append to current delete button.
+    $response->addCommand(new invokeCommand('input[name=current_id]', 'val', [$question_id]));
+
+    // Set hidden value for current_id.
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-confirm-delete', 'prependTo', ['div#buttons-' . $question_id]));
+    $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-confirm-delete]', 'removeClass', ['visually-hidden']));
+
+    return $response;
+  }
+
+  /**
+   * Remove questions from the table and queues delete for persitent questions.
+   */
+  public function deleteQuestion(array &$form, FormStateInterface $form_state) {
+    // Get the edited question.
+    $question_id = $form_state->getValue('current_id');
+    $questions = $form_state->getValue('question_entities');
+    $question = $this->getRequestedQuestion($questions, $question_id);
+
+    // If the question is not new, we need to delete the entity. The question is
+    // put into the delete queue and deleted during form save.
+    if (!$question->isNew()) {
+      $question_delete_queue = $form_state->getValue('question_delete_queue');
+      $question_delete_queue[] = $question;
+      $form_state->setValue('question_delete_queue', $question_delete_queue);
     }
 
+    unset($questions[$question_id]);
+    $form_state->setValue('question_entities', $questions);
     $form_state->setRebuild();
   }
 
@@ -486,7 +592,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Gives rows for table of questions.
    */
-  protected function buildRow($question, $temp_id) {
+  protected function buildRow($question) {
     // Get bundle for question entity.
     /** @var \Drupal\quizzes\QuestionInterface $question */
     $bundle = $this->entityTypeManager
@@ -503,21 +609,34 @@ class ParagraphWithQuizForm extends ParagraphForm {
     ];
     $row['buttons']['delete'] = [
       '#type' => 'button',
+      '#prefix' => '<div id="buttons-' . $question->id() . '">',
       '#attributes' => [
         'class' => ['button--extrasmall align-right'],
-        'data-id' => $question->id() ?? $temp_id,
+        'data-id' => $question->id(),
         'data-type' => $question->bundle(),
       ],
       '#value' => $this->t('Delete'),
+      '#name' => 'delete-' . $question->id(),
+      '#ajax' => [
+        'callback' => '::prepareDelete',
+        'disable-refocus' => TRUE,
+        'event' => 'click',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
     ];
     $row['buttons']['edit'] = [
       '#type' => 'button',
+      '#suffix' => '</div>',
       '#attributes' => [
         'class' => ['button--extrasmall align-right'],
-        'data-id' => $question->id() ?? $temp_id,
+        'data-id' => $question->id(),
         'data-type' => $question->bundle(),
       ],
       '#value' => $this->t('Edit'),
+      '#name' => 'edit-' . $question->id(),
       '#ajax' => [
         'callback' => '::setQuestionDefaultValues',
         'disable-refocus' => TRUE,
@@ -546,17 +665,14 @@ class ParagraphWithQuizForm extends ParagraphForm {
    * @param int $question_id
    *   Requested question id.
    *
-   * @return array
-   *   The requested question and the key in the current entity array.
+   * @return \Drupal\quizzes\Entity\Question
+   *   The requested question.
    */
-  private function getRequestedQuestion(array $questions, int $question_id) {
+  protected function getRequestedQuestion(array $questions, int $question_id) {
     $question = array_filter($questions, function ($q) use ($question_id) {
       return $q->id() == $question_id;
     });
-    return [
-      'question' => reset($question),
-      'key' => array_key_first($question),
-    ];
+    return reset($question);
   }
 
 }
