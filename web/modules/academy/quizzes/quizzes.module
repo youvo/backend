@@ -5,8 +5,10 @@
  * Alterations for paragraph entity.
  */
 
+use Drupal\Core\Entity\EntityInterface;
+
 /**
- * Implements hook_entity_type_build().
+ * Implements hook_entity_type_alter().
  */
 function quizzes_entity_type_alter(array &$entity_types) {
   // We alter the default paragraph.{add,edit,delete} form handlers in order
@@ -15,4 +17,24 @@ function quizzes_entity_type_alter(array &$entity_types) {
   $entity_types['paragraph']->setFormClass('add', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
   $entity_types['paragraph']->setFormClass('edit', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
   $entity_types['paragraph']->setFormClass('delete', 'Drupal\\quizzes\\Form\\ParagraphWithQuizDeleteForm');
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete().
+ *
+ * Removes all referenced question entities.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function quizzes_paragraph_predelete(EntityInterface $entity) {
+  /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
+  if ($entity->bundle() === 'quiz') {
+    /** @var \Drupal\quizzes\Entity\Question[] $questions */
+    $questions_reference = $entity->get('field_questions')->getValue();
+    $question_ids = array_column($questions_reference, 'target_id');
+    $questions = \Drupal::entityTypeManager()->getStorage('question')->loadMultiple($question_ids);
+    foreach ($questions as $question) {
+      $question->delete();
+    }
+  }
 }
