@@ -121,61 +121,78 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['body'] = BaseFieldDefinition::create('text_long')
+    $fields['body'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Question'))
       ->setDescription(new TranslatableMarkup('The question.'))
       ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
+        'type' => 'textarea',
         'rows' => 2,
         'weight' => 10,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => 'basic_string',
         'label' => 'above',
         'weight' => 10,
       ]);
 
-    $fields['help'] = BaseFieldDefinition::create('text_long')
+    $fields['help'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Help Text'))
       ->setDescription(new TranslatableMarkup('Further explanation to the question.'))
       ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
+        'type' => 'textarea',
+        'rows' => 3,
         'weight' => 11,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => 'basic_string',
         'label' => 'above',
         'weight' => 11,
       ]);
 
-    $fields['options'] = BaseFieldDefinition::create('text_long')
+    $fields['options'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Answer Options'))
       ->setDescription(new TranslatableMarkup('Comma separated options for the answers.'))
       ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
-        'placeholder' => 'Option 1,\nOption 2,\nOption 3',
+        'type' => 'textarea',
+        'rows' => 3,
+        'placeholder' => new TranslatableMarkup('Option 1,&#10;Option 2,&#10;Option 3'),
         'weight' => 12,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => 'basic_string',
         'label' => 'above',
         'weight' => 12,
       ]);
 
     $fields['answers'] = BaseFieldDefinition::create('string')
       ->setTranslatable(TRUE)
-      ->setLabel(new TranslatableMarkup('Correct Answers'))
+      ->setLabel(new TranslatableMarkup('Correct Answer(s)'))
       ->setDescription(new TranslatableMarkup('Comma separated numbers of correct answers. Only one for single-choice question.'))
       ->setDisplayOptions('form', [
-        'type' => 'text_textfield',
-        'placeholder' => '1, 2, 3',
+        'type' => 'textfield',
+        'placeholder' => new TranslatableMarkup('1, 2, 3'),
         'weight' => 12,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => 'basic_string',
+        'label' => 'above',
+        'weight' => 12,
+      ]);
+
+    $fields['explanation'] = BaseFieldDefinition::create('string_long')
+      ->setTranslatable(TRUE)
+      ->setLabel(new TranslatableMarkup('Explanation'))
+      ->setDescription(new TranslatableMarkup('Explaining the reasoning behind the correct answers.'))
+      ->setDisplayOptions('form', [
+        'type' => 'textarea',
+        'weight' => 12,
+        'rows' => 3,
+      ])
+      ->setDisplayOptions('view', [
+        'type' => 'basic_string',
         'label' => 'above',
         'weight' => 12,
       ]);
@@ -190,7 +207,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'settings' => [
           'match_operator' => 'CONTAINS',
           'size' => 60,
-          'placeholder' => '',
         ],
         'weight' => 15,
       ])
@@ -201,20 +217,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'weight' => 15,
       ])
       ->setDisplayConfigurable('view', TRUE);
-
-    $fields['explanation'] = BaseFieldDefinition::create('text_long')
-      ->setTranslatable(TRUE)
-      ->setLabel(new TranslatableMarkup('Explanation'))
-      ->setDescription(new TranslatableMarkup('Explaining the reasoning behind the correct answers.'))
-      ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
-        'weight' => 12,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'text_default',
-        'label' => 'above',
-        'weight' => 12,
-      ]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Authored on'))
