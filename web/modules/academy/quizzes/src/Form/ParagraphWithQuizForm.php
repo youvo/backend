@@ -3,15 +3,12 @@
 namespace Drupal\quizzes\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -104,32 +101,30 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
       // Get all questions that have this quiz paragraph as a parent.
       // Or get current entities from form_state and append to form element.
-      if (empty($form_state->getValue('entities'))) {
-        $questions_storage = $this->entityTypeManager->getStorage('question');
+      if (empty($form_state->getValue('question_entities'))) {
+        $questions_storage = $this->entityTypeManager
+          ->getStorage('question');
         $questions_query = $questions_storage->getQuery()
           ->condition('paragraph', $this->entity->id())
           ->sort('weight')
           ->execute();
-
         $questions = $questions_storage->loadMultiple($questions_query);
       }
       else {
-        $questions = $form_state->getValue('entities');
+        $questions = $form_state->getValue('question_entities');
       }
 
-      $form['questions']['entities'] = [
+      $form['questions']['question_entities'] = [
         '#type' => 'value',
         '#default_value' => $questions,
       ];
 
       // Newly created entities do not have an ID yet. Just use an iterator that
       // is larger than the IDs of the persistent entities.
-      $questions_id = [];
-      foreach ($questions as $question) {
-        $questions_id[] = $question->id() ?? 0;
-      }
-      $largest_id = !empty($questions_id) ? max($questions_id) : 0;
-      $temp_id = $largest_id + 1;
+      $temp_id = !empty($questions) ?
+        max(array_map(function ($q) {
+          return $q->id();
+        }, $questions)) + 1 : 1;
 
       // Determine delta for the weight distribution.
       $delta = count($questions);
@@ -152,20 +147,15 @@ class ParagraphWithQuizForm extends ParagraphForm {
       ];
 
       $question_types = [];
-      try {
-        $question_types = \Drupal::entityTypeManager()
-          ->getStorage('question_type')
-          ->loadMultiple();
-      }
-      catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-        watchdog_exception('Quiz', $e, 'Could not load quiz types in edit form.');
-      }
+      $question_types = $this->entityTypeManager
+        ->getStorage('question_type')
+        ->loadMultiple();
 
       foreach ($question_types as $question_type) {
         $form['questions']['add_question'][$question_type->id()] = [
           '#type' => 'button',
           '#value' => '+ ' . $question_type->label() . ' Question',
-          '#data' => $question_type->id(),
+          '#trigger' => $question_type->id(),
           '#ajax' => [
             'callback' => [$this, 'showQuestionFieldset'],
             'disable-refocus' => TRUE,
@@ -190,11 +180,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#default_value' => '',
       ];
 
-
-
       // Fetch the base fields from the question entity definition.
       // We exclude non-content fields and then build the render array manually.
-      $question_fields = $this->fieldManager->getBaseFieldDefinitions('question');
+      $question_fields = $this->fieldManager
+        ->getBaseFieldDefinitions('question');
       $excluded_base_fields = [
         'id',
         'uuid',
@@ -240,7 +229,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ],
         '#limit_validation_errors' => [
           ['type'],
-          ['entities'],
+          ['question_entities'],
           ['body'],
           ['help'],
           ['options'],
@@ -264,7 +253,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ],
         '#limit_validation_errors' => [
           ['type'],
-          ['entities'],
+          ['question_entities'],
         ],
       ];
 
@@ -283,7 +272,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
     parent::save($form, $form_state);
 
     $quiz_id = $this->entity->id();
-    $questions = $form_state->getValue('entities');
+    $questions = $form_state->getValue('question_entities');
     $question_ids = [];
     foreach ($questions as $question) {
       $question->set('paragraph', $quiz_id);
@@ -300,7 +289,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
     // We inject the question type into the form_state in order to use it later
     // in the submit-handler.
-    $question_type = $form_state->getTriggeringElement()['#data'];
+    $question_type = $form_state->getTriggeringElement()['#trigger'];
 
     $response = new AjaxResponse();
 
@@ -367,7 +356,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   public function createQuestion(array &$form, FormStateInterface $form_state) {
     // We get the form values and append a newly created question of the
     // requested type to the form_state.
-    $questions = $form_state->getValue('entities');
+    $questions = $form_state->getValue('question_entities');
     $questions[] = Question::create([
       'bundle' => $form_state->getValue('type'),
       'body' => $form_state->getValue('body'),
@@ -375,7 +364,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'answers' => $form_state->getValue('answers'),
       'explanation' => $form_state->getValue('explanation'),
     ]);
-    $form_state->setValue('entities', $questions);
+    $form_state->setValue('question_entities', $questions);
     $form_state->setRebuild();
   }
 
@@ -399,16 +388,10 @@ class ParagraphWithQuizForm extends ParagraphForm {
   protected function buildRow($question, $temp_id) {
     // Get bundle for question entity.
     /** @var \Drupal\quizzes\QuestionInterface $question */
-    $bundle = '';
-    try {
-      $bundle = \Drupal::entityTypeManager()
-        ->getStorage('question_type')
-        ->load($question->bundle())
-        ->label();
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      watchdog_exception('Quiz Form: Could not fetch bundles.', $e);
-    }
+    $bundle = $this->entityTypeManager
+      ->getStorage('question_type')
+      ->load($question->bundle())
+      ->label();
     $row['#attributes']['class'][] = 'draggable';
     $row['#weight'] = $question->get('weight')->value;
     $row['type'] = [
@@ -419,14 +402,18 @@ class ParagraphWithQuizForm extends ParagraphForm {
     ];
     $row['buttons']['delete'] = [
       '#type' => 'button',
-      '#data' => $question->id() ?? $temp_id,
-      '#attributes' => ['class' => ['button--extrasmall align-right']],
+      '#attributes' => [
+        'class' => ['button--extrasmall align-right'],
+        'data-id' => $question->id() ?? $temp_id,
+      ],
       '#value' => $this->t('Delete'),
     ];
     $row['buttons']['edit'] = [
       '#type' => 'button',
-      '#data' => $question->id() ?? $temp_id,
-      '#attributes' => ['class' => ['button--extrasmall align-right']],
+      '#attributes' => [
+        'class' => ['button--extrasmall align-right'],
+        'data-id' => $question->id() ?? $temp_id,
+      ],
       '#value' => $this->t('Edit'),
     ];
     $row['weight'] = [
