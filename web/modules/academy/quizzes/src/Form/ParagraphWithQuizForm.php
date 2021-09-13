@@ -146,7 +146,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#weight' => '99',
       ];
 
-      $question_types = [];
       $question_types = $this->entityTypeManager
         ->getStorage('question_type')
         ->loadMultiple();
@@ -155,7 +154,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         $form['questions']['add_question'][$question_type->id()] = [
           '#type' => 'button',
           '#value' => '+ ' . $question_type->label() . ' Question',
-          '#trigger' => $question_type->id(),
+          '#attributes' => ['data-type' => $question_type->id()],
           '#ajax' => [
             'callback' => [$this, 'showQuestionFieldset'],
             'disable-refocus' => TRUE,
@@ -175,9 +174,23 @@ class ParagraphWithQuizForm extends ParagraphForm {
         '#attributes' => ['class' => ['hidden']],
       ];
 
+      // This field gets populated by the ajax response.
       $form['questions']['elements']['type'] = [
         '#type' => 'hidden',
         '#default_value' => '',
+      ];
+
+      // This field gets populated by the ajax response.
+      $form['questions']['elements']['current_id'] = [
+        '#type' => 'hidden',
+        '#default_value' => '',
+      ];
+
+      // This is a 'free' temporary id that is used to identify newly created
+      // question entities.
+      $form['questions']['elements']['temp_id'] = [
+        '#type' => 'hidden',
+        '#default_value' => $temp_id,
       ];
 
       // Fetch the base fields from the question entity definition.
@@ -235,6 +248,34 @@ class ParagraphWithQuizForm extends ParagraphForm {
           ['options'],
           ['answers'],
           ['explanation'],
+          ['temp_id'],
+        ],
+      ];
+
+      // Use a separate modify submit button to edit given question.
+      $form['questions']['elements']['modify'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Edit Question'),
+        '#submit' => ['::editQuestion'],
+        '#attributes' => ['class' => ['button--primary']],
+        '#ajax' => [
+          'callback' => '::rebuildAjax',
+          'wrapper' => 'questions-wrapper',
+          'effect' => 'none',
+          'progress' => [
+            'type' => 'none',
+          ],
+        ],
+        '#limit_validation_errors' => [
+          ['type'],
+          ['question_entities'],
+          ['body'],
+          ['help'],
+          ['options'],
+          ['answers'],
+          ['explanation'],
+          ['temp_id'],
+          ['current_id'],
         ],
       ];
 
@@ -289,7 +330,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
     // We inject the question type into the form_state in order to use it later
     // in the submit-handler.
-    $question_type = $form_state->getTriggeringElement()['#trigger'];
+    $question_type = $form_state->getTriggeringElement()['#attributes']['data-type'];
 
     $response = new AjaxResponse();
 
@@ -344,6 +385,34 @@ class ParagraphWithQuizForm extends ParagraphForm {
   }
 
   /**
+   * Get the entity values from form_state to populate form fields.
+   */
+  public function setQuestionDefaultValues(array $form, FormStateInterface &$form_state) {
+
+    $response = $this->showQuestionFieldset($form, $form_state);
+
+    // Identify the requested question.
+    $question_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
+    $question_type = $form_state->getTriggeringElement()['#attributes']['data-type'];
+    $questions = $form_state->getValue('question_entities');
+    $question = $this->getRequestedQuestion($questions, $question_id)['question'];
+
+    // Populate form fields.
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-body]', 'val', [$question->get('body')->value]));
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-help]', 'val', [$question->get('help')->value]));
+    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-explanation]', 'val', [$question->get('explanation')->value]));
+    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
+      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'val', [$question->get('options')->value]));
+      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'val', [$question->get('answers')->value]));
+    }
+
+    // Set hidden value for current_id.
+    $response->addCommand(new invokeCommand('input[name=current_id]', 'val', [$question_id]));
+
+    return $response;
+  }
+
+  /**
    * Aborts current question and resets quiz form.
    */
   public function rebuildAjax(array $form, FormStateInterface &$form_state) {
@@ -357,14 +426,46 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // We get the form values and append a newly created question of the
     // requested type to the form_state.
     $questions = $form_state->getValue('question_entities');
-    $questions[] = Question::create([
+    $new_question = Question::create([
       'bundle' => $form_state->getValue('type'),
       'body' => $form_state->getValue('body'),
       'help' => $form_state->getValue('help'),
       'answers' => $form_state->getValue('answers'),
       'explanation' => $form_state->getValue('explanation'),
+      'id' => $form_state->getValue('temp_id'),
     ]);
+    $new_question->enforceIsNew();
+    $questions[] = $new_question;
     $form_state->setValue('question_entities', $questions);
+    $form_state->setRebuild();
+  }
+
+  /**
+   * Aborts current question and resets quiz form.
+   */
+  public function editQuestion(array &$form, FormStateInterface $form_state) {
+    // Get the edited question.
+    $question_id = $form_state->getValue('current_id');
+    $questions = $form_state->getValue('question_entities');
+    $question_request = $this->getRequestedQuestion($questions, $question_id);
+    $question = $question_request['question'];
+    $key = $question_request['key'];
+
+    // Just create a new question, if the prior question was new.
+    if ($question->isNew()) {
+      $new_question = Question::create([
+        'bundle' => $form_state->getValue('type'),
+        'body' => $form_state->getValue('body'),
+        'help' => $form_state->getValue('help'),
+        'answers' => $form_state->getValue('answers'),
+        'explanation' => $form_state->getValue('explanation'),
+        'id' => $form_state->getValue('temp_id'),
+      ]);
+      $new_question->enforceIsNew();
+      $questions[$key] = $new_question;
+      $form_state->setValue('question_entities', $questions);
+    }
+
     $form_state->setRebuild();
   }
 
@@ -405,6 +506,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#attributes' => [
         'class' => ['button--extrasmall align-right'],
         'data-id' => $question->id() ?? $temp_id,
+        'data-type' => $question->bundle(),
       ],
       '#value' => $this->t('Delete'),
     ];
@@ -413,8 +515,18 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#attributes' => [
         'class' => ['button--extrasmall align-right'],
         'data-id' => $question->id() ?? $temp_id,
+        'data-type' => $question->bundle(),
       ],
       '#value' => $this->t('Edit'),
+      '#ajax' => [
+        'callback' => '::setQuestionDefaultValues',
+        'disable-refocus' => TRUE,
+        'event' => 'click',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
     ];
     $row['weight'] = [
       '#type' => 'weight',
@@ -424,6 +536,27 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#attributes' => ['class' => ['weight']],
     ];
     return $row;
+  }
+
+  /**
+   * Searches for the question in an array of question objects.
+   *
+   * @param array $questions
+   *   Array of Question objects.
+   * @param int $question_id
+   *   Requested question id.
+   *
+   * @return array
+   *   The requested question and the key in the current entity array.
+   */
+  private function getRequestedQuestion(array $questions, int $question_id) {
+    $question = array_filter($questions, function ($q) use ($question_id) {
+      return $q->id() == $question_id;
+    });
+    return [
+      'question' => reset($question),
+      'key' => array_key_first($question),
+    ];
   }
 
 }
