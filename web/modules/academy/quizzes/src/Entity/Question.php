@@ -154,11 +154,11 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['options'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Answer Options'))
-      ->setDescription(new TranslatableMarkup('Comma separated options for the answers.'))
+      ->setDescription(new TranslatableMarkup('&-separated options for the answers.'))
       ->setDisplayOptions('form', [
         'type' => 'textarea',
         'rows' => 3,
-        'placeholder' => new TranslatableMarkup('Option 1,&#10;Option 2,&#10;Option 3'),
+        'placeholder' => new TranslatableMarkup('Option 1 &amp;&#10;Option 2 &amp;&#10;Option 3'),
         'weight' => 12,
       ])
       ->setDisplayOptions('view', [
@@ -170,10 +170,10 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['answers'] = BaseFieldDefinition::create('string')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Correct Answer(s)'))
-      ->setDescription(new TranslatableMarkup('Comma separated numbers of correct answers. Only one for single-choice question.'))
+      ->setDescription(new TranslatableMarkup('&-separated numbers of correct answers. Only one for single-choice question.'))
       ->setDisplayOptions('form', [
         'type' => 'textfield',
-        'placeholder' => new TranslatableMarkup('1, 2, 3'),
+        'placeholder' => new TranslatableMarkup('1 &amp; 2 &amp; 3'),
         'weight' => 12,
       ])
       ->setDisplayOptions('view', [

@@ -5,10 +5,12 @@ namespace Drupal\quizzes\Form;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\MessageCommand;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,6 +19,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Form controller for the paragraph entity with quiz edit forms.
  */
 class ParagraphWithQuizForm extends ParagraphForm {
+
+  use MessengerTrait;
 
   /**
    * The field manager.
@@ -66,6 +70,9 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     if ($this->entity->bundle() === 'quiz') {
 
+      // Delete all queued messages.
+      $this->messenger()->deleteAll();
+
       // Hide unused form elements.
       // @todo Remove revision when Paragraph was updated.
       $form['revision']['#access'] = FALSE;
@@ -82,7 +89,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $form['questions'] = [
         '#type' => 'container',
         '#prefix' => '<div id="questions-wrapper">',
-        '#suffix' => '</div>',
+        '#suffix' => '</div><div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
       ];
 
       // We add a draggable table to append the questions in the form_state.
@@ -186,6 +193,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       // We add form elements to fill the question entity in the submit-handler.
       // These correspond to the fields in a question entity.
       $form['questions']['elements'] = [
+        '#prefix' => '<div id="error-wrapper"></div>',
         '#type' => 'fieldset',
         '#attributes' => ['class' => ['hidden']],
       ];
@@ -246,6 +254,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $form['questions']['elements']['create'] = [
         '#type' => 'submit',
         '#value' => $this->t('Create Question'),
+        '#validate' => ['::validateQuestion'],
         '#submit' => ['::createQuestion'],
         '#attributes' => ['class' => ['button--primary']],
         '#ajax' => [
@@ -266,6 +275,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
           ['answers'],
           ['explanation'],
           ['temp_id'],
+          ['elements'],
         ],
       ];
 
@@ -481,14 +491,86 @@ class ParagraphWithQuizForm extends ParagraphForm {
   }
 
   /**
-   * Aborts current question and resets quiz form.
+   * Rebuilds the form or delivers form errors from validation.
    */
   public function rebuildAjax(array $form, FormStateInterface &$form_state) {
-    return $form['questions'];
+    if (!$form_state->hasAnyErrors()) {
+      return $form['questions'];
+    }
+    else {
+      $response = new AjaxResponse();
+      $errors = $form_state->getErrors();
+      foreach ($errors as $error) {
+        $response->addCommand(new MessageCommand($error->render(),
+            '#error-wrapper',
+            ['type' => 'error']));
+      }
+      return $response;
+    }
   }
 
   /**
-   * Aborts current question and resets quiz form.
+   * Validates form fields for creating a question.
+   */
+  public function validateQuestion(array &$form, FormStateInterface $form_state) {
+    $question_type = $form_state->getValue('type');
+
+    // Check if all required fields are filled.
+    $required_fields = [];
+    if (empty($form_state->getValue('body'))) {
+      $required_fields[] = $this->t('Question');
+    }
+    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
+      if (empty($form_state->getValue('options'))) {
+        $required_fields[] = $this->t('Options');
+      }
+      if (empty($form_state->getValue('answers'))) {
+        $required_fields[] = $this->t('Answer(s)');
+      }
+    }
+    if (!empty($required_fields)) {
+      $message = $this->formatPlural(
+        count($required_fields),
+        'The field %field is required.',
+        'The fields %fields are required.', [
+          '%field' => reset($required_fields),
+          '%fields' => implode(', ', $required_fields),
+        ]);
+      $form_state->setErrorByName('elements', $message);
+    }
+
+    // Check if options and answers fields have the correct format.
+    $invalid = FALSE;
+    $count_options = count(explode('&', $form_state->getValue('options')));
+    $answers = explode('&', $form_state->getValue('answers'));
+    $count_answers = count($answers);
+    if ($question_type === 'multiple_choice') {
+      if ($count_answers > $count_options) {
+        $invalid = TRUE;
+      }
+      foreach ($answers as $answer) {
+        if (!is_numeric($answer) || $answer < 1 || $answer > $count_options) {
+          $invalid = TRUE;
+        }
+      }
+    }
+    if ($question_type === 'single_choice') {
+      if (!($count_answers == 1)) {
+        $invalid = TRUE;
+      }
+      $answer = reset($answers);
+      if (!is_numeric($answer) || $answer < 1 || $answer > $count_options) {
+        $invalid = TRUE;
+      }
+    }
+    if ($invalid) {
+      $message = $this->t('Options and answers have an invalid format.');
+      $form_state->setErrorByName('elements', $message);
+    }
+  }
+
+  /**
+   * Creates new question and adds it to form_state.
    */
   public function createQuestion(array &$form, FormStateInterface $form_state) {
     // We get the form values and append a newly created question of the
@@ -498,6 +580,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'bundle' => $form_state->getValue('type'),
       'body' => $form_state->getValue('body'),
       'help' => $form_state->getValue('help'),
+      'options' => $form_state->getValue('options'),
       'answers' => $form_state->getValue('answers'),
       'explanation' => $form_state->getValue('explanation'),
       'id' => $form_state->getValue('temp_id'),
@@ -509,7 +592,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   }
 
   /**
-   * Aborts current question and resets quiz form.
+   * Edits questions in form_state.
    */
   public function editQuestion(array &$form, FormStateInterface $form_state) {
     // Get the edited question.
@@ -535,7 +618,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   }
 
   /**
-   *
+   * Prepopulate hidden fields for deletion.
    */
   public function prepareDelete(array &$form, FormStateInterface $form_state) {
 
