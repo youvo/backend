@@ -89,7 +89,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $form['questions'] = [
         '#type' => 'container',
         '#prefix' => '<div id="questions-wrapper">',
-        '#suffix' => '</div><div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
+        '#suffix' => '</div>',
       ];
 
       // We add a draggable table to append the questions in the form_state.
@@ -166,6 +166,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       // question to the current quiz.
       $form['questions']['add_question'] = [
         '#type' => 'fieldset',
+        '#suffix' => '<div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
         '#weight' => '99',
       ];
 
