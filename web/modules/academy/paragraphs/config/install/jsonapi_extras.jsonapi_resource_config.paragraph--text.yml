@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - paragraphs.paragraph_type.text
+    - paragraphs.type.text
 id: paragraph--text
 disabled: false
 path: paragraphs

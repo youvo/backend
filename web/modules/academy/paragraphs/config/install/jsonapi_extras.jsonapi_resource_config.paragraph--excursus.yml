@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - paragraphs.paragraph_type.excursus
+    - paragraphs.type.excursus
 id: paragraph--excursus
 disabled: false
 path: paragraphs

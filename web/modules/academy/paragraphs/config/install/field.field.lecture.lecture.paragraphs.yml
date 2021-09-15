@@ -3,11 +3,11 @@ status: true
 dependencies:
   config:
     - field.storage.lecture.paragraphs
-    - paragraphs.paragraph_type.excursus
-    - paragraphs.paragraph_type.illustration
-    - paragraphs.paragraph_type.picture
-    - paragraphs.paragraph_type.text
-    - paragraphs.paragraph_type.video
+    - paragraphs.type.excursus
+    - paragraphs.type.illustration
+    - paragraphs.type.picture
+    - paragraphs.type.text
+    - paragraphs.type.video
 id: lecture.lecture.paragraphs
 field_name: paragraphs
 entity_type: lecture

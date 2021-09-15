@@ -23,7 +23,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *   },
  *   admin_permission = "administer paragraphs",
  *   bundle_of = "paragraph",
- *   config_prefix = "paragraph_type",
+ *   config_prefix = "type",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",

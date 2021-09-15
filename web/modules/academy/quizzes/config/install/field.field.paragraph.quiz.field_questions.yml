@@ -3,7 +3,7 @@ status: true
 dependencies:
   config:
     - field.storage.paragraph.field_questions
-    - paragraphs.paragraph_type.quiz
+    - paragraphs.type.quiz
     - quizzes.question_type.free_text
     - quizzes.question_type.multiple_choice
     - quizzes.question_type.single_choice
