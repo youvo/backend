@@ -38,7 +38,7 @@ use Drupal\user\UserInterface;
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
- *     "bundle" = "bundle",
+ *     "bundle" = "type",
  *     "label" = "id",
  *     "uuid" = "uuid",
  *     "parent" = "paragraph",

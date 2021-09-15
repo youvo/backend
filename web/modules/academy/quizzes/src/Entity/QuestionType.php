@@ -23,7 +23,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *   },
  *   admin_permission = "administer question types",
  *   bundle_of = "question",
- *   config_prefix = "question_type",
+ *   config_prefix = "type",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
