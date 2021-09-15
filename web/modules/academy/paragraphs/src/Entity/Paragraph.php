@@ -48,7 +48,7 @@ use Drupal\user\UserInterface;
  *     "id" = "id",
  *     "revision" = "revision_id",
  *     "langcode" = "langcode",
- *     "bundle" = "bundle",
+ *     "bundle" = "type",
  *     "label" = "title",
  *     "uuid" = "uuid",
  *     "parent" = "lecture",
@@ -87,10 +87,12 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     parent::preCreate($storage, $values);
-    $values += [
-      'uid' => \Drupal::currentUser()->id(),
-      'lecture' => \Drupal::service('current_route_match')->getParameter('lecture'),
-    ];
+    if (!isset($values['uid'])) {
+      $values['uid'] = \Drupal::currentUser()->id();
+    }
+    if (!isset($values['lecture']) && $route_match = \Drupal::service('current_route_match')->getParameter('lecture')) {
+      $values['lecture'] = $route_match;
+    }
   }
 
   /**

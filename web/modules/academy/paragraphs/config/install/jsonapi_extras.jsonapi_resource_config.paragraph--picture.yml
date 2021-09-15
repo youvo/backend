@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - paragraphs.paragraph_type.picture
+    - paragraphs.type.picture
 id: paragraph--picture
 disabled: false
 path: paragraphs
