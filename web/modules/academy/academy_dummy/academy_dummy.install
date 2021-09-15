@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Academy Dummy module.
+ */
+
+use Drupal\Component\Utility\Random;
+
+/**
+ * Implements hook_install().
+ */
+function academy_dummy_install() {
+
+  // Object for random content.
+  $random = new Random();
+}
+
