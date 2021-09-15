@@ -11,5 +11,8 @@ use Drupal\youvo_projects\Entity\Project;
  * Implements hook_entity_bundle_info_alter().
  */
 function youvo_projects_entity_bundle_info_alter(&$bundles) {
-  $bundles['node']['project']['class'] = Project::class;
+  $node_bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+  if (array_key_exists('project', $node_bundles)) {
+    $bundles['node']['project']['class'] = Project::class;
+  }
 }
