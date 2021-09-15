@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.lecture.lecture.paragraphs
+    - field.storage.lecture.paragraphs
     - paragraphs.paragraph_type.excursus
     - paragraphs.paragraph_type.illustration
     - paragraphs.paragraph_type.picture
