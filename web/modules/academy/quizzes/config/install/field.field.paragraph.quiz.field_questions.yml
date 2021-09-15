@@ -4,9 +4,9 @@ dependencies:
   config:
     - field.storage.paragraph.field_questions
     - paragraphs.type.quiz
-    - quizzes.question_type.free_text
-    - quizzes.question_type.multiple_choice
-    - quizzes.question_type.single_choice
+    - quizzes.type.free_text
+    - quizzes.type.multiple_choice
+    - quizzes.type.single_choice
 id: paragraph.quiz.field_questions
 field_name: field_questions
 entity_type: paragraph
