@@ -6,13 +6,39 @@
  */
 
 use Drupal\Component\Utility\Random;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\lectures\Entity\Lecture;
+use Drupal\Core\Utility\Error;
 
 /**
  * Implements hook_install().
  */
 function academy_dummy_install() {
 
+  // Initialize.
+  $lecture_ids = [];
+
   // Object for random content.
   $random = new Random();
-}
 
+  // Create lectures.
+  for ($i = 1; $i <= 5; $i++) {
+
+    $values = [
+      'title' => ucwords($random->word(10) . ' ' . $random->word(6)),
+      'description' => $random->paragraphs(2),
+      'status' => 1,
+    ];
+
+    // Create creative.
+    $lecture = Lecture::create($values);
+    try {
+      $lecture->save();
+      $lecture_ids[] = $lecture->id();
+    }
+    catch (EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('academy_dummy')->error('An error occurred while creating dummy lecture: @message in %function (line %line of %file).', $variables);
+    }
+  }
+}
