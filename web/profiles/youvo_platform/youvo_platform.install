@@ -96,6 +96,9 @@ function youvo_platform_install() {
   $first_user->set('field_name', 'Administrator');
   $first_user->save();
 
-  // Add dummy content by installing youvo_dummy.
+  // Add dummy projects installing youvo_dummy.
   Drupal::service('module_installer')->install(['youvo_dummy']);
+
+  // Add dummy lectures by installing academy_dummy.
+  Drupal::service('module_installer')->install(['academy_dummy']);
 }
