@@ -248,6 +248,11 @@ class Lecture extends ContentEntityBase implements LectureInterface {
       ->setTranslatable(TRUE)
       ->setDescription(t('The time that the lecture was last edited.'));
 
+    $fields['weight'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Weight'))
+      ->setDescription(t('The weight of this term in relation to other terms.'))
+      ->setDefaultValue(0);
+
     return $fields;
   }
 
