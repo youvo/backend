@@ -265,23 +265,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
 
   /**
    * {@inheritdoc}
-   */
-  public function delete() {
-    if (!$this->isNew()) {
-      // Remove paragraph from reference field in lecture parent entity.
-      /** @var \Drupal\lectures\Entity\Lecture $parent */
-      $parent = $this->getParentEntity();
-      $paragraphs = $parent->get('paragraphs')->getValue();
-      if ($index = array_search($this->id(), array_column($paragraphs, 'target_id'))) {
-        $parent->get('paragraphs')->removeItem($index);
-        $parent->save();
-      }
-    }
-    parent::delete();
-  }
-
-  /**
-   * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

@@ -38,7 +38,6 @@ function academy_dummy_install() {
 
   // Add some paragraphs to the lectures.
   foreach ($lectures as $lecture) {
-    $paragraph_targets = [];
 
     $paragraph = Paragraph::create([
       'type' => 'text',
@@ -48,7 +47,6 @@ function academy_dummy_install() {
       'weight' => -5,
     ]);
     $paragraph->save();
-    $paragraph_targets[] = ['target_id' => $paragraph->id()];
 
     $paragraph = Paragraph::create([
       'type' => 'illustration',
@@ -59,7 +57,6 @@ function academy_dummy_install() {
       'weight' => -4,
     ]);
     $paragraph->save();
-    $paragraph_targets[] = ['target_id' => $paragraph->id()];
 
     $paragraph = Paragraph::create([
       'type' => 'excursus',
@@ -69,7 +66,6 @@ function academy_dummy_install() {
       'weight' => -3,
     ]);
     $paragraph->save();
-    $paragraph_targets[] = ['target_id' => $paragraph->id()];
 
     $paragraph = Paragraph::create([
       'type' => 'picture',
@@ -80,7 +76,6 @@ function academy_dummy_install() {
       'weight' => -2,
     ]);
     $paragraph->save();
-    $paragraph_targets[] = ['target_id' => $paragraph->id()];
 
     $paragraph = Paragraph::create([
       'type' => 'video',
@@ -91,9 +86,8 @@ function academy_dummy_install() {
       'weight' => -1,
     ]);
     $paragraph->save();
-    $paragraph_targets[] = ['target_id' => $paragraph->id()];
 
-    $lecture->set('paragraphs', $paragraph_targets);
+    // Update computed fields.
     $lecture->save();
   }
 
@@ -118,8 +112,7 @@ function academy_dummy_install() {
     ]);
     $quiz->save();
 
-    // Append quiz to lecture.
-    $lecture->get('paragraphs')->appendItem(['target_id' => $quiz->id()]);
+    // Update computed fields.
     $lecture->save();
 
     // Create questions for quiz.
