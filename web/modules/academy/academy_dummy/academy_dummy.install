@@ -37,8 +37,8 @@ function academy_dummy_install() {
   }
 
   // Add some paragraphs to the lectures.
-  $paragraph_targets = [];
   foreach ($lectures as $lecture) {
+    $paragraph_targets = [];
 
     $paragraph = Paragraph::create([
       'type' => 'text',
