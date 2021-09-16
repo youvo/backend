@@ -378,32 +378,34 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Save Quiz as Paragraph.
     parent::save($form, $form_state);
 
-    // Save the new and persistent questions. Also, the references are attached
-    // to the current quiz paragraph.
-    $quiz_id = $this->entity->id();
-    $questions = $form_state->getValue('question_entities');
-    $table = $form_state->getValue('table');
-    $question_ids = [];
-    foreach ($questions as $question) {
-      /** @var \Drupal\quizzes\Entity\Question $question */
-      $weight = $table[$question->id()]['weight'] ?? 0;
-      $question->set('weight', $weight);
-      $question->set('paragraph', $quiz_id);
-      // Unset the ID to automatically determine valid ID instead of using the
-      // temporary ID.
-      if ($question->isNew()) {
-        unset($question->id);
+    if ($this->entity instanceof Quiz) {
+      // Save the new and persistent questions. Also, the references are
+      // attached to the current quiz paragraph.
+      $quiz_id = $this->entity->id();
+      $questions = $form_state->getValue('question_entities');
+      $table = $form_state->getValue('table');
+      $question_ids = [];
+      foreach ($questions as $question) {
+        /** @var \Drupal\quizzes\Entity\Question $question */
+        $weight = $table[$question->id()]['weight'] ?? 0;
+        $question->set('weight', $weight);
+        $question->set('paragraph', $quiz_id);
+        // Unset the ID to automatically determine valid ID instead of using the
+        // temporary ID.
+        if ($question->isNew()) {
+          unset($question->id);
+        }
+        $question->save();
+        $question_ids[] = ['target_id' => $question->id()];
       }
-      $question->save();
-      $question_ids[] = ['target_id' => $question->id()];
-    }
-    $this->entity->set('field_questions', $question_ids);
-    $this->entity->save();
+      $this->entity->set('field_questions', $question_ids);
+      $this->entity->save();
 
-    // Delete stale questions from the delete queue.
-    $question_delete_queue = $form_state->getValue('question_delete_queue');
-    foreach ($question_delete_queue as $question) {
-      $question->delete();
+      // Delete stale questions from the delete queue.
+      $question_delete_queue = $form_state->getValue('question_delete_queue');
+      foreach ($question_delete_queue as $question) {
+        $question->delete();
+      }
     }
   }
 
