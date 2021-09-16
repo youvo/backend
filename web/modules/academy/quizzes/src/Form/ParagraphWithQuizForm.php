@@ -226,7 +226,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         'id',
         'uuid',
         'langcode',
-        'bundle',
+        'type',
         'uid',
         'created',
         'changed',
