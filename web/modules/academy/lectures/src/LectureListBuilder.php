@@ -161,6 +161,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\lectures\Entity\Lecture $entity */
@@ -169,7 +171,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     $row['#weight'] = $entity->get('weight')->value;
     // Add content columns.
     $row['title'] = [
-      '#markup' => $entity->getTitle(),
+      '#markup' => $entity->toLink()->toString(),
     ];
     $row['status'] = [
       '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
