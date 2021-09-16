@@ -54,16 +54,16 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The Child Entity Route Match.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
    * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
    *   The redirect destination service.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The Child Entity Route Match.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination, RouteMatchInterface $route_match) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
     parent::__construct($entity_type, $storage, $route_match);
     $this->dateFormatter = $date_formatter;
     $this->redirectDestination = $redirect_destination;
@@ -78,9 +78,9 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('current_route_match'),
       $container->get('date.formatter'),
       $container->get('redirect.destination'),
-      $container->get('current_route_match')
     );
   }
 
