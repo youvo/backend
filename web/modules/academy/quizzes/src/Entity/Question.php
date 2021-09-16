@@ -57,10 +57,12 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     parent::preCreate($storage, $values);
-    $values += [
-      'uid' => \Drupal::currentUser()->id(),
-      'paragraph' => \Drupal::service('current_route_match')->getParameter('paragraph'),
-    ];
+    if (!isset($values['uid'])) {
+      $values['uid'] = \Drupal::currentUser()->id();
+    }
+    if (!isset($values['paragraph']) && $route_match = \Drupal::service('current_route_match')->getParameter('paragraph')) {
+      $values['paragraph'] = $route_match;
+    }
   }
 
   /**
