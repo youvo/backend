@@ -9,7 +9,16 @@
  * to implement alterations to extend paragraphs for quizzes.
  */
 
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\quizzes\Entity\Quiz;
+
+/**
+ * Implements hook_entity_bundle_info_alter().
+ */
+function quizzes_entity_bundle_info_alter(&$bundles) {
+  if (isset($bundles['paragraph']['quiz'])) {
+    $bundles['paragraph']['quiz']['class'] = Quiz::class;
+  }
+}
 
 /**
  * Implements hook_entity_type_alter().
