@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -235,16 +236,23 @@ class ParagraphWithQuizForm extends ParagraphForm {
         'default_langcode',
       ];
 
+      // @todo Render fields by using widget.
       foreach ($question_fields as $question_field) {
         /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
         if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
           $display_options = $question_field->getDisplayOptions('form');
+          $title = $question_field->getLabel() instanceof TranslatableMarkup ?
+            $question_field->getLabel()->render() :
+            $question_field->getLabel();
+          $description = $question_field->getDescription() instanceof TranslatableMarkup ?
+            $question_field->getDescription()->render() :
+            $question_field->getDescription();
           $form['questions']['elements'][$question_field->getName()] = [
-            '#title' => $question_field->getLabel()->render(),
+            '#title' => $title,
             '#type' => $display_options['type'],
             '#rows' => $display_options['rows'] ?? '',
             '#placeholder' => $display_options['placeholder'] ?? '',
-            '#description' => $question_field->getDescription()->render(),
+            '#description' => $description,
           ];
         }
       }
