@@ -3,6 +3,10 @@
 /**
  * @file
  * Alterations for paragraph entity.
+ *
+ * This module does not define a new quiz entity. A quiz is a paragraph entity
+ * or more explicitly a type of paragraph entity. We use the following hooks
+ * to implement alterations to extend paragraphs for quizzes.
  */
 
 use Drupal\Core\Entity\EntityInterface;
@@ -16,7 +20,6 @@ function quizzes_entity_type_alter(array &$entity_types) {
   // paragraphs.
   $entity_types['paragraph']->setFormClass('add', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
   $entity_types['paragraph']->setFormClass('edit', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
-  $entity_types['paragraph']->setFormClass('delete', 'Drupal\\quizzes\\Form\\ParagraphWithQuizDeleteForm');
 }
 
 /**
