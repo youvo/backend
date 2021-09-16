@@ -14,6 +14,7 @@ use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
+use Drupal\quizzes\Entity\Quiz;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -69,297 +70,303 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     $form = parent::form($form, $form_state);
 
-    if ($this->entity->bundle() === 'quiz') {
-
-      // Delete all queued messages.
-      $this->messenger()->deleteAll();
-
-      // Hide unused form elements.
-      // @todo Remove revision when Paragraph was updated.
-      $form['revision']['#access'] = FALSE;
-      $form['revision_log']['#access'] = FALSE;
-      $form['revision_information']['#access'] = FALSE;
-      $form['uid']['#access'] = FALSE;
-      $form['created']['#access'] = FALSE;
-      $form['changed']['#access'] = FALSE;
-      $form['field_questions']['#access'] = FALSE;
-
-      // @todo Target wrapper with drupal-data-selector after
-      // https://www.drupal.org/project/drupal/issues/2821793
-      // is resolved.
-      $form['questions'] = [
-        '#type' => 'container',
-        '#prefix' => '<div id="questions-wrapper">',
-        '#suffix' => '</div>',
-      ];
-
-      // We add a draggable table to append the questions in the form_state.
-      $form['questions']['table'] = [
-        '#type' => 'table',
-        '#header' => $this->buildHeader(),
-        '#empty' => $this->t('There are no Questions yet.'),
-        '#tabledrag' => [
-          [
-            'action' => 'order',
-            'relationship' => 'sibling',
-            'group' => 'weight',
-          ],
-        ],
-      ];
-
-      // Add a queue for questions to delete to garantuee data persistency.
-      $question_delete_queue = $form_state->getValue('question_delete_queue') ?? [];
-      $form['questions']['question_delete_queue'] = [
-        '#type' => 'value',
-        '#default_value' => $question_delete_queue,
-      ];
-
-      // We compile the ids here to exclude the questions from the table from
-      // the next form build.
-      $question_delete_queue_ids = [0];
-      if (!empty($question_delete_queue)) {
-        $question_delete_queue_ids = array_map(function ($q) {
-          return $q->id();
-        }, $question_delete_queue);
-      }
-
-      // Get all questions that have this quiz paragraph as a parent.
-      // Or get current entities from form_state and append to form element.
-      if ($form_state->getValue('question_entities') === NULL) {
-        $questions_storage = $this->entityTypeManager
-          ->getStorage('question');
-        $questions_query = $questions_storage->getQuery()
-          ->condition('paragraph', $this->entity->id())
-          ->condition('id', $question_delete_queue_ids, 'NOT IN')
-          ->sort('weight')
-          ->execute();
-        $questions = $questions_storage->loadMultiple($questions_query);
-      }
-      else {
-        $questions = $form_state->getValue('question_entities');
-      }
-
-      $form['questions']['question_entities'] = [
-        '#type' => 'value',
-        '#default_value' => $questions,
-      ];
-
-      // Get the largest ID or temporary ID from already created questions.
-      // Increase by one. This new temporary ID is unique.
-      $temp_id = !empty($questions) ?
-        max(array_map(function ($q) {
-          return $q->id();
-        }, $questions)) + 1 : 1;
-
-      // Determine delta for the weight distribution.
-      $delta = count($questions);
-
-      // Fill the table with row entries.
-      foreach ($questions as $question) {
-        $row = $this->buildRow($question);
-        if (isset($row['weight'])) {
-          $row['weight']['#delta'] = $delta;
-        }
-        $form['questions']['table'][$question->id()] = $row;
-      }
-
-      // We load the different question types and append buttons to add a
-      // question to the current quiz.
-      $form['questions']['add_question'] = [
-        '#type' => 'fieldset',
-        '#suffix' => '<div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
-        '#weight' => '99',
-      ];
-
-      $question_types = $this->entityTypeManager
-        ->getStorage('question_type')
-        ->loadMultiple();
-
-      foreach ($question_types as $question_type) {
-        $form['questions']['add_question'][$question_type->id()] = [
-          '#type' => 'button',
-          '#value' => '+ ' . $question_type->label() . ' Question',
-          '#attributes' => ['data-type' => $question_type->id()],
-          '#ajax' => [
-            'callback' => [$this, 'showQuestionFieldset'],
-            'disable-refocus' => TRUE,
-            'event' => 'click',
-            'effect' => 'none',
-            'progress' => [
-              'type' => 'none',
-            ],
-          ],
-        ];
-      }
-
-      // We add form elements to fill the question entity in the submit-handler.
-      // These correspond to the fields in a question entity.
-      $form['questions']['elements'] = [
-        '#prefix' => '<div id="error-wrapper"></div>',
-        '#type' => 'fieldset',
-        '#attributes' => ['class' => ['hidden']],
-      ];
-
-      // This field gets populated by the ajax response.
-      $form['questions']['elements']['type'] = [
-        '#type' => 'hidden',
-        '#default_value' => '',
-      ];
-
-      // This field gets populated by the ajax response.
-      $form['questions']['elements']['current_id'] = [
-        '#type' => 'hidden',
-        '#default_value' => '',
-      ];
-
-      // This is a 'free' temporary id that is used to identify newly created
-      // question entities.
-      $form['questions']['elements']['temp_id'] = [
-        '#type' => 'hidden',
-        '#value' => $temp_id,
-      ];
-
-      // Fetch the base fields from the question entity definition.
-      // We exclude non-content fields and then build the render array manually.
-      $question_fields = $this->fieldManager
-        ->getBaseFieldDefinitions('question');
-      $excluded_base_fields = [
-        'id',
-        'uuid',
-        'langcode',
-        'type',
-        'uid',
-        'created',
-        'changed',
-        'weight',
-        'paragraph',
-        'default_langcode',
-      ];
-
-      // @todo Render fields by using widget.
-      foreach ($question_fields as $question_field) {
-        /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
-        if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
-          $display_options = $question_field->getDisplayOptions('form');
-          $title = $question_field->getLabel() instanceof TranslatableMarkup ?
-            $question_field->getLabel()->render() :
-            $question_field->getLabel();
-          $description = $question_field->getDescription() instanceof TranslatableMarkup ?
-            $question_field->getDescription()->render() :
-            $question_field->getDescription();
-          $form['questions']['elements'][$question_field->getName()] = [
-            '#title' => $title,
-            '#type' => $display_options['type'],
-            '#rows' => $display_options['rows'] ?? '',
-            '#placeholder' => $display_options['placeholder'] ?? '',
-            '#description' => $description,
-          ];
-        }
-      }
-
-      // Trigger a 'submit' for the form elements in the container and create
-      // a question entity. Then represent such question entity in the table
-      // above.
-      $form['questions']['elements']['create'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Create Question'),
-        '#validate' => ['::validateQuestion'],
-        '#submit' => ['::createQuestion'],
-        '#attributes' => ['class' => ['button--primary']],
-        '#ajax' => [
-          'callback' => '::rebuildAjax',
-          'wrapper' => 'questions-wrapper',
-          'effect' => 'none',
-          'progress' => [
-            'type' => 'none',
-          ],
-        ],
-        '#limit_validation_errors' => [
-          ['type'],
-          ['question_entities'],
-          ['question_delete_queue'],
-          ['body'],
-          ['help'],
-          ['options'],
-          ['answers'],
-          ['explanation'],
-          ['temp_id'],
-          ['elements'],
-        ],
-      ];
-
-      // Use a separate modify submit button to edit given question.
-      $form['questions']['elements']['modify'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Edit Question'),
-        '#submit' => ['::editQuestion'],
-        '#attributes' => ['class' => ['button--primary']],
-        '#ajax' => [
-          'callback' => '::rebuildAjax',
-          'wrapper' => 'questions-wrapper',
-          'effect' => 'none',
-          'progress' => [
-            'type' => 'none',
-          ],
-        ],
-        '#limit_validation_errors' => [
-          ['type'],
-          ['question_entities'],
-          ['question_delete_queue'],
-          ['body'],
-          ['help'],
-          ['options'],
-          ['answers'],
-          ['explanation'],
-          ['temp_id'],
-          ['current_id'],
-        ],
-      ];
-
-      // This is a little button to confirm the deletion.
-      $form['questions']['elements']['confirm_delete'] = [
-        '#type' => 'submit',
-        '#submit' => ['::deleteQuestion'],
-        '#attributes' => ['class' => ['button--extrasmall button--danger align-right visually-hidden']],
-        '#value' => $this->t('Confirm Deletion'),
-        '#ajax' => [
-          'callback' => '::rebuildAjax',
-          'disable-refocus' => TRUE,
-          'wrapper' => 'questions-wrapper',
-          'effect' => 'none',
-          'progress' => [
-            'type' => 'none',
-          ],
-        ],
-        '#limit_validation_errors' => [
-          ['question_entities'],
-          ['current_id'],
-          ['question_delete_queue'],
-        ],
-      ];
-
-      // We can also abort current creation and rebuild the form as it was
-      // before.
-      $form['questions']['elements']['abort'] = [
-        '#type' => 'button',
-        '#value' => $this->t('Abort'),
-        '#ajax' => [
-          'callback' => '::rebuildAjax',
-          'wrapper' => 'questions-wrapper',
-          'effect' => 'none',
-          'progress' => [
-            'type' => 'none',
-          ],
-        ],
-        '#limit_validation_errors' => [
-          ['question_entities'],
-          ['question_delete_queue'],
-        ],
-      ];
-
+    if ($this->entity instanceof Quiz) {
+      $this->attachQuizForm($form, $form_state);
     }
 
     return $form;
+  }
+
+  /**
+   * Adds form elements for quizzes.
+   */
+  protected function attachQuizForm(&$form, FormStateInterface $form_state) {
+
+    // Delete all queued messages.
+    $this->messenger()->deleteAll();
+
+    // Hide unused form elements.
+    // @todo Remove revision when Paragraph was updated.
+    $form['revision']['#access'] = FALSE;
+    $form['revision_log']['#access'] = FALSE;
+    $form['revision_information']['#access'] = FALSE;
+    $form['uid']['#access'] = FALSE;
+    $form['created']['#access'] = FALSE;
+    $form['changed']['#access'] = FALSE;
+    $form['field_questions']['#access'] = FALSE;
+
+    // @todo Target wrapper with drupal-data-selector after
+    // https://www.drupal.org/project/drupal/issues/2821793
+    // is resolved.
+    $form['questions'] = [
+      '#type' => 'container',
+      '#prefix' => '<div id="questions-wrapper">',
+      '#suffix' => '</div>',
+    ];
+
+    // We add a draggable table to append the questions in the form_state.
+    $form['questions']['table'] = [
+      '#type' => 'table',
+      '#header' => $this->buildHeader(),
+      '#empty' => $this->t('There are no Questions yet.'),
+      '#tabledrag' => [
+        [
+          'action' => 'order',
+          'relationship' => 'sibling',
+          'group' => 'weight',
+        ],
+      ],
+    ];
+
+    // Add a queue for questions to delete to garantuee data persistency.
+    $question_delete_queue = $form_state->getValue('question_delete_queue') ?? [];
+    $form['questions']['question_delete_queue'] = [
+      '#type' => 'value',
+      '#default_value' => $question_delete_queue,
+    ];
+
+    // We compile the ids here to exclude the questions from the table from
+    // the next form build.
+    $question_delete_queue_ids = [0];
+    if (!empty($question_delete_queue)) {
+      $question_delete_queue_ids = array_map(function ($q) {
+        return $q->id();
+      }, $question_delete_queue);
+    }
+
+    // Get all questions that have this quiz paragraph as a parent.
+    // Or get current entities from form_state and append to form element.
+    if ($form_state->getValue('question_entities') === NULL) {
+      $questions_storage = $this->entityTypeManager
+        ->getStorage('question');
+      $questions_query = $questions_storage->getQuery()
+        ->condition('paragraph', $this->entity->id())
+        ->condition('id', $question_delete_queue_ids, 'NOT IN')
+        ->sort('weight')
+        ->execute();
+      $questions = $questions_storage->loadMultiple($questions_query);
+    }
+    else {
+      $questions = $form_state->getValue('question_entities');
+    }
+
+    $form['questions']['question_entities'] = [
+      '#type' => 'value',
+      '#default_value' => $questions,
+    ];
+
+    // Get the largest ID or temporary ID from already created questions.
+    // Increase by one. This new temporary ID is unique.
+    $temp_id = !empty($questions) ?
+      max(array_map(function ($q) {
+        return $q->id();
+      }, $questions)) + 1 : 1;
+
+    // Determine delta for the weight distribution.
+    $delta = count($questions);
+
+    // Fill the table with row entries.
+    foreach ($questions as $question) {
+      $row = $this->buildRow($question);
+      if (isset($row['weight'])) {
+        $row['weight']['#delta'] = $delta;
+      }
+      $form['questions']['table'][$question->id()] = $row;
+    }
+
+    // We load the different question types and append buttons to add a
+    // question to the current quiz.
+    $form['questions']['add_question'] = [
+      '#type' => 'fieldset',
+      '#suffix' => '<div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
+      '#weight' => '99',
+    ];
+
+    $question_types = $this->entityTypeManager
+      ->getStorage('question_type')
+      ->loadMultiple();
+
+    foreach ($question_types as $question_type) {
+      $form['questions']['add_question'][$question_type->id()] = [
+        '#type' => 'button',
+        '#value' => '+ ' . $question_type->label() . ' Question',
+        '#attributes' => ['data-type' => $question_type->id()],
+        '#ajax' => [
+          'callback' => [$this, 'showQuestionFieldset'],
+          'disable-refocus' => TRUE,
+          'event' => 'click',
+          'effect' => 'none',
+          'progress' => [
+            'type' => 'none',
+          ],
+        ],
+      ];
+    }
+
+    // We add form elements to fill the question entity in the submit-handler.
+    // These correspond to the fields in a question entity.
+    $form['questions']['elements'] = [
+      '#prefix' => '<div id="error-wrapper"></div>',
+      '#type' => 'fieldset',
+      '#attributes' => ['class' => ['hidden']],
+    ];
+
+    // This field gets populated by the ajax response.
+    $form['questions']['elements']['type'] = [
+      '#type' => 'hidden',
+      '#default_value' => '',
+    ];
+
+    // This field gets populated by the ajax response.
+    $form['questions']['elements']['current_id'] = [
+      '#type' => 'hidden',
+      '#default_value' => '',
+    ];
+
+    // This is a 'free' temporary id that is used to identify newly created
+    // question entities.
+    $form['questions']['elements']['temp_id'] = [
+      '#type' => 'hidden',
+      '#value' => $temp_id,
+    ];
+
+    // Fetch the base fields from the question entity definition.
+    // We exclude non-content fields and then build the render array manually.
+    $question_fields = $this->fieldManager
+      ->getBaseFieldDefinitions('question');
+    $excluded_base_fields = [
+      'id',
+      'uuid',
+      'langcode',
+      'type',
+      'uid',
+      'created',
+      'changed',
+      'weight',
+      'paragraph',
+      'default_langcode',
+    ];
+
+    // @todo Render fields by using widget.
+    foreach ($question_fields as $question_field) {
+      /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
+      if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
+        $display_options = $question_field->getDisplayOptions('form');
+        $title = $question_field->getLabel() instanceof TranslatableMarkup ?
+          $question_field->getLabel()->render() :
+          $question_field->getLabel();
+        $description = $question_field->getDescription() instanceof TranslatableMarkup ?
+          $question_field->getDescription()->render() :
+          $question_field->getDescription();
+        $form['questions']['elements'][$question_field->getName()] = [
+          '#title' => $title,
+          '#type' => $display_options['type'],
+          '#rows' => $display_options['rows'] ?? '',
+          '#placeholder' => $display_options['placeholder'] ?? '',
+          '#description' => $description,
+        ];
+      }
+    }
+
+    // Trigger a 'submit' for the form elements in the container and create
+    // a question entity. Then represent such question entity in the table
+    // above.
+    $form['questions']['elements']['create'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Create Question'),
+      '#validate' => ['::validateQuestion'],
+      '#submit' => ['::createQuestion'],
+      '#attributes' => ['class' => ['button--primary']],
+      '#ajax' => [
+        'callback' => '::rebuildAjax',
+        'wrapper' => 'questions-wrapper',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
+      '#limit_validation_errors' => [
+        ['type'],
+        ['question_entities'],
+        ['question_delete_queue'],
+        ['body'],
+        ['help'],
+        ['options'],
+        ['answers'],
+        ['explanation'],
+        ['temp_id'],
+        ['elements'],
+      ],
+    ];
+
+    // Use a separate modify submit button to edit given question.
+    $form['questions']['elements']['modify'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Edit Question'),
+      '#submit' => ['::editQuestion'],
+      '#attributes' => ['class' => ['button--primary']],
+      '#ajax' => [
+        'callback' => '::rebuildAjax',
+        'wrapper' => 'questions-wrapper',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
+      '#limit_validation_errors' => [
+        ['type'],
+        ['question_entities'],
+        ['question_delete_queue'],
+        ['body'],
+        ['help'],
+        ['options'],
+        ['answers'],
+        ['explanation'],
+        ['temp_id'],
+        ['current_id'],
+      ],
+    ];
+
+    // This is a little button to confirm the deletion.
+    $form['questions']['elements']['confirm_delete'] = [
+      '#type' => 'submit',
+      '#submit' => ['::deleteQuestion'],
+      '#attributes' => ['class' => ['button--extrasmall button--danger align-right visually-hidden']],
+      '#value' => $this->t('Confirm Deletion'),
+      '#ajax' => [
+        'callback' => '::rebuildAjax',
+        'disable-refocus' => TRUE,
+        'wrapper' => 'questions-wrapper',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
+      '#limit_validation_errors' => [
+        ['question_entities'],
+        ['current_id'],
+        ['question_delete_queue'],
+      ],
+    ];
+
+    // We can also abort current creation and rebuild the form as it was
+    // before.
+    $form['questions']['elements']['abort'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Abort'),
+      '#ajax' => [
+        'callback' => '::rebuildAjax',
+        'wrapper' => 'questions-wrapper',
+        'effect' => 'none',
+        'progress' => [
+          'type' => 'none',
+        ],
+      ],
+      '#limit_validation_errors' => [
+        ['question_entities'],
+        ['question_delete_queue'],
+      ],
+    ];
   }
 
   /**

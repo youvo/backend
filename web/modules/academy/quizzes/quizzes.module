@@ -24,31 +24,10 @@ function quizzes_entity_bundle_info_alter(&$bundles) {
  * Implements hook_entity_type_alter().
  */
 function quizzes_entity_type_alter(array &$entity_types) {
-  // We alter the default paragraph.{add,edit,delete} form handlers in order
-  // to load a different class than the standard add-, edit- and delete form for
+  // We alter the default paragraph.{add,edit} form handlers in order
+  // to load a different class than the standard add- and  edit form for
   // paragraphs.
+  // @todo Check if there is a better way to define handlers by bundle.
   $entity_types['paragraph']->setFormClass('add', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
   $entity_types['paragraph']->setFormClass('edit', 'Drupal\\quizzes\\Form\\ParagraphWithQuizForm');
-}
-
-/**
- * Implements hook_ENTITY_TYPE_predelete().
- *
- * Removes all referenced question entities.
- *
- * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
- * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
- * @throws \Drupal\Core\Entity\EntityStorageException
- */
-function quizzes_paragraph_predelete(EntityInterface $entity) {
-  /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
-  if ($entity->bundle() === 'quiz') {
-    /** @var \Drupal\quizzes\Entity\Question[] $questions */
-    $questions_reference = $entity->get('field_questions')->getValue();
-    $question_ids = array_column($questions_reference, 'target_id');
-    $questions = \Drupal::entityTypeManager()->getStorage('question')->loadMultiple($question_ids);
-    foreach ($questions as $question) {
-      $question->delete();
-    }
-  }
 }
