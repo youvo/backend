@@ -3,8 +3,6 @@
 namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -13,6 +11,7 @@ use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\paragraphs\Entity\ParagraphType;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -109,16 +108,16 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   public function buildRow(EntityInterface $entity) {
     // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\ParagraphInterface $entity */
-    $bundle = '';
-    try {
-      $bundle = \Drupal::entityTypeManager()
-        ->getStorage('paragraph_type')
-        ->load($entity->bundle())
-        ->label();
+    $bundle = \Drupal::entityTypeManager()
+      ->getStorage('paragraph_type')
+      ->load($entity->bundle());
+
+    if (!($bundle instanceof ParagraphType)) {
+      \Drupal::logger('paragraphs')
+        ->warning('Paragraphs Collection: Could not fetch bundle for entity type %try.', ['%try' => $entity->bundle()]);
+      return [];
     }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      watchdog_exception('Paragraphs Collection: Could not fetch bundles.', $e);
-    }
+
     // Override default values to markup elements.
     $row['#attributes']['class'][] = 'draggable';
     $row['#weight'] = $entity->get('weight')->value;
@@ -127,7 +126,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#markup' => $entity->getTitle(),
     ];
     $row['bundle'] = [
-      '#markup' => $bundle,
+      '#markup' => $bundle->label(),
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);
