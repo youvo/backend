@@ -24,6 +24,8 @@ function quizzes_entity_type_alter(array &$entity_types) {
  *
  * Removes all referenced question entities.
  *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  * @throws \Drupal\Core\Entity\EntityStorageException
  */
 function quizzes_paragraph_predelete(EntityInterface $entity) {
