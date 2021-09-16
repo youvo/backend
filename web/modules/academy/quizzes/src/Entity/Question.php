@@ -23,10 +23,6 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Question type"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "view_builder" = "Drupal\quizzes\QuestionViewBuilder",
- *     "form" = {
- *       "edit" = "Drupal\quizzes\Form\QuestionForm"
- *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
