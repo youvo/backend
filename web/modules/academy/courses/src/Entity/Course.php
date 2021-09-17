@@ -166,6 +166,24 @@ class Course extends ContentEntityBase implements CourseInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
+    $fields['subtitle'] = BaseFieldDefinition::create('string')
+      ->setTranslatable(TRUE)
+      ->setLabel(t('Subtitle'))
+      ->setDescription(t('The subtitle of the course entity.'))
+      ->setRequired(TRUE)
+      ->setSetting('max_length', 255)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -5,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'string',
+        'weight' => -5,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Status'))
       ->setDescription(t('A boolean indicating whether the course is enabled.'))
@@ -189,17 +207,17 @@ class Course extends ContentEntityBase implements CourseInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['description'] = BaseFieldDefinition::create('text_long')
+    $fields['description'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Description'))
       ->setDescription(t('A description of the course.'))
       ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
+        'type' => 'string_textarea',
         'weight' => 10,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => 'string_default',
         'label' => 'above',
         'weight' => 10,
       ])
@@ -255,6 +273,11 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
       ->setClass(ComputedChildrenField::class);
+
+    $fields['weight'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Weight'))
+      ->setDescription(t('The weight of this term in relation to other terms.'))
+      ->setDefaultValue(0);
 
     return $fields;
   }
