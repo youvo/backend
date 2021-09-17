@@ -5,3 +5,8 @@ services:
       - { name: paramconverter }
     arguments:
       [ '@entity_type.manager', '@entity.repository' ]
+
+  youvo_projects.route_subscriber:
+    class: Drupal\youvo_projects\EventSubscriber\YouvoProjectsRouteSubscriber
+    tags:
+      - { name: event_subscriber }
