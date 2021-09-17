@@ -97,10 +97,13 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   public function buildHeader() {
     $header['name'] = $this->t('Name');
     $header['bundle'] = $this->t('Type');
-    $header = $header + parent::buildHeader();
+    $header['operations'] = [
+      'data' => $this->t('Operations'),
+      'class' => ['text-align-right'],
+    ];
     $header['weight'] = [
       'data' => $this->t('Weight'),
-      'class' => ['tabledrag-hide'],
+      'class' => ['tabledrag-hide', 'text-align-right'],
     ];
     return $header;
   }
@@ -133,6 +136,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);
+    $row['operations']['#wrapper_attributes']['class'] = ['text-align-right'];
     // Add weight column.
     $row['weight'] = [
       '#type' => 'weight',

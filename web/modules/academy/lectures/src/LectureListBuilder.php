@@ -180,7 +180,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     ];
     $header['weight'] = [
       'data' => $this->t('Weight'),
-      'class' => ['tabledrag-hide'],
+      'class' => ['tabledrag-hide', 'text-align-right'],
     ];
     return $header;
   }
