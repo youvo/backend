@@ -32,7 +32,7 @@ use Drupal\lectures\LectureInterface;
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
  *   },
  *   base_table = "lectures",
