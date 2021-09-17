@@ -5,7 +5,7 @@ dependencies:
     - paragraphs.type.illustration
 id: paragraph--illustration
 disabled: false
-path: paragraphs
+path: paragraphs/illustration
 resourceType: illustration
 resourceFields:
   id:
@@ -20,40 +20,16 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  revision_id:
-    disabled: true
-    fieldName: revision_id
-    publicName: revision_id
-    enhancer:
-      id: ''
   langcode:
     fieldName: langcode
     publicName: langcode
     enhancer:
       id: ''
     disabled: false
-  bundle:
+  type:
     disabled: true
-    fieldName: bundle
-    publicName: bundle
-    enhancer:
-      id: ''
-  revision_timestamp:
-    disabled: true
-    fieldName: revision_timestamp
-    publicName: revision_timestamp
-    enhancer:
-      id: ''
-  revision_uid:
-    disabled: true
-    fieldName: revision_uid
-    publicName: revision_uid
-    enhancer:
-      id: ''
-  revision_log:
-    disabled: true
-    fieldName: revision_log
-    publicName: revision_log
+    fieldName: type
+    publicName: type
     enhancer:
       id: ''
   title:
@@ -63,11 +39,11 @@ resourceFields:
     enhancer:
       id: ''
   uid:
+    disabled: true
     fieldName: uid
     publicName: author
     enhancer:
       id: ''
-    disabled: false
   created:
     disabled: true
     fieldName: created
@@ -80,15 +56,15 @@ resourceFields:
     publicName: changed
     enhancer:
       id: ''
-  weight:
-    fieldName: weight
-    publicName: weight
-    enhancer:
-      id: ''
-    disabled: false
   lecture:
     fieldName: lecture
     publicName: lecture
+    enhancer:
+      id: ''
+    disabled: false
+  weight:
+    fieldName: weight
+    publicName: weight
     enhancer:
       id: ''
     disabled: false
@@ -96,18 +72,6 @@ resourceFields:
     disabled: true
     fieldName: default_langcode
     publicName: default_langcode
-    enhancer:
-      id: ''
-  revision_default:
-    disabled: true
-    fieldName: revision_default
-    publicName: revision_default
-    enhancer:
-      id: ''
-  revision_translation_affected:
-    disabled: true
-    fieldName: revision_translation_affected
-    publicName: revision_translation_affected
     enhancer:
       id: ''
   body:
