@@ -237,11 +237,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setTranslatable(TRUE)
       ->setDescription(new TranslatableMarkup('The time that the question was last edited.'));
 
-    $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(new TranslatableMarkup('Weight'))
-      ->setDescription(new TranslatableMarkup('The weight of this term in relation to other terms.'))
-      ->setDefaultValue(0);
-
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;

@@ -31,8 +31,8 @@ trait ChildEntityTrait {
       throw new UnsupportedEntityTypeDefinitionException(
         'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
     }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
+    if (!$entity_type->hasKey('parent') || !$entity_type->hasKey('weight')) {
+      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" or "weight" entity key.');
     }
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
@@ -47,6 +47,10 @@ trait ChildEntityTrait {
         ])
         ->setDisplayConfigurable('form', FALSE)
         ->setDisplayConfigurable('view', FALSE),
+      $entity_type->getKey('weight') => BaseFieldDefinition::create('integer')
+        ->setLabel(t('Weight'))
+        ->setDescription(t('The weight of this term in relation to other terms.'))
+        ->setDefaultValue(0),
     ];
   }
 
