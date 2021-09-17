@@ -191,22 +191,6 @@ class Lecture extends ContentEntityBase implements LectureInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['description'] = BaseFieldDefinition::create('text_long')
-      ->setTranslatable(TRUE)
-      ->setLabel(t('Description'))
-      ->setDescription(t('A description of the lecture.'))
-      ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
-        'weight' => 10,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'type' => 'text_default',
-        'label' => 'above',
-        'weight' => 10,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
