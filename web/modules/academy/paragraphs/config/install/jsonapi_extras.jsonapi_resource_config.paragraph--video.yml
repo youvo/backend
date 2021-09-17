@@ -110,14 +110,14 @@ resourceFields:
     publicName: revision_translation_affected
     enhancer:
       id: ''
-  field_body:
-    fieldName: field_body
+  body:
+    fieldName: body
     publicName: body
     enhancer:
       id: ''
     disabled: false
-  field_url:
-    fieldName: field_url
+  url:
+    fieldName: url
     publicName: url
     enhancer:
       id: ''
