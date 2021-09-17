@@ -170,7 +170,6 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setTranslatable(TRUE)
       ->setLabel(t('Subtitle'))
       ->setDescription(t('The subtitle of the course entity.'))
-      ->setRequired(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
@@ -178,7 +177,7 @@ class Course extends ContentEntityBase implements CourseInterface {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
-        'label' => 'hidden',
+        'label' => 'above',
         'type' => 'string',
         'weight' => -5,
       ])
