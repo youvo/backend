@@ -1,0 +1,100 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - quizzes.type.single_choice
+id: question--single_choice
+disabled: false
+path: questions/single_choice
+resourceType: single_choice
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+    disabled: false
+  langcode:
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+    disabled: false
+  type:
+    disabled: true
+    fieldName: type
+    publicName: type
+    enhancer:
+      id: ''
+  body:
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+    disabled: false
+  help:
+    fieldName: help
+    publicName: help
+    enhancer:
+      id: ''
+    disabled: false
+  options:
+    fieldName: options
+    publicName: options
+    enhancer:
+      id: ''
+    disabled: false
+  answers:
+    fieldName: answers
+    publicName: answers
+    enhancer:
+      id: ''
+    disabled: false
+  explanation:
+    fieldName: explanation
+    publicName: explanation
+    enhancer:
+      id: ''
+    disabled: false
+  uid:
+    disabled: true
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  created:
+    disabled: true
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  paragraph:
+    fieldName: paragraph
+    publicName: paragraph
+    enhancer:
+      id: ''
+    disabled: false
+  weight:
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
+    disabled: false
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
