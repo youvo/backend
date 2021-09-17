@@ -104,6 +104,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
