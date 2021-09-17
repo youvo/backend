@@ -226,11 +226,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setTranslatable(TRUE)
       ->setDescription(new TranslatableMarkup('The time that the paragraph was last edited.'));
 
-    $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Weight'))
-      ->setDescription(t('The weight of this term in relation to other terms.'))
-      ->setDefaultValue(0);
-
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
