@@ -4,11 +4,11 @@ namespace Drupal\paragraphs\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
 use Drupal\paragraphs\ParagraphInterface;
@@ -38,25 +38,17 @@ use Drupal\user\UserInterface;
  *   },
  *   base_table = "paragraphs",
  *   data_table = "paragraphs_field_data",
- *   revision_table = "paragraphs_revision",
- *   revision_data_table = "paragraphs_field_revision",
- *   show_revision_ui = TRUE,
  *   translatable = TRUE,
+ *   fieldable = TRUE,
  *   admin_permission = "administer paragraphs",
  *   entity_keys = {
  *     "id" = "id",
- *     "revision" = "revision_id",
  *     "langcode" = "langcode",
  *     "bundle" = "type",
  *     "label" = "title",
  *     "uuid" = "uuid",
  *     "parent" = "lecture",
  *     "weight" = "weight"
- *   },
- *   revision_metadata_keys = {
- *     "revision_user" = "revision_uid",
- *     "revision_created" = "revision_timestamp",
- *     "revision_log_message" = "revision_log"
  *   },
  *   links = {
  *     "add-form" = "/admin/content/lectures/{lecture}/paragraphs/add/{paragraph_type}",
@@ -69,12 +61,10 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
  * )
  */
-class Paragraph extends RevisionableContentEntityBase implements ChildEntityInterface, ParagraphInterface {
+class Paragraph extends ContentEntityBase implements ChildEntityInterface, ParagraphInterface {
 
-  use ChildEntityTrait{
-    urlRouteParameters as childEntityUrlRouteParameters;
-  }
   use EntityChangedTrait;
+  use ChildEntityTrait;
 
   /**
    * {@inheritdoc}
@@ -164,7 +154,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['title'] = BaseFieldDefinition::create('string')
-      ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setLabel(t('Internal Title'))
       ->setDescription(t('The title of the paragraph entity.'))
@@ -182,7 +171,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the paragraph author.'))
@@ -228,19 +216,6 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function urlRouteParameters($rel) {
-    $uri_route_parameters = $this->childEntityUrlRouteParameters($rel);
-
-    if (str_starts_with($rel, 'revision')) {
-      $uri_route_parameters[$this->getEntityTypeId() . '_revision'] = $this->getRevisionId();
-    }
-
-    return $uri_route_parameters;
   }
 
   /**
