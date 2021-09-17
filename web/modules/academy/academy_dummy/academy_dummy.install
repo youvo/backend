@@ -5,6 +5,7 @@
  * Install, update and uninstall functions for the Academy Dummy module.
  */
 
+use Drupal\courses\Entity\Course;
 use Drupal\Component\Utility\Random;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
@@ -23,6 +24,14 @@ function academy_dummy_install() {
   // Object for random content.
   $random = new Random();
 
+  // Add course.
+  $course = Course::create([
+    'title' => ucwords($random->word(10) . ' Course'),
+    'description' => $random->paragraphs(2),
+    'status' => 1,
+  ]);
+  $course->save();
+
   // Create lectures.
   for ($i = 1; $i <= 5; $i++) {
 
@@ -31,6 +40,7 @@ function academy_dummy_install() {
       'title' => ucwords($random->word(10) . ' Lecture'),
       'description' => $random->paragraphs(2),
       'status' => 1,
+      'course' => $course->id(),
     ]);
     $lecture->save();
     $lectures[] = $lecture;
@@ -99,6 +109,7 @@ function academy_dummy_install() {
       'title' => ucwords($random->word(10) . ' Quiz'),
       'description' => $random->paragraphs(2),
       'status' => 1,
+      'course' => $course->id(),
     ]);
     $lecture->save();
 

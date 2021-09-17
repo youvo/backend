@@ -2,6 +2,8 @@
 
 namespace Drupal\lectures\Entity;
 
+use Drupal\child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityTrait;
 use Drupal\child_entities\Plugin\Field\ComputedChildrenField;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -42,7 +44,9 @@ use Drupal\lectures\LectureInterface;
  *     "id" = "id",
  *     "langcode" = "langcode",
  *     "label" = "title",
- *     "uuid" = "uuid"
+ *     "uuid" = "uuid",
+ *     "parent" = "course",
+ *     "weight" = "weight"
  *   },
  *   links = {
  *     "add-form" = "/admin/content/lectures/add",
@@ -53,19 +57,27 @@ use Drupal\lectures\LectureInterface;
  *   }
  * )
  */
-class Lecture extends ContentEntityBase implements LectureInterface {
+class Lecture extends ContentEntityBase implements ChildEntityInterface, LectureInterface {
 
   use EntityChangedTrait;
+  use ChildEntityTrait;
 
   /**
    * {@inheritdoc}
    *
    * When a new lecture entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
+   *
+   * We set the mandatory course value here!
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     parent::preCreate($storage, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
+    if (!isset($values['uid'])) {
+      $values['uid'] = \Drupal::currentUser()->id();
+    }
+    if (!isset($values['course']) && $route_match = \Drupal::service('current_route_match')->getParameter('course')) {
+      $values['course'] = $route_match;
+    }
   }
 
   /**
@@ -145,6 +157,8 @@ class Lecture extends ContentEntityBase implements LectureInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
@@ -246,6 +260,8 @@ class Lecture extends ContentEntityBase implements LectureInterface {
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
       ->setClass(ComputedChildrenField::class);
+
+    $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
   }

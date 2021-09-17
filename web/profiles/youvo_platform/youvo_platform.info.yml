@@ -42,6 +42,7 @@ install:
   # Academy
   - academy
   - child_entities
+  - courses
   - lectures
   - paragraphs
   - quizzes
