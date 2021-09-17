@@ -98,7 +98,10 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     $header['name'] = $this->t('Name');
     $header['bundle'] = $this->t('Type');
     $header = $header + parent::buildHeader();
-    $header['weight'] = $this->t('Weight');
+    $header['weight'] = [
+      'data' => $this->t('Weight'),
+      'class' => ['tabledrag-hide'],
+    ];
     return $header;
   }
 
