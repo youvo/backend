@@ -2,13 +2,13 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.paragraph.field_questions
+    - field.storage.paragraph.questions
     - paragraphs.type.quiz
     - quizzes.type.free_text
     - quizzes.type.multiple_choice
     - quizzes.type.single_choice
-id: paragraph.quiz.field_questions
-field_name: field_questions
+id: paragraph.quiz.questions
+field_name: questions
 entity_type: paragraph
 bundle: quiz
 label: Questions

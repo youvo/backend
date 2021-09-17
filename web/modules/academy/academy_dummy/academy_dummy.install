@@ -163,7 +163,7 @@ function academy_dummy_install() {
     $question_targets[] = ['target_id' => $question->id()];
 
     // Append questions to quiz.
-    $quiz->set('field_questions', $question_targets);
+    $quiz->set('questions', $question_targets);
     $quiz->save();
   }
 

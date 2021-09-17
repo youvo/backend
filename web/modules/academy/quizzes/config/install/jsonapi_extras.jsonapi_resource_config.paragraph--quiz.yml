@@ -74,8 +74,8 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
-  field_questions:
-    fieldName: field_questions
+  questions:
+    fieldName: questions
     publicName: questions
     enhancer:
       id: ''

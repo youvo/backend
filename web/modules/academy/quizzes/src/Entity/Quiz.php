@@ -16,7 +16,7 @@ class Quiz extends Paragraph {
     if (!$this->isNew()) {
       // Remove question references in quiz paragraph entity.
       /** @var \Drupal\quizzes\Entity\Question[] $questions */
-      $questions_reference = $this->get('field_questions')->getValue();
+      $questions_reference = $this->get('questions')->getValue();
       $question_ids = array_column($questions_reference, 'target_id');
       $questions = \Drupal::entityTypeManager()
         ->getStorage('question')
