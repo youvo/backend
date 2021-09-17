@@ -220,6 +220,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
         $paragraph->save();
       }
     }
+    parent::submitForm($form, $form_state);
   }
 
   /**
