@@ -34,9 +34,7 @@ class ComputedChildrenField extends EntityReferenceFieldItemList {
     }
 
     // Attach the query result to the list.
-    $this->setValue(array_map(function ($id) {
-      return ['target_id' => $id];
-    }, $query->execute()));
+    $this->setValue(array_map(fn ($id) => ['target_id' => $id], $query->execute()));
   }
 
 }
