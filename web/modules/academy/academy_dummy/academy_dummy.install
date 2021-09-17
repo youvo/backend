@@ -42,7 +42,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'text',
       'title' => ucwords($random->word(10) . ' Text'),
-      'field_body' => $random->paragraphs(2),
+      'body' => $random->paragraphs(2),
       'lecture' => $lecture->id(),
       'weight' => -5,
     ]);
@@ -51,8 +51,8 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'illustration',
       'title' => ucwords($random->word(10) . ' Illustration'),
-      'field_body' => $random->paragraphs(2),
-      'field_url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.png',
+      'body' => $random->paragraphs(2),
+      'url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.png',
       'lecture' => $lecture->id(),
       'weight' => -4,
     ]);
@@ -61,7 +61,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'excursus',
       'title' => ucwords($random->word(10) . ' Excursus'),
-      'field_body' => $random->paragraphs(2),
+      'body' => $random->paragraphs(2),
       'lecture' => $lecture->id(),
       'weight' => -3,
     ]);
@@ -70,8 +70,8 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'picture',
       'title' => ucwords($random->word(10) . ' Picture'),
-      'field_body' => $random->paragraphs(2),
-      'field_url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.jpg',
+      'body' => $random->paragraphs(2),
+      'url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.jpg',
       'lecture' => $lecture->id(),
       'weight' => -2,
     ]);
@@ -80,8 +80,8 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'video',
       'title' => ucwords($random->word(10) . ' ' . $random->word(6)),
-      'field_url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.mp4',
-      'field_body' => $random->paragraphs(2),
+      'url' => '/' . $random->word(6) . '/' . $random->word(6) . '/' . $random->word(6) . '.mp4',
+      'body' => $random->paragraphs(2),
       'lecture' => $lecture->id(),
       'weight' => -1,
     ]);
@@ -106,7 +106,7 @@ function academy_dummy_install() {
     $quiz = Paragraph::create([
       'type' => 'quiz',
       'title' => ucwords($random->word(10) . ' ' . $random->word(6)),
-      'field_body' => $random->paragraphs(2),
+      'body' => $random->paragraphs(2),
       'lecture' => $lecture->id(),
       'weight' => 0,
     ]);
