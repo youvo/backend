@@ -16,21 +16,21 @@ class ComputedChildrenField extends EntityReferenceFieldItemList {
    * Computes the field value.
    *
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function computeValue() {
     // Fetch the parent and the desired target type.
     $parent = $this->getEntity();
-    $target_type = $this->getSetting('target_type');
+    $target_type_id = $this->getSetting('target_type');
 
     // Query for children referencing the parent.
-    $query = \Drupal::entityQuery($target_type)
+    $query = \Drupal::entityQuery($target_type_id)
       ->condition($parent->getEntityTypeId(), $parent->id());
 
     // Sort by weight if the field is available.
-    $fields = \Drupal::service('entity_field.manager')
-      ->getBaseFieldDefinitions($target_type);
-    if (array_key_exists('weight', $fields)) {
-      $query->sort('weight');
+    $target_type = \Drupal::entityTypeManager()->getDefinition($target_type_id);
+    if ($target_type->hasKey('weight')) {
+      $query->sort($target_type->getKey('weight'));
     }
 
     // Attach the query result to the list.
