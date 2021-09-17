@@ -1,5 +1,0 @@
-entity.lecture.collection:
-  title: Lectures
-  description: List of lectures
-  route_name: entity.lecture.collection
-  parent: system.admin_content
