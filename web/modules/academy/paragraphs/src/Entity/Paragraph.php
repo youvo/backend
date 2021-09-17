@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
@@ -167,8 +166,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
-      ->setLabel(new TranslatableMarkup('Internal Title'))
-      ->setDescription(new TranslatableMarkup('The title of the paragraph entity.'))
+      ->setLabel(t('Internal Title'))
+      ->setDescription(t('The title of the paragraph entity.'))
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
@@ -185,8 +184,8 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
-      ->setLabel(new TranslatableMarkup('Author'))
-      ->setDescription(new TranslatableMarkup('The user ID of the paragraph author.'))
+      ->setLabel(t('Author'))
+      ->setDescription(t('The user ID of the paragraph author.'))
       ->setSetting('target_type', 'user')
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -206,9 +205,9 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(new TranslatableMarkup('Authored on'))
+      ->setLabel(t('Authored on'))
       ->setTranslatable(TRUE)
-      ->setDescription(new TranslatableMarkup('The time that the paragraph was created.'))
+      ->setDescription(t('The time that the paragraph was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -222,9 +221,9 @@ class Paragraph extends RevisionableContentEntityBase implements ChildEntityInte
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(new TranslatableMarkup('Changed'))
+      ->setLabel(t('Changed'))
       ->setTranslatable(TRUE)
-      ->setDescription(new TranslatableMarkup('The time that the paragraph was last edited.'));
+      ->setDescription(t('The time that the paragraph was last edited.'));
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
