@@ -20,7 +20,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   /**
    * The entities being listed.
    *
-   * @var \Drupal\Core\Entity\EntityInterface[]
+   * @var array
    */
   protected $entities = [];
 
@@ -104,49 +104,66 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $form['course'] = [
-      '#type' => 'details',
-      '#module_package_listing' => TRUE,
-      '#title' => $this->t('Module: Wurstsalat'),
-      '#description' => $this->t('Wurstsalat (German, literally sausage salad) is a tart sausage salad prepared with distilled white vinegar, oil and onions. A variation of the recipe adds strips of pickled gherkin. It is normally made from a sort of boiled sausage like Lyoner, stadtwurst, Regensburger Wurst (two types of cooked sausage) or extrawurst.'),
-      '#open' => FALSE,
-    ];
-
-    $form['course']['entities'] = [
-      '#type' => 'table',
-      '#header' => $this->buildHeader(),
-      '#empty' => $this->t('There are no @label yet.', ['@label' => $this->entityType->getPluralLabel()]),
-      '#tabledrag' => [
-        [
-          'action' => 'order',
-          'relationship' => 'sibling',
-          'group' => 'weight',
-        ],
-      ],
-    ];
-
-    $this->entities = $this->load();
-    $delta = count($this->entities);
-
-    foreach ($this->entities as $entity) {
-      $row = $this->buildRow($entity);
-      if (isset($row['weight'])) {
-        $row['weight']['#delta'] = $delta;
-      }
-      $form['course']['entities'][$entity->id()] = $row;
+    // Load entities and group by courses.
+    /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
+    $lectures = $this->load();
+    $lectures_grouped = [];
+    foreach ($lectures as $lecture) {
+      $lectures_grouped[$lecture->getParentEntity()->id()][$lecture->id()] = $lecture;
     }
+    $this->entities = $lectures_grouped;
 
-    $form['actions']['#type'] = 'actions';
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-      '#button_type' => 'primary',
-    ];
+    foreach ($lectures_grouped as $course_id => $lectures) {
+
+      /** @var \Drupal\courses\Entity\Course $course */
+      $course = \Drupal::entityTypeManager()->getStorage('course')->load($course_id);
+
+      $form['course'][$course_id] = [
+        '#type' => 'details',
+        '#module_package_listing' => TRUE,
+        '#title' => 'Course: ' . $course->getTitle(),
+        '#description' => '<div class="leader">' . $course->get('description')->value . '</div>',
+        '#open' => FALSE,
+      ];
+
+      $form['course'][$course_id]['lectures'] = [
+        '#type' => 'table',
+        '#header' => $this->buildHeader(),
+        '#empty' => $this->t('There are no @label yet.', ['@label' => $this->entityType->getPluralLabel()]),
+        '#tabledrag' => [
+          [
+            'action' => 'order',
+            'relationship' => 'sibling',
+            'group' => 'weight',
+          ],
+        ],
+      ];
+
+      $delta = count($lectures);
+
+      foreach ($lectures as $lecture) {
+        $row = $this->buildRow($lecture);
+        if (isset($row['weight'])) {
+          $row['weight']['#delta'] = $delta;
+        }
+        $form['course'][$course_id]['lectures'][$lecture->id()] = $row;
+      }
+
+      $form['course'][$course_id]['submit'] = [
+        '#type' => 'submit',
+        '#name' => 'submit' . $course_id,
+        '#attributes' => [
+          'class' => ['button--extrasmall'],
+          'data-id' => $course_id,
+        ],
+        '#submit' => [],
+        '#value' => $this->t('Save Order'),
+        '#button_type' => 'secondary',
+      ];
+    }
 
     return $form;
   }
@@ -155,17 +172,21 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['title'] = $this->t('Title');
+    $header['title'] = $this->t('Lecture');
     $header['status'] = $this->t('Status');
-    $header = $header + parent::buildHeader();
-    $header['weight'] = $this->t('Weight');
+    $header['operations'] = [
+      'data' => $this->t('Operations'),
+      'class' => ['text-align-right'],
+    ];
+    $header['weight'] = [
+      'data' => $this->t('Weight'),
+      'class' => ['tabledrag-hide'],
+    ];
     return $header;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\lectures\Entity\Lecture $entity */
@@ -174,13 +195,15 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     $row['#weight'] = $entity->get('weight')->value;
     // Add content columns.
     $row['title'] = [
-      '#markup' => $entity->toLink()->toString(),
+      '#markup' => $entity->getTitle(),
     ];
     $row['status'] = [
       '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);
+    $row['operations']['#wrapper_attributes']['class'] = ['text-align-right'];
+
     // Add weight column.
     $row['weight'] = [
       '#type' => 'weight',
@@ -213,6 +236,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @todo Adjust for different entities array.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
