@@ -93,7 +93,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $form['uid']['#access'] = FALSE;
     $form['created']['#access'] = FALSE;
     $form['changed']['#access'] = FALSE;
-    $form['field_questions']['#access'] = FALSE;
+    $form['questions']['#access'] = FALSE;
 
     // @todo Target wrapper with drupal-data-selector after
     // https://www.drupal.org/project/drupal/issues/2821793
@@ -398,7 +398,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         $question->save();
         $question_ids[] = ['target_id' => $question->id()];
       }
-      $this->entity->set('field_questions', $question_ids);
+      $this->entity->set('questions', $question_ids);
       $this->entity->save();
 
       // Delete stale questions from the delete queue.
