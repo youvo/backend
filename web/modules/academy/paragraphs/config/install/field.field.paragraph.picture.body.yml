@@ -2,12 +2,12 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.paragraph.field_body
-    - paragraphs.type.video
-id: paragraph.video.field_body
-field_name: field_body
+    - field.storage.paragraph.body
+    - paragraphs.type.picture
+id: paragraph.picture.body
+field_name: body
 entity_type: paragraph
-bundle: video
+bundle: picture
 label: Body
 description: ''
 required: false
