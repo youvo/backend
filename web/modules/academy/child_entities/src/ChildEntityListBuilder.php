@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -77,6 +78,18 @@ class ChildEntityListBuilder extends EntityListBuilder {
       $query->pager($this->limit);
     }
     return $query->execute();
+  }
+
+  /**
+   * If the child entity list is a form, save the parent with each form submit.
+   *
+   * This avoids caching problems - for example when saving weights for
+   * children.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->parent->save();
   }
 
 }
