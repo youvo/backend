@@ -36,7 +36,7 @@ use Drupal\lectures\LectureInterface;
  *   base_table = "lectures",
  *   data_table = "lectures_field_data",
  *   translatable = TRUE,
- *   fieldable = TRUE,
+ *   fieldable = FALSE,
  *   admin_permission = "administer lectures",
  *   entity_keys = {
  *     "id" = "id",
