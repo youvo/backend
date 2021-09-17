@@ -232,25 +232,4 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
     }
   }
 
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    parent::postSave($storage);
-    // Append reference to parent entity. We store these references in a field.
-    // Then we can easily query all paragraphs.
-    if (!$update) {
-      /** @var \Drupal\lectures\Entity\Lecture $parent */
-      if ($parent = $this->getParentEntity()) {
-        $parent->get('paragraphs')->appendItem(['target_id' => $this->id()]);
-        $parent->save();
-      }
-      else {
-        throw new EntityStorageException('Could not append reference to parent entity.');
-      }
-    }
-  }
-
 }
