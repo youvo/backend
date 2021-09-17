@@ -18,7 +18,7 @@ use Drupal\lectures\LectureInterface;
  * @ContentEntityType(
  *   id = "lecture",
  *   label = @Translation("Lecture"),
- *   label_collection = @Translation("Lectures"),
+ *   label_collection = @Translation("Academy"),
  *   handlers = {
  *     "access" = "Drupal\lectures\LectureAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
