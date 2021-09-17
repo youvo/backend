@@ -107,14 +107,15 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $form['mxdule'] = [
+    $form['course'] = [
       '#type' => 'details',
+      '#module_package_listing' => TRUE,
       '#title' => $this->t('Module: Wurstsalat'),
       '#description' => $this->t('Wurstsalat (German, literally sausage salad) is a tart sausage salad prepared with distilled white vinegar, oil and onions. A variation of the recipe adds strips of pickled gherkin. It is normally made from a sort of boiled sausage like Lyoner, stadtwurst, Regensburger Wurst (two types of cooked sausage) or extrawurst.'),
       '#open' => FALSE,
     ];
 
-    $form['mxdule']['entities'] = [
+    $form['course']['entities'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
       '#empty' => $this->t('There are no @label yet.', ['@label' => $this->entityType->getPluralLabel()]),
@@ -135,7 +136,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       if (isset($row['weight'])) {
         $row['weight']['#delta'] = $delta;
       }
-      $form['mxdule']['entities'][$entity->id()] = $row;
+      $form['course']['entities'][$entity->id()] = $row;
     }
 
     $form['actions']['#type'] = 'actions';
