@@ -26,8 +26,8 @@ function academy_dummy_install() {
 
   // Add course.
   $course = Course::create([
-    'title' => $random->sentences(2, TRUE),
-    'subtitle' => $random->sentences(4, TRUE),
+    'title' => $random->sentences(3, TRUE),
+    'subtitle' => $random->sentences(5, TRUE),
     'description' => $random->paragraphs(1),
     'status' => 1,
   ]);
@@ -38,7 +38,7 @@ function academy_dummy_install() {
 
     // Create lecture.
     $lecture = Lecture::create([
-      'title' => $random->sentences(2, TRUE),
+      'title' => $random->sentences(4, TRUE),
       'description' => $random->paragraphs(1),
       'status' => 1,
       'course' => $course->id(),
@@ -107,7 +107,7 @@ function academy_dummy_install() {
 
     // Create lecture.
     $lecture = Lecture::create([
-      'title' => 'Quiz: ' . $random->sentences(2, TRUE),
+      'title' => 'Quiz: ' . $random->sentences(3, TRUE),
       'description' => $random->paragraphs(1),
       'status' => 1,
       'course' => $course->id(),
