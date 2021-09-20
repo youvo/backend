@@ -28,7 +28,7 @@ function academy_dummy_install() {
   $course = Course::create([
     'title' => $random->sentences(3, TRUE),
     'subtitle' => $random->sentences(5, TRUE),
-    'description' => $random->paragraphs(1),
+    'description' => rtrim($random->paragraphs(1)),
     'status' => 1,
     'uid' => 1,
   ]);
@@ -40,7 +40,7 @@ function academy_dummy_install() {
     // Create lecture.
     $lecture = Lecture::create([
       'title' => $random->sentences(4, TRUE),
-      'description' => $random->paragraphs(1),
+      'description' => rtrim($random->paragraphs(1)),
       'status' => 1,
       'course' => $course->id(),
       'uid' => 1,
@@ -55,7 +55,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'text',
       'title' => $random->sentences(2, TRUE),
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'lecture' => $lecture->id(),
       'weight' => -5,
       'uid' => 1,
@@ -65,7 +65,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'illustration',
       'title' => $random->sentences(2, TRUE),
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.png',
       'lecture' => $lecture->id(),
       'weight' => -4,
@@ -76,7 +76,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'excursus',
       'title' => $random->sentences(2, TRUE),
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'lecture' => $lecture->id(),
       'weight' => -3,
       'uid' => 1,
@@ -86,7 +86,7 @@ function academy_dummy_install() {
     $paragraph = Paragraph::create([
       'type' => 'picture',
       'title' => $random->sentences(2, TRUE),
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.jpg',
       'lecture' => $lecture->id(),
       'weight' => -2,
@@ -98,7 +98,7 @@ function academy_dummy_install() {
       'type' => 'video',
       'title' => $random->sentences(2, TRUE),
       'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.mp4',
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'lecture' => $lecture->id(),
       'weight' => -1,
       'uid' => 1,
@@ -115,7 +115,7 @@ function academy_dummy_install() {
     // Create lecture.
     $lecture = Lecture::create([
       'title' => 'Quiz: ' . $random->sentences(3, TRUE),
-      'description' => $random->paragraphs(1),
+      'description' => rtrim($random->paragraphs(1)),
       'status' => 1,
       'course' => $course->id(),
       'uid' => 1,
@@ -126,7 +126,7 @@ function academy_dummy_install() {
     $quiz = Paragraph::create([
       'type' => 'quiz',
       'title' => $random->sentences(2, TRUE),
-      'body' => $random->paragraphs(1),
+      'body' => rtrim($random->paragraphs(1)),
       'lecture' => $lecture->id(),
       'weight' => 0,
       'uid' => 1,
@@ -143,8 +143,8 @@ function academy_dummy_install() {
     $question = Question::create([
       'type' => 'free_text',
       'body' => $random->sentences(8, TRUE) . '?',
-      'help' => $random->paragraphs(1),
-      'explanation' => $random->paragraphs(1),
+      'help' => rtrim($random->paragraphs(1)),
+      'explanation' => rtrim($random->paragraphs(1)),
       'paragraph' => $quiz->id(),
       'weight' => -3,
       'uid' => 1,
@@ -156,8 +156,8 @@ function academy_dummy_install() {
     $question = Question::create([
       'type' => 'single_choice',
       'body' => $random->sentences(8, TRUE) . '?',
-      'help' => $random->paragraphs(1),
-      'explanation' => $random->paragraphs(1),
+      'help' => rtrim($random->paragraphs(1)),
+      'explanation' => rtrim($random->paragraphs(1)),
       'options' => $random->sentences(3, TRUE) .
       ' & ' . $random->sentences(3, TRUE) .
       ' & ' . $random->sentences(3, TRUE),
@@ -173,8 +173,8 @@ function academy_dummy_install() {
     $question = Question::create([
       'type' => 'multiple_choice',
       'body' => $random->sentences(8, TRUE) . '?',
-      'help' => $random->paragraphs(1),
-      'explanation' => $random->paragraphs(1),
+      'help' => rtrim($random->paragraphs(1)),
+      'explanation' => rtrim($random->paragraphs(1)),
       'options' => $random->sentences(3, TRUE) .
       ' & ' . $random->sentences(3, TRUE) .
       ' & ' . $random->sentences(3, TRUE),
