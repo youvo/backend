@@ -112,10 +112,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
     $lectures = $this->load();
     $lectures_grouped = [];
+    $course_ids = [];
     foreach ($lectures as $lecture) {
+      $course_ids[] = $lecture->getParentEntity()->id();
       $lectures_grouped[$lecture->getParentEntity()->id()][$lecture->id()] = $lecture;
     }
     $this->entities = $lectures_grouped;
+
+    // Find empty courses.
+    $empty_query = \Drupal::entityQuery('course')
+      ->condition('id', $course_ids, 'NOT IN')
+      ->execute();
+    foreach ($empty_query as $empty_course_id) {
+      $lectures_grouped[$empty_course_id] = [];
+    }
 
     foreach ($lectures_grouped as $course_id => $lectures) {
 
