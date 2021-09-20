@@ -119,7 +119,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     }
     $this->entities = $lectures_grouped;
 
-    // Find empty courses.
+    // Find empty courses. This is a little squishy. But just an easy workaround
+    // because this is the lecture collection.
     $empty_query = \Drupal::entityQuery('course')
       ->condition('id', $course_ids, 'NOT IN')
       ->execute();
@@ -127,6 +128,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       $lectures_grouped[$empty_course_id] = [];
     }
 
+    // Iterate lectures by courses and display as details.
     foreach ($lectures_grouped as $course_id => $lectures) {
 
       /** @var \Drupal\courses\Entity\Course $course */
@@ -173,6 +175,18 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         ],
         '#value' => $this->t('+ Add Lecture'),
         '#button_type' => 'primary',
+      ];
+
+      $form['course'][$course_id]['edit_course'] = [
+        '#type' => 'submit',
+        '#submit' => ['::redirectEditCourse'],
+        '#name' => 'edit_course_' . $course_id,
+        '#attributes' => [
+          'class' => ['button--small'],
+          'data-id' => $course_id,
+        ],
+        '#value' => $this->t('Edit Course'),
+        '#button_type' => 'secondary',
       ];
 
       $form['course'][$course_id]['submit'] = [
@@ -261,11 +275,10 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   /**
    * {@inheritdoc}
    *
-   * @todo Adjust for different entities array.
-   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // @todo Adjust for different entities array.
     foreach ($form_state->getValue('entities') as $id => $value) {
       /** @var \Drupal\lectures\Entity\Lecture $lecture */
       $lecture = $this->entities[$id];
@@ -288,6 +301,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   public function redirectAddLecture(array &$form, FormStateInterface $form_state) {
     $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
     $redirect = Url::fromRoute('entity.lecture.add_form', ['course' => $course_id]);
+    $form_state->setRedirectUrl($redirect);
+  }
+
+  /**
+   * Submit handler that redirects user to course edit page.
+   *
+   * @param array $form
+   *   The current form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form_state.
+   */
+  public function redirectEditCourse(array &$form, FormStateInterface $form_state) {
+    $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
+    $redirect = Url::fromRoute('entity.course.edit_form', ['course' => $course_id]);
     $form_state->setRedirectUrl($redirect);
   }
 
