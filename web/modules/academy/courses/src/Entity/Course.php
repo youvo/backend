@@ -203,13 +203,15 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setTranslatable(TRUE)
       ->setDescription(t('The time that the course was last edited.'));
 
-    $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
-      ->setSetting('target_type', 'lecture')
-      ->setDescription(t('Computes the lectures referencing this course.'))
-      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      ->setComputed(TRUE)
-      ->setClass(ComputedChildrenBaseField::class);
+    if (\Drupal::moduleHandler()->moduleExists('lectures')) {
+      $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
+        ->setLabel(t('Computed Children.'))
+        ->setSetting('target_type', 'lecture')
+        ->setDescription(t('Computes the lectures referencing this course.'))
+        ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+        ->setComputed(TRUE)
+        ->setClass(ComputedChildrenBaseField::class);
+    }
 
     $fields['weight'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Weight'))
