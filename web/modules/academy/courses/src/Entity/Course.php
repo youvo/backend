@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Url;
 use Drupal\courses\CourseInterface;
 use Drupal\user\UserInterface;
 
@@ -20,9 +21,6 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Course"),
  *   label_collection = @Translation("Courses"),
  *   handlers = {
- *     "view_builder" = "Drupal\courses\CourseViewBuilder",
- *     "list_builder" = "Drupal\courses\CourseListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\courses\Form\CourseForm",
  *       "edit" = "Drupal\courses\Form\CourseForm",
@@ -44,10 +42,8 @@ use Drupal\user\UserInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/content/course/add",
- *     "canonical" = "/course/{course}",
  *     "edit-form" = "/admin/content/course/{course}/edit",
  *     "delete-form" = "/admin/content/course/{course}/delete",
- *     "collection" = "/admin/content/course"
  *   },
  * )
  */
@@ -221,6 +217,20 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setDefaultValue(0);
 
     return $fields;
+  }
+
+  /**
+   * Overwrite call toUrl for non-present canonical route.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function toUrl($rel = 'canonical', array $options = []) {
+    if ($rel == 'canonical') {
+      return Url::fromUri('route:<nolink>')->setOptions($options);
+    }
+    else {
+      return parent::toUrl($rel, $options);
+    }
   }
 
 }
