@@ -32,6 +32,12 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
+  machine_name:
+    fieldName: machine_name
+    publicName: machine_name
+    enhancer:
+      id: ''
+    disabled: false
   subtitle:
     fieldName: subtitle
     publicName: subtitle
