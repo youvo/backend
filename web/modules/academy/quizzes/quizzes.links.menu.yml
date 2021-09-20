@@ -1,0 +1,5 @@
+entity.question_type.collection:
+  title: 'Question types'
+  parent: system.admin_structure
+  description: 'Manage Question types.'
+  route_name: entity.question_type.collection
