@@ -11,7 +11,7 @@ use Drupal\Core\Link;
 /**
  * Class ChildEntityController.
  *
- *  Returns responses for Child Entity routes.
+ * Returns responses for Child Entity routes.
  */
 class ChildEntityController extends EntityController {
 
@@ -22,8 +22,6 @@ class ChildEntityController extends EntityController {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   *
-   * @todo include parent method more smoothly.
    */
   public function addPage($entity_type_id) {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
@@ -89,7 +87,7 @@ class ChildEntityController extends EntityController {
     foreach ($bundles as $bundle_name => $bundle_info) {
       $build['#bundles'][$bundle_name] = [
         'label' => $bundle_info['label'],
-        'description' => isset($bundle_info['description']) ? $bundle_info['description'] : '',
+        'description' => $bundle_info['description'] ?? '',
         'add_link' => Link::createFromRoute($bundle_info['label'], $form_route_name, [
           $bundle_argument => $bundle_name,
           $parent_argument => $parent_id,
