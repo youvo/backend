@@ -132,6 +132,21 @@ class Course extends ContentEntityBase implements CourseInterface {
   /**
    * {@inheritdoc}
    */
+  public function getMachineName() {
+    return $this->get('machine_name')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMachineName($machine_name) {
+    $this->set('machine_name', $machine_name);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());
     return $this;
@@ -155,6 +170,13 @@ class Course extends ContentEntityBase implements CourseInterface {
         'weight' => -5,
       ]);
 
+    $fields['machine_name'] = BaseFieldDefinition::create('string')
+      ->setTranslatable(TRUE)
+      ->setLabel(t('Machine name'))
+      ->setDescription(t('The machine name of the course entity.'))
+      ->setRequired(TRUE)
+      ->setSetting('max_length', EntityTypeInterface::BUNDLE_MAX_LENGTH);
+
     $fields['subtitle'] = BaseFieldDefinition::create('string')
       ->setTranslatable(TRUE)
       ->setLabel(t('Subtitle'))
@@ -162,7 +184,7 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -5,
+        'weight' => -3,
       ]);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')

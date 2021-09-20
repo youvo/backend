@@ -28,7 +28,26 @@ interface CourseInterface extends ContentEntityInterface, EntityOwnerInterface, 
    * @return \Drupal\courses\CourseInterface
    *   The called course entity.
    */
-  public function setTitle($title);
+  public function setTitle(string $title);
+
+  /**
+   * Gets the course machine name.
+   *
+   * @return string
+   *   Machine name of the course.
+   */
+  public function getMachineName();
+
+  /**
+   * Sets the course machine name.
+   *
+   * @param string $machine_name
+   *   The course title.
+   *
+   * @return \Drupal\courses\CourseInterface
+   *   The called course entity.
+   */
+  public function setMachineName(string $machine_name);
 
   /**
    * Gets the course creation timestamp.
@@ -47,7 +66,7 @@ interface CourseInterface extends ContentEntityInterface, EntityOwnerInterface, 
    * @return \Drupal\courses\CourseInterface
    *   The called course entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime(int $timestamp);
 
   /**
    * Returns the course status.
@@ -66,6 +85,6 @@ interface CourseInterface extends ContentEntityInterface, EntityOwnerInterface, 
    * @return \Drupal\courses\CourseInterface
    *   The called course entity.
    */
-  public function setStatus($status);
+  public function setStatus(bool $status);
 
 }
