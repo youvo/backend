@@ -238,7 +238,11 @@ class Course extends ContentEntityBase implements CourseInterface {
     $fields['weight'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Weight'))
       ->setDescription(t('The weight of this term in relation to other terms.'))
-      ->setDefaultValue(0);
+      ->setDefaultValue(0)
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => 20,
+      ]);
 
     return $fields;
   }
