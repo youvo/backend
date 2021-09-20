@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -152,17 +153,30 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         $form['course'][$course_id]['lectures'][$lecture->id()] = $row;
       }
 
+      $form['course'][$course_id]['add_lecture'] = [
+        '#type' => 'submit',
+        '#submit' => ['::redirectAddLecture'],
+        '#name' => 'add_lecture_' . $course_id,
+        '#attributes' => [
+          'class' => ['button--small'],
+          'data-id' => $course_id,
+        ],
+        '#value' => $this->t('+ Add Lecture'),
+        '#button_type' => 'primary',
+      ];
+
       $form['course'][$course_id]['submit'] = [
         '#type' => 'submit',
         '#name' => 'submit' . $course_id,
         '#attributes' => [
-          'class' => ['button--extrasmall'],
+          'class' => ['button--small'],
           'data-id' => $course_id,
         ],
         '#submit' => [],
         '#value' => $this->t('Save Order'),
         '#button_type' => 'secondary',
       ];
+
     }
 
     return $form;
@@ -251,6 +265,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         $lecture->save();
       }
     }
+  }
+
+  /**
+   * Submit handler that redirects user to lecture add page.
+   *
+   * @param array $form
+   *   The current form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form_state.
+   */
+  public function redirectAddLecture(array &$form, FormStateInterface $form_state) {
+    $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
+    $redirect = Url::fromRoute('entity.lecture.add_form', ['course' => $course_id]);
+    $form_state->setRedirectUrl($redirect);
   }
 
 }

@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Drupal\lectures\LectureInterface;
 
@@ -49,11 +50,10 @@ use Drupal\lectures\LectureInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/lectures/add",
- *     "canonical" = "/academy/lectures/{lecture}",
- *     "edit-form" = "/admin/content/lectures/{lecture}/edit",
+ *     "add-form" = "/admin/content/courses/{course}/lectures/add",
+ *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/edit",
  *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
- *     "collection" = "/admin/content/lectures"
+ *     "collection" = "/admin/content/academy"
  *   }
  * )
  */
@@ -229,6 +229,20 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
+  }
+
+  /**
+   * Overwrite call toUrl for non-present canonical route.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function toUrl($rel = 'canonical', array $options = []) {
+    if ($rel == 'canonical') {
+      return Url::fromUri('route:<nolink>')->setOptions($options);
+    }
+    else {
+      return parent::toUrl($rel, $options);
+    }
   }
 
 }
