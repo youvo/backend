@@ -3,7 +3,7 @@
  # Exit on error.
  set -e
  
- SITE_FOLDER=_test-backend
+ SITE_FOLDER=_dev/backend
  PATH=$PATH:~/www/$SITE_FOLDER/vendor/bin
 
  cd ~
