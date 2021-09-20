@@ -22,6 +22,8 @@ class ChildEntityRouteContext implements ContextProviderInterface {
   use StringTranslationTrait;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   private $entityTypeManager;
