@@ -39,6 +39,13 @@ install:
   - youvo
   - youvo_lifecycle
   - youvo_projects
+  # Academy
+  - academy
+  - child_entities
+  - courses
+  - lectures
+  - paragraphs
+  - quizzes
   # Change later
   - basic_auth
 themes:

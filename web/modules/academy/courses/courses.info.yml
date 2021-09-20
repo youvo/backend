@@ -1,0 +1,10 @@
+name: Courses
+type: module
+description: 'Provides a course entity.'
+core_version_requirement: '^8.8 || ^9'
+package: Academy
+
+dependencies:
+  - academy
+  - child_entities
+  - drupal:text

@@ -1,0 +1,32 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.questions
+    - paragraphs.type.quiz
+    - quizzes.type.free_text
+    - quizzes.type.multiple_choice
+    - quizzes.type.single_choice
+id: paragraph.quiz.questions
+field_name: questions
+entity_type: paragraph
+bundle: quiz
+label: Questions
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:question'
+  handler_settings:
+    target_bundles:
+      free_text: free_text
+      multiple_choice: multiple_choice
+      single_choice: single_choice
+    sort:
+      field: weight
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: free_text
+field_type: entity_reference

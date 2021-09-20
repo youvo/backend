@@ -1,0 +1,8 @@
+name: Academy
+type: module
+description: Academy base module.
+core_version_requirement: '^8.8 || ^9'
+package: 'Academy'
+
+dependencies:
+  - youvo

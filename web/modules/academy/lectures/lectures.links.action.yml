@@ -1,0 +1,6 @@
+course.add_form:
+  route_name: entity.course.add_form
+  title: 'Add course'
+  weight: -20
+  appears_on:
+    - entity.lecture.collection
