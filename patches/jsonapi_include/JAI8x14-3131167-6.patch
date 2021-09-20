@@ -1,0 +1,143 @@
+diff --git a/modules/contrib/jsonapi_include/src/JsonapiParse.php b/modules/contrib/jsonapi_include/src/JsonapiParse.php
+index 84d6e85..9cc4e09 100644
+--- a/modules/contrib/jsonapi_include/src/JsonapiParse.php
++++ b/modules/contrib/jsonapi_include/src/JsonapiParse.php
+@@ -19,6 +19,13 @@ class JsonapiParse implements JsonapiParseInterface {
+    */
+   protected $included;
+ 
++  /**
++   * Allowed includes.
++   *
++   * @var array
++   */
++  protected $allowed;
++
+   /**
+    * Parse json api.
+    *
+@@ -96,7 +103,7 @@ class JsonapiParse implements JsonapiParseInterface {
+    * @return array
+    *   The result.
+    */
+-  protected function flattenIncluded($resource) {
++  protected function flattenIncluded($resource, $key) {
+     if (isset($this->included[$resource['type']][$resource['id']])) {
+       $object = $this->resolveAttributes($this->included[$resource['type']][$resource['id']]);
+       if (isset($resource['meta'])) {
+@@ -106,7 +113,7 @@ class JsonapiParse implements JsonapiParseInterface {
+     else {
+       $object = $resource;
+     }
+-    $result = $this->resolveRelationships($object);
++    $result = $this->resolveRelationships($object, $key);
+     return $result;
+   }
+ 
+@@ -116,10 +123,17 @@ class JsonapiParse implements JsonapiParseInterface {
+    * @param array|mixed $resource
+    *   The resource to verify.
+    *
++   * @param string $key
++   *   Relationship key.
++   *
+    * @return bool
+    *   Check result.
+    */
+-  protected function isIncluded($resource) {
++  protected function isIncluded($resource, $key) {
++    if (!in_array($key, $this->allowed) && count(preg_grep('/^' . preg_quote($key) . '\..*/', $this->allowed)) === 0) {
++      return FALSE;
++    }
++
+     return isset($resource['type']) && isset($this->included[$resource['type']]);
+   }
+ 
+@@ -129,12 +143,15 @@ class JsonapiParse implements JsonapiParseInterface {
+    * @param array|mixed $data
+    *   The data for resolve.
+    *
++   * @param string $key
++   *   Relationship key.
++   *
+    * @return array
+    *   Result.
+    */
+-  protected function resolveData($data) {
+-    if ($this->isIncluded($data)) {
+-      return $this->flattenIncluded($data);
++  protected function resolveData($data, $key) {
++    if ($this->isIncluded($data, $key)) {
++      return $this->flattenIncluded($data, $key);
+     }
+     else {
+       return $data;
+@@ -147,21 +164,24 @@ class JsonapiParse implements JsonapiParseInterface {
+    * @param array|mixed $links
+    *   The data for resolve.
+    *
++   * @param string $key
++   *   Relationship key.
++   *
+    * @return array
+    *   Result.
+    */
+-  protected function resolveRelationshipData($links) {
++  protected function resolveRelationshipData($links, $key) {
+     if (empty($links['data'])) {
+       return $links;
+     }
+     $output = [];
+     if (!$this->isAssoc($links['data'])) {
+       foreach ($links['data'] as $item) {
+-        $output[] = $this->resolveData($item);
++        $output[] = $this->resolveData($item, $key);
+       }
+     }
+     else {
+-      $output = $this->resolveData($links['data']);
++      $output = $this->resolveData($links['data'], $key);
+     }
+     return $output;
+   }
+@@ -172,16 +192,19 @@ class JsonapiParse implements JsonapiParseInterface {
+    * @param array|mixed $resource
+    *   The data for resolve.
+    *
++   * @param string $parent_key
++   *   The parent key for relationship.
++   *
+    * @return array
+    *   Result.
+    */
+-  protected function resolveRelationships($resource) {
++  protected function resolveRelationships($resource, $parent_key) {
+     if (empty($resource['relationships'])) {
+       return $resource;
+     }
+ 
+     foreach ($resource['relationships'] as $key => $value) {
+-      $resource[$key] = $this->resolveRelationshipData($value);
++      $resource[$key] = $this->resolveRelationshipData($value, trim("$parent_key.$key", '.'));
+     }
+     unset($resource['relationships']);
+     return $resource;
+@@ -198,7 +221,7 @@ class JsonapiParse implements JsonapiParseInterface {
+    */
+   protected function parseResource($item) {
+     $attributes = $this->resolveAttributes($item);
+-    return $this->resolveRelationships($attributes);
++    return $this->resolveRelationships($attributes, '');
+   }
+ 
+   /**
+@@ -227,6 +250,8 @@ class JsonapiParse implements JsonapiParseInterface {
+       return $json;
+     }
+     $this->included = $this->groupIncludes($json);
++    $include_parameter = \Drupal::request()->query->get('include');
++    $this->allowed = array_map('trim', explode(',', $include_parameter));
+     $data = [];
+     if (!$this->isAssoc($json['data'])) {
+       foreach ($json['data'] as $item) {
+

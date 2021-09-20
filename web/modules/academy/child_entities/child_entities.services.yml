@@ -1,0 +1,6 @@
+services:
+  academy.child_entity_route_context:
+    class: 'Drupal\child_entities\Context\ChildEntityRouteContext'
+    arguments: ['@current_route_match', '@entity_type.manager', '@string_translation']
+    tags:
+      - { name: 'context_provider' }

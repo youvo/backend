@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.body
+    - paragraphs.type.illustration
+id: paragraph.illustration.body
+field_name: body
+entity_type: paragraph
+bundle: illustration
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

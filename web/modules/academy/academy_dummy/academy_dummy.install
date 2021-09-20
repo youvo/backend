@@ -1,0 +1,222 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Academy Dummy module.
+ */
+
+use Drupal\courses\Entity\Course;
+use Drupal\Component\Utility\Random;
+use Drupal\lectures\Entity\Lecture;
+use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\quizzes\Entity\Question;
+
+/**
+ * Implements hook_install().
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function academy_dummy_install() {
+
+  // Set Course titles.
+  $course_titles = [
+    'Introduction',
+    'Problem',
+    'Solution',
+    'Practice',
+    'Project Management',
+    'Workshop',
+    'First Project',
+  ];
+
+  $course_machine_names = [
+    'introduction',
+    'problem',
+    'solution',
+    'practice',
+    'management',
+    'workshop',
+    'project',
+  ];
+
+  // Object for random content.
+  $random = new Random();
+
+  // Create lectures.
+  for ($j = 0; $j < 7; $j++) {
+
+    // Initialize lectures.
+    $lectures = [];
+
+    // Add course.
+    $course = Course::create([
+      'title' => $course_titles[$j],
+      'subtitle' => $random->sentences(5, TRUE),
+      'description' => rtrim($random->paragraphs(1)),
+      'status' => 1,
+      'uid' => 1,
+      'machine_name' => $course_machine_names[$j],
+      'weight' => -7 + $j,
+    ]);
+    $course->save();
+
+    // Create lectures.
+    for ($i = 1; $i <= 5; $i++) {
+
+      // Create lecture.
+      $lecture = Lecture::create([
+        'title' => $random->sentences(4, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'uid' => 1,
+        'weight' => -6 + $i,
+      ]);
+      $lecture->save();
+      $lectures[] = $lecture;
+    }
+
+    // Add some paragraphs to the lectures.
+    foreach ($lectures as $lecture) {
+
+      $paragraph = Paragraph::create([
+        'type' => 'text',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -5,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      $paragraph = Paragraph::create([
+        'type' => 'illustration',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.png',
+        'lecture' => $lecture->id(),
+        'weight' => -4,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      $paragraph = Paragraph::create([
+        'type' => 'excursus',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -3,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      $paragraph = Paragraph::create([
+        'type' => 'picture',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.jpg',
+        'lecture' => $lecture->id(),
+        'weight' => -2,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      $paragraph = Paragraph::create([
+        'type' => 'video',
+        'title' => $random->sentences(2, TRUE),
+        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.mp4',
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -1,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Update computed fields.
+      $lecture->save();
+    }
+
+    // Add a lecture that contains a quiz.
+    if (\Drupal::service('module_handler')->moduleExists('quizzes')) {
+
+      // Create lecture.
+      $lecture = Lecture::create([
+        'title' => 'Quiz: ' . $random->sentences(3, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'uid' => 1,
+      ]);
+      $lecture->save();
+
+      // Create quiz.
+      $quiz = Paragraph::create([
+        'type' => 'quiz',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => 0,
+        'uid' => 1,
+      ]);
+      $quiz->save();
+
+      // Update computed fields.
+      $lecture->save();
+
+      // Create questions for quiz.
+      $question_targets = [];
+
+      // Free text question.
+      $question = Question::create([
+        'type' => 'free_text',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $quiz->id(),
+        'weight' => -3,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Single choice question.
+      $question = Question::create([
+        'type' => 'single_choice',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'options' => $random->sentences(3, TRUE) .
+        ' & ' . $random->sentences(3, TRUE) .
+        ' & ' . $random->sentences(3, TRUE),
+        'answers' => rand(1, 3),
+        'paragraph' => $quiz->id(),
+        'weight' => -2,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Multiple choice question.
+      $question = Question::create([
+        'type' => 'multiple_choice',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'options' => $random->sentences(3, TRUE) .
+        ' & ' . $random->sentences(3, TRUE) .
+        ' & ' . $random->sentences(3, TRUE),
+        'answers' => rand(1, 3),
+        'paragraph' => $quiz->id(),
+        'weight' => -1,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Append questions to quiz.
+      $quiz->set('questions', $question_targets);
+      $quiz->save();
+    }
+  }
+
+}

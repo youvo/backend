@@ -1,0 +1,12 @@
+name: Academy Dummy
+type: module
+description: 'Generates dummy content for academy entities.'
+core_version_requirement: '^8.8 || ^9'
+package: Academy
+
+dependencies:
+  - academy
+  - lectures
+  - paragraphs
+  - quizzes
+  - youvo_dummy
