@@ -4,7 +4,7 @@ namespace Drupal\lectures\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
-use Drupal\child_entities\Plugin\Field\ComputedChildrenField;
+use Drupal\child_entities\Plugin\Field\ComputedChildrenBaseField;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -259,7 +259,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
       ->setDescription(t('Computes the paragraphs referencing this lecture.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
-      ->setClass(ComputedChildrenField::class);
+      ->setClass(ComputedChildrenBaseField::class);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
