@@ -126,11 +126,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'type' => 'textarea',
         'rows' => 2,
         'weight' => 10,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'basic_string',
-        'label' => 'above',
-        'weight' => 10,
       ]);
 
     $fields['help'] = BaseFieldDefinition::create('string_long')
@@ -140,11 +135,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setDisplayOptions('form', [
         'type' => 'textarea',
         'rows' => 3,
-        'weight' => 11,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'basic_string',
-        'label' => 'above',
         'weight' => 11,
       ]);
 
@@ -157,11 +147,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'rows' => 3,
         'placeholder' => t('Option 1 &amp;&#10;Option 2 &amp;&#10;Option 3'),
         'weight' => 12,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'basic_string',
-        'label' => 'above',
-        'weight' => 12,
       ]);
 
     $fields['answers'] = BaseFieldDefinition::create('string')
@@ -171,11 +156,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setDisplayOptions('form', [
         'type' => 'textfield',
         'placeholder' => t('1 &amp; 2 &amp; 3'),
-        'weight' => 12,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'basic_string',
-        'label' => 'above',
         'weight' => 12,
       ]);
 
@@ -187,49 +167,18 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
         'type' => 'textarea',
         'weight' => 12,
         'rows' => 3,
-      ])
-      ->setDisplayOptions('view', [
-        'type' => 'basic_string',
-        'label' => 'above',
-        'weight' => 12,
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the question author.'))
-      ->setSetting('target_type', 'user')
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => 60,
-        ],
-        'weight' => 15,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'author',
-        'weight' => 15,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
+      ->setSetting('target_type', 'user');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the question was created.'))
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'timestamp',
-        'weight' => 20,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
-        'weight' => 20,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
+      ->setDescription(t('The time that the question was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
