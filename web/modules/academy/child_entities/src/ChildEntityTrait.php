@@ -39,14 +39,7 @@ trait ChildEntityTrait {
         ->setLabel(new TranslatableMarkup('Parent ID'))
         ->setSetting('target_type', $entity_type->getKey('parent'))
         ->setTranslatable(FALSE)
-        ->setReadOnly(TRUE)
-        ->setDisplayOptions('view', [
-          'type' => 'entity_reference_label',
-          'label' => 'inline',
-          'weight' => -3,
-        ])
-        ->setDisplayConfigurable('form', FALSE)
-        ->setDisplayConfigurable('view', FALSE),
+        ->setReadOnly(TRUE),
       $entity_type->getKey('weight') => BaseFieldDefinition::create('integer')
         ->setLabel(t('Weight'))
         ->setDescription(t('The weight of this term in relation to other terms.'))
