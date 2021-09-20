@@ -63,8 +63,12 @@ class QuestionTypeForm extends BundleEntityFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function save(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\quizzes\Entity\QuestionType $entity_type */
     $entity_type = $this->entity;
 
     $entity_type->set('id', trim($entity_type->id()));
@@ -78,6 +82,9 @@ class QuestionTypeForm extends BundleEntityFormBase {
     }
     elseif ($status == SAVED_NEW) {
       $message = $this->t('The question type %name has been added.', $t_args);
+    }
+    else {
+      $message = '';
     }
     $this->messenger()->addStatus($message);
 
