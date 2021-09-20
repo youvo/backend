@@ -31,7 +31,13 @@ class CourseForm extends ContentEntityForm {
       $this->logger('courses')->notice('Updated new course %label.', $logger_arguments);
     }
 
-    $form_state->setRedirect('entity.course.canonical', ['course' => $entity->id()]);
+    if ($this->moduleHandler->moduleExists('lectures')) {
+      $form_state->setRedirect('entity.lecture.collection');
+    }
+    else {
+      $form_state->setRedirect('admin.content');
+    }
+
   }
 
 }
