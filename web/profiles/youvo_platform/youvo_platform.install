@@ -93,7 +93,7 @@ function youvo_platform_install() {
   $first_user = User::load(1);
   $first_user->addRole('administrator');
   $first_user->addRole('creative');
-  $first_user->set('field_name', 'Administrator');
+  $first_user->set('field_name', 'Admira Mineur');
   $first_user->save();
 
   // Add dummy projects installing youvo_dummy.
