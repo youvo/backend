@@ -45,17 +45,17 @@ resourceFields:
       id: ''
     disabled: false
   options:
+    disabled: true
     fieldName: options
     publicName: options
     enhancer:
       id: ''
-    disabled: false
   answers:
+    disabled: true
     fieldName: answers
     publicName: answers
     enhancer:
       id: ''
-    disabled: false
   explanation:
     fieldName: explanation
     publicName: explanation
