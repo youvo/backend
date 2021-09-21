@@ -2,7 +2,12 @@ langcode: en
 status: true
 dependencies:
   module:
+    - jsonapi_defaults
     - lectures
+third_party_settings:
+  jsonapi_defaults:
+    default_sorting: {  }
+    page_limit: 50
 id: lecture--lecture
 disabled: false
 path: lectures
@@ -38,12 +43,6 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  description:
-    fieldName: description
-    publicName: description
-    enhancer:
-      id: ''
-    disabled: false
   uid:
     fieldName: uid
     publicName: author
@@ -62,15 +61,27 @@ resourceFields:
     publicName: changed
     enhancer:
       id: ''
-  default_langcode:
-    disabled: true
-    fieldName: default_langcode
-    publicName: default_langcode
+  weight:
+    fieldName: weight
+    publicName: weight
     enhancer:
       id: ''
+    disabled: false
   paragraphs:
     fieldName: paragraphs
     publicName: paragraphs
     enhancer:
       id: ''
     disabled: false
+  course:
+    fieldName: course
+    publicName: course
+    enhancer:
+      id: ''
+    disabled: false
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
