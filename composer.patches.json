@@ -5,7 +5,8 @@
     	  	"Issue #2570593: Allow entities to be subclassed using bundle classes (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2570593-163.patch" 
 		},
 		"drupal/jsonapi_include": {
-			"Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch"
+			"Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
+			"Issue #3238138: Move JSON:API Include settings to JSON:API configuration pages": "patches/jsonapi_include/JAI8x-14-3238138-1.patch"
 		}
 	}
 }
