@@ -31,7 +31,7 @@ class LectureForm extends ContentEntityForm {
       $this->logger('lectures')->notice('Updated new lecture %label.', $logger_arguments);
     }
 
-    $form_state->setRedirect('entity.lecture.canonical', ['lecture' => $entity->id()]);
+    $form_state->setRedirect('entity.lecture.collection');
   }
 
 }
