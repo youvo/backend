@@ -2,18 +2,22 @@ langcode: en
 status: true
 dependencies:
   module:
+    - jsonapi_defaults
     - user
+third_party_settings:
+  jsonapi_defaults:
+    page_limit: 50
 id: user--user
 disabled: false
 path: users
 resourceType: user
 resourceFields:
   uid:
+    disabled: true
     fieldName: uid
     publicName: uid
     enhancer:
       id: ''
-    disabled: false
   uuid:
     fieldName: uuid
     publicName: uuid
@@ -21,35 +25,35 @@ resourceFields:
       id: ''
     disabled: false
   langcode:
+    disabled: true
     fieldName: langcode
     publicName: langcode
     enhancer:
       id: ''
-    disabled: false
   preferred_langcode:
+    disabled: true
     fieldName: preferred_langcode
     publicName: preferred_langcode
     enhancer:
       id: ''
-    disabled: false
   preferred_admin_langcode:
+    disabled: true
     fieldName: preferred_admin_langcode
     publicName: preferred_admin_langcode
     enhancer:
       id: ''
-    disabled: false
   name:
+    disabled: true
     fieldName: name
     publicName: name
     enhancer:
       id: ''
-    disabled: false
   pass:
+    disabled: true
     fieldName: pass
     publicName: pass
     enhancer:
       id: ''
-    disabled: false
   mail:
     fieldName: mail
     publicName: mail
@@ -75,29 +79,29 @@ resourceFields:
       id: ''
     disabled: false
   changed:
+    disabled: true
     fieldName: changed
     publicName: changed
     enhancer:
       id: ''
-    disabled: false
   access:
+    disabled: true
     fieldName: access
     publicName: access
     enhancer:
       id: ''
-    disabled: false
   login:
+    disabled: true
     fieldName: login
     publicName: login
     enhancer:
       id: ''
-    disabled: false
   init:
+    disabled: true
     fieldName: init
     publicName: init
     enhancer:
       id: ''
-    disabled: false
   roles:
     fieldName: roles
     publicName: roles
@@ -105,11 +109,11 @@ resourceFields:
       id: ''
     disabled: false
   default_langcode:
+    disabled: true
     fieldName: default_langcode
     publicName: default_langcode
     enhancer:
       id: ''
-    disabled: false
   field_about:
     fieldName: field_about
     publicName: about

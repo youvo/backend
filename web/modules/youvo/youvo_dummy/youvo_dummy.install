@@ -196,8 +196,17 @@ function youvo_dummy_install() {
     'completed',
   ];
 
+  // Some time to use.
+  $current_time = Drupal::time()->getRequestTime();
+  $one_year_ago = $current_time - 31536000;
+
+  // Total projects.
+  $total = 100;
+  $max_created_increment = 31536000 / $total;
+  $created = $one_year_ago;
+
   // Create random content.
-  for ($i = 1; $i <= 100; $i++) {
+  for ($i = 1; $i <= $total; $i++) {
 
     // Get field values.
     $skills = youvo_dummy_get_random_skills();
@@ -206,11 +215,12 @@ function youvo_dummy_install() {
     $image_file = youvo_dummy_get_stock_image($i);
 
     // Set random time in last year.
-    $current_time = Drupal::time()->getRequestTime();
-    $one_year_ago = $current_time - 31536000;
     $rnd_time = rand($one_year_ago, $current_time);
     $date = Drupal::service('date.formatter')
       ->format($rnd_time, 'custom', 'Y-m-d');
+
+    // Increase created time randomly.
+    $created += rand(1, $max_created_increment);
 
     // Get random state.
     shuffle($lifecycle_states);
@@ -225,6 +235,7 @@ function youvo_dummy_install() {
         'summary' => rtrim($random->paragraphs(1)),
       ],
       'langcode' => 'en',
+      'created' => $created,
       'uid' => $organisation_ids[array_rand($organisation_ids)],
       'status' => 1,
       'field_workload' => rand(1, 5),

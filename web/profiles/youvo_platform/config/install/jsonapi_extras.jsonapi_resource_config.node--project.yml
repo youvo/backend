@@ -3,17 +3,25 @@ status: true
 dependencies:
   config:
     - node.type.project
+  module:
+    - jsonapi_defaults
+third_party_settings:
+  jsonapi_defaults:
+    default_sorting:
+      'sort:created#path': created
+      'sort:created#direction': DESC
+    page_limit: 50
 id: node--project
 disabled: false
 path: projects
 resourceType: project
 resourceFields:
   nid:
+    disabled: true
     fieldName: nid
     publicName: nid
     enhancer:
       id: ''
-    disabled: false
   uuid:
     fieldName: uuid
     publicName: uuid
@@ -21,11 +29,11 @@ resourceFields:
       id: ''
     disabled: false
   vid:
+    disabled: true
     fieldName: vid
     publicName: vid
     enhancer:
       id: ''
-    disabled: false
   langcode:
     fieldName: langcode
     publicName: langcode
@@ -33,29 +41,29 @@ resourceFields:
       id: ''
     disabled: false
   type:
+    disabled: true
     fieldName: type
     publicName: type
     enhancer:
       id: ''
-    disabled: false
   revision_timestamp:
+    disabled: true
     fieldName: revision_timestamp
     publicName: revision_timestamp
     enhancer:
       id: ''
-    disabled: false
   revision_uid:
+    disabled: true
     fieldName: revision_uid
     publicName: revision_uid
     enhancer:
       id: ''
-    disabled: false
   revision_log:
+    disabled: true
     fieldName: revision_log
     publicName: revision_log
     enhancer:
       id: ''
-    disabled: false
   status:
     fieldName: status
     publicName: status
@@ -81,11 +89,11 @@ resourceFields:
       id: ''
     disabled: false
   changed:
+    disabled: true
     fieldName: changed
     publicName: changed
     enhancer:
       id: ''
-    disabled: false
   promote:
     fieldName: promote
     publicName: promote
@@ -99,29 +107,29 @@ resourceFields:
       id: ''
     disabled: false
   default_langcode:
+    disabled: true
     fieldName: default_langcode
     publicName: default_langcode
     enhancer:
       id: ''
-    disabled: false
   revision_default:
+    disabled: true
     fieldName: revision_default
     publicName: revision_default
     enhancer:
       id: ''
-    disabled: false
   revision_translation_affected:
+    disabled: true
     fieldName: revision_translation_affected
     publicName: revision_translation_affected
     enhancer:
       id: ''
-    disabled: false
   path:
+    disabled: true
     fieldName: path
     publicName: path
     enhancer:
       id: ''
-    disabled: false
   body:
     fieldName: body
     publicName: body
