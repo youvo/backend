@@ -34,10 +34,10 @@ function youvo_dummy_install() {
     'field_xing' => 'fredatonito',
     'field_about' => rtrim($random->paragraphs(2)),
     'field_skills' => youvo_dummy_get_random_skills(),
-    'name' => 'fredolina@youvo.org',
-    'mail' => 'fredolina@youvo.org',
+    'name' => 'hello@youvo.org',
+    'mail' => 'hello@youvo.org',
     'roles' => ['creative'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
@@ -66,7 +66,7 @@ function youvo_dummy_install() {
     'name' => 'alexandria@youvo.org',
     'mail' => 'alexandria@youvo.org',
     'roles' => ['creative'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
@@ -95,7 +95,7 @@ function youvo_dummy_install() {
     'name' => 'frechie@youvo.org',
     'mail' => 'frechie@youvo.org',
     'roles' => ['creative'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
@@ -121,7 +121,7 @@ function youvo_dummy_install() {
     'name' => 'hello@brueckengehen.org',
     'mail' => 'hello@brueckengehen.org',
     'roles' => ['organisation'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
@@ -146,7 +146,7 @@ function youvo_dummy_install() {
     'name' => 'hello@vogelscheuchenseelsorge.org',
     'mail' => 'hello@vogelscheuchenseelsorge.org',
     'roles' => ['organisation'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
@@ -171,7 +171,7 @@ function youvo_dummy_install() {
     'name' => 'hello@blk.gov',
     'mail' => 'hello@blk.gov',
     'roles' => ['organisation'],
-    'pass' => 'drupal',
+    'pass' => 'admin',
     'status' => 1,
   ];
 
