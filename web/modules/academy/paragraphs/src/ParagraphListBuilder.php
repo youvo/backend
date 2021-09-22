@@ -135,7 +135,9 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#markup' => $bundle->label(),
     ];
     // Contains operation column.
-    $row = $row + parent::buildRow($entity);
+    // @todo Fix route entity parameters.
+    // $row = $row + parent::buildRow($entity);
+    $row['operations']['data'] = [];
     $row['operations']['#wrapper_attributes']['class'] = ['text-align-right'];
     // Add weight column.
     $row['weight'] = [

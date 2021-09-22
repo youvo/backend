@@ -1,7 +1,7 @@
-view lectures:
-  title: 'View lectures content'
-manage lectures:
-  title: 'Manage lectures content'
+# Permissions for Lecture entities are inherited from the origin
+# entity Course. Here, we only specify permissions to administer
+# lectures.
+
 administer lectures:
   title: 'Administer lectures settings'
   restrict access: true

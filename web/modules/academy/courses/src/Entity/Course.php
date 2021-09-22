@@ -21,6 +21,7 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Course"),
  *   label_collection = @Translation("Courses"),
  *   handlers = {
+ *     "access" = "Drupal\courses\CourseAccessControlHandler",
  *     "form" = {
  *       "add" = "Drupal\courses\Form\CourseForm",
  *       "edit" = "Drupal\courses\Form\CourseForm",
@@ -33,7 +34,7 @@ use Drupal\user\UserInterface;
  *   base_table = "course",
  *   data_table = "course_field_data",
  *   translatable = TRUE,
- *   admin_permission = "access course overview",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
