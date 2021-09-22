@@ -35,16 +35,18 @@ class ChildEntityListBuilder extends EntityListBuilder {
    *   The Child Entity Route Match.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
+   *   Thrown when the entity type does not implement ChildEntityInterface
+   *   or if it does not have "parent" and "weight" entity keys.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match) {
     if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
       throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
+        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
     }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
+    if (!$entity_type->hasKey('parent') || !$entity_type->hasKey('weight')) {
+      throw new UnsupportedEntityTypeDefinitionException(
+        'The entity type ' . $entity_type->id() . ' does not have a "parent" or "weight" entity key.');
     }
-
     parent::__construct($entity_type, $storage);
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
@@ -83,8 +85,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
   /**
    * If the child entity list is a form, save the parent with each form submit.
    *
-   * This avoids caching problems - for example when saving weights for
-   * children.
+   * This avoids caching problems, for example when saving weights for children.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

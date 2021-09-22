@@ -76,4 +76,14 @@ interface ChildEntityInterface extends EntityInterface {
    */
   public function setParentId(int $id);
 
+  /**
+   * Gets origin entity of descendant tree.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The origin entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function getOriginEntity();
+
 }
