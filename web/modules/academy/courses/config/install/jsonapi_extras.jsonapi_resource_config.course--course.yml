@@ -3,6 +3,10 @@ status: true
 dependencies:
   module:
     - courses
+    - jsonapi_defaults
+third_party_settings:
+  jsonapi_defaults:
+    page_limit: 50
 id: course--course
 disabled: false
 path: courses
