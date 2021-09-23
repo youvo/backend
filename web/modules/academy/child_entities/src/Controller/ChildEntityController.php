@@ -2,10 +2,9 @@
 
 namespace Drupal\child_entities\Controller;
 
+use Drupal\child_entities\ChildEntityEnsureTrait;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
-use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\Controller\EntityController;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Link;
 
 /**
@@ -16,6 +15,7 @@ use Drupal\Core\Link;
 class ChildEntityController extends EntityController {
 
   use ChildEntityRouteContextTrait;
+  use ChildEntityEnsureTrait;
 
   /**
    * {@inheritdoc}
@@ -25,14 +25,7 @@ class ChildEntityController extends EntityController {
    */
   public function addPage($entity_type_id) {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
-    }
+    $this->entityImplementsChildEntityInterface($entity_type);
 
     $bundles = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
     $bundle_key = $entity_type->getKey('bundle');

@@ -4,13 +4,14 @@ namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
  * Provides a trait for parent information.
  */
 trait ChildEntityTrait {
+
+  use ChildEntityEnsureTrait;
 
   /**
    * Returns an array of base field definitions for publishing status.
@@ -22,18 +23,9 @@ trait ChildEntityTrait {
    *   An array of base field definitions.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   *   Thrown when the entity type does not implement ChildEntityInterface
-   *   or if it does not have "parent" and "weight" entity keys.
    */
   public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type) {
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent') || !$entity_type->hasKey('weight')) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not have a "parent" or "weight" entity key.');
-    }
+    ChildEntityEnsureTrait::entityImplementsChildEntityInterface($entity_type);
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
         ->setLabel(t('Parent ID'))

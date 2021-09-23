@@ -5,7 +5,6 @@ namespace Drupal\child_entities;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,6 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @ingroup child_entity
  */
 class ChildEntityListBuilder extends EntityListBuilder {
+
+  use ChildEntityEnsureTrait;
 
   /**
    * The parent entity.
@@ -35,18 +36,9 @@ class ChildEntityListBuilder extends EntityListBuilder {
    *   The Child Entity Route Match.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   *   Thrown when the entity type does not implement ChildEntityInterface
-   *   or if it does not have "parent" and "weight" entity keys.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match) {
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent') || !$entity_type->hasKey('weight')) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not have a "parent" or "weight" entity key.');
-    }
+    $this->entityImplementsChildEntityInterface($entity_type);
     parent::__construct($entity_type, $storage);
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
