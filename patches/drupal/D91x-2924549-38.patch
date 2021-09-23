@@ -8,12 +8,12 @@ index c8103369b6..06aab93fed 100644
      'install_finished' => [],
 +    'install_invoke_finished_hooks' => [],
    ];
- 
+
    // Allow the installation profile to modify the full list of tasks.
 @@ -1871,6 +1872,16 @@ function install_finished(&$install_state) {
    \Drupal::messenger()->addStatus($success_message);
  }
- 
+
 +/**
 + * Invokes hooks related to site installation being finished.
 + *
@@ -21,7 +21,7 @@ index c8103369b6..06aab93fed 100644
 + *   An array of information about the current installation state.
 + */
 +function install_invoke_finished_hooks(&$install_state) {
-+  \Drupal::moduleHandler()->invokeAll('site_install_finished', $install_state);
++  \Drupal::moduleHandler()->invokeAll('site_install_finished', [$install_state]);
 +}
 +
  /**
@@ -34,15 +34,15 @@ index e2ffe1320b..11561da340 100644
 @@ -502,6 +502,30 @@ function hook_install_tasks_alter(&$tasks, $install_state) {
    $tasks['install_configure_form']['function'] = 'myprofile_install_configure_form';
  }
- 
+
 +/**
 + * Perform necessary actions after Drupal being installed.
 + *
-+ * It is recommended that you implement this hook if you want to perform some 
++ * It is recommended that you implement this hook if you want to perform some
 + * actions after site is installed.
-+ * 
++ *
 + * This hook is invoked at the end of installation profile.
-+ * 
++ *
 + * @param $install_state
 + *   An array of information about the current installation state.
 + *
