@@ -1,6 +1,6 @@
-# Permissions for Paragraph entities are inherited from the parent
-# class Lecture. Here, we only specify permissions to administer
-# paragraph types.
+# Permissions for Paragraph entities are inherited from the origin
+# entity Course. Here, we only specify permissions to administer
+# paragraphs and respective types.
 
 administer paragraphs:
   title: 'Administer paragraphs'

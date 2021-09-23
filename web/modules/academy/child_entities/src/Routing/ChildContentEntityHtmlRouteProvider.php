@@ -2,8 +2,8 @@
 
 namespace Drupal\child_entities\Routing;
 
+use Drupal\child_entities\ChildEntityEnsureTrait;
 use Drupal\child_entities\Controller\ChildEntityController;
-use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Route;
  * @see \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
  */
 class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
+
+  use ChildEntityEnsureTrait;
 
   /**
    * {@inheritdoc}
@@ -34,15 +36,9 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function getRoutes(EntityTypeInterface $entity_type) {
-    $collection = parent::getRoutes($entity_type);
+    $this->entityImplementsChildEntityInterface($entity_type);
 
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
-    }
+    $collection = parent::getRoutes($entity_type);
     $parent_type = \Drupal::entityTypeManager()->getDefinition($entity_type->getKey('parent'));
     if (!$parent_type->hasLinkTemplate('canonical') && !$parent_type->hasLinkTemplate('edit-form')) {
       throw new UnsupportedEntityTypeDefinitionException('The parent entity type ' . $parent_type->id() . ' does not have a canonical or edit route.');
@@ -57,6 +53,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
         'type' => 'entity:' . $entity_type->getKey('parent'),
       ];
       $route->setOption('parameters', $option_parameters);
+      // @todo Route definition is manual at the moment. Rework maybe.
       // $this->prepareWithParentEntities($route, $entity_type);
       $collection->add($key, $route);
     }

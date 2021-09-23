@@ -2,7 +2,7 @@
 
 namespace Drupal\courses\Entity;
 
-use Drupal\child_entities\Plugin\Field\ComputedChildrenBaseField;
+use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -21,6 +21,7 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Course"),
  *   label_collection = @Translation("Courses"),
  *   handlers = {
+ *     "access" = "Drupal\courses\CourseAccessControlHandler",
  *     "form" = {
  *       "add" = "Drupal\courses\Form\CourseForm",
  *       "edit" = "Drupal\courses\Form\CourseForm",
@@ -33,7 +34,7 @@ use Drupal\user\UserInterface;
  *   base_table = "course",
  *   data_table = "course_field_data",
  *   translatable = TRUE,
- *   admin_permission = "access course overview",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -232,7 +233,7 @@ class Course extends ContentEntityBase implements CourseInterface {
         ->setDescription(t('Computes the lectures referencing this course.'))
         ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
         ->setComputed(TRUE)
-        ->setClass(ComputedChildrenBaseField::class);
+        ->setClass(ComputedChildEntityReferenceFieldItemList::class);
     }
 
     $fields['weight'] = BaseFieldDefinition::create('integer')
