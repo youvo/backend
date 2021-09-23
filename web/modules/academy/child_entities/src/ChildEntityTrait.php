@@ -4,14 +4,14 @@ namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Provides a trait for parent information.
  */
 trait ChildEntityTrait {
+
+  use ChildEntityEnsureTrait;
 
   /**
    * Returns an array of base field definitions for publishing status.
@@ -23,20 +23,12 @@ trait ChildEntityTrait {
    *   An array of base field definitions.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   *   Thrown when the entity type does not implement EntityPublishedInterface
-   *   or if it does not have a "published" entity key.
    */
   public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type) {
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entity\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent') || !$entity_type->hasKey('weight')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" or "weight" entity key.');
-    }
+    ChildEntityEnsureTrait::entityImplementsChildEntityInterface($entity_type);
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
-        ->setLabel(new TranslatableMarkup('Parent ID'))
+        ->setLabel(t('Parent ID'))
         ->setSetting('target_type', $entity_type->getKey('parent'))
         ->setTranslatable(FALSE)
         ->setReadOnly(TRUE),
@@ -65,23 +57,8 @@ trait ChildEntityTrait {
   }
 
   /**
-   * {@inheritdoc}
+   * Build route parameters.
    *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function urlRouteParameters($rel) {
-    $uri_route_parameters = parent::urlRouteParameters($rel) + [
-      $this->getParentEntityTypeId() => $this->getParentId(),
-    ];
-
-    if ($this->isParentAnotherChildEntity()) {
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
-    }
-
-    return $uri_route_parameters;
-  }
-
-  /**
    * @param array $uri_route_parameters
    *   The Child Route Parameters.
    * @param \Drupal\child_entities\ChildEntityInterface $parent_entity
@@ -97,6 +74,23 @@ trait ChildEntityTrait {
     $uri_route_parameters[$parent_entity->getParentEntityTypeId()] = $parent_entity->getParentId();
 
     if ($parent_entity->isParentAnotherChildEntity()) {
+      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
+    }
+
+    return $uri_route_parameters;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function urlRouteParameters($rel) {
+    $uri_route_parameters = parent::urlRouteParameters($rel) + [
+      $this->getParentEntityTypeId() => $this->getParentId(),
+    ];
+
+    if ($this->isParentAnotherChildEntity()) {
       $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
     }
 
@@ -159,6 +153,17 @@ trait ChildEntityTrait {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $parent);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOriginEntity() {
+    $child = $this;
+    while ($child->isParentAnotherChildEntity()) {
+      $child = $child->getParentEntity();
+    }
+    return $child->getParentEntity();
   }
 
 }

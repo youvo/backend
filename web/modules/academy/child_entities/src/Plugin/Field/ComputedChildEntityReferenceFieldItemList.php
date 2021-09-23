@@ -8,7 +8,7 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
 /**
  * Computes referencing children of parent.
  */
-class ComputedChildrenBaseField extends EntityReferenceFieldItemList {
+class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItemList {
 
   use ComputedItemListTrait;
 

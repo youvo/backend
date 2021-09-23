@@ -1,2 +1,14 @@
-access course overview:
-  title: 'Access course overview page'
+# The view and manage permissions are bequeathed to all child
+# entities (Lecture, Paragraph, Question). Therefore, these two
+# permissions govern the accessibility of the academy content.
+# @see Drupal\courses\CourseAccessControlHandler
+view courses:
+  title: 'View courses content'
+manage courses:
+  title: 'Manage courses content'
+
+# Note that this administrative permission is also reflected
+# on descendents.
+administer courses:
+  title: 'Administer courses settings'
+  restrict access: true

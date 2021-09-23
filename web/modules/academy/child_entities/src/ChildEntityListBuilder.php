@@ -5,7 +5,6 @@ namespace Drupal\child_entities;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,6 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @ingroup child_entity
  */
 class ChildEntityListBuilder extends EntityListBuilder {
+
+  use ChildEntityEnsureTrait;
 
   /**
    * The parent entity.
@@ -37,14 +38,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match) {
-    if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
-      throw new UnsupportedEntityTypeDefinitionException(
-        'The entity type ' . $entity_type->id() . ' does not implement \Drupal\child_entities\Entity\ChildEntityInterface.');
-    }
-    if (!$entity_type->hasKey('parent')) {
-      throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not have a "parent" entity key.');
-    }
-
+    $this->entityImplementsChildEntityInterface($entity_type);
     parent::__construct($entity_type, $storage);
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
@@ -83,8 +77,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
   /**
    * If the child entity list is a form, save the parent with each form submit.
    *
-   * This avoids caching problems - for example when saving weights for
-   * children.
+   * This avoids caching problems, for example when saving weights for children.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

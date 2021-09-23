@@ -15,23 +15,20 @@ class LectureForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
 
-    $entity = $this->getEntity();
-    $result = $entity->save();
-    $link = $entity->toLink($this->t('View'))->toRenderable();
-
-    $message_arguments = ['%label' => $this->entity->label()];
-    $logger_arguments = $message_arguments + ['link' => render($link)];
+    // Save entity.
+    $result = parent::save($form, $form_state);
+    $arguments = ['%label' => $this->entity->label()];
 
     if ($result == SAVED_NEW) {
-      $this->messenger()->addStatus($this->t('New lecture %label has been created.', $message_arguments));
-      $this->logger('lectures')->notice('Created new lecture %label', $logger_arguments);
+      $this->messenger()->addStatus($this->t('New lecture %label has been created.', $arguments));
+      $this->logger('lectures')->notice('Created new lecture %label', $arguments);
     }
     else {
-      $this->messenger()->addStatus($this->t('The lecture %label has been updated.', $message_arguments));
-      $this->logger('lectures')->notice('Updated new lecture %label.', $logger_arguments);
+      $this->messenger()->addStatus($this->t('The lecture %label has been updated.', $arguments));
+      $this->logger('lectures')->notice('Updated new lecture %label.', $arguments);
     }
 
-    $form_state->setRedirect('entity.lecture.canonical', ['lecture' => $entity->id()]);
+    $form_state->setRedirect('entity.lecture.collection');
   }
 
 }

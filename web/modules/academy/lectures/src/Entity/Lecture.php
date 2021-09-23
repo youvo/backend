@@ -4,7 +4,7 @@ namespace Drupal\lectures\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
-use Drupal\child_entities\Plugin\Field\ComputedChildrenBaseField;
+use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -23,7 +23,7 @@ use Drupal\lectures\LectureInterface;
  *   label = @Translation("Lecture"),
  *   label_collection = @Translation("Academy"),
  *   handlers = {
- *     "access" = "Drupal\lectures\LectureAccessControlHandler",
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\lectures\LectureListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
@@ -224,7 +224,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
       ->setDescription(t('Computes the paragraphs referencing this lecture.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
-      ->setClass(ComputedChildrenBaseField::class);
+      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
