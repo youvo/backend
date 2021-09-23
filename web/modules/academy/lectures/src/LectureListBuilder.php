@@ -239,9 +239,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
     ];
     // Contains operation column.
-    // @todo Fix route entity parameters.
-    // $row = $row + parent::buildRow($entity);
-    $row['operations']['data'] = [];
+    $row = $row + parent::buildRow($entity);
     $row['operations']['#wrapper_attributes']['class'] = ['text-align-right'];
 
     // Add weight column.
