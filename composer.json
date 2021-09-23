@@ -94,7 +94,8 @@
         "patches-file": "composer.patches.json",
   		"enable-patching": true,
   		"patchLevel": {
-		  "drupal/core": "-p2"
+		  "drupal/core": "-p2",
+          "drupal/jsonapi_include": "-p4"
 		}
     },
     "require-dev": {
