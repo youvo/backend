@@ -90,6 +90,23 @@ trait ChildEntityTrait {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function urlRouteParameters($rel) {
+    $uri_route_parameters = parent::urlRouteParameters($rel) + [
+      $this->getParentEntityTypeId() => $this->getParentId(),
+    ];
+
+    if ($this->isParentAnotherChildEntity()) {
+      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
+    }
+
+    return $uri_route_parameters;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getParentEntityTypeId() {
     if ($this->getEntityType()->hasKey('parent')) {
