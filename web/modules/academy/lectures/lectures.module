@@ -2,24 +2,12 @@
 
 /**
  * @file
- * Provides a lecture entity type.
+ * Provides hooks for a lecture entity type.
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
-
-/**
- * Implements hook_theme().
- */
-function lectures_theme() {
-  return [
-    'lecture' => [
-      'render element' => 'elements',
-    ],
-  ];
-}
 
 /**
  * Implements hook_entity_operation().
@@ -35,21 +23,4 @@ function lectures_entity_operation(EntityInterface $entity) {
     ];
   }
   return $operations;
-}
-
-/**
- * Prepares variables for lecture templates.
- *
- * Default template: lecture.html.twig.
- *
- * @param array $variables
- *   An associative array containing:
- *   - elements: An associative array containing the lecture information and any
- *     fields attached to the entity.
- *   - attributes: HTML attributes for the containing element.
- */
-function template_preprocess_lectures(array &$variables) {
-  foreach (Element::children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
-  }
 }
