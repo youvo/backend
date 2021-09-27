@@ -1,0 +1,12 @@
+services:
+  project.paramconverter:
+    class: Drupal\project\ParamConverter\ProjectParamConverter
+    tags:
+      - { name: paramconverter }
+    arguments:
+      [ '@entity_type.manager', '@entity.repository' ]
+
+  project.route_subscriber:
+    class: Drupal\project\EventSubscriber\ProjectRouteSubscriber
+    tags:
+      - { name: event_subscriber }

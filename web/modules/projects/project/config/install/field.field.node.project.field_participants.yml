@@ -1,0 +1,36 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_participants
+    - node.type.project
+id: node.project.field_participants
+field_name: field_participants
+entity_type: node
+bundle: project
+label: Participants
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:user'
+  handler_settings:
+    include_anonymous: 0
+    filter:
+      type: role
+      role:
+        creative: creative
+        administrator: '0'
+        organisation: '0'
+        observer: '0'
+        editor: '0'
+        manager: '0'
+        supervisor: '0'
+    target_bundles: null
+    sort:
+      field: name
+      direction: ASC
+    auto_create: 0
+field_type: entity_reference

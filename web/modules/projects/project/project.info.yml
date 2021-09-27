@@ -1,0 +1,15 @@
+name: 'Project'
+description: 'Defines Project entities and handles business logic.'
+package: 'Projects'
+
+type: module
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - drupal:taxonomy (>= 8.8.0)
+  - drupal:field (>= 8.8.0)
+  - drupal:user (>= 8.8.0)
+  - drupal:workflows (>= 8.8.0)
+  - filefield_paths
+  - youvo_lifecycle
+  - youvo

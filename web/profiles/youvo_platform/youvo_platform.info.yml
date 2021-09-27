@@ -36,10 +36,11 @@ install:
   # Contrib
   - filefield_paths
   - mail_login
-  # Custom
+  # Base
   - youvo
   - youvo_lifecycle
-  - youvo_projects
+  # Projects
+  - project
   # Academy
   - academy
   - child_entities
