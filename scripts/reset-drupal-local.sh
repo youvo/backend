@@ -1,7 +1,7 @@
 #!/bin/bash
 
  # Exit on error.
- set -e
+ # set -e
 
  # Login sudo.
  sudo true
@@ -63,6 +63,6 @@
 
  # Bye bye.
  echo "Exit in 3 seconds!"
- sleep 3
+ sleep 2222222
 
 

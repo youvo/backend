@@ -3,7 +3,7 @@
 namespace Drupal\youvo\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\youvo_projects\Entity\Project;
+use Drupal\project\Entity\Project;
 
 /**
  * Controller for youvo_work landing pages.
