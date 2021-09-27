@@ -66,7 +66,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
     // Get parent edit access handler. This is not the cleanest solution, but
     // create permissions should always be connected to edit permissions.
     $parent_entity_type = $this->entityType->getKey('parent');
-    return $this->getParentEntityFromRoute($parent_entity_type)->access('edit', $account, TRUE);
+    return $this->getParentEntityFromRoute($parent_entity_type)->access('update', $account, TRUE);
   }
 
 }
