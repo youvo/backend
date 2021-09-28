@@ -20,3 +20,7 @@ install:
   - openapi_jsonapi
   - openapi_ui
   - openapi_ui_redoc
+  # Dummy content
+  - youvo_dummy
+  - project_dummy
+  - academy_dummy

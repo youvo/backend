@@ -14,7 +14,7 @@ use Drupal\Core\Utility\Error;
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function courses_site_install_finished($install_state) {
+function courses_site_install_finished() {
 
   // View courses.
   $roles = ['creative', 'editor', 'observer', 'manager', 'supervisor'];
