@@ -38,8 +38,8 @@ install:
   - mail_login
   # Base
   - youvo
-  - youvo_lifecycle
   # Projects
+  - lifecycle
   - project
   # Academy
   - academy

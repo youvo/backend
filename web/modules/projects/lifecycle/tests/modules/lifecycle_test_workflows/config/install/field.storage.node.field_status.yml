@@ -2,16 +2,16 @@ langcode: en
 status: true
 dependencies:
   config:
-    - workflows.workflow.project_lifecycle
+    - workflows.workflow.bureaucracy_workflow
   module:
     - node
     - lifecycle
-id: node.field_lifecycle
-field_name: field_lifecycle
+id: node.field_status
+field_name: field_status
 entity_type: node
 type: lifecycle_item
 settings:
-  workflow: project_lifecycle
+  workflow: bureaucracy_workflow
 module: lifecycle
 locked: false
 cardinality: 1
