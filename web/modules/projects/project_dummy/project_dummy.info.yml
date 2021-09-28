@@ -1,0 +1,12 @@
+name: 'Project Dummy'
+description: 'Provides dummy project content.'
+package: Projects
+
+type: module
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - drupal:file (>= 8.8.0)
+  - drupal:user (>= 8.8.0)
+  - youvo
+  - youvo_dummy

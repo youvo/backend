@@ -5,10 +5,11 @@
  * Install, update and uninstall functions for the youvo_dummy module.
  */
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Component\Utility\Random;
 use Drupal\file\Entity\File;
-use Drupal\project\Entity\Project;
 use Drupal\user\Entity\User;
 use Drupal\Core\Utility\Error;
 
@@ -16,10 +17,15 @@ use Drupal\Core\Utility\Error;
  * Implements hook_install().
  */
 function youvo_dummy_install() {
+  module_set_weight('youvo_dummy', 1);
+}
 
-  // Initialize.
-  $creative_ids = [];
-  $organisation_ids = [];
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function youvo_dummy_site_install_finished() {
 
   // Object for random content.
   $random = new Random();
@@ -45,7 +51,6 @@ function youvo_dummy_install() {
   $creative = User::create($values);
   try {
     $creative->save();
-    $creative_ids[] = $creative->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
@@ -74,7 +79,6 @@ function youvo_dummy_install() {
   $creative = User::create($values);
   try {
     $creative->save();
-    $creative_ids[] = $creative->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
@@ -103,7 +107,6 @@ function youvo_dummy_install() {
   $creative = User::create($values);
   try {
     $creative->save();
-    $creative_ids[] = $creative->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
@@ -129,7 +132,6 @@ function youvo_dummy_install() {
   $organisation = User::create($values);
   try {
     $organisation->save();
-    $organisation_ids[] = $organisation->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
@@ -154,7 +156,6 @@ function youvo_dummy_install() {
   $organisation = User::create($values);
   try {
     $organisation->save();
-    $organisation_ids[] = $organisation->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
@@ -179,103 +180,11 @@ function youvo_dummy_install() {
   $organisation = User::create($values);
   try {
     $organisation->save();
-    $organisation_ids[] = $organisation->id();
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo_dummy')
       ->error('An error occurred while creating dummy organisation. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  // Array of cycle states.
-  $lifecycle_states = [
-    'draft',
-    'pending',
-    'open',
-    'ongoing',
-    'completed',
-  ];
-
-  // Some time to use.
-  $current_time = Drupal::time()->getRequestTime();
-  $one_year_ago = $current_time - 31536000;
-
-  // Total projects.
-  $total = 100;
-  $max_created_increment = 31536000 / $total;
-  $created = $one_year_ago;
-
-  // Create random content.
-  for ($i = 1; $i <= $total; $i++) {
-
-    // Get field values.
-    $skills = youvo_dummy_get_random_skills();
-    $causes = youvo_dummy_get_random_causes();
-    // $image_file = youvo_dummy_get_random_image();
-    $image_file = youvo_dummy_get_stock_image($i);
-
-    // Set random time in last year.
-    $rnd_time = rand($one_year_ago, $current_time);
-    $date = Drupal::service('date.formatter')
-      ->format($rnd_time, 'custom', 'Y-m-d');
-
-    // Increase created time randomly.
-    $created += rand(1, $max_created_increment);
-
-    // Get random state.
-    shuffle($lifecycle_states);
-    $state = $lifecycle_states[0];
-
-    // Create node with random information.
-    $project = Project::create([
-      'type' => 'project',
-      'title' => ucwords($random->word(10) . ' ' . $random->word(6)),
-      'body' => [
-        'value' => rtrim($random->paragraphs(3)),
-        'summary' => rtrim($random->paragraphs(1)),
-      ],
-      'langcode' => 'en',
-      'created' => $created,
-      'uid' => $organisation_ids[array_rand($organisation_ids)],
-      'status' => 1,
-      'field_workload' => rand(1, 5),
-      'field_deadline' => $date,
-      'field_city' => ucwords($random->word(12)),
-      'field_material' => $random->sentences(4),
-      'field_appreciation' => $random->sentences(8),
-      'field_skills' => $skills,
-      'field_causes' => $causes,
-      'field_image' => $image_file->id(),
-      'field_lifecycle' => $state,
-      'field_local' => rand(0, 1),
-    ]);
-
-    // Set applicants for open projects.
-    if ($state === 'open') {
-      shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(0, count($creative_ids)));
-      if (!empty($applicants)) {
-        $project->setApplicants($applicants);
-      }
-    }
-
-    // Set applicants and participants for ongoing or completed projects.
-    if ($state === 'ongoing' || $state === 'completed') {
-      shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(1, count($creative_ids)));
-      $project->setApplicants($applicants);
-      $participants = array_slice($applicants, 0, rand(1, count($applicants)));
-      $project->setParticipants($participants);
-    }
-
-    try {
-      $project->save();
-    }
-    catch (EntityStorageException $e) {
-      $variables = Error::decodeException($e);
-      \Drupal::logger('youvo_dummy')
-        ->error('An error occurred while creating dummy projects. %type: @message in %function (line %line of %file).', $variables);
-    }
   }
 }
 
@@ -299,73 +208,22 @@ function youvo_dummy_get_random_skills() {
 function youvo_dummy_get_random_causes() {
   $causes = [];
   /** @var \Drupal\taxonomy\Entity\Term[] $causes_select */
-  $causes_select = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['vid' => 'causes']);
+  try {
+    $causes_select = \Drupal::entityTypeManager()
+      ->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'causes']);
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while loading taxonomy terms. %type: @message in %function (line %line of %file).', $variables);
+  }
   shuffle($causes_select);
   $causes_select = array_slice($causes_select, 0, rand(0, 2));
   foreach ($causes_select as $cause) {
     $causes[] = ['target_id' => $cause->id()];
   }
   return $causes;
-}
-
-/**
- * Returns file of random image.
- */
-function youvo_dummy_get_random_image() {
-
-  // Object for random content.
-  $random = new Random();
-
-  // Generate random image and save to public file system.
-  $random_img_name = $random->name(20);
-  $image_path = $random->image('public://projects' .
-    $random_img_name . '.png', '1024x768', '1024x768');
-  $image_file = File::create([
-    'uri' => $image_path,
-    'uid' => 1,
-    'status' => 1,
-  ]);
-  try {
-    $image_file->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating random project images. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  return $image_file;
-}
-
-/**
- * Returns stock image file.
- *
- * @param int $i
- *   Iteration index.
- *
- * @return \Drupal\file\Entity\File
- *   Image file.
- */
-function youvo_dummy_get_stock_image(int $i) {
-
-  $index = sprintf('%02d', (($i - 1) % 12) + 1);
-  $image_path = drupal_get_path('module', 'youvo_dummy') . '/img/test_images/projects/' . $index . '.jpg';
-  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
-  $image_file = File::create([
-    'uri' => $public_path,
-    'uid' => 1,
-    'status' => 1,
-  ]);
-  try {
-    $image_file->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating stock project images. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  return $image_file;
 }
 
 /**
@@ -392,7 +250,9 @@ function youvo_dummy_get_image_by_path(string $path, string $file_name) {
     $image_file->save();
   }
   catch (EntityStorageException $e) {
-    watchdog_exception('youvo_dummy', $e, 'An error occurred while creating project images by path.');
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while creating project images by path. %type: @message in %function (line %line of %file).', $variables);
   }
 
   return $image_file;
@@ -410,6 +270,24 @@ function youvo_dummy_get_image_by_path(string $path, string $file_name) {
 function youvo_dummy_get_random_creative(array $creative_ids) {
   if (!empty($creative_ids)) {
     return $creative_ids[array_rand($creative_ids)];
+  }
+  else {
+    return 0;
+  }
+}
+
+/**
+ * Returns random organisation id.
+ *
+ * @param array $organisation_ids
+ *   Array of organisation ids.
+ *
+ * @return int
+ *   Random organisation id.
+ */
+function youvo_dummy_get_random_organisation(array $organisation_ids) {
+  if (!empty($organisation_ids)) {
+    return $organisation_ids[array_rand($organisation_ids)];
   }
   else {
     return 0;

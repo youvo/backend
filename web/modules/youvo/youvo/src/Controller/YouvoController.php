@@ -19,6 +19,12 @@ class YouvoController extends ControllerBase {
 
     $project = $this->entityTypeManager()->getStorage('node')->load(1);
 
+    $organisation_ids = \Drupal::entityQuery('user')
+      ->condition('roles', 'organisation')
+      ->execute();
+
+    $wurst = youvo_dummy_get_random_organisation($organisation_ids);
+
     if ($project instanceof Project) {
       dvp($project->getState());
     }

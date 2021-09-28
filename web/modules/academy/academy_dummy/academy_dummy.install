@@ -13,10 +13,19 @@ use Drupal\quizzes\Entity\Question;
 
 /**
  * Implements hook_install().
+ */
+function academy_dummy_install() {
+  module_set_weight('academy_dummy', 3);
+}
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
  *
  * @throws \Drupal\Core\Entity\EntityStorageException
  */
-function academy_dummy_install() {
+function academy_dummy_site_install_finished() {
 
   // Set Course titles.
   $course_titles = [
