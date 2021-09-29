@@ -9,7 +9,6 @@ base profile: youvo_platform
 install:
   # Development
   - admin_toolbar
-  - youvo_dev
   - devel
   - field_ui
   - menu_ui
