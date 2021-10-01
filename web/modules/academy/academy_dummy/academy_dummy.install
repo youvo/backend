@@ -106,7 +106,10 @@ function academy_dummy_site_install_finished() {
         'type' => 'illustration',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
-        'image' => $illustration_file->id(),
+        'image' => [
+          'target_id' => $illustration_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
         'lecture' => $lecture->id(),
         'weight' => -4,
         'uid' => 1,
@@ -128,7 +131,10 @@ function academy_dummy_site_install_finished() {
         'type' => 'picture',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
-        'image' => $picture_file->id(),
+        'image' => [
+          'target_id' => $picture_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
         'lecture' => $lecture->id(),
         'weight' => -2,
         'uid' => 1,

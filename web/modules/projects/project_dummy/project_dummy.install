@@ -94,7 +94,10 @@ function project_dummy_site_install_finished() {
       'field_appreciation' => $random->sentences(8),
       'field_skills' => $skills,
       'field_causes' => $causes,
-      'field_image' => $image_file->id(),
+      'field_image' => [
+        'target_id' => $image_file->id(),
+        'alt' => $random->sentences(3, TRUE),
+      ],
       'field_lifecycle' => $state,
       'field_local' => rand(0, 1),
     ]);
