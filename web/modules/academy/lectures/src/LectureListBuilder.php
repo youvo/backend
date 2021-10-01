@@ -108,6 +108,9 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'lectures/hideweightbutton';
+
     // Load entities and group by courses.
     /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
     $lectures = $this->load();
