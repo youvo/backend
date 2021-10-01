@@ -3,8 +3,10 @@ status: true
 dependencies:
   config:
     - field.field.paragraph.illustration.body
-    - field.field.paragraph.illustration.url
+    - field.field.paragraph.illustration.image
     - paragraphs.type.illustration
+  module:
+    - image
 id: paragraph.illustration.default
 targetEntityType: paragraph
 bundle: illustration
@@ -17,19 +19,20 @@ content:
     label: above
     settings: {  }
     third_party_settings: {  }
+  image:
+    weight: 2
+    label: above
+    settings:
+      image_style: ''
+      image_link: ''
+    third_party_settings: {  }
+    type: image
+    region: content
   title:
     label: hidden
     type: string
     weight: 0
     region: content
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-  url:
-    type: string
-    weight: 2
-    region: content
-    label: above
     settings:
       link_to_entity: false
     third_party_settings: {  }

@@ -80,9 +80,9 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  url:
-    fieldName: url
-    publicName: url
+  image:
+    fieldName: image
+    publicName: image
     enhancer:
       id: ''
     disabled: false

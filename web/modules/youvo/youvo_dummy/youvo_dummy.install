@@ -33,7 +33,10 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
   $values = [
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'field_name' => 'Fredolina Tonito',
     'field_position' => 'Treppenstufenlauscherin',
     'field_linkedin' => 'fredatonito',
@@ -61,7 +64,10 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'anne.jpg');
   $values = [
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'field_name' => 'Alexandria Frezza',
     'field_position' => 'Hebelwirkungstesterin',
     'field_linkedin' => 'alexfrezza',
@@ -89,7 +95,10 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'frank.jpg');
   $values = [
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'field_name' => 'Frechie Daxon',
     'field_position' => 'Laternenbetrachter',
     'field_linkedin' => 'fredaxon',
@@ -120,7 +129,10 @@ function youvo_dummy_site_install_finished() {
     'field_name' => 'BrückengeherInnen e.V.',
     'field_about' => rtrim($random->paragraphs(4)),
     'field_contact' => 'Helga Peickert',
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'name' => 'hello@brueckengehen.org',
     'mail' => 'hello@brueckengehen.org',
     'roles' => ['organisation'],
@@ -144,7 +156,10 @@ function youvo_dummy_site_install_finished() {
     'field_name' => 'Vogelscheuchen Seelsorge e.V.',
     'field_about' => rtrim($random->paragraphs(4)),
     'field_contact' => 'Ursula Ursig',
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'name' => 'hello@vogelscheuchenseelsorge.org',
     'mail' => 'hello@vogelscheuchenseelsorge.org',
     'roles' => ['organisation'],
@@ -168,7 +183,10 @@ function youvo_dummy_site_install_finished() {
     'field_name' => 'Ball-Luftdruck-Korrektiv',
     'field_about' => rtrim($random->paragraphs(4)),
     'field_contact' => 'Nadir Ongerer',
-    'field_avatar' => $image_file->id(),
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
     'name' => 'hello@blk.gov',
     'mail' => 'hello@blk.gov',
     'roles' => ['organisation'],
