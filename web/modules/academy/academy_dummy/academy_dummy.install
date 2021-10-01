@@ -5,6 +5,9 @@
  * Install, update and uninstall functions for the Academy Dummy module.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\file\Entity\File;
+use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\Component\Utility\Random;
 use Drupal\lectures\Entity\Lecture;
@@ -98,11 +101,15 @@ function academy_dummy_site_install_finished() {
       ]);
       $paragraph->save();
 
+      $illustration_file = academy_dummy_get_stock_illustration($lecture->id());
       $paragraph = Paragraph::create([
         'type' => 'illustration',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
-        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.png',
+        'image' => [
+          'target_id' => $illustration_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
         'lecture' => $lecture->id(),
         'weight' => -4,
         'uid' => 1,
@@ -119,11 +126,15 @@ function academy_dummy_site_install_finished() {
       ]);
       $paragraph->save();
 
+      $picture_file = academy_dummy_get_stock_image($lecture->id());
       $paragraph = Paragraph::create([
         'type' => 'picture',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
-        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.jpg',
+        'image' => [
+          'target_id' => $picture_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
         'lecture' => $lecture->id(),
         'weight' => -2,
         'uid' => 1,
@@ -133,7 +144,7 @@ function academy_dummy_site_install_finished() {
       $paragraph = Paragraph::create([
         'type' => 'video',
         'title' => $random->sentences(2, TRUE),
-        'url' => '/' . $random->word(7) . '/' . $random->word(6) . '/' . $random->word(5) . '.mp4',
+        'url' => 'https://www.youtube-nocookie.com/embed/W04eOUz3HBg?rel=0&cc_load_policy=1',
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
         'weight' => -1,
@@ -228,4 +239,66 @@ function academy_dummy_site_install_finished() {
     }
   }
 
+}
+
+/**
+ * Returns stock image file.
+ *
+ * @param int $i
+ *   Iteration index.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_stock_image(int $i) {
+
+  $index = sprintf('%02d', (($i - 1) % 7) + 1);
+  $image_path = drupal_get_path('module', 'academy_dummy') . '/img/' . $index . '.jpg';
+  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
+  $image_file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $image_file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy_dummy')
+      ->error('An error occurred while creating stock academy images. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $image_file;
+}
+
+/**
+ * Returns stock illustration file.
+ *
+ * @param int $i
+ *   Iteration index.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_stock_illustration(int $i) {
+
+  $index = sprintf('%02d', (($i - 1) % 7) + 1);
+  $image_path = drupal_get_path('module', 'academy_dummy') . '/gfx/' . $index . '.png';
+  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
+  $image_file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $image_file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy_dummy')
+      ->error('An error occurred while creating stock academy illustration. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $image_file;
 }
