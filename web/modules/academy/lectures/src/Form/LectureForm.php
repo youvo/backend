@@ -28,7 +28,13 @@ class LectureForm extends ContentEntityForm {
       $this->logger('lectures')->notice('Updated new lecture %label.', $arguments);
     }
 
-    $form_state->setRedirect('entity.lecture.collection');
+    /** @var \Drupal\lectures\Entity\Lecture $lecture */
+    $lecture = $this->entity;
+    $course = $lecture->getParentEntity();
+    $form_state->setRedirect('entity.lecture.collection', [], [
+      'query' => ['cr' => $course->id()],
+      'fragment' => 'edit-course-' . $course->id(),
+    ]);
   }
 
 }
