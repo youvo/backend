@@ -92,7 +92,7 @@ function academy_dummy_site_install_finished() {
     foreach ($lectures as $lecture) {
 
       $paragraph = Paragraph::create([
-        'type' => 'text',
+        'bundle' => 'text',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
@@ -103,7 +103,7 @@ function academy_dummy_site_install_finished() {
 
       $illustration_file = academy_dummy_get_stock_illustration($lecture->id());
       $paragraph = Paragraph::create([
-        'type' => 'illustration',
+        'bundle' => 'illustration',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'image' => [
@@ -117,7 +117,7 @@ function academy_dummy_site_install_finished() {
       $paragraph->save();
 
       $paragraph = Paragraph::create([
-        'type' => 'excursus',
+        'bundle' => 'excursus',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
@@ -128,7 +128,7 @@ function academy_dummy_site_install_finished() {
 
       $picture_file = academy_dummy_get_stock_image($lecture->id());
       $paragraph = Paragraph::create([
-        'type' => 'picture',
+        'bundle' => 'picture',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'image' => [
@@ -142,7 +142,7 @@ function academy_dummy_site_install_finished() {
       $paragraph->save();
 
       $paragraph = Paragraph::create([
-        'type' => 'video',
+        'bundle' => 'video',
         'title' => $random->sentences(2, TRUE),
         'url' => 'https://www.youtube-nocookie.com/embed/W04eOUz3HBg?rel=0&cc_load_policy=1',
         'body' => rtrim($random->paragraphs(1)),
@@ -171,7 +171,7 @@ function academy_dummy_site_install_finished() {
 
       // Create quiz.
       $quiz = Paragraph::create([
-        'type' => 'quiz',
+        'bundle' => 'quiz',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
@@ -188,7 +188,7 @@ function academy_dummy_site_install_finished() {
 
       // Free text question.
       $question = Question::create([
-        'type' => 'free_text',
+        'bundle' => 'free_text',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
@@ -201,7 +201,7 @@ function academy_dummy_site_install_finished() {
 
       // Single choice question.
       $question = Question::create([
-        'type' => 'single_choice',
+        'bundle' => 'single_choice',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
@@ -218,7 +218,7 @@ function academy_dummy_site_install_finished() {
 
       // Multiple choice question.
       $question = Question::create([
-        'type' => 'multiple_choice',
+        'bundle' => 'multiple_choice',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
