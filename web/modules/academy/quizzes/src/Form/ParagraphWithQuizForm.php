@@ -15,6 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
+use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
 use Drupal\quizzes\Entity\Quiz;
@@ -138,8 +139,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // Get all questions that have this quiz paragraph as a parent.
     // Or get current entities from form_state and append to form element.
-    $questions = [];
     if ($form_state->getValue('question_entities') === NULL) {
+      $questions = [];
       try {
         $questions_storage = $this->entityTypeManager
           ->getStorage('question');
@@ -250,41 +251,74 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // Fetch the base fields from the question entity definition.
     // We exclude non-content fields and then build the render array manually.
-    $question_fields = $this->fieldManager
-      ->getBaseFieldDefinitions('question');
-    $excluded_base_fields = [
-      'id',
-      'uuid',
-      'langcode',
-      'bundle',
-      'uid',
-      'created',
-      'changed',
-      'weight',
-      'paragraph',
-      'default_langcode',
+//    $question_fields = $this->fieldManager
+//      ->getBaseFieldDefinitions('question');
+//    $excluded_base_fields = [
+//      'id',
+//      'uuid',
+//      'langcode',
+//      'bundle',
+//      'uid',
+//      'created',
+//      'changed',
+//      'weight',
+//      'paragraph',
+//      'default_langcode',
+//    ];
+//
+//    // @todo Render fields by using widget.
+//    foreach ($question_fields as $question_field) {
+//      /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
+//      if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
+//        $display_options = $question_field->getDisplayOptions('form');
+//        $title = $question_field->getLabel();
+//        $description = $question_field->getDescription();
+//        $form['questions']['elements'][$question_field->getName()] = [
+//          '#title' => $title,
+//          '#type' => $display_options['type'],
+//          '#rows' => $display_options['rows'] ?? '',
+//          '#placeholder' => $display_options['placeholder'] ?? '',
+//          '#description' => $description,
+//        ];
+//      }
+//    }
+
+    $form['questions']['elements']['body'] = [
+      '#title' => $this->t('Question'),
+      '#type' => 'textarea',
+      '#rows' => 2,
     ];
 
-    // @todo Render fields by using widget.
-    foreach ($question_fields as $question_field) {
-      /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
-      if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
-        $display_options = $question_field->getDisplayOptions('form');
-        $title = $question_field->getLabel() instanceof TranslatableMarkup ?
-          $question_field->getLabel()->render() :
-          $question_field->getLabel();
-        $description = $question_field->getDescription() instanceof TranslatableMarkup ?
-          $question_field->getDescription()->render() :
-          $question_field->getDescription();
-        $form['questions']['elements'][$question_field->getName()] = [
-          '#title' => $title,
-          '#type' => $display_options['type'],
-          '#rows' => $display_options['rows'] ?? '',
-          '#placeholder' => $display_options['placeholder'] ?? '',
-          '#description' => $description,
-        ];
-      }
-    }
+    $form['questions']['elements']['help'] = [
+      '#title' => $this->t('Help Text'),
+      '#type' => 'textarea',
+      '#description' => $this->t('Further explanation to the question.'),
+      '#rows' => 3,
+    ];
+
+    $form['questions']['elements']['answers'] = [
+      '#title' => $this->t('Answers'),
+      '#type' => 'multivalue',
+      '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
+      '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for single-choice question!'),
+      '#add_more_label' => $this->t('Add answer'),
+      'option' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Option'),
+        '#title_display' => 'invisible',
+      ],
+      'correct' => [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Correct?'),
+      ],
+    ];
+
+    $form['questions']['elements']['explanation'] = [
+      '#title' => $this->t('Explanation'),
+      '#type' => 'textarea',
+      '#description' => $this->t('Explaining the reasoning behind the correct answers.'),
+      '#rows' => 3,
+    ];
 
     // Trigger a 'submit' for the form elements in the container and create
     // a question entity. Then represent such question entity in the table
@@ -451,20 +485,12 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Empty all field values.
     $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-body]', 'val', ['']));
     $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-help]', 'val', ['']));
-    $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'val', ['']));
     $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'val', ['']));
     $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-explanation]', 'val', ['']));
 
     // Disable answer options and correct answers for free text question.
     if ($question_type === 'free_text') {
-      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'attr', ['disabled', 'true']));
-      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'addClass', ['visually-hidden']));
-      $response->addCommand(new invokeCommand('label[for^=edit-options]', 'addClass', ['visually-hidden']));
-      $response->addCommand(new invokeCommand('div[id^=edit-options]', 'addClass', ['visually-hidden']));
-      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['disabled', 'true']));
-      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'addClass', ['visually-hidden']));
-      $response->addCommand(new invokeCommand('label[for^=edit-answers]', 'addClass', ['visually-hidden']));
-      $response->addCommand(new invokeCommand('div[id^=edit-answers]', 'addClass', ['visually-hidden']));
+      $response->addCommand(new invokeCommand('div[data-drupal-selector=edit-answers]', 'addClass', ['visually-hidden']));
     }
 
     // Make form element body required.
@@ -473,15 +499,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // Make form elements required for multiple-/single choice questions.
     if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
-      $response->addCommand(new invokeCommand('textarea[data-drupal-selector=edit-options]', 'attr', ['required', 'true']));
-      $response->addCommand(new invokeCommand('label[for^=edit-options]', 'addClass', ['form-required']));
-      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['required', 'true']));
-      $response->addCommand(new invokeCommand('label[for^=edit-answers]', 'addClass', ['form-required']));
-    }
-
-    // Change placeholder for single choice questions.
-    if ($question_type === 'single_choice') {
-      $response->addCommand(new invokeCommand('input[data-drupal-selector=edit-answers]', 'attr', ['placeholder', '1']));
+      $response->addCommand(new invokeCommand('h4.form-item__label--multiple-value-form', 'addClass', ['form-required']));
     }
 
     // Set hidden value for type.
