@@ -171,6 +171,10 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
+
     $form['entities'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
