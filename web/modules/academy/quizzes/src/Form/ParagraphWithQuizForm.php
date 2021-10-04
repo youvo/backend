@@ -238,7 +238,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'id',
       'uuid',
       'langcode',
-      'type',
+      'bundle',
       'uid',
       'created',
       'changed',
@@ -595,7 +595,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // requested type to the form_state.
     $questions = $form_state->getValue('question_entities');
     $new_question = Question::create([
-      'type' => $form_state->getValue('type'),
+      'bundle' => $form_state->getValue('type'),
       'body' => $form_state->getValue('body'),
       'help' => $form_state->getValue('help'),
       'options' => $form_state->getValue('options'),
@@ -624,7 +624,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $this->createQuestion($form, $form_state);
     }
     else {
-      $question->set('type', $form_state->getValue('type'));
+      $question->set('bundle', $form_state->getValue('type'));
       $question->set('body', $form_state->getValue('body'));
       $question->set('help', $form_state->getValue('help'));
       $question->set('answers', $form_state->getValue('answers'));
