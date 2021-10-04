@@ -3,6 +3,8 @@
 namespace Drupal\quizzes\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\MessageCommand;
@@ -12,6 +14,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Utility\Error;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\quizzes\Entity\Question;
 use Drupal\quizzes\Entity\Quiz;
@@ -89,10 +92,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $form['#attached']['library'][] = 'academy/hideweightbutton';
 
     // Hide unused form elements.
-    // @todo Remove revision when Paragraph was updated.
-    $form['revision']['#access'] = FALSE;
-    $form['revision_log']['#access'] = FALSE;
-    $form['revision_information']['#access'] = FALSE;
     $form['uid']['#access'] = FALSE;
     $form['created']['#access'] = FALSE;
     $form['changed']['#access'] = FALSE;
@@ -139,15 +138,23 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     // Get all questions that have this quiz paragraph as a parent.
     // Or get current entities from form_state and append to form element.
+    $questions = [];
     if ($form_state->getValue('question_entities') === NULL) {
-      $questions_storage = $this->entityTypeManager
-        ->getStorage('question');
-      $questions_query = $questions_storage->getQuery()
-        ->condition('paragraph', $this->entity->id())
-        ->condition('id', $question_delete_queue_ids, 'NOT IN')
-        ->sort('weight')
-        ->execute();
-      $questions = $questions_storage->loadMultiple($questions_query);
+      try {
+        $questions_storage = $this->entityTypeManager
+          ->getStorage('question');
+        $questions_query = $questions_storage->getQuery()
+          ->condition('paragraph', $this->entity->id())
+          ->condition('id', $question_delete_queue_ids, 'NOT IN')
+          ->sort('weight')
+          ->execute();
+        $questions = $questions_storage->loadMultiple($questions_query);
+      }
+      catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+        $variables = Error::decodeException($e);
+        \Drupal::logger('quiz')
+          ->error('An error occurred while loading questions. %type: @message in %function (line %line of %file).', $variables);
+      }
     }
     else {
       $questions = $form_state->getValue('question_entities');
@@ -185,9 +192,17 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#weight' => '99',
     ];
 
-    $question_types = $this->entityTypeManager
-      ->getStorage('question_type')
-      ->loadMultiple();
+    $question_types = [];
+    try {
+      $question_types = $this->entityTypeManager
+        ->getStorage('question_type')
+        ->loadMultiple();
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('lecture')
+        ->error('An error occurred while loading question types. %type: @message in %function (line %line of %file).', $variables);
+    }
 
     foreach ($question_types as $question_type) {
       $form['questions']['add_question'][$question_type->id()] = [
