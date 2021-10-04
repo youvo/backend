@@ -85,6 +85,9 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Delete all queued messages.
     $this->messenger()->deleteAll();
 
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
+
     // Hide unused form elements.
     // @todo Remove revision when Paragraph was updated.
     $form['revision']['#access'] = FALSE;

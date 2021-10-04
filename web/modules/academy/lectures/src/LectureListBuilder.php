@@ -114,7 +114,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     $query_parameter_cr = \Drupal::request()->get('cr') ?? NULL;
 
     // Attach js to hide 'show row weights' buttons.
-    $form['#attached']['library'][] = 'lectures/hideweightbutton';
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
 
     // Load entities and group by courses.
     /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
