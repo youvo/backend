@@ -8,12 +8,10 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\MessageCommand;
-use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\paragraphs\Form\ParagraphForm;
@@ -27,45 +25,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphWithQuizForm extends ParagraphForm {
 
   use MessengerTrait;
-
-  /**
-   * The field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManager
-   */
-  protected $fieldManager;
-
-  /**
-   * Constructs a ContentEntityForm object.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\Core\Entity\EntityFieldManager $field_manager
-   *   The field manager service.
-   */
-  public function __construct(EntityRepositoryInterface $entity_repository,
-                              EntityTypeBundleInfoInterface $entity_type_bundle_info,
-                              TimeInterface $time,
-                              EntityFieldManager $field_manager) {
-    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-    $this->fieldManager = $field_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time'),
-      $container->get('entity_field.manager'),
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -249,40 +208,9 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#value' => $temp_id,
     ];
 
-    // Fetch the base fields from the question entity definition.
-    // We exclude non-content fields and then build the render array manually.
-//    $question_fields = $this->fieldManager
-//      ->getBaseFieldDefinitions('question');
-//    $excluded_base_fields = [
-//      'id',
-//      'uuid',
-//      'langcode',
-//      'bundle',
-//      'uid',
-//      'created',
-//      'changed',
-//      'weight',
-//      'paragraph',
-//      'default_langcode',
-//    ];
-//
-//    // @todo Render fields by using widget.
-//    foreach ($question_fields as $question_field) {
-//      /** @var \Drupal\Core\Field\BaseFieldDefinition $question_field */
-//      if (!in_array(strtolower($question_field->getName()), $excluded_base_fields)) {
-//        $display_options = $question_field->getDisplayOptions('form');
-//        $title = $question_field->getLabel();
-//        $description = $question_field->getDescription();
-//        $form['questions']['elements'][$question_field->getName()] = [
-//          '#title' => $title,
-//          '#type' => $display_options['type'],
-//          '#rows' => $display_options['rows'] ?? '',
-//          '#placeholder' => $display_options['placeholder'] ?? '',
-//          '#description' => $description,
-//        ];
-//      }
-//    }
-
+    // Manually define the form elements for questions. We have to ensure that
+    // these questions represent the fields of a question.
+    // @todo Find a way to resolve widget to form array from fieldManager.
     $form['questions']['elements']['body'] = [
       '#title' => $this->t('Question'),
       '#type' => 'textarea',
