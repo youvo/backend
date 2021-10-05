@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - quizzes
-id: question.field_answers
-field_name: field_answers
+id: question.answers
+field_name: answers
 entity_type: question
 type: boolean
 settings: {  }

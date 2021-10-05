@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - quizzes
-id: question.field_options
-field_name: field_options
+id: question.options
+field_name: options
 entity_type: question
 type: string
 settings:

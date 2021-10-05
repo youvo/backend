@@ -2,16 +2,16 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.question.field_answers
-    - quizzes.type.single_choice
-id: question.single_choice.field_answers
-field_name: field_answers
+    - field.storage.question.answers
+    - quizzes.type.multiple_choice
+id: question.multiple_choice.answers
+field_name: answers
 entity_type: question
-bundle: single_choice
+bundle: multiple_choice
 label: Answers
 description: ''
 required: false
-translatable: true
+translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:

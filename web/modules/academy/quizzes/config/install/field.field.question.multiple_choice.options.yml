@@ -2,10 +2,10 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.question.field_options
+    - field.storage.question.options
     - quizzes.type.multiple_choice
-id: question.multiple_choice.field_options
-field_name: field_options
+id: question.multiple_choice.options
+field_name: options
 entity_type: question
 bundle: multiple_choice
 label: Options
