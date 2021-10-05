@@ -162,7 +162,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#type' => 'fieldset',
       '#suffix' => '<div class="form-item__description">' . $this->t('Please do not forget to save newly created and changed content by submitting this form!') . '</div>',
       '#weight' => '99',
-      '#access' => !$form_state->hasValue('current_id'),
+      //'#access' => !$form_state->hasValue('current_id'),
     ];
 
     $question_types = [];
@@ -179,17 +179,28 @@ class ParagraphWithQuizForm extends ParagraphForm {
 
     foreach ($question_types as $question_type) {
       $form['questions']['add_question'][$question_type->id()] = [
-        '#type' => 'button',
+        '#type' => 'submit',
+        '#submit' => ['::editQuestion'],
         '#value' => '+ ' . $question_type->label() . ' Question',
-        '#attributes' => ['data-type' => $question_type->id()],
+        '#attributes' => [
+          'data-type' => $question_type->id(),
+          'data-id' => 0,
+        ],
         '#ajax' => [
-          'callback' => [$this, 'showQuestionFieldset'],
-          'disable-refocus' => TRUE,
+          'callback' => '::rebuildAjax',
+          'wrapper' => 'questions-wrapper',
           'event' => 'click',
           'effect' => 'none',
           'progress' => [
             'type' => 'none',
           ],
+        ],
+        '#limit_validation_errors' => [
+          ['question_entities'],
+          ['current_id'],
+          ['question_delete_queue'],
+          ['type'],
+          ['key'],
         ],
       ];
     }
@@ -214,7 +225,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
     $form['questions']['elements'] = [
       '#prefix' => '<div id="error-wrapper"></div>',
       '#type' => 'fieldset',
-      '#access' => $form_state->hasValue('current_id'),
+      //'#access' => $form_state->hasValue('current_id'),
     ];
 
     // This is a 'free' temporary id that is used to identify newly created
@@ -242,29 +253,24 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#rows' => 3,
     ];
 
-    $default_answers = [];
-    if (isset($current_question) && $answers_access) {
-      $options = $current_question->get('options')->getValue();
-      $answers = $current_question->get('answers')->getValue();
-      foreach (array_keys($options) as $delta) {
-        $default_answers[] = [
-          'option' => $options[$delta]['value'],
-          'correct' => $answers[$delta]['value'],
-        ];
-      }
-    }
+//    $default_answers = [];
+//    if (isset($current_question) && $answers_access) {
+//      $options = $current_question->get('options')->getValue();
+//      $answers = $current_question->get('answers')->getValue();
+//      foreach (array_keys($options) as $delta) {
+//        $default_answers[] = [
+//          'option' => $options[$delta]['value'],
+//          'correct' => $answers[$delta]['value'],
+//        ];
+//      }
+//    }
 
-    // We use key to replenish default value after rebuild.
-    $key = $form_state->hasValue('key') ? $form_state->getValue('key') : 0;
-    $form['questions']['elements']['answers']['#tree'] = TRUE;
-    $form['questions']['elements']['answers'][$key]['options'] = [
+    $form['questions']['elements']['answers'] = [
       '#title' => $this->t('Answers'),
       '#type' => 'multivalue',
       '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
       '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for single-choice question!'),
       '#add_more_label' => $this->t('Add answer'),
-      '#access' => $answers_access ?? TRUE,
-      '#default_value' => $default_answers,
       'option' => [
         '#type' => 'textfield',
         '#title' => $this->t('Option'),
@@ -291,7 +297,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#type' => 'submit',
       '#value' => $this->t('Create Question'),
       '#validate' => ['::validateQuestion'],
-      '#submit' => ['::createQuestion'],
+      '#submit' => ['::submitCreateQuestion'],
       '#attributes' => ['class' => ['button--primary']],
       '#access' => !$form_state->getValue('current_id'),
       '#ajax' => [
@@ -592,7 +598,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Creates new question and adds it to form_state.
    */
-  public function createQuestion(array &$form, FormStateInterface $form_state) {
+  public function submitCreateQuestion(array &$form, FormStateInterface $form_state) {
     // We get the form values and append a newly created question of the
     // requested type to the form_state.
     $questions = $form_state->getValue('question_entities');
@@ -626,7 +632,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // Just create a new question, if the prior question was new.
     if ($question->isNew()) {
       $form_state->setValue('temp_id', $question_id);
-      $this->createQuestion($form, $form_state);
+      $this->submitCreateQuestion($form, $form_state);
     }
     else {
       $question->set('bundle', $form_state->getValue('type'));
