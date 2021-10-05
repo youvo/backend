@@ -28,6 +28,7 @@ use Drupal\user\UserInterface;
  *   },
  *   base_table = "questions",
  *   data_table = "questions_field_data",
+ *   fieldable = TRUE,
  *   translatable = TRUE,
  *   admin_permission = "administer questions",
  *   entity_keys = {
@@ -121,53 +122,17 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['body'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Question'))
-      ->setDescription(t('The question.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'rows' => 2,
-        'weight' => 10,
-      ]);
+      ->setDescription(t('The question.'));
 
     $fields['help'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Help Text'))
-      ->setDescription(t('Further explanation to the question.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'rows' => 3,
-        'weight' => 11,
-      ]);
-
-    $fields['options'] = BaseFieldDefinition::create('string_long')
-      ->setTranslatable(TRUE)
-      ->setLabel(t('Answer Options'))
-      ->setDescription(t('&-separated options for the answers.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'rows' => 3,
-        'placeholder' => t('Option 1 &amp;&#10;Option 2 &amp;&#10;Option 3'),
-        'weight' => 12,
-      ]);
-
-    $fields['answers'] = BaseFieldDefinition::create('string')
-      ->setTranslatable(TRUE)
-      ->setLabel(t('Correct Answer(s)'))
-      ->setDescription(t('&-separated numbers of correct answers. Only one for single-choice question.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textfield',
-        'placeholder' => t('1 &amp; 2 &amp; 3'),
-        'weight' => 12,
-      ]);
+      ->setDescription(t('Further explanation to the question.'));
 
     $fields['explanation'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Explanation'))
-      ->setDescription(t('Explaining the reasoning behind the correct answers.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'weight' => 12,
-        'rows' => 3,
-      ]);
+      ->setDescription(t('Explaining the reasoning behind the correct answers.'));
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
