@@ -22,6 +22,7 @@ use Drupal\quizzes\Entity\Quiz;
 class ParagraphWithQuizForm extends ParagraphForm {
 
   use MessengerTrait;
+  use QuestionValidateTrait;
 
   /**
    * {@inheritdoc}
@@ -79,7 +80,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
     ];
 
     // Get all questions that have this quiz paragraph as a parent.
-    // Or get current entities from form_state and append to form element.
     $questions = [];
     try {
       $questions_storage = $this->entityTypeManager
@@ -251,6 +251,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ['answers'],
         ['explanation'],
         ['elements'],
+        ['title'],
       ],
     ];
 
@@ -287,6 +288,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#limit_validation_errors' => [
         ['current_id'],
         ['question_entities'],
+        ['title'],
       ],
     ];
   }
@@ -343,66 +345,6 @@ class ParagraphWithQuizForm extends ParagraphForm {
   }
 
   /**
-   * Validates form fields for creating a question.
-   */
-  public function validateQuestion(array &$form, FormStateInterface $form_state) {
-
-    // Get current question type.
-    $question_type = $form_state->getValue('type');
-
-    // Check if all required fields are filled.
-    $required_fields = [];
-    if (empty($form_state->getValue('body'))) {
-      $required_fields[] = $this->t('Question');
-    }
-    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
-      $answers = $form_state->getValue('answers');
-      $option_set = 0;
-      foreach ($answers as $answer) {
-        if (!empty($answer['option'])) {
-          $option_set++;
-        }
-      }
-      if (!$option_set) {
-        $required_fields[] = $this->t('Answers');
-      }
-    }
-    if (!empty($required_fields)) {
-      $message = $this->formatPlural(
-        count($required_fields),
-        'The field %field is required.',
-        'The fields %fields are required.', [
-          '%field' => reset($required_fields),
-          '%fields' => implode(' and ', $required_fields),
-        ]);
-      $form_state->setErrorByName('elements', $message);
-    }
-
-    // Check if correct options are satisfying.
-    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
-      $answers = $form_state->getValue('answers');
-      $correct_set = 0;
-      foreach ($answers as $answer) {
-        if ($answer['correct']) {
-          $correct_set++;
-        }
-      }
-      if ($question_type === 'single_choice') {
-        if ($correct_set != 1) {
-          $message = $this->t('Please select one correct answer.');
-          $form_state->setErrorByName('elements', $message);
-        }
-      }
-      else {
-        if (!$correct_set) {
-          $message = $this->t('Please select at least one correct answer.');
-          $form_state->setErrorByName('elements', $message);
-        }
-      }
-    }
-  }
-
-  /**
    * Adds a question form to the quiz form.
    */
   public function submitAbortQuestion(array &$form, FormStateInterface $form_state) {
@@ -418,6 +360,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   public function submitCreateQuestion(array &$form, FormStateInterface $form_state) {
 
     // The paragraph might be new. We save here to ensure that an ID is present.
+    $this->entity->set('title', $form_state->getValue('title'));
     $this->entity->save();
 
     // Create new question from form input.
@@ -481,12 +424,12 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // If the question is not new, we need to delete the question and rebuild
     // the reference in paragraph entity.
     if (!$question->isNew()) {
-      $persistent_questions = $this->entity->get('questions')->getValue();
-      $key = array_search($question->id(), array_column($persistent_questions, 'target_id'));
-      unset($persistent_questions[$key]);
-      $this->entity->set('questions', $persistent_questions);
-      $this->entity->save();
+      $questions = array_map(fn($q) => ['target_id' => $q], array_keys($questions));
+      $key = array_search($question->id(), array_column($questions, 'target_id'));
       $question->delete();
+      unset($questions[$key]);
+      $this->entity->set('questions', $questions);
+      $this->entity->save();
     }
 
     $form_state->unsetValue('current_id');

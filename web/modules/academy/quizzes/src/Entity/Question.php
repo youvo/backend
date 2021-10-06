@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Url;
 use Drupal\quizzes\QuestionInterface;
 use Drupal\user\UserInterface;
 
@@ -22,6 +23,10 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Question type"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
+ *     "form" = {
+ *       "edit" = "Drupal\quizzes\Form\QuestionForm",
+ *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
+ *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
@@ -39,6 +44,10 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid",
  *     "parent" = "paragraph",
  *     "weight" = "weight"
+ *   },
+ *   links = {
+ *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit",
+ *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/delete"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
@@ -122,17 +131,29 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['body'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Question'))
-      ->setDescription(t('The question.'));
+      ->setDisplayOptions('form', [
+        'type' => 'string_textarea',
+        'weight' => -5,
+        'rows' => 2,
+      ]);
 
     $fields['help'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Help Text'))
-      ->setDescription(t('Further explanation to the question.'));
+      ->setDescription(t('Further explanation to the question.'))
+      ->setDisplayOptions('form', [
+        'type' => 'string_textarea',
+        'weight' => -4,
+      ]);
 
     $fields['explanation'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Explanation'))
-      ->setDescription(t('Explaining the reasoning behind the correct answers.'));
+      ->setDescription(t('Explaining the reasoning behind the correct answers.'))
+      ->setDisplayOptions('form', [
+        'type' => 'string_textarea',
+        'weight' => -1,
+      ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
@@ -153,6 +174,20 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
+  }
+
+  /**
+   * Overwrite call toUrl for non-present canonical route.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function toUrl($rel = 'canonical', array $options = []) {
+    if ($rel == 'canonical') {
+      return Url::fromUri('route:<nolink>')->setOptions($options);
+    }
+    else {
+      return parent::toUrl($rel, $options);
+    }
   }
 
 }
