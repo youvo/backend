@@ -27,6 +27,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route->setDefault('_controller', ChildEntityController::class . '::addPage');
       return $route;
     }
+    return NULL;
   }
 
   /**
