@@ -8,6 +8,10 @@
 		"drupal/jsonapi_include": {
 			"Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
 			"Issue #3238138: Move JSON:API Include settings to JSON:API configuration pages": "patches/jsonapi_include/JAI8x-14-3238138-1.patch"
+		},
+		"drupal/multivalue_form_element": {
+			"Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
+			"Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
 		}
 	}
 }
