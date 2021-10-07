@@ -1,0 +1,6 @@
+hideweightbutton:
+  js:
+    js/hideweightbutton.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

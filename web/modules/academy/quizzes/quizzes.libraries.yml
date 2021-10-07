@@ -1,0 +1,6 @@
+hidesubmitbutton:
+  js:
+    js/hidesubmitbutton.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

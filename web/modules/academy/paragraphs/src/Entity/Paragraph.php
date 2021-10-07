@@ -6,7 +6,6 @@ use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -44,18 +43,18 @@ use Drupal\user\UserInterface;
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
- *     "bundle" = "type",
+ *     "bundle" = "bundle",
  *     "label" = "title",
  *     "uuid" = "uuid",
  *     "parent" = "lecture",
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/lectures/{lecture}/paragraphs/add/{paragraph_type}",
- *     "add-page" = "/admin/content/lectures/{lecture}/paragraphs/add",
- *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/edit",
- *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/delete",
- *     "collection" = "/admin/content/lectures/{lecture}/paragraphs"
+ *     "add-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add/{paragraph_type}",
+ *     "add-page" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add",
+ *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/edit",
+ *     "delete-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/delete",
+ *     "collection" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs"
  *   },
  *   bundle_entity_type = "paragraph_type",
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
