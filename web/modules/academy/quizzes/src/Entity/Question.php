@@ -24,8 +24,7 @@ use Drupal\user\UserInterface;
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "form" = {
- *       "edit" = "Drupal\quizzes\Form\QuestionForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
+ *       "edit" = "Drupal\quizzes\Form\QuestionForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
@@ -46,8 +45,7 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit",
- *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/delete"
+ *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
@@ -174,20 +172,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
-  }
-
-  /**
-   * Overwrite call toUrl for non-present canonical route.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
-      return Url::fromUri('route:<nolink>')->setOptions($options);
-    }
-    else {
-      return parent::toUrl($rel, $options);
-    }
   }
 
 }
