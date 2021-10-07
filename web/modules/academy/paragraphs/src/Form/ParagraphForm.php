@@ -4,6 +4,7 @@ namespace Drupal\paragraphs\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Form controller for the paragraph entity edit forms.
@@ -31,7 +32,41 @@ class ParagraphForm extends ContentEntityForm {
       $this->logger('paragraphs')->notice('Updated new paragraph %label.', $arguments);
     }
 
-    $form_state->setRedirect('entity.paragraph.collection', ['lecture' => $paragraph->getParentEntity()->id()]);
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+    $lecture = $paragraph->getParentEntity();
+    $form_state->setRedirect('entity.paragraph.collection', [
+      'lecture' => $lecture->id(),
+      'course' => $lecture->getParentEntity()->id(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+
+    // Get entitys actions.
+    $actions = parent::actions($form, $form_state);
+
+    // Add an abort button.
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+    $paragraph = $this->getEntity();
+    $lecture = $paragraph->getParentEntity();
+    $url = Url::fromRoute('entity.paragraph.collection', [
+      'lecture' => $lecture->id(),
+      'course' => $lecture->getParentEntity()->id(),
+    ]);
+    $actions['abort'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Abort'),
+      '#url' => $url,
+      '#attributes' => [
+        'class' => ['button'],
+      ],
+      '#weight' => 10,
+    ];
+    return $actions;
   }
 
 }

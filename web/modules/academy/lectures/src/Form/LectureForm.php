@@ -31,9 +31,9 @@ class LectureForm extends ContentEntityForm {
     /** @var \Drupal\lectures\Entity\Lecture $lecture */
     $lecture = $this->entity;
     $course = $lecture->getParentEntity();
-    $form_state->setRedirect('entity.lecture.collection', [], [
-      'query' => ['cr' => $course->id()],
-      'fragment' => 'edit-course-' . $course->id(),
+    $form_state->setRedirect('entity.paragraph.collection', [
+      'course' => $course->id(),
+      'lecture' => $lecture->id(),
     ]);
   }
 
