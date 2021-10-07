@@ -321,6 +321,12 @@ class ParagraphWithQuizForm extends ParagraphForm {
    * Adds a question form to the quiz form.
    */
   public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
+    $current_input = $form_state->getUserInput();
+    unset($current_input['body']);
+    unset($current_input['help']);
+    unset($current_input['explanation']);
+    unset($current_input['multianswers']);
+    $form_state->setUserInput($current_input);
     $form_state->setValue('type', $form_state->getTriggeringElement()['#attributes']['data-type']);
     $form_state->setRebuild();
   }
