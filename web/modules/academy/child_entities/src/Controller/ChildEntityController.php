@@ -5,6 +5,7 @@ namespace Drupal\child_entities\Controller;
 use Drupal\child_entities\ChildEntityEnsureTrait;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\Controller\EntityController;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
 
 /**
@@ -63,32 +64,52 @@ class ChildEntityController extends EntityController {
       $bundle_argument = $bundle_key;
     }
 
-    $parent_argument = $entity_type->getKey('parent');
-    $parent_id = $this->getParentEntityFromRoute($parent_argument)->id();
+    // Add parents to route arguments.
+    $route_arguments = [];
+    $this->addParentRouteArguments($route_arguments, $entity_type);
 
     $form_route_name = 'entity.' . $entity_type_id . '.add_form';
     // Redirect if there's only one bundle available.
     if (count($bundles) == 1) {
       $bundle_names = array_keys($bundles);
       $bundle_name = reset($bundle_names);
-      return $this->redirect($form_route_name, [
-        $bundle_argument => $bundle_name,
-        $parent_argument => $parent_id,
-      ]);
+      $route_arguments[$bundle_argument] = $bundle_name;
+      return $this->redirect($form_route_name, $route_arguments);
     }
     // Prepare the #bundles array for the template.
     foreach ($bundles as $bundle_name => $bundle_info) {
+      $route_arguments_per_bundle = $route_arguments;
+      $route_arguments_per_bundle[$bundle_argument] = $bundle_name;
       $build['#bundles'][$bundle_name] = [
         'label' => $bundle_info['label'],
         'description' => $bundle_info['description'] ?? '',
-        'add_link' => Link::createFromRoute($bundle_info['label'], $form_route_name, [
-          $bundle_argument => $bundle_name,
-          $parent_argument => $parent_id,
-        ]),
+        'add_link' => Link::createFromRoute($bundle_info['label'], $form_route_name, $route_arguments_per_bundle),
       ];
     }
 
     return $build;
+  }
+
+  /**
+   * Append parent arguments.
+   *
+   * @param array $route_arguments
+   *   The option parameters.
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The Child Entity Type.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  private function addParentRouteArguments(array &$route_arguments, EntityTypeInterface $entity_type) {
+    // Add entity route arguments.
+    $parent_argument = $entity_type->getKey('parent');
+    $route_arguments[$parent_argument] = $this->getParentEntityFromRoute($parent_argument)->id();
+
+    // If parent is another child append its parents.
+    $parent_type = \Drupal::entityTypeManager()->getDefinition($entity_type->getKey('parent'));
+    if ($parent_type->hasKey('parent')) {
+      $this->addParentRouteArguments($route_arguments, $parent_type);
+    }
   }
 
 }
