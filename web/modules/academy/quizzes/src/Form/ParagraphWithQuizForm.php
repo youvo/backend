@@ -428,6 +428,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       $key = array_search($question->id(), array_column($questions, 'target_id'));
       $question->delete();
       unset($questions[$key]);
+      $this->entity->set('title', $form_state->getValue('title'));
       $this->entity->set('questions', $questions);
       $this->entity->save();
     }
