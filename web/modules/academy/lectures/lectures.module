@@ -18,7 +18,10 @@ function lectures_entity_operation(EntityInterface $entity) {
     \Drupal::service('module_handler')->moduleExists('paragraphs')) {
     $operations['add_paragraphs'] = [
       'title' => t('Paragraphs'),
-      'url' => Url::fromRoute('entity.paragraph.collection', ['lecture' => $entity->id()]),
+      'url' => Url::fromRoute('entity.paragraph.collection', [
+        'lecture' => $entity->id(),
+        'course' => $entity->getParentEntity()->id(),
+      ]),
       'weight' => 1,
     ];
   }

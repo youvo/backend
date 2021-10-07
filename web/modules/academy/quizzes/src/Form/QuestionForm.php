@@ -103,8 +103,11 @@ class QuestionForm extends ContentEntityForm {
     $arguments = ['%label' => $question->label()];
     $this->messenger()->addStatus($this->t('The question %label has been updated.', $arguments));
 
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+    $lecture = $paragraph->getParentEntity();
     $form_state->setRedirect('entity.paragraph.edit_form', [
-      'lecture' => $paragraph->getParentEntity()->id(),
+      'lecture' => $lecture->id(),
+      'course' => $lecture->getParentEntity()->id(),
       'paragraph' => $paragraph->id(),
     ]);
   }
@@ -128,11 +131,14 @@ class QuestionForm extends ContentEntityForm {
     // Add an abort button.
     /** @var \Drupal\child_entities\ChildEntityInterface $question */
     /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $question = $this->getEntity();
     $paragraph = $question->getParentEntity();
+    $lecture = $paragraph->getParentEntity();
     $url = Url::fromRoute('entity.paragraph.edit_form', [
+      'lecture' => $lecture->id(),
+      'course' => $lecture->getParentEntity()->id(),
       'paragraph' => $paragraph->id(),
-      'lecture' => $paragraph->getParentEntity()->id(),
     ]);
     $actions['abort'] = [
       '#type' => 'link',

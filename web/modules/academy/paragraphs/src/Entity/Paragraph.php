@@ -50,11 +50,11 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/lectures/{lecture}/paragraphs/add/{paragraph_type}",
- *     "add-page" = "/admin/content/lectures/{lecture}/paragraphs/add",
- *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/edit",
- *     "delete-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/delete",
- *     "collection" = "/admin/content/lectures/{lecture}/paragraphs"
+ *     "add-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add/{paragraph_type}",
+ *     "add-page" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add",
+ *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/edit",
+ *     "delete-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/delete",
+ *     "collection" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs"
  *   },
  *   bundle_entity_type = "paragraph_type",
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
