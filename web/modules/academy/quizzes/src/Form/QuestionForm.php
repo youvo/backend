@@ -103,8 +103,19 @@ class QuestionForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   protected function actions(array $form, FormStateInterface $form_state) {
+
+    // Get entitys actions.
     $actions = parent::actions($form, $form_state);
-    $url = Url::fromUserInput('#');
+
+    // Add an abort button.
+    /** @var \Drupal\child_entities\ChildEntityInterface $question */
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
+    $question = $this->getEntity();
+    $paragraph = $question->getParentEntity();
+    $url = Url::fromRoute('entity.paragraph.edit_form', [
+      'paragraph' => $paragraph->id(),
+      'lecture' => $paragraph->getParentEntity()->id(),
+    ]);
     $actions['abort'] = [
       '#type' => 'link',
       '#title' => $this->t('Abort'),

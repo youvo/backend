@@ -497,9 +497,15 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ],
       ],
     ];
+    /** @var \Drupal\child_entities\ChildEntityInterface $quiz */
+    $quiz = $this->entity;
     $is_disabled = $buttons_disabled ? ' is-disabled' : '';
     $url = !$buttons_disabled ?
-      Url::fromRoute('system.admin_content') :
+      Url::fromRoute('entity.question.edit_form', [
+        'paragraph' => $quiz->id(),
+        'lecture' => $quiz->getParentEntity()->id(),
+        'question' => $question->id(),
+      ]) :
       Url::fromUserInput('#');
     $row['buttons']['edit'] = [
       '#type' => 'link',
