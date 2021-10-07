@@ -76,14 +76,30 @@ class QuestionForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    // Save entity.
-    parent::save($form, $form_state);
 
-    // Add status and logger messages.
+    // Describe relevant entities.
     /** @var \Drupal\quizzes\Entity\Question $question */
     /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $question = $this->getEntity();
     $paragraph = $question->getParentEntity();
+
+    // Add values from multianswers form element.
+    if ($form_state->getValue('type') != 'free_text') {
+      $answers = $form_state->getValue('multianswers');
+      $question->set('options', []);
+      $question->set('answers', []);
+      foreach ($answers as $answer) {
+        if (!empty($answer['option'])) {
+          $question->get('options')->appendItem($answer['option']);
+          $question->get('answers')->appendItem($answer['correct']);
+        }
+      }
+    }
+
+    // Save entity.
+    parent::save($form, $form_state);
+
+    // Add status and logger messages.
     $arguments = ['%label' => $question->label()];
     $this->messenger()->addStatus($this->t('The question %label has been updated.', $arguments));
 
