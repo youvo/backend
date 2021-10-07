@@ -74,7 +74,9 @@ trait ChildEntityTrait {
     $uri_route_parameters[$parent_entity->getParentEntityTypeId()] = $parent_entity->getParentId();
 
     if ($parent_entity->isParentAnotherChildEntity()) {
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
+      /** @var \Drupal\child_entities\ChildEntityInterface $grandparent_entity */
+      $grandparent_entity = $parent_entity->getParentEntity();
+      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $grandparent_entity);
     }
 
     return $uri_route_parameters;

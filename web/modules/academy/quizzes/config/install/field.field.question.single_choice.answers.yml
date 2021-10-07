@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.question.answers
+    - quizzes.type.single_choice
+id: question.single_choice.answers
+field_name: answers
+entity_type: question
+bundle: single_choice
+label: Answers
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

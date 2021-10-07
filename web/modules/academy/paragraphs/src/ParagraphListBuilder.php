@@ -3,6 +3,7 @@
 namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
+use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -11,6 +12,7 @@ use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\paragraphs\Entity\ParagraphType;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,6 +20,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a list controller for the paragraph entity type.
  */
 class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterface {
+
+  use ChildEntityRouteContextTrait;
 
   /**
    * The entities being listed.
@@ -171,6 +175,10 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
+
     $form['entities'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
@@ -198,8 +206,33 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Save'),
-      '#button_type' => 'primary',
+      '#value' => $this->t('Save Order'),
+      '#button_type' => 'secondary',
+      '#attributes' => [
+        'class' => ['button--small'],
+      ],
+    ];
+    $form['actions']['edit'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Edit Lecture'),
+      '#url' => Url::fromRoute('entity.lecture.edit_form', [
+        'lecture' => $this->getParentEntityFromRoute('lecture')->id(),
+        'course' => $this->getParentEntityFromRoute('course')->id(),
+      ]),
+      '#attributes' => [
+        'class' => ['button button--small'],
+      ],
+    ];
+    $form['actions']['back'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Back to Courses'),
+      '#url' => Url::fromRoute('entity.lecture.collection', [], [
+        'query' => ['cr' => $this->getParentEntityFromRoute('course')->id()],
+        'fragment' => 'edit-course-' . $this->getParentEntityFromRoute('course')->id(),
+      ]),
+      '#attributes' => [
+        'class' => ['button button--small'],
+      ],
     ];
 
     return $form;

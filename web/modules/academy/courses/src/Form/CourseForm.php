@@ -58,7 +58,10 @@ class CourseForm extends ContentEntityForm {
     }
 
     if ($this->moduleHandler->moduleExists('lectures')) {
-      $form_state->setRedirect('entity.lecture.collection');
+      $form_state->setRedirect('entity.lecture.collection', [], [
+        'query' => ['cr' => $entity->id()],
+        'fragment' => 'edit-course-' . $entity->id(),
+      ]);
     }
     else {
       $form_state->setRedirect('admin.content');

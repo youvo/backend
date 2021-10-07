@@ -36,6 +36,7 @@ install:
   # Contrib
   - filefield_paths
   - mail_login
+  - multivalue_form_element
   # Base
   - youvo
   # Projects

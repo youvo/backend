@@ -18,9 +18,31 @@ function lectures_entity_operation(EntityInterface $entity) {
     \Drupal::service('module_handler')->moduleExists('paragraphs')) {
     $operations['add_paragraphs'] = [
       'title' => t('Paragraphs'),
-      'url' => Url::fromRoute('entity.paragraph.collection', ["lecture" => $entity->id()]),
+      'url' => Url::fromRoute('entity.paragraph.collection', [
+        'lecture' => $entity->id(),
+        'course' => $entity->getParentEntity()->id(),
+      ]),
       'weight' => 1,
     ];
   }
   return $operations;
+}
+
+/**
+ * Implements hook_entity_operation_alter().
+ */
+function lectures_entity_operation_alter(array &$operations, EntityInterface $entity) {
+  // Overwrite edit and delete to avoid destination.
+  if ($entity instanceof Lecture) {
+    $operations['edit']['url'] = Url::fromRoute('entity.lecture.edit_form', [
+      'course' => $entity->getParentEntity()->id(),
+      'lecture' => $entity->id(),
+    ]);
+    $operations['delete']['url'] = Url::fromRoute('entity.lecture.delete_form', [
+      'course' => $entity->getParentEntity()->id(),
+      'lecture' => $entity->id(),
+    ]);
+    unset($operations['edit']['query']);
+    unset($operations['delete']['query']);
+  }
 }

@@ -2,6 +2,8 @@
 
 namespace Drupal\lectures;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -10,7 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
-use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -108,6 +110,12 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    // Get query parameter.
+    $query_parameter_cr = \Drupal::request()->get('cr') ?? NULL;
+
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
+
     // Load entities and group by courses.
     /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
     $lectures = $this->load();
@@ -117,7 +125,6 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       $course_ids[] = $lecture->getParentEntity()->id();
       $lectures_grouped[$lecture->getParentEntity()->id()][$lecture->id()] = $lecture;
     }
-    $this->entities = $lectures_grouped;
 
     // Find empty courses. This is a little squishy. But just an easy workaround
     // because this is the lecture collection.
@@ -125,21 +132,47 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       ->condition('id', $course_ids, 'NOT IN')
       ->execute();
     foreach ($empty_query as $empty_course_id) {
+      $course_ids[] = $empty_course_id;
       $lectures_grouped[$empty_course_id] = [];
     }
 
+    // Use this light-weight trick to sort by courses weight.
+    $lectures_grouped_sorted = [];
+    $sorted_query = \Drupal::entityQuery('course')
+      ->condition('id', $course_ids, 'IN')
+      ->sort('weight')
+      ->execute();
+    foreach ($sorted_query as $key) {
+      $lectures_grouped_sorted[$key] = $lectures_grouped[$key];
+    }
+
+    // Attach to entities property.
+    $this->entities = $lectures_grouped_sorted;
+
+    // Make tree, so we can order lectures per table.
+    $form['course']['#tree'] = TRUE;
+
     // Iterate lectures by courses and display as details.
-    foreach ($lectures_grouped as $course_id => $lectures) {
+    foreach ($lectures_grouped_sorted as $course_id => $lectures) {
 
       /** @var \Drupal\courses\Entity\Course $course */
-      $course = \Drupal::entityTypeManager()->getStorage('course')->load($course_id);
+      try {
+        $course = \Drupal::entityTypeManager()
+          ->getStorage('course')
+          ->load($course_id);
+      }
+      catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+        $variables = Error::decodeException($e);
+        \Drupal::logger('lecture')
+          ->error('An error occurred while loading a course. %type: @message in %function (line %line of %file).', $variables);
+      }
 
       $form['course'][$course_id] = [
         '#type' => 'details',
         '#module_package_listing' => TRUE,
         '#title' => 'Course: ' . $course->getTitle(),
-        '#description' => '<div class="leader">' . $course->get('description')->value . '</div>',
-        '#open' => FALSE,
+        '#description' => '<div class="leader trailer">' . $course->get('description')->value . '</div>',
+        '#open' => $query_parameter_cr == $course_id,
       ];
 
       $form['course'][$course_id]['lectures'] = [
@@ -150,7 +183,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
           [
             'action' => 'order',
             'relationship' => 'sibling',
-            'group' => 'weight',
+            'group' => 'weight_' . $course_id,
           ],
         ],
       ];
@@ -158,7 +191,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       $delta = count($lectures);
 
       foreach ($lectures as $lecture) {
-        $row = $this->buildRow($lecture);
+        $row = $this->buildRow($lecture, $course_id);
         if (isset($row['weight'])) {
           $row['weight']['#delta'] = $delta;
         }
@@ -196,11 +229,10 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
           'class' => ['button--small'],
           'data-id' => $course_id,
         ],
-        '#submit' => [],
+        '#submit' => ['::submitOrder'],
         '#value' => $this->t('Save Order'),
         '#button_type' => 'secondary',
       ];
-
     }
 
     return $form;
@@ -226,7 +258,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity, int $course_id = 0) {
     /** @var \Drupal\lectures\Entity\Lecture $entity */
     // Override default values to markup elements.
     $row['#attributes']['class'][] = 'draggable';
@@ -248,7 +280,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       '#title' => $this->t('Weight for @title', ['@title' => $entity->label()]),
       '#title_display' => 'invisible',
       '#default_value' => $entity->get('weight')->value,
-      '#attributes' => ['class' => ['weight']],
+      '#attributes' => ['class' => ['weight_' . $course_id]],
     ];
     return $row;
   }
@@ -274,20 +306,31 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Has no main submit.
+  }
+
+  /**
+   * Changes the order of Lecture entities by course id.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    // @todo Adjust for different entities array.
-    foreach ($form_state->getValue('entities') as $id => $value) {
+  public function submitOrder(array &$form, FormStateInterface $form_state) {
+    $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
+    foreach ($form_state->getValue(['course', $course_id, 'lectures']) as $id => $value) {
       /** @var \Drupal\lectures\Entity\Lecture $lecture */
-      $lecture = $this->entities[$id];
+      $lecture = $this->entities[$course_id][$id];
       if (isset($lecture) && $lecture->get('weight')->value != $value['weight']) {
         // Save entity only when its weight was changed.
         $lecture->set('weight', $value['weight']);
         $lecture->save();
       }
     }
+    $form_state->setRedirect('entity.lecture.collection', [], [
+      'query' => ['cr' => $course_id],
+      'fragment' => 'edit-course-' . $course_id,
+    ]);
   }
 
   /**
@@ -300,8 +343,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    */
   public function redirectAddLecture(array &$form, FormStateInterface $form_state) {
     $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
-    $redirect = Url::fromRoute('entity.lecture.add_form', ['course' => $course_id]);
-    $form_state->setRedirectUrl($redirect);
+    $form_state->setRedirect('entity.lecture.add_form', ['course' => $course_id]);
   }
 
   /**
@@ -314,8 +356,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
    */
   public function redirectEditCourse(array &$form, FormStateInterface $form_state) {
     $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
-    $redirect = Url::fromRoute('entity.course.edit_form', ['course' => $course_id]);
-    $form_state->setRedirectUrl($redirect);
+    $form_state->setRedirect('entity.course.edit_form', ['course' => $course_id]);
+  }
+
+  /**
+   * Loads entity IDs using a pager sorted by the weight.
+   *
+   * @return array
+   *   An array of entity IDs.
+   */
+  protected function getEntityIds() {
+    $query = $this->getStorage()->getQuery()
+      ->accessCheck(TRUE)
+      ->sort('weight');
+    return $query->execute();
   }
 
 }

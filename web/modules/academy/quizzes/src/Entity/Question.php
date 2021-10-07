@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Url;
 use Drupal\quizzes\QuestionInterface;
 use Drupal\user\UserInterface;
 
@@ -22,22 +23,29 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Question type"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
+ *     "form" = {
+ *       "edit" = "Drupal\quizzes\Form\QuestionForm"
+ *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
  *   },
  *   base_table = "questions",
  *   data_table = "questions_field_data",
+ *   fieldable = TRUE,
  *   translatable = TRUE,
  *   admin_permission = "administer questions",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
- *     "bundle" = "type",
+ *     "bundle" = "bundle",
  *     "label" = "id",
  *     "uuid" = "uuid",
  *     "parent" = "paragraph",
  *     "weight" = "weight"
+ *   },
+ *   links = {
+ *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
@@ -121,11 +129,11 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['body'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Question'))
-      ->setDescription(t('The question.'))
+      ->setRequired(TRUE)
       ->setDisplayOptions('form', [
-        'type' => 'textarea',
+        'type' => 'string_textarea',
+        'weight' => -5,
         'rows' => 2,
-        'weight' => 10,
       ]);
 
     $fields['help'] = BaseFieldDefinition::create('string_long')
@@ -133,30 +141,8 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setLabel(t('Help Text'))
       ->setDescription(t('Further explanation to the question.'))
       ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'rows' => 3,
-        'weight' => 11,
-      ]);
-
-    $fields['options'] = BaseFieldDefinition::create('string_long')
-      ->setTranslatable(TRUE)
-      ->setLabel(t('Answer Options'))
-      ->setDescription(t('&-separated options for the answers.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'rows' => 3,
-        'placeholder' => t('Option 1 &amp;&#10;Option 2 &amp;&#10;Option 3'),
-        'weight' => 12,
-      ]);
-
-    $fields['answers'] = BaseFieldDefinition::create('string')
-      ->setTranslatable(TRUE)
-      ->setLabel(t('Correct Answer(s)'))
-      ->setDescription(t('&-separated numbers of correct answers. Only one for single-choice question.'))
-      ->setDisplayOptions('form', [
-        'type' => 'textfield',
-        'placeholder' => t('1 &amp; 2 &amp; 3'),
-        'weight' => 12,
+        'type' => 'string_textarea',
+        'weight' => -4,
       ]);
 
     $fields['explanation'] = BaseFieldDefinition::create('string_long')
@@ -164,9 +150,8 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
       ->setLabel(t('Explanation'))
       ->setDescription(t('Explaining the reasoning behind the correct answers.'))
       ->setDisplayOptions('form', [
-        'type' => 'textarea',
-        'weight' => 12,
-        'rows' => 3,
+        'type' => 'string_textarea',
+        'weight' => -1,
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
