@@ -49,7 +49,7 @@ class QuestionForm extends ContentEntityForm {
       }
 
       // Attach answers multi value form element.
-      $form['answers'] = [
+      $form['multianswers'] = [
         '#title' => $this->t('Answers'),
         '#type' => 'multivalue',
         '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,

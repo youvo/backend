@@ -200,7 +200,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#rows' => 3,
     ];
 
-    $form['questions']['elements']['answers'] = [
+    $form['questions']['elements']['multianswers'] = [
       '#title' => $this->t('Answers'),
       '#type' => 'multivalue',
       '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
@@ -248,7 +248,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
         ['body'],
         ['help'],
         ['options'],
-        ['answers'],
+        ['multianswers'],
         ['explanation'],
         ['elements'],
         ['title'],
@@ -372,7 +372,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'paragraph' => $this->entity->id(),
     ]);
     if ($form_state->getValue('type') != 'free_text') {
-      $answers = $form_state->getValue('answers');
+      $answers = $form_state->getValue('multianswers');
       foreach ($answers as $answer) {
         if (!empty($answer['option'])) {
           $new_question->get('options')->appendItem($answer['option']);
