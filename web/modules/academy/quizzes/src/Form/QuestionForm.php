@@ -81,13 +81,15 @@ class QuestionForm extends ContentEntityForm {
 
     // Add status and logger messages.
     /** @var \Drupal\quizzes\Entity\Question $question */
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $question = $this->getEntity();
+    $paragraph = $question->getParentEntity();
     $arguments = ['%label' => $question->label()];
     $this->messenger()->addStatus($this->t('The question %label has been updated.', $arguments));
 
     $form_state->setRedirect('entity.paragraph.edit_form', [
-      'lecture' => 6,
-      'paragraph' => $question->getParentEntity()->id(),
+      'lecture' => $paragraph->getParentEntity()->id(),
+      'paragraph' => $paragraph->id(),
     ]);
   }
 
