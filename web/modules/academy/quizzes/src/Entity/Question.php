@@ -129,6 +129,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
     $fields['body'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(t('Question'))
+      ->setRequired(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'string_textarea',
         'weight' => -5,
