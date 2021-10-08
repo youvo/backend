@@ -31,6 +31,7 @@ class ParagraphForm extends ContentEntityForm {
 
     return $form;
   }
+
   /**
    * {@inheritdoc}
    */
@@ -49,7 +50,6 @@ class ParagraphForm extends ContentEntityForm {
     }
     else {
       $this->messenger()->addStatus($this->t('The paragraph %label has been updated.', $arguments));
-      $this->logger('paragraphs')->notice('Updated new paragraph %label.', $arguments);
     }
 
     /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
