@@ -4,10 +4,13 @@ namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use Drupal\paragraphs\Entity\ParagraphType;
 
 /**
@@ -61,9 +64,17 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   public function buildRow(EntityInterface $entity) {
     // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
-    $bundle = \Drupal::entityTypeManager()
-      ->getStorage('paragraph_type')
-      ->load($entity->bundle());
+    $bundle = '';
+    try {
+      $bundle = \Drupal::entityTypeManager()
+        ->getStorage('paragraph_type')
+        ->load($entity->bundle());
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('paragraphs')
+        ->error('An error occurred while loading paragraph types. %type: @message in %function (line %line of %file).', $variables);
+    }
 
     if (!($bundle instanceof ParagraphType)) {
       \Drupal::logger('paragraphs')
@@ -109,9 +120,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
 
     // Attach js to hide 'show row weights' buttons.
     $form['#attached']['library'][] = 'academy/hideweightbutton';
-
-    /** @var \Drupal\lectures\Entity\Lecture $lecture */
-    $lecture = $this->parent;
 
     $form['entities'] = [
       '#type' => 'table',

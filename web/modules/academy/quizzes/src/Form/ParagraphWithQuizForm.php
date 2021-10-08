@@ -334,7 +334,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Rebuilds the form or delivers form errors from validation.
    */
-  public function rebuildAjax(array $form, FormStateInterface &$form_state) {
+  public function rebuildAjax(array $form, FormStateInterface $form_state) {
     if (!$form_state->hasAnyErrors()) {
       return $form['questions'];
     }
