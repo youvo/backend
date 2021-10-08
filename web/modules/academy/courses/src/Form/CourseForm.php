@@ -20,6 +20,10 @@ class CourseForm extends ContentEntityForm {
     /** @var \Drupal\courses\Entity\Course $course */
     $course = $this->getEntity();
 
+    // Attach js to hide 'show row weights' buttons.
+    $form['#attached']['library'][] = 'academy/hideweightbutton';
+
+    // Add machine name form element.
     $form['machine_name'] = [
       '#type' => 'machine_name',
       '#default_value' => $course->getMachineName(),
