@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
@@ -45,4 +46,25 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
     unset($operations['edit']['query']);
     unset($operations['delete']['query']);
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lectures_form_course_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
+}
+
+/**
+ * Set redirect for course form.
+ */
+function lectures_form_course_edit_form_redirect($form, FormStateInterface $form_state) {
+
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $course = $form_object->getEntity();
+  $form_state->setRedirect('entity.lecture.collection', [], [
+    'query' => ['cr' => $course->id()],
+    'fragment' => 'edit-course-' . $course->id(),
+  ]);
 }
