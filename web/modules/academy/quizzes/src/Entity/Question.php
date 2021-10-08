@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
-use Drupal\quizzes\QuestionInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -51,7 +50,7 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "entity.question_type.edit_form"
  * )
  */
-class Question extends ContentEntityBase implements ChildEntityInterface, QuestionInterface {
+class Question extends ContentEntityBase implements ChildEntityInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;

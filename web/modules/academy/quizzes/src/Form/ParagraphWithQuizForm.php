@@ -462,7 +462,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
    */
   protected function buildRow($question, $buttons_disabled) {
     // Get bundle for question entity.
-    /** @var \Drupal\quizzes\QuestionInterface $question */
+    /** @var \Drupal\quizzes\Entity\Question $question */
     $bundle = '';
     try {
       $bundle = $this->entityTypeManager

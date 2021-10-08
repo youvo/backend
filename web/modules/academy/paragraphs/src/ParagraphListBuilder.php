@@ -118,7 +118,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    */
   public function buildRow(EntityInterface $entity) {
     // Get bundle for paragraph entity.
-    /** @var \Drupal\paragraphs\ParagraphInterface $entity */
+    /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
     $bundle = \Drupal::entityTypeManager()
       ->getStorage('paragraph_type')
       ->load($entity->bundle());
