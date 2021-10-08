@@ -70,7 +70,8 @@ function academy_dummy_site_install_finished() {
       'machine_name' => $course_machine_names[$j],
       'weight' => -7 + $j,
     ]);
-    for ($k = 0; $k < 5; $k++) {
+    $max = rand(3, 6);
+    for ($k = 0; $k < $max; $k++) {
       $course->get('tags')->appendItem($random->sentences(1, TRUE));
     }
     $course->save();
