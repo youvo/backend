@@ -43,7 +43,7 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit"
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}/qu/{question}"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"

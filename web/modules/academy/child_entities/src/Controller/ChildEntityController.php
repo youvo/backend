@@ -120,7 +120,7 @@ class ChildEntityController extends EntityController {
    */
   public function editTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
-      return $this->t('Edit %label', ['%label' => $entity->label()]);
+      return $entity->label();
     }
   }
 
