@@ -36,25 +36,6 @@ function lectures_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
- * Implements hook_entity_operation().
- */
-function lectures_entity_operation(EntityInterface $entity) {
-  $operations = [];
-  if ($entity instanceof Lecture &&
-    \Drupal::service('module_handler')->moduleExists('paragraphs')) {
-    $operations['add_paragraphs'] = [
-      'title' => t('Paragraphs'),
-      'url' => Url::fromRoute('entity.paragraph.collection', [
-        'lecture' => $entity->id(),
-        'course' => $entity->getParentEntity()->id(),
-      ]),
-      'weight' => 1,
-    ];
-  }
-  return $operations;
-}
-
-/**
  * Implements hook_entity_operation_alter().
  */
 function lectures_entity_operation_alter(array &$operations, EntityInterface $entity) {

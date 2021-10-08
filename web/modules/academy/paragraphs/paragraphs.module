@@ -6,11 +6,13 @@
  */
 
 use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\lectures\Entity\Lecture;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -31,6 +33,24 @@ function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
   }
 
   return $fields;
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function paragraphs_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity instanceof Lecture) {
+    $operations['add_paragraphs'] = [
+      'title' => t('Paragraphs'),
+      'url' => Url::fromRoute('entity.paragraph.collection', [
+        'lecture' => $entity->id(),
+        'course' => $entity->getParentEntity()->id(),
+      ]),
+      'weight' => 1,
+    ];
+  }
+  return $operations;
 }
 
 /**
