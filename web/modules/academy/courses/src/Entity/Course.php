@@ -236,6 +236,17 @@ class Course extends ContentEntityBase implements CourseInterface {
         ->setClass(ComputedChildEntityReferenceFieldItemList::class);
     }
 
+    $fields['tags'] = BaseFieldDefinition::create('string')
+      ->setTranslatable(TRUE)
+      ->setLabel(t('Tags'))
+      ->setDescription(t('Tags are displayed on Course teasers.'))
+      ->setSetting('max_length', 255)
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 15,
+      ]);
+
     $fields['weight'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Weight'))
       ->setDescription(t('The weight of this term in relation to other terms.'))
