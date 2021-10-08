@@ -3,10 +3,13 @@
 namespace Drupal\child_entities\Controller;
 
 use Drupal\child_entities\ChildEntityEnsureTrait;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\Controller\EntityController;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Class ChildEntityController.
@@ -110,6 +113,32 @@ class ChildEntityController extends EntityController {
     if ($parent_type->hasKey('parent')) {
       $this->addParentRouteArguments($route_arguments, $parent_type);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function editTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+    if ($entity = $this->doGetEntity($route_match, $_entity)) {
+      return $this->t('Edit %label', ['%label' => $entity->label()]);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doGetEntity(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+    // Looking for the matching entity in the route parameters.
+    // The entity routes follow the pattern entity.{entity_id}.edit_form!
+    $route_name = explode('.', $route_match->getRouteName());
+    $parameters = $route_match->getParameters()->all();
+    if (in_array($route_name[1], array_keys($parameters))) {
+      $candidate = $parameters[$route_name[1]];
+      if ($candidate instanceof ChildEntityInterface) {
+        $_entity = $candidate;
+      }
+    }
+    return parent::doGetEntity($route_match, $_entity);
   }
 
 }
