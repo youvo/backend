@@ -40,6 +40,9 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
     $this->entityImplementsChildEntityInterface($entity_type);
     $collection = parent::getRoutes($entity_type);
     foreach ($collection as $key => $route) {
+      if (strpos($key, 'edit_form')) {
+        $route->setDefault('_title_callback', ChildEntityController::class . '::editTitle');
+      }
       $option_parameters = $route->getOption('parameters');
       if (!is_array($option_parameters)) {
         $option_parameters = [];
