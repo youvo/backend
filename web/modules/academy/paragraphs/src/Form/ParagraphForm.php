@@ -12,25 +12,6 @@ use Drupal\paragraphs\ParagraphFormInfoTrait;
  */
 class ParagraphForm extends ContentEntityForm {
 
-  use ParagraphFormInfoTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(array $form, FormStateInterface $form_state) {
-
-    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
-    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
-    $paragraph = $this->getEntity();
-    $lecture = $paragraph->getParentEntity();
-    $this->getParagraphInfo($form, $lecture->getParentEntity(), $lecture);
-
-    // Build parent form.
-    $form += parent::form($form, $form_state);
-
-    return $form;
-  }
-
   /**
    * {@inheritdoc}
    */

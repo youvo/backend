@@ -16,7 +16,6 @@ use Drupal\paragraphs\Entity\ParagraphType;
 class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterface {
 
   use ChildEntityRouteContextTrait;
-  use ParagraphFormInfoTrait;
 
   /**
    * The entities being listed.
@@ -113,7 +112,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
 
     /** @var \Drupal\lectures\Entity\Lecture $lecture */
     $lecture = $this->parent;
-    $this->getParagraphInfo($form, $lecture->getParentEntity(), $lecture);
 
     $form['entities'] = [
       '#type' => 'table',
