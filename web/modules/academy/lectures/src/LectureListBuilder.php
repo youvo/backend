@@ -167,11 +167,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
           ->error('An error occurred while loading a course. %type: @message in %function (line %line of %file).', $variables);
       }
 
+      $tags = '';
+      foreach ($course->get('tags')->getValue() as $tag) {
+        $tags .= '<div class="button button--extrasmall is-disabled">' . $tag['value'] . '</div>';
+      }
+      $disabled_course = '';
+      if (!$course->isEnabled()) {
+        $disabled_course = ' ' . $this->t('(Disabled)');
+      }
       $form['course'][$course_id] = [
         '#type' => 'details',
         '#module_package_listing' => TRUE,
-        '#title' => 'Course: ' . $course->getTitle(),
-        '#description' => '<div class="leader trailer">' . $course->get('description')->value . '</div>',
+        '#title' => $this->t('Course: @s', ['@s' => $course->getTitle()]) . $disabled_course,
+        '#description' => '<h6>' . $course->get('subtitle')->value . '</h6>
+        <div>' . $course->get('description')->value . '</div>' . $tags,
         '#open' => $query_parameter_cr == $course_id,
       ];
 

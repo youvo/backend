@@ -5,12 +5,32 @@ namespace Drupal\paragraphs\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\multivalue_form_element\Element\MultiValue;
+use Drupal\paragraphs\ParagraphFormInfoTrait;
 
 /**
  * Form controller for the paragraph entity edit forms.
  */
 class ParagraphForm extends ContentEntityForm {
 
+  use ParagraphFormInfoTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+    $paragraph = $this->getEntity();
+    $lecture = $paragraph->getParentEntity();
+    $this->getParagraphInfo($form, $lecture->getParentEntity(), $lecture);
+
+    // Build parent form.
+    $form += parent::form($form, $form_state);
+
+    return $form;
+  }
   /**
    * {@inheritdoc}
    */
