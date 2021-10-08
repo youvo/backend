@@ -5,27 +5,34 @@
  * Provides hooks for a lecture entity type.
  */
 
+use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
 /**
- * Implements hook_entity_operation().
+ * Implements hook_entity_base_field_info().
  */
-function lectures_entity_operation(EntityInterface $entity) {
-  $operations = [];
-  if ($entity instanceof Lecture &&
-    \Drupal::service('module_handler')->moduleExists('paragraphs')) {
-    $operations['add_paragraphs'] = [
-      'title' => t('Paragraphs'),
-      'url' => Url::fromRoute('entity.paragraph.collection', [
-        'lecture' => $entity->id(),
-        'course' => $entity->getParentEntity()->id(),
-      ]),
-      'weight' => 1,
-    ];
+function lectures_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add lectures base field to entity Course.
+  if ($entity_type->id() == 'course') {
+    $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Computed Children.'))
+      ->setSetting('target_type', 'lecture')
+      ->setDescription(t('Computes the lectures referencing this course.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setComputed(TRUE)
+      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
   }
-  return $operations;
+
+  return $fields;
 }
 
 /**
@@ -42,7 +49,65 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
     ]);
-    unset($operations['edit']['query']);
-    unset($operations['delete']['query']);
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lectures_form_course_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add abort button.
+  $url = Url::fromRoute('entity.lecture.collection');
+  lectures_form_course_edit_form_abort_button($form, $url);
+
+  // Alter redirect.
+  $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lectures_form_course_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Add abort button.
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $course = $form_object->getEntity();
+  $url = Url::fromRoute('entity.lecture.collection', [], [
+    'query' => ['cr' => $course->id()],
+    'fragment' => 'edit-course-' . $course->id(),
+  ]);
+  lectures_form_course_edit_form_abort_button($form, $url);
+
+  // Alter redirect.
+  $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
+}
+
+/**
+ * Amends abort button to course edit form.
+ */
+function lectures_form_course_edit_form_abort_button(array &$form, Url $url) {
+  $form['actions']['abort'] = [
+    '#type' => 'link',
+    '#title' => t('Abort'),
+    '#url' => $url,
+    '#attributes' => [
+      'class' => ['button'],
+    ],
+    '#weight' => 5,
+  ];
+}
+
+/**
+ * Set redirect for course form.
+ */
+function lectures_form_course_edit_form_redirect($form, FormStateInterface $form_state) {
+
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $course = $form_object->getEntity();
+  $form_state->setRedirect('entity.lecture.collection', [], [
+    'query' => ['cr' => $course->id()],
+    'fragment' => 'edit-course-' . $course->id(),
+  ]);
 }

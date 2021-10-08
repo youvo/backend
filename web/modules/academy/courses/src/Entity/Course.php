@@ -2,7 +2,6 @@
 
 namespace Drupal\courses\Entity;
 
-use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -42,9 +41,9 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/course/add",
- *     "edit-form" = "/admin/content/course/{course}/edit",
- *     "delete-form" = "/admin/content/course/{course}/delete",
+ *     "add-form" = "/academy/co/add",
+ *     "edit-form" = "/academy/co/{course}",
+ *     "delete-form" = "/academy/co/{course}/delete",
  *   },
  * )
  */
@@ -225,16 +224,6 @@ class Course extends ContentEntityBase implements CourseInterface {
       ->setLabel(t('Changed'))
       ->setTranslatable(TRUE)
       ->setDescription(t('The time that the course was last edited.'));
-
-    if (\Drupal::moduleHandler()->moduleExists('lectures')) {
-      $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
-        ->setLabel(t('Computed Children.'))
-        ->setSetting('target_type', 'lecture')
-        ->setDescription(t('Computes the lectures referencing this course.'))
-        ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-        ->setComputed(TRUE)
-        ->setClass(ComputedChildEntityReferenceFieldItemList::class);
-    }
 
     $fields['tags'] = BaseFieldDefinition::create('string')
       ->setTranslatable(TRUE)

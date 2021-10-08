@@ -4,17 +4,14 @@ namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use Drupal\paragraphs\Entity\ParagraphType;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a list controller for the paragraph entity type.
@@ -31,62 +28,11 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   protected $entities = [];
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The redirect destination service.
-   *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
-   */
-  protected $redirectDestination;
-
-  /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
   protected $formBuilder;
-
-  /**
-   * Constructs a new ParagraphListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The Child Entity Route Match.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
-   *   The redirect destination service.
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
-    parent::__construct($entity_type, $storage, $route_match);
-    $this->dateFormatter = $date_formatter;
-    $this->redirectDestination = $redirect_destination;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('current_route_match'),
-      $container->get('date.formatter'),
-      $container->get('redirect.destination'),
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -117,10 +63,18 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    */
   public function buildRow(EntityInterface $entity) {
     // Get bundle for paragraph entity.
-    /** @var \Drupal\paragraphs\ParagraphInterface $entity */
-    $bundle = \Drupal::entityTypeManager()
-      ->getStorage('paragraph_type')
-      ->load($entity->bundle());
+    /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
+    $bundle = '';
+    try {
+      $bundle = \Drupal::entityTypeManager()
+        ->getStorage('paragraph_type')
+        ->load($entity->bundle());
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('paragraphs')
+        ->error('An error occurred while loading paragraph types. %type: @message in %function (line %line of %file).', $variables);
+    }
 
     if (!($bundle instanceof ParagraphType)) {
       \Drupal::logger('paragraphs')
@@ -150,18 +104,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#attributes' => ['class' => ['weight']],
     ];
     return $row;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity) {
-    $operations = parent::getDefaultOperations($entity);
-    $destination = $this->redirectDestination->getAsArray();
-    foreach ($operations as $key => $operation) {
-      $operations[$key]['query'] = $destination;
-    }
-    return $operations;
   }
 
   /**

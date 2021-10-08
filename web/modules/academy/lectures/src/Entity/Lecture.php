@@ -4,16 +4,12 @@ namespace Drupal\lectures\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
-use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Url;
 use Drupal\user\UserInterface;
-use Drupal\lectures\LectureInterface;
 
 /**
  * Defines the lecture entity class.
@@ -22,11 +18,10 @@ use Drupal\lectures\LectureInterface;
  *   id = "lecture",
  *   label = @Translation("Lecture"),
  *   label_collection = @Translation("Academy"),
+ *   label_singular = @Translation("Lecture"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\lectures\LectureListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\lectures\Form\LectureForm",
  *       "edit" = "Drupal\lectures\Form\LectureForm",
@@ -50,14 +45,14 @@ use Drupal\lectures\LectureInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/courses/{course}/lectures/add",
- *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/edit",
- *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
- *     "collection" = "/admin/content/academy"
+ *     "add-form" = "/academy/co/{course}/le/add",
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}",
+ *     "delete-form" = "/academy/co/{course}/le/{lecture}/delete",
+ *     "collection" = "/academy"
  *   }
  * )
  */
-class Lecture extends ContentEntityBase implements ChildEntityInterface, LectureInterface {
+class Lecture extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;
@@ -81,14 +76,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
   }
 
   /**
-   * {@inheritdoc}
+   * Get title.
    */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set title.
    */
   public function setTitle(string $title) {
     $this->set('title', $title);
@@ -96,14 +91,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
   }
 
   /**
-   * {@inheritdoc}
+   * Get status.
    */
   public function isEnabled() {
     return (bool) $this->get('status')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set status.
    */
   public function setStatus(bool $status) {
     $this->set('status', $status);
@@ -111,14 +106,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
   }
 
   /**
-   * {@inheritdoc}
+   * Get created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set created time.
    */
   public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
@@ -126,21 +121,21 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner.
    */
   public function getOwner() {
     return $this->get('uid')->entity;
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner ID.
    */
   public function getOwnerId() {
     return $this->get('uid')->target_id;
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner ID.
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
@@ -148,7 +143,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner.
    */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());
@@ -218,31 +213,9 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
       ->setDescription(t('The weight of this term in relation to other terms.'))
       ->setDefaultValue(0);
 
-    $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
-      ->setSetting('target_type', 'paragraph')
-      ->setDescription(t('Computes the paragraphs referencing this lecture.'))
-      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      ->setComputed(TRUE)
-      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
-
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
-  }
-
-  /**
-   * Overwrite call toUrl for non-present canonical route.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
-      return Url::fromUri('route:<nolink>')->setOptions($options);
-    }
-    else {
-      return parent::toUrl($rel, $options);
-    }
   }
 
 }
