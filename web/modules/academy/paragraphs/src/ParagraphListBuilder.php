@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\paragraphs\Entity\ParagraphType;
@@ -39,13 +38,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   protected $dateFormatter;
 
   /**
-   * The redirect destination service.
-   *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
-   */
-  protected $redirectDestination;
-
-  /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
@@ -63,15 +55,12 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    *   The Child Entity Route Match.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
-   *   The redirect destination service.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter) {
     parent::__construct($entity_type, $storage, $route_match);
     $this->dateFormatter = $date_formatter;
-    $this->redirectDestination = $redirect_destination;
   }
 
   /**
@@ -84,8 +73,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('current_route_match'),
-      $container->get('date.formatter'),
-      $container->get('redirect.destination'),
+      $container->get('date.formatter')
     );
   }
 
@@ -151,18 +139,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#attributes' => ['class' => ['weight']],
     ];
     return $row;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity) {
-    $operations = parent::getDefaultOperations($entity);
-    $destination = $this->redirectDestination->getAsArray();
-    foreach ($operations as $key => $operation) {
-      $operations[$key]['query'] = $destination;
-    }
-    return $operations;
   }
 
   /**
