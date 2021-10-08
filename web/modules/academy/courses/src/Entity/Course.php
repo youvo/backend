@@ -41,9 +41,9 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/course/add",
- *     "edit-form" = "/admin/content/course/{course}/edit",
- *     "delete-form" = "/admin/content/course/{course}/delete",
+ *     "add-form" = "/academy/co/add",
+ *     "edit-form" = "/academy/co/{course}",
+ *     "delete-form" = "/academy/co/{course}/delete",
  *   },
  * )
  */

@@ -18,11 +18,10 @@ use Drupal\user\UserInterface;
  *   id = "lecture",
  *   label = @Translation("Lecture"),
  *   label_collection = @Translation("Academy"),
+ *   label_singular = @Translation("Lecture"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\lectures\LectureListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\lectures\Form\LectureForm",
  *       "edit" = "Drupal\lectures\Form\LectureForm",
@@ -46,10 +45,10 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/courses/{course}/lectures/add",
- *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/edit",
- *     "delete-form" = "/admin/content/lectures/{lecture}/delete",
- *     "collection" = "/admin/content/academy"
+ *     "add-form" = "/academy/co/{course}/le/add",
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}",
+ *     "delete-form" = "/academy/co/{course}/le/{lecture}/delete",
+ *     "collection" = "/academy"
  *   }
  * )
  */

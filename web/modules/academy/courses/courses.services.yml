@@ -1,0 +1,5 @@
+services:
+  courses.route_subscriber:
+    class: Drupal\courses\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
