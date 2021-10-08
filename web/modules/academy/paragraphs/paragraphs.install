@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Implements install and uninstall hook. Adds basefield to Lecture.
+ *
+ * @see pargraphs.module paragraphs_entity_base_field_info().
+ */
+
+/**
+ * Implements hook_install().
+ */
+function paragraphs_install() {
+  $entity_type = \Drupal::service('entity_type.manager')->getDefinition('lecture');
+  \Drupal::service('entity.definition_update_manager')->updateEntityType($entity_type);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function paragraphs_uninstall() {
+  $entity_type = \Drupal::service('entity_type.manager')->getDefinition('lecture');
+  \Drupal::service('entity.definition_update_manager')->updateEntityType($entity_type);
+}

@@ -4,13 +4,11 @@ namespace Drupal\lectures\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
-use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Drupal\lectures\LectureInterface;
@@ -217,14 +215,6 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Lecture
       ->setLabel(t('Weight'))
       ->setDescription(t('The weight of this term in relation to other terms.'))
       ->setDefaultValue(0);
-
-    $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
-      ->setSetting('target_type', 'paragraph')
-      ->setDescription(t('Computes the paragraphs referencing this lecture.'))
-      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      ->setComputed(TRUE)
-      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 

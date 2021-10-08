@@ -5,7 +5,32 @@
  * Provides hooks for a paragraph entity type.
  */
 
+use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add paragraphs base field to entity Lecture.
+  if ($entity_type->id() == 'lecture') {
+    $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Computed Children.'))
+      ->setSetting('target_type', 'paragraph')
+      ->setDescription(t('Computes the paragraphs referencing this lecture.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setComputed(TRUE)
+      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
+  }
+
+  return $fields;
+}
 
 /**
  * Implements hook_form_FORM_ID_alter().
