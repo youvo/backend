@@ -84,6 +84,12 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
+  tags:
+    fieldName: tags
+    publicName: tags
+    enhancer:
+      id: ''
+    disabled: false
   weight:
     fieldName: weight
     publicName: weight
