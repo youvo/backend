@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Provides hooks for a paragraph entity type.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function paragraphs_form_lecture_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['actions']['submit']['#submit'][] = 'paragraphs_form_lecture_edit_form_redirect';
+}
+
+/**
+ * Set redirect for lecture form.
+ */
+function paragraphs_form_lecture_edit_form_redirect($form, FormStateInterface $form_state) {
+
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+  $form_object = $form_state->getFormObject();
+  $lecture = $form_object->getEntity();
+  $form_state->setRedirect('entity.paragraph.collection', [
+    'course' => $lecture->getParentEntity()->id(),
+    'lecture' => $lecture->id(),
+  ]);
+}

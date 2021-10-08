@@ -25,16 +25,7 @@ class LectureForm extends ContentEntityForm {
     }
     else {
       $this->messenger()->addStatus($this->t('The lecture %label has been updated.', $arguments));
-      $this->logger('lectures')->notice('Updated new lecture %label.', $arguments);
     }
-
-    /** @var \Drupal\lectures\Entity\Lecture $lecture */
-    $lecture = $this->entity;
-    $course = $lecture->getParentEntity();
-    $form_state->setRedirect('entity.paragraph.collection', [
-      'course' => $course->id(),
-      'lecture' => $lecture->id(),
-    ]);
   }
 
 }
