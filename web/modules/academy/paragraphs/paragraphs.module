@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Provides hooks for a paragraph entity type.
+ */
+
+use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\lectures\Entity\Lecture;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add paragraphs base field to entity Lecture.
+  if ($entity_type->id() == 'lecture') {
+    $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Computed Children.'))
+      ->setSetting('target_type', 'paragraph')
+      ->setDescription(t('Computes the paragraphs referencing this lecture.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setComputed(TRUE)
+      ->setClass(ComputedChildEntityReferenceFieldItemList::class);
+  }
+
+  return $fields;
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function paragraphs_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity instanceof Lecture) {
+    $operations['add_paragraphs'] = [
+      'title' => t('Paragraphs'),
+      'url' => Url::fromRoute('entity.paragraph.collection', [
+        'lecture' => $entity->id(),
+        'course' => $entity->getParentEntity()->id(),
+      ]),
+      'weight' => 1,
+    ];
+  }
+  return $operations;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  paragraphs_form_lecture_edit_form_alter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function paragraphs_form_lecture_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Add abort button.
+  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+  $lecture = \Drupal::service('current_route_match')->getParameter('lecture');
+  $url = Url::fromRoute('entity.paragraph.collection', [
+    'course' => $lecture->getParentEntity()->id(),
+    'lecture' => $lecture->id(),
+  ]);
+  $form['actions']['abort'] = [
+    '#type' => 'link',
+    '#title' => t('Abort'),
+    '#url' => $url,
+    '#attributes' => [
+      'class' => ['button'],
+    ],
+    '#weight' => 5,
+  ];
+
+  // Alter redirect.
+  $form['actions']['submit']['#submit'][] = 'paragraphs_form_lecture_edit_form_redirect';
+}
+
+/**
+ * Set redirect for lecture form.
+ */
+function paragraphs_form_lecture_edit_form_redirect($form, FormStateInterface $form_state) {
+
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+  $form_object = $form_state->getFormObject();
+  $lecture = $form_object->getEntity();
+  $form_state->setRedirect('entity.paragraph.collection', [
+    'course' => $lecture->getParentEntity()->id(),
+    'lecture' => $lecture->id(),
+  ]);
+}

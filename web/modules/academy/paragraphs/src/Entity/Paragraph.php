@@ -9,8 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
-use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -23,9 +21,7 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Paragraph type"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\paragraphs\ParagraphListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\paragraphs\Form\ParagraphForm",
  *       "edit" = "Drupal\paragraphs\Form\ParagraphForm",
@@ -50,17 +46,17 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add/{paragraph_type}",
- *     "add-page" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/add",
- *     "edit-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/edit",
- *     "delete-form" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs/{paragraph}/delete",
- *     "collection" = "/admin/content/courses/{course}/lectures/{lecture}/paragraphs"
+ *     "add-form" = "/academy/co/{course}/le/{lecture}/pa/add/{paragraph_type}",
+ *     "add-page" = "/academy/co/{course}/le/{lecture}/pa/add",
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}",
+ *     "delete-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}/delete",
+ *     "collection" = "/academy/co/{course}/le/{lecture}/paragraphs"
  *   },
  *   bundle_entity_type = "paragraph_type",
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
  * )
  */
-class Paragraph extends ContentEntityBase implements ChildEntityInterface, ParagraphInterface {
+class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;
@@ -84,14 +80,14 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
   }
 
   /**
-   * {@inheritdoc}
+   * Get title.
    */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set title.
    */
   public function setTitle(string $title) {
     $this->set('title', $title);
@@ -99,14 +95,14 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
   }
 
   /**
-   * {@inheritdoc}
+   * Get created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set created time.
    */
   public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
@@ -114,21 +110,21 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner.
    */
   public function getOwner() {
     return $this->get('uid')->entity;
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner ID.
    */
   public function getOwnerId() {
     return $this->get('uid')->target_id;
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner ID.
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
@@ -136,7 +132,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner.
    */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());
@@ -188,20 +184,6 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface, Parag
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
-  }
-
-  /**
-   * Overwrite call toUrl for non-present canonical route.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
-      return Url::fromUri('route:<nolink>')->setOptions($options);
-    }
-    else {
-      return parent::toUrl($rel, $options);
-    }
   }
 
 }

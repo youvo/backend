@@ -5,15 +5,10 @@ namespace Drupal\lectures;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Utility\Error;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a list controller for the lecture entity type.
@@ -28,55 +23,11 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   protected $entities = [];
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The redirect destination service.
-   *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
-   */
-  protected $redirectDestination;
-
-  /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
   protected $formBuilder;
-
-  /**
-   * Constructs a new LectureListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
-   *   The redirect destination service.
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
-    parent::__construct($entity_type, $storage);
-    $this->dateFormatter = $date_formatter;
-    $this->redirectDestination = $redirect_destination;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter'),
-      $container->get('redirect.destination')
-    );
-  }
 
   /**
    * Returns the form builder.
@@ -167,11 +118,20 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
           ->error('An error occurred while loading a course. %type: @message in %function (line %line of %file).', $variables);
       }
 
+      $tags = '';
+      foreach ($course->get('tags')->getValue() as $tag) {
+        $tags .= '<div class="button button--extrasmall is-disabled">' . $tag['value'] . '</div>';
+      }
+      $disabled_course = '';
+      if (!$course->isEnabled()) {
+        $disabled_course = ' ' . $this->t('(Disabled)');
+      }
       $form['course'][$course_id] = [
         '#type' => 'details',
         '#module_package_listing' => TRUE,
-        '#title' => 'Course: ' . $course->getTitle(),
-        '#description' => '<div class="leader trailer">' . $course->get('description')->value . '</div>',
+        '#title' => $this->t('Course: @s', ['@s' => $course->getTitle()]) . $disabled_course,
+        '#description' => '<h6>' . $course->get('subtitle')->value . '</h6>
+        <div>' . $course->get('description')->value . '</div>' . $tags,
         '#open' => $query_parameter_cr == $course_id,
       ];
 
@@ -283,18 +243,6 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       '#attributes' => ['class' => ['weight_' . $course_id]],
     ];
     return $row;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity) {
-    $operations = parent::getDefaultOperations($entity);
-    $destination = $this->redirectDestination->getAsArray();
-    foreach ($operations as $key => $operation) {
-      $operations[$key]['query'] = $destination;
-    }
-    return $operations;
   }
 
   /**

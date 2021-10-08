@@ -334,7 +334,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
   /**
    * Rebuilds the form or delivers form errors from validation.
    */
-  public function rebuildAjax(array $form, FormStateInterface &$form_state) {
+  public function rebuildAjax(array $form, FormStateInterface $form_state) {
     if (!$form_state->hasAnyErrors()) {
       return $form['questions'];
     }
@@ -462,7 +462,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
    */
   protected function buildRow($question, $buttons_disabled) {
     // Get bundle for question entity.
-    /** @var \Drupal\quizzes\QuestionInterface $question */
+    /** @var \Drupal\quizzes\Entity\Question $question */
     $bundle = '';
     try {
       $bundle = $this->entityTypeManager
@@ -505,12 +505,15 @@ class ParagraphWithQuizForm extends ParagraphForm {
       ],
     ];
     /** @var \Drupal\child_entities\ChildEntityInterface $quiz */
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $quiz = $this->entity;
+    $lecture = $quiz->getParentEntity();
     $is_disabled = $buttons_disabled ? ' is-disabled' : '';
     $url = !$buttons_disabled ?
       Url::fromRoute('entity.question.edit_form', [
         'paragraph' => $quiz->id(),
-        'lecture' => $quiz->getParentEntity()->id(),
+        'lecture' => $lecture->id(),
+        'course' => $lecture->getParentEntity()->id(),
         'question' => $question->id(),
       ]) :
       Url::fromUserInput('#');

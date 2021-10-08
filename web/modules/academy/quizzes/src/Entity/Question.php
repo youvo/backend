@@ -9,8 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
-use Drupal\quizzes\QuestionInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -45,13 +43,13 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "edit-form" = "/admin/content/lectures/{lecture}/paragraphs/{paragraph}/question/{question}/edit"
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}/qu/{question}"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
  * )
  */
-class Question extends ContentEntityBase implements ChildEntityInterface, QuestionInterface {
+class Question extends ContentEntityBase implements ChildEntityInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;
@@ -73,14 +71,14 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
   }
 
   /**
-   * {@inheritdoc}
+   * Get created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set created time.
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
@@ -88,21 +86,21 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner.
    */
   public function getOwner() {
     return $this->get('uid')->entity;
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner ID.
    */
   public function getOwnerId() {
     return $this->get('uid')->target_id;
   }
 
   /**
-   * {@inheritdoc}
+   * Set ownder ID.
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
@@ -110,7 +108,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Questi
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner.
    */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());
