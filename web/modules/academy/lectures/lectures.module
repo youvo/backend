@@ -77,6 +77,26 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
  * Implements hook_form_FORM_ID_alter().
  */
 function lectures_form_course_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Add abort button.
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $course = $form_object->getEntity();
+  $url = Url::fromRoute('entity.lecture.collection', [], [
+    'query' => ['cr' => $course->id()],
+    'fragment' => 'edit-course-' . $course->id(),
+  ]);
+  $form['actions']['abort'] = [
+    '#type' => 'link',
+    '#title' => t('Abort'),
+    '#url' => $url,
+    '#attributes' => [
+      'class' => ['button'],
+    ],
+    '#weight' => 5,
+  ];
+
+  // Alter redirect.
   $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
 }
 
