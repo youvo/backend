@@ -56,13 +56,18 @@ function paragraphs_entity_operation(EntityInterface $entity) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
+function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  paragraphs_form_lecture_edit_form_alter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function paragraphs_form_lecture_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   // Add abort button.
-  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
   /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
-  $form_object = $form_state->getFormObject();
-  $lecture = $form_object->getEntity();
+  $lecture = \Drupal::service('current_route_match')->getParameter('lecture');
   $url = Url::fromRoute('entity.paragraph.collection', [
     'course' => $lecture->getParentEntity()->id(),
     'lecture' => $lecture->id(),
