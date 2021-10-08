@@ -5,15 +5,10 @@ namespace Drupal\paragraphs;
 use Drupal\child_entities\ChildEntityListBuilder;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\paragraphs\Entity\ParagraphType;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a list controller for the paragraph entity type.
@@ -31,51 +26,11 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   protected $entities = [];
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
   protected $formBuilder;
-
-  /**
-   * Constructs a new ParagraphListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The Child Entity Route Match.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter) {
-    parent::__construct($entity_type, $storage, $route_match);
-    $this->dateFormatter = $date_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('current_route_match'),
-      $container->get('date.formatter')
-    );
-  }
 
   /**
    * {@inheritdoc}
