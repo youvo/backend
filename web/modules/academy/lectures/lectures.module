@@ -49,8 +49,6 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
     ]);
-    unset($operations['edit']['query']);
-    unset($operations['delete']['query']);
   }
 }
 
