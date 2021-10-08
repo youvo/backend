@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 
 /**
@@ -218,20 +217,6 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
     $fields += static::childBaseFieldDefinitions($entity_type);
 
     return $fields;
-  }
-
-  /**
-   * Overwrite call toUrl for non-present canonical route.
-   *
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
-      return Url::fromUri('route:<nolink>')->setOptions($options);
-    }
-    else {
-      return parent::toUrl($rel, $options);
-    }
   }
 
 }
