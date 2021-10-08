@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
-use Drupal\paragraphs\ParagraphInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -59,7 +58,7 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "entity.paragraph_type.edit_form"
  * )
  */
-class Paragraph extends ContentEntityBase implements ChildEntityInterface, ParagraphInterface {
+class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;

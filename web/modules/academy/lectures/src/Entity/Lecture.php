@@ -11,7 +11,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
-use Drupal\lectures\LectureInterface;
 
 /**
  * Defines the lecture entity class.
@@ -55,7 +54,7 @@ use Drupal\lectures\LectureInterface;
  *   }
  * )
  */
-class Lecture extends ContentEntityBase implements ChildEntityInterface, LectureInterface {
+class Lecture extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;
