@@ -61,19 +61,7 @@ class CourseForm extends ContentEntityForm {
     }
     else {
       $this->messenger()->addStatus($this->t('The course %label has been updated.', $message_arguments));
-      $this->logger('courses')->notice('Updated new course %label.', $logger_arguments);
     }
-
-    if ($this->moduleHandler->moduleExists('lectures')) {
-      $form_state->setRedirect('entity.lecture.collection', [], [
-        'query' => ['cr' => $entity->id()],
-        'fragment' => 'edit-course-' . $entity->id(),
-      ]);
-    }
-    else {
-      $form_state->setRedirect('admin.content');
-    }
-
   }
 
 }
