@@ -4,7 +4,6 @@ namespace Drupal\lectures\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 
 /**
  * Form controller for the lecture entity edit forms.

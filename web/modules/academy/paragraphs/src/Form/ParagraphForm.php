@@ -5,7 +5,6 @@ namespace Drupal\paragraphs\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\paragraphs\ParagraphFormInfoTrait;
 
 /**
  * Form controller for the paragraph entity edit forms.

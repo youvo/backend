@@ -71,14 +71,14 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set created time.
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
@@ -86,21 +86,21 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner.
    */
   public function getOwner() {
     return $this->get('uid')->entity;
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner ID.
    */
   public function getOwnerId() {
     return $this->get('uid')->target_id;
   }
 
   /**
-   * {@inheritdoc}
+   * Set ownder ID.
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
@@ -108,7 +108,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner.
    */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());

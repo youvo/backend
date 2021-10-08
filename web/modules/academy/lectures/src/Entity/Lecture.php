@@ -76,14 +76,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get title.
    */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set title.
    */
   public function setTitle(string $title) {
     $this->set('title', $title);
@@ -91,14 +91,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get status.
    */
   public function isEnabled() {
     return (bool) $this->get('status')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set status.
    */
   public function setStatus(bool $status) {
     $this->set('status', $status);
@@ -106,14 +106,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * {@inheritdoc}
+   * Set created time.
    */
   public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
@@ -121,21 +121,21 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner.
    */
   public function getOwner() {
     return $this->get('uid')->entity;
   }
 
   /**
-   * {@inheritdoc}
+   * Get owner ID.
    */
   public function getOwnerId() {
     return $this->get('uid')->target_id;
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner ID.
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
@@ -143,7 +143,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Set owner.
    */
   public function setOwner(UserInterface $account) {
     $this->set('uid', $account->id());
