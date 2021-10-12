@@ -79,9 +79,11 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
     // Find empty courses. This is a little squishy. But just an easy workaround
     // because this is the lecture collection.
-    $empty_query = \Drupal::entityQuery('course')
-      ->condition('id', $course_ids, 'NOT IN')
-      ->execute();
+    $empty_query = \Drupal::entityQuery('course');
+    if (!empty($course_ids)) {
+      $empty_query->condition('id', $course_ids, 'NOT IN');
+    }
+    $empty_query->execute();
     foreach ($empty_query as $empty_course_id) {
       $course_ids[] = $empty_course_id;
       $lectures_grouped[$empty_course_id] = [];
