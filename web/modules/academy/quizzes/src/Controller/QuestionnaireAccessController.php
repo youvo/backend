@@ -10,7 +10,7 @@ use Drupal\quizzes\Entity\Quiz;
 use Symfony\Component\Routing\Route;
 
 /**
- * Access controller for transition forms.
+ * Access controller for questionnaire rest resources.
  */
 class QuestionnaireAccessController extends ControllerBase {
 
@@ -21,16 +21,23 @@ class QuestionnaireAccessController extends ControllerBase {
    *   Run access checks for this account.
    * @param \Symfony\Component\Routing\Route $route
    *   The requested route.
-   * @param \Drupal\paragraphs\Entity\Paragraph|null $questionnaire
+   * @param \Drupal\paragraphs\Entity\Paragraph|null $paragraph
    *   The questionnaire entity.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessQuestionnaire(AccountInterface $account, Route $route, Paragraph $questionnaire = NULL) {
-    if ($questionnaire instanceof Quiz) {
+  public function accessQuestionnaire(AccountInterface $account, Route $route, Paragraph $paragraph = NULL) {
+    if ($paragraph instanceof Quiz) {
       $methods = $route->getMethods();
-      return AccessResult::allowedIf($account->hasPermission('restful ' . strtolower(reset($methods)) . ' questionnaire:submission'));
+      $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+      $lecture = $paragraph->getParentEntity();
+      $course = $lecture->getParentEntity();
+      return AccessResult::allowedIf(
+        $course->isEnabled() &&
+        $lecture->isEnabled() &&
+        $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource)
+      );
     }
     return AccessResult::forbidden();
   }
