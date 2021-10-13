@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\project\ParamConverter;
+namespace Drupal\youvo\ParamConverter;
 
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\ParamConverter\EntityConverter;
@@ -13,7 +13,7 @@ use Drupal\Core\ParamConverter\ParamConverterInterface;
  *
  * @todo Remove when https://www.drupal.org/node/2353611 lands.
  */
-class ProjectParamConverter extends EntityConverter implements ParamConverterInterface {
+class UuidParamConverter extends EntityConverter implements ParamConverterInterface {
 
   /**
    * {@inheritdoc}
