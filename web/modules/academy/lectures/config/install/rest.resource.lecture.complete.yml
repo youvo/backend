@@ -1,0 +1,11 @@
+id: lecture.complete
+plugin_id: 'lecture:complete'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
