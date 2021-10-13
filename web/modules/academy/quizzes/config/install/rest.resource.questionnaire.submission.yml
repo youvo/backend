@@ -1,0 +1,11 @@
+id: questionnaire.submission
+plugin_id: 'questionnaire:submission'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
