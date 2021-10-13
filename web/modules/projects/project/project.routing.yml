@@ -18,4 +18,4 @@ project.mediate:
     parameters:
       project:
         type: entity:node
-        converter: youvo.paramconverter
+        converter: paramconverter.uuid

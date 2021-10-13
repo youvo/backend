@@ -1,5 +1,5 @@
 services:
-  youvo.paramconverter:
+  paramconverter.uuid:
     class: Drupal\youvo\ParamConverter\UuidParamConverter
     tags:
       - { name: paramconverter }
