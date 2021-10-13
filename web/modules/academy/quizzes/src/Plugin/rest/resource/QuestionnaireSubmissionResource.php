@@ -73,7 +73,7 @@ class QuestionnaireSubmissionResource extends ResourceBase {
    * Responds POST requests.
    *
    * @param \Drupal\quizzes\Entity\Quiz $questionnaire
-   *   The referenced project.
+   *   The referenced questionnaire.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Contains request data.
    *
