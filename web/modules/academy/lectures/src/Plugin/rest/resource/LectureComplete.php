@@ -3,7 +3,6 @@
 namespace Drupal\lectures\Plugin\rest\resource;
 
 use Drupal\lectures\Entity\Lecture;
-use Drupal\quizzes\Entity\Quiz;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
