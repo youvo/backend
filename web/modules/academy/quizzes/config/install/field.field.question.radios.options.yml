@@ -3,11 +3,11 @@ status: true
 dependencies:
   config:
     - field.storage.question.options
-    - quizzes.type.single_choice
-id: question.single_choice.options
+    - quizzes.type.radios
+id: question.radios.options
 field_name: options
 entity_type: question
-bundle: single_choice
+bundle: radios
 label: Options
 description: ''
 required: false

@@ -4,9 +4,10 @@ dependencies:
   config:
     - field.storage.paragraph.questions
     - paragraphs.type.quiz
-    - quizzes.type.free_text
-    - quizzes.type.multiple_choice
-    - quizzes.type.single_choice
+    - quizzes.type.textarea
+    - quizzes.type.textfield
+    - quizzes.type.checkboxes
+    - quizzes.type.radios
 id: paragraph.quiz.questions
 field_name: questions
 entity_type: paragraph
@@ -21,12 +22,13 @@ settings:
   handler: 'default:question'
   handler_settings:
     target_bundles:
-      free_text: free_text
-      multiple_choice: multiple_choice
-      single_choice: single_choice
+      textarea: textarea
+      textfield: textfield
+      checkboxes: checkboxes
+      radios: radios
     sort:
       field: weight
       direction: ASC
     auto_create: false
-    auto_create_bundle: free_text
+    auto_create_bundle: textarea
 field_type: entity_reference

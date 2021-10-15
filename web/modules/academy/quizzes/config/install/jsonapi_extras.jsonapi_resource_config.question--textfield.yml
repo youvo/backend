@@ -2,11 +2,11 @@ langcode: en
 status: true
 dependencies:
   config:
-    - quizzes.type.single_choice
-id: question--single_choice
+    - quizzes.type.textfield
+id: question--textfield
 disabled: false
-path: questions/single_choice
-resourceType: single_choice
+path: questions/textfield
+resourceType: textfield
 resourceFields:
   id:
     disabled: true
@@ -45,17 +45,17 @@ resourceFields:
       id: ''
     disabled: false
   options:
+    disabled: true
     fieldName: options
     publicName: options
     enhancer:
       id: ''
-    disabled: false
   answers:
+    disabled: true
     fieldName: answers
     publicName: answers
     enhancer:
       id: ''
-    disabled: false
   explanation:
     fieldName: explanation
     publicName: explanation
