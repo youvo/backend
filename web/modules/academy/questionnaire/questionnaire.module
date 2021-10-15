@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Alterations for paragraph entity.
+ *
+ * This module does not define a new questionnaire entity. A questionnaire is a
+ * paragraph entity or more explicitly a type of paragraph entity. We use the
+ * following hooks to implement alterations to extend paragraphs for
+ * questionnaires.
+ */
+
+use Drupal\questionnaire\Entity\Questionnaire;
+
+/**
+ * Implements hook_entity_bundle_info_alter().
+ */
+function questionnaire_entity_bundle_info_alter(&$bundles) {
+  if (isset($bundles['paragraph']['questionnaire'])) {
+    $bundles['paragraph']['questionnaire']['class'] = Questionnaire::class;
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function questionnaire_entity_type_alter(array &$entity_types) {
+  // We alter the default paragraph.{add,edit} form handlers in order
+  // to load a different class than the standard add- and  edit form for
+  // paragraphs.
+  // @todo Check if there is a better way to define handlers by bundle.
+  $entity_types['paragraph']->setFormClass('add', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
+  $entity_types['paragraph']->setFormClass('edit', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
+}
