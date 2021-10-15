@@ -12,7 +12,7 @@ use Drupal\courses\Entity\Course;
 use Drupal\Component\Utility\Random;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
-use Drupal\quizzes\Entity\Question;
+use Drupal\questionnaire\Entity\Question;
 
 /**
  * Implements hook_install().
@@ -160,12 +160,12 @@ function academy_dummy_site_install_finished() {
       $lecture->save();
     }
 
-    // Add a lecture that contains a quiz.
-    if (\Drupal::service('module_handler')->moduleExists('quizzes')) {
+    // Add a lecture that contains a questionnaire.
+    if (\Drupal::service('module_handler')->moduleExists('questionnaire')) {
 
       // Create lecture.
       $lecture = Lecture::create([
-        'title' => 'Quiz: ' . $random->sentences(3, TRUE),
+        'title' => 'Questionnaire: ' . $random->sentences(3, TRUE),
         'description' => rtrim($random->paragraphs(1)),
         'status' => 1,
         'course' => $course->id(),
@@ -173,43 +173,56 @@ function academy_dummy_site_install_finished() {
       ]);
       $lecture->save();
 
-      // Create quiz.
-      $quiz = Paragraph::create([
-        'bundle' => 'quiz',
+      // Create questionnaire.
+      $questionnaire = Paragraph::create([
+        'bundle' => 'questionnaire',
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
         'weight' => 0,
         'uid' => 1,
       ]);
-      $quiz->save();
+      $questionnaire->save();
 
       // Update computed fields.
       $lecture->save();
 
-      // Create questions for quiz.
+      // Create questions for questionnaire.
       $question_targets = [];
 
-      // Free text question.
+      // Textarea question.
       $question = Question::create([
-        'bundle' => 'free_text',
+        'bundle' => 'textarea',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
-        'paragraph' => $quiz->id(),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -4,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Textfield question.
+      $question = Question::create([
+        'bundle' => 'textfield',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
         'weight' => -3,
         'uid' => 1,
       ]);
       $question->save();
       $question_targets[] = ['target_id' => $question->id()];
 
-      // Single choice question.
+      // Radios question.
       $question = Question::create([
-        'bundle' => 'single_choice',
+        'bundle' => 'radios',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
-        'paragraph' => $quiz->id(),
+        'paragraph' => $questionnaire->id(),
         'weight' => -2,
         'uid' => 1,
       ]);
@@ -229,13 +242,13 @@ function academy_dummy_site_install_finished() {
       $question->save();
       $question_targets[] = ['target_id' => $question->id()];
 
-      // Multiple choice question.
+      // Checkboxes question.
       $question = Question::create([
-        'bundle' => 'multiple_choice',
+        'bundle' => 'checkboxes',
         'body' => $random->sentences(8, TRUE) . '?',
         'help' => rtrim($random->paragraphs(1)),
         'explanation' => rtrim($random->paragraphs(1)),
-        'paragraph' => $quiz->id(),
+        'paragraph' => $questionnaire->id(),
         'weight' => -1,
         'uid' => 1,
       ]);
@@ -256,9 +269,9 @@ function academy_dummy_site_install_finished() {
       $question->save();
       $question_targets[] = ['target_id' => $question->id()];
 
-      // Append questions to quiz.
-      $quiz->set('questions', $question_targets);
-      $quiz->save();
+      // Append questions to questionnaire.
+      $questionnaire->set('questions', $question_targets);
+      $questionnaire->save();
     }
   }
 

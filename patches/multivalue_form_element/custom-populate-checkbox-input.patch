@@ -9,7 +9,7 @@ index 7d4246b..e57ba5a 100644
 +      $forms_to_modify = [
 +        'question_radios_edit_form',
 +        'question_checkboxes_edit_form',
-+        'paragraph_quiz_edit_form',
++        'paragraph_questionnaire_edit_form',
 +      ];
 +      if (in_array($form_state->getFormObject()->getFormId(), $forms_to_modify)) {
 +        foreach ($input as $key => $in) {

@@ -1,0 +1,6 @@
+services:
+  questionnaire.uninstall_validator:
+    class: Drupal\questionnaire\QuestionnaireUninstallValidator
+    tags:
+      - { name: module_install.uninstall_validator }
+    arguments: ['@entity_type.manager', '@string_translation']
