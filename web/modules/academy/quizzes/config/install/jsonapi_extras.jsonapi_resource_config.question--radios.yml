@@ -2,11 +2,11 @@ langcode: en
 status: true
 dependencies:
   config:
-    - quizzes.type.multiple_choice
-id: question--multiple_choice
+    - quizzes.type.radios
+id: question--radios
 disabled: false
-path: questions/multiple_choice
-resourceType: multiple_choice
+path: questions/radios
+resourceType: radios
 resourceFields:
   id:
     disabled: true

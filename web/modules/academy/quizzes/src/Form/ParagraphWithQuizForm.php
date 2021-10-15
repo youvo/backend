@@ -160,7 +160,9 @@ class ParagraphWithQuizForm extends ParagraphForm {
     // the $form element to be build in order to generate more fields.
     $answers_hidden = FALSE;
     $hidden = ['class' => ['hidden']];
-    if ($form_state->hasValue('type') && $form_state->getValue('type') == 'free_text') {
+    if ($form_state->hasValue('type') &&
+      ($form_state->getValue('type') == 'textarea' ||
+      $form_state->getValue('type') == 'textfield')) {
       $answers_hidden = TRUE;
     }
 
@@ -204,7 +206,7 @@ class ParagraphWithQuizForm extends ParagraphForm {
       '#title' => $this->t('Answers'),
       '#type' => 'multivalue',
       '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
-      '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for single-choice question!'),
+      '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for radios question!'),
       '#add_more_label' => $this->t('Add answer'),
       '#attributes' => $answers_hidden ? $hidden : [],
       '#disabled' => $answers_hidden,
@@ -377,7 +379,8 @@ class ParagraphWithQuizForm extends ParagraphForm {
       'explanation' => $form_state->getValue('explanation'),
       'paragraph' => $this->entity->id(),
     ]);
-    if ($form_state->getValue('type') != 'free_text') {
+    if ($form_state->getValue('type') != 'textarea' &&
+      $form_state->getValue('type') != 'textfield') {
       $answers = $form_state->getValue('multianswers');
       foreach ($answers as $answer) {
         if (!empty($answer['option'])) {

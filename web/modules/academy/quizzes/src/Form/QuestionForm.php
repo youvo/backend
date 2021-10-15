@@ -35,7 +35,7 @@ class QuestionForm extends ContentEntityForm {
     ];
 
     // Add answers multi value form element.
-    if ($question->bundle() == 'multiple_choice' || $question->bundle() == 'single_choice') {
+    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'radios') {
 
       // Load default values for answers.
       $default_answers = [];
@@ -53,7 +53,7 @@ class QuestionForm extends ContentEntityForm {
         '#title' => $this->t('Answers'),
         '#type' => 'multivalue',
         '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
-        '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for single-choice question!'),
+        '#description' => $this->t('Specify the potential answers. Check if they are correct. Only one for radios question!'),
         '#add_more_label' => $this->t('Add answer'),
         '#default_value' => $default_answers,
         'option' => [
@@ -84,7 +84,8 @@ class QuestionForm extends ContentEntityForm {
     $paragraph = $question->getParentEntity();
 
     // Add values from multianswers form element.
-    if ($form_state->getValue('type') != 'free_text') {
+    if ($form_state->getValue('type') != 'textarea' &&
+      $form_state->getValue('type') != 'textfield') {
       $answers = $form_state->getValue('multianswers');
       $question->set('options', []);
       $question->set('answers', []);

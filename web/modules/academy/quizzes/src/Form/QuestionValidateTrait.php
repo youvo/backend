@@ -32,7 +32,7 @@ trait QuestionValidateTrait {
     if (empty($form_state->getValue('body'))) {
       $required_fields[] = $this->t('Question');
     }
-    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
+    if ($question_type === 'radios' || $question_type === 'checkboxes') {
       $answers = $form_state->getValue('multianswers');
       $option_set = 0;
       foreach ($answers as $answer) {
@@ -56,7 +56,7 @@ trait QuestionValidateTrait {
     }
 
     // Check if correct options are satisfying.
-    if ($question_type === 'single_choice' || $question_type === 'multiple_choice') {
+    if ($question_type === 'radios' || $question_type === 'checkboxes') {
       $answers = $form_state->getValue('multianswers');
       $correct_set = 0;
       foreach ($answers as $answer) {
@@ -64,7 +64,7 @@ trait QuestionValidateTrait {
           $correct_set++;
         }
       }
-      if ($question_type === 'single_choice') {
+      if ($question_type === 'radios') {
         if ($correct_set != 1) {
           $message = $this->t('Please select one correct answer.');
           $form_state->setErrorByName('elements', $message);

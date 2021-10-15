@@ -3,15 +3,15 @@ status: true
 dependencies:
   config:
     - field.storage.question.answers
-    - quizzes.type.multiple_choice
-id: question.multiple_choice.answers
+    - quizzes.type.radios
+id: question.radios.answers
 field_name: answers
 entity_type: question
-bundle: multiple_choice
+bundle: radios
 label: Answers
 description: ''
 required: false
-translatable: false
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:

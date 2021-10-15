@@ -7,8 +7,8 @@ index 7d4246b..e57ba5a 100644
    public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
      if ($input !== FALSE) {
 +      $forms_to_modify = [
-+        'question_single_choice_edit_form',
-+        'question_multiple_choice_edit_form',
++        'question_radios_edit_form',
++        'question_checkboxes_edit_form',
 +        'paragraph_quiz_edit_form',
 +      ];
 +      if (in_array($form_state->getFormObject()->getFormId(), $forms_to_modify)) {

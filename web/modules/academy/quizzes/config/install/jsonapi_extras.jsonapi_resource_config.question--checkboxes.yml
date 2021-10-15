@@ -2,11 +2,11 @@ langcode: en
 status: true
 dependencies:
   config:
-    - quizzes.type.free_text
-id: question--free_text
+    - quizzes.type.checkboxes
+id: question--checkboxes
 disabled: false
-path: questions/free_text
-resourceType: free_text
+path: questions/checkboxes
+resourceType: checkboxes
 resourceFields:
   id:
     disabled: true
@@ -45,17 +45,17 @@ resourceFields:
       id: ''
     disabled: false
   options:
-    disabled: true
     fieldName: options
     publicName: options
     enhancer:
       id: ''
+    disabled: false
   answers:
-    disabled: true
     fieldName: answers
     publicName: answers
     enhancer:
       id: ''
+    disabled: false
   explanation:
     fieldName: explanation
     publicName: explanation
