@@ -1,0 +1,7 @@
+services:
+  paramconverter.uuid:
+    class: Drupal\youvo\ParamConverter\UuidParamConverter
+    tags:
+      - { name: paramconverter }
+    arguments:
+      [ '@entity_type.manager', '@entity.repository' ]
