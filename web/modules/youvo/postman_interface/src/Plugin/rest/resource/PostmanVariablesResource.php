@@ -49,6 +49,15 @@ class PostmanVariablesResource extends ResourceBase {
         'creative_uuid' => !empty($test_creative) ? $test_creative->uuid() : NULL,
       ],
     ]);
+
+    // Prevent caching.
+    $response->addCacheableDependency([
+      '#cache' => [
+        'max-age' => 0,
+      ],
+    ]);
+
+    return $response;
   }
 
 }
