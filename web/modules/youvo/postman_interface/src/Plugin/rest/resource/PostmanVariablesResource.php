@@ -29,24 +29,74 @@ class PostmanVariablesResource extends ResourceBase {
   public function get() {
 
     // Get some creative.
+    // $database = \Drupal::database();
+    // $query = $database->select('users', 'u')->fields('u', ['uuid']);
+    // $query->join('user__roles', 'r', 'u.uid = r.entity_id');
+    // $query->condition('u.uid', 1, '!=')
+    // ->condition('r.roles_target_id', 'creative');
+    // $creative_uuids = $query->execute()->fetchCol();
+    // $creative_uuid = reset($creative_uuids);
     $creative_ids = \Drupal::entityQuery('user')
       ->condition('uid', 1, '!=')
       ->condition('roles', 'creative')
       ->execute();
     try {
-      $test_creative = \Drupal::entityTypeManager()
+      $creative = \Drupal::entityTypeManager()
         ->getStorage('user')
         ->load(reset($creative_ids));
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $test_creative = [];
+      $creative = NULL;
+    }
+
+    // Get some lecture.
+    $lecture_ids = \Drupal::entityQuery('lecture')
+      ->execute();
+    try {
+      $lecture = \Drupal::entityTypeManager()
+        ->getStorage('lecture')
+        ->load(reset($lecture_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $lecture = NULL;
+    }
+
+    // Get some course.
+    $course_ids = \Drupal::entityQuery('course')
+      ->execute();
+    try {
+      $course = \Drupal::entityTypeManager()
+        ->getStorage('course')
+        ->load(reset($course_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $course = NULL;
+    }
+
+    // Get a project that can mediate.
+    $project_ids = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('status', 1)
+      ->condition('field_lifecycle', 'open')
+      ->condition('field_applicants.%delta', 1, '>=')
+      ->execute();
+    try {
+      $project_can_mediate = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($project_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_can_mediate = NULL;
     }
 
     // Compile response with structured data.
-    return new ResourceResponse([
+    $response = new ResourceResponse([
       'type' => 'postman.variables.resource',
       'data' => [
-        'creative_uuid' => !empty($test_creative) ? $test_creative->uuid() : NULL,
+        'creative' => $creative?->uuid(),
+        'course' => $course?->uuid(),
+        'lecture' => $lecture?->uuid(),
+        'project_can_mediate' => $project_can_mediate?->uuid(),
       ],
     ]);
 
