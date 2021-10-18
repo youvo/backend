@@ -23,3 +23,5 @@ install:
   - youvo_dummy
   - project_dummy
   - academy_dummy
+  # Postman
+  - postman_interface

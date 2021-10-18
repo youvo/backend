@@ -1,0 +1,10 @@
+id: postman.variables
+plugin_id: 'postman:variables'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth
