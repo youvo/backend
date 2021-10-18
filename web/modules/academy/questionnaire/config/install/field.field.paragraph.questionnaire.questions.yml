@@ -1,0 +1,34 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.questions
+    - paragraphs.type.questionnaire
+    - questionnaire.type.textarea
+    - questionnaire.type.textfield
+    - questionnaire.type.checkboxes
+    - questionnaire.type.radios
+id: paragraph.questionnaire.questions
+field_name: questions
+entity_type: paragraph
+bundle: questionnaire
+label: Questions
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:question'
+  handler_settings:
+    target_bundles:
+      textarea: textarea
+      textfield: textfield
+      checkboxes: checkboxes
+      radios: radios
+    sort:
+      field: weight
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: textarea
+field_type: entity_reference
