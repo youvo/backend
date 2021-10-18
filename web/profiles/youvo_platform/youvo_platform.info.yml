@@ -48,7 +48,7 @@ install:
   - courses
   - lectures
   - paragraphs
-  - quizzes
+  - questionnaire
   # Change later
   - basic_auth
 themes:
