@@ -49,6 +49,20 @@ class PostmanVariablesResource extends ResourceBase {
       $creative = NULL;
     }
 
+    // Get some organisation.
+    $organisation_ids = \Drupal::entityQuery('user')
+      ->condition('uid', 1, '!=')
+      ->condition('roles', 'organisation')
+      ->execute();
+    try {
+      $organisation = \Drupal::entityTypeManager()
+        ->getStorage('user')
+        ->load(reset($organisation_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $organisation = NULL;
+    }
+
     // Get some lecture.
     $lecture_ids = \Drupal::entityQuery('lecture')
       ->execute();
@@ -73,20 +87,101 @@ class PostmanVariablesResource extends ResourceBase {
       $course = NULL;
     }
 
+    // Get a project that is a draft.
+    try {
+      $projects_id = \Drupal::entityQuery('node')
+        ->condition('type', 'project')
+        ->condition('status', 1)
+        ->condition('field_lifecycle', 'draft')
+        ->range(0, 1)
+        ->execute();
+      $project_draft = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($projects_id));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_draft = NULL;
+    }
+
+    // Get a project that is pending.
+    $projects_id = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('status', 1)
+      ->condition('field_lifecycle', 'pending')
+      ->range(0, 1)
+      ->execute();
+    try {
+      $project_pending = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($projects_id));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_pending = NULL;
+    }
+
+    // Get a project that is open.
+    $projects_id = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('status', 1)
+      ->condition('field_lifecycle', 'open')
+      ->range(0, 1)
+      ->execute();
+    try {
+      $project_open = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($projects_id));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_open = NULL;
+    }
+
     // Get a project that can mediate.
-    $project_ids = \Drupal::entityQuery('node')
+    $projects_id = \Drupal::entityQuery('node')
       ->condition('type', 'project')
       ->condition('status', 1)
       ->condition('field_lifecycle', 'open')
       ->condition('field_applicants.%delta', 1, '>=')
+      ->range(0, 1)
       ->execute();
     try {
       $project_can_mediate = \Drupal::entityTypeManager()
         ->getStorage('node')
-        ->load(reset($project_ids));
+        ->load(reset($projects_id));
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_can_mediate = NULL;
+    }
+
+    // Get a project that is ongoing.
+    $projects_id = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('status', 1)
+      ->condition('field_lifecycle', 'ongoing')
+      ->range(0, 1)
+      ->execute();
+    try {
+      $project_ongoing = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($projects_id));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_ongoing = NULL;
+    }
+
+    // Get a project that is completed.
+    $projects_id = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('status', 1)
+      ->condition('field_lifecycle', 'completed')
+      ->range(0, 1)
+      ->execute();
+    try {
+      $project_completed = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load(reset($projects_id));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $project_completed = NULL;
     }
 
     // Compile response with structured data.
@@ -94,9 +189,15 @@ class PostmanVariablesResource extends ResourceBase {
       'type' => 'postman.variables.resource',
       'data' => [
         'creative' => $creative?->uuid(),
+        'organisation' => $organisation?->uuid(),
         'course' => $course?->uuid(),
         'lecture' => $lecture?->uuid(),
-        'project_can_mediate' => $project_can_mediate?->uuid(),
+        'project_draft' => $project_draft?->uuid(),
+        'project_pending' => $project_pending?->uuid(),
+        'project_open' => $project_open?->uuid(),
+        'project_open_can_mediate' => $project_can_mediate?->uuid(),
+        'project_ongoing' => $project_ongoing?->uuid(),
+        'project_completed' => $project_completed?->uuid(),
       ],
     ]);
 
