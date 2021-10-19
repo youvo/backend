@@ -1,0 +1,68 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - jsonapi_defaults
+    - questionnaire
+third_party_settings:
+  jsonapi_defaults:
+    page_limit: 50
+id: question_submission--question_submission
+disabled: true
+path: question_submission/question_submission
+resourceType: question_submission--question_submission
+resourceFields:
+  sid:
+    fieldName: sid
+    publicName: sid
+    enhancer:
+      id: ''
+    disabled: false
+  uuid:
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+    disabled: false
+  question:
+    fieldName: question
+    publicName: question
+    enhancer:
+      id: ''
+    disabled: false
+  question_revision:
+    fieldName: question_revision
+    publicName: question_revision
+    enhancer:
+      id: ''
+    disabled: false
+  uid:
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+    disabled: false
+  value:
+    fieldName: value
+    publicName: value
+    enhancer:
+      id: ''
+    disabled: false
+  langcode:
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+    disabled: false
+  created:
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+    disabled: false
+  changed:
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+    disabled: false
