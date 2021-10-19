@@ -200,7 +200,7 @@ class QuestionSubmissionResource extends ResourceBase {
       $route = $this->getBaseRoute($path, $method);
 
       // Add custom access check.
-      $route->setRequirement('_custom_access', '\Drupal\questionnaire\Controller\QuestionSubmissionAccessController::accessQuestionnaire');
+      $route->setRequirement('_custom_access', '\Drupal\questionnaire\Controller\QuestionSubmissionAccessController::accessQuestionSubmission');
 
       // Add route entity context parameters.
       $parameters = $route->getOption('parameters') ?: [];
