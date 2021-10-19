@@ -5,7 +5,7 @@ namespace Drupal\questionnaire\Controller;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\Questionnaire;
 use Symfony\Component\Routing\Route;
 
@@ -15,22 +15,23 @@ use Symfony\Component\Routing\Route;
 class QuestionSubmissionAccessController extends ControllerBase {
 
   /**
-   * Checks access for questionnaire submission.
+   * Checks access for question submission.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
    * @param \Symfony\Component\Routing\Route $route
    *   The requested route.
-   * @param \Drupal\paragraphs\Entity\Paragraph|null $paragraph
+   * @param \Drupal\questionnaire\Entity\Question|null $question
    *   The questionnaire entity.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessQuestionnaire(AccountInterface $account, Route $route, Paragraph $paragraph = NULL) {
-    if ($paragraph instanceof Questionnaire) {
+  public function accessQuestionSubmission(AccountInterface $account, Route $route, Question $question = NULL) {
+    if ($question instanceof Question) {
       $methods = $route->getMethods();
       $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+      $paragraph = $question->getParentEntity();
       $lecture = $paragraph->getParentEntity();
       $course = $lecture->getParentEntity();
       return AccessResult::allowedIf(
