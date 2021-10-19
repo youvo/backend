@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
@@ -130,8 +131,11 @@ class QuestionSubmissionResource extends ResourceBase {
 
     // Fetch questions and answers.
     $response = new ResourceResponse([
-      'type' => $question->bundle(),
-      'uuid' => $question->uuid(),
+      'type' => 'question.submission.resource',
+      'question' => [
+        'uuid' => $question->uuid(),
+        'type' => $question->bundle(),
+      ],
       'data' => [
         'value' => $submission->get('value')->value,
         'stale' => FALSE,
@@ -174,11 +178,11 @@ class QuestionSubmissionResource extends ResourceBase {
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
    */
   public function delete(Question $question) {
-    return new ResourceResponse('Hello DELETE.');
+    return new ModifiedResourceResponse();
   }
 
   /**
