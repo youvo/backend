@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Access controller for questionnaire rest resources.
  */
-class QuestionnaireAccessController extends ControllerBase {
+class QuestionSubmissionAccessController extends ControllerBase {
 
   /**
    * Checks access for questionnaire submission.

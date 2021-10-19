@@ -20,7 +20,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-class QuestionnaireSubmissionResource extends ResourceBase {
+class QuestionSubmissionResource extends ResourceBase {
 
   /**
    * Responds GET requests.
