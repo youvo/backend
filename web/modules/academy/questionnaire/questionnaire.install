@@ -26,7 +26,8 @@ function questionnaire_install() {
  * Implements hook_uninstall().
  */
 function questionnaire_uninstall() {
-  // Remove questionnaire target bundle to paragraph reference in lecture entity.
+  // Remove questionnaire target bundle to paragraph reference in lecture
+  // entity.
   $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
   $current_types = $config->get('settings.handler_settings.target_bundles');
   unset($current_types['questionnaire']);
