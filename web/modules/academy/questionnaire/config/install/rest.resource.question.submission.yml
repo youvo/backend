@@ -1,10 +1,11 @@
-id: questionnaire.submission
-plugin_id: 'questionnaire:submission'
+id: question.submission
+plugin_id: 'question:submission'
 granularity: resource
 configuration:
   methods:
     - GET
     - POST
+    - DELETE
   formats:
     - json
   authentication:
