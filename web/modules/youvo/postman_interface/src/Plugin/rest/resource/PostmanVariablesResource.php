@@ -63,6 +63,18 @@ class PostmanVariablesResource extends ResourceBase {
       $organisation = NULL;
     }
 
+    // Get some course.
+    $course_ids = \Drupal::entityQuery('course')
+      ->execute();
+    try {
+      $course = \Drupal::entityTypeManager()
+        ->getStorage('course')
+        ->load(reset($course_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $course = NULL;
+    }
+
     // Get some lecture.
     $lecture_ids = \Drupal::entityQuery('lecture')
       ->execute();
@@ -75,16 +87,56 @@ class PostmanVariablesResource extends ResourceBase {
       $lecture = NULL;
     }
 
-    // Get some course.
-    $course_ids = \Drupal::entityQuery('course')
+    // Get some textfield question.
+    $question_ids = \Drupal::entityQuery('question')
+      ->condition('bundle', 'textfield')
       ->execute();
     try {
-      $course = \Drupal::entityTypeManager()
-        ->getStorage('course')
-        ->load(reset($course_ids));
+      $question_textfield = \Drupal::entityTypeManager()
+        ->getStorage('question')
+        ->load(reset($question_ids));
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $course = NULL;
+      $question_textfield = NULL;
+    }
+
+    // Get some textarea question.
+    $question_ids = \Drupal::entityQuery('question')
+      ->condition('bundle', 'textarea')
+      ->execute();
+    try {
+      $question_textarea = \Drupal::entityTypeManager()
+        ->getStorage('question')
+        ->load(reset($question_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $question_textarea = NULL;
+    }
+
+    // Get some textfield question.
+    $question_ids = \Drupal::entityQuery('question')
+      ->condition('bundle', 'checkboxes')
+      ->execute();
+    try {
+      $question_checkboxes = \Drupal::entityTypeManager()
+        ->getStorage('question')
+        ->load(reset($question_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $question_checkboxes = NULL;
+    }
+
+    // Get some radios question.
+    $question_ids = \Drupal::entityQuery('question')
+      ->condition('bundle', 'radios')
+      ->execute();
+    try {
+      $question_radios = \Drupal::entityTypeManager()
+        ->getStorage('question')
+        ->load(reset($question_ids));
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $question_radios = NULL;
     }
 
     // Get a project that is a draft.
@@ -192,6 +244,10 @@ class PostmanVariablesResource extends ResourceBase {
         'organisation' => $organisation?->uuid(),
         'course' => $course?->uuid(),
         'lecture' => $lecture?->uuid(),
+        'question_textfield' => $question_textfield?->uuid(),
+        'question_textarea' => $question_textarea?->uuid(),
+        'question_checkboxes' => $question_checkboxes?->uuid(),
+        'question_radios' => $question_radios?->uuid(),
         'project_draft' => $project_draft?->uuid(),
         'project_pending' => $project_pending?->uuid(),
         'project_open' => $project_open?->uuid(),
