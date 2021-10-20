@@ -5,15 +5,16 @@ namespace Drupal\questionnaire\Plugin\rest\resource;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
+use Drupal\questionnaire\Entity\QuestionSubmission;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -111,39 +112,12 @@ class QuestionSubmissionResource extends ResourceBase {
    */
   public function get(Question $question) {
 
-    // Get referenced submission.
-    $submission_id = [];
-    try {
-      $query = $this->entityTypeManager
-        ->getStorage('question_submission')
-        ->getQuery();
-      $submission_id = $query->condition('question', $question->id())
-        ->condition('uid', $this->currentUser->id())
-        ->execute();
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
-    }
-
-    // Something went wrong here.
-    if (count($submission_id) > 1) {
-      throw new HttpException(417, 'The submission for the requested question has inconsistent persistent data.');
-    }
+    // Get the respective submission by question and current user.
+    $submission = $this->getRespectiveSubmission($question);
 
     // There is no submission for this question by this user.
-    if (empty($submission_id)) {
+    if (empty($submission)) {
       return new ModifiedResourceResponse(NULL, 204);
-    }
-
-    // Load submission.
-    try {
-      /** @var \Drupal\questionnaire\Entity\QuestionSubmission $submission */
-      $submission = $this->entityTypeManager
-        ->getStorage('question_submission')
-        ->load(reset($submission_id));
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
     }
 
     // Fetch questions and answers.
@@ -159,7 +133,7 @@ class QuestionSubmissionResource extends ResourceBase {
       ],
       'post_required' => [
         'type' => 'Expected type of question.',
-        'value' => 'Array of values for submission.',
+        'value' => 'String or array of values for submission.',
       ],
     ]);
 
@@ -192,7 +166,41 @@ class QuestionSubmissionResource extends ResourceBase {
       throw new BadRequestHttpException('Question type mismatch.');
     }
 
-    return new ModifiedResourceResponse('Hello POST.');
+    // Resolve value for respective type.
+    $value = match ($question->bundle()) {
+      'textarea', 'textfield' => $request_content['value'],
+      'checkboxes', 'radios' => implode(',', $request_content['value']),
+      default => throw new BadRequestHttpException('Action for question type not specified.'),
+    };
+
+    // Get the respective submission by question and current user.
+    $submission = $this->getRespectiveSubmission($question);
+
+    // There is no submission for this question by this user. Create new
+    // submission.
+    // @todo Pass langcode in which question was answered.
+    if (empty($submission)) {
+      $submission = QuestionSubmission::create([
+        'question' => $question->id(),
+        'uid' => $this->currentUser->id(),
+        'langcode' => 'en',
+        'value' => $value,
+      ]);
+    }
+    // We found a submission. Modify the last submission.
+    else {
+      $submission->set('value', $value);
+    }
+
+    // Save submission.
+    try {
+      $submission->save();
+    }
+    catch (EntityStorageException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    return new ModifiedResourceResponse('Submission saved.', 201);
   }
 
   /**
@@ -203,11 +211,24 @@ class QuestionSubmissionResource extends ResourceBase {
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
    *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function delete(Question $question) {
-    return new JsonResponse('Hello DELETE!');
+
+    // Get the respective submission by question and current user.
+    $submission = $this->getRespectiveSubmission($question);
+
+    // There is no submission for this question by this user.
+    if (empty($submission)) {
+      return new ModifiedResourceResponse(NULL, 204);
+    }
+
+    // Delete the respective submission.
+    $submission->delete();
+    return new ModifiedResourceResponse();
   }
 
   /**
@@ -244,6 +265,54 @@ class QuestionSubmissionResource extends ResourceBase {
     }
 
     return $collection;
+  }
+
+  /**
+   * Gets the respective submission of the question by the current user.
+   *
+   * @param \Drupal\questionnaire\Entity\Question $question
+   *   The requested question.
+   *
+   * @returns \Drupal\questionnaire\Entity\QuestionSubmission|null
+   *   The respective submission or NULL if no storage.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   */
+  protected function getRespectiveSubmission(Question $question) : ?QuestionSubmission {
+    try {
+      // Get referenced submission.
+      $query = $this->entityTypeManager
+        ->getStorage('question_submission')
+        ->getQuery();
+      $submission_id = $query->condition('question', $question->id())
+        ->condition('uid', $this->currentUser->id())
+        ->execute();
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    // Return nothing if there is no submission.
+    if (empty($submission_id)) {
+      return NULL;
+    }
+
+    // Something went wrong here.
+    if (count($submission_id) > 1) {
+      throw new HttpException(417, 'The submission for the requested question has inconsistent persistent data.');
+    }
+
+    try {
+      // Return loaded submission.
+      /** @var \Drupal\questionnaire\Entity\QuestionSubmission $submission */
+      $submission = $this->entityTypeManager
+        ->getStorage('question_submission')
+        ->load(reset($submission_id));
+      return $submission;
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
   }
 
 }
