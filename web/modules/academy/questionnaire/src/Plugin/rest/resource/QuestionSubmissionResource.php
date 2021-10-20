@@ -4,6 +4,7 @@ namespace Drupal\questionnaire\Plugin\rest\resource;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
@@ -13,6 +14,7 @@ use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -45,6 +47,13 @@ class QuestionSubmissionResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
+   * The serialization by Json service.
+   *
+   * @var \Drupal\Component\Serialization\Json
+   */
+  protected $serializationJson;
+
+  /**
    * Constructs a QuestionSubmissionResource object.
    *
    * @param array $configuration
@@ -61,11 +70,14 @@ class QuestionSubmissionResource extends ResourceBase {
    *   The current user.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Component\Serialization\Json $serialization_json
+   *   The serialization by Json service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, Json $serialization_json) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
+    $this->serializationJson = $serialization_json;
   }
 
   /**
@@ -79,7 +91,8 @@ class QuestionSubmissionResource extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
       $container->get('current_user'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('serialization.json')
     );
   }
 
@@ -161,15 +174,22 @@ class QuestionSubmissionResource extends ResourceBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Contains request data.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    */
   public function post(Question $question, Request $request) {
 
     // Decode content of the request.
-    // $request_content = \Drupal::service('serialization.json')
-    // ->decode($request->getContent());
-    return new ResourceResponse('Hello POST.');
+    $request_content = $this->serializationJson
+      ->decode($request->getContent());
+
+    if ($question->bundle() != $request_content['type']) {
+      throw new BadRequestHttpException('Question type mismatch.');
+    }
+
+    return new ModifiedResourceResponse('Hello POST.');
   }
 
   /**
