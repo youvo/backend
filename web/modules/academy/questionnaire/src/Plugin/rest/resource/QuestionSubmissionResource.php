@@ -13,8 +13,10 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -102,8 +104,10 @@ class QuestionSubmissionResource extends ResourceBase {
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\rest\ModifiedResourceResponse|ResourceResponse
    *   Response.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
   public function get(Question $question) {
 
@@ -118,17 +122,17 @@ class QuestionSubmissionResource extends ResourceBase {
         ->execute();
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      return new ResourceResponse('Could not query database.', 500);
+      throw new HttpException(500, 'Internal Server Error', $e);
     }
 
     // Something went wrong here.
     if (count($submission_id) > 1) {
-      return new ResourceResponse('The submission for the requested question has inconsistent persistent data.', 417);
+      throw new HttpException(417, 'The submission for the requested question has inconsistent persistent data.');
     }
 
     // There is no submission for this question by this user.
     if (empty($submission_id)) {
-      return new ResourceResponse('There is no submission for this question by this user', 204);
+      return new ModifiedResourceResponse(NULL, 204);
     }
 
     // Load submission.
@@ -139,7 +143,7 @@ class QuestionSubmissionResource extends ResourceBase {
         ->load(reset($submission_id));
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      return new ResourceResponse('Could not load submission correctly.', 500);
+      throw new HttpException(500, 'Internal Server Error', $e);
     }
 
     // Fetch questions and answers.
@@ -154,9 +158,8 @@ class QuestionSubmissionResource extends ResourceBase {
         'stale' => FALSE,
       ],
       'post_required' => [
-        'uuid' => 'The Uuid of the question.',
         'type' => 'Expected type of question.',
-        'values' => 'Array of values for submission.',
+        'value' => 'Array of values for submission.',
       ],
     ]);
 
@@ -195,14 +198,16 @@ class QuestionSubmissionResource extends ResourceBase {
   /**
    * Responds DELETE requests.
    *
+   * This method is temporary for development.
+   *
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
    *
-   * @return \Drupal\rest\ModifiedResourceResponse
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   Response.
    */
   public function delete(Question $question) {
-    return new ModifiedResourceResponse();
+    return new JsonResponse('Hello DELETE!');
   }
 
   /**
