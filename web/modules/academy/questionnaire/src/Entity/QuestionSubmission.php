@@ -31,17 +31,6 @@ class QuestionSubmission extends ContentEntityBase {
   use EntityChangedTrait;
 
   /**
-   * {@inheritdoc}
-   *
-   * When a new question submission entity is created, set the uid entity
-   * reference to the current user as the creator of the entity.
-   */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
-    parent::preCreate($storage, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
-  }
-
-  /**
    * Get created time.
    */
   public function getCreatedTime() {
@@ -97,23 +86,20 @@ class QuestionSubmission extends ContentEntityBase {
       ->setLabel(t('Question'))
       ->setDescription(t('The question ID of the respective submission.'))
       ->setSetting('target_type', 'question')
-      ->setReadOnly(TRUE);
-
-    $fields['question'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Question'))
-      ->setDescription(t('The question ID of the respective submission.'))
-      ->setSetting('target_type', 'question')
+      ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
     $fields['question_revision'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Question revision ID'))
       ->setReadOnly(TRUE)
+      ->setDefaultValue(0)
       ->setSetting('unsigned', TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the question author.'))
-      ->setSetting('target_type', 'user');
+      ->setSetting('target_type', 'user')
+      ->setRequired(TRUE);
 
     $fields['value'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Submission value'))
@@ -121,6 +107,7 @@ class QuestionSubmission extends ContentEntityBase {
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language'))
+      ->setRequired(TRUE)
       ->setDescription(t('The submission language code.'));
 
     $fields['created'] = BaseFieldDefinition::create('created')
