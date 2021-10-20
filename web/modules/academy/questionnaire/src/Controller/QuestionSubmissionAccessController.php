@@ -28,19 +28,27 @@ class QuestionSubmissionAccessController extends ControllerBase {
    *   The access results.
    */
   public function accessQuestionSubmission(AccountInterface $account, Route $route, Question $question = NULL) {
-    if ($question instanceof Question) {
-      $methods = $route->getMethods();
-      $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
-      $paragraph = $question->getParentEntity();
-      $lecture = $paragraph->getParentEntity();
-      $course = $lecture->getParentEntity();
+
+    // Gather properties.
+    $methods = $route->getMethods();
+    $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+    $paragraph = $question->getParentEntity();
+    $lecture = $paragraph->getParentEntity();
+    $course = $lecture->getParentEntity();
+
+    // Give access to editors.
+    if ($account->hasPermission('manage courses')) {
       return AccessResult::allowedIf(
-        $course->isEnabled() &&
-        $lecture->isEnabled() &&
         $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource)
       );
     }
-    return AccessResult::forbidden();
+
+    // Return access result.
+    return AccessResult::allowedIf(
+      $course->isEnabled() &&
+      $lecture->isEnabled() &&
+      $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource)
+    );
   }
 
 }
