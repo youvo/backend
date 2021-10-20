@@ -121,6 +121,14 @@ class QuestionSubmissionResource extends ResourceBase {
       return new ModifiedResourceResponse(NULL, 204);
     }
 
+    // Prepare and sanitize output.
+    if ($question->bundle() == 'checkboxes') {
+      $value = explode(',', Html::escape($submission->get('value')->value));
+    }
+    else {
+      $value = Html::escape($submission->get('value')->value);
+    }
+
     // Fetch questions and answers.
     $response = new ResourceResponse([
       'type' => 'question.submission.resource',
@@ -129,8 +137,7 @@ class QuestionSubmissionResource extends ResourceBase {
         'type' => $question->bundle(),
       ],
       'data' => [
-        'value' => Html::escape($submission->get('value')->value),
-        'stale' => FALSE,
+        'value' => $value,
       ],
       'post_required' => [
         'type' => 'Expected type of question.',
@@ -167,10 +174,35 @@ class QuestionSubmissionResource extends ResourceBase {
       throw new BadRequestHttpException('Question type mismatch.');
     }
 
+    // Check if posted value has valid format.
+    $v = $request_content['value'];
+    $valid_type = match($question->bundle()) {
+      'textarea' => is_string($v),
+      'textfield' => is_string($v) && strlen($v) < 255,
+      'radios' => is_string($v) && is_numeric($v) && intval($v) == $v,
+      'checkboxes' => is_array($v) && !in_array(FALSE, array_map(fn($s) => is_numeric($s) && intval($s) == $s, $v), TRUE),
+      default => throw new BadRequestHttpException('Action for question type not specified.'),
+    };
+
+    if (!$valid_type) {
+      throw new BadRequestHttpException('Malformed submission value.');
+    }
+
+    // Check if posted value is a valid option.
+    if ($question->bundle() == 'radios' || $question->bundle() == 'checkboxes') {
+      $valid_value = match($question->bundle()) {
+        'radios' => in_array($v, array_keys($question->get('options')->getValue())),
+        'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
+      };
+      if (!$valid_value) {
+        throw new BadRequestHttpException('Invalid submission value.');
+      }
+    }
+
     // Resolve value for respective type.
     $value = match ($question->bundle()) {
-      'textarea', 'textfield' => $request_content['value'],
-      'checkboxes', 'radios' => implode(',', $request_content['value']),
+      'textarea', 'textfield', 'radios' => $request_content['value'],
+      'checkboxes' => implode(',', $request_content['value']),
       default => throw new BadRequestHttpException('Action for question type not specified.'),
     };
 
@@ -201,7 +233,7 @@ class QuestionSubmissionResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
 
-    return new ModifiedResourceResponse('Submission saved.', 201);
+    return new ModifiedResourceResponse(NULL, 201);
   }
 
   /**
