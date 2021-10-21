@@ -2,15 +2,19 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lectures\Entity\Lecture;
+use Drupal\progress\Entity\LectureProgress;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -25,7 +29,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-class LectureComplete extends ResourceBase {
+class LectureCompleteResource extends ResourceBase {
 
   /**
    * The current user.
@@ -108,7 +112,7 @@ class LectureComplete extends ResourceBase {
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'type' => 'lecture.resource.complete',
+      'type' => 'progress.lecture.complete.resource',
       'data' => $submission,
     ]);
 
@@ -157,7 +161,7 @@ class LectureComplete extends ResourceBase {
       $route = $this->getBaseRoute($path, $method);
 
       // Add custom access check.
-      $route->setRequirement('_custom_access', '\Drupal\lectures\Controller\LectureProgressAccessController::accessLecture');
+      $route->setRequirement('_custom_access', '\Drupal\progress\Controller\LectureProgressAccessController::accessLecture');
 
       // Add route entity context parameters.
       $parameters = $route->getOption('parameters') ?: [];
