@@ -87,7 +87,7 @@ class LectureComplete extends ResourceBase {
       $route = $this->getBaseRoute($path, $method);
 
       // Add custom access check.
-      $route->setRequirement('_custom_access', '\Drupal\lectures\Controller\LectureAccessController::accessLecture');
+      $route->setRequirement('_custom_access', '\Drupal\lectures\Controller\LectureProgressAccessController::accessLecture');
 
       // Add route entity context parameters.
       $parameters = $route->getOption('parameters') ?: [];

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Access controller for lecture rest resources.
  */
-class LectureAccessController extends ControllerBase {
+class LectureProgressAccessController extends ControllerBase {
 
   /**
    * Checks access for lecture completion.
@@ -27,9 +27,20 @@ class LectureAccessController extends ControllerBase {
    *   The access results.
    */
   public function accessLecture(AccountInterface $account, Route $route, Lecture $lecture = NULL) {
+
+    // Gather properties.
     $methods = $route->getMethods();
     $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
     $course = $lecture->getParentEntity();
+
+    // Give access to editors.
+    if ($account->hasPermission('manage courses')) {
+      return AccessResult::allowedIf(
+        $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource)
+      );
+    }
+
+    // Return access result.
     return AccessResult::allowedIf(
       $course->isEnabled() &&
       $lecture->isEnabled() &&
