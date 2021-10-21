@@ -212,6 +212,7 @@ class QuestionSubmissionResource extends ResourceBase {
     // There is no submission for this question by this user. Create new
     // submission.
     // @todo Pass langcode in which question was answered.
+    // @todo Issue #11: Add revision id of question.
     if (empty($submission)) {
       $submission = QuestionSubmission::create([
         'question' => $question->id(),
