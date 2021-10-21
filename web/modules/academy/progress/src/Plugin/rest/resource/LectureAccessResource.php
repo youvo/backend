@@ -6,7 +6,6 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
 use Drupal\rest\ModifiedResourceResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
