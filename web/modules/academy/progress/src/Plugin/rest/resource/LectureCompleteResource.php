@@ -2,10 +2,13 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Provides Progress Lecture Complete Resource.
@@ -21,42 +24,6 @@ use Symfony\Component\HttpFoundation\Request;
 class LectureCompleteResource extends LectureProgressResource {
 
   /**
-   * Responds GET requests.
-   *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
-   *   The referenced lecture.
-   *
-   * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
-   *   Response.
-   */
-  public function get(Lecture $lecture) {
-
-    // Get the respective lecture progress by lecture and current user.
-    $progress = $this->getRespectiveLectureProgress($lecture);
-
-    // There is no progress for this lecture by this user.
-    if (empty($progress)) {
-      return new ModifiedResourceResponse(NULL, 204);
-    }
-
-    // Fetch progress information.
-    $data['enrolled'] = $progress->getEnrollmentTime();
-    $data['accessed'] = $progress->getAccessTime();
-    $data['completed'] = $progress->getCompletedTime();
-
-    // Compile response with structured data.
-    $response = new ResourceResponse([
-      'type' => 'progress.lecture.complete.resource',
-      'data' => $data,
-    ]);
-
-    // Add cacheable dependency to refresh response when lecture is udpated.
-    $response->addCacheableDependency($progress);
-
-    return $response;
-  }
-
-  /**
    * Responds POST requests.
    *
    * @param \Drupal\lectures\Entity\Lecture $lecture
@@ -64,16 +31,32 @@ class LectureCompleteResource extends LectureProgressResource {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Contains request data.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
   public function post(Lecture $lecture, Request $request) {
 
-    // Decode content of the request.
-    $request_content = $this->serializationJson
-      ->decode($request->getContent());
+    // Get the respective lecture progress by lecture and current user.
+    $progress = $this->getRespectiveLectureProgress($lecture);
 
-    return new ResourceResponse('Hello POST.', 200);
+    // There is no progress for this lecture by this user.
+    if (empty($progress)) {
+      throw new BadRequestHttpException('Creative is not enrolled in this lecture.');
+    }
+
+    try {
+      // Set completed timestamp.
+      $progress->setCompletedTime($this->time->getRequestTime());
+      $progress->save();
+    }
+    catch (EntityStorageException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    return new ModifiedResourceResponse();
   }
 
 }
