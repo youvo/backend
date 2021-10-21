@@ -44,20 +44,21 @@ class LectureAccessResource extends LectureProgressResource {
       $progress = LectureProgress::create([
         'lecture' => $lecture->id(),
         'uid' => $this->currentUser->id(),
-        'langcode' => 'en',
-        'enrolled' => $this->time->getRequestTime(),
         'accessed' => $this->time->getRequestTime(),
+        'langcode' => 'en',
       ]);
     }
     // Update access timestamp for this users progress.
     else {
-      try {
-        $progress->setAccessTime($this->time->getRequestTime());
-        $progress->save();
-      }
-      catch (EntityStorageException $e) {
-        throw new HttpException(500, 'Internal Server Error', $e);
-      }
+      $progress->setAccessTime($this->time->getRequestTime());
+    }
+
+    // Save progress.
+    try {
+      $progress->save();
+    }
+    catch (EntityStorageException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
     }
 
     return new ModifiedResourceResponse(NULL, 201);
