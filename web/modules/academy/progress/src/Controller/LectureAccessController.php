@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lectures\Controller;
+namespace Drupal\progress\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
