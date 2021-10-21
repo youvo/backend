@@ -111,8 +111,8 @@ class LectureProgress extends ContentEntityBase implements LectureProgressInterf
       ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
-    $fields['access'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Last access'))
+    $fields['accessed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Last accessed'))
       ->setDescription(t('The time that the lecture was last accessed.'))
       ->setRequired(TRUE);
 
