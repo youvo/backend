@@ -40,14 +40,14 @@ class LectureProgress extends ContentEntityBase implements LectureProgressInterf
    * {@inheritdoc}
    */
   public function getAccessTime() {
-    return $this->get('access')->value;
+    return $this->get('accessed')->value;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setAccessTime(int $timestamp): LectureProgress {
-    $this->set('access', $timestamp);
+    $this->set('accessed', $timestamp);
     return $this;
   }
 
@@ -111,12 +111,12 @@ class LectureProgress extends ContentEntityBase implements LectureProgressInterf
       ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
-    $fields['accessed'] = BaseFieldDefinition::create('changed')
+    $fields['accessed'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Last accessed'))
       ->setDescription(t('The time that the lecture was last accessed.'))
       ->setRequired(TRUE);
 
-    $fields['completed'] = BaseFieldDefinition::create('changed')
+    $fields['completed'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Completed'))
       ->setDescription(t('The time that the lecture was completed.'))
       ->setDefaultValue(0);
