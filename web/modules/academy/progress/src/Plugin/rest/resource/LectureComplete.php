@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lectures\Plugin\rest\resource;
+namespace Drupal\progress\Plugin\rest\resource;
 
 use Drupal\lectures\Entity\Lecture;
 use Drupal\rest\Plugin\ResourceBase;
@@ -9,11 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Provides Project Mediate Resource.
+ * Provides Progress Lecture Complete Resource.
  *
  * @RestResource(
- *   id = "lecture:complete",
- *   label = @Translation("Lecture Complete Resource"),
+ *   id = "progress:lecture:complete",
+ *   label = @Translation("Progress Lecture Complete Resource"),
  *   uri_paths = {
  *     "canonical" = "/api/lectures/{lecture}/complete",
  *     "create" = "/api/lectures/{lecture}/complete"
