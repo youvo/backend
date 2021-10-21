@@ -2,9 +2,14 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -21,6 +26,70 @@ use Symfony\Component\Routing\RouteCollection;
  * )
  */
 class LectureComplete extends ResourceBase {
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The serialization by Json service.
+   *
+   * @var \Drupal\Component\Serialization\Json
+   */
+  protected $serializationJson;
+
+  /**
+   * Constructs a QuestionSubmissionResource object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param array $serializer_formats
+   *   The available serialization formats.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Component\Serialization\Json $serialization_json
+   *   The serialization by Json service.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, Json $serialization_json) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
+    $this->currentUser = $current_user;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->serializationJson = $serialization_json;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->getParameter('serializer.formats'),
+      $container->get('logger.factory')->get('rest'),
+      $container->get('current_user'),
+      $container->get('entity_type.manager'),
+      $container->get('serialization.json')
+    );
+  }
 
   /**
    * Responds GET requests.
@@ -63,7 +132,8 @@ class LectureComplete extends ResourceBase {
   public function post(Lecture $lecture, Request $request) {
 
     // Decode content of the request.
-    $request_content = \Drupal::service('serialization.json')->decode($request->getContent());
+    $request_content = $this->serializationJson
+      ->decode($request->getContent());
 
     return new ResourceResponse('Hello POST.', 200);
   }
