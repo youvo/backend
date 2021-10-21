@@ -1,5 +1,5 @@
-id: lecture.complete
-plugin_id: 'lecture:complete'
+id: progress.lecture.access
+plugin_id: 'progress:lecture:access'
 granularity: resource
 configuration:
   methods:

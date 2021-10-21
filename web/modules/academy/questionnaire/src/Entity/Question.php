@@ -14,6 +14,8 @@ use Drupal\user\UserInterface;
 /**
  * Defines the question entity class.
  *
+ * @todo Issue #11: Add revisions to entity.
+ *
  * @ContentEntityType(
  *   id = "question",
  *   label = @Translation("Question"),

@@ -49,6 +49,7 @@ install:
   - lectures
   - paragraphs
   - questionnaire
+  - progress
   # Change later
   - basic_auth
 themes:

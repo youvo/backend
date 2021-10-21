@@ -1,0 +1,11 @@
+name: Progress
+type: module
+description: 'Documents the user progress in academy.'
+core_version_requirement: '^8.8 || ^9'
+package: Academy
+dependencies:
+  - academy
+  - courses
+  - lectures
+  - questionnaire
+  - paragraphs
