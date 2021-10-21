@@ -9,6 +9,8 @@ use Drupal\multivalue_form_element\Element\MultiValue;
 
 /**
  * Form controller for the paragraph entity edit forms.
+ *
+ * @todo Issue #11: Note administrators about revisions of questions (soft edit).
  */
 class QuestionForm extends ContentEntityForm {
 
