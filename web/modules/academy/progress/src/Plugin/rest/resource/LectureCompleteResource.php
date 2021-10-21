@@ -5,7 +5,6 @@ namespace Drupal\progress\Plugin\rest\resource;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\ResourceResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;

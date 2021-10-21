@@ -5,7 +5,6 @@ namespace Drupal\progress\Plugin\rest\resource;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lectures\Entity\Lecture;
@@ -38,13 +37,6 @@ abstract class LectureProgressResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
-   * The serialization by Json service.
-   *
-   * @var \Drupal\Component\Serialization\Json
-   */
-  protected $serializationJson;
-
-  /**
    * The time service.
    *
    * @var \Drupal\Component\Datetime\TimeInterface
@@ -68,16 +60,13 @@ abstract class LectureProgressResource extends ResourceBase {
    *   The current user.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Component\Serialization\Json $serialization_json
-   *   The serialization by Json service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, Json $serialization_json, TimeInterface $time) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
-    $this->serializationJson = $serialization_json;
     $this->time = $time;
   }
 
@@ -93,7 +82,6 @@ abstract class LectureProgressResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('current_user'),
       $container->get('entity_type.manager'),
-      $container->get('serialization.json'),
       $container->get('datetime.time')
     );
   }
