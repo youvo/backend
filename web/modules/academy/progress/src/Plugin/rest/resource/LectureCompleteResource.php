@@ -24,8 +24,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   id = "progress:lecture:complete",
  *   label = @Translation("Progress Lecture Complete Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/lectures/{lecture}/complete",
- *     "create" = "/api/lectures/{lecture}/complete"
+ *     "canonical" = "/api/lectures/{lecture}/complete"
  *   }
  * )
  */
@@ -146,6 +145,8 @@ class LectureCompleteResource extends ResourceBase {
    * {@inheritdoc}
    */
   public function routes() {
+
+    // Gather properties.
     $collection = new RouteCollection();
 
     $definition = $this->getPluginDefinition();
@@ -153,14 +154,9 @@ class LectureCompleteResource extends ResourceBase {
     $create_path = $definition['uri_paths']['create'];
     $route_name = strtr($this->pluginId, ':', '.');
 
-    $methods = $this->availableMethods();
-    foreach ($methods as $method) {
-      $path = $method === 'POST'
-        ? $create_path
-        : $canonical_path;
-      $route = $this->getBaseRoute($path, $method);
-
-      // Add custom access check.
+    // Add access check and route entity context parameter for each method.
+    foreach ($this->availableMethods() as $method) {
+      $route = $this->getBaseRoute($canonical_path, $method);
       $route->setRequirement('_custom_access', '\Drupal\progress\Controller\LectureProgressAccessController::accessLecture');
 
       // Add route entity context parameters.
