@@ -10,7 +10,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -94,6 +96,42 @@ abstract class LectureProgressResource extends ResourceBase {
       $container->get('serialization.json'),
       $container->get('datetime.time')
     );
+  }
+
+  /**
+   * Responds GET requests.
+   *
+   * @param \Drupal\lectures\Entity\Lecture $lecture
+   *   The referenced lecture.
+   *
+   * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
+   *   Response.
+   */
+  public function get(Lecture $lecture) {
+
+    // Get the respective lecture progress by lecture and current user.
+    $progress = $this->getRespectiveLectureProgress($lecture);
+
+    // There is no progress for this lecture by this user.
+    if (empty($progress)) {
+      return new ModifiedResourceResponse(NULL, 204);
+    }
+
+    // Fetch progress information.
+    $data['enrolled'] = $progress->getEnrollmentTime();
+    $data['accessed'] = $progress->getAccessTime();
+    $data['completed'] = $progress->getCompletedTime();
+
+    // Compile response with structured data.
+    $response = new ResourceResponse([
+      'type' => strtr($this->pluginId, ':', '.') . '.resource',
+      'data' => $data,
+    ]);
+
+    // Add cacheable dependency to refresh response when lecture is udpated.
+    $response->addCacheableDependency($progress);
+
+    return $response;
   }
 
   /**
