@@ -105,18 +105,18 @@ class LectureProgress extends ContentEntityBase implements LectureProgressInterf
       ->setDescription(t('The lecture language code on enrollment.'))
       ->setRequired(TRUE);
 
-    $fields['enrolled'] = BaseFieldDefinition::create('enrolled')
+    $fields['enrolled'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Initial access (enrollment)'))
       ->setDescription(t('The time that the lecture was accessed initially.'))
       ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
-    $fields['access'] = BaseFieldDefinition::create('access')
+    $fields['access'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Last access'))
       ->setDescription(t('The time that the lecture was last accessed.'))
       ->setRequired(TRUE);
 
-    $fields['completed'] = BaseFieldDefinition::create('completed')
+    $fields['completed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Completed'))
       ->setDescription(t('The time that the lecture was completed.'))
       ->setDefaultValue(0);
