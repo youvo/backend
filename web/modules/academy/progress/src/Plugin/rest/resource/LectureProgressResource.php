@@ -105,15 +105,19 @@ abstract class LectureProgressResource extends ResourceBase {
       return new ModifiedResourceResponse(NULL, 204);
     }
 
-    // Fetch progress information.
-    $data['enrolled'] = $progress->getEnrollmentTime();
-    $data['accessed'] = $progress->getAccessTime();
-    $data['completed'] = $progress->getCompletedTime();
-
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'type' => strtr($this->pluginId, ':', '.') . '.resource',
-      'data' => $data,
+      'resource' => strtr($this->pluginId, ':', '.'),
+      'data' => [
+        'type' => $progress->getEntityTypeId(),
+        'enrolled' => $progress->getEnrollmentTime(),
+        'accessed' => $progress->getAccessTime(),
+        'completed' => $progress->getCompletedTime(),
+        'lecture' => [
+          'type' => $lecture->getEntityTypeId(),
+          'uuid' => $lecture->uuid(),
+        ],
+      ],
     ]);
 
     // Add cacheable dependency to refresh response when lecture is udpated.

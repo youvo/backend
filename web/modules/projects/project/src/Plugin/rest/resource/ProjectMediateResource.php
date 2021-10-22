@@ -6,6 +6,8 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\project\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * Provides Project Mediate Resource.
@@ -45,13 +47,17 @@ class ProjectMediateResource extends ResourceBase {
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'type' => 'project.resource.mediate',
+      'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
         'type' => $project->getType(),
         'id' => $project->uuid(),
         'attributes' => [
           'title' => $project->getTitle(),
-          'applicants' => $applicants,
+        ],
+        'relationships' => [
+          'applicants' => [
+            'data' => $applicants,
+          ],
         ],
       ],
       'patch_required' => [
@@ -75,6 +81,9 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ResourceResponse
    *   Response.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+   * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    */
   public function patch(ProjectInterface $project, Request $request) {
 
@@ -83,7 +92,7 @@ class ProjectMediateResource extends ResourceBase {
 
     // The selected_participants are required to process the request.
     if (!array_key_exists('selected_participants', $request_content)) {
-      return new ResourceResponse('Request body does not specify \'selected_participants\'.', 417);
+      throw new BadRequestHttpException('Request body does not specify selected_participants.');
     }
 
     // Set preliminary selected_participants variable.
@@ -91,25 +100,25 @@ class ProjectMediateResource extends ResourceBase {
 
     // Force at least one selected participant.
     if (empty($selected_participants)) {
-      return new ResourceResponse('The \'selected_participants\' array in the request body is empty.', 417);
+      throw new BadRequestHttpException('The selected_participants array in the request body is empty.');
     }
 
     // The selected_participants is expected to be delivered as a simple array.
     if (count(array_filter(array_keys($selected_participants), 'is_string')) > 0) {
-      return new ResourceResponse('The \'selected_participants\' array in the request body is malformed.', 417);
+      throw new BadRequestHttpException('The selected_participants array in the request body is malformed.');
     }
 
     // The entries of the selected participants array are expected to be UUIDs.
     if (count(array_filter($selected_participants,
         ['Drupal\Component\Uuid\Uuid', 'isValid'])) != count($selected_participants)) {
-      return new ResourceResponse('The entries of the \'selected_participants\' array are not valid UUIDs.', 417);
+      throw new BadRequestHttpException('The entries of the selected_participants array are not valid UUIDs.');
     }
 
     // Get applicants for current project and check if selected_participants are
     // applicable.
     $applicants = array_unique(array_keys($project->getApplicantsAsArray(TRUE)));
     if (count(array_intersect($selected_participants, $applicants)) != count($selected_participants)) {
-      return new ResourceResponse('Some selected participants did not apply for this project.', 409);
+      throw new UnprocessableEntityHttpException('Some selected participants did not apply for this project.');
     }
 
     // Now we are finally sure to mediate the project. We get the UIDs by query.
@@ -121,7 +130,7 @@ class ProjectMediateResource extends ResourceBase {
       return new ResourceResponse('Project was mediated successfully.');
     }
 
-    return new ResourceResponse('Could not mediate project.', 422);
+    throw new UnprocessableEntityHttpException('Could not mediate project.');
   }
 
 }
