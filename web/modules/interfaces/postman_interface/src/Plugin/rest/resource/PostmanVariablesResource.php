@@ -247,7 +247,7 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'type' => 'postman.variables.resource',
+      'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
         'creative' => $creative?->uuid(),
         'organisation' => $organisation?->uuid(),
@@ -267,11 +267,20 @@ class PostmanVariablesResource extends ResourceBase {
     ]);
 
     // Prevent caching.
-    $response->addCacheableDependency([
-      '#cache' => [
-        'max-age' => 0,
-      ],
-    ]);
+    $response->addCacheableDependency($creative);
+    $response->addCacheableDependency($organisation);
+    $response->addCacheableDependency($course);
+    $response->addCacheableDependency($lecture);
+    $response->addCacheableDependency($question_textfield);
+    $response->addCacheableDependency($question_textarea);
+    $response->addCacheableDependency($question_checkboxes);
+    $response->addCacheableDependency($question_radios);
+    $response->addCacheableDependency($project_draft);
+    $response->addCacheableDependency($project_pending);
+    $response->addCacheableDependency($project_open);
+    $response->addCacheableDependency($project_can_mediate);
+    $response->addCacheableDependency($project_ongoing);
+    $response->addCacheableDependency($project_completed);
 
     return $response;
   }

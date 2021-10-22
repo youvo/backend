@@ -1,6 +1,6 @@
 name: Postman Interface
 description: Provides REST resources to exchange data with Postman.
-package: youvo
+package: Interfaces
 
 type: module
 core_version_requirement: ^8.8 || ^9
