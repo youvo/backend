@@ -5,7 +5,6 @@ configuration:
   methods:
     - GET
     - POST
-    - DELETE
   formats:
     - json
   authentication:

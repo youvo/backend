@@ -267,34 +267,6 @@ class QuestionSubmissionResource extends ResourceBase {
   }
 
   /**
-   * Responds DELETE requests.
-   *
-   * This method is temporary for development.
-   *
-   * @param \Drupal\questionnaire\Entity\Question $question
-   *   The referenced question.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public function delete(Question $question) {
-
-    // Get the respective submission by question and current user.
-    $submission = $this->getRespectiveSubmission($question);
-
-    // There is no submission for this question by this user.
-    if (empty($submission)) {
-      return new ModifiedResourceResponse(NULL, 204);
-    }
-
-    // Delete the respective submission.
-    $submission->delete();
-    return new ModifiedResourceResponse();
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function routes() {
