@@ -28,9 +28,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   id = "question:submission",
  *   label = @Translation("Question Submission Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/questions/{question}/submission",
- *     "create" = "/api/questions/{question}/submission",
- *     "delete" = "/api/questions/{question}/submission/delete"
+ *     "canonical" = "/api/questions/{question}/submission"
  *   }
  * )
  */
@@ -131,13 +129,14 @@ class QuestionSubmissionResource extends ResourceBase {
 
     // Fetch questions and answers.
     $response = new ResourceResponse([
-      'type' => 'question.submission.resource',
-      'question' => [
-        'uuid' => $question->uuid(),
-        'type' => $question->bundle(),
-      ],
+      'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
+        'type' => $submission->getEntityTypeId(),
         'value' => $value,
+        'question' => [
+          'type' => $question->bundle(),
+          'uuid' => $question->uuid(),
+        ],
       ],
       'post_required' => [
         'type' => 'Expected type of question.',
@@ -170,6 +169,17 @@ class QuestionSubmissionResource extends ResourceBase {
     $request_content = $this->serializationJson
       ->decode($request->getContent());
 
+    // The type is required to process the request.
+    if (!array_key_exists('type', $request_content)) {
+      throw new BadRequestHttpException('Request body does not specify type.');
+    }
+
+    // The value is required to process the request.
+    if (!array_key_exists('value', $request_content)) {
+      throw new BadRequestHttpException('Request body does not specify value.');
+    }
+
+    // Check for matching type.
     if ($question->bundle() != $request_content['type']) {
       throw new BadRequestHttpException('Question type mismatch.');
     }
@@ -269,24 +279,17 @@ class QuestionSubmissionResource extends ResourceBase {
    * {@inheritdoc}
    */
   public function routes() {
-    $collection = new RouteCollection();
 
+    // Gather properties.
+    $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $create_path = $definition['uri_paths']['create'];
     $route_name = strtr($this->pluginId, ':', '.');
 
-    $methods = $this->availableMethods();
-    foreach ($methods as $method) {
-      $path = $method === 'POST'
-        ? $create_path
-        : $canonical_path;
-      $route = $this->getBaseRoute($path, $method);
-
-      // Add custom access check.
+    // Add access check and route entity context parameter for each method.
+    foreach ($this->availableMethods() as $method) {
+      $route = $this->getBaseRoute($canonical_path, $method);
       $route->setRequirement('_custom_access', '\Drupal\questionnaire\Controller\QuestionSubmissionAccessController::accessQuestionSubmission');
-
-      // Add route entity context parameters.
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'question' => [
@@ -294,7 +297,6 @@ class QuestionSubmissionResource extends ResourceBase {
           'converter' => 'paramconverter.uuid',
         ],
       ]);
-
       $collection->add("$route_name.$method", $route);
     }
 
