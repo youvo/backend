@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -162,6 +163,7 @@ class QuestionSubmissionResource extends ResourceBase {
    *   Response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
   public function post(Question $question, Request $request) {
 
@@ -219,32 +221,49 @@ class QuestionSubmissionResource extends ResourceBase {
     // Get the respective submission by question and current user.
     $submission = $this->getRespectiveSubmission($question);
 
-    // There is no submission for this question by this user. Create new
-    // submission.
-    // @todo Pass langcode in which question was answered.
-    // @todo Issue #11: Add revision id of question.
-    if (empty($submission)) {
-      $submission = QuestionSubmission::create([
-        'question' => $question->id(),
-        'uid' => $this->currentUser->id(),
-        'langcode' => 'en',
-        'value' => $value,
-      ]);
+    // Create or update submission if value is not empty.
+    if (!empty($value)) {
+
+      // There is no submission for this question by this user. Create new
+      // submission.
+      // @todo Pass langcode in which question was answered.
+      // @todo Issue #11: Add revision id of question.
+      if (empty($submission)) {
+        $submission = QuestionSubmission::create([
+          'question' => $question->id(),
+          'uid' => $this->currentUser->id(),
+          'langcode' => 'en',
+          'value' => $value,
+        ]);
+      }
+      // We found a submission. Modify the last submission.
+      else {
+        $submission->set('value', $value);
+      }
+
+      // Save submission.
+      try {
+        $submission->save();
+      }
+      catch (EntityStorageException $e) {
+        throw new HttpException(500, 'Internal Server Error', $e);
+      }
+
+      return new ModifiedResourceResponse(NULL, 201);
     }
-    // We found a submission. Modify the last submission.
+
+    // Delete previous submission or do nothing if value is empty.
     else {
-      $submission->set('value', $value);
+      if (!empty($submission)) {
+        try {
+          $submission->delete();
+        }
+        catch (EntityStorageException $e) {
+          throw new HttpException(500, 'Internal Server Error', $e);
+        }
+      }
+      return new ModifiedResourceResponse(NULL, 204);
     }
-
-    // Save submission.
-    try {
-      $submission->save();
-    }
-    catch (EntityStorageException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
-    }
-
-    return new ModifiedResourceResponse(NULL, 201);
   }
 
   /**
@@ -313,6 +332,7 @@ class QuestionSubmissionResource extends ResourceBase {
    *   The respective submission or NULL if no storage.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    */
   protected function getRespectiveSubmission(Question $question) : ?QuestionSubmission {
     try {
@@ -335,7 +355,7 @@ class QuestionSubmissionResource extends ResourceBase {
 
     // Something went wrong here.
     if (count($submission_id) > 1) {
-      throw new HttpException(417, 'The submission for the requested question has inconsistent persistent data.');
+      throw new UnprocessableEntityHttpException('The submission for the requested question has inconsistent persistent data.');
     }
 
     try {
