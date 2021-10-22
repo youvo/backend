@@ -1,17 +1,17 @@
 {
-	"patches": {
-		"drupal/core": {
-      "Issue #1356276: Introduce base profiles (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-1356276-656.patch",
-      "Issue #2570593: Allow entities to be subclassed using bundle classes (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2570593-163.patch",
-      "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-2924549-38.patch"
-		},
-		"drupal/jsonapi_include": {
-			"Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
-			"Issue #3238138: Move JSON:API Include settings to JSON:API configuration pages": "patches/jsonapi_include/JAI8x-14-3238138-1.patch"
-		},
-		"drupal/multivalue_form_element": {
-			"Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
-			"Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
-		}
-	}
+    "patches": {
+	    "drupal/core": {
+            "Issue #1356276: Introduce base profiles (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-1356276-656.patch",
+            "Issue #2570593: Allow entities to be subclassed using bundle classes (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2570593-209.patch",
+            "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-2924549-38.patch"
+        },
+        "drupal/jsonapi_include": {
+            "Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
+            "Issue #3238138: Move JSON:API Include settings to JSON:API configuration pages": "patches/jsonapi_include/JAI8x-14-3238138-1.patch"
+        },
+        "drupal/multivalue_form_element": {
+            "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
+            "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
+        }
+    }
 }
