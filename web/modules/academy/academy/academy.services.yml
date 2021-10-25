@@ -4,3 +4,6 @@ services:
     arguments: ['@messenger']
     tags:
       - { name: event_subscriber }
+  logger.channel.academy:
+    parent: logger.channel_base
+    arguments: [ 'academy' ]
