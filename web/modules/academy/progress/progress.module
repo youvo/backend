@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Provides hooks to document progress in academy.
+ */
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\progress\Plugin\Field\LectureCompletedFieldItemList;
+use Drupal\progress\Plugin\Field\LectureUnlockedFieldItemList;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add paragraphs base field to entity Lecture.
+  if ($entity_type->id() == 'lecture') {
+    $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean_item')
+      ->setLabel(t('Completed'))
+      ->setDescription(t('Computes the lecture completed status by user.'))
+      ->setComputed(TRUE)
+      ->setClass(LectureCompletedFieldItemList::class);
+    $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean_item')
+      ->setLabel(t('Unlocked'))
+      ->setDescription(t('Computes the lecture unlocked status by user.'))
+      ->setComputed(TRUE)
+      ->setClass(LectureUnlockedFieldItemList::class);
+  }
+
+  return $fields;
+}
