@@ -3,11 +3,15 @@
 namespace Drupal\progress;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
+use Psr\Log\LoggerInterface;
 
 /**
  * Provides functionality to manage the progress of a lecture.
@@ -43,6 +47,13 @@ class LectureProgressManager {
   protected $time;
 
   /**
+   * Logger channel.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
    * Constructs a QuestionSubmissionResource object.
    *
    * @param \Drupal\lectures\Entity\Lecture $lecture
@@ -53,12 +64,15 @@ class LectureProgressManager {
    *   The entity type manager.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
    */
-  public function __construct(Lecture $lecture, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time) {
+  public function __construct(Lecture $lecture, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger) {
     $this->lecture = $lecture;
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
+    $this->logger = $logger;
   }
 
   /**
@@ -73,8 +87,61 @@ class LectureProgressManager {
       $lecture,
       $container->get('current_user'),
       $container->get('entity_type.manager'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('logger.channel.academy')
     );
+  }
+
+  /**
+   * Returns current user ID.
+   */
+  public function getCurrentUserId(): int {
+    return $this->currentUser->id();
+  }
+
+  /**
+   * Returns the request time.
+   */
+  public function getRequestTime(): int {
+    return $this->time->getRequestTime();
+  }
+
+  /**
+   * Determines whether a lecture is completed.
+   */
+  public function getCompletedStatus(): bool {
+    return (bool) $this->getProgressField('completed');
+  }
+
+  /**
+   * Determines whether a lecture is completed.
+   */
+  public function getUnlockedStatus(): bool {
+    return (bool) $this->getProgressField('accessed');
+  }
+
+  /**
+   * Gets a field of the progress.
+   */
+  protected function getProgressField(string $field_name): mixed {
+
+    $progress = NULL;
+
+    try {
+      $progress = $this->getLectureProgress();
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      $this->logger
+        ->error('Can not retrieve lecture_progress entity. %type: @message in %function (line %line of %file).', $variables);
+    }
+    catch (EntityMalformedException $e) {
+      $variables = Error::decodeException($e);
+      $this->logger
+        ->error('The progress of the requested lecture has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+    }
+
+    return $progress?->get($field_name)->value;
   }
 
   /**
@@ -117,20 +184,6 @@ class LectureProgressManager {
     $progress = $this->entityTypeManager->getStorage($entity_type_id)
       ->load(reset($progress_id));
     return $progress;
-  }
-
-  /**
-   * Returns current user ID.
-   */
-  public function getCurrentUserId() {
-    return $this->currentUser->id();
-  }
-
-  /**
-   * Returns the request time.
-   */
-  public function getRequestTime() {
-    return $this->time->getRequestTime();
   }
 
 }

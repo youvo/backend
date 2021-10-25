@@ -26,30 +26,17 @@ class LectureUnlockedFieldItemList extends FieldItemList implements FieldItemLis
    */
   protected function computeValue() {
 
-    $unlocked = FALSE;
+    // Get progress manager for lecture.
+    $progress_manager = LectureProgressManager::create($this->getEntity());
 
-    try {
-      $progress_manager = LectureProgressManager::create($this->getEntity());
-      $progress = $progress_manager->getLectureProgress();
-      $unlocked = (bool) $progress?->get('accessed')->value;
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      $variables = Error::decodeException($e);
-      \Drupal::logger('progress')
-        ->error('Can not retrieve lecture_progress enitity. %type: @message in %function (line %line of %file).', $variables);
-    }
-    catch (EntityMalformedException $e) {
-      $variables = Error::decodeException($e);
-      \Drupal::logger('progress')
-        ->error('The progress of the requested lecture has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
-    }
-    finally {
-      /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $unlocked);
-      $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
-      $item->get('value')->addCacheableDependency($cacheability);
-      $this->list[0] = $item;
-    }
+    // Set completed status.
+    /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
+    $item = $this->createItem(0, $progress_manager->getUnlockedStatus());
+
+    // Set cache max age zero.
+    $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
+    $item->get('value')->addCacheableDependency($cacheability);
+    $this->list[0] = $item;
   }
 
 }
