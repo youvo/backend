@@ -229,8 +229,11 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     $row['title'] = [
       '#markup' => $entity->getTitle(),
     ];
+    $status = $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled');
+    $unlocked = $entity->get('unlocked')->value ? $this->t('Unlocked') : $this->t('Locked');
+    $completed = $entity->get('completed')->value ? $this->t('Completed') : $this->t('Pending');
     $row['status'] = [
-      '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
+      '#markup' => $status . ' - ' . $completed . ' - ' . $unlocked,
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);
