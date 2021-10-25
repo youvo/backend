@@ -5,6 +5,7 @@ namespace Drupal\progress;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -54,6 +55,13 @@ class LectureProgressManager {
   protected $logger;
 
   /**
+   * Database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
    * Constructs a QuestionSubmissionResource object.
    *
    * @param \Drupal\lectures\Entity\Lecture $lecture
@@ -66,13 +74,16 @@ class LectureProgressManager {
    *   The time service.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
+   * @param \Drupal\Core\Database\Connection $database
+   *   A database connection.
    */
-  public function __construct(Lecture $lecture, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger) {
+  public function __construct(Lecture $lecture, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database) {
     $this->lecture = $lecture;
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->logger = $logger;
+    $this->database = $database;
   }
 
   /**
@@ -88,7 +99,8 @@ class LectureProgressManager {
       $container->get('current_user'),
       $container->get('entity_type.manager'),
       $container->get('datetime.time'),
-      $container->get('logger.channel.academy')
+      $container->get('logger.channel.academy'),
+      $container->get('database')
     );
   }
 
@@ -114,10 +126,49 @@ class LectureProgressManager {
   }
 
   /**
-   * Determines whether a lecture is completed.
+   * Determines whether a lecture is unlocked.
    */
   public function getUnlockedStatus(): bool {
-    return (bool) $this->getProgressField('accessed');
+
+    // Get all lecture IDs in this course.
+    $course = $this->lecture->getParentEntity();
+    $lecture_references = $course->get('lectures')->getValue();
+    $lecture_ids = array_column($lecture_references, 'target_id');
+
+    // This condition should never trigger.
+    if (empty($lecture_ids)) {
+      return FALSE;
+    }
+
+    // Get id and completed with custom query sorted by weight.
+    // Might be faster than loading every lecture individually.
+    $query = $this->database->select('lectures_field_data', 'x')
+      ->condition('x.id', $lecture_ids, 'IN')
+      ->orderBy('x.weight');
+    $query->addField('x', 'id');
+    $query->leftJoin('lecture_progress', 'p',
+      '[p].[lecture] = [x].[id] AND [p].[uid] = :user', [
+        ':user' => $this->currentUser->id(),
+      ]);
+    $query->addField('p', 'completed');
+    $lectures = $query->execute()->fetchAll();
+
+    // The first lecture is always unlocked.
+    if ($lectures[0]->id == $this->lecture->id()) {
+      return TRUE;
+    }
+
+    // Unlock if all previous lectures are completed. We can assume that the
+    // current lecture ID is contained within the queried lectures.
+    $i = 0;
+    while ($lectures[$i]->id != $this->lecture->id()) {
+      if (!$lectures[$i]->completed) {
+        return FALSE;
+      }
+      $i++;
+    }
+
+    return TRUE;
   }
 
   /**
