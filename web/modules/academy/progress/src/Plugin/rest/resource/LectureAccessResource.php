@@ -2,6 +2,9 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
@@ -35,22 +38,30 @@ class LectureAccessResource extends LectureProgressResource {
    */
   public function post(Lecture $lecture) {
 
-    // Get the respective lecture progress by lecture and current user.
-    $progress = $this->getRespectiveLectureProgress($lecture);
+    try {
+      // Get the respective lecture progress by lecture and current user.
+      $progress = $this->progressManager->getLectureProgress($lecture);
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+    catch (EntityMalformedException $e) {
+      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+    }
 
     // There is no progress for this lecture by this user.
     // @todo Pass langcode in which lecture was enrolled.
     if (empty($progress)) {
       $progress = LectureProgress::create([
         'lecture' => $lecture->id(),
-        'uid' => $this->currentUser->id(),
-        'accessed' => $this->time->getRequestTime(),
+        'uid' => $this->progressManager->getCurrentUserId(),
+        'accessed' => $this->progressManager->getRequestTime(),
         'langcode' => 'en',
       ]);
     }
     // Update access timestamp for this users progress.
     else {
-      $progress->setAccessTime($this->time->getRequestTime());
+      $progress->setAccessTime($this->progressManager->getRequestTime());
     }
 
     // Save progress.

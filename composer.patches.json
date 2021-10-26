@@ -4,7 +4,7 @@
             "Issue #1356276: Introduce base profiles (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-1356276-656.patch",
             "Issue #2570593: Allow entities to be subclassed using bundle classes (Release Drupal 9.3.0)": "patches/drupal/D92x-2570593-209.patch",
             "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.3.0)": "patches/drupal/D91x-2924549-38.patch",
-            "Issue #2997123: Cacheability of normalized computed fields' properties is not captured during serialization (Scheduled Drupal 9.3.0)": "patches/drupal/D92x-2997123-130.patch"
+            "Issue #2997123: Cacheability of normalized computed fields' properties is not captured during serialization (Release Drupal 9.3.0)": "patches/drupal/D92x-2997123-130.patch"
         },
         "drupal/jsonapi_include": {
             "Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
