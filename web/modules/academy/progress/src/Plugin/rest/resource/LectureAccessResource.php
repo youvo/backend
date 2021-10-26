@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
-use Drupal\progress\LectureProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -41,8 +40,7 @@ class LectureAccessResource extends LectureProgressResource {
 
     try {
       // Get the respective lecture progress by lecture and current user.
-      $progress_manager = LectureProgressManager::create($lecture);
-      $progress = $progress_manager->getLectureProgress();
+      $progress = $this->progressManager->getLectureProgress($lecture);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
@@ -56,14 +54,14 @@ class LectureAccessResource extends LectureProgressResource {
     if (empty($progress)) {
       $progress = LectureProgress::create([
         'lecture' => $lecture->id(),
-        'uid' => $progress_manager->getCurrentUserId(),
-        'accessed' => $progress_manager->getRequestTime(),
+        'uid' => $this->progressManager->getCurrentUserId(),
+        'accessed' => $this->progressManager->getRequestTime(),
         'langcode' => 'en',
       ]);
     }
     // Update access timestamp for this users progress.
     else {
-      $progress->setAccessTime($progress_manager->getRequestTime());
+      $progress->setAccessTime($this->progressManager->getRequestTime());
     }
 
     // Save progress.

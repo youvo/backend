@@ -10,6 +10,8 @@ use Drupal\progress\LectureProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -17,6 +19,48 @@ use Symfony\Component\Routing\RouteCollection;
  * Provides Abstract for Lecture Progress Resources.
  */
 abstract class LectureProgressResource extends ResourceBase {
+
+  /**
+   * The progress manager service.
+   *
+   * @var \Drupal\progress\LectureProgressManager
+   */
+  protected $progressManager;
+
+  /**
+   * Constructs a Drupal\rest\Plugin\ResourceBase object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param array $serializer_formats
+   *   The available serialization formats.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
+   * @param \Drupal\progress\LectureProgressManager $progress_manager
+   *   The progress manager service.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, LectureProgressManager $progress_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
+    $this->progressManager = $progress_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->getParameter('serializer.formats'),
+      $container->get('logger.factory')->get('rest'),
+      $container->get('progress.manager')
+    );
+  }
 
   /**
    * Responds GET requests.
@@ -29,10 +73,9 @@ abstract class LectureProgressResource extends ResourceBase {
    */
   public function get(Lecture $lecture) {
 
-    // Get the respective lecture progress by lecture and current user.
     try {
-      $progress_manager = LectureProgressManager::create($lecture);
-      $progress = $progress_manager->getLectureProgress();
+      // Get the respective lecture progress by lecture and current user.
+      $progress = $this->progressManager->getLectureProgress($lecture);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);

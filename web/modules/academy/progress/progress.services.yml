@@ -1,0 +1,4 @@
+services:
+  progress.manager:
+    class: Drupal\progress\LectureProgressManager
+    arguments: ['@current_user', '@entity_type.manager', '@datetime.time', '@logger.channel.academy', '@database']

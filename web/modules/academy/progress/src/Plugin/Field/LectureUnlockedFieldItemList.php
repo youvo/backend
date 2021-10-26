@@ -2,15 +2,10 @@
 
 namespace Drupal\progress\Plugin\Field;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
-use Drupal\Core\Utility\Error;
-use Drupal\progress\LectureProgressManager;
 
 /**
  * ComputedCompletedStatusFieldItemList class to generate a computed field.
@@ -20,23 +15,34 @@ class LectureUnlockedFieldItemList extends FieldItemList implements FieldItemLis
   use ComputedItemListTrait;
 
   /**
+   * Mock progress manager dependency injection.
+   *
+   * @todo Replace with proper DI after
+   *    https://www.drupal.org/project/drupal/issues/2914419 or
+   *    https://www.drupal.org/project/drupal/issues/2053415
+   */
+  protected function progressManager() {
+    return \Drupal::service('progress.manager');
+  }
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function computeValue() {
 
-    // Get progress manager for lecture.
-    $progress_manager = LectureProgressManager::create($this->getEntity());
+    if (!isset($this->list[0])) {
 
-    // Set completed status.
-    /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
-    $item = $this->createItem(0, $progress_manager->getUnlockedStatus());
+      // Set completed status.
+      /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
+      $item = $this->createItem(0, $this->progressManager()->getUnlockedStatus($this->getEntity()));
 
-    // Set cache max age zero.
-    $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
-    $item->get('value')->addCacheableDependency($cacheability);
-    $this->list[0] = $item;
+      // Set cache max age zero.
+      $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
+      $item->get('value')->addCacheableDependency($cacheability);
+      $this->list[0] = $item;
+    }
   }
 
 }

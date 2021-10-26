@@ -15,7 +15,9 @@ use Drupal\progress\Entity\LectureProgress;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides functionality to manage the progress of a lecture.
+ * Service that provides functionality to manage the progress of a lecture.
+ *
+ * @see progress -> progress.services.yml
  */
 class LectureProgressManager {
 
@@ -64,8 +66,6 @@ class LectureProgressManager {
   /**
    * Constructs a QuestionSubmissionResource object.
    *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
-   *   The respective lecture.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -77,31 +77,12 @@ class LectureProgressManager {
    * @param \Drupal\Core\Database\Connection $database
    *   A database connection.
    */
-  public function __construct(Lecture $lecture, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database) {
-    $this->lecture = $lecture;
+  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database) {
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->logger = $logger;
     $this->database = $database;
-  }
-
-  /**
-   * Creates an instance.
-   *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
-   *   The respective lecture.
-   */
-  public static function create(Lecture $lecture) {
-    $container = \Drupal::getContainer();
-    return new static(
-      $lecture,
-      $container->get('current_user'),
-      $container->get('entity_type.manager'),
-      $container->get('datetime.time'),
-      $container->get('logger.channel.academy'),
-      $container->get('database')
-    );
   }
 
   /**
@@ -121,17 +102,17 @@ class LectureProgressManager {
   /**
    * Determines whether a lecture is completed.
    */
-  public function getCompletedStatus(): bool {
-    return (bool) $this->getProgressField('completed');
+  public function getCompletedStatus($lecture): bool {
+    return (bool) $this->getProgressField($lecture, 'completed');
   }
 
   /**
    * Determines whether a lecture is unlocked.
    */
-  public function getUnlockedStatus(): bool {
+  public function getUnlockedStatus(Lecture $lecture): bool {
 
     // Get all lecture IDs in this course.
-    $course = $this->lecture->getParentEntity();
+    $course = $lecture->getParentEntity();
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
 
@@ -154,14 +135,14 @@ class LectureProgressManager {
     $lectures = $query->execute()->fetchAll();
 
     // The first lecture is always unlocked.
-    if ($lectures[0]->id == $this->lecture->id()) {
+    if ($lectures[0]->id == $lecture->id()) {
       return TRUE;
     }
 
     // Unlock if all previous lectures are completed. We can assume that the
     // current lecture ID is contained within the queried lectures.
     $i = 0;
-    while ($lectures[$i]->id != $this->lecture->id()) {
+    while ($lectures[$i]->id != $lecture->id()) {
       if (!$lectures[$i]->completed) {
         return FALSE;
       }
@@ -174,12 +155,12 @@ class LectureProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(string $field_name): mixed {
+  protected function getProgressField(Lecture $lecture, string $field_name): mixed {
 
     $progress = NULL;
 
     try {
-      $progress = $this->getLectureProgress();
+      $progress = $this->getLectureProgress($lecture);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -205,7 +186,7 @@ class LectureProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getLectureProgress(): ?LectureProgress {
+  public function getLectureProgress($lecture): ?LectureProgress {
 
     $entity_type_id = 'lecture_progress';
 
@@ -213,7 +194,7 @@ class LectureProgressManager {
     $query = $this->entityTypeManager->getStorage($entity_type_id)
       ->getQuery();
     $progress_id = $query
-      ->condition($this->lecture->getEntityTypeId(), $this->lecture->id())
+      ->condition($lecture->getEntityTypeId(), $lecture->id())
       ->condition('uid', $this->currentUser->id())
       ->execute();
 
