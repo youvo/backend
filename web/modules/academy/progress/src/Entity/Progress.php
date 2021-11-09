@@ -11,7 +11,7 @@ use Drupal\progress\ProgressInterface;
 /**
  * Base class for progress entities.
  */
-class Progress extends ContentEntityBase implements ProgressInterface {
+abstract class Progress extends ContentEntityBase implements ProgressInterface {
 
   use EntityChangedTrait;
 
