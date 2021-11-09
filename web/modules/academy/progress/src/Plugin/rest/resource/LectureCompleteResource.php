@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  *   id = "progress:lecture:complete",
  *   label = @Translation("Progress Lecture Complete Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/lectures/{lecture}/complete"
+ *     "canonical" = "/api/lectures/{entity}/complete"
  *   }
  * )
  */
