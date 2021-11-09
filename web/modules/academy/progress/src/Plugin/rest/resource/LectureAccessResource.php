@@ -27,7 +27,7 @@ class LectureAccessResource extends ProgressResource {
   /**
    * Responds POST requests.
    *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
+   * @param \Drupal\lectures\Entity\Lecture $entity
    *   The referenced lecture.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
@@ -36,11 +36,11 @@ class LectureAccessResource extends ProgressResource {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Lecture $lecture) {
+  public function post(Lecture $entity) {
 
     try {
       // Get the respective lecture progress by lecture and current user.
-      $progress = $this->progressManager->getProgress($lecture);
+      $progress = $this->progressManager->getProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
@@ -53,7 +53,7 @@ class LectureAccessResource extends ProgressResource {
     // @todo Pass langcode in which lecture was enrolled.
     if (empty($progress)) {
       $progress = LectureProgress::create([
-        'lecture' => $lecture->id(),
+        'lecture' => $entity->id(),
         'uid' => $this->progressManager->getCurrentUserId(),
         'accessed' => $this->progressManager->getRequestTime(),
         'langcode' => 'en',
