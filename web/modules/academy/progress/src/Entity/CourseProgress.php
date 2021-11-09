@@ -9,23 +9,23 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\progress\ProgressInterface;
 
 /**
- * Defines the LectureProgress entity class.
+ * Defines the CourseProgress entity class.
  *
  * @ContentEntityType(
- *   id = "lecture_progress",
- *   label = @Translation("LectureProgress"),
- *   label_collection = @Translation("LectureProgress"),
- *   base_table = "lecture_progress",
+ *   id = "course_progress",
+ *   label = @Translation("Course Progress"),
+ *   label_collection = @Translation("Course Progress"),
+ *   base_table = "course_progress",
  *   admin_permission = "administer progress",
  *   entity_keys = {
  *     "id" = "id",
  *     "uuid" = "uuid",
- *     "lecture" = "lecture",
+ *     "course" = "course",
  *     "uid" = "uid"
  *   }
  * )
  */
-class LectureProgress extends ContentEntityBase implements ProgressInterface {
+class CourseProgress extends ContentEntityBase implements ProgressInterface {
 
   use EntityChangedTrait;
   use ProgressEntityTrait;
@@ -38,10 +38,10 @@ class LectureProgress extends ContentEntityBase implements ProgressInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::progressBaseFieldDefinitions();
 
-    $fields['lecture'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Lecture'))
-      ->setDescription(t('The lecture ID.'))
-      ->setSetting('target_type', 'lecture')
+    $fields['course'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Course'))
+      ->setDescription(t('The course ID.'))
+      ->setSetting('target_type', 'course')
       ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
