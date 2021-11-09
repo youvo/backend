@@ -75,7 +75,7 @@ abstract class LectureProgressResource extends ResourceBase {
 
     try {
       // Get the respective lecture progress by lecture and current user.
-      $progress = $this->progressManager->getLectureProgress($lecture);
+      $progress = $this->progressManager->getProgress($lecture);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);

@@ -96,7 +96,7 @@ class ProgressManager {
   /**
    * Determines whether a lecture or course is completed.
    */
-  public function getCompletedStatus(Progress $entity): bool {
+  public function getCompletedStatus(Lecture|Course $entity): bool {
     return (bool) $this->getProgressField($entity, 'completed');
   }
 
@@ -119,7 +119,7 @@ class ProgressManager {
   /**
    * Determines whether a course is unlocked.
    */
-  public function getCourseUnlockedStatus(Course $course): bool {
+  protected function getCourseUnlockedStatus(Course $course): bool {
 
     return FALSE;
   }
@@ -127,7 +127,7 @@ class ProgressManager {
   /**
    * Determines whether a lecture is unlocked.
    */
-  public function getLectureUnlockedStatus(Lecture $lecture): bool {
+  protected function getLectureUnlockedStatus(Lecture $lecture): bool {
 
     // Get all lecture IDs in this course.
     $course = $lecture->getParentEntity();
@@ -173,7 +173,7 @@ class ProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(Progress $entity, string $field_name): mixed {
+  protected function getProgressField(Lecture|Course $entity, string $field_name): mixed {
 
     $progress = NULL;
 
@@ -204,7 +204,7 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getProgress(Progress $entity): ?Progress {
+  public function getProgress(Lecture|Course $entity): ?Progress {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
