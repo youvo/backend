@@ -25,7 +25,7 @@ function progress_site_install_finished() {
     $role_object->grantPermission('restful get progress:lecture:complete');
     $role_object->grantPermission('restful post progress:lecture:complete');
     $role_object->grantPermission('restful get progress:course:access');
-    $role_object->grantPermission('restful get progress:course:access');
+    $role_object->grantPermission('restful post progress:course:access');
     try {
       $role_object->save();
     }
