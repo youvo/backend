@@ -94,6 +94,34 @@ class ProgressManager {
   }
 
   /**
+   * Returns progress in percent for course.
+   */
+  public function getProgressStatus(Course $course): int {
+
+    // If the course is completed the progress is full.
+    if ($this->getCompletedStatus($course)) {
+      return 100;
+    }
+
+    // If the course is not unlocked there is no progress.
+    // Note that the edge case of a course being completed but not unlocked is
+    // covered by the previous conditional.
+    if (!$this->getUnlockedStatus($course)) {
+      return 0;
+    }
+
+    // Otherwise, calculate the percentage of completed lectures in the course.
+    if ($lectures = $this->getReferencedLecturesByCompleted($course)) {
+      $total = count($lectures);
+      $completed = count(array_filter((array) $lectures, fn($l) => $l->completed));
+      return ceil($completed / $total * 100);
+    }
+
+    // Fallback.
+    return 0;
+  }
+
+  /**
    * Determines whether a lecture or course is completed.
    */
   public function getCompletedStatus(Lecture|Course $entity): bool {
@@ -121,7 +149,7 @@ class ProgressManager {
    */
   protected function getCourseUnlockedStatus(Course $course): bool {
 
-    return FALSE;
+    return TRUE;
   }
 
   /**
@@ -131,26 +159,7 @@ class ProgressManager {
 
     // Get all lecture IDs in this course.
     $course = $lecture->getParentEntity();
-    $lecture_references = $course->get('lectures')->getValue();
-    $lecture_ids = array_column($lecture_references, 'target_id');
-
-    // This condition should never trigger.
-    if (empty($lecture_ids)) {
-      return FALSE;
-    }
-
-    // Get id and completed with custom query sorted by weight.
-    // Might be faster than loading every lecture individually.
-    $query = $this->database->select('lectures_field_data', 'x')
-      ->condition('x.id', $lecture_ids, 'IN')
-      ->orderBy('x.weight');
-    $query->addField('x', 'id');
-    $query->leftJoin('lecture_progress', 'p',
-      '[p].[lecture] = [x].[id] AND [p].[uid] = :user', [
-        ':user' => $this->currentUser->id(),
-      ]);
-    $query->addField('p', 'completed');
-    $lectures = $query->execute()->fetchAll();
+    $lectures = $this->getReferencedLecturesByCompleted($course);
 
     // The first lecture is always unlocked.
     if ($lectures[0]->id == $lecture->id()) {
@@ -234,6 +243,33 @@ class ProgressManager {
     $progress = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->load(reset($progress_id));
     return $progress;
+  }
+
+  /**
+   * Get referenced lectures with completed status.
+   */
+  private function getReferencedLecturesByCompleted(Course $course) {
+
+    $lecture_references = $course->get('lectures')->getValue();
+    $lecture_ids = array_column($lecture_references, 'target_id');
+
+    // This condition should never trigger.
+    if (empty($lecture_ids)) {
+      return FALSE;
+    }
+
+    // Get id and completed with custom query sorted by weight.
+    // Might be faster than loading every lecture individually.
+    $query = $this->database->select('lectures_field_data', 'x')
+      ->condition('x.id', $lecture_ids, 'IN')
+      ->orderBy('x.weight');
+    $query->addField('x', 'id');
+    $query->leftJoin('lecture_progress', 'p',
+      '[p].[lecture] = [x].[id] AND [p].[uid] = :user', [
+        ':user' => $this->currentUser->id(),
+      ]);
+    $query->addField('p', 'completed');
+    return $query->execute()->fetchAll();
   }
 
 }
