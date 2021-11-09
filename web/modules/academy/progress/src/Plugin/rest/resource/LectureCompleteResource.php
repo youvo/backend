@@ -56,11 +56,23 @@ class LectureCompleteResource extends ProgressResource {
 
     try {
       // Set completed timestamp.
-      $progress->setCompletedTime($this->progressManager->getRequestTime());
+      $timestamp = $this->progressManager->getRequestTime();
+      $progress->setCompletedTime($timestamp);
       $progress->save();
+
+      // Also set the parent course completed if this is the last lecture.
+      if ($course_progress = $this->progressManager->isLastLecture($entity)) {
+        if (!$course_progress->getCompletedTime()) {
+          $course_progress->setCompletedTime($timestamp);
+          $course_progress->save();
+        }
+      }
     }
-    catch (EntityStorageException $e) {
+    catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
+    }
+    catch (EntityMalformedException $e) {
+      throw new HttpException(417, 'The progress of the referenced course has inconsistent persistent data.', $e);
     }
 
     return new ModifiedResourceResponse(NULL, 201);
