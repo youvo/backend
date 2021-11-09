@@ -1,0 +1,11 @@
+id: progress.course.access
+plugin_id: 'progress:course:access'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
