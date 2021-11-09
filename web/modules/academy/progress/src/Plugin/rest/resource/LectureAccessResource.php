@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  *   }
  * )
  */
-class LectureAccessResource extends LectureProgressResource {
+class LectureAccessResource extends ProgressResource {
 
   /**
    * Responds POST requests.

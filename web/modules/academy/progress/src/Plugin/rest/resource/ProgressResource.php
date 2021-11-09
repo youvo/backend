@@ -2,10 +2,10 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
+use Drupal\academy\Entity\AcademicFormat;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
-use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\ProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -18,7 +18,7 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Provides Abstract for Lecture Progress Resources.
  */
-abstract class LectureProgressResource extends ResourceBase {
+abstract class ProgressResource extends ResourceBase {
 
   /**
    * The progress manager service.
@@ -65,23 +65,23 @@ abstract class LectureProgressResource extends ResourceBase {
   /**
    * Responds GET requests.
    *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
-   *   The referenced lecture.
+   * @param \Drupal\academy\Entity\AcademicFormat $entity
+   *   The referenced lecture or course.
    *
    * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
    *   Response.
    */
-  public function get(Lecture $lecture) {
+  public function get(AcademicFormat $entity) {
 
     try {
-      // Get the respective lecture progress by lecture and current user.
-      $progress = $this->progressManager->getProgress($lecture);
+      // Get the respective progress by lecture or course and current user.
+      $progress = $this->progressManager->getProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+      throw new HttpException(417, 'The requested progress has inconsistent persistent data.', $e);
     }
 
     // There is no progress for this lecture by this user.
@@ -97,9 +97,9 @@ abstract class LectureProgressResource extends ResourceBase {
         'enrolled' => $progress->getEnrollmentTime(),
         'accessed' => $progress->getAccessTime(),
         'completed' => $progress->getCompletedTime(),
-        'lecture' => [
-          'type' => $lecture->getEntityTypeId(),
-          'uuid' => $lecture->uuid(),
+        'referenced_entity' => [
+          'type' => $entity->getEntityTypeId(),
+          'uuid' => $entity->uuid(),
         ],
       ],
     ]);
@@ -120,6 +120,7 @@ abstract class LectureProgressResource extends ResourceBase {
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
     $route_name = strtr($this->pluginId, ':', '.');
+    $entity_type = $this->getEntityTypeIdFromPluginId();
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
@@ -127,8 +128,8 @@ abstract class LectureProgressResource extends ResourceBase {
       $route->setRequirement('_custom_access', '\Drupal\progress\Controller\LectureProgressAccessController::accessLecture');
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
-        'lecture' => [
-          'type' => 'entity:lecture',
+        'entity' => [
+          'type' => 'entity:' . $entity_type,
           'converter' => 'paramconverter.uuid',
         ],
       ]);
@@ -136,6 +137,17 @@ abstract class LectureProgressResource extends ResourceBase {
     }
 
     return $collection;
+  }
+
+  /**
+   * Gets the entity type ID from the plugin ID.
+   *
+   * @return string
+   *   The entity type ID.
+   */
+  private function getEntityTypeIdFromPluginId() {
+    $plugin_id_substrings = explode(':', $this->pluginId);
+    return $plugin_id_substrings[1];
   }
 
 }
