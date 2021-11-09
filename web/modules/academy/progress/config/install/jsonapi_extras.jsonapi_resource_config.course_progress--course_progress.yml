@@ -1,0 +1,62 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - jsonapi_defaults
+    - progress
+third_party_settings:
+  jsonapi_defaults:
+    page_limit: 50
+id: course_progress--course_progress
+disabled: true
+path: course_progress/course_progress
+resourceType: course_progress--course_progress
+resourceFields:
+  id:
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+    disabled: false
+  uuid:
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+    disabled: false
+  uid:
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+    disabled: false
+  langcode:
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+    disabled: false
+  enrolled:
+    fieldName: enrolled
+    publicName: enrolled
+    enhancer:
+      id: ''
+    disabled: false
+  accessed:
+    fieldName: accessed
+    publicName: accessed
+    enhancer:
+      id: ''
+    disabled: false
+  completed:
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+    disabled: false
+  course:
+    fieldName: course
+    publicName: course
+    enhancer:
+      id: ''
+    disabled: false
