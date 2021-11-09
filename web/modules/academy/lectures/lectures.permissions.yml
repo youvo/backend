@@ -1,7 +1,0 @@
-# Permissions for Lecture entities are inherited from the origin
-# entity Course. Here, we only specify permissions to administer
-# lectures.
-
-administer lectures:
-  title: 'Administer lectures settings'
-  restrict access: true

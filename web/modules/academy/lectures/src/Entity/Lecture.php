@@ -35,7 +35,7 @@ use Drupal\user\UserInterface;
  *   data_table = "lectures_field_data",
  *   translatable = TRUE,
  *   fieldable = FALSE,
- *   admin_permission = "administer lectures",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
