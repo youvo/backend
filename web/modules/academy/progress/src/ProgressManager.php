@@ -2,6 +2,7 @@
 
 namespace Drupal\progress;
 
+use Drupal\academy\Entity\AcademicFormat;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -124,14 +125,14 @@ class ProgressManager {
   /**
    * Determines whether a lecture or course is completed.
    */
-  public function getCompletedStatus(Lecture|Course $entity): bool {
+  public function getCompletedStatus(AcademicFormat $entity): bool {
     return (bool) $this->getProgressField($entity, 'completed');
   }
 
   /**
    * Determines unlocked status.
    */
-  public function getUnlockedStatus(Lecture|Course $entity): bool {
+  public function getUnlockedStatus(AcademicFormat $entity): bool {
 
     if ($entity instanceof Lecture) {
       return $this->getLectureUnlockedStatus($entity);
@@ -182,7 +183,7 @@ class ProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(Lecture|Course $entity, string $field_name): mixed {
+  protected function getProgressField(AcademicFormat $entity, string $field_name): mixed {
 
     $progress = NULL;
 
@@ -213,11 +214,11 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getProgress(Lecture|Course $entity): ?Progress {
+  public function getProgress(AcademicFormat $entity): ?Progress {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
-    // Get referenced LectureProgress.
+    // Get referenced Progress.
     $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->getQuery();
     $progress_id = $query
