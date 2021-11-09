@@ -4,7 +4,6 @@ namespace Drupal\questionnaire\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
@@ -17,7 +16,7 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Question Submission"),
  *   label_collection = @Translation("Question Submissions"),
  *   base_table = "question_submissions",
- *   admin_permission = "administer questions",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "sid",
  *     "uuid" = "uuid",

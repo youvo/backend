@@ -21,7 +21,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   admin_permission = "administer questions",
+ *   admin_permission = "administer courses",
  *   bundle_of = "question",
  *   config_prefix = "type",
  *   entity_keys = {
