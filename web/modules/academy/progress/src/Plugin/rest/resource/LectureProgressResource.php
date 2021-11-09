@@ -6,7 +6,7 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\lectures\Entity\Lecture;
-use Drupal\progress\LectureProgressManager;
+use Drupal\progress\ProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -23,7 +23,7 @@ abstract class LectureProgressResource extends ResourceBase {
   /**
    * The progress manager service.
    *
-   * @var \Drupal\progress\LectureProgressManager
+   * @var \Drupal\progress\ProgressManager
    */
   protected $progressManager;
 
@@ -40,10 +40,10 @@ abstract class LectureProgressResource extends ResourceBase {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\progress\LectureProgressManager $progress_manager
+   * @param \Drupal\progress\ProgressManager $progress_manager
    *   The progress manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, LectureProgressManager $progress_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, ProgressManager $progress_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->progressManager = $progress_manager;
   }

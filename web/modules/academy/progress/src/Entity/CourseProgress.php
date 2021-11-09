@@ -2,11 +2,8 @@
 
 namespace Drupal\progress\Entity;
 
-use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\progress\ProgressInterface;
 
 /**
  * Defines the CourseProgress entity class.
@@ -25,10 +22,7 @@ use Drupal\progress\ProgressInterface;
  *   }
  * )
  */
-class CourseProgress extends ContentEntityBase implements ProgressInterface {
-
-  use EntityChangedTrait;
-  use ProgressEntityTrait;
+class CourseProgress extends Progress {
 
   /**
    * {@inheritdoc}
@@ -36,7 +30,6 @@ class CourseProgress extends ContentEntityBase implements ProgressInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
     $fields = parent::baseFieldDefinitions($entity_type);
-    $fields += static::progressBaseFieldDefinitions();
 
     $fields['course'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Course'))

@@ -2,12 +2,18 @@
 
 namespace Drupal\progress\Entity;
 
+use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\progress\ProgressInterface;
 
 /**
- * Provides a trait for progress entities.
+ * Base class for progress entities.
  */
-trait ProgressEntityTrait {
+class Progress extends ContentEntityBase implements ProgressInterface {
+
+  use EntityChangedTrait;
 
   /**
    * {@inheritdoc}
@@ -26,7 +32,7 @@ trait ProgressEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function setAccessTime(int $timestamp) {
+  public function setAccessTime(int $timestamp): Progress {
     $this->set('accessed', $timestamp);
     return $this;
   }
@@ -41,7 +47,7 @@ trait ProgressEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function setCompletedTime(int $timestamp) {
+  public function setCompletedTime(int $timestamp): Progress {
     $this->set('completed', $timestamp);
     return $this;
   }
@@ -61,12 +67,11 @@ trait ProgressEntityTrait {
   }
 
   /**
-   * Returns an array of base field definitions for progress entities.
-   *
-   * @return \Drupal\Core\Field\BaseFieldDefinition[]
-   *   An array of base field definitions.
+   * {@inheritdoc}
    */
-  public static function progressBaseFieldDefinitions() {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+
+    $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))

@@ -10,8 +10,9 @@ use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
-use Drupal\progress\Entity\LectureProgress;
+use Drupal\progress\Entity\Progress;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,14 +20,7 @@ use Psr\Log\LoggerInterface;
  *
  * @see progress -> progress.services.yml
  */
-class LectureProgressManager {
-
-  /**
-   * The respective Lecture entity.
-   *
-   * @var \Drupal\lectures\Entity\Lecture
-   */
-  protected $lecture;
+class ProgressManager {
 
   /**
    * The current user.
@@ -100,16 +94,40 @@ class LectureProgressManager {
   }
 
   /**
-   * Determines whether a lecture is completed.
+   * Determines whether a lecture or course is completed.
    */
-  public function getCompletedStatus($lecture): bool {
-    return (bool) $this->getProgressField($lecture, 'completed');
+  public function getCompletedStatus(Progress $entity): bool {
+    return (bool) $this->getProgressField($entity, 'completed');
+  }
+
+  /**
+   * Determines unlocked status.
+   */
+  public function getUnlockedStatus(Lecture|Course $entity): bool {
+
+    if ($entity instanceof Lecture) {
+      return $this->getLectureUnlockedStatus($entity);
+    }
+
+    if ($entity instanceof Course) {
+      return $this->getCourseUnlockedStatus($entity);
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Determines whether a course is unlocked.
+   */
+  public function getCourseUnlockedStatus(Course $course): bool {
+
+    return FALSE;
   }
 
   /**
    * Determines whether a lecture is unlocked.
    */
-  public function getUnlockedStatus(Lecture $lecture): bool {
+  public function getLectureUnlockedStatus(Lecture $lecture): bool {
 
     // Get all lecture IDs in this course.
     $course = $lecture->getParentEntity();
@@ -155,46 +173,46 @@ class LectureProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(Lecture $lecture, string $field_name): mixed {
+  protected function getProgressField(Progress $entity, string $field_name): mixed {
 
     $progress = NULL;
 
     try {
-      $progress = $this->getLectureProgress($lecture);
+      $progress = $this->getProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
       $this->logger
-        ->error('Can not retrieve lecture_progress entity. %type: @message in %function (line %line of %file).', $variables);
+        ->error('Can not retrieve progress entity. %type: @message in %function (line %line of %file).', $variables);
     }
     catch (EntityMalformedException $e) {
       $variables = Error::decodeException($e);
       $this->logger
-        ->error('The progress of the requested lecture has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+        ->error('The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
     }
 
     return $progress?->get($field_name)->value;
   }
 
   /**
-   * Gets the respective progress of the lecture by the current user.
+   * Gets the respective progress of the lecture or course by the current user.
    *
-   * @returns \Drupal\progress\Entity\LectureProgress|null
+   * @returns \Drupal\progress\Entity\Progress|null
    *   The respective progress or NULL if no storage.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getLectureProgress($lecture): ?LectureProgress {
+  public function getProgress(Progress $entity): ?Progress {
 
-    $entity_type_id = 'lecture_progress';
+    $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
     // Get referenced LectureProgress.
-    $query = $this->entityTypeManager->getStorage($entity_type_id)
+    $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->getQuery();
     $progress_id = $query
-      ->condition($lecture->getEntityTypeId(), $lecture->id())
+      ->condition($entity->getEntityTypeId(), $entity->id())
       ->condition('uid', $this->currentUser->id())
       ->execute();
 
@@ -206,14 +224,14 @@ class LectureProgressManager {
     // Something went wrong here.
     if (count($progress_id) > 1) {
       throw new EntityMalformedException(
-        $entity_type_id,
-        sprintf('The "%s" entity type query has inconsistent persistent data.', $entity_type_id)
+        $progress_entity_type_id,
+        sprintf('The "%s" entity type query has inconsistent persistent data.', $progress_entity_type_id)
       );
     }
 
     // Return loaded progress.
-    /** @var \Drupal\progress\Entity\LectureProgress $progress */
-    $progress = $this->entityTypeManager->getStorage($entity_type_id)
+    /** @var \Drupal\progress\Entity\Progress $progress */
+    $progress = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->load(reset($progress_id));
     return $progress;
   }
