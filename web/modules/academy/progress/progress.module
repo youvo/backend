@@ -8,6 +8,7 @@
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
+use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
 
 /**
@@ -17,18 +18,27 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   $fields = [];
 
-  // Add paragraphs base field to entity Lecture.
+  // Add paragraphs base field to entity Lecture and Course.
   if ($entity_type->id() == 'lecture' || $entity_type->id() == 'course') {
     $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean_item')
       ->setLabel(t('Completed'))
-      ->setDescription(t('Computes the lecture completed status by user.'))
+      ->setDescription(t('Computes the completed status by user.'))
       ->setComputed(TRUE)
       ->setClass(CompletedFieldItemList::class);
     $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean_item')
       ->setLabel(t('Unlocked'))
-      ->setDescription(t('Computes the lecture unlocked status by user.'))
+      ->setDescription(t('Computes the unlocked status by user.'))
       ->setComputed(TRUE)
       ->setClass(UnlockedFieldItemList::class);
+  }
+
+  // Add paragraphs base field to entity Course.
+  if ($entity_type->id() == 'course') {
+    $fields['progress'] = BaseFieldDefinition::create('cacheable_integer_item')
+      ->setLabel(t('Progress'))
+      ->setDescription(t('Computes the progress status by user.'))
+      ->setComputed(TRUE)
+      ->setClass(ProgressFieldItemList::class);
   }
 
   return $fields;

@@ -8,7 +8,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
 /**
- * ComputedCompletedStatusFieldItemList class to generate a computed field.
+ * UnlockedFieldItemList class to generate a computed field.
  */
 class UnlockedFieldItemList extends FieldItemList implements FieldItemListInterface {
 
