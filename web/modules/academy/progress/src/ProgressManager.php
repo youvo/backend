@@ -35,7 +35,7 @@ class ProgressManager {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  public $entityTypeManager;
 
   /**
    * The time service.
@@ -132,14 +132,14 @@ class ProgressManager {
   /**
    * Determines unlocked status.
    */
-  public function getUnlockedStatus(AcademicFormat $entity): bool {
+  public function getUnlockedStatus(AcademicFormat $entity, AccountInterface $account = NULL): bool {
 
     if ($entity instanceof Lecture) {
-      return $this->getLectureUnlockedStatus($entity);
+      return $this->getLectureUnlockedStatus($entity, $account);
     }
 
     if ($entity instanceof Course) {
-      return $this->getCourseUnlockedStatus($entity);
+      return $this->getCourseUnlockedStatus($entity, $account);
     }
 
     return FALSE;
@@ -148,7 +148,7 @@ class ProgressManager {
   /**
    * Determines whether a course is unlocked.
    */
-  protected function getCourseUnlockedStatus(Course $course): bool {
+  protected function getCourseUnlockedStatus(Course $course, ?AccountInterface $account): bool {
 
     return TRUE;
   }
@@ -156,11 +156,11 @@ class ProgressManager {
   /**
    * Determines whether a lecture is unlocked.
    */
-  protected function getLectureUnlockedStatus(Lecture $lecture): bool {
+  protected function getLectureUnlockedStatus(Lecture $lecture, ?AccountInterface $account): bool {
 
     // Get all lecture IDs in this course.
     $course = $lecture->getParentEntity();
-    $lectures = $this->getReferencedLecturesByCompleted($course);
+    $lectures = $this->getReferencedLecturesByCompleted($course, $account);
 
     // The first lecture is always unlocked.
     if ($lectures[0]->id == $lecture->id()) {
@@ -181,14 +181,52 @@ class ProgressManager {
   }
 
   /**
+   * Determines if given lecture is last lecture of course.
+   *
+   * @returns \Drupal\progress\Entity\CourseProgress|null
+   *    The progress of the course or false.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function isLastLecture(Lecture $lecture): ?Progress {
+
+    $course = $lecture->getParentEntity();
+    $lectures = $this->getReferencedLecturesByCompleted($course);
+
+    if (is_array($lectures) && $lectures[array_key_last($lectures)]->id == $lecture->id()) {
+      return $this->getProgress($course);
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Determines whether user is enrolled in lecture or course.
+   *
+   * @param \Drupal\academy\Entity\AcademicFormat $entity
+   *   The referenced entity.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current account. This method is used for access check - therefore
+   *   we explicitly pass the account.
+   *
+   * @return bool
+   *   Gives enrollment status.
+   */
+  public function isEnrolled(AcademicFormat $entity, AccountInterface $account): bool {
+    return (bool) $this->getProgressField($entity, 'accessed', $account);
+  }
+
+  /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(AcademicFormat $entity, string $field_name): mixed {
+  protected function getProgressField(AcademicFormat $entity, string $field_name, AccountInterface $account = NULL): mixed {
 
     $progress = NULL;
 
     try {
-      $progress = $this->getProgress($entity);
+      $progress = $this->getProgress($entity, $account);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -214,16 +252,24 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getProgress(AcademicFormat $entity): ?Progress {
+  public function getProgress(AcademicFormat $entity, AccountInterface $account = NULL): ?Progress {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
+
+    // Get uid.
+    if (!$account) {
+      $uid = $this->currentUser->id();
+    }
+    else {
+      $uid = $account->id();
+    }
 
     // Get referenced Progress.
     $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->getQuery();
     $progress_id = $query
       ->condition($entity->getEntityTypeId(), $entity->id())
-      ->condition('uid', $this->currentUser->id())
+      ->condition('uid', $uid)
       ->execute();
 
     // Return nothing if there is no progress.
@@ -249,10 +295,18 @@ class ProgressManager {
   /**
    * Get referenced lectures with completed status.
    */
-  private function getReferencedLecturesByCompleted(Course $course) {
+  private function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL) {
 
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
+
+    // Get uid.
+    if (!$account) {
+      $uid = $this->currentUser->id();
+    }
+    else {
+      $uid = $account->id();
+    }
 
     // This condition should never trigger.
     if (empty($lecture_ids)) {
@@ -267,7 +321,7 @@ class ProgressManager {
     $query->addField('x', 'id');
     $query->leftJoin('lecture_progress', 'p',
       '[p].[lecture] = [x].[id] AND [p].[uid] = :user', [
-        ':user' => $this->currentUser->id(),
+        ':user' => $uid,
       ]);
     $query->addField('p', 'completed');
     return $query->execute()->fetchAll();
