@@ -32,7 +32,7 @@ interface ProgressInterface extends ContentEntityInterface, EntityChangedInterfa
    * @param int $timestamp
    *   The Lecture access timestamp.
    *
-   * @return \Drupal\progress\LectureProgressInterface
+   * @return \Drupal\progress\ProgressInterface
    *   The called LectureProgress entity.
    */
   public function setAccessTime(int $timestamp);
@@ -51,7 +51,7 @@ interface ProgressInterface extends ContentEntityInterface, EntityChangedInterfa
    * @param int $timestamp
    *   The Lecture completed timestamp.
    *
-   * @return \Drupal\progress\LectureProgressInterface
+   * @return \Drupal\progress\ProgressInterface
    *   The called LectureProgress entity.
    */
   public function setCompletedTime(int $timestamp);
