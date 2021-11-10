@@ -34,12 +34,15 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
     // Check the admin_permission as defined in child entity annotation.
     $admin_permission = $this->entityType->getAdminPermission();
     if ($account->hasPermission($admin_permission)) {
-      return AccessResult::allowed();
+      return AccessResult::allowed()->cachePerUser();
     }
 
-    // Rely on origin entity access handling.
+    // First check if user has permission to access courses.
     try {
-      return $entity->getOriginEntity()->access($operation, $account, TRUE);
+      $origin = $entity->getOriginEntity();
+      $access = \Drupal::entityTypeManager()
+        ->getAccessControlHandler($origin->getEntityTypeId())
+        ->checkAccess($entity, $operation, $account);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -47,6 +50,21 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
         ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }
+
+    // Let other modules hook into access decision.
+    // @see progress.module
+    \Drupal::moduleHandler()
+      ->invokeAll('child_entities_check_access', [&$access, $origin, $account]);
+
+    // If all conditions are met allow access.
+    if ($access->isAllowed()) {
+      return AccessResult::allowed()->cachePerUser();
+    }
+
+    // Otherwise, deny access - but do not cache access result for user. Because
+    // a user might access a child before the origin progress is created. Then,
+    // cached access will deliver wrong results.
+    return AccessResult::forbidden()->cachePerUser()->setCacheMaxAge(0);
   }
 
   /**
@@ -60,13 +78,26 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
     // Check the admin_permission as defined in child entity annotation.
     $admin_permission = $this->entityType->getAdminPermission();
     if ($account->hasPermission($admin_permission)) {
-      return AccessResult::allowed();
+      return AccessResult::allowed()->cachePerUser();
     }
 
-    // Get parent edit access handler. This is not the cleanest solution, but
-    // create permissions should always be connected to edit permissions.
-    $parent_entity_type = $this->entityType->getKey('parent');
-    return $this->getParentEntityFromRoute($parent_entity_type)->access('update', $account, TRUE);
+    // Rely on create access of origin.
+    try {
+      /** @var \Drupal\child_entities\ChildEntityInterface $entity */
+      $parent_entity_type = $this->entityType->getKey('parent');
+      $parent = $this->getParentEntityFromRoute($parent_entity_type);
+      $origin = $parent instanceof ChildEntityInterface ?
+        $parent->getOriginEntity() : $parent;
+      return \Drupal::entityTypeManager()
+        ->getAccessControlHandler($origin->getEntityTypeId())
+        ->checkCreateAccess($account, $context, $account);
+    }
+    catch (PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('child_entities')
+        ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
+      return AccessResult::neutral();
+    }
   }
 
 }

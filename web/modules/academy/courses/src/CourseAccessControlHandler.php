@@ -31,7 +31,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
    *
    * @see \Drupal\child_entities\ChildEntityAccessControlHandler
    */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
 
     // Check if access handler suits Course descendants logic.
     if (!($entity instanceof Course || $entity instanceof ChildEntityInterface)) {
@@ -46,7 +46,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
     // Check the admin_permission as defined in Course entity annotation.
     $admin_permission = $this->entityType->getAdminPermission();
     if ($account->hasPermission($admin_permission)) {
-      return AccessResult::allowed();
+      return AccessResult::allowed()->cachePerUser();
     }
 
     // Return access result by permissions defined in permissions.yml.
@@ -68,7 +68,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
     // Check the admin_permission as defined in Course entity annotation.
     $admin_permission = $this->entityType->getAdminPermission();
     if ($account->hasPermission($admin_permission)) {
-      return AccessResult::allowed();
+      return AccessResult::allowed()->cachePerUser();
     }
     return AccessResult::allowedIfHasPermission($account, 'manage courses');
   }
