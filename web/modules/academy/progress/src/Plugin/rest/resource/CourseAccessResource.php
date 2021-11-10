@@ -46,7 +46,7 @@ class CourseAccessResource extends ProgressResource {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+      throw new HttpException(417, 'The progress of the requested course has inconsistent persistent data.', $e);
     }
 
     // There is no progress for this course by this user.
