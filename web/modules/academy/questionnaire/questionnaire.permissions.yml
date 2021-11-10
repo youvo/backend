@@ -1,7 +1,0 @@
-# Permissions for Question entities are inherited from the origin
-# entity Course. Here, we only specify permissions to administer
-# questions and respective types.
-
-administer questions:
-  title: 'Administer questions settings'
-  restrict access: true

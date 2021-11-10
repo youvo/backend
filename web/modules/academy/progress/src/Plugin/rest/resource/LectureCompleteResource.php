@@ -18,16 +18,16 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  *   id = "progress:lecture:complete",
  *   label = @Translation("Progress Lecture Complete Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/lectures/{lecture}/complete"
+ *     "canonical" = "/api/lectures/{entity}/complete"
  *   }
  * )
  */
-class LectureCompleteResource extends LectureProgressResource {
+class LectureCompleteResource extends ProgressResource {
 
   /**
    * Responds POST requests.
    *
-   * @param \Drupal\lectures\Entity\Lecture $lecture
+   * @param \Drupal\lectures\Entity\Lecture $entity
    *   The referenced lecture.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
@@ -36,11 +36,11 @@ class LectureCompleteResource extends LectureProgressResource {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Lecture $lecture) {
+  public function post(Lecture $entity) {
 
     try {
       // Get the respective lecture progress by lecture and current user.
-      $progress = $this->progressManager->getLectureProgress($lecture);
+      $progress = $this->progressManager->getProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
@@ -56,11 +56,23 @@ class LectureCompleteResource extends LectureProgressResource {
 
     try {
       // Set completed timestamp.
-      $progress->setCompletedTime($this->progressManager->getRequestTime());
+      $timestamp = $this->progressManager->getRequestTime();
+      $progress->setCompletedTime($timestamp);
       $progress->save();
+
+      // Also set the parent course completed if this is the last lecture.
+      if ($course_progress = $this->progressManager->isLastLecture($entity)) {
+        if (!$course_progress->getCompletedTime()) {
+          $course_progress->setCompletedTime($timestamp);
+          $course_progress->save();
+        }
+      }
     }
-    catch (EntityStorageException $e) {
+    catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
+    }
+    catch (EntityMalformedException $e) {
+      throw new HttpException(417, 'The progress of the referenced course has inconsistent persistent data.', $e);
     }
 
     return new ModifiedResourceResponse(NULL, 201);

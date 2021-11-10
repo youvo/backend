@@ -34,7 +34,7 @@ use Drupal\user\UserInterface;
  *   data_table = "questions_field_data",
  *   fieldable = TRUE,
  *   translatable = TRUE,
- *   admin_permission = "administer questions",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
