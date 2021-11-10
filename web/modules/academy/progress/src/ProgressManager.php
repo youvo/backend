@@ -147,8 +147,29 @@ class ProgressManager {
 
   /**
    * Determines whether a course is unlocked.
+   *
+   * @todo Rework unlocking mechanism.
    */
   protected function getCourseUnlockedStatus(Course $course, ?AccountInterface $account): bool {
+
+    // Get all course IDs present.
+    $courses = $this->getCoursesByCompleted($account);
+
+    // The first course is always unlocked.
+    // The first lecture is always unlocked.
+    if ($courses[0]->id == $course->id()) {
+      return TRUE;
+    }
+
+    // Unlock if all previous courses are completed. We can assume that the
+    // current course ID is contained within the queried courses.
+    $i = 0;
+    while ($courses[$i]->id != $course->id()) {
+      if (!$courses[$i]->completed) {
+        return FALSE;
+      }
+      $i++;
+    }
 
     return TRUE;
   }
@@ -257,12 +278,7 @@ class ProgressManager {
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
     // Get uid.
-    if (!$account) {
-      $uid = $this->currentUser->id();
-    }
-    else {
-      $uid = $account->id();
-    }
+    $uid = isset($account) ? $account->id() : $this->currentUser->id();
 
     // Get referenced Progress.
     $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
@@ -300,14 +316,6 @@ class ProgressManager {
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
 
-    // Get uid.
-    if (!$account) {
-      $uid = $this->currentUser->id();
-    }
-    else {
-      $uid = $account->id();
-    }
-
     // This condition should never trigger.
     if (empty($lecture_ids)) {
       return FALSE;
@@ -321,7 +329,25 @@ class ProgressManager {
     $query->addField('x', 'id');
     $query->leftJoin('lecture_progress', 'p',
       '[p].[lecture] = [x].[id] AND [p].[uid] = :user', [
-        ':user' => $uid,
+        ':user' => isset($account) ? $account->id() : $this->currentUser->id(),
+      ]);
+    $query->addField('p', 'completed');
+    return $query->execute()->fetchAll();
+  }
+
+  /**
+   * Get referenced lectures with completed status.
+   */
+  private function getCoursesByCompleted(AccountInterface $account = NULL) {
+
+    // Get id and completed with custom query sorted by weight.
+    // Might be faster than loading every course individually.
+    $query = $this->database->select('course_field_data', 'x')
+      ->orderBy('x.weight');
+    $query->addField('x', 'id');
+    $query->leftJoin('course_progress', 'p',
+      '[p].[course] = [x].[id] AND [p].[uid] = :user', [
+        ':user' => isset($account) ? $account->id() : $this->currentUser->id(),
       ]);
     $query->addField('p', 'completed');
     return $query->execute()->fetchAll();
