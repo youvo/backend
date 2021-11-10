@@ -5,8 +5,12 @@
  * Provides hooks to document progress in academy.
  */
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
@@ -42,4 +46,19 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
   }
 
   return $fields;
+}
+
+/**
+ * Implements hook_child_entities_check_access().
+ *
+ * @see \Drupal\child_entities\ChildEntityAccessControlHandler
+ */
+function progress_child_entities_check_access(AccessResultInterface &$access, ContentEntityInterface $origin, AccountInterface $account) {
+
+  // Check enrollment status. Therefore, from an access point of view, all
+  // contents of the course are revealed once a user enrolls into a course.
+  if ($access->isAllowed()) {
+    $access = AccessResult::allowedIf(Drupal::service('progress.manager')
+      ->isEnrolled($origin, $account));
+  }
 }
