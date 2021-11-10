@@ -35,7 +35,7 @@ use Drupal\user\UserInterface;
  *   data_table = "paragraphs_field_data",
  *   translatable = TRUE,
  *   fieldable = TRUE,
- *   admin_permission = "administer paragraphs",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",

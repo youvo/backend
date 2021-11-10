@@ -57,7 +57,12 @@ function paragraphs_entity_operation(EntityInterface $entity) {
  * Implements hook_form_FORM_ID_alter().
  */
 function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  paragraphs_form_lecture_edit_form_alter($form, $form_state, $form_id);
+  $course = \Drupal::service('current_route_match')->getParameter('course');
+  $url = Url::fromRoute('entity.lecture.collection', [], [
+    'query' => ['cr' => $course->id()],
+    'fragment' => 'edit-course-' . $course->id(),
+  ]);
+  paragraphs_add_abort_button($form, $url);
 }
 
 /**
@@ -72,15 +77,7 @@ function paragraphs_form_lecture_edit_form_alter(&$form, FormStateInterface $for
     'course' => $lecture->getParentEntity()->id(),
     'lecture' => $lecture->id(),
   ]);
-  $form['actions']['abort'] = [
-    '#type' => 'link',
-    '#title' => t('Abort'),
-    '#url' => $url,
-    '#attributes' => [
-      'class' => ['button'],
-    ],
-    '#weight' => 5,
-  ];
+  paragraphs_add_abort_button($form, $url);
 
   // Alter redirect.
   $form['actions']['submit']['#submit'][] = 'paragraphs_form_lecture_edit_form_redirect';
@@ -99,4 +96,19 @@ function paragraphs_form_lecture_edit_form_redirect($form, FormStateInterface $f
     'course' => $lecture->getParentEntity()->id(),
     'lecture' => $lecture->id(),
   ]);
+}
+
+/**
+ * Adds abort button to form array.
+ */
+function paragraphs_add_abort_button(&$form, $url) {
+  $form['actions']['abort'] = [
+    '#type' => 'link',
+    '#title' => t('Abort'),
+    '#url' => $url,
+    '#attributes' => [
+      'class' => ['button'],
+    ],
+    '#weight' => 5,
+  ];
 }

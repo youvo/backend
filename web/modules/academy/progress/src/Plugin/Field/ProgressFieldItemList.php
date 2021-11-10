@@ -8,9 +8,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
 /**
- * ComputedCompletedStatusFieldItemList class to generate a computed field.
+ * ProgressFieldItemList class to generate a computed field.
  */
-class LectureCompletedFieldItemList extends FieldItemList implements FieldItemListInterface {
+class ProgressFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
 
@@ -36,7 +36,7 @@ class LectureCompletedFieldItemList extends FieldItemList implements FieldItemLi
 
       // Set completed status.
       /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->getCompletedStatus($this->getEntity()));
+      $item = $this->createItem(0, $this->progressManager()->getProgressStatus($this->getEntity()));
 
       // Set cache max age zero.
       $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);

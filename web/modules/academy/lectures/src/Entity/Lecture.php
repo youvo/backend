@@ -2,9 +2,9 @@
 
 namespace Drupal\lectures\Entity;
 
+use Drupal\academy\Entity\AcademicFormat;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
-use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -35,7 +35,7 @@ use Drupal\user\UserInterface;
  *   data_table = "lectures_field_data",
  *   translatable = TRUE,
  *   fieldable = FALSE,
- *   admin_permission = "administer lectures",
+ *   admin_permission = "administer courses",
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -52,7 +52,7 @@ use Drupal\user\UserInterface;
  *   }
  * )
  */
-class Lecture extends ContentEntityBase implements ChildEntityInterface {
+class Lecture extends AcademicFormat implements ChildEntityInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;

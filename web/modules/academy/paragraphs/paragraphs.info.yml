@@ -5,6 +5,7 @@ core_version_requirement: '^8.8 || ^9'
 package: Academy
 dependencies:
   - academy
+  - lectures
   - child_entities
   - drupal:field (>= 8.8.0)
   - drupal:text (>= 8.8.0)

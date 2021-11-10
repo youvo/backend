@@ -6,8 +6,8 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\lectures\Entity\Lecture;
-use Drupal\progress\Entity\LectureProgress;
+use Drupal\courses\Entity\Course;
+use Drupal\progress\Entity\CourseProgress;
 use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -15,20 +15,20 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  * Provides Progress Lecture Complete Resource.
  *
  * @RestResource(
- *   id = "progress:lecture:access",
- *   label = @Translation("Progress Lecture Access Resource"),
+ *   id = "progress:course:access",
+ *   label = @Translation("Progress Course Access Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/lectures/{entity}/access"
+ *     "canonical" = "/api/courses/{entity}/access"
  *   }
  * )
  */
-class LectureAccessResource extends ProgressResource {
+class CourseAccessResource extends ProgressResource {
 
   /**
    * Responds POST requests.
    *
-   * @param \Drupal\lectures\Entity\Lecture $entity
-   *   The referenced lecture.
+   * @param \Drupal\courses\Entity\Course $entity
+   *   The referenced course.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
@@ -36,24 +36,24 @@ class LectureAccessResource extends ProgressResource {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Lecture $entity) {
+  public function post(Course $entity) {
 
     try {
-      // Get the respective lecture progress by lecture and current user.
+      // Get the respective course progress by lecture and current user.
       $progress = $this->progressManager->getProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+      throw new HttpException(417, 'The progress of the requested course has inconsistent persistent data.', $e);
     }
 
-    // There is no progress for this lecture by this user.
-    // @todo Pass langcode in which lecture was enrolled.
+    // There is no progress for this course by this user.
+    // @todo Pass langcode in which course was enrolled.
     if (empty($progress)) {
-      $progress = LectureProgress::create([
-        'lecture' => $entity->id(),
+      $progress = CourseProgress::create([
+        'course' => $entity->id(),
         'uid' => $this->progressManager->getCurrentUserId(),
         'accessed' => $this->progressManager->getRequestTime(),
         'langcode' => 'en',

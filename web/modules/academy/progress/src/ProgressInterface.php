@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityChangedInterface;
 /**
  * Provides an interface defining a LectureProgress entity type.
  */
-interface LectureProgressInterface extends ContentEntityInterface, EntityChangedInterface {
+interface ProgressInterface extends ContentEntityInterface, EntityChangedInterface {
 
   /**
    * Gets the Lecture enrollment timestamp.
@@ -32,7 +32,7 @@ interface LectureProgressInterface extends ContentEntityInterface, EntityChanged
    * @param int $timestamp
    *   The Lecture access timestamp.
    *
-   * @return \Drupal\progress\LectureProgressInterface
+   * @return \Drupal\progress\ProgressInterface
    *   The called LectureProgress entity.
    */
   public function setAccessTime(int $timestamp);
@@ -51,7 +51,7 @@ interface LectureProgressInterface extends ContentEntityInterface, EntityChanged
    * @param int $timestamp
    *   The Lecture completed timestamp.
    *
-   * @return \Drupal\progress\LectureProgressInterface
+   * @return \Drupal\progress\ProgressInterface
    *   The called LectureProgress entity.
    */
   public function setCompletedTime(int $timestamp);
