@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Access controller for lecture rest resources.
  */
-class ProgressAccessController extends ControllerBase implements ContainerInjectionInterface {
+class ProgressResourceAccessController extends ControllerBase implements ContainerInjectionInterface {
 
   /**
    * The progress manager service.
@@ -26,7 +26,7 @@ class ProgressAccessController extends ControllerBase implements ContainerInject
   private $progressManager;
 
   /**
-   * Constructs a Drupal\progress\Controller\ProgressAccessController object.
+   * Constructs a Drupal\progress\Controller\ProgressResourceAccessController object.
    *
    * @param \Drupal\progress\ProgressManager $progress_manager
    *   The progress manager service.

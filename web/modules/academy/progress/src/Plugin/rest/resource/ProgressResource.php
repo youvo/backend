@@ -125,7 +125,7 @@ abstract class ProgressResource extends ResourceBase {
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\progress\Controller\ProgressAccessController::accessProgress');
+      $route->setRequirement('_custom_access', '\Drupal\progress\Controller\ProgressResourceAccessController::accessProgress');
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'entity' => [
