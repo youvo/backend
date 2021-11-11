@@ -104,7 +104,8 @@ abstract class ProgressResource extends ResourceBase {
       ],
     ]);
 
-    // Add cacheable dependency to refresh response when lecture is udpated.
+    // Add cacheable dependency to refresh response when lecture or course is
+    // udpated.
     $response->addCacheableDependency($progress);
 
     return $response;

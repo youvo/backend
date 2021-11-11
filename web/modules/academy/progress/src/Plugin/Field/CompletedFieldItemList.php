@@ -6,6 +6,7 @@ use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
+use Drupal\progress\ProgressManagerInjectionTrait;
 
 /**
  * CompletedFieldItemList class to generate a computed field.
@@ -13,17 +14,7 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
 class CompletedFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
-
-  /**
-   * Mock progress manager dependency injection.
-   *
-   * @todo Replace with proper DI after
-   *    https://www.drupal.org/project/drupal/issues/2914419 or
-   *    https://www.drupal.org/project/drupal/issues/2053415
-   */
-  protected function progressManager() {
-    return \Drupal::service('progress.manager');
-  }
+  use ProgressManagerInjectionTrait;
 
   /**
    * {@inheritdoc}
