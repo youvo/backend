@@ -36,7 +36,7 @@ class ProgressFieldItemList extends FieldItemList implements FieldItemListInterf
 
       // Set completed status.
       /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->getProgressStatus($this->getEntity()));
+      $item = $this->createItem(0, $this->progressManager()->calculateProgression($this->getEntity()));
 
       // Set cache max age zero.
       $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);

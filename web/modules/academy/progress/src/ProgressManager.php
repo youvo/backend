@@ -95,51 +95,23 @@ class ProgressManager {
   }
 
   /**
-   * Returns progress in percent for course.
-   */
-  public function getProgressStatus(Course $course): int {
-
-    // If the course is completed the progress is full.
-    if ($this->getCompletedStatus($course)) {
-      return 100;
-    }
-
-    // If the course is not unlocked there is no progress.
-    // Note that the edge case of a course being completed but not unlocked is
-    // covered by the previous conditional.
-    if (!$this->getUnlockedStatus($course)) {
-      return 0;
-    }
-
-    // Otherwise, calculate the percentage of completed lectures in the course.
-    if ($lectures = $this->getReferencedLecturesByCompleted($course)) {
-      $total = count($lectures);
-      $completed = count(array_filter((array) $lectures, fn($l) => $l->completed));
-      return ceil($completed / $total * 100);
-    }
-
-    // Fallback.
-    return 0;
-  }
-
-  /**
    * Determines whether a lecture or course is completed.
    */
-  public function getCompletedStatus(AcademicFormat $entity): bool {
+  public function isCompleted(AcademicFormat $entity): bool {
     return (bool) $this->getProgressField($entity, 'completed');
   }
 
   /**
    * Determines unlocked status.
    */
-  public function getUnlockedStatus(AcademicFormat $entity, AccountInterface $account = NULL): bool {
+  public function isUnlocked(AcademicFormat $entity, AccountInterface $account = NULL): bool {
 
     if ($entity instanceof Lecture) {
-      return $this->getLectureUnlockedStatus($entity, $account);
+      return $this->isLectureUnlocked($entity, $account);
     }
 
     if ($entity instanceof Course) {
-      return $this->getCourseUnlockedStatus($entity, $account);
+      return $this->isCourseUnlocked($entity, $account);
     }
 
     return FALSE;
@@ -150,7 +122,7 @@ class ProgressManager {
    *
    * @todo Rework unlocking mechanism.
    */
-  protected function getCourseUnlockedStatus(Course $course, ?AccountInterface $account): bool {
+  protected function isCourseUnlocked(Course $course, ?AccountInterface $account): bool {
 
     // Get all course IDs present.
     $courses = $this->getCoursesByCompleted($account);
@@ -177,7 +149,7 @@ class ProgressManager {
   /**
    * Determines whether a lecture is unlocked.
    */
-  protected function getLectureUnlockedStatus(Lecture $lecture, ?AccountInterface $account): bool {
+  protected function isLectureUnlocked(Lecture $lecture, ?AccountInterface $account): bool {
 
     // Get all lecture IDs in this course.
     $course = $lecture->getParentEntity();
@@ -202,25 +174,31 @@ class ProgressManager {
   }
 
   /**
-   * Determines if given lecture is last lecture of course.
-   *
-   * @returns \Drupal\progress\Entity\CourseProgress|null
-   *    The progress of the course or false.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Core\Entity\EntityMalformedException
+   * Returns progress in percent for course.
    */
-  public function isLastLecture(Lecture $lecture): ?Progress {
+  public function calculateProgression(Course $course): int {
 
-    $course = $lecture->getParentEntity();
-    $lectures = $this->getReferencedLecturesByCompleted($course);
-
-    if (is_array($lectures) && $lectures[array_key_last($lectures)]->id == $lecture->id()) {
-      return $this->getProgress($course);
+    // If the course is completed the progress is full.
+    if ($this->isCompleted($course)) {
+      return 100;
     }
 
-    return NULL;
+    // If the course is not unlocked there is no progress.
+    // Note that the edge case of a course being completed but not unlocked is
+    // covered by the previous conditional.
+    if (!$this->isUnlocked($course)) {
+      return 0;
+    }
+
+    // Otherwise, calculate the percentage of completed lectures in the course.
+    if ($lectures = $this->getReferencedLecturesByCompleted($course)) {
+      $total = count($lectures);
+      $completed = count(array_filter((array) $lectures, fn($l) => $l->completed));
+      return ceil($completed / $total * 100);
+    }
+
+    // Fallback.
+    return 0;
   }
 
   /**
@@ -240,6 +218,28 @@ class ProgressManager {
   }
 
   /**
+   * Determines if given lecture is last lecture of course.
+   *
+   * @returns \Drupal\progress\Entity\CourseProgress|null
+   *    The progress of the course or false.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function isLastLecture(Lecture $lecture): ?Progress {
+
+    $course = $lecture->getParentEntity();
+    $lectures = $this->getReferencedLecturesByCompleted($course);
+
+    if (is_array($lectures) && $lectures[array_key_last($lectures)]->id == $lecture->id()) {
+      return $this->loadProgress($course);
+    }
+
+    return NULL;
+  }
+
+  /**
    * Gets a field of the progress.
    */
   protected function getProgressField(AcademicFormat $entity, string $field_name, AccountInterface $account = NULL): mixed {
@@ -247,7 +247,7 @@ class ProgressManager {
     $progress = NULL;
 
     try {
-      $progress = $this->getProgress($entity, $account);
+      $progress = $this->loadProgress($entity, $account);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -273,7 +273,7 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function getProgress(AcademicFormat $entity, AccountInterface $account = NULL): ?Progress {
+  public function loadProgress(AcademicFormat $entity, AccountInterface $account = NULL): ?Progress {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
