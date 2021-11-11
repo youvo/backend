@@ -53,7 +53,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
 
     // Let other modules hook into access decision.
     // @see progress.module
-    \Drupal::moduleHandler()
+    $this->moduleHandler()
       ->invokeAll('child_entities_check_access', [&$access, $origin, $account]);
 
     // If all conditions are met allow access.
