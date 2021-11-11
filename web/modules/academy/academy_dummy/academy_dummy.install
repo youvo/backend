@@ -303,7 +303,7 @@ function academy_dummy_get_stock_image(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
   $image_path = drupal_get_path('module', 'academy_dummy') . '/img/' . $index . '.jpg';
-  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
   $image_file = File::create([
     'uri' => $public_path,
     'uid' => 1,
@@ -334,7 +334,7 @@ function academy_dummy_get_stock_illustration(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
   $image_path = drupal_get_path('module', 'academy_dummy') . '/gfx/' . $index . '.png';
-  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
   $image_file = File::create([
     'uri' => $public_path,
     'uid' => 1,
