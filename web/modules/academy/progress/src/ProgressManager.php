@@ -202,41 +202,15 @@ class ProgressManager {
   }
 
   /**
-   * Determines whether user is enrolled in lecture or course.
-   *
-   * @param \Drupal\academy\Entity\AcademicFormat $entity
-   *   The referenced entity.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The current account. This method is used for access check - therefore
-   *   we explicitly pass the account.
-   *
-   * @return bool
-   *   Gives enrollment status.
-   */
-  public function isEnrolled(AcademicFormat $entity, AccountInterface $account): bool {
-    return (bool) $this->getProgressField($entity, 'accessed', $account);
-  }
-
-  /**
    * Determines if given lecture is last lecture of course.
    *
-   * @returns \Drupal\progress\Entity\CourseProgress|null
-   *    The progress of the course or false.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Core\Entity\EntityMalformedException
+   * @returns bool
+   *    The decision if last lecture.
    */
-  public function isLastLecture(Lecture $lecture): ?Progress {
-
-    $course = $lecture->getParentEntity();
-    $lectures = $this->getReferencedLecturesByCompleted($course);
-
-    if (is_array($lectures) && $lectures[array_key_last($lectures)]->id == $lecture->id()) {
-      return $this->loadProgress($course);
-    }
-
-    return NULL;
+  public function isLastLecture(Lecture $lecture): bool {
+    $lectures = $this->getReferencedLecturesByCompleted($lecture->getParentEntity());
+    return is_array($lectures) &&
+      $lectures[array_key_last($lectures)]->id == $lecture->id();
   }
 
   /**
