@@ -28,7 +28,7 @@ function courses_site_install_finished() {
       $variables = Error::decodeException($e);
       $variables['%permission'] = 'view courses';
       $variables['%role'] = $role;
-      \Drupal::logger('courses')
+      \Drupal::logger('academy')
         ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
     }
   }
@@ -43,7 +43,7 @@ function courses_site_install_finished() {
     $variables = Error::decodeException($e);
     $variables['%permission'] = 'manage courses';
     $variables['%role'] = 'editor';
-    \Drupal::logger('courses')
+    \Drupal::logger('academy')
       ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
   }
 

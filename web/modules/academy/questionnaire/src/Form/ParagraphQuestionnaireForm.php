@@ -92,7 +92,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('questionnaire')
+      $this->logger('academy')
         ->error('An error occurred while loading questions. %type: @message in %function (line %line of %file).', $variables);
     }
 
@@ -129,7 +129,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('lecture')
+      $this->logger('academy')
         ->error('An error occurred while loading question types. %type: @message in %function (line %line of %file).', $variables);
     }
 
@@ -475,7 +475,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('questionnaire')
+      $this->logger('academy')
         ->error('An error occurred while loading question types. %type: @message in %function (line %line of %file).', $variables);
     }
     if (!$buttons_disabled) {

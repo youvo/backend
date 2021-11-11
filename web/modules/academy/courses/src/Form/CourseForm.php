@@ -53,7 +53,7 @@ class CourseForm extends ContentEntityForm {
 
     if ($result == SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New course %label has been created.', $message_arguments));
-      $this->logger('courses')->notice('Created new course %label.', $message_arguments);
+      $this->logger('academy')->notice('Created new course %label.', $message_arguments);
     }
     else {
       $this->messenger()->addStatus($this->t('The course %label has been updated.', $message_arguments));

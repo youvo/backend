@@ -33,7 +33,7 @@ function progress_site_install_finished() {
       $variables = Error::decodeException($e);
       $variables['%permission'] = 'restful METHOD progress:lecture:ACTION';
       $variables['%role'] = $role;
-      \Drupal::logger('progress')
+      \Drupal::logger('academy')
         ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
     }
   }
