@@ -39,7 +39,7 @@ class CourseAccessResource extends ProgressResource {
   public function post(Course $entity) {
 
     try {
-      // Get the respective course progress by lecture and current user.
+      // Get the respective course progress by course and current user.
       $progress = $this->progressManager->loadProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {

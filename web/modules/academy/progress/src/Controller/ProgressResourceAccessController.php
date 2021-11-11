@@ -91,13 +91,12 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
   protected function accessLectureProgress(AccountInterface $account, Lecture $lecture, string $permission) {
 
     // Access is granted if the creative has permission to use this resource,
-    // the course and lecture are enabled. Additionally, the enrollment status
-    // is checked.
+    // the course and lecture are enabled and unlocked.
     return AccessResult::allowedIf(
       $account->hasPermission($permission) &&
       $lecture->getParentEntity()->isEnabled() &&
       $lecture->isEnabled() &&
-      $this->progressManager->isEnrolled($lecture->getParentEntity(), $account) &&
+      $this->progressManager->isUnlocked($lecture->getParentEntity(), $account) &&
       $this->progressManager->isUnlocked($lecture, $account)
     )->cachePerUser();
   }
@@ -107,9 +106,9 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
    */
   protected function accessCourseProgress(AccountInterface $account, Course $course, string $permission) {
     return AccessResult::allowedIf(
-      $this->progressManager->isUnlocked($course, $account) &&
       $course->isEnabled() &&
-      $account->hasPermission($permission)
+      $account->hasPermission($permission) &&
+      $this->progressManager->isUnlocked($course, $account)
     )->cachePerUser();
   }
 

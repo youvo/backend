@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
+use Drupal\progress\Entity\CourseProgress;
 use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -60,9 +61,28 @@ class LectureCompleteResource extends ProgressResource {
       $progress->setCompletedTime($timestamp);
       $progress->save();
 
-      // Also set the parent course completed if this is the last lecture.
-      if ($course_progress = $this->progressManager->isLastLecture($entity)) {
-        if (!$course_progress->getCompletedTime()) {
+      // Load the respective course progress.
+      $course_progress = $this->progressManager
+        ->loadProgress($entity->getParentEntity());
+
+      // This should never happen. We create the course progress if not present.
+      // A sneaky way to ensure that the course progress exists before the
+      // lecture and course progresses interfere.
+      // @todo Adjust langcode.
+      if (!$course_progress) {
+        $course_progress = CourseProgress::create([
+          'course' => $entity->getParentEntity()->id(),
+          'uid' => $progress->getOwnerId(),
+          'enrolled' => $progress->getEnrollmentTime(),
+          'accessed' => $progress->getEnrollmentTime(),
+          'langcode' => 'en',
+        ]);
+        $course_progress->save();
+      }
+
+      // Set the parent course completed if this is the last lecture.
+      if (!$course_progress->getCompletedTime()) {
+        if ($this->progressManager->isLastLecture($entity)) {
           $course_progress->setCompletedTime($timestamp);
           $course_progress->save();
         }
