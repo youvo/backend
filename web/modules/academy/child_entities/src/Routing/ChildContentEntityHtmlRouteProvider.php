@@ -71,7 +71,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
     ];
 
     // If parent is another child append its parents.
-    $parent_type = \Drupal::entityTypeManager()->getDefinition($entity_type->getKey('parent'));
+    $parent_type = $this->entityTypeManager->getDefinition($entity_type->getKey('parent'));
     if ($parent_type->hasKey('parent')) {
       $this->appendParentOptionParameters($option_parameters, $parent_type);
     }
