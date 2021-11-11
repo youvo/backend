@@ -25,7 +25,7 @@ class ParagraphForm extends ContentEntityForm {
 
     if ($result == SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New paragraph %label has been created.', $arguments));
-      $this->logger('paragraphs')->notice('Created new paragraph %label', $arguments);
+      $this->logger('academy')->notice('Created new paragraph %label', $arguments);
     }
     else {
       $this->messenger()->addStatus($this->t('The paragraph %label has been updated.', $arguments));

@@ -72,12 +72,12 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('paragraphs')
+      \Drupal::logger('academy')
         ->error('An error occurred while loading paragraph types. %type: @message in %function (line %line of %file).', $variables);
     }
 
     if (!($bundle instanceof ParagraphType)) {
-      \Drupal::logger('paragraphs')
+      \Drupal::logger('academy')
         ->warning('Paragraphs Collection: Could not fetch bundle for entity type %try.', ['%try' => $entity->bundle()]);
       return [];
     }
