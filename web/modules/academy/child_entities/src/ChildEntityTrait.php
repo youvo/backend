@@ -15,6 +15,11 @@ trait ChildEntityTrait {
   use ChildEntityEnsureTrait;
 
   /**
+   * {@inheritdoc}
+   */
+  abstract protected function entityTypeManager();
+
+  /**
    * Returns an array of base field definitions for publishing status.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -114,7 +119,7 @@ trait ChildEntityTrait {
    * {@inheritdoc}
    */
   public function getParentEntityType() {
-    return \Drupal::entityTypeManager()
+    return $this->entityTypeManager()
       ->getDefinition($this->getParentEntityTypeId());
   }
 
