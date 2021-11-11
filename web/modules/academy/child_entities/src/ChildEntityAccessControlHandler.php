@@ -46,14 +46,14 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('child_entities')
+      \Drupal::logger('academy')
         ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }
 
     // Let other modules hook into access decision.
     // @see progress.module
-    \Drupal::moduleHandler()
+    $this->moduleHandler()
       ->invokeAll('child_entities_check_access', [&$access, $origin, $account]);
 
     // If all conditions are met allow access.
@@ -94,7 +94,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('child_entities')
+      \Drupal::logger('academy')
         ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }

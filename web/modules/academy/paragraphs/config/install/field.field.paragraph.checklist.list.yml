@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.list
+    - paragraphs.type.checklist
+id: paragraph.checklist.list
+field_name: list
+entity_type: paragraph
+bundle: checklist
+label: List
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

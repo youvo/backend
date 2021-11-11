@@ -33,7 +33,7 @@ function questionnaire_site_install_finished() {
       $variables = Error::decodeException($e);
       $variables['%permission'] = 'restful METHOD question:submission';
       $variables['%role'] = $role;
-      \Drupal::logger('questionnaire')
+      \Drupal::logger('academy')
         ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
     }
   }

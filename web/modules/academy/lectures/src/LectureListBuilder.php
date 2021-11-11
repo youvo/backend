@@ -116,7 +116,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       }
       catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
         $variables = Error::decodeException($e);
-        \Drupal::logger('lecture')
+        \Drupal::logger('academy')
           ->error('An error occurred while loading a course. %type: @message in %function (line %line of %file).', $variables);
       }
 
