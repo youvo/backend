@@ -35,7 +35,7 @@ class ProgressManager {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  public $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * The time service.
@@ -214,30 +214,6 @@ class ProgressManager {
   }
 
   /**
-   * Gets a field of the progress.
-   */
-  protected function getProgressField(AcademicFormat $entity, string $field_name, AccountInterface $account = NULL): mixed {
-
-    $progress = NULL;
-
-    try {
-      $progress = $this->loadProgress($entity, $account);
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      $variables = Error::decodeException($e);
-      $this->logger
-        ->error('Can not retrieve progress entity. %type: @message in %function (line %line of %file).', $variables);
-    }
-    catch (EntityMalformedException $e) {
-      $variables = Error::decodeException($e);
-      $this->logger
-        ->error('The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
-    }
-
-    return $progress?->get($field_name)->value;
-  }
-
-  /**
    * Gets the respective progress of the lecture or course by the current user.
    *
    * @returns \Drupal\progress\Entity\Progress|null
@@ -280,6 +256,30 @@ class ProgressManager {
     $progress = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->load(reset($progress_id));
     return $progress;
+  }
+
+  /**
+   * Gets a field of the progress.
+   */
+  protected function getProgressField(AcademicFormat $entity, string $field_name, AccountInterface $account = NULL): mixed {
+
+    $progress = NULL;
+
+    try {
+      $progress = $this->loadProgress($entity, $account);
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+      $variables = Error::decodeException($e);
+      $this->logger
+        ->error('Can not retrieve progress entity. %type: @message in %function (line %line of %file).', $variables);
+    }
+    catch (EntityMalformedException $e) {
+      $variables = Error::decodeException($e);
+      $this->logger
+        ->error('The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+    }
+
+    return $progress?->get($field_name)->value;
   }
 
   /**
