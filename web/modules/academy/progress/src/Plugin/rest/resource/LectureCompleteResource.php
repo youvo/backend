@@ -40,7 +40,7 @@ class LectureCompleteResource extends ProgressResource {
 
     try {
       // Get the respective lecture progress by lecture and current user.
-      $progress = $this->progressManager->getProgress($entity);
+      $progress = $this->progressManager->loadProgress($entity);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
