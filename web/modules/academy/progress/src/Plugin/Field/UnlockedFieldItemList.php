@@ -36,7 +36,7 @@ class UnlockedFieldItemList extends FieldItemList implements FieldItemListInterf
 
       // Set completed status.
       /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->getUnlockedStatus($this->getEntity()));
+      $item = $this->createItem(0, $this->progressManager()->isUnlocked($this->getEntity()));
 
       // Set cache max age zero.
       $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);

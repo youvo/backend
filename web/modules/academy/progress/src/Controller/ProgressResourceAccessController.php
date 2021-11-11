@@ -95,7 +95,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
     $enrollment = FALSE;
     if ($this->progressManager->isEnrolled($lecture->getParentEntity(), $account)) {
       if ($this->progressManager->isEnrolled($lecture, $account) ||
-        ($method == 'post' && $this->progressManager->getUnlockedStatus($lecture, $account))
+        ($method == 'post' && $this->progressManager->isUnlocked($lecture, $account))
       ) {
         $enrollment = TRUE;
       }
@@ -117,7 +117,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
    */
   protected function accessCourseProgress(AccountInterface $account, Course $course, string $method, string $rest_resource) {
     return AccessResult::allowedIf(
-      $this->progressManager->getUnlockedStatus($course, $account) &&
+      $this->progressManager->isUnlocked($course, $account) &&
       $course->isEnabled() &&
       $account->hasPermission('restful ' . $method . ' ' . $rest_resource)
     )->cachePerUser();
