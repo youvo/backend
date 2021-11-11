@@ -100,7 +100,7 @@ function academy_dummy_site_install_finished() {
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
-        'weight' => -5,
+        'weight' => -6,
         'uid' => 1,
       ]);
       $paragraph->save();
@@ -115,7 +115,7 @@ function academy_dummy_site_install_finished() {
           'alt' => $random->sentences(3, TRUE),
         ],
         'lecture' => $lecture->id(),
-        'weight' => -4,
+        'weight' => -5,
         'uid' => 1,
       ]);
       $paragraph->save();
@@ -125,9 +125,22 @@ function academy_dummy_site_install_finished() {
         'title' => $random->sentences(2, TRUE),
         'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
+        'weight' => -4,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      $paragraph = Paragraph::create([
+        'bundle' => 'checklist',
+        'title' => $random->sentences(2, TRUE),
+        'lecture' => $lecture->id(),
         'weight' => -3,
         'uid' => 1,
       ]);
+      $max = rand(3, 6);
+      for ($k = 0; $k < $max; $k++) {
+        $paragraph->get('list')->appendItem($random->sentences(3, TRUE));
+      }
       $paragraph->save();
 
       $picture_file = academy_dummy_get_stock_image($lecture->id());
