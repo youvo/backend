@@ -314,7 +314,7 @@ function academy_dummy_get_stock_image(int $i) {
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
-    \Drupal::logger('academy_dummy')
+    \Drupal::logger('academy')
       ->error('An error occurred while creating stock academy images. %type: @message in %function (line %line of %file).', $variables);
   }
 
@@ -345,7 +345,7 @@ function academy_dummy_get_stock_illustration(int $i) {
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
-    \Drupal::logger('academy_dummy')
+    \Drupal::logger('academy')
       ->error('An error occurred while creating stock academy illustration. %type: @message in %function (line %line of %file).', $variables);
   }
 
