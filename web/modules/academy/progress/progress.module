@@ -59,6 +59,6 @@ function progress_child_entities_check_access(AccessResultInterface &$access, Co
   // contents of the course are revealed once a user enrolls into a course.
   if ($access->isAllowed()) {
     $access = AccessResult::allowedIf(Drupal::service('progress.manager')
-      ->isEnrolled($origin, $account));
+      ->isUnlocked($origin, $account));
   }
 }

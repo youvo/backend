@@ -26,7 +26,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
   private $progressManager;
 
   /**
-   * Constructs a Drupal\progress\Controller\ProgressResourceAccessController object.
+   * Constructs a ProgressResourceAccessController object.
    *
    * @param \Drupal\progress\ProgressManager $progress_manager
    *   The progress manager service.
@@ -66,20 +66,20 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
 
     // Gather properties.
     $methods = $route->getMethods();
-    $method = strtolower(reset($methods));
-    $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+    $permission = 'restful ' . strtolower(reset($methods)) . ' ' .
+      strtr($route->getDefault('_rest_resource_config'), '.', ':');
 
     // Give access to editors.
     if ($account->hasPermission('manage courses')) {
-      return AccessResult::allowedIfHasPermission($account, 'restful ' . $method . ' ' . $rest_resource);
+      return AccessResult::allowedIfHasPermission($account, $permission);
     }
 
     if ($entity instanceof Lecture) {
-      return $this->accessLectureProgress($account, $entity, $method, $rest_resource);
+      return $this->accessLectureProgress($account, $entity, $permission);
     }
 
     if ($entity instanceof Course) {
-      return $this->accessCourseProgress($account, $entity, $method, $rest_resource);
+      return $this->accessCourseProgress($account, $entity, $permission);
     }
 
     return AccessResult::neutral();
@@ -88,38 +88,28 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
   /**
    * Checks access for lecture progress REST resources.
    */
-  protected function accessLectureProgress(AccountInterface $account, Lecture $lecture, string $method, string $rest_resource) {
-
-    // Check whether creative is enrolled in the course.
-    // And if creative is enrolled or wants to enroll in the lecture.
-    $enrollment = FALSE;
-    if ($this->progressManager->isEnrolled($lecture->getParentEntity(), $account)) {
-      if ($this->progressManager->isEnrolled($lecture, $account) ||
-        ($method == 'post' && $this->progressManager->isUnlocked($lecture, $account))
-      ) {
-        $enrollment = TRUE;
-      }
-    }
+  protected function accessLectureProgress(AccountInterface $account, Lecture $lecture, string $permission) {
 
     // Access is granted if the creative has permission to use this resource,
     // the course and lecture are enabled. Additionally, the enrollment status
     // is checked.
     return AccessResult::allowedIf(
-      $account->hasPermission('restful ' . $method . ' ' . $rest_resource) &&
+      $account->hasPermission($permission) &&
       $lecture->getParentEntity()->isEnabled() &&
       $lecture->isEnabled() &&
-      $enrollment
+      $this->progressManager->isEnrolled($lecture->getParentEntity(), $account) &&
+      $this->progressManager->isUnlocked($lecture, $account)
     )->cachePerUser();
   }
 
   /**
    * Checks access for course progress REST resources.
    */
-  protected function accessCourseProgress(AccountInterface $account, Course $course, string $method, string $rest_resource) {
+  protected function accessCourseProgress(AccountInterface $account, Course $course, string $permission) {
     return AccessResult::allowedIf(
       $this->progressManager->isUnlocked($course, $account) &&
       $course->isEnabled() &&
-      $account->hasPermission('restful ' . $method . ' ' . $rest_resource)
+      $account->hasPermission($permission)
     )->cachePerUser();
   }
 
