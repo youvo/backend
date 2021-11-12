@@ -32,7 +32,7 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAccessTime(int $timestamp): Progress {
+  public function setAccessTime(int $timestamp): ProgressInterface {
     $this->set('accessed', $timestamp);
     return $this;
   }
@@ -47,7 +47,7 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCompletedTime(int $timestamp): Progress {
+  public function setCompletedTime(int $timestamp): ProgressInterface {
     $this->set('completed', $timestamp);
     return $this;
   }

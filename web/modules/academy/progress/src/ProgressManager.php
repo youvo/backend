@@ -13,7 +13,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
-use Drupal\progress\Entity\Progress;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -216,14 +215,14 @@ class ProgressManager {
   /**
    * Gets the respective progress of the lecture or course by the current user.
    *
-   * @returns \Drupal\progress\Entity\Progress|null
+   * @returns \Drupal\progress\ProgressInterface|null
    *   The respective progress or NULL if no storage.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function loadProgress(AcademicFormatInterface $entity, AccountInterface $account = NULL): ?Progress {
+  public function loadProgress(AcademicFormatInterface $entity, AccountInterface $account = NULL): ?ProgressInterface {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
@@ -252,7 +251,7 @@ class ProgressManager {
     }
 
     // Return loaded progress.
-    /** @var \Drupal\progress\Entity\Progress $progress */
+    /** @var \Drupal\progress\ProgressInterface $progress */
     $progress = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->load(reset($progress_id));
     return $progress;
