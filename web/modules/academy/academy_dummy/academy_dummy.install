@@ -286,6 +286,33 @@ function academy_dummy_site_install_finished() {
       $questionnaire->set('questions', $question_targets);
       $questionnaire->save();
     }
+
+    // Add a lecture that contains the evaluation of the questionnaire.
+    if (\Drupal::service('module_handler')->moduleExists('progress')) {
+
+      // Create lecture.
+      $lecture = Lecture::create([
+        'title' => 'Evaluation: ' . $random->sentences(3, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'uid' => 1,
+      ]);
+      $lecture->save();
+
+      // Create evaluation.
+      $evaluation = Paragraph::create([
+        'bundle' => 'evaluation',
+        'title' => $random->sentences(2, TRUE),
+        'lecture' => $lecture->id(),
+        'weight' => 0,
+        'uid' => 1,
+      ]);
+      $evaluation->save();
+
+      // Update computed fields.
+      $lecture->save();
+    }
   }
 
 }
