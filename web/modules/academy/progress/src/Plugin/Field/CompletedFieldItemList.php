@@ -30,8 +30,7 @@ class CompletedFieldItemList extends FieldItemList implements FieldItemListInter
       $item = $this->createItem(0, $this->progressManager()->isCompleted($this->getEntity()));
 
       // Set cache max age zero.
-      $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
-      $item->get('value')->addCacheableDependency($cacheability);
+      $item->get('value')->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }
