@@ -2,7 +2,7 @@
 
 namespace Drupal\progress;
 
-use Drupal\academy\Entity\AcademicFormat;
+use Drupal\academy\AcademicFormatInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -97,14 +97,14 @@ class ProgressManager {
   /**
    * Determines whether a lecture or course is completed.
    */
-  public function isCompleted(AcademicFormat $entity): bool {
+  public function isCompleted(AcademicFormatInterface $entity): bool {
     return (bool) $this->getProgressField($entity, 'completed');
   }
 
   /**
    * Determines unlocked status.
    */
-  public function isUnlocked(AcademicFormat $entity, AccountInterface $account = NULL): bool {
+  public function isUnlocked(AcademicFormatInterface $entity, AccountInterface $account = NULL): bool {
 
     if ($entity instanceof Lecture) {
       return $this->isLectureUnlocked($entity, $account);
@@ -223,7 +223,7 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function loadProgress(AcademicFormat $entity, AccountInterface $account = NULL): ?Progress {
+  public function loadProgress(AcademicFormatInterface $entity, AccountInterface $account = NULL): ?Progress {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
@@ -261,7 +261,7 @@ class ProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(AcademicFormat $entity, string $field_name, AccountInterface $account = NULL): mixed {
+  protected function getProgressField(AcademicFormatInterface $entity, string $field_name, AccountInterface $account = NULL): mixed {
 
     $progress = NULL;
 
