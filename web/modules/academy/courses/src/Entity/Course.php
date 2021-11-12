@@ -2,7 +2,8 @@
 
 namespace Drupal\courses\Entity;
 
-use Drupal\academy\Entity\AcademicFormat;
+use Drupal\academy\AcademicFormatInterface;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -47,7 +48,7 @@ use Drupal\user\UserInterface;
  *   },
  * )
  */
-class Course extends AcademicFormat implements CourseInterface {
+class Course extends ContentEntityBase implements CourseInterface, AcademicFormatInterface {
 
   use EntityChangedTrait;
 

@@ -2,7 +2,7 @@
 
 namespace Drupal\progress\Plugin\rest\resource;
 
-use Drupal\academy\Entity\AcademicFormat;
+use Drupal\academy\AcademicFormatInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
@@ -65,13 +65,13 @@ abstract class ProgressResource extends ResourceBase {
   /**
    * Responds GET requests.
    *
-   * @param \Drupal\academy\Entity\AcademicFormat $entity
+   * @param \Drupal\academy\AcademicFormatInterface $entity
    *   The referenced lecture or course.
    *
    * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
    *   Response.
    */
-  public function get(AcademicFormat $entity) {
+  public function get(AcademicFormatInterface $entity) {
 
     try {
       // Get the respective progress by lecture or course and current user.

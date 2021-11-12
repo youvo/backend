@@ -2,7 +2,7 @@
 
 namespace Drupal\progress\Controller;
 
-use Drupal\academy\Entity\AcademicFormat;
+use Drupal\academy\AcademicFormatInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -51,13 +51,13 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
    *   Run access checks for this account.
    * @param \Symfony\Component\Routing\Route $route
    *   The requested route.
-   * @param \Drupal\academy\Entity\AcademicFormat|null $entity
+   * @param \Drupal\academy\AcademicFormatInterface|null $entity
    *   The lecture entity.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessProgress(AccountInterface $account, Route $route, AcademicFormat $entity = NULL) {
+  public function accessProgress(AccountInterface $account, Route $route, AcademicFormatInterface $entity = NULL) {
 
     // Return, if entity is empty.
     if (!$entity) {

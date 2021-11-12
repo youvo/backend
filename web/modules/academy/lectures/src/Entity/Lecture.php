@@ -2,9 +2,10 @@
 
 namespace Drupal\lectures\Entity;
 
-use Drupal\academy\Entity\AcademicFormat;
+use Drupal\academy\AcademicFormatInterface;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -52,7 +53,7 @@ use Drupal\user\UserInterface;
  *   }
  * )
  */
-class Lecture extends AcademicFormat implements ChildEntityInterface {
+class Lecture extends ContentEntityBase implements ChildEntityInterface, AcademicFormatInterface {
 
   use EntityChangedTrait;
   use ChildEntityTrait;
