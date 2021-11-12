@@ -32,11 +32,11 @@ resourceFields:
       id: ''
     disabled: false
   bundle:
+    disabled: true
     fieldName: bundle
     publicName: bundle
     enhancer:
       id: ''
-    disabled: false
   title:
     disabled: true
     fieldName: title
