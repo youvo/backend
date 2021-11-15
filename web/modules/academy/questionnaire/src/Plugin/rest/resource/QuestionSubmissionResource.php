@@ -222,7 +222,7 @@ class QuestionSubmissionResource extends ResourceBase {
     $submission = $this->getRespectiveSubmission($question);
 
     // Create or update submission if value is not empty.
-    if (!empty($value)) {
+    if ($value === '0' || !empty($value)) {
 
       // There is no submission for this question by this user. Create new
       // submission.
