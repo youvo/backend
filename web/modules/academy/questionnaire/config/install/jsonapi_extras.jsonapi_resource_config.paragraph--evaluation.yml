@@ -3,11 +3,6 @@ status: true
 dependencies:
   config:
     - paragraphs.type.evaluation
-  module:
-    - jsonapi_defaults
-third_party_settings:
-  jsonapi_defaults:
-    page_limit: 50
 id: paragraph--evaluation
 disabled: false
 path: paragraphs/evaluation
