@@ -11,9 +11,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\progress\ComputedFieldStorageDefinition;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
-use Drupal\progress\Plugin\Field\EvaluationFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
 
@@ -45,29 +43,6 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
       ->setClass(ProgressFieldItemList::class);
-  }
-
-  return $fields;
-}
-
-/**
- * Implements hook_entity_bundle_field_info().
- */
-function progress_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
-
-  $fields = [];
-
-  // Add computed evaluation field to evaluation paragraphs.
-  if ($entity_type->id() == 'paragraph' && $bundle == 'evaluation') {
-    // It is not a basefield, so we need a custom field storage definition see
-    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
-    $fields['evaluation'] = ComputedFieldStorageDefinition::create('map')
-      ->setLabel(t('Course Evaluation'))
-      ->setDescription(t('Computes the evaluation of a course.'))
-      ->setComputed(TRUE)
-      ->setClass(EvaluationFieldItemList::class)
-      ->setTargetEntityTypeId($entity_type->id())
-      ->setTargetBundle($bundle);
   }
 
   return $fields;
