@@ -10,23 +10,22 @@ use Drupal\progress\ProgressManagerInjectionTrait;
 /**
  * ProgressFieldItemList class to generate a computed field.
  */
-class ProgressFieldItemList extends FieldItemList implements FieldItemListInterface {
+class CurrentLectureFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
   use ProgressManagerInjectionTrait;
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function computeValue() {
 
     if (!isset($this->list[0])) {
 
-      // Set completed status.
-      /** @var \Drupal\academy\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->calculateProgression($this->getEntity()));
+      // Get uuid of current unlocked lecture.
+      $lecture = $this->progressManager()->currentLecture($this->getEntity());
+      $uuid = isset($lecture) ? $lecture->uuid() : '';
+      $item = $this->createItem(0, $uuid);
 
       // Set cache max age zero.
       $item->get('value')->mergeCacheMaxAge(0);

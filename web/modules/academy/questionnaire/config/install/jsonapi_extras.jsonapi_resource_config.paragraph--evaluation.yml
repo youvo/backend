@@ -1,12 +1,12 @@
 langcode: en
 status: true
 dependencies:
-  module:
-    - lectures
-id: lecture--lecture
+  config:
+    - paragraphs.type.evaluation
+id: paragraph--evaluation
 disabled: false
-path: lectures
-resourceType: lecture
+path: paragraphs/evaluation
+resourceType: evaluation
 resourceFields:
   id:
     disabled: true
@@ -26,24 +26,24 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
+  bundle:
+    disabled: true
+    fieldName: bundle
+    publicName: bundle
+    enhancer:
+      id: ''
   title:
+    disabled: true
     fieldName: title
     publicName: title
     enhancer:
       id: ''
-    disabled: false
-  status:
-    fieldName: status
-    publicName: status
-    enhancer:
-      id: ''
-    disabled: false
   uid:
+    disabled: true
     fieldName: uid
-    publicName: author
+    publicName: uid
     enhancer:
       id: ''
-    disabled: false
   created:
     disabled: true
     fieldName: created
@@ -56,21 +56,15 @@ resourceFields:
     publicName: changed
     enhancer:
       id: ''
+  lecture:
+    fieldName: lecture
+    publicName: lecture
+    enhancer:
+      id: ''
+    disabled: false
   weight:
     fieldName: weight
     publicName: weight
-    enhancer:
-      id: ''
-    disabled: false
-  paragraphs:
-    fieldName: paragraphs
-    publicName: paragraphs
-    enhancer:
-      id: ''
-    disabled: false
-  course:
-    fieldName: course
-    publicName: course
     enhancer:
       id: ''
     disabled: false
@@ -80,3 +74,9 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
+  evaluation:
+    fieldName: evaluation
+    publicName: evaluation
+    enhancer:
+      id: ''
+    disabled: false

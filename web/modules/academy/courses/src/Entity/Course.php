@@ -60,7 +60,9 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     parent::preCreate($storage, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
+    if (!isset($values['uid'])) {
+      $values['uid'] = \Drupal::currentUser()->id();
+    }
   }
 
   /**

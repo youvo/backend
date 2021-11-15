@@ -2,7 +2,6 @@
 
 namespace Drupal\progress\Plugin\Field;
 
-use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
@@ -26,12 +25,11 @@ class UnlockedFieldItemList extends FieldItemList implements FieldItemListInterf
     if (!isset($this->list[0])) {
 
       // Set completed status.
-      /** @var \Drupal\progress\Plugin\Field\FieldType\CacheableBooleanItem $item */
+      /** @var \Drupal\academy\Plugin\Field\FieldType\CacheableBooleanItem $item */
       $item = $this->createItem(0, $this->progressManager()->isUnlocked($this->getEntity()));
 
       // Set cache max age zero.
-      $cacheability = (new CacheableMetadata())->setCacheMaxAge(0);
-      $item->get('value')->addCacheableDependency($cacheability);
+      $item->get('value')->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }

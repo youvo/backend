@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress\Plugin\Field\FieldType;
+namespace Drupal\academy\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\IntegerItem;
@@ -10,7 +10,7 @@ use Drupal\Core\TypedData\DataDefinition;
  * Defines the 'integer' entity field type with cacheability metadata.
  *
  * @FieldType(
- *   id = "cacheable_integer_item",
+ *   id = "cacheable_integer",
  *   label = @Translation("Cacheable Integer Item"),
  *   description = @Translation("A field containing a integer value and cacheability metadata."),
  *   no_ui = TRUE,

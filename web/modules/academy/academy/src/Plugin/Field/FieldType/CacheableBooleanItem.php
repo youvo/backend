@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress\Plugin\Field\FieldType;
+namespace Drupal\academy\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\BooleanItem;
@@ -10,7 +10,7 @@ use Drupal\Core\TypedData\DataDefinition;
  * Defines the 'boolean' entity field type with cacheability metadata.
  *
  * @FieldType(
- *   id = "cacheable_boolean_item",
+ *   id = "cacheable_boolean",
  *   label = @Translation("Cacheable Boolean Item"),
  *   description = @Translation("A field containing a boolean value and cacheability metadata."),
  *   no_ui = TRUE,

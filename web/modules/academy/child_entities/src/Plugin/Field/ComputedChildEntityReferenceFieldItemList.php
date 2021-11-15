@@ -19,6 +19,7 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function computeValue() {
+
     // Fetch the parent and the desired target type.
     $parent = $this->getEntity();
     $target_type_id = $this->getSetting('target_type');

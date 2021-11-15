@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
+use Drupal\progress\Plugin\Field\CurrentLectureFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
 
@@ -24,12 +25,12 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add paragraphs base field to entity Lecture and Course.
   if ($entity_type->id() == 'lecture' || $entity_type->id() == 'course') {
-    $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean_item')
+    $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Completed'))
       ->setDescription(t('Computes the completed status by user.'))
       ->setComputed(TRUE)
       ->setClass(CompletedFieldItemList::class);
-    $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean_item')
+    $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Unlocked'))
       ->setDescription(t('Computes the unlocked status by user.'))
       ->setComputed(TRUE)
@@ -38,11 +39,16 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add paragraphs base field to entity Course.
   if ($entity_type->id() == 'course') {
-    $fields['progress'] = BaseFieldDefinition::create('cacheable_integer_item')
+    $fields['progress'] = BaseFieldDefinition::create('cacheable_integer')
       ->setLabel(t('Progress'))
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
       ->setClass(ProgressFieldItemList::class);
+    $fields['current_lecture'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(t('Current Lecture'))
+      ->setDescription(t('Computes the last unlocked lecture by user.'))
+      ->setComputed(TRUE)
+      ->setClass(CurrentLectureFieldItemList::class);
   }
 
   return $fields;
@@ -58,7 +64,7 @@ function progress_child_entities_check_access(AccessResultInterface &$access, Co
   // Check enrollment status. Therefore, from an access point of view, all
   // contents of the course are revealed once a user enrolls into a course.
   if ($access->isAllowed()) {
-    $access = AccessResult::allowedIf(Drupal::service('progress.manager')
+    $access = AccessResult::allowedIf(\Drupal::service('progress.manager')
       ->isUnlocked($origin, $account));
   }
 }

@@ -201,6 +201,41 @@ class ProgressManager {
   }
 
   /**
+   * Returns the current unlocked lecture.
+   *
+   * Selects the lecture that is currently unlocked.
+   * If the course is complete, return the first lecture.
+   */
+  public function currentLecture(Course $course): ?Lecture {
+
+    // Retrieve lectures from course.
+    $lectures = $course->get('lectures')->referencedEntities();
+
+    // If the course is completed the progress is full.
+    if ($this->isCompleted($course)) {
+      return is_array($lectures) && !empty($lectures) ? $lectures[0] : NULL;
+    }
+
+    // Return nothing if course is not unlocked.
+    if (!$this->isUnlocked($course)) {
+      return NULL;
+    }
+
+    // Otherwise, return first lecture that is not completed.
+    if ($lectures_completed = $this->getReferencedLecturesByCompleted($course)) {
+      $lecture = current(array_filter((array) $lectures_completed,
+        fn($l) => !$l->completed));
+      // Get selected lecture from references and check unlocked status again.
+      $lecture = array_filter($lectures, fn ($l) => $l->id() == $lecture->id);
+      $lecture = reset($lecture);
+      return $this->isUnlocked($lecture) ? $lecture : NULL;
+    }
+
+    // Fallback.
+    return NULL;
+  }
+
+  /**
    * Determines if given lecture is last lecture of course.
    *
    * @returns bool

@@ -26,10 +26,10 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  type:
+  bundle:
     disabled: true
-    fieldName: type
-    publicName: type
+    fieldName: bundle
+    publicName: bundle
     enhancer:
       id: ''
   title:

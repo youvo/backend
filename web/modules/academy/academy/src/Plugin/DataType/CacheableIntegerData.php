@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress\Plugin\DataType;
+namespace Drupal\academy\Plugin\DataType;
 
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
