@@ -10,7 +10,12 @@
  * questionnaires.
  */
 
+use Drupal\academy\ComputedFieldStorageDefinition;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\questionnaire\Entity\Questionnaire;
+use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
 
 /**
  * Implements hook_entity_bundle_info_alter().
@@ -31,4 +36,30 @@ function questionnaire_entity_type_alter(array &$entity_types) {
   // @todo Check if there is a better way to define handlers by bundle.
   $entity_types['paragraph']->setFormClass('add', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
   $entity_types['paragraph']->setFormClass('edit', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ */
+function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+
+  $fields = [];
+
+  // Add computed evaluation field to evaluation paragraphs.
+  if ($entity_type->id() == 'question') {
+    // It is not a basefield, so we need a custom field storage definition see
+    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
+    $fields['submission'] = ComputedFieldStorageDefinition::create('cacheable_string')
+      ->setLabel(t('User Input'))
+      ->setDescription(t('Computes the user input from question submissions.'))
+      ->setComputed(TRUE)
+      ->setClass(SubmissionFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
+      ->setTargetBundle($bundle);
+    if ($bundle == 'checkboxes') {
+      $fields['submission']->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+    }
+  }
+
+  return $fields;
 }
