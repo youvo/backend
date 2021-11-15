@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress\Plugin\Field\FieldType;
+namespace Drupal\academy\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\BooleanItem;
