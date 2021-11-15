@@ -18,7 +18,7 @@ class Questionnaire extends Paragraph {
       /** @var \Drupal\questionnaire\Entity\Question[] $questions */
       $questions_reference = $this->get('questions')->getValue();
       $question_ids = array_column($questions_reference, 'target_id');
-      $questions = \Drupal::entityTypeManager()
+      $questions = $this->entityTypeManager()
         ->getStorage('question')
         ->loadMultiple($question_ids);
       foreach ($questions as $question) {

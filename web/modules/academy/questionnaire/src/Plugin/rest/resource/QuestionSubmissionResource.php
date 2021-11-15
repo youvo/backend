@@ -8,7 +8,6 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\QuestionSubmission;
 use Drupal\questionnaire\SubmissionManager;

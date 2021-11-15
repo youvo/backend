@@ -2,7 +2,6 @@
 
 namespace Drupal\questionnaire;
 
-use Drupal\academy\AcademicFormatInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
