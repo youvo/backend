@@ -2,7 +2,6 @@
 
 namespace Drupal\progress\Plugin\Field;
 
-use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
