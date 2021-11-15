@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress;
+namespace Drupal\academy;
 
 use Drupal\Core\Field\BaseFieldDefinition;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\progress\Plugin\Field;
+namespace Drupal\questionnaire\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -21,7 +21,7 @@ class EvaluationFieldItemList extends FieldItemList implements FieldItemListInte
     if (!isset($this->list[0])) {
 
       // Set some value.
-      $item = $this->createItem(0, ['frech' => 'Hello World!']);
+      $item = $this->createItem(0, TRUE);
       $this->list[0] = $item;
     }
   }
