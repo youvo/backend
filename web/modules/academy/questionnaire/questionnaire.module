@@ -11,10 +11,10 @@
  */
 
 use Drupal\academy\ComputedFieldStorageDefinition;
-use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\questionnaire\Entity\Questionnaire;
+use Drupal\questionnaire\Plugin\Field\ContainedQuestionsFieldItemList;
 use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
 
 /**
@@ -59,6 +59,19 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
     if ($bundle == 'checkboxes') {
       $fields['submission']->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
     }
+  }
+
+  // Add computed evaluation field to evaluation paragraphs.
+  if ($entity_type->id() == 'paragraph' && $bundle == 'evaluation') {
+    $fields['questions'] = ComputedFieldStorageDefinition::create('entity_reference')
+      ->setLabel(t('Computed course questions.'))
+      ->setDescription(t('Computes the questions contained in this course.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setSetting('target_type', 'question')
+      ->setComputed(TRUE)
+      ->setClass(ContainedQuestionsFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
+      ->setTargetBundle($bundle);
   }
 
   return $fields;
