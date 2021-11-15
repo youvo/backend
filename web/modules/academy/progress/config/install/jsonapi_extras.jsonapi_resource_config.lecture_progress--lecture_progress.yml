@@ -2,11 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - jsonapi_defaults
     - progress
-third_party_settings:
-  jsonapi_defaults:
-    page_limit: 50
 id: lecture_progress--lecture_progress
 disabled: true
 path: lecture_progress/lecture_progress

@@ -19,7 +19,6 @@ install:
   - image
   - jsonapi
   - jsonapi_extras
-  - jsonapi_defaults
   - jsonapi_include
   - link
   - menu_link_content

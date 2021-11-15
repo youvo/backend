@@ -2,12 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - jsonapi_defaults
     - lectures
-third_party_settings:
-  jsonapi_defaults:
-    default_sorting: {  }
-    page_limit: 50
 id: lecture--lecture
 disabled: false
 path: lectures
