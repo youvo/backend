@@ -24,12 +24,12 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add paragraphs base field to entity Lecture and Course.
   if ($entity_type->id() == 'lecture' || $entity_type->id() == 'course') {
-    $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean_item')
+    $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Completed'))
       ->setDescription(t('Computes the completed status by user.'))
       ->setComputed(TRUE)
       ->setClass(CompletedFieldItemList::class);
-    $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean_item')
+    $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Unlocked'))
       ->setDescription(t('Computes the unlocked status by user.'))
       ->setComputed(TRUE)
@@ -38,7 +38,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add paragraphs base field to entity Course.
   if ($entity_type->id() == 'course') {
-    $fields['progress'] = BaseFieldDefinition::create('cacheable_integer_item')
+    $fields['progress'] = BaseFieldDefinition::create('cacheable_integer')
       ->setLabel(t('Progress'))
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
