@@ -4,6 +4,7 @@ namespace Drupal\questionnaire\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
@@ -28,6 +29,19 @@ use Drupal\user\UserInterface;
 class QuestionSubmission extends ContentEntityBase {
 
   use EntityChangedTrait;
+
+  /**
+   * {@inheritdoc}
+   *
+   * When a new question_submission entity is created, set the uid entity
+   * reference to the current user as the creator of the entity.
+   */
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    parent::preCreate($storage, $values);
+    if (!isset($values['uid'])) {
+      $values['uid'] = \Drupal::currentUser()->id();
+    }
+  }
 
   /**
    * Get created time.
