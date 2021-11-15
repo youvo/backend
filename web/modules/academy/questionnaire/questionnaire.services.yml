@@ -6,4 +6,4 @@ services:
     arguments: ['@entity_type.manager', '@string_translation']
   submission.manager:
     class: Drupal\questionnaire\SubmissionManager
-    arguments: [ '@current_user', '@entity_type.manager']
+    arguments: [ '@current_user', '@entity_type.manager', '@logger.channel.academy' ]

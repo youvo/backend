@@ -33,4 +33,16 @@ class CacheableStringItem extends StringItem {
     return $properties;
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * Explicitly allow empty strings (""), to be able to attach caching info.
+   *
+   * @see \Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList
+   */
+  public function isEmpty() {
+    $value = $this->get('value')->getValue();
+    return $value === NULL;
+  }
+
 }
