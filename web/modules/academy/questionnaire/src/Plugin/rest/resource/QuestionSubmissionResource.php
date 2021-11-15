@@ -6,11 +6,11 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\QuestionSubmission;
+use Drupal\questionnaire\SubmissionManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -36,25 +36,18 @@ use Symfony\Component\Routing\RouteCollection;
 class QuestionSubmissionResource extends ResourceBase {
 
   /**
-   * The current user.
+   * The serialization by Json service.
    *
-   * @var \Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Component\Serialization\Json
    */
-  protected $currentUser;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+  protected $serializationJson;
 
   /**
    * The serialization by Json service.
    *
    * @var \Drupal\Component\Serialization\Json
    */
-  protected $serializationJson;
+  protected $submissionManager;
 
   /**
    * Constructs a QuestionSubmissionResource object.
@@ -69,18 +62,15 @@ class QuestionSubmissionResource extends ResourceBase {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
    * @param \Drupal\Component\Serialization\Json $serialization_json
    *   The serialization by Json service.
+   * @param \Drupal\questionnaire\SubmissionManager $submission_manager
+   *   The submission manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, Json $serialization_json) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, SubmissionManager $submission_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
     $this->serializationJson = $serialization_json;
+    $this->submissionManager = $submission_manager;
   }
 
   /**
@@ -93,9 +83,8 @@ class QuestionSubmissionResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('current_user'),
-      $container->get('entity_type.manager'),
-      $container->get('serialization.json')
+      $container->get('serialization.json'),
+      $container->get('submission.manager')
     );
   }
 
@@ -113,7 +102,7 @@ class QuestionSubmissionResource extends ResourceBase {
   public function get(Question $question) {
 
     // Get the respective submission by question and current user.
-    $submission = $this->getRespectiveSubmission($question);
+    $submission = $this->getSubmission($question);
 
     // There is no submission for this question by this user.
     if (empty($submission)) {
@@ -219,10 +208,10 @@ class QuestionSubmissionResource extends ResourceBase {
     };
 
     // Get the respective submission by question and current user.
-    $submission = $this->getRespectiveSubmission($question);
+    $submission = $this->getSubmission($question);
 
     // Create or update submission if value is not empty.
-    if (!empty($value)) {
+    if ($value === '0' || !empty($value)) {
 
       // There is no submission for this question by this user. Create new
       // submission.
@@ -231,7 +220,6 @@ class QuestionSubmissionResource extends ResourceBase {
       if (empty($submission)) {
         $submission = QuestionSubmission::create([
           'question' => $question->id(),
-          'uid' => $this->currentUser->id(),
           'langcode' => 'en',
           'value' => $value,
         ]);
@@ -306,40 +294,15 @@ class QuestionSubmissionResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    */
-  protected function getRespectiveSubmission(Question $question) : ?QuestionSubmission {
+  protected function getSubmission(Question $question) : ?QuestionSubmission {
     try {
-      // Get referenced submission.
-      $query = $this->entityTypeManager
-        ->getStorage('question_submission')
-        ->getQuery();
-      $submission_id = $query->condition('question', $question->id())
-        ->condition('uid', $this->currentUser->id())
-        ->execute();
+      return $this->submissionManager->loadSubmission($question);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
-
-    // Return nothing if there is no submission.
-    if (empty($submission_id)) {
-      return NULL;
-    }
-
-    // Something went wrong here.
-    if (count($submission_id) > 1) {
-      throw new UnprocessableEntityHttpException('The submission for the requested question has inconsistent persistent data.');
-    }
-
-    try {
-      // Return loaded submission.
-      /** @var \Drupal\questionnaire\Entity\QuestionSubmission $submission */
-      $submission = $this->entityTypeManager
-        ->getStorage('question_submission')
-        ->load(reset($submission_id));
-      return $submission;
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
+    catch (EntityMalformedException $e) {
+      throw new UnprocessableEntityHttpException('The submission for the requested question has inconsistent persistent data.', $e);
     }
   }
 

@@ -2,11 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - jsonapi_defaults
     - progress
-third_party_settings:
-  jsonapi_defaults:
-    page_limit: 50
 id: course_progress--course_progress
 disabled: true
 path: course_progress/course_progress
