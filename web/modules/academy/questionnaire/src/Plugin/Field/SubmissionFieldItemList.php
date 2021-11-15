@@ -34,8 +34,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
         $input = Html::escape($submission->get('value')->value);
 
         // Explode input for checkboxes and radios.
-        if ($question->bundle() == 'checkboxes' ||
-          $question->bundle() == 'radios') {
+        if ($question->bundle() == 'checkboxes') {
           $values = explode(',', $input);
           foreach ($values as $value) {
             $item = $this->createItem(0, $value);
@@ -50,6 +49,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
           $this->list[0] = $item;
         }
       }
+
       // If there is no submission, create empty item with attached cache info.
       // @see \Drupal\academy\Plugin\Field\FieldType\CacheableStringItem
       else {

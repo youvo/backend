@@ -156,13 +156,6 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
         'weight' => -1,
       ]);
 
-    $fields['submission'] = BaseFieldDefinition::create('cacheable_string')
-      ->setLabel(t('User Input'))
-      ->setDescription(t('Computes the user input from question submissions.'))
-      ->setComputed(TRUE)
-      ->setClass(SubmissionFieldItemList::class)
-      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
-
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
