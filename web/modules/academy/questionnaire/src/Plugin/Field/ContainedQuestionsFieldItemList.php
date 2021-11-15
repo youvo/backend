@@ -37,7 +37,7 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
       foreach ($lectures as $lecture) {
         // The paragraphs are weighted correctly.
         $paragraphs = $lecture->get('paragraphs')->referencedEntities();
-        $questionnaires += array_merge($questionnaires,
+        $questionnaires = array_merge($questionnaires,
           array_filter($paragraphs, fn($p) => $p->bundle() == 'questionnaire'));
       }
 
@@ -47,7 +47,7 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
         // Questions are not weighted correctly. Therefore, sort them.
         usort($questions,
           fn($a, $b) => $a->get('weight')->value <=> $b->get('weight')->value);
-        $all_question_ids += array_merge($all_question_ids,
+        $all_question_ids = array_merge($all_question_ids,
           array_map(fn ($q) => $q->id(), $questions));
       }
     }
