@@ -10,10 +10,7 @@
  * questionnaires.
  */
 
-use Drupal\academy\ComputedFieldStorageDefinition;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\questionnaire\Entity\Questionnaire;
-use Drupal\questionnaire\Plugin\Field\EvaluationFieldItemList;
 
 /**
  * Implements hook_entity_bundle_info_alter().
@@ -34,29 +31,4 @@ function questionnaire_entity_type_alter(array &$entity_types) {
   // @todo Check if there is a better way to define handlers by bundle.
   $entity_types['paragraph']->setFormClass('add', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
   $entity_types['paragraph']->setFormClass('edit', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
-}
-
-/**
- * Implements hook_entity_bundle_field_info().
- */
-function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
-
-  $fields = [];
-
-  // Add computed evaluation field to evaluation paragraphs.
-  if ($entity_type->id() == 'question' &&
-    ($bundle == 'checkboxes' || $bundle == 'radios')) {
-    // It is not a basefield, so we need a custom field storage definition see
-    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
-    $fields['evaluation'] = ComputedFieldStorageDefinition::create('cacheable_boolean_item')
-      ->setLabel(t('Question Evaluation'))
-      ->setDescription(t('Computes the evaluation of a question.'))
-      ->setComputed(TRUE)
-      ->setRequired(TRUE)
-      ->setClass(EvaluationFieldItemList::class)
-      ->setTargetEntityTypeId($entity_type->id())
-      ->setTargetBundle($bundle);
-  }
-
-  return $fields;
 }
