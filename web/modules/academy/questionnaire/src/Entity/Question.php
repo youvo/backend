@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\progress\Plugin\Field\CompletedFieldItemList;
 use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
 use Drupal\user\UserInterface;
 
