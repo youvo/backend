@@ -297,7 +297,7 @@ class QuestionSubmissionResource extends ResourceBase {
    */
   protected function getSubmission(Question $question) : ?QuestionSubmission {
     try {
-      return $this->submissionManager->getSubmission($question);
+      return $this->submissionManager->loadSubmission($question);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new HttpException(500, 'Internal Server Error', $e);

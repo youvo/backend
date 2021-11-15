@@ -157,7 +157,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
         'weight' => -1,
       ]);
 
-    $fields['value'] = BaseFieldDefinition::create('cacheable_string')
+    $fields['submission'] = BaseFieldDefinition::create('cacheable_string')
       ->setLabel(t('User Input'))
       ->setDescription(t('Computes the user input from question submissions.'))
       ->setComputed(TRUE)
