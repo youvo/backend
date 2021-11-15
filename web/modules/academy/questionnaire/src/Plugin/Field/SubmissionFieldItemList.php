@@ -2,9 +2,11 @@
 
 namespace Drupal\questionnaire\Plugin\Field;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
+use Drupal\questionnaire\SubmissionManagerInjectionTrait;
 
 /**
  * SubmissionFieldItemList class to generate a computed field.
@@ -29,7 +31,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
       // If submission is found, calculate list.
       if (!empty($submission)) {
 
-        $input = $submission->get('value')->value;
+        $input = Html::escape($submission->get('value')->value);
 
         // Explode input for checkboxes and radios.
         if ($question->bundle() == 'checkboxes' ||
