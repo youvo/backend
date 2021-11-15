@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
+use Drupal\progress\Plugin\Field\CurrentLectureFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
 
@@ -43,6 +44,11 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
       ->setClass(ProgressFieldItemList::class);
+    $fields['current_lecture'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(t('Current Lecture'))
+      ->setDescription(t('Computes the last unlocked lecture by user.'))
+      ->setComputed(TRUE)
+      ->setClass(CurrentLectureFieldItemList::class);
   }
 
   return $fields;
