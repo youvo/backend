@@ -9,6 +9,9 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\progress\Plugin\Field\CompletedFieldItemList;
+use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
 use Drupal\user\UserInterface;
 
 /**
@@ -153,6 +156,13 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
         'type' => 'string_textarea',
         'weight' => -1,
       ]);
+
+    $fields['value'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(t('User Input'))
+      ->setDescription(t('Computes the user input from question submissions.'))
+      ->setComputed(TRUE)
+      ->setClass(SubmissionFieldItemList::class)
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
