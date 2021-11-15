@@ -12,26 +12,7 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
 class SubmissionFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
-
-  /**
-   * The submission manager.
-   *
-   * @var \Drupal\questionnaire\SubmissionManager
-   */
-  protected $submissionManager;
-
-  /**
-   * Gets the submission manager.
-   *
-   * @return \Drupal\questionnaire\SubmissionManager
-   *   The submission manager.
-   */
-  protected function submissionManager() {
-    if (!$this->submissionManager) {
-      $this->submissionManager = \Drupal::service('submission.manager');
-    }
-    return $this->submissionManager;
-  }
+  use SubmissionManagerInjectionTrait;
 
   /**
    * {@inheritdoc}
