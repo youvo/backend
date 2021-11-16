@@ -58,8 +58,10 @@ class LectureCompleteResource extends ProgressResource {
     try {
       // Set completed timestamp.
       $timestamp = $this->progressManager->getRequestTime();
-      $progress->setCompletedTime($timestamp);
-      $progress->save();
+      if (!$progress->getCompletedTime()) {
+        $progress->setCompletedTime($timestamp);
+        $progress->save();
+      }
 
       // Load the respective course progress.
       $course_progress = $this->progressManager
