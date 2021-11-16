@@ -228,6 +228,12 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       '#rows' => 3,
     ];
 
+    $form['questions']['elements']['required'] = [
+      '#title' => $this->t('Required'),
+      '#type' => 'checkbox',
+      '#description' => $this->t('This question has to be answered in order to complete current lecture.'),
+    ];
+
     // Trigger a 'submit' for the form elements in the container and create
     // a question entity. Then represent such question entity in the table
     // above.
@@ -252,6 +258,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
         ['options'],
         ['multianswers'],
         ['explanation'],
+        ['required'],
         ['elements'],
         ['title'],
       ],
@@ -328,6 +335,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     unset($current_input['help']);
     unset($current_input['explanation']);
     unset($current_input['multianswers']);
+    unset($current_input['required']);
     $form_state->setUserInput($current_input);
     $form_state->setValue('type', $form_state->getTriggeringElement()['#attributes']['data-type']);
     $form_state->setRebuild();
@@ -378,6 +386,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       'help' => $form_state->getValue('help'),
       'explanation' => $form_state->getValue('explanation'),
       'paragraph' => $this->entity->id(),
+      'required' => $form_state->getValue('required'),
     ]);
     if ($form_state->getValue('type') != 'textarea' &&
       $form_state->getValue('type') != 'textfield') {

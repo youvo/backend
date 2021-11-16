@@ -158,7 +158,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
 
     $fields['required'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Required'))
-      ->setDescription(t('A boolean indicating whether the question is required.'))
+      ->setDescription(t('This question has to be answered in order to complete current lecture.'))
       ->setDefaultValue(FALSE)
       ->setSetting('on_label', 'Required')
       ->setDisplayOptions('form', [
