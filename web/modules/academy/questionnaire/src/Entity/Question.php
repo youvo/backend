@@ -156,6 +156,19 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
         'weight' => -1,
       ]);
 
+    $fields['required'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Required'))
+      ->setDescription(t('A boolean indicating whether the question is required.'))
+      ->setDefaultValue(FALSE)
+      ->setSetting('on_label', 'Required')
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => FALSE,
+        ],
+        'weight' => 0,
+      ]);
+
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
