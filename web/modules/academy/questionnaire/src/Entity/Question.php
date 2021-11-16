@@ -120,6 +120,13 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
+   * Is required?
+   */
+  public function isRequired() {
+    return $this->get('required')->value;
+  }
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
