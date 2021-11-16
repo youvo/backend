@@ -13,6 +13,7 @@ use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -81,7 +82,7 @@ abstract class ProgressResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The requested progress has inconsistent persistent data.', $e);
+      throw new UnprocessableEntityHttpException('The requested progress has inconsistent persistent data.', $e);
     }
 
     // There is no progress for this lecture by this user.

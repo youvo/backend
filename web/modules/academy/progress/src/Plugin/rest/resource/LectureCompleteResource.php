@@ -11,6 +11,7 @@ use Drupal\progress\Entity\CourseProgress;
 use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * Provides Progress Lecture Complete Resource.
@@ -47,7 +48,7 @@ class LectureCompleteResource extends ProgressResource {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+      throw new UnprocessableEntityHttpException('The progress of the requested lecture has inconsistent persistent data.', $e);
     }
 
     // There is no progress for this lecture by this user.
@@ -94,7 +95,7 @@ class LectureCompleteResource extends ProgressResource {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the referenced course has inconsistent persistent data.', $e);
+      throw new UnprocessableEntityHttpException('The progress of the referenced course has inconsistent persistent data.', $e);
     }
 
     return new ModifiedResourceResponse(NULL, 201);
