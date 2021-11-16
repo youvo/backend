@@ -120,6 +120,13 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
+   * Is required?
+   */
+  public function isRequired() {
+    return $this->get('required')->value;
+  }
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
@@ -154,6 +161,19 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
       ->setDisplayOptions('form', [
         'type' => 'string_textarea',
         'weight' => -1,
+      ]);
+
+    $fields['required'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Required'))
+      ->setDescription(t('This question has to be answered in order to complete current lecture.'))
+      ->setDefaultValue(FALSE)
+      ->setSetting('on_label', 'Required')
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => FALSE,
+        ],
+        'weight' => 0,
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')

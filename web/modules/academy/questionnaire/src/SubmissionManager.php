@@ -121,4 +121,15 @@ class SubmissionManager {
     return $submission;
   }
 
+  /**
+   * Gets a submission of a question.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function isAnswered(Question $entity): bool {
+    return $this->loadSubmission($entity) !== NULL;
+  }
+
 }

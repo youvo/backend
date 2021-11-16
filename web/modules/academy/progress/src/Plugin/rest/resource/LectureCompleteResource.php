@@ -11,6 +11,7 @@ use Drupal\progress\Entity\CourseProgress;
 use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * Provides Progress Lecture Complete Resource.
@@ -47,7 +48,7 @@ class LectureCompleteResource extends ProgressResource {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the requested lecture has inconsistent persistent data.', $e);
+      throw new UnprocessableEntityHttpException('The progress of the requested lecture has inconsistent persistent data.', $e);
     }
 
     // There is no progress for this lecture by this user.
@@ -55,11 +56,32 @@ class LectureCompleteResource extends ProgressResource {
       throw new BadRequestHttpException('Creative is not enrolled in this lecture.');
     }
 
+    // Check if all required questions are answered.
+    // We are graceful, if there is an error.
+    try {
+      $answered = $this->progressManager->requiredQuestionsAnswered($entity);
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $this->logger->error('A referenced question has problems loading!');
+      $answered = TRUE;
+    }
+    catch (EntityMalformedException) {
+      $this->logger->error('A referenced question has inconsistent data.');
+      $answered = TRUE;
+    }
+
+    // If not all questions are answered, the lecture can not be completed.
+    if (!$answered) {
+      throw new BadRequestHttpException('Creative has not answered all required questions.');
+    }
+
     try {
       // Set completed timestamp.
       $timestamp = $this->progressManager->getRequestTime();
-      $progress->setCompletedTime($timestamp);
-      $progress->save();
+      if (!$progress->getCompletedTime()) {
+        $progress->setCompletedTime($timestamp);
+        $progress->save();
+      }
 
       // Load the respective course progress.
       $course_progress = $this->progressManager
@@ -92,7 +114,7 @@ class LectureCompleteResource extends ProgressResource {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
     catch (EntityMalformedException $e) {
-      throw new HttpException(417, 'The progress of the referenced course has inconsistent persistent data.', $e);
+      throw new UnprocessableEntityHttpException('The progress of the referenced course has inconsistent persistent data.', $e);
     }
 
     return new ModifiedResourceResponse(NULL, 201);

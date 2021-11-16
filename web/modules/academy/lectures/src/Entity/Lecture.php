@@ -152,6 +152,15 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   }
 
   /**
+   * Get paragraphs.
+   */
+  public function getParagraphs() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $paragraphs_field */
+    $paragraphs_field = $this->get('paragraphs');
+    return $paragraphs_field->referencedEntities();
+  }
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException

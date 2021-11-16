@@ -10,6 +10,15 @@ use Drupal\paragraphs\Entity\Paragraph;
 class Questionnaire extends Paragraph {
 
   /**
+   * Get paragraphs.
+   */
+  public function getQuestions() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $questions_field */
+    $questions_field = $this->get('questions');
+    return $questions_field->referencedEntities();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function delete() {

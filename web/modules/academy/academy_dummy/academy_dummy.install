@@ -238,6 +238,7 @@ function academy_dummy_site_install_finished() {
         'explanation' => rtrim($random->paragraphs(1)),
         'paragraph' => $questionnaire->id(),
         'weight' => -2,
+        'required' => rand(0, 1) == 1,
         'uid' => 1,
       ]);
       $max = rand(3, 5);
@@ -264,6 +265,7 @@ function academy_dummy_site_install_finished() {
         'explanation' => rtrim($random->paragraphs(1)),
         'paragraph' => $questionnaire->id(),
         'weight' => -1,
+        'required' => rand(0, 1) == 1,
         'uid' => 1,
       ]);
       $max = rand(3, 5);
