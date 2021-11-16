@@ -156,6 +156,15 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   }
 
   /**
+   * Get lectures.
+   */
+  public function getLectures() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $lectures_field */
+    $lectures_field = $this->get('lectures');
+    return $lectures_field->referencedEntities();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {

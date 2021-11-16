@@ -177,6 +177,9 @@ class QuestionSubmissionResource extends ResourceBase {
 
     // Check if posted value has valid format.
     $v = $request_content['value'];
+    if ($question->bundle() == 'checkboxes') {
+      $v = array_filter($v, fn($s) => $s !== NULL && $s !== "");
+    }
     $valid_type = match($question->bundle()) {
       'textarea' => is_string($v),
       'textfield' => is_string($v) && strlen($v) < 255,
