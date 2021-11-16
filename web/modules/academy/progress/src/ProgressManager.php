@@ -13,6 +13,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
+use Drupal\questionnaire\SubmissionManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -58,6 +59,13 @@ class ProgressManager {
   protected $database;
 
   /**
+   * The submission manager.
+   *
+   * @var \Drupal\questionnaire\SubmissionManager
+   */
+  protected $submissionManager;
+
+  /**
    * Constructs a QuestionSubmissionResource object.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -70,13 +78,16 @@ class ProgressManager {
    *   A logger instance.
    * @param \Drupal\Core\Database\Connection $database
    *   A database connection.
+   * @param \Drupal\questionnaire\SubmissionManager $submission_manager
+   *   The submission manager service.
    */
-  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database) {
+  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database, SubmissionManager $submission_manager) {
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->logger = $logger;
     $this->database = $database;
+    $this->submissionManager = $submission_manager;
   }
 
   /**
@@ -209,7 +220,7 @@ class ProgressManager {
   public function currentLecture(Course $course): ?Lecture {
 
     // Retrieve lectures from course.
-    $lectures = $course->get('lectures')->referencedEntities();
+    $lectures = $course->getLectures();
 
     // If the course is completed the progress is full.
     if ($this->isCompleted($course)) {
@@ -245,6 +256,34 @@ class ProgressManager {
     $lectures = $this->getReferencedLecturesByCompleted($lecture->getParentEntity());
     return is_array($lectures) &&
       $lectures[array_key_last($lectures)]->id == $lecture->id();
+  }
+
+  /**
+   * Determines if all required questions were answered.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  public function requiredQuestionsAnswered(Lecture $lecture) {
+
+    $answered = TRUE;
+
+    if ($questionnaires = array_filter($lecture->getParagraphs(),
+      fn($p) => $p->bundle() == 'questionnaire')) {
+      /** @var \Drupal\questionnaire\Entity\Questionnaire[] $questionnaires */
+      /** @var \Drupal\questionnaire\Entity\Question[] $questions */
+      foreach ($questionnaires as $questionnaire) {
+        $questions = $questionnaire->getQuestions();
+        foreach ($questions as $question) {
+          if ($question->isRequired()) {
+            $answered = $this->submissionManager->isAnswered($question);
+          }
+        }
+      }
+    }
+
+    return $answered;
   }
 
   /**

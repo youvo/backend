@@ -1,4 +1,4 @@
 services:
   progress.manager:
     class: Drupal\progress\ProgressManager
-    arguments: ['@current_user', '@entity_type.manager', '@datetime.time', '@logger.channel.academy', '@database']
+    arguments: ['@current_user', '@entity_type.manager', '@datetime.time', '@logger.channel.academy', '@database', '@submission.manager' ]

@@ -56,6 +56,25 @@ class LectureCompleteResource extends ProgressResource {
       throw new BadRequestHttpException('Creative is not enrolled in this lecture.');
     }
 
+    // Check if all required questions are answered.
+    // We are graceful, if there is an error.
+    try {
+      $answered = $this->progressManager->requiredQuestionsAnswered($entity);
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $this->logger->error('A referenced question has problems loading!');
+      $answered = TRUE;
+    }
+    catch (EntityMalformedException) {
+      $this->logger->error('A referenced question has inconsistent data.');
+      $answered = TRUE;
+    }
+
+    // If not all questions are answered, the lecture can not be completed.
+    if (!$answered) {
+      throw new BadRequestHttpException('Creative has not answered all required questions.');
+    }
+
     try {
       // Set completed timestamp.
       $timestamp = $this->progressManager->getRequestTime();
