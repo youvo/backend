@@ -10,7 +10,10 @@ use Drupal\paragraphs\Entity\Paragraph;
 class Questionnaire extends Paragraph {
 
   /**
-   * Get paragraphs.
+   * Get questions.
+   *
+   * @return \Drupal\questionnaire\Entity\Question[]
+   *   The referenced questions.
    */
   public function getQuestions() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $questions_field */

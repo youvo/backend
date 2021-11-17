@@ -29,21 +29,22 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
 
     try {
       // Get all questions contained in a course.
+      /** @var \Drupal\courses\Entity\Course $course */
       $course = $paragraph->getOriginEntity();
 
       // First get distill all questionnaires in lectures.
-      $lectures = $course->get('lectures')->referencedEntities();
+      $lectures = $course->getLectures();
       $questionnaires = [];
       foreach ($lectures as $lecture) {
         // The paragraphs are weighted correctly.
-        $paragraphs = $lecture->get('paragraphs')->referencedEntities();
+        $paragraphs = $lecture->getParagraphs();
         $questionnaires = array_merge($questionnaires,
           array_filter($paragraphs, fn($p) => $p->bundle() == 'questionnaire'));
       }
 
       // Compile all questions within all questionnaires.
       foreach ($questionnaires as $questionnaire) {
-        $questions = $questionnaire->get('questions')->referencedEntities();
+        $questions = $questionnaire->getQuestions();
         // Questions are not weighted correctly. Therefore, sort them.
         usort($questions,
           fn($a, $b) => $a->get('weight')->value <=> $b->get('weight')->value);

@@ -153,6 +153,9 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
 
   /**
    * Get paragraphs.
+   *
+   * @return \Drupal\paragraphs\Entity\Paragraph[]
+   *   Array of referenced paragraphs.
    */
   public function getParagraphs() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $paragraphs_field */

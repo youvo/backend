@@ -157,6 +157,9 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
 
   /**
    * Get lectures.
+   *
+   * @return \Drupal\lectures\Entity\Lecture[]
+   *   Array of referenced lectures.
    */
   public function getLectures() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $lectures_field */
