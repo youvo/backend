@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides a trait for form validation for questions.
  */
-trait QuestionValidateTrait {
+trait QuestionProcessTrait {
 
   /**
    * Require t.
@@ -56,7 +56,7 @@ trait QuestionValidateTrait {
     }
 
     // Check if correct options are satisfying.
-    if ($question_type === 'radios' || $question_type === 'checkboxes') {
+    if ($question_type === 'radios') {
       $answers = $form_state->getValue('multianswers');
       $correct_set = 0;
       foreach ($answers as $answer) {
@@ -64,16 +64,29 @@ trait QuestionValidateTrait {
           $correct_set++;
         }
       }
-      if ($question_type === 'radios') {
-        if ($correct_set != 1) {
-          $message = $this->t('Please select one correct answer.');
-          $form_state->setErrorByName('elements', $message);
-        }
+      if ($correct_set > 1) {
+        $message = $this->t('Please select at most one correct answer.');
+        $form_state->setErrorByName('elements', $message);
       }
-      else {
-        if (!$correct_set) {
-          $message = $this->t('Please select at least one correct answer.');
-          $form_state->setErrorByName('elements', $message);
+    }
+  }
+
+  /**
+   * Adds answers to question from form_state.
+   */
+  public function populateMultiAnswerToQuestion(&$question, $form_state) {
+    if ($form_state->getValue('type') != 'textarea' &&
+      $form_state->getValue('type') != 'textfield') {
+      $answers = $form_state->getValue('multianswers');
+      $correct_set = count(array_filter($answers, fn($a) => $a['correct']));
+      $question->set('options', []);
+      $question->set('answers', []);
+      foreach ($answers as $answer) {
+        if (!empty($answer['option'])) {
+          $question->get('options')->appendItem($answer['option']);
+          if ($correct_set) {
+            $question->get('answers')->appendItem($answer['correct']);
+          }
         }
       }
     }
