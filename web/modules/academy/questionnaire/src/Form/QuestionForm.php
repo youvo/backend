@@ -14,7 +14,7 @@ use Drupal\multivalue_form_element\Element\MultiValue;
  */
 class QuestionForm extends ContentEntityForm {
 
-  use QuestionValidateTrait;
+  use QuestionProcessTrait;
 
   /**
    * {@inheritdoc}
@@ -86,18 +86,7 @@ class QuestionForm extends ContentEntityForm {
     $paragraph = $question->getParentEntity();
 
     // Add values from multianswers form element.
-    if ($form_state->getValue('type') != 'textarea' &&
-      $form_state->getValue('type') != 'textfield') {
-      $answers = $form_state->getValue('multianswers');
-      $question->set('options', []);
-      $question->set('answers', []);
-      foreach ($answers as $answer) {
-        if (!empty($answer['option'])) {
-          $question->get('options')->appendItem($answer['option']);
-          $question->get('answers')->appendItem($answer['correct']);
-        }
-      }
-    }
+    $this->populateMultiAnswerToQuestion($question, $form_state);
 
     // Save entity.
     parent::save($form, $form_state);

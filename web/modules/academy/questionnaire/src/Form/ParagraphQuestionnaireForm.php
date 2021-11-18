@@ -22,7 +22,7 @@ use Drupal\questionnaire\Entity\Questionnaire;
 class ParagraphQuestionnaireForm extends ParagraphForm {
 
   use MessengerTrait;
-  use QuestionValidateTrait;
+  use QuestionProcessTrait;
 
   /**
    * {@inheritdoc}
@@ -388,16 +388,9 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       'paragraph' => $this->entity->id(),
       'required' => $form_state->getValue('required'),
     ]);
-    if ($form_state->getValue('type') != 'textarea' &&
-      $form_state->getValue('type') != 'textfield') {
-      $answers = $form_state->getValue('multianswers');
-      foreach ($answers as $answer) {
-        if (!empty($answer['option'])) {
-          $new_question->get('options')->appendItem($answer['option']);
-          $new_question->get('answers')->appendItem($answer['correct']);
-        }
-      }
-    }
+
+    // Add values from multianswers form element.
+    $this->populateMultiAnswerToQuestion($new_question, $form_state);
 
     // Append new question to paragraph.
     $new_question->save();
