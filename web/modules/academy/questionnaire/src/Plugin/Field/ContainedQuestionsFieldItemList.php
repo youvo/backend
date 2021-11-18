@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\Core\Utility\Error;
+use Drupal\questionnaire\Entity\Questionnaire;
 
 /**
  * Computes questions contained in course.
@@ -44,7 +45,8 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
 
       // Compile all questions within all questionnaires.
       foreach ($questionnaires as $questionnaire) {
-        $questions = $questionnaire->getQuestions();
+        $questions = $questionnaire instanceof Questionnaire ?
+          $questionnaire->getQuestions() : [];
         // Questions are not weighted correctly. Therefore, sort them.
         usort($questions,
           fn($a, $b) => $a->get('weight')->value <=> $b->get('weight')->value);
