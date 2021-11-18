@@ -242,15 +242,17 @@ function academy_dummy_site_install_finished() {
         'uid' => 1,
       ]);
       $max = rand(3, 5);
-      $correct = rand(1, $max);
+      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
       $i = 1;
       while ($i <= $max) {
         $question->get('options')->appendItem($random->sentences(3, TRUE));
-        if ($i == $correct) {
-          $question->get('answers')->appendItem(TRUE);
-        }
-        else {
-          $question->get('answers')->appendItem(FALSE);
+        if ($correct) {
+          if ($i == $correct) {
+            $question->get('answers')->appendItem(TRUE);
+          }
+          else {
+            $question->get('answers')->appendItem(FALSE);
+          }
         }
         $i++;
       }
@@ -269,15 +271,17 @@ function academy_dummy_site_install_finished() {
         'uid' => 1,
       ]);
       $max = rand(3, 5);
-      $correct = rand(1, $max);
+      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
       $i = 1;
       while ($i <= $max) {
         $question->get('options')->appendItem($random->sentences(3, TRUE));
-        if ($i == $correct) {
-          $question->get('answers')->appendItem(TRUE);
-        }
-        else {
-          $question->get('answers')->appendItem(rand(0, 1) == 1);
+        if ($correct) {
+          if ($i == $correct) {
+            $question->get('answers')->appendItem(TRUE);
+          }
+          else {
+            $question->get('answers')->appendItem(rand(0, 100) < 20);
+          }
         }
         $i++;
       }
