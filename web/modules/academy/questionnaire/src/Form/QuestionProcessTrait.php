@@ -3,6 +3,7 @@
 namespace Drupal\questionnaire\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\questionnaire\Entity\Question;
 
 /**
  * Provides a trait for form validation for questions.
@@ -74,7 +75,7 @@ trait QuestionProcessTrait {
   /**
    * Adds answers to question from form_state.
    */
-  public function populateMultiAnswerToQuestion(&$question, $form_state) {
+  public function populateMultiAnswerToQuestion(Question &$question, FormStateInterface $form_state) {
     if ($form_state->getValue('type') != 'textarea' &&
       $form_state->getValue('type') != 'textfield') {
       $answers = $form_state->getValue('multianswers');
