@@ -91,12 +91,14 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
     // Use this light-weight trick to sort by courses weight.
     $lectures_grouped_sorted = [];
-    $sorted_query = \Drupal::entityQuery('course')
-      ->condition('id', $course_ids, 'IN')
-      ->sort('weight')
-      ->execute();
-    foreach ($sorted_query as $key) {
-      $lectures_grouped_sorted[$key] = $lectures_grouped[$key];
+    if (!empty($course_ids)) {
+      $sorted_query = \Drupal::entityQuery('course')
+        ->condition('id', $course_ids, 'IN')
+        ->sort('weight')
+        ->execute();
+      foreach ($sorted_query as $key) {
+        $lectures_grouped_sorted[$key] = $lectures_grouped[$key];
+      }
     }
 
     // Attach to entities property.
