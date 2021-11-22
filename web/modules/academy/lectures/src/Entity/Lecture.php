@@ -77,6 +77,20 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Delete all referenced paragraphs.
+      $paragraphs = $this->getParagraphs();
+      foreach ($paragraphs as $paragraph) {
+        $paragraph->delete();
+      }
+      parent::delete();
+    }
+  }
+
+  /**
    * Get title.
    */
   public function getTitle() {

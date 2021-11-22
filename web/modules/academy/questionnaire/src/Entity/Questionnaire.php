@@ -27,12 +27,7 @@ class Questionnaire extends Paragraph {
   public function delete() {
     if (!$this->isNew()) {
       // Remove question references in questionnaire paragraph entity.
-      /** @var \Drupal\questionnaire\Entity\Question[] $questions */
-      $questions_reference = $this->get('questions')->getValue();
-      $question_ids = array_column($questions_reference, 'target_id');
-      $questions = $this->entityTypeManager()
-        ->getStorage('question')
-        ->loadMultiple($question_ids);
+      $questions = $this->getQuestions();
       foreach ($questions as $question) {
         $question->delete();
       }

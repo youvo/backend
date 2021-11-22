@@ -1,4 +1,4 @@
-include .env
+include conf/.env.local
 
 default: up
 
@@ -19,8 +19,8 @@ endif
 .PHONY: up
 up:
 	@echo "Starting up containers for $(PROJECT_NAME)..."
-	docker-compose pull
-	docker-compose up -d --remove-orphans
+	docker-compose --env-file conf/.env.local pull
+	docker-compose --env-file conf/.env.local up -d --remove-orphans
 
 .PHONY: mutagen
 mutagen:

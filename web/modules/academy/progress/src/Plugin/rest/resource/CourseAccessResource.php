@@ -57,7 +57,7 @@ class CourseAccessResource extends ProgressResource {
         'course' => $entity->id(),
         'uid' => $this->progressManager->getCurrentUserId(),
         'accessed' => $this->progressManager->getRequestTime(),
-        'langcode' => 'en',
+        'langcode' => 'de',
       ]);
     }
     // Update access timestamp for this users progress.

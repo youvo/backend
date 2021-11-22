@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.checklist
+id: paragraph.checklist
+target_entity_type_id: paragraph
+target_bundle: checklist
+default_langcode: de
+language_alterable: false

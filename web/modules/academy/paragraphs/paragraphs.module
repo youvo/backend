@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
@@ -51,64 +50,4 @@ function paragraphs_entity_operation(EntityInterface $entity) {
     ];
   }
   return $operations;
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $course = \Drupal::service('current_route_match')->getParameter('course');
-  $url = Url::fromRoute('entity.lecture.collection', [], [
-    'query' => ['cr' => $course->id()],
-    'fragment' => 'edit-course-' . $course->id(),
-  ]);
-  paragraphs_add_abort_button($form, $url);
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function paragraphs_form_lecture_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-
-  // Add abort button.
-  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
-  $lecture = \Drupal::service('current_route_match')->getParameter('lecture');
-  $url = Url::fromRoute('entity.paragraph.collection', [
-    'course' => $lecture->getParentEntity()->id(),
-    'lecture' => $lecture->id(),
-  ]);
-  paragraphs_add_abort_button($form, $url);
-
-  // Alter redirect.
-  $form['actions']['submit']['#submit'][] = 'paragraphs_form_lecture_edit_form_redirect';
-}
-
-/**
- * Set redirect for lecture form.
- */
-function paragraphs_form_lecture_edit_form_redirect($form, FormStateInterface $form_state) {
-
-  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
-  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
-  $form_object = $form_state->getFormObject();
-  $lecture = $form_object->getEntity();
-  $form_state->setRedirect('entity.paragraph.collection', [
-    'course' => $lecture->getParentEntity()->id(),
-    'lecture' => $lecture->id(),
-  ]);
-}
-
-/**
- * Adds abort button to form array.
- */
-function paragraphs_add_abort_button(&$form, $url) {
-  $form['actions']['abort'] = [
-    '#type' => 'link',
-    '#title' => t('Abort'),
-    '#url' => $url,
-    '#attributes' => [
-      'class' => ['button'],
-    ],
-    '#weight' => 5,
-  ];
 }

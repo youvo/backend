@@ -33,16 +33,14 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
   $values = [
-    'field_avatar' => [
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
-    'field_name' => 'Fredolina Tonito',
-    'field_position' => 'Treppenstufenlauscherin',
-    'field_linkedin' => 'fredatonito',
-    'field_xing' => 'fredatonito',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
+    'fullname' => 'Fredolina Tonito',
+    'position' => 'Treppenstufenlauscherin',
+    'about' => rtrim($random->paragraphs(2)),
+    'skills' => youvo_dummy_get_random_skills(),
     'name' => 'hello@youvo.org',
     'mail' => 'hello@youvo.org',
     'roles' => ['creative'],
@@ -64,16 +62,14 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'anne.jpg');
   $values = [
-    'field_avatar' => [
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
-    'field_name' => 'Alexandria Frezza',
-    'field_position' => 'Hebelwirkungstesterin',
-    'field_linkedin' => 'alexfrezza',
-    'field_xing' => 'alexfrezza',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
+    'fullname' => 'Alexandria Frezza',
+    'position' => 'Hebelwirkungstesterin',
+    'about' => rtrim($random->paragraphs(2)),
+    'skills' => youvo_dummy_get_random_skills(),
     'name' => 'alexandria@youvo.org',
     'mail' => 'alexandria@youvo.org',
     'roles' => ['creative'],
@@ -95,16 +91,14 @@ function youvo_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'frank.jpg');
   $values = [
-    'field_avatar' => [
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
-    'field_name' => 'Frechie Daxon',
-    'field_position' => 'Laternenbetrachter',
-    'field_linkedin' => 'fredaxon',
-    'field_xing' => 'fredaxon',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
+    'fullname' => 'Frechie Daxon',
+    'position' => 'Laternenbetrachter',
+    'about' => rtrim($random->paragraphs(2)),
+    'skills' => youvo_dummy_get_random_skills(),
     'name' => 'frechie@youvo.org',
     'mail' => 'frechie@youvo.org',
     'roles' => ['creative'],
@@ -126,10 +120,10 @@ function youvo_dummy_site_install_finished() {
   // Values for organisation user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/organisations/', 'test.jpg');
   $values = [
-    'field_name' => 'BrückengeherInnen e.V.',
-    'field_about' => rtrim($random->paragraphs(4)),
-    'field_contact' => 'Helga Peickert',
-    'field_avatar' => [
+    'fullname' => 'BrückengeherInnen e.V.',
+    'about' => rtrim($random->paragraphs(4)),
+    'contact' => 'Helga Peickert',
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
@@ -153,10 +147,10 @@ function youvo_dummy_site_install_finished() {
 
   // Values for organisation user.
   $values = [
-    'field_name' => 'Vogelscheuchen Seelsorge e.V.',
-    'field_about' => rtrim($random->paragraphs(4)),
-    'field_contact' => 'Ursula Ursig',
-    'field_avatar' => [
+    'fullname' => 'Vogelscheuchen Seelsorge e.V.',
+    'about' => rtrim($random->paragraphs(4)),
+    'contact' => 'Ursula Ursig',
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
@@ -180,10 +174,10 @@ function youvo_dummy_site_install_finished() {
 
   // Values for organisation user.
   $values = [
-    'field_name' => 'Ball-Luftdruck-Korrektiv',
-    'field_about' => rtrim($random->paragraphs(4)),
-    'field_contact' => 'Nadir Ongerer',
-    'field_avatar' => [
+    'fullname' => 'Ball-Luftdruck-Korrektiv',
+    'about' => rtrim($random->paragraphs(4)),
+    'contact' => 'Nadir Ongerer',
+    'avatar' => [
       'target_id' => $image_file->id(),
       'alt' => $random->sentences(3, TRUE),
     ],
@@ -258,7 +252,7 @@ function youvo_dummy_get_random_causes() {
 function youvo_dummy_get_image_by_path(string $path, string $file_name) {
 
   $image_path = drupal_get_path('module', 'youvo_dummy') . $path . $file_name;
-  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $file_name);
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $file_name);
   $image_file = File::create([
     'uri' => $public_path,
     'uid' => 1,

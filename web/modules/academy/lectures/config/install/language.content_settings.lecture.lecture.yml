@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - lectures
+id: lecture.lecture
+target_entity_type_id: lecture
+target_bundle: lecture
+default_langcode: de
+language_alterable: false
