@@ -1,0 +1,9 @@
+<h3>Hello, {{ page.fullname }}!</h3>
+
+<p class="leader">
+  {% if page.academy %}
+    <a class="button button--primary" href="{{ path('entity.lecture.collection') }}">
+      {{ 'Academy Administration'|t }}
+    </a>
+  {% endif %}
+</p>

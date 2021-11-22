@@ -5,3 +5,6 @@ services:
       - { name: paramconverter }
     arguments:
       [ '@entity_type.manager', '@entity.repository' ]
+  logger.channel.youvo:
+    parent: logger.channel_base
+    arguments: [ 'youvo' ]

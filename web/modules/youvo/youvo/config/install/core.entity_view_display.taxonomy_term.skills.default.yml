@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.taxonomy_term.skills.field_machine_name
+    - field.field.taxonomy_term.skills.machine_name
     - taxonomy.vocabulary.skills
   module:
     - text
@@ -18,7 +18,7 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_machine_name:
+  machine_name:
     weight: 1
     label: above
     settings:

@@ -3,14 +3,6 @@ status: true
 dependencies:
   config:
     - node.type.project
-  module:
-    - jsonapi_defaults
-third_party_settings:
-  jsonapi_defaults:
-    default_sorting:
-      'sort:created#path': created
-      'sort:created#direction': DESC
-    page_limit: 50
 id: node--project
 disabled: false
 path: projects

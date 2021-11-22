@@ -223,7 +223,7 @@ class QuestionSubmissionResource extends ResourceBase {
       if (empty($submission)) {
         $submission = QuestionSubmission::create([
           'question' => $question->id(),
-          'langcode' => 'en',
+          'langcode' => 'de',
           'value' => $value,
         ]);
       }

@@ -2,14 +2,12 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.user.user.field_about
-    - field.field.user.user.field_avatar
-    - field.field.user.user.field_contact
-    - field.field.user.user.field_linkedin
-    - field.field.user.user.field_name
-    - field.field.user.user.field_position
-    - field.field.user.user.field_skills
-    - field.field.user.user.field_xing
+    - field.field.user.user.about
+    - field.field.user.user.avatar
+    - field.field.user.user.contact
+    - field.field.user.user.fullname
+    - field.field.user.user.position
+    - field.field.user.user.skills
     - image.style.thumbnail
   module:
     - image
@@ -24,7 +22,7 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-  field_about:
+  about:
     type: string_textarea
     weight: 2
     region: content
@@ -32,7 +30,7 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
-  field_avatar:
+  avatar:
     type: image_image
     weight: 3
     region: content
@@ -40,7 +38,7 @@ content:
       progress_indicator: throbber
       preview_image_style: ''
     third_party_settings: {  }
-  field_contact:
+  contact:
     type: string_textfield
     weight: 7
     region: content
@@ -48,15 +46,7 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_linkedin:
-    type: string_textfield
-    weight: 5
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
-  field_name:
+  fullname:
     type: string_textfield
     weight: 0
     region: content
@@ -64,7 +54,7 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_position:
+  position:
     type: string_textfield
     weight: 1
     region: content
@@ -72,19 +62,11 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_skills:
+  skills:
     type: options_buttons
     weight: 4
     region: content
     settings: {  }
-    third_party_settings: {  }
-  field_xing:
-    type: string_textfield
-    weight: 6
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
     third_party_settings: {  }
 hidden:
   langcode: true

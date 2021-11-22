@@ -140,8 +140,8 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  field_machine_name:
-    fieldName: field_machine_name
+  machine_name:
+    fieldName: machine_name
     publicName: machine_name
     enhancer:
       id: ''

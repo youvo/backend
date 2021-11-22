@@ -83,20 +83,22 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     if (!empty($course_ids)) {
       $empty_query->condition('id', $course_ids, 'NOT IN');
     }
-    $empty_query->execute();
-    foreach ($empty_query as $empty_course_id) {
+    $empty_query_result = $empty_query->execute();
+    foreach ($empty_query_result as $empty_course_id) {
       $course_ids[] = $empty_course_id;
       $lectures_grouped[$empty_course_id] = [];
     }
 
     // Use this light-weight trick to sort by courses weight.
     $lectures_grouped_sorted = [];
-    $sorted_query = \Drupal::entityQuery('course')
-      ->condition('id', $course_ids, 'IN')
-      ->sort('weight')
-      ->execute();
-    foreach ($sorted_query as $key) {
-      $lectures_grouped_sorted[$key] = $lectures_grouped[$key];
+    if (!empty($course_ids)) {
+      $sorted_query = \Drupal::entityQuery('course')
+        ->condition('id', $course_ids, 'IN')
+        ->sort('weight')
+        ->execute();
+      foreach ($sorted_query as $key) {
+        $lectures_grouped_sorted[$key] = $lectures_grouped[$key];
+      }
     }
 
     // Attach to entities property.
@@ -172,18 +174,6 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         '#button_type' => 'primary',
       ];
 
-      $form['course'][$course_id]['edit_course'] = [
-        '#type' => 'submit',
-        '#submit' => ['::redirectEditCourse'],
-        '#name' => 'edit_course_' . $course_id,
-        '#attributes' => [
-          'class' => ['button--small'],
-          'data-id' => $course_id,
-        ],
-        '#value' => $this->t('Edit Course'),
-        '#button_type' => 'secondary',
-      ];
-
       $form['course'][$course_id]['submit'] = [
         '#type' => 'submit',
         '#name' => 'submit' . $course_id,
@@ -193,6 +183,18 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         ],
         '#submit' => ['::submitOrder'],
         '#value' => $this->t('Save Order'),
+        '#button_type' => 'secondary',
+      ];
+
+      $form['course'][$course_id]['edit_course'] = [
+        '#type' => 'submit',
+        '#submit' => ['::redirectEditCourse'],
+        '#name' => 'edit_course_' . $course_id,
+        '#attributes' => [
+          'class' => ['button--small'],
+          'data-id' => $course_id,
+        ],
+        '#value' => $this->t('Edit Course'),
         '#button_type' => 'secondary',
       ];
     }
