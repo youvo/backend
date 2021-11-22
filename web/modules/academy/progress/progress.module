@@ -5,16 +5,23 @@
  * Provides hooks to document progress in academy.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\courses\Entity\Course;
+use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
 use Drupal\progress\Plugin\Field\CurrentLectureFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
+use Drupal\Core\Utility\Error;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -66,5 +73,53 @@ function progress_child_entities_check_access(AccessResultInterface &$access, Co
   if ($access->isAllowed()) {
     $access = AccessResult::allowedIf(\Drupal::service('progress.manager')
       ->isUnlocked($origin, $account));
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ *
+ * Delete all relevant progress entries when lecture is deleted.
+ */
+function progress_lecture_delete(EntityInterface $entity) {
+
+  if ($entity instanceof Lecture) {
+    try {
+      $progresses = \Drupal::entityTypeManager()->getStorage('lecture_progress')
+        ->loadByProperties(['lecture' => $entity->id()]);
+      foreach ($progresses as $progress) {
+        $progress->delete();
+      }
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      $variables['%id'] = $entity->id();
+      \Drupal::logger('academy')
+        ->error('Unable to delete submissions for lecture with ID %id.', $variables);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ *
+ * Delete all relevant progress entries when course is deleted.
+ */
+function progress_course_delete(EntityInterface $entity) {
+
+  if ($entity instanceof Course) {
+    try {
+      $progresses = \Drupal::entityTypeManager()->getStorage('course_progress')
+        ->loadByProperties(['course' => $entity->id()]);
+      foreach ($progresses as $progress) {
+        $progress->delete();
+      }
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      $variables['%id'] = $entity->id();
+      \Drupal::logger('academy')
+        ->error('Unable to delete submissions for course with ID %id.', $variables);
+    }
   }
 }
