@@ -68,6 +68,20 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Delete all referenced lectures.
+      $lectures = $this->getLectures();
+      foreach ($lectures as $lecture) {
+        $lecture->delete();
+      }
+      parent::delete();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getTitle() {
     return $this->get('title')->value;
   }

@@ -75,6 +75,23 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Remove all submissions made for this question.
+      // @todo Maybe has to be moved to cron bulk delete in the future.
+      $submissions = $this->entityTypeManager()
+        ->get('question_submission')
+        ->loadByProperties(['paragraph' => $this->id()]);
+      foreach ($submissions as $submission) {
+        $submission->delete();
+      }
+    }
+    parent::delete();
+  }
+
+  /**
    * Get created time.
    */
   public function getCreatedTime() {
