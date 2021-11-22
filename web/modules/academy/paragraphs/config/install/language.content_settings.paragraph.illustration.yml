@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.illustration
+id: paragraph.illustration
+target_entity_type_id: paragraph
+target_bundle: illustration
+default_langcode: de
+language_alterable: false

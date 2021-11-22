@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.excursus
+id: paragraph.excursus
+target_entity_type_id: paragraph
+target_bundle: excursus
+default_langcode: de
+language_alterable: false
