@@ -82,7 +82,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
       // Remove all submissions made for this question.
       // @todo Maybe has to be moved to cron bulk delete in the future.
       $submissions = $this->entityTypeManager()
-        ->get('question_submission')
+        ->getStorage('question_submission')
         ->loadByProperties(['paragraph' => $this->id()]);
       foreach ($submissions as $submission) {
         $submission->delete();
