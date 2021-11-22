@@ -1,0 +1,5 @@
+services:
+  paragraphs.route_subscriber:
+    class: Drupal\paragraphs\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
