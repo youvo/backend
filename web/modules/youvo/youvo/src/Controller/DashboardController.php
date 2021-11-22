@@ -35,8 +35,8 @@ class DashboardController extends ControllerBase {
       $page['fullname'] = $this->t('User');
     }
 
-    // Get URL to academy administration.
-    $page['academy_url'] = 'Wurst';
+    // Is academy activated?
+    $page['academy'] = $this->moduleHandler()->moduleExists('lectures');
 
     return [
       '#theme' => 'dashboard',
