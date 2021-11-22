@@ -83,7 +83,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
       // @todo Maybe has to be moved to cron bulk delete in the future.
       $submissions = $this->entityTypeManager()
         ->getStorage('question_submission')
-        ->loadByProperties(['paragraph' => $this->id()]);
+        ->loadByProperties(['question' => $this->id()]);
       foreach ($submissions as $submission) {
         $submission->delete();
       }
