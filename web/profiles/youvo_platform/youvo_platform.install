@@ -65,7 +65,7 @@ function youvo_platform_install() {
       'tid' => $tid,
       'vid' => $vocabulary,
       'description' => $term['description'],
-      'field_machine_name' => $term['machine_name'],
+      'machine_name' => $term['machine_name'],
       'weight' => $term['weight'],
     ])->save();
   }
