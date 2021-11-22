@@ -146,6 +146,17 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     }
 
     $form['actions']['#type'] = 'actions';
+    $form['actions']['add_paragraph'] = [
+      '#type' => 'link',
+      '#title' => $this->t('+ Add Paragraph'),
+      '#url' => Url::fromRoute('entity.paragraph.add_page', [
+        'lecture' => $this->getParentEntityFromRoute('lecture')->id(),
+        'course' => $this->getParentEntityFromRoute('course')->id(),
+      ]),
+      '#attributes' => [
+        'class' => ['button button--small button--primary'],
+      ],
+    ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save Order'),
