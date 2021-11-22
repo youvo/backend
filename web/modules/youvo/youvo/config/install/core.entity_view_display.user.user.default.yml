@@ -2,14 +2,12 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.user.user.field_about
-    - field.field.user.user.field_avatar
-    - field.field.user.user.field_contact
-    - field.field.user.user.field_linkedin
-    - field.field.user.user.field_name
-    - field.field.user.user.field_position
-    - field.field.user.user.field_skills
-    - field.field.user.user.field_xing
+    - field.field.user.user.about
+    - field.field.user.user.avatar
+    - field.field.user.user.contact
+    - field.field.user.user.fullname
+    - field.field.user.user.position
+    - field.field.user.user.skills
     - image.style.large
   module:
     - image
@@ -19,14 +17,14 @@ targetEntityType: user
 bundle: user
 mode: default
 content:
-  field_about:
+  about:
     weight: 5
     label: above
     settings: {  }
     third_party_settings: {  }
     type: basic_string
     region: content
-  field_avatar:
+  avatar:
     weight: 6
     label: above
     settings:
@@ -35,7 +33,7 @@ content:
     third_party_settings: {  }
     type: image
     region: content
-  field_contact:
+  contact:
     weight: 7
     label: above
     settings:
@@ -43,15 +41,7 @@ content:
     third_party_settings: {  }
     type: string
     region: content
-  field_linkedin:
-    weight: 2
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    type: string
-    region: content
-  field_name:
+  fullname:
     weight: 0
     label: above
     settings:
@@ -59,7 +49,7 @@ content:
     third_party_settings: {  }
     type: string
     region: content
-  field_position:
+  position:
     weight: 4
     label: above
     settings:
@@ -67,7 +57,7 @@ content:
     third_party_settings: {  }
     type: string
     region: content
-  field_skills:
+  skills:
     weight: 1
     label: above
     settings:
@@ -76,14 +66,7 @@ content:
     third_party_settings: {  }
     type: entity_reference_entity_view
     region: content
-  field_xing:
-    weight: 3
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    type: string
-    region: content
+
 hidden:
   langcode: true
   member_for: true

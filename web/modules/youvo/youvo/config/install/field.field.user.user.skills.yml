@@ -2,15 +2,15 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.field_skills
+    - field.storage.user.skills
     - taxonomy.vocabulary.skills
   module:
     - user
-id: user.user.field_skills
-field_name: field_skills
+id: user.user.skills
+field_name: skills
 entity_type: user
 bundle: user
-label: Tätigkeitsfelder
+label: Skills
 description: ''
 required: false
 translatable: false

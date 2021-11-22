@@ -45,11 +45,11 @@ resourceFields:
     enhancer:
       id: ''
   id:
+    disabled: true
     fieldName: id
     publicName: id
     enhancer:
       id: ''
-    disabled: false
   label:
     fieldName: label
     publicName: label

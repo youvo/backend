@@ -2,11 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - jsonapi_defaults
     - user
-third_party_settings:
-  jsonapi_defaults:
-    page_limit: 50
 id: user--user
 disabled: false
 path: users
@@ -67,11 +63,11 @@ resourceFields:
       id: ''
     disabled: false
   status:
+    disabled: true
     fieldName: status
     publicName: status
     enhancer:
       id: ''
-    disabled: false
   created:
     fieldName: created
     publicName: created
@@ -103,62 +99,50 @@ resourceFields:
     enhancer:
       id: ''
   roles:
+    disabled: true
     fieldName: roles
     publicName: roles
     enhancer:
       id: ''
-    disabled: false
   default_langcode:
     disabled: true
     fieldName: default_langcode
     publicName: default_langcode
     enhancer:
       id: ''
-  field_about:
-    fieldName: field_about
+  about:
+    fieldName: about
     publicName: about
     enhancer:
       id: ''
     disabled: false
-  field_avatar:
-    fieldName: field_avatar
+  avatar:
+    fieldName: avatar
     publicName: avatar
     enhancer:
       id: ''
     disabled: false
-  field_contact:
-    fieldName: field_contact
+  contact:
+    fieldName: contact
     publicName: contact
     enhancer:
       id: ''
     disabled: false
-  field_linkedin:
-    fieldName: field_linkedin
-    publicName: linkedin
-    enhancer:
-      id: ''
-    disabled: false
-  field_name:
-    fieldName: field_name
+  fullname:
+    fieldName: fullname
     publicName: name
     enhancer:
       id: ''
     disabled: false
-  field_position:
-    fieldName: field_position
+  position:
+    fieldName: position
     publicName: position
     enhancer:
       id: ''
     disabled: false
-  field_skills:
-    fieldName: field_skills
+  skills:
+    fieldName: skills
     publicName: skills
-    enhancer:
-      id: ''
-    disabled: false
-  field_xing:
-    fieldName: field_xing
-    publicName: xing
     enhancer:
       id: ''
     disabled: false

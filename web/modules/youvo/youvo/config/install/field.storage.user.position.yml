@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - user
-id: user.field_linkedin
-field_name: field_linkedin
+id: user.position
+field_name: position
 entity_type: user
 type: string
 settings:
