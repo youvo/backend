@@ -174,18 +174,6 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         '#button_type' => 'primary',
       ];
 
-      $form['course'][$course_id]['edit_course'] = [
-        '#type' => 'submit',
-        '#submit' => ['::redirectEditCourse'],
-        '#name' => 'edit_course_' . $course_id,
-        '#attributes' => [
-          'class' => ['button--small'],
-          'data-id' => $course_id,
-        ],
-        '#value' => $this->t('Edit Course'),
-        '#button_type' => 'secondary',
-      ];
-
       $form['course'][$course_id]['submit'] = [
         '#type' => 'submit',
         '#name' => 'submit' . $course_id,
@@ -195,6 +183,18 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         ],
         '#submit' => ['::submitOrder'],
         '#value' => $this->t('Save Order'),
+        '#button_type' => 'secondary',
+      ];
+
+      $form['course'][$course_id]['edit_course'] = [
+        '#type' => 'submit',
+        '#submit' => ['::redirectEditCourse'],
+        '#name' => 'edit_course_' . $course_id,
+        '#attributes' => [
+          'class' => ['button--small'],
+          'data-id' => $course_id,
+        ],
+        '#value' => $this->t('Edit Course'),
         '#button_type' => 'secondary',
       ];
     }
