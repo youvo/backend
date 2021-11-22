@@ -4,4 +4,4 @@ youvo.dashboard:
     _controller: '\Drupal\youvo\Controller\DashboardController::dashboard'
     _title: 'Dashboard'
   requirements:
-    _permission: 'manage courses'
+    _role: 'editor+administrator'
