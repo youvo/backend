@@ -8,7 +8,7 @@
 
  cd ~
  cd www/$SITE_FOLDER
- set -a; source conf/.env; set +a
+ set -a; source conf/.env.development; set +a
 
  # Delete database.
  mysql -e "DROP DATABASE IF EXISTS ${DB_NAME}"
@@ -30,7 +30,7 @@
  # Reset files folder.
  rm -rf files
  mkdir files
- chmod 0777 files
+ chmod 0755 files
  echo "Files folder reset ..."
 
  # Reinstall drupal.
@@ -40,16 +40,22 @@
  drush site:install -y youvo_development \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
-  --site-name="youvo.org" \
-  --site-mail="admin@youvo.org" \
-  --account-name="admin@youvo.org" \
-  --account-mail="admin@youvo.org" \
-  --account-pass="admin" > /dev/null 2>&1
+  --site-name="${SITE_NAME}" \
+  --site-mail="${SITE_MAIL}" \
+  --account-name="${ACCOUNT_NAME}" \
+  --account-mail="${ACCOUNT_MAIL}" \
+  --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1
-
+	
+ # Set permissions for settings file.
+ cd ~
+ cd www/$SITE_FOLDER/web/sites/default
+ chmod 0444 settings.php
+ chmod 0444 default.settings.php
+ 
  # Bye bye.
  echo "Exit in 3 seconds!"
  sleep 3
