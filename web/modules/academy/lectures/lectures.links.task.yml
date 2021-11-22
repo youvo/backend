@@ -1,5 +1,0 @@
-entity.lecture.collection:
-  title: Academy
-  route_name: entity.lecture.collection
-  base_route: system.admin_content
-  weight: 10
