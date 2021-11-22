@@ -97,7 +97,7 @@ class LectureCompleteResource extends ProgressResource {
           'uid' => $progress->getOwnerId(),
           'enrolled' => $progress->getEnrollmentTime(),
           'accessed' => $progress->getEnrollmentTime(),
-          'langcode' => 'en',
+          'langcode' => 'de',
         ]);
         $course_progress->save();
       }

@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.textfield
+id: question.textfield
+target_entity_type_id: question
+target_bundle: textfield
+default_langcode: de
+language_alterable: false
