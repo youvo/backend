@@ -3,9 +3,3 @@ paragraph.type_add:
   title: 'Add paragraph type'
   appears_on:
     - entity.paragraph_type.collection
-
-paragraph.add_page:
-  route_name: entity.paragraph.add_page
-  title: 'Add paragraph'
-  appears_on:
-    - entity.paragraph.collection
