@@ -4,7 +4,7 @@ slogan: 'You create. You volunteer.'
 page:
   403: /user/login
   404: ''
-  front: /admin/index
+  front: /dashboard
 admin_compact_mode: false
 weight_select_max: 100
 langcode: en
