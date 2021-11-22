@@ -83,8 +83,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     if (!empty($course_ids)) {
       $empty_query->condition('id', $course_ids, 'NOT IN');
     }
-    $empty_query->execute();
-    foreach ($empty_query as $empty_course_id) {
+    $empty_query_result = $empty_query->execute();
+    foreach ($empty_query_result as $empty_course_id) {
       $course_ids[] = $empty_course_id;
       $lectures_grouped[$empty_course_id] = [];
     }
