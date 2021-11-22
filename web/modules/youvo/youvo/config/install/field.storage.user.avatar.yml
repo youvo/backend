@@ -5,8 +5,8 @@ dependencies:
     - file
     - image
     - user
-id: user.field_avatar
-field_name: field_avatar
+id: user.avatar
+field_name: avatar
 entity_type: user
 type: image
 settings:

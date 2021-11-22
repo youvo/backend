@@ -2,14 +2,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.field_name
+    - field.storage.user.contact
   module:
     - user
-id: user.user.field_name
-field_name: field_name
+id: user.user.contact
+field_name: contact
 entity_type: user
 bundle: user
-label: Name
+label: Contact
 description: ''
 required: false
 translatable: false

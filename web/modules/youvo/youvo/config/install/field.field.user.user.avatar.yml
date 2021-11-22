@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.field_avatar
+    - field.storage.user.avatar
   module:
     - filefield_paths
     - image
@@ -25,11 +25,11 @@ third_party_settings:
         slashes: false
         pathauto: false
         transliterate: false
-id: user.user.field_avatar
-field_name: field_avatar
+id: user.user.avatar
+field_name: avatar
 entity_type: user
 bundle: user
-label: Bild
+label: Avatar
 description: ''
 required: false
 translatable: false

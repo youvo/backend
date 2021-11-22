@@ -47,7 +47,7 @@ function project_dummy_site_install_finished() {
   ];
 
   // Some time to use.
-  $current_time = Drupal::time()->getRequestTime();
+  $current_time = \Drupal::time()->getRequestTime();
   $one_year_ago = $current_time - 31536000;
 
   // Total projects.
@@ -65,7 +65,7 @@ function project_dummy_site_install_finished() {
 
     // Set random time in last year.
     $rnd_time = rand($one_year_ago, $current_time);
-    $date = Drupal::service('date.formatter')
+    $date = \Drupal::service('date.formatter')
       ->format($rnd_time, 'custom', 'Y-m-d');
 
     // Increase created time randomly.
@@ -144,7 +144,7 @@ function project_dummy_get_stock_image(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 12) + 1);
   $image_path = drupal_get_path('module', 'project_dummy') . '/img/' . $index . '.jpg';
-  $public_path = Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
   $image_file = File::create([
     'uri' => $public_path,
     'uid' => 1,

@@ -2,14 +2,14 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.field_linkedin
+    - field.storage.user.position
   module:
     - user
-id: user.user.field_linkedin
-field_name: field_linkedin
+id: user.user.position
+field_name: position
 entity_type: user
 bundle: user
-label: 'Profil Linkedin'
+label: Position
 description: ''
 required: false
 translatable: false

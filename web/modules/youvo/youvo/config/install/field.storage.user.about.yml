@@ -3,13 +3,11 @@ status: true
 dependencies:
   module:
     - user
-id: user.field_name
-field_name: field_name
+id: user.about
+field_name: about
 entity_type: user
-type: string
+type: string_long
 settings:
-  max_length: 255
-  is_ascii: false
   case_sensitive: false
 module: core
 locked: false

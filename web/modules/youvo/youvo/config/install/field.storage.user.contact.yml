@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - user
-id: user.field_position
-field_name: field_position
+id: user.contact
+field_name: contact
 entity_type: user
 type: string
 settings:
