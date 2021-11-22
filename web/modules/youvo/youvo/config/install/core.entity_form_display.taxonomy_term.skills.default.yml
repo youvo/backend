@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.taxonomy_term.skills.field_machine_name
+    - field.field.taxonomy_term.skills.machine_name
     - taxonomy.vocabulary.skills
   module:
     - path
@@ -20,7 +20,7 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_machine_name:
+  machine_name:
     weight: 101
     settings:
       size: 60

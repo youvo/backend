@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - taxonomy
-id: taxonomy_term.field_machine_name
-field_name: field_machine_name
+id: taxonomy_term.machine_name
+field_name: machine_name
 entity_type: taxonomy_term
 type: string
 settings:
