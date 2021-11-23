@@ -33,7 +33,7 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
       /** @var \Drupal\courses\Entity\Course $course */
       $course = $paragraph->getOriginEntity();
 
-      // First get distill all questionnaires in lectures.
+      // First get all questionnaires in lectures.
       $lectures = $course->getLectures();
       $questionnaires = [];
       foreach ($lectures as $lecture) {

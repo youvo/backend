@@ -76,6 +76,8 @@ class QuestionForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function save(array $form, FormStateInterface $form_state) {
 
@@ -90,6 +92,9 @@ class QuestionForm extends ContentEntityForm {
 
     // Save entity.
     parent::save($form, $form_state);
+
+    // Save questionnaire.
+    $paragraph->save();
 
     // Add status and logger messages.
     $arguments = ['%label' => $question->label()];
