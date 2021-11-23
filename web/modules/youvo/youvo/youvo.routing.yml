@@ -5,3 +5,5 @@ youvo.dashboard:
     _title: 'Dashboard'
   requirements:
     _role: 'editor+administrator'
+  options:
+    no_cache: 'TRUE'
