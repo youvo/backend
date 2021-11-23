@@ -8,9 +8,7 @@ dependencies:
     - field.field.user.user.fullname
     - field.field.user.user.position
     - field.field.user.user.skills
-    - image.style.thumbnail
   module:
-    - image
     - user
 id: user.user.default
 targetEntityType: user
@@ -18,33 +16,9 @@ bundle: user
 mode: default
 content:
   account:
-    weight: 8
+    weight: 1
     region: content
     settings: {  }
-    third_party_settings: {  }
-  about:
-    type: string_textarea
-    weight: 2
-    region: content
-    settings:
-      rows: 5
-      placeholder: ''
-    third_party_settings: {  }
-  avatar:
-    type: image_image
-    weight: 3
-    region: content
-    settings:
-      progress_indicator: throbber
-      preview_image_style: ''
-    third_party_settings: {  }
-  contact:
-    type: string_textfield
-    weight: 7
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
     third_party_settings: {  }
   fullname:
     type: string_textfield
@@ -54,21 +28,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  position:
-    type: string_textfield
-    weight: 1
-    region: content
-    settings:
-      size: 60
-      placeholder: ''
-    third_party_settings: {  }
-  skills:
-    type: options_buttons
-    weight: 4
-    region: content
-    settings: {  }
-    third_party_settings: {  }
 hidden:
+  about: true
+  avatar: true
+  contact: true
   langcode: true
   language: true
+  position: true
+  skills: true
   timezone: true
