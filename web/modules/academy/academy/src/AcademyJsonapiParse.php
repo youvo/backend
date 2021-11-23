@@ -49,4 +49,21 @@ class AcademyJsonapiParse extends JsonapiParse {
     return $resource;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function resolveAttributes($item) {
+
+    // Filter empty states from checkboxes submission.
+    if (isset($item['type']) && $item['type'] == 'checkboxes') {
+      if (isset($item['attributes']['submission'])) {
+        $item['attributes']['submission'] = array_filter(
+          $item['attributes']['submission'],
+          fn($s) => $s !== NULL && $s !== ""
+        );
+      }
+    }
+    return parent::resolveAttributes($item);
+  }
+
 }
