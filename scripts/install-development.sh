@@ -21,8 +21,8 @@
 
  # Remove settings file.
  cd default
- chmod 0777 settings.php
- rm settings.php
+ [[ -f settings.php ]] && chmod 0777 settings.php
+ [[ -f settings.php ]] && rm settings.php
  cp default.settings.php settings.php
  chmod 0755 settings.php
  echo "Settings reset ..."
