@@ -6,3 +6,4 @@ package: 'Academy'
 
 dependencies:
   - youvo
+  - jsonapi_include
