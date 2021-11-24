@@ -68,6 +68,11 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
  */
 function progress_child_entities_check_access(AccessResultInterface &$access, ContentEntityInterface $origin, AccountInterface $account) {
 
+  // Skip, if this is an editor.
+  if ($account->hasPermission('manage courses')) {
+    return;
+  }
+
   // Check enrollment status. Therefore, from an access point of view, all
   // contents of the course are revealed once a user enrolls into a course.
   if ($access->isAllowed()) {
