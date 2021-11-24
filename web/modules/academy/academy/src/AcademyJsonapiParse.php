@@ -52,6 +52,16 @@ class AcademyJsonapiParse extends JsonapiParse {
   /**
    * {@inheritdoc}
    */
+  protected function resolveRelationshipData($links, $key) {
+    if (empty($links['data'])) {
+      return [];
+    }
+    return parent::resolveRelationshipData($links, $key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function resolveAttributes($item) {
 
     // Filter empty states from checkboxes submission.
