@@ -3,6 +3,7 @@
 namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Url;
@@ -18,6 +19,18 @@ trait ChildEntityTrait {
    * {@inheritdoc}
    */
   abstract protected function entityTypeManager();
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postCreate(EntityStorageInterface $storage) {
+
+    // Invalidate cache for parent to recompute children field.
+    $parent = $this->getParentEntity();
+    $parent->save();
+
+    parent::postCreate($storage);
+  }
 
   /**
    * Returns an array of base field definitions for publishing status.
