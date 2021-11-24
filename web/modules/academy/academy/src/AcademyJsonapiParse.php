@@ -51,6 +51,9 @@ class AcademyJsonapiParse extends JsonapiParse {
 
   /**
    * {@inheritdoc}
+   *
+   * Overwrite this method to provide an empty array, when the data is empty.
+   * This ensures a consistent data type for includes.
    */
   protected function resolveRelationshipData($links, $key) {
     if (empty($links['data'])) {
@@ -61,6 +64,11 @@ class AcademyJsonapiParse extends JsonapiParse {
 
   /**
    * {@inheritdoc}
+   *
+   * Overwrite this method to pop empty values from submission arrays. These
+   * empty values are added beforehand to deliver the caching information.
+   *
+   * @see SubmissionFieldItemList
    */
   protected function resolveAttributes($item) {
 
