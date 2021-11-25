@@ -185,6 +185,7 @@ class QuestionSubmissionResource extends ResourceBase {
       'textfield' => is_string($v) && strlen($v) < 255,
       'radios' => is_string($v) && is_numeric($v) && intval($v) == $v,
       'checkboxes' => is_array($v) && !in_array(FALSE, array_map(fn($s) => is_numeric($s) && intval($s) == $s, $v), TRUE),
+      'task' => is_array($v) && !in_array(FALSE, array_map(fn($s) => is_numeric($s) && intval($s) == $s, $v), TRUE) && count($v) <= 1,
       default => throw new BadRequestHttpException('Action for question type not specified.'),
     };
 
@@ -193,10 +194,11 @@ class QuestionSubmissionResource extends ResourceBase {
     }
 
     // Check if posted value is a valid option.
-    if ($question->bundle() == 'radios' || $question->bundle() == 'checkboxes') {
+    if (in_array($question->bundle(), ['radios', 'checkboxes', 'task'])) {
       $valid_value = match($question->bundle()) {
         'radios' => in_array($v, array_keys($question->get('options')->getValue())),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
+        'task' => empty($v) || intval($v[0]) == 0,
       };
       if (!$valid_value) {
         throw new BadRequestHttpException('Invalid submission value.');
@@ -206,7 +208,7 @@ class QuestionSubmissionResource extends ResourceBase {
     // Resolve value for respective type.
     $value = match ($question->bundle()) {
       'textarea', 'textfield', 'radios' => $request_content['value'],
-      'checkboxes' => implode(',', $request_content['value']),
+      'checkboxes', 'task' => implode(',', $request_content['value']),
       default => throw new BadRequestHttpException('Action for question type not specified.'),
     };
 

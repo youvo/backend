@@ -73,7 +73,7 @@ class AcademyJsonapiParse extends JsonapiParse {
   protected function resolveAttributes($item) {
 
     // Filter empty states from checkboxes submission.
-    if (isset($item['type']) && $item['type'] == 'checkboxes') {
+    if (isset($item['type']) && in_array($item['type'], ['checkboxes', 'task'])) {
       if (isset($item['attributes']['submission'])) {
         $item['attributes']['submission'] = array_filter(
           $item['attributes']['submission'],
