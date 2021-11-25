@@ -25,6 +25,13 @@ use Psr\Log\LoggerInterface;
 class ProgressManager {
 
   /**
+   * Stores progress results.
+   *
+   * @var array
+   */
+  private $progressCache;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountInterface
@@ -109,7 +116,17 @@ class ProgressManager {
    * Determines whether a lecture or course is completed.
    */
   public function isCompleted(AcademicFormatInterface $entity): bool {
-    return (bool) $this->getProgressField($entity, 'completed');
+
+    // Look for cached results.
+    $cache_result = $this->getProgressCache($entity, 'completed');
+    if (isset($cache_result)) {
+      return $cache_result;
+    }
+
+    // Compute result and set cache.
+    $result = (bool) $this->getProgressField($entity, 'completed');
+    $this->setProgressCache($entity, 'completed', $result);
+    return $result;
   }
 
   /**
@@ -117,14 +134,25 @@ class ProgressManager {
    */
   public function isUnlocked(AcademicFormatInterface $entity, AccountInterface $account = NULL): bool {
 
+    // Look for cached results.
+    $cache_result = $this->getProgressCache($entity, 'unlocked');
+    if (isset($cache_result)) {
+      return $cache_result;
+    }
+
+    // Compute result and set cache.
     if ($entity instanceof Lecture) {
-      return $this->isLectureUnlocked($entity, $account);
+      $result = $this->isLectureUnlocked($entity, $account);
     }
-
     if ($entity instanceof Course) {
-      return $this->isCourseUnlocked($entity, $account);
+      $result = $this->isCourseUnlocked($entity, $account);
+    }
+    if (isset($result)) {
+      $this->setProgressCache($entity, 'unlocked', $result);
+      return $result;
     }
 
+    // Fallback.
     return FALSE;
   }
 
@@ -228,6 +256,7 @@ class ProgressManager {
         $progress = $this->loadProgress($course);
         $progress->setCompletedTime($this->getRequestTime());
         $progress->save();
+        $this->setProgressCache($course, 'completed', TRUE);
       }
       catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
         $variables = Error::decodeException($e);
@@ -443,6 +472,29 @@ class ProgressManager {
       ]);
     $query->addField('p', 'completed');
     return $query->execute()->fetchAll();
+  }
+
+  /**
+   * Get cache for previously calculated results.
+   */
+  private function getProgressCache(AcademicFormatInterface $entity, string $request): ?bool {
+    if (!in_array($request, ['unlocked', 'completed'])) {
+      return NULL;
+    }
+    if (isset($this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request])) {
+      return $this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request];
+    }
+    return NULL;
+  }
+
+  /**
+   * Set cache for calculated results.
+   */
+  private function setProgressCache(AcademicFormatInterface $entity, string $request, bool $value) {
+    if (!in_array($request, ['unlocked', 'completed'])) {
+      return;
+    }
+    $this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request] = $value;
   }
 
 }
