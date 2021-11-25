@@ -1,0 +1,100 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.task
+id: question--task
+disabled: false
+path: questions/task
+resourceType: task
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+    disabled: false
+  langcode:
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+    disabled: false
+  bundle:
+    disabled: true
+    fieldName: bundle
+    publicName: bundle
+    enhancer:
+      id: ''
+  body:
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+    disabled: false
+  help:
+    fieldName: help
+    publicName: help
+    enhancer:
+      id: ''
+    disabled: false
+  explanation:
+    fieldName: explanation
+    publicName: explanation
+    enhancer:
+      id: ''
+    disabled: false
+  required:
+    fieldName: required
+    publicName: required
+    enhancer:
+      id: ''
+    disabled: false
+  uid:
+    disabled: true
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  created:
+    disabled: true
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  paragraph:
+    fieldName: paragraph
+    publicName: paragraph
+    enhancer:
+      id: ''
+    disabled: false
+  weight:
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
+    disabled: false
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  submission:
+    fieldName: submission
+    publicName: submission
+    enhancer:
+      id: ''
+    disabled: false
