@@ -8,6 +8,7 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
@@ -204,7 +205,32 @@ class ProgressManager {
     if ($lectures = $this->getReferencedLecturesByCompleted($course)) {
       $total = count($lectures);
       $completed = count(array_filter((array) $lectures, fn($l) => $l->completed));
-      return ceil($completed / $total * 100);
+      $progression = ceil($completed / $total * 100);
+
+      // Here, we cover an edge case. An example scenario:
+      // The user has completed 4/5 lectures. The 5th lecture gets deleted by
+      // the editor. Then the progression is 100, but the course is not
+      // completed. Therefore, we grant the course completion on access, when
+      // progression is 100.
+      if ($progression == 100) {
+        try {
+          $progress = $this->loadProgress($course);
+          $progress->setCompletedTime($this->getRequestTime());
+          $progress->save();
+        }
+        catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
+          $variables = Error::decodeException($e);
+          $this->logger
+            ->error('Progression 100, but not completed. Can not retrieve progress or save entity. %type: @message in %function (line %line of %file).', $variables);
+        }
+        catch (EntityMalformedException $e) {
+          $variables = Error::decodeException($e);
+          $this->logger
+            ->error('Progression 100, but not completed. The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+        }
+      }
+
+      return $progression;
     }
 
     // Fallback.
