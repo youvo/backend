@@ -79,6 +79,21 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   /**
    * {@inheritdoc}
    */
+  public function preSave(EntityStorageInterface $storage) {
+    // Adjust weight depending on existing children.
+    if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
+      $parent = $this->getParentEntity();
+      $children = $parent->getLectures();
+      if (!empty($children)) {
+        $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
+        $this->set('weight', $max_weight + 1);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function delete() {
     if (!$this->isNew()) {
       // Delete all referenced paragraphs.
