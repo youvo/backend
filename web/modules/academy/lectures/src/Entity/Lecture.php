@@ -86,8 +86,10 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
       foreach ($paragraphs as $paragraph) {
         $paragraph->delete();
       }
-      parent::delete();
+      // Invalidate parent cache to update the computed children field.
+      $this->invalidateParentCache();
     }
+    parent::delete();
   }
 
   /**

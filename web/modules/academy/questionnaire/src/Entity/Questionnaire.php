@@ -2,7 +2,9 @@
 
 namespace Drupal\questionnaire\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Implements questionnaire specific methods.
@@ -26,25 +28,14 @@ class Questionnaire extends Paragraph {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function save() {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
 
-    // Discover all evaluations in a course.
+    // If questionnaire is updated all evaluations in this course need updating.
+    // Invalidate cache to recalculate referenced questions in evaluations.
     $course = $this->getOriginEntity();
-    $lectures = $course->getLectures();
-    $evaluations = [];
-    foreach ($lectures as $lecture) {
-      $paragraphs = $lecture->getParagraphs();
-      $evaluations = array_merge($evaluations,
-        array_filter($paragraphs, fn($p) => $p->bundle() == 'evaluation'));
-    }
-
-    // Save all evaluations to update computed fields.
-    foreach ($evaluations as $evaluation) {
-      $evaluation->save();
-    }
-
-    // Continue with parent save.
-    parent::save();
+    $invalidate_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . 'evaluation';
+    Cache::invalidateTags($invalidate_tags);
   }
 
   /**

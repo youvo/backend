@@ -2,6 +2,7 @@
 
 namespace Drupal\child_entities;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -75,14 +76,13 @@ class ChildEntityListBuilder extends EntityListBuilder {
   }
 
   /**
-   * If the child entity list is a form, save the parent with each form submit.
+   * If this is a form, invalidate the parent cache with each form submit.
    *
-   * This avoids caching problems, for example when saving weights for children.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
+   * This avoids problems, for example when saving weights for children.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->parent->save();
+    $invalidate_tags[] = $this->parent->getEntityTypeId() . ':' . $this->parent->id();
+    Cache::invalidateTags($invalidate_tags);
   }
 
 }

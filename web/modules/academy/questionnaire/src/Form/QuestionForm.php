@@ -96,9 +96,6 @@ class QuestionForm extends ContentEntityForm {
     // Save entity.
     parent::save($form, $form_state);
 
-    // Save questionnaire.
-    $paragraph->save();
-
     // Add status and logger messages.
     $arguments = ['%label' => $question->label()];
     $this->messenger()->addStatus($this->t('The question %label has been updated.', $arguments));

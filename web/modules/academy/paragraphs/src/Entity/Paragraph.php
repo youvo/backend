@@ -59,7 +59,9 @@ use Drupal\user\UserInterface;
 class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
-  use ChildEntityTrait;
+  use ChildEntityTrait {
+    postSave as childEntityPostSave;
+  }
 
   /**
    * {@inheritdoc}
@@ -77,6 +79,34 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
     if (!isset($values['lecture']) && $route_match = \Drupal::service('current_route_match')->getParameter('lecture')) {
       $values['lecture'] = $route_match;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    $this->childEntityPostSave($storage, $update);
+
+    // Add a cache tag for evaluation paragraphs in order to easily identify
+    // and invalidate all cached evaluations in a course.
+    if (!$update && $this->bundle() == 'evaluation') {
+      $course = $this->getOriginEntity();
+      $cache_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . $this->bundle();
+      $this->addCacheTags($cache_tags);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Invalidate parent cache to update the computed children field.
+      $this->invalidateParentCache();
+    }
+    parent::delete();
   }
 
   /**
