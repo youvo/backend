@@ -76,18 +76,15 @@ trait QuestionProcessTrait {
    * Adds answers to question from form_state.
    */
   public function populateMultiAnswerToQuestion(Question &$question, FormStateInterface $form_state) {
-    if ($form_state->getValue('type') != 'textarea' &&
-      $form_state->getValue('type') != 'textfield') {
-      $answers = $form_state->getValue('multianswers');
-      $correct_set = count(array_filter($answers, fn($a) => $a['correct']));
-      $question->set('options', []);
-      $question->set('answers', []);
-      foreach ($answers as $answer) {
-        if (!empty($answer['option'])) {
-          $question->get('options')->appendItem($answer['option']);
-          if ($correct_set) {
-            $question->get('answers')->appendItem($answer['correct']);
-          }
+    $answers = $form_state->getValue('multianswers');
+    $correct_set = count(array_filter($answers, fn($a) => $a['correct']));
+    $question->set('options', []);
+    $question->set('answers', []);
+    foreach ($answers as $answer) {
+      if (!empty($answer['option'])) {
+        $question->get('options')->appendItem($answer['option']);
+        if ($correct_set) {
+          $question->get('answers')->appendItem($answer['correct']);
         }
       }
     }

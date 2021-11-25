@@ -56,7 +56,7 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
       ->setClass(SubmissionFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
       ->setTargetBundle($bundle);
-    if ($bundle == 'checkboxes') {
+    if ($bundle == 'checkboxes' || $bundle == 'task') {
       $fields['submission']->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
     }
   }

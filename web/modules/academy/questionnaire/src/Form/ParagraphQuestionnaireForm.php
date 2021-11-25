@@ -137,7 +137,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       $form['questions']['add_question'][$question_type->id()] = [
         '#type' => 'submit',
         '#submit' => ['::showQuestionFieldset'],
-        '#value' => '+ ' . $question_type->label() . ' Question',
+        '#value' => '+ ' . $question_type->label(),
         '#attributes' => [
           'data-type' => $question_type->id(),
         ],
@@ -162,7 +162,8 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     $hidden = ['class' => ['hidden']];
     if ($form_state->hasValue('type') &&
       ($form_state->getValue('type') == 'textarea' ||
-      $form_state->getValue('type') == 'textfield')) {
+      $form_state->getValue('type') == 'textfield') ||
+      $form_state->getValue('type') == 'task') {
       $answers_hidden = TRUE;
     }
 
@@ -390,7 +391,10 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     ]);
 
     // Add values from multianswers form element.
-    $this->populateMultiAnswerToQuestion($new_question, $form_state);
+    if ($form_state->getValue('type') == 'checkboxes' &&
+      $form_state->getValue('type') == 'radios') {
+      $this->populateMultiAnswerToQuestion($new_question, $form_state);
+    }
 
     // Append new question to paragraph.
     $new_question->save();
