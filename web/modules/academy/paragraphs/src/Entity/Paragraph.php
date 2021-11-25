@@ -83,6 +83,21 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   /**
    * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    // Adjust weight depending on existing children.
+    if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
+      $parent = $this->getParentEntity();
+      $children = $parent->getParagraphs();
+      if (!empty($children)) {
+        $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
+        $this->set('weight', $max_weight + 1);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
