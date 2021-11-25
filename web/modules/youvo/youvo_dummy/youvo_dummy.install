@@ -41,10 +41,10 @@ function youvo_dummy_site_install_finished() {
     'position' => 'Treppenstufenlauscherin',
     'about' => rtrim($random->paragraphs(2)),
     'skills' => youvo_dummy_get_random_skills(),
-    'name' => 'hello@youvo.org',
-    'mail' => 'hello@youvo.org',
+    'name' => 'fred@youvo.org',
+    'mail' => 'fred@youvo.org',
     'roles' => ['creative'],
-    'pass' => 'admin',
+    'pass' => 'password',
     'status' => 1,
   ];
 
