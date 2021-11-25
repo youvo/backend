@@ -27,7 +27,9 @@ trait ChildEntityTrait {
 
     // Invalidate cache for parent to recompute children field.
     $parent = $this->getParentEntity();
-    $parent->save();
+    if (isset($parent)) {
+      $parent->save();
+    }
 
     parent::postCreate($storage);
   }
