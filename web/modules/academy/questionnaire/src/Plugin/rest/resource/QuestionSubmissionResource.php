@@ -110,7 +110,7 @@ class QuestionSubmissionResource extends ResourceBase {
     }
 
     // Prepare and sanitize output.
-    if ($question->bundle() == 'checkboxes') {
+    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
       $value = explode(',', Html::escape($submission->get('value')->value));
     }
     else {
@@ -177,7 +177,7 @@ class QuestionSubmissionResource extends ResourceBase {
 
     // Check if posted value has valid format.
     $v = $request_content['value'];
-    if ($question->bundle() == 'checkboxes') {
+    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
       $v = array_filter($v, fn($s) => $s !== NULL && $s !== "");
     }
     $valid_type = match($question->bundle()) {

@@ -34,7 +34,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
         $input = Html::escape($submission->get('value')->value);
 
         // Explode input for checkboxes and radios.
-        if ($question->bundle() == 'checkboxes') {
+        if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
           $values = explode(',', $input);
           foreach ($values as $value) {
             $item = $this->createItem(0, $value);
