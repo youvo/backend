@@ -8,8 +8,8 @@
 
  # Navigate to directory.
  SCRIPTPATH="$( cd -- "$(dirname "$0")" || exit >/dev/null 2>&1  ; pwd -P )"
- cd "$SCRIPTPATH"
- 
+ cd "$SCRIPTPATH" || exit
+
  # Get variables and stop docker containers.
  cd ..
  set -a; source conf/.env.local; set +a
@@ -17,11 +17,11 @@
  docker-compose down > /dev/null 2>&1
 
  # Set permissions.
- cd web/sites
+ cd web/sites || exit
  chmod 0755 default
 
  # Remove settings file.
- cd default
+ cd default || exit
  if test -f "settings.php"; then
  	sudo chmod 0777 settings.php
  	rm settings.php
@@ -61,9 +61,9 @@
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  make drush cr > /dev/null 2>&1
- 
+
  # Set permissions for settings file.
- cd web/sites/default
+ cd web/sites/default || exit
  chmod 0444 settings.php
  chmod 0444 default.settings.php
 
