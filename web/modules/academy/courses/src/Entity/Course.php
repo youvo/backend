@@ -75,8 +75,8 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
       foreach ($lectures as $lecture) {
         $lecture->delete();
       }
-      parent::delete();
     }
+    parent::delete();
   }
 
   /**

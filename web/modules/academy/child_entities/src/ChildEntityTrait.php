@@ -2,6 +2,7 @@
 
 namespace Drupal\child_entities;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -23,15 +24,11 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
 
-    // Invalidate cache for parent to recompute children field.
-    $parent = $this->getParentEntity();
-    if (isset($parent)) {
-      $parent->save();
-    }
-
-    parent::postCreate($storage);
+    // Invalidate parent cache to update the computed children field.
+    $this->invalidateParentCache();
   }
 
   /**
@@ -201,6 +198,15 @@ trait ChildEntityTrait {
     else {
       return parent::toUrl($rel, $options);
     }
+  }
+
+  /**
+   * Invalidate the cache of the parent.
+   */
+  private function invalidateParentCache() {
+    $parent = $this->getParentEntity();
+    $invalidate_tags[] = $parent->getEntityTypeId() . ':' . $parent->id();
+    Cache::invalidateTags($invalidate_tags);
   }
 
 }
