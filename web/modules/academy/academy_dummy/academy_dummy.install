@@ -289,6 +289,21 @@ function academy_dummy_site_install_finished() {
       $question->save();
       $question_targets[] = ['target_id' => $question->id()];
 
+      // Task question.
+      $question = Question::create([
+        'bundle' => 'task',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -1,
+        'required' => rand(0, 1) == 1,
+        'uid' => 1,
+      ]);
+
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
       // Append questions to questionnaire.
       $questionnaire->set('questions', $question_targets);
       $questionnaire->save();
