@@ -166,6 +166,11 @@ class ProgressManager {
     $course = $lecture->getParentEntity();
     $lectures = $this->getReferencedLecturesByCompleted($course, $account);
 
+    // This condition should never trigger.
+    if (empty($lectures)) {
+      return FALSE;
+    }
+
     // The first lecture is always unlocked.
     if ($lectures[0]->id == $lecture->id()) {
       return TRUE;
@@ -202,74 +207,88 @@ class ProgressManager {
     }
 
     // Otherwise, calculate the percentage of completed lectures in the course.
-    if ($lectures = $this->getReferencedLecturesByCompleted($course)) {
-      $total = count($lectures);
-      $completed = count(array_filter((array) $lectures, fn($l) => $l->completed));
-      $progression = ceil($completed / $total * 100);
+    $lectures = $this->getReferencedLecturesByCompleted($course);
 
-      // Here, we cover an edge case. An example scenario:
-      // The user has completed 4/5 lectures. The 5th lecture gets deleted by
-      // the editor. Then the progression is 100, but the course is not
-      // completed. Therefore, we grant the course completion on access, when
-      // progression is 100.
-      if ($progression == 100) {
-        try {
-          $progress = $this->loadProgress($course);
-          $progress->setCompletedTime($this->getRequestTime());
-          $progress->save();
-        }
-        catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
-          $variables = Error::decodeException($e);
-          $this->logger
-            ->error('Progression 100, but not completed. Can not retrieve progress or save entity. %type: @message in %function (line %line of %file).', $variables);
-        }
-        catch (EntityMalformedException $e) {
-          $variables = Error::decodeException($e);
-          $this->logger
-            ->error('Progression 100, but not completed. The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
-        }
-      }
-
-      return $progression;
+    // If there are no lectures, there is no progress.
+    if (empty($lectures)) {
+      return 0;
     }
 
-    // Fallback.
-    return 0;
+    $total = count($lectures);
+    $completed = count(array_filter($lectures, fn($l) => $l->completed));
+    $progression = ceil($completed / $total * 100);
+
+    // Here, we cover an edge case. An example scenario:
+    // The user has completed 4/5 lectures. The 5th lecture gets deleted by
+    // the editor. Then the progression is 100, but the course is not
+    // completed. Therefore, we grant the course completion on access, when
+    // progression is 100.
+    if ($progression == 100) {
+      try {
+        $progress = $this->loadProgress($course);
+        $progress->setCompletedTime($this->getRequestTime());
+        $progress->save();
+      }
+      catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
+        $variables = Error::decodeException($e);
+        $this->logger
+          ->error('Progression 100, but not completed. Can not retrieve progress or save entity. %type: @message in %function (line %line of %file).', $variables);
+      }
+      catch (EntityMalformedException $e) {
+        $variables = Error::decodeException($e);
+        $this->logger
+          ->error('Progression 100, but not completed. The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+      }
+    }
+
+    return $progression;
   }
 
   /**
    * Returns the current unlocked lecture.
    *
    * Selects the lecture that is currently unlocked.
-   * If the course is complete, return the first lecture.
+   * Otherwise, if present, return the first lecture of the course.
    */
   public function currentLecture(Course $course): ?Lecture {
 
     // Retrieve lectures from course.
     $lectures = $course->getLectures();
 
-    // If the course is completed the progress is full.
-    if ($this->isCompleted($course)) {
-      return is_array($lectures) && !empty($lectures) ? $lectures[0] : NULL;
-    }
-
-    // Return nothing if course is not unlocked.
-    if (!$this->isUnlocked($course)) {
+    // If there are no lectures, return nothing.
+    if (empty($lectures)) {
       return NULL;
     }
 
-    // Otherwise, return first lecture that is not completed.
-    if ($lectures_completed = $this->getReferencedLecturesByCompleted($course)) {
-      $lecture = current(array_filter((array) $lectures_completed,
-        fn($l) => !$l->completed));
-      // Get selected lecture from references and check unlocked status again.
-      $lecture = array_filter($lectures, fn ($l) => $l->id() == $lecture->id);
-      $lecture = reset($lecture);
-      return $this->isUnlocked($lecture) ? $lecture : NULL;
+    // The first lecture is the fallback value.
+    $first = $lectures[0];
+
+    // Return first lecture, if the is course completed or not unlocked.
+    if ($this->isCompleted($course) || !$this->isUnlocked($course)) {
+      return $first;
     }
 
-    // Fallback.
-    return NULL;
+    // Otherwise, return first lecture that is not completed.
+    $lectures_by_completed = $this->getReferencedLecturesByCompleted($course);
+
+    // This condition should never trigger.
+    if (empty($lectures_by_completed)) {
+      return NULL;
+    }
+
+    // Get the first lecture that is not completed.
+    $lecture = current(array_filter($lectures_by_completed,
+      fn($l) => !$l->completed));
+
+    // If somehow all lectures are completed return the first lecture.
+    if (!$lecture) {
+      return $first;
+    }
+
+    // Get selected lecture from references and check unlocked status again.
+    $lecture = array_filter($lectures, fn ($l) => $l->id() == $lecture->id);
+    $lecture = reset($lecture);
+    return $this->isUnlocked($lecture) ? $lecture : $first;
   }
 
   /**
@@ -280,7 +299,7 @@ class ProgressManager {
    */
   public function isLastLecture(Lecture $lecture): bool {
     $lectures = $this->getReferencedLecturesByCompleted($lecture->getParentEntity());
-    return is_array($lectures) &&
+    return !empty($lectures) &&
       $lectures[array_key_last($lectures)]->id == $lecture->id();
   }
 
@@ -384,14 +403,14 @@ class ProgressManager {
   /**
    * Get referenced lectures with completed status.
    */
-  private function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL) {
+  private function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL): array {
 
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
 
     // This condition should never trigger.
     if (empty($lecture_ids)) {
-      return FALSE;
+      return [];
     }
 
     // Get id and completed with custom query sorted by weight.
