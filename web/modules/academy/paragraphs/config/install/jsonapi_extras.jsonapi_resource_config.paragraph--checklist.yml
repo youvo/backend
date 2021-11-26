@@ -74,6 +74,12 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
+  body:
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+    disabled: false
   list:
     fieldName: list
     publicName: list

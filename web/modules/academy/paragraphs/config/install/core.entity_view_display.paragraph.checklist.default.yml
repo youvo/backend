@@ -2,6 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.paragraph.checklist.body
     - field.field.paragraph.checklist.list
     - paragraphs.type.checklist
 id: paragraph.checklist.default
@@ -9,9 +10,16 @@ targetEntityType: paragraph
 bundle: checklist
 mode: default
 content:
+  body:
+    weight: 1
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    type: basic_string
+    region: content
   list:
     type: string
-    weight: 1
+    weight: 2
     region: content
     label: above
     settings:
