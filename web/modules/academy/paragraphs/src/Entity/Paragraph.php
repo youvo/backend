@@ -59,9 +59,7 @@ use Drupal\user\UserInterface;
 class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
-  use ChildEntityTrait {
-    postSave as childEntityPostSave;
-  }
+  use ChildEntityTrait;
 
   /**
    * {@inheritdoc}
@@ -94,19 +92,10 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
         $this->set('weight', $max_weight + 1);
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    $this->childEntityPostSave($storage, $update);
 
     // Add a cache tag for evaluation paragraphs in order to easily identify
     // and invalidate all cached evaluations in a course.
-    if (!$update && $this->bundle() == 'evaluation') {
+    if ($this->isNew() && $this->bundle() == 'evaluation') {
       $course = $this->getOriginEntity();
       $cache_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . $this->bundle();
       $this->addCacheTags($cache_tags);
