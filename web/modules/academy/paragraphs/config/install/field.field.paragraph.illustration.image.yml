@@ -5,26 +5,32 @@ dependencies:
     - field.storage.paragraph.image
     - paragraphs.type.illustration
   module:
+    - content_translation
     - filefield_paths
     - image
 third_party_settings:
   filefield_paths:
     enabled: true
     file_path:
-      value: academy/illustration
+      value: 'academy/[paragraph:course_machine_name]/[paragraph:lecture_id]'
       options:
-        slashes: false
+        slashes: true
         pathauto: false
-        transliterate: false
+        transliterate: true
     redirect: false
     retroactive_update: false
     active_updating: false
     file_name:
       value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
       options:
-        slashes: false
+        slashes: true
         pathauto: false
-        transliterate: false
+        transliterate: true
+  content_translation:
+    translation_sync:
+      alt: alt
+      title: title
+      file: '0'
 id: paragraph.illustration.image
 field_name: image
 entity_type: paragraph
@@ -32,7 +38,7 @@ bundle: illustration
 label: Illustration
 description: ''
 required: false
-translatable: false
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:
