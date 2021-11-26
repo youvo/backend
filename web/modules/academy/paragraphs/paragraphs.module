@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
@@ -50,4 +51,29 @@ function paragraphs_entity_operation(EntityInterface $entity) {
     ];
   }
   return $operations;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function paragraphs_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
+
+  $replacements = [];
+
+  if ($type == 'paragraph' && !empty($data['paragraph'])) {
+    /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+    $paragraph = $data['paragraph'];
+    $lecture = $paragraph->getParentEntity();
+    $course = $lecture->getParentEntity();
+
+    foreach ($tokens as $name => $original) {
+      $replacements[$original] = match ($name) {
+        'lecture_title' => substr($lecture->getTitle(), 0, 30),
+        'course_machine_name' => $course->getMachineName(),
+        default => $name,
+      };
+    }
+  }
+
+  return $replacements;
 }
