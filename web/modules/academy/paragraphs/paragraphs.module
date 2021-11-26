@@ -68,7 +68,7 @@ function paragraphs_tokens($type, $tokens, array $data, array $options, Bubbleab
 
     foreach ($tokens as $name => $original) {
       $replacements[$original] = match ($name) {
-        'lecture_title' => str_replace(' ', '_', strtolower(substr($lecture->getTitle(), 0, 20))),
+        'lecture_id' => $lecture->id(),
         'course_machine_name' => $course->getMachineName(),
         default => $name,
       };
