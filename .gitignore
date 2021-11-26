@@ -5,3 +5,5 @@
 
 /conf/.env.development
 /conf/.env.production
+/certificates/private.key
+/certificates/public.key
