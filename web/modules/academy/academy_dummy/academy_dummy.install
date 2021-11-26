@@ -170,6 +170,21 @@ function academy_dummy_site_install_finished() {
       ]);
       $paragraph->save();
 
+      $file = academy_dummy_get_test_file();
+      $paragraph = Paragraph::create([
+        'bundle' => 'download',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'files' => [
+          'target_id' => $file->id(),
+          'description' => $random->sentences(3, TRUE),
+        ],
+        'lecture' => $lecture->id(),
+        'weight' => 0,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
       // Update computed fields.
       $lecture->save();
     }
@@ -401,4 +416,31 @@ function academy_dummy_get_stock_illustration(int $i) {
   }
 
   return $image_file;
+}
+
+/**
+ * Returns test file.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_test_file() {
+
+  $file_path = drupal_get_path('module', 'academy_dummy') . '/file/test.txt';
+  $public_path = \Drupal::service('file_system')->copy($file_path, 'public://test.txt');
+  $file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy')
+      ->error('An error occurred while creating test file. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $file;
 }
