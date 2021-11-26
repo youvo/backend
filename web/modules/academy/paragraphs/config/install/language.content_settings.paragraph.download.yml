@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.download
+id: paragraph.download
+target_entity_type_id: paragraph
+target_bundle: download
+default_langcode: de
+language_alterable: false
