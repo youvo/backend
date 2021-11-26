@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.task
+id: question.task
+target_entity_type_id: question
+target_bundle: task
+default_langcode: de
+language_alterable: false
