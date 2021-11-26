@@ -13,6 +13,9 @@
         "drupal/multivalue_form_element": {
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
+        },
+        "drupal/simple_oauth": {
+            "Issue #3230707: PHP 8 compatibility": "patches/simple_oauth/3230707--jwt-4-compatibility--5.patch"
         }
     }
 }
