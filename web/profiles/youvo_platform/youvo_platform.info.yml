@@ -40,6 +40,8 @@ install:
   - simple_oauth
   # Base
   - youvo
+  # Authentication
+  - oauth_grant
   # Projects
   - lifecycle
   - project
