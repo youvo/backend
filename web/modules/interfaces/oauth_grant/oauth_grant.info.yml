@@ -1,0 +1,11 @@
+name: 'OAuth Grant'
+description: 'Governs behavior for OAuth2 Authorization Code Grant.'
+package: Interfaces
+
+type: module
+core_version_requirement: ^8.8 || ^9
+
+dependencies:
+  - youvo
+  - consumers
+  - simple_oauth
