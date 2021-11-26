@@ -133,6 +133,7 @@ function academy_dummy_site_install_finished() {
       $paragraph = Paragraph::create([
         'bundle' => 'checklist',
         'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
         'lecture' => $lecture->id(),
         'weight' => -3,
         'uid' => 1,
