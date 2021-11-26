@@ -36,6 +36,8 @@ install:
   - filefield_paths
   - mail_login
   - multivalue_form_element
+  - consumers
+  - simple_oauth
   # Base
   - youvo
   # Projects
