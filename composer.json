@@ -99,8 +99,11 @@
         "patches-file": "composer.patches.json",
   		"enable-patching": true,
   		"patchLevel": {
-		  "drupal/core": "-p2",
-          "drupal/jsonapi_include": "-p4"
+            "drupal/core": "-p2",
+            "drupal/jsonapi_include": "-p4",
+            "drupal/simple_oauth": "-p4",
+            "drupal/filefield_paths": "-p4",
+            "drupal/multivalue_form_element": "-p4"
 		}
     },
     "require-dev": {
