@@ -1,6 +1,7 @@
 name: 'OAuth Grant Remote'
 description: 'Pings the OAuth Relay for authentication.'
 package: Interfaces
+configure: oauth_grant_remote.settings
 
 type: module
 core_version_requirement: ^8.8 || ^9

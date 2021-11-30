@@ -1,0 +1,10 @@
+oauth_grant_remote.settings:
+  path: '/admin/config/services/oauth_grant_remote'
+  defaults:
+   _form: '\Drupal\oauth_grant_remote\Form\OauthGrantRemoteSettingsForm'
+   _title: 'OAuth Grant Remote Settings'
+  requirements:
+    _role: 'administrator'
+  options:
+    _admin_route: TRUE
+  base_route: entity.user.admin_form
