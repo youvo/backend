@@ -219,7 +219,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     try {
       // Sending POST Request with the JWT to the Auth Relay.
-      $auth_relay_url = $path = $this->configFactory
+      $auth_relay_url = $this->configFactory
         ->get('oauth_grant_remote.settings')
         ->get('auth_relay_url');
       $relay = $this->httpClient
