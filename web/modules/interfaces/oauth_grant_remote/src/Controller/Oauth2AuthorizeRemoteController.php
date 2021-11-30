@@ -152,6 +152,16 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    */
   public function authorize(Request $request) {
 
+    // Check configuration.
+    if (empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_expiration')) ||
+      empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_key_path')) ||
+      empty($this->configFactory->get('oauth_grant_remote.settings')->get('auth_relay_url'))) {
+      $this->logger
+        ->error('Auth Relay is not configured. Check the OAuth Grant Remote settings form.');
+      return OAuthServerException::serverError('Auth Relay is not configured.')
+        ->generateHttpResponse(new Response());
+    }
+
     // Get all cookies registered under the host domain.
     // Note we can not get all the session cookies directly. Therefore, we
     // extract them from all present session cookies.
@@ -181,7 +191,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
-
       // @todo Login on original host.
       return OAuthServerException::serverError('Not authenticated on original host.')
         ->generateHttpResponse(new Response());
@@ -189,27 +198,32 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // If there is a session or multiple sessions, contact the Auth Relay.
     // Prepare a JWT for the Auth Relay.
-    // @todo path to file
-    $key_path = 'file://' . dirname(DRUPAL_ROOT) . '/file';
+    $path = $this->configFactory
+      ->get('oauth_grant_remote.settings')
+      ->get('jwt_key_path');
+    $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
     $config->setValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
 
     // Build the JWT.
+    $expiry = $this->configFactory
+      ->get('oauth_grant_remote.settings')
+      ->get('jwt_expiration');
     $builder = $config->builder()
       ->issuedAt(new \DateTimeImmutable('@' . $this->time->getCurrentTime()))
       ->issuedBy($this->request->getHost())
-      ->expiresAt(new \DateTimeImmutable('@' . ($this->time->getCurrentTime() + 60)))
+      ->expiresAt(new \DateTimeImmutable('@' . ($this->time->getCurrentTime() + $expiry)))
       ->withClaim('sessions', $session_cookies);
     $jwt = $builder->getToken($config->signer(), $config->signingKey())->toString();
 
     try {
       // Sending POST Request with the JWT to the Auth Relay.
-      // @todo settings path
-      $relay = $this->httpClient->post(
-        'path',
-        ['json' => ['jwt' => $jwt]],
-      );
+      $auth_relay_url = $path = $this->configFactory
+        ->get('oauth_grant_remote.settings')
+        ->get('auth_relay_url');
+      $relay = $this->httpClient
+        ->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
     }
     catch (ClientException $e) {
       $variables = Error::decodeException($e);
