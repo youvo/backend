@@ -1,7 +1,7 @@
-diff --git a/src/Entities/AccessTokenEntity.php b/src/Entities/AccessTokenEntity.php
+diff --git a/modules/contrib/simple_oauth/src/Entities/AccessTokenEntity.php b/modules/contrib/simple_oauth/src/Entities/AccessTokenEntity.php
 index 9c077fe..3e2ce84 100644
---- a/src/Entities/AccessTokenEntity.php
-+++ b/src/Entities/AccessTokenEntity.php
+--- a/modules/contrib/simple_oauth/src/Entities/AccessTokenEntity.php
++++ b/modules/contrib/simple_oauth/src/Entities/AccessTokenEntity.php
 @@ -2,10 +2,10 @@
  
  namespace Drupal\simple_oauth\Entities;
