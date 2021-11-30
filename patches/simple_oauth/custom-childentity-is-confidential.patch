@@ -1,0 +1,15 @@
+diff --git a/modules/contrib/simple_oauth/src/Entities/ClientEntity.php b/web/modules/contrib/simple_oauth/src/Entities/ClientEntity.php
+index 19dfb7c..45ec730 100644
+--- a/modules/contrib/simple_oauth/src/Entities/ClientEntity.php
++++ b/modules/contrib/simple_oauth/src/Entities/ClientEntity.php
+@@ -28,6 +28,9 @@ public function __construct(Consumer $entity) {
+     if ($entity->hasField('redirect')) {
+       $this->redirectUri = $entity->get('redirect')->value;
+     }
++    if ($entity->hasField('confidential')) {
++      $this->isConfidential = (bool) $entity->get('confidential')->value;
++    }
+   }
+ 
+   /**
+
