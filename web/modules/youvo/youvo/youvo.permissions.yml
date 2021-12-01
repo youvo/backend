@@ -1,0 +1,3 @@
+# Users without access site permission will be blocked in Blocker Mode.
+access site:
+  title: 'Access site'

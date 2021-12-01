@@ -1,0 +1,5 @@
+oauth_grant_remote.admin.config.services:
+  title: OAuth Grant Remote
+  description: 'OAuth Grant Remote Settings.'
+  route_name: oauth_grant_remote.settings
+  parent: system.admin_config_services

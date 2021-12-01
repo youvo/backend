@@ -1,0 +1,16 @@
+oauth_grant_remote.settings:
+  type: config_object
+  label: 'OAuth Grant Remote Settings'
+  mapping:
+    jwt_expiration:
+      type: integer
+      label: 'JWT Token Expiration Time'
+      description: 'The default period in seconds while a JWT token is valid.'
+    jwt_key_path:
+      type: path
+      label: 'JWT Key'
+      description: 'The path to the key file.'
+    auth_relay_url:
+      type: string
+      label: 'Auth Relay URL'
+      description: 'The URL of the Auth Relay.'
