@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\youvo\EventSubscriber;
+namespace Drupal\blocker_mode\EventSubscriber;
 
+use Drupal\blocker_mode\BlockerModeInterface;
 use Drupal\Core\Render\BareHtmlPageRendererInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\youvo\BlockerModeInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -43,7 +43,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   /**
    * Constructs a new MaintenanceModeSubscriber.
    *
-   * @param \Drupal\youvo\BlockerModeInterface $blocker_mode
+   * @param \Drupal\blocker_mode\BlockerModeInterface $blocker_mode
    *   The blocker mode.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.

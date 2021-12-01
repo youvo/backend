@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo;
+namespace Drupal\blocker_mode;
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;

@@ -1,0 +1,9 @@
+services:
+  blocker_mode:
+    class: Drupal\blocker_mode\BlockerMode
+    arguments: [ '@state' ]
+  blocker_mode_subscriber:
+    class: Drupal\blocker_mode\EventSubscriber\BlockerModeSubscriber
+    arguments: [ '@blocker_mode', '@current_user', '@bare_html_page_renderer' ]
+    tags:
+      - { name: event_subscriber }
