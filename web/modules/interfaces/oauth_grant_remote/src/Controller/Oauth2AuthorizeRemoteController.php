@@ -211,11 +211,13 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $expiry = $this->configFactory
       ->get('oauth_grant_remote.settings')
       ->get('jwt_expiration');
+    $state = bin2hex(random_bytes(16));
     $builder = $config->builder()
       ->issuedAt(new \DateTimeImmutable('@' . $this->time->getCurrentTime()))
       ->issuedBy($this->request->getHost())
       ->expiresAt(new \DateTimeImmutable('@' . ($this->time->getCurrentTime() + $expiry)))
-      ->withClaim('sessions', $session_cookies);
+      ->withClaim('sessions', $session_cookies)
+      ->withClaim('state', $state);
     $jwt = $builder->getToken($config->signer(), $config->signingKey())->toString();
 
     try {
@@ -226,9 +228,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
     catch (ClientException $e) {
       $variables = Error::decodeException($e);
-      $variables['local_uid'] = $local_session_uid;
       $this->logger
-        ->error('Unable to contact Auth Relay. Hints: local_uid = %local_uid. %type: @message in %function (line %line of %file).', $variables);
+        ->error('Unable to contact Auth Relay. %type: @message in %function (line %line of %file).', $variables);
       return OAuthServerException::serverError('Unable to contact Auth Relay.')
         ->generateHttpResponse(new Response());
     }
@@ -252,7 +253,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     catch (CannotDecodeContent | InvalidTokenStructure | UnsupportedHeaderFound $e) {
       $variables = Error::decodeException($e);
       $this->logger
-        ->error('Unable to decode JWT from Auth Relay. Hints: local_uid = %local_uid. %type: @message in %function (line %line of %file).', $variables);
+        ->error('Unable to decode JWT from Auth Relay. %type: @message in %function (line %line of %file).', $variables);
       return OAuthServerException::serverError('Unable to decode JWT from Auth Relay.')
         ->generateHttpResponse(new Response());
     }
@@ -261,13 +262,23 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $constraints = $config->validationConstraints();
     if (!$config->validator()->validate($remote_jwt, ...$constraints)) {
       $this->logger
-        ->error('Unable to validate JWT from Auth Relay. Hints: local_uid = %local_uid.');
+        ->error('Unable to validate JWT from Auth Relay.');
       return OAuthServerException::serverError('Unable to validate JWT from Auth Relay.')
         ->generateHttpResponse(new Response());
     }
 
-    // Get the account delivered by Auth Relay.
+    // Get the claims delivered by Auth Relay.
     $claims = $remote_jwt->claims()->all();
+
+    // Check if the state was exchanged correctly.
+    if ($claims['state'] != $state) {
+      $this->logger
+        ->error('Unable to validate state in JWT from Auth Relay.');
+      return OAuthServerException::serverError('Unable to validate state in JWT from Auth Relay.')
+        ->generateHttpResponse(new Response());
+    }
+
+    // Get the account delivered by Auth Relay.
     $account = $claims['account'];
 
     // Check if the user is a creative on the host.
