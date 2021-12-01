@@ -88,7 +88,7 @@ class QuestionForm extends ContentEntityForm {
     $paragraph = $question->getParentEntity();
 
     // Add values from multianswers form element.
-    if ($form_state->getValue('type') == 'checkboxes' &&
+    if ($form_state->getValue('type') == 'checkboxes' ||
       $form_state->getValue('type') == 'radios') {
       $this->populateMultiAnswerToQuestion($question, $form_state);
     }

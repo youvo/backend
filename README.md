@@ -84,7 +84,13 @@ To set up a local Drupal distribution with the `youvo_development` profile, do t
 3. Consult and configure `conf/.env.local`.
 4. Run `scripts/install-local.sh`.
 
-Provides development modules as described above.
+Provides development modules as described above. You may need to adjust folder permissions for 
+dummy content folders `academy` and `projects`. Use
+
+`chmod 0666 -R academy`  
+`chmod 0666 -R projects`  
+
+in the `sites/default/files` folder to grant permissions.
 
 ### Make commands
 

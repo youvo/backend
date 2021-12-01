@@ -1,8 +1,12 @@
-Insert keys for simple_oauth module here. You can generate keys with:
+Insert keys for simple_oauth module here. 
 
-openssl genrsa -out private.key 2048
-openssl rsa -in private.key -pubout > public.key
+Use the `Generate keys` button on the module settings page (preferred method).  
 
-Then add the file paths to the simple_oauth configuration.
+Or you can generate keys with
 
-Or use the "Generate keys" button on the module settings page (preferred method).
+`openssl genrsa -out private.key 2048`  
+`openssl rsa -in private.key -pubout > public.key`
+
+and then add the file paths to the simple_oauth configuration.
+
+
