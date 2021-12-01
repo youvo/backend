@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Custom module which provides implementation of blocker_mode functionality.
+ */
+
+/**
+ * Implements hook_local_tasks_alter().
+ */
+function blocker_mode_local_tasks_alter(&$local_tasks) {
+  unset($local_tasks['user.pass']);
+}

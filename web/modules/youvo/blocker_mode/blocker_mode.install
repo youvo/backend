@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the youvo module.
+ * Install, update and uninstall functions for the blocker_mode module.
  */
 
 use Drupal\Core\Entity\EntityStorageException;
@@ -12,7 +12,7 @@ use Drupal\Core\Utility\Error;
 /**
  * Implements hook_install().
  */
-function youvo_install() {
+function blocker_mode_install() {
 
   try {
     $role_object = Role::load('editor');

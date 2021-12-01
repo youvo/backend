@@ -1,8 +1,7 @@
 <?php
 
-namespace Drupal\youvo;
+namespace Drupal\blocker_mode;
 
-use Drupal\Core\Routing\NullRouteMatch;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -36,9 +35,11 @@ class BlockerMode implements BlockerModeInterface {
    */
   public function applies(Request $request, AccountInterface $account) {
 
-    // @todo Remove temporarly set non-block.
-    return FALSE;
-    
+    // Get configuration state.
+    if (!$this->state->get('system.blocker_mode')) {
+      return FALSE;
+    }
+
     // We use the Authorization Header to identify requests from an external
     // client. Although, this is not completely safe, because the header can
     // easily be modified, we do not care, because anyways a user without the

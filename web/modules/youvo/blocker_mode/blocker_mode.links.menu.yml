@@ -1,0 +1,5 @@
+blocker_mode.admin.config.development:
+  title: Blocker Mode
+  description: 'Blocker Mode Settings.'
+  route_name: blocker_mode.settings
+  parent: system.admin_config_development

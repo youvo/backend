@@ -1,0 +1,10 @@
+blocker_mode.settings:
+  path: '/admin/config/development/blockermode'
+  defaults:
+   _form: '\Drupal\blocker_mode\Form\BlockerModeSettingsForm'
+   _title: 'Blocker Mode Settings'
+  requirements:
+    _role: 'administrator'
+  options:
+    _admin_route: TRUE
+  base_route: entity.user.admin_form
