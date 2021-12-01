@@ -2,7 +2,7 @@ name: youvo
 mail: hello@youvo.org
 slogan: 'You create. You volunteer.'
 page:
-  403: /user/login
+  403: ''
   404: ''
   front: /dashboard
 admin_compact_mode: false
