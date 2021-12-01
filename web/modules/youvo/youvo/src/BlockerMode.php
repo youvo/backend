@@ -36,6 +36,9 @@ class BlockerMode implements BlockerModeInterface {
    */
   public function applies(Request $request, AccountInterface $account) {
 
+    // @todo Remove temporarly set non-block.
+    return FALSE;
+    
     // We use the Authorization Header to identify requests from an external
     // client. Although, this is not completely safe, because the header can
     // easily be modified, we do not care, because anyways a user without the
