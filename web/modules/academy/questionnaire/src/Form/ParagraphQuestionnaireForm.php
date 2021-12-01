@@ -391,7 +391,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     ]);
 
     // Add values from multianswers form element.
-    if ($form_state->getValue('type') == 'checkboxes' &&
+    if ($form_state->getValue('type') == 'checkboxes' ||
       $form_state->getValue('type') == 'radios') {
       $this->populateMultiAnswerToQuestion($new_question, $form_state);
     }
