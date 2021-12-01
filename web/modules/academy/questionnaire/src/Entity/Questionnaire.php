@@ -34,8 +34,18 @@ class Questionnaire extends Paragraph {
     // If questionnaire is updated all evaluations in this course need updating.
     // Invalidate cache to recalculate referenced questions in evaluations.
     $course = $this->getOriginEntity();
-    $invalidate_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . 'evaluation';
-    Cache::invalidateTags($invalidate_tags);
+    $lectures = $course->getLectures();
+    $evaluations = [];
+    foreach ($lectures as $lecture) {
+      $paragraphs = $lecture->getParagraphs();
+      $evaluations = array_merge($evaluations,
+        array_filter($paragraphs, fn($p) => $p->bundle() == 'evaluation'));
+    }
+    $tags = [];
+    foreach ($evaluations as $evaluation) {
+      $tags[] = 'paragraph:' . $evaluation->id();
+    }
+    Cache::invalidateTags($tags);
   }
 
   /**
