@@ -45,7 +45,7 @@ function oauth_grant_install() {
       'owner_id' => 1,
       'confidential' => TRUE,
       'roles' => [['target_id' => 'creative']],
-      'redirect' => 'https://preview.youvo.org/api/auth/callback/drupal',
+      'redirect' => 'https://preview.youvo.org/api/auth/callback',
     ]);
     $consumer->save();
   }

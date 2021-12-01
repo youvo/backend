@@ -1,0 +1,5 @@
+services:
+  oauth_grant_remote.route_subscriber:
+    class: Drupal\oauth_grant_remote\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
