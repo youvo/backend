@@ -303,10 +303,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         return parent::authorize($request);
       }
       else {
-        /** @var \Drupal\Core\Session\AccountProxyInterface $account */
-        $account = $this->currentUser();
+        /** @var \Drupal\Core\Session\AccountProxyInterface $local_account */
+        $local_account = $this->currentUser();
         $this->sessionManager->destroy();
-        $account->setAccount(new AnonymousUserSession());
+        $local_account->setAccount(new AnonymousUserSession());
       }
     }
 
