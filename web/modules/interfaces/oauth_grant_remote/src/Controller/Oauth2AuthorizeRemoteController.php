@@ -5,6 +5,7 @@ namespace Drupal\oauth_grant_remote\Controller;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Utility\Error;
@@ -162,6 +163,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         ->generateHttpResponse(new Response());
     }
 
+    // Set the auth relay.
+    $auth_relay = $this->configFactory->get('oauth_grant_remote.settings')
+      ->get('auth_relay_url');
+
     // Get all cookies registered under the host domain.
     // Note we can not get all the session cookies directly. Therefore, we
     // extract them from all present session cookies.
@@ -185,15 +190,11 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         fn($c) => $c != $local_session_id);
     }
 
-    // Add a test session here.
-    // @todo Delete before release.
-    $session_cookies['test'] = 'session';
-
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
-      // @todo Login on original host.
-      return OAuthServerException::serverError('Not authenticated on original host.')
-        ->generateHttpResponse(new Response());
+      $redirect_url = $auth_relay . '/user/login?r=a';
+      // Client ID and secret may be passed as Basic Auth. Copy the headers.
+      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
 
     // If there is a session or multiple sessions, contact the Auth Relay.
@@ -219,9 +220,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     try {
       // Sending POST Request with the JWT to the Auth Relay.
-      $auth_relay_url = $this->configFactory
-        ->get('oauth_grant_remote.settings')
-        ->get('auth_relay_url');
+      $auth_relay_url = $auth_relay . '/api/auth/relay';
       $relay = $this->httpClient
         ->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
     }
@@ -241,9 +240,9 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // found on the host site, and we have to log in the user on the original
     // host.
     if (!isset($relay_response->jwt)) {
-      // @todo Login on original host.
-      return OAuthServerException::serverError('Not authenticated on original host.')
-        ->generateHttpResponse(new Response());
+      $redirect_url = $auth_relay . '/user/login?r=a';
+      // Client ID and secret may be passed as Basic Auth. Copy the headers.
+      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
 
     try {
@@ -272,12 +271,13 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $account = $claims['account'];
 
     // Check if the user is a creative on the host.
+    // If it is not a creative, it must be an organisation or provisional
+    // organisation. We redirect back to Auth Relay where the query parameter
+    // can be resolved.
     if (!array_key_exists(3, $account['roles'])) {
-      $this->logger
-        ->error('Only available for creatives.');
-      // @todo Add redirect that informs organisations that academy is only for creatives.
-      return OAuthServerException::accessDenied('Only available for creatives.')
-        ->generateHttpResponse(new Response());
+      $redirect_url = $auth_relay . '?r=oa';
+      // Client ID and secret may be passed as Basic Auth. Copy the headers.
+      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
 
     // Compare local session Uid and relayed account Uid. If both match, we can
