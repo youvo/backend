@@ -1,0 +1,3 @@
+jwt_expiration: 60
+jwt_key_path: /var/www/html/certificates/youvo7.key
+auth_relay_url: 'https://www.youvo.org'
