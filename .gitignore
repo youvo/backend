@@ -7,3 +7,4 @@
 /conf/.env.production
 /certificates/private.key
 /certificates/public.key
+/certificates/youvo7.key
