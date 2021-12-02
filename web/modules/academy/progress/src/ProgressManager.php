@@ -166,6 +166,11 @@ class ProgressManager {
     // Get all course IDs present.
     $courses = $this->getCoursesByCompleted($account);
 
+    // The workshop is always locked.
+    if ($course->getMachineName() == 'workshop') {
+      return FALSE;
+    }
+
     // The first course is always unlocked.
     // The first lecture is always unlocked.
     if ($courses[0]->id == $course->id()) {
