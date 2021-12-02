@@ -43,6 +43,7 @@ install:
   # Authentication
   - oauth_grant
   - oauth_grant_remote
+  - blocker_mode
   # Projects
   - lifecycle
   - project
