@@ -42,6 +42,7 @@ install:
   - youvo
   # Authentication
   - oauth_grant
+  - oauth_grant_remote
   # Projects
   - lifecycle
   - project
