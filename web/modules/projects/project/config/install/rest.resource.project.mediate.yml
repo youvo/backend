@@ -9,3 +9,4 @@ configuration:
     - json
   authentication:
     - basic_auth
+    - oauth2
