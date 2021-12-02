@@ -167,7 +167,7 @@ class ProgressManager {
     $courses = $this->getCoursesByCompleted($account);
 
     // The workshop is always locked.
-    if ($course->getMachineName() == 'workshop') {
+    if ($course->getMachineName() == 'project') {
       return FALSE;
     }
 
