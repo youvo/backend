@@ -164,7 +164,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // Set the auth relay.
-    $auth_relay = $this->configFactory->get('oauth_grant_remote.settings')
+    $auth_relay_server = $this->configFactory->get('oauth_grant_remote.settings')
       ->get('auth_relay_url');
 
     // Get all cookies registered under the host domain.
@@ -192,7 +192,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
-      $redirect_url = $auth_relay . '/user/login?r=a';
+      $redirect_url = $auth_relay_server . '/user/login?r=a';
       // Client ID and secret may be passed as Basic Auth. Copy the headers.
       return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
@@ -222,7 +222,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     try {
       // Sending POST Request with the JWT to the Auth Relay.
-      $auth_relay_url = $auth_relay . '/api/auth/relay';
+      $auth_relay_url = $auth_relay_server . '/api/auth/relay';
       $relay = $this->httpClient
         ->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
     }
@@ -241,7 +241,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // found on the host site, and we have to log in the user on the original
     // host.
     if (!isset($relay_response->jwt)) {
-      $redirect_url = $auth_relay . '/user/login?r=a';
+      $redirect_url = $auth_relay_server . '/user/login?r=a';
       // Client ID and secret may be passed as Basic Auth. Copy the headers.
       return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
@@ -268,10 +268,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // Get the claims delivered by Auth Relay.
-    $claims = $remote_jwt->claims()->all();
+    $remote_claims = $remote_jwt->claims()->all();
 
     // Check if the state was exchanged correctly.
-    if ($claims['state'] != $state) {
+    if ($remote_claims['state'] != $state) {
       $this->logger
         ->error('Unable to validate state in JWT from Auth Relay.');
       return OAuthServerException::serverError('Unable to validate state in JWT from Auth Relay.')
@@ -279,14 +279,14 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // Get the account delivered by Auth Relay.
-    $account = $claims['account'];
+    $remote_account = $remote_claims['account'];
 
     // Check if the user is a creative on the host.
     // If it is not a creative, it must be an organisation or provisional
     // organisation. We redirect back to Auth Relay where the query parameter
     // can be resolved.
-    if (!array_key_exists(3, $account['roles'])) {
-      $redirect_url = $auth_relay . '?r=oa';
+    if (!array_key_exists(3, $remote_account['roles'])) {
+      $redirect_url = $auth_relay_server . '?r=oa';
       // Client ID and secret may be passed as Basic Auth. Copy the headers.
       return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
     }
@@ -299,7 +299,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // @todo This should be moved to the beginning. Therefore, we need to
     //   disable logins on the current page. Then, the sessions never collide.
     if ($local_session_uid > 0) {
-      if ($local_session_uid == $account['uid']) {
+      if ($local_session_uid == $remote_account['uid']) {
         return parent::authorize($request);
       }
       else {
@@ -311,17 +311,17 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // See if the relayed user already exists in the database.
-    $account_ids = $this->entityTypeManager()
+    $user_ids = $this->entityTypeManager()
       ->getStorage('user')->getQuery()
-      ->condition('uid', $account['uid'])
+      ->condition('uid', $remote_account['uid'])
       ->range(0, 1)
       ->execute();
 
     // If a user was found, we can log in the user here and continue with the
     // parent authorize callback.
-    if (!empty($account_ids)) {
-      $uid = reset($account_ids);
-      $account = User::load($uid);
+    if (!empty($user_ids)) {
+      $uid = reset($user_ids);
+      $shell_user = User::load($uid);
     }
 
     // Otherwise, the user does not exist on the current platform. We will
@@ -330,20 +330,20 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // mail login.
     else {
       $shell_user = User::create([
-        'uid' => $account['uid'],
-        'name' => $account['mail'],
-        'mail' => $account['mail'],
-        'created' => $account['created'],
-        'access' => $account['access'],
-        'login' => $account['login'],
-        'init' => $account['init'],
+        'uid' => $remote_account['uid'],
+        'name' => $remote_account['mail'],
+        'mail' => $remote_account['mail'],
+        'created' => $remote_account['created'],
+        'access' => $remote_account['access'],
+        'login' => $remote_account['login'],
+        'init' => $remote_account['init'],
         'roles' => ['creative'],
-        'status' => $account['status'],
+        'status' => $remote_account['status'],
       ]);
 
       // Set full name.
       if ($shell_user->hasField('fullname')) {
-        $shell_user->set('fullname', $account['fullname']);
+        $shell_user->set('fullname', $remote_account['fullname']);
       }
 
       // Save shell user.
@@ -352,15 +352,15 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       // Pass on the hash of the password to mitigate later migration issues.
       $this->database->update('users_field_data')
         ->condition('uid', $shell_user->id())
-        ->fields(['pass' => $account['pass']])
+        ->fields(['pass' => $remote_account['pass']])
         ->execute();
 
       // Reload the complete user object.
-      $account = User::load($shell_user->id());
+      $shell_user = User::load($shell_user->id());
     }
 
     // Login the shell user and continue with parent authorize callback.
-    user_login_finalize($account);
+    user_login_finalize($shell_user);
     return parent::authorize($request);
   }
 
