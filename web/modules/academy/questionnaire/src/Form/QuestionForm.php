@@ -45,8 +45,8 @@ class QuestionForm extends ContentEntityForm {
       $answers = $question->get('answers')->getValue();
       foreach (array_keys($options) as $delta) {
         $default_answers[] = [
-          'option' => $options[$delta]['value'],
-          'correct' => $answers[$delta]['value'],
+          'option' => $options[$delta]['value'] ?? NULL,
+          'correct' => $answers[$delta]['value'] ?? NULL,
         ];
       }
 
