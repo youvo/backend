@@ -217,8 +217,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         fn($c) => $c != $local_session_id);
     }
 
-    $session_cookies['test'] = 'yj3wtnVYQBntLo5FFhysuu_zqTr4JuNPR46C8nSGHDA';
-
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
       $redirect_url = $auth_relay_server . '/user/login?r=a';
