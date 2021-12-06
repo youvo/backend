@@ -84,7 +84,11 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   public function onKernelExceptionBlocker(RequestEvent $event) {
     /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
     $exception = $event->getThrowable();
-    if ($exception instanceof HttpException) {
+    $method = $event->getRequest()->getMethod();
+    $path = $event->getRequest()->getPathInfo();
+    if ($method == 'POST' &&
+      (str_starts_with($path, '/api') || $path == '/oauth/expire') &&
+      $exception instanceof HttpException) {
       $event->setResponse(new Response($exception->getMessage(), $exception->getStatusCode()));
     }
     else {
