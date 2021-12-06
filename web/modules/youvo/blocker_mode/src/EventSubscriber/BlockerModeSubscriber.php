@@ -10,6 +10,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -81,7 +82,14 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    *   The event to process.
    */
   public function onKernelExceptionBlocker(RequestEvent $event) {
-    $this->forbiddenResponse($event);
+    /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
+    $exception = $event->getThrowable();
+    if ($exception instanceof HttpException) {
+      $event->setResponse(new Response($exception->getMessage(), $exception->getStatusCode()));
+    }
+    else {
+      $this->forbiddenResponse($event);
+    }
   }
 
   /**
