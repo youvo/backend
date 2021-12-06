@@ -101,7 +101,7 @@ class ExpireRefreshTokensController extends ControllerBase {
     $config->setValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
 
     // Get JWT from url parameter.
-    $params = $request->getQueryParams();
+    $params = $request->getParsedBody();
     $jwt = $params['jwt'];
 
     // Check if JWT has content.
