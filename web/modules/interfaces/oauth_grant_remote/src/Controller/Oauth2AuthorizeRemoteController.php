@@ -6,7 +6,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Utility\Error;
@@ -110,6 +109,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *   A database connection.
    * @param \Drupal\Core\Session\SessionManager $session_manager
    *   The session manager.
+   * @param \Symfony\Component\HttpFoundation\Session\Session $session
+   *   The session.
    */
   public function __construct(
     HttpMessageFactoryInterface $message_factory,
