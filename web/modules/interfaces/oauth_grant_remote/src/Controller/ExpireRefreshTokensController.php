@@ -136,6 +136,12 @@ class ExpireRefreshTokensController extends ControllerBase {
     // Get the account delivered by Remote Logout.
     $remote_account = $remote_claims['account'];
 
+    // Only accept claims issued by main page.
+    if (!($remote_claims['iss'] == 'https://youvo.org' ||
+      $remote_claims['iss'] == 'https://www.youvo.org')) {
+      throw new BadRequestHttpException('Bad Request. Expiry is activated only for production environment.');
+    }
+
     // Nothing to do if this account is not a creative.
     if (!array_key_exists(3, $remote_account['roles'])) {
       return new ModifiedResourceResponse(NULL, 200);
