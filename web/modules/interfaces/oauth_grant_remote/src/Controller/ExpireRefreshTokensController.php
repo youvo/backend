@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Utility\Error;
 use Drupal\rest\ModifiedResourceResponse;
 use Lcobucci\Clock\SystemClock;
@@ -49,6 +50,13 @@ class ExpireRefreshTokensController extends ControllerBase {
   protected $tokenStorage;
 
   /**
+   * The session manager.
+   *
+   * @var \Drupal\Core\Session\SessionManager
+   */
+  private $sessionManager;
+
+  /**
    * ExpireRefreshTokensController constructor.
    *
    * @param \Psr\Log\LoggerInterface $logger
@@ -57,15 +65,19 @@ class ExpireRefreshTokensController extends ControllerBase {
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityStorageInterface $token_storage
    *   The token storage.
+   * @param \Drupal\Core\Session\SessionManager $session_manager
+   *   The session manager.
    */
   public function __construct(
     LoggerInterface $logger,
     ConfigFactoryInterface $config_factory,
-    EntityStorageInterface $token_storage
+    EntityStorageInterface $token_storage,
+    SessionManager $session_manager,
   ) {
     $this->logger = $logger;
     $this->configFactory = $config_factory;
     $this->tokenStorage = $token_storage;
+    $this->sessionManager = $session_manager;
   }
 
   /**
@@ -75,7 +87,8 @@ class ExpireRefreshTokensController extends ControllerBase {
     return new static(
       $container->get('logger.factory')->get('rest'),
       $container->get('config.factory'),
-      $container->get('entity_type.manager')->getStorage('oauth2_token')
+      $container->get('entity_type.manager')->getStorage('oauth2_token'),
+      $container->get('session_manager')
     );
   }
 
@@ -163,6 +176,12 @@ class ExpireRefreshTokensController extends ControllerBase {
         ->error('Unable to delete Tokens in remote user logout resource.');
       throw new HttpException(500, 'Internal Server Error', $e);
     }
+
+    // Also, destroy all sessions of user. We do not care about users being
+    // logged in from different devices, because if all refresh tokens are
+    // invalidated, the user has to authenticate again and consequently will be
+    // logged in to the data provider again.
+    $this->sessionManager->delete($remote_account['uid']);
 
     return new ModifiedResourceResponse(NULL, 200);
   }
