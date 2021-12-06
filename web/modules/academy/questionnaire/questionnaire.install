@@ -25,7 +25,6 @@ function questionnaire_site_install_finished() {
     $role_object = Role::load($role);
     $role_object->grantPermission('restful get question:submission');
     $role_object->grantPermission('restful post question:submission');
-    $role_object->grantPermission('restful delete question:submission');
     try {
       $role_object->save();
     }
