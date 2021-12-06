@@ -8,3 +8,10 @@ oauth_grant_remote.settings:
   options:
     _admin_route: TRUE
   base_route: entity.user.admin_form
+oauth_grant_remote.expire:
+  path: '/oauth/expire'
+  defaults:
+    _controller: 'Drupal\oauth_grant_remote\Controller\ExpireRefreshTokensController::response'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'

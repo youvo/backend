@@ -10,3 +10,4 @@ dependencies:
   - youvo
   - consumers
   - simple_oauth
+  - rest
