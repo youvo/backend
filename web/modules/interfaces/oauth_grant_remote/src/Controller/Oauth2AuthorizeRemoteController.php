@@ -6,6 +6,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Utility\Error;
@@ -87,6 +88,13 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
   private Session $session;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $account;
+
+  /**
    * Extend the Oauth2AuthorizeController construct.
    *
    * @param \Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface $message_factory
@@ -111,6 +119,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *   The session manager.
    * @param \Symfony\Component\HttpFoundation\Session\Session $session
    *   The session.
+   * @param \Drupal\Core\Session\AccountProxyInterface $account
+   *   The current user.
    */
   public function __construct(
     HttpMessageFactoryInterface $message_factory,
@@ -123,7 +133,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     LoggerChannelInterface $logger,
     Connection $database,
     SessionManager $session_manager,
-    Session $session
+    Session $session,
+    AccountProxyInterface $account
   ) {
     parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository);
     $this->httpClient = $http_client;
@@ -133,6 +144,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $this->database = $database;
     $this->sessionManager = $session_manager;
     $this->session = $session;
+    $this->account = $account;
   }
 
   /**
@@ -150,7 +162,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       $container->get('logger.factory')->get('youvo'),
       $container->get('database'),
       $container->get('session_manager'),
-      $container->get('session')
+      $container->get('session'),
+      $container->get('current_user')
     );
   }
 
@@ -203,6 +216,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       $session_cookies = array_filter($session_cookies,
         fn($c) => $c != $local_session_id);
     }
+
+    $session_cookies['test'] = 'yj3wtnVYQBntLo5FFhysuu_zqTr4JuNPR46C8nSGHDA';
 
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
@@ -307,23 +322,22 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // Compare local session Uid and relayed account Uid. If both match, we can
     // continue with the parent authorize callback. The currently logged in user
-    // is valid and both original and sub host.
-    // If the Uids do not match. We log out the user from the current platform,
+    // is valid for both original host and data provider.
+    // If the Uids do not match. We log out the user from the data provider,
     // destroy the current session and use the relayed account in the following.
     // @todo This should be moved to the beginning. Therefore, we need to
     //   disable logins on the current page. Then, the sessions never collide.
     if ($local_session_uid > 0) {
+      // Regenerate the session ID to prevent against session fixation attacks.
+      $this->sessionManager->regenerate();
       if ($local_session_uid == $remote_account['uid']) {
-        // Reload the complete user object and touch the session.
-        $shell_user = User::load($local_session_uid);
-        $this->loginUser($shell_user);
         return parent::authorize($request);
       }
       else {
-        /** @var \Drupal\Core\Session\AccountProxyInterface $local_account */
-        $local_account = $this->currentUser();
+        // Call logout hooks and logout current local user.
+        $this->moduleHandler()->invokeAll('user_logout', [$this->account]);
         $this->sessionManager->destroy();
-        $local_account->setAccount(new AnonymousUserSession());
+        $this->account->setAccount(new AnonymousUserSession());
       }
     }
 
@@ -388,15 +402,19 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   private function loginUser(UserInterface $account) {
-    $this->currentUser()->setAccount($account);
+    $this->account->setAccount($account);
     $this->logger->notice('Session opened for %name.',
       ['%name' => $account->getAccountName()]);
     $account->setLastLoginTime($this->time->getRequestTime());
-    $this->entityTypeManager()
-      ->getStorage('user')
-      ->updateLastLoginTimestamp($account);
+    $user_storage = $this->entityTypeManager()
+      ->getStorage('user');
+    /** @var \Drupal\user\UserStorage $user_storage */
+    $user_storage->updateLastLoginTimestamp($account);
     $this->session->migrate();
     $this->session->set('uid', $account->id());
+
+    // Call all login hooks for newly logged-in user.
+    $this->moduleHandler()->invokeAll('user_login', [$account]);
   }
 
 }
