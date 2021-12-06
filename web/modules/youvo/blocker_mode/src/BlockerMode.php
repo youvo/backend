@@ -63,6 +63,7 @@ class BlockerMode implements BlockerModeInterface {
       $allowed_routes[] = 'oauth2_token.token';
       $allowed_routes[] = 'user.login';
       $allowed_routes[] = 'user.logout';
+      $allowed_routes[] = 'oauth_grant_remote.expire';
       if (in_array($route_name, $allowed_routes)) {
         return FALSE;
       }
