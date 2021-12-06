@@ -19,6 +19,11 @@ class RouteSubscriber extends RouteSubscriberBase {
         '_controller' => '\Drupal\oauth_grant_remote\Controller\Oauth2AuthorizeRemoteController::authorize',
       ]);
     }
+    if ($route = $collection->get('simple_oauth.userinfo')) {
+      $route->setDefaults([
+        '_controller' => '\Drupal\oauth_grant_remote\Controller\UserInfoOverwriteController::handle',
+      ]);
+    }
   }
 
 }
