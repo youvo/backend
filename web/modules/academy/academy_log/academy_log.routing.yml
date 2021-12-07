@@ -1,0 +1,9 @@
+academy_log.overview:
+  path: '/academy-log'
+  defaults:
+    _controller: '\Drupal\academy_log\OverviewController::overview'
+    _title: 'Academy Overview'
+  requirements:
+    _permission: 'manage courses'
+  options:
+    no_cache: 'TRUE'
