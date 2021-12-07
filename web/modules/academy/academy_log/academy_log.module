@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Custom module which provides implementation of academy log functionality.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function academy_log_theme($existing, $type, $theme, $path) {
+  return [
+    'overview' => [
+      'template' => 'content--overview',
+      'variables' => ['page' => NULL],
+    ],
+  ];
+}
