@@ -35,6 +35,7 @@
     <summary role="button" class="claro-details__summary claro-details__summary--package-listing">
       {{ participant.name }}
       <div class="l"><div><div style="width: {{ participant.progression }}%;"></div></div></div>
+      <span class="claro-details__summary-summary" style="display:inline-block;">&nbsp;{{ participant.mail }}</span>
     </summary>
     <div class="claro-details__wrapper" style="margin-right: 1rem; margin-bottom: 2.25rem;">
       {% for course in participant.courses %}

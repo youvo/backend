@@ -66,6 +66,7 @@ class OverviewController extends ControllerBase {
     foreach ($accounts as $account) {
       $sheet = [];
       $sheet['name'] = $account->get('fullname')->value;
+      $sheet['mail'] = $account->getEmail();
       $overall_progression = $this->calculateProgressionCourses($account);
       $sheet['courses'] = [];
       foreach ($courses as $course) {
@@ -102,8 +103,10 @@ class OverviewController extends ControllerBase {
     }
 
     // Sort participants by progression.
-    usort($page['participants'],
-      fn($a, $b) => $b['progression'] <=> $a['progression']);
+    if (!empty($page['participants'])) {
+      usort($page['participants'],
+        fn($a, $b) => $b['progression'] <=> $a['progression']);
+    }
 
     return [
       '#theme' => 'overview',
