@@ -1,5 +1,49 @@
+<style>
+  .l{
+    position: relative;
+    width: 40%;
+    float: right;
+  }
+  .l > div {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    height: 10px;
+    background: #f3f4f9;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .17);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .l > div > div {
+    content: '';
+    position: absolute;
+    background: #003cc5;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, .8);
+  }
+</style>
+
+{% if page.participants is empty %}
+  No participants found.
+{% endif %}
+
 {% for participant in page.participants %}
-  <div class="modules-table-filter leader">
-    <h6>{{ participant }}</h6>
-  </div>
+  <details class="claro-details claro-details--package-listing trailer">
+    <summary role="button" class="claro-details__summary claro-details__summary--package-listing">
+      {{ participant.name }}
+      <div class="l"><div><div style="width: {{ participant.progression }}%;"></div></div></div>
+    </summary>
+    <div class="claro-details__wrapper" style="margin-right: 1rem; margin-bottom: 4.5rem;">
+      {% for course in participant.courses %}
+        <div style="display: inline-block;"><strong>{{ course.title }}</strong>{% if course.completed %}<br />{{ 'Last Access'|t }}: {{ course.accessed }}{% endif %}</div>
+         <div class="l">
+           <div><div style="width:{{ course.progression }}%;"></div></div>
+           {{ course.progression }}%{% if course.completed %} &mdash; {{ 'Completed'|t }}: {{ course.completed }}{% elseif course.enrolled %} &mdash; {{ 'Enrolled'|t }}: {{ course.enrolled }}{% endif %}
+         </div>
+      {% endfor %}
+    </div>
+  </details>
 {% endfor %}
