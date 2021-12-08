@@ -74,10 +74,10 @@ class OverviewController extends ControllerBase {
         }
         $slip['title'] = $course->getTitle();
         $slip['progression'] = isset($progress) ? $this->calculateProgressionLectures($course, $account) : 0;
-        $slip['enrolled'] = isset($progress) ? $this->dateFormatter->format($progress->getEnrollmentTime(), 'short') : '';
-        $slip['accessed'] = isset($progress) ? $this->dateFormatter->format($progress->getAccessTime(), 'short') : '';
+        $slip['enrolled'] = isset($progress) ? $this->dateFormatter->format($progress->getEnrollmentTime(), 'short') : NULL;
+        $slip['accessed'] = isset($progress) ? $this->dateFormatter->format($progress->getAccessTime(), 'short') : NULL;
         $completed = $progress?->getCompletedTime();
-        $slip['completed'] = isset($completed) ? $this->dateFormatter->format($completed, 'short') : '';
+        $slip['completed'] = isset($completed) ? $this->dateFormatter->format($completed, 'short') : NULL;
         $sheet['courses'][$course->id()] = $slip;
         if (!isset($completed) || $completed == 0) {
           break;
