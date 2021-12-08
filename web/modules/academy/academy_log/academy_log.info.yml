@@ -1,0 +1,10 @@
+name: Academy Log
+type: module
+description: Academy log module.
+core_version_requirement: '^9 || ^10'
+package: 'Academy'
+
+dependencies:
+  - academy
+  - progress
+  - questionnaire

@@ -37,6 +37,7 @@ class DashboardController extends ControllerBase {
 
     // Is academy activated?
     $page['academy'] = $this->moduleHandler()->moduleExists('lectures');
+    $page['academy_log'] = $this->moduleHandler()->moduleExists('academy_log');
 
     return [
       '#theme' => 'dashboard',
