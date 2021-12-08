@@ -82,11 +82,14 @@ class OverviewController extends ControllerBase {
         $slip['accessed'] = isset($accessed) ? $this->dateFormatter->format($accessed, 'short') : NULL;
         $completed = $progress?->getCompletedTime();
         $slip['completed'] = isset($completed) && $completed != 0 ? $this->dateFormatter->format($completed, 'short') : NULL;
+        if (!isset($accessed)) {
+          break;
+        }
         $sheet['courses'][$course->id()] = $slip;
         if (isset($completed) && $completed == 0) {
           $overall_progression += $course_progression / $total_courses;
         }
-        if (!isset($accessed) || !isset($completed) || $completed == 0) {
+        if (!isset($completed) || $completed == 0) {
           break;
         }
       }
