@@ -1,3 +1,5 @@
+{% set module_path = _self|split('/templates')[0] %}
+
 <style>
   .l{
     position: relative;
@@ -24,6 +26,34 @@
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, .8);
   }
+
+  .icon {
+    position: relative;
+    display: inline-block;
+    top: -1px;
+    vertical-align: middle;
+    height: 1.295rem;
+    margin-right: 0.5rem;
+  }
+
+  .grid__item {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  @media screen and (min-width: 50em) {
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .grid__item {
+      margin-bottom: 10px;
+    }
+    .grid__item--25 {
+      width: 25%;
+    }
+  }
 </style>
 
 {% if page.participants is empty %}
@@ -32,21 +62,37 @@
 
 {% for participant in page.participants %}
   <details class="claro-details claro-details--package-listing trailer">
+
     <summary role="button" class="claro-details__summary claro-details__summary--package-listing">
       {{ participant.name }}
       <div class="l"><div><div style="width: {{ participant.progression }}%;"></div></div></div>
       <span class="claro-details__summary-summary" style="display:inline-block;">&nbsp;{{ participant.mail }}</span>
     </summary>
+
     <div class="claro-details__wrapper" style="margin-right: 1rem; margin-bottom: 2.25rem;">
       {% for course in participant.courses %}
         <div style="overflow: auto; margin-bottom: 1.125rem;">
-          <div style="display: inline-block;"><strong>{{ course.title }}</strong>{% if course.accessed %}<br />{{ 'Last Access'|t }}: {{ course.accessed }}{% endif %}</div>
-           <div class="l">
-             <div><div style="width:{{ course.progression }}%;"></div></div>
-             {{ course.progression }}%{% if course.completed %} &mdash; {{ 'Completed'|t }}: {{ course.completed }}{% elseif course.enrolled %} &mdash; {{ 'Enrolled'|t }}: {{ course.enrolled }}{% endif %}
-           </div>
+          <div class="grid">
+            <div class="grid__item grid__item--25">
+              <strong>{{ course.title }}</strong>
+            </div>
+            <div class="grid__item grid__item--25">
+              <img class="icon" src="{{ module_path ~ '/icons/enroll.svg' }}" title="Enrolled" alt="Enrolled">&nbsp;{{ course.enrolled }}
+            </div>
+            <div class="grid__item grid__item--25">
+              {% if course.completed %}
+                <img class="icon" src="{{ module_path ~ '/icons/complete.svg' }}" title="Completed" alt="Completed">&nbsp;{{ course.completed }}
+              {% else %}
+                <img class="icon" src="{{ module_path ~ '/icons/progress.svg' }}" title="Progression" alt="Progression">&nbsp;{{ course.progression }}&nbsp;%
+              {% endif %}
+            </div>
+            <div class="grid__item grid__item--25">
+              <img class="icon" src="{{ module_path ~ '/icons/access.svg' }}" title="Last Access" alt="Last Access">&nbsp;{{ course.accessed }}
+            </div>
+          </div>
         </div>
       {% endfor %}
     </div>
+
   </details>
 {% endfor %}
