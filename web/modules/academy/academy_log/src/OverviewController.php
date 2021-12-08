@@ -61,6 +61,7 @@ class OverviewController extends ControllerBase {
     $accounts = $this->getCreativeAccounts();
     $courses = $this->getAllCourses();
 
+    // Gather progress info for each account.
     foreach ($accounts as $account) {
       $sheet = [];
       $sheet['name'] = $account->get('fullname')->value;
@@ -77,7 +78,7 @@ class OverviewController extends ControllerBase {
         $slip['enrolled'] = isset($progress) ? $this->dateFormatter->format($progress->getEnrollmentTime(), 'short') : NULL;
         $slip['accessed'] = isset($progress) ? $this->dateFormatter->format($progress->getAccessTime(), 'short') : NULL;
         $completed = $progress?->getCompletedTime();
-        $slip['completed'] = isset($completed) ? $this->dateFormatter->format($completed, 'short') : NULL;
+        $slip['completed'] = isset($completed) && $completed != 0 ? $this->dateFormatter->format($completed, 'short') : NULL;
         $sheet['courses'][$course->id()] = $slip;
         if (!isset($completed) || $completed == 0) {
           break;
@@ -88,6 +89,10 @@ class OverviewController extends ControllerBase {
       }
       $page['participants'][$account->id()] = $sheet;
     }
+
+    // Sort participants by progression.
+    usort($page['participants'],
+      fn($a, $b) => $b['progression'] <=> $a['progression']);
 
     return [
       '#theme' => 'overview',
