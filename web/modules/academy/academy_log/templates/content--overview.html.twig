@@ -58,6 +58,11 @@
 
 {% if page.participants is empty %}
   No participants found.
+{% else %}
+    <img class="icon" src="{{ module_path ~ '/icons/enroll.svg' }}" title="Enrolled" alt="Enrolled">{{ 'Enrolled'|t }}
+    <img style="margin-left:1rem;" class="icon" src="{{ module_path ~ '/icons/complete.svg' }}" title="Completed" alt="Completed">{{ 'Completed'|t }}
+    <img style="margin-left:1rem;" class="icon" src="{{ module_path ~ '/icons/progress.svg' }}" title="Progression" alt="Progression">{{ 'Progression'|t }}
+    <img style="margin-left:1rem;" class="icon" src="{{ module_path ~ '/icons/access.svg' }}" title="Last Access" alt="Last Access">{{ 'Last Access'|t }}
 {% endif %}
 
 {% for participant in page.participants %}
