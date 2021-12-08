@@ -60,12 +60,13 @@ class OverviewController extends ControllerBase {
     $page = [];
     $accounts = $this->getCreativeAccounts();
     $courses = $this->getAllCourses();
+    $total_courses = !empty($courses) ? count($courses) : 1;
 
     // Gather progress info for each account.
     foreach ($accounts as $account) {
       $sheet = [];
       $sheet['name'] = $account->get('fullname')->value;
-      $sheet['progression'] = $this->calculateProgressionCourses($account);
+      $overall_progression = $this->calculateProgressionCourses($account);
       $sheet['courses'] = [];
       foreach ($courses as $course) {
         $slip = [];
@@ -74,19 +75,25 @@ class OverviewController extends ControllerBase {
           break;
         }
         $slip['title'] = $course->getTitle();
-        $slip['progression'] = isset($progress) ? $this->calculateProgressionLectures($course, $account) : 0;
+        $course_progression = isset($progress) ? $this->calculateProgressionLectures($course, $account) : 0;
+        $slip['progression'] = $course_progression;
         $slip['enrolled'] = isset($progress) ? $this->dateFormatter->format($progress->getEnrollmentTime(), 'short') : NULL;
         $slip['accessed'] = isset($progress) ? $this->dateFormatter->format($progress->getAccessTime(), 'short') : NULL;
         $completed = $progress?->getCompletedTime();
         $slip['completed'] = isset($completed) && $completed != 0 ? $this->dateFormatter->format($completed, 'short') : NULL;
         $sheet['courses'][$course->id()] = $slip;
+        if (isset($completed) && $completed == 0) {
+          $overall_progression += $course_progression / $total_courses;
+        }
         if (!isset($completed) || $completed == 0) {
           break;
         }
       }
+      // If a user never clicked on any courses - do not list.
       if (empty($sheet['courses'])) {
         continue;
       }
+      $sheet['progression'] = $overall_progression;
       $page['participants'][$account->id()] = $sheet;
     }
 
