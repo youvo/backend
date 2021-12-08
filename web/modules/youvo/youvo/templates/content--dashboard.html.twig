@@ -6,4 +6,9 @@
       {{ 'Academy Administration'|t }}
     </a>
   {% endif %}
+  {% if page.academy_log %}
+    <a class="button button--primary" href="{{ path('academy_log.overview') }}">
+      {{ 'Academy Log'|t }}
+    </a>
+  {% endif %}
 </p>

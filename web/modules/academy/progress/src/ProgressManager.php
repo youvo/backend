@@ -437,7 +437,7 @@ class ProgressManager {
   /**
    * Get referenced lectures with completed status.
    */
-  private function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL): array {
+  public function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL): array {
 
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
@@ -464,7 +464,7 @@ class ProgressManager {
   /**
    * Get referenced lectures with completed status.
    */
-  private function getCoursesByCompleted(AccountInterface $account = NULL) {
+  public function getCoursesByCompleted(AccountInterface $account = NULL) {
 
     // Get id and completed with custom query sorted by weight.
     // Might be faster than loading every course individually.

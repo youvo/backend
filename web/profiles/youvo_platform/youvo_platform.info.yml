@@ -49,6 +49,7 @@ install:
   - project
   # Academy
   - academy
+  - academy_log
   - child_entities
   - courses
   - lectures
