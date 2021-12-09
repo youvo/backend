@@ -68,7 +68,10 @@ class AcademyJsonapiParse extends JsonapiParse {
    * Overwrite this method to pop empty values from submission arrays. These
    * empty values are added beforehand to deliver the caching information.
    *
+   * Also, handle multivalue fields.
+   *
    * @see SubmissionFieldItemList
+   * @see ParagraphForm
    */
   protected function resolveAttributes($item) {
 
@@ -81,6 +84,20 @@ class AcademyJsonapiParse extends JsonapiParse {
         );
       }
     }
+
+    // Rearrange values from multifield for stats paragraphs. Merge stats and
+    // description to one array. We can assume that both are the same length.
+    if (isset($item['type']) && $item['type'] == 'stats') {
+      if (isset($item['attributes']['stats']) && isset($item['attributes']['description'])) {
+        $stats = [];
+        foreach ($item['attributes']['stats'] as $key => $stat) {
+          $stats[] = [$stat, $item['attributes']['description'][$key]];
+        }
+        $item['attributes']['stats'] = $stats;
+        unset($item['attributes']['description']);
+      }
+    }
+
     return parent::resolveAttributes($item);
   }
 
