@@ -55,10 +55,11 @@ class BlockerMode implements BlockerModeInterface {
     }
 
     // At the moment all request are send to blocker page.
-    // Except login and logout routes.
+    // Except authorize, login and logout routes.
     $route_match = RouteMatch::createFromRequest($request);
     if ($route_match->getRouteObject()) {
       $route_name = $route_match->getRouteName();
+      $allowed_routes[] = 'oauth2_token.authorize';
       $allowed_routes[] = 'user.login';
       $allowed_routes[] = 'user.logout';
       if (in_array($route_name, $allowed_routes)) {
