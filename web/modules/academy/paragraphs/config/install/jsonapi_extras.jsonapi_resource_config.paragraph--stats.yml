@@ -82,7 +82,7 @@ resourceFields:
     disabled: false
   list:
     fieldName: list
-    publicName: list
+    publicName: stats
     enhancer:
       id: ''
     disabled: false
