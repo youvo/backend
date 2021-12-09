@@ -47,21 +47,18 @@ class BlockerMode implements BlockerModeInterface {
     // allowed through the client.
     if ($request->headers->has('user-agent')) {
       $user_agent = $request->headers->get('user-agent');
-      if ($user_agent == 'youvo-frontend' ||
-        $user_agent == 'youvo-ip' ||
-        str_starts_with($user_agent, 'Postman')) {
+      if (str_contains($user_agent, 'youvo-frontend') ||
+        str_contains($user_agent, 'youvo-ip') ||
+        str_contains($user_agent, 'Postman')) {
         return FALSE;
       }
     }
 
     // At the moment all request are send to blocker page.
-    // Except authorize, authentication, login and logout routes.
+    // Except login and logout routes.
     $route_match = RouteMatch::createFromRequest($request);
     if ($route_match->getRouteObject()) {
       $route_name = $route_match->getRouteName();
-      $allowed_routes[] = 'oauth2_token.authorize';
-      $allowed_routes[] = 'oauth2_token.token';
-      $allowed_routes[] = 'simple_oauth.userinfo';
       $allowed_routes[] = 'user.login';
       $allowed_routes[] = 'user.logout';
       if (in_array($route_name, $allowed_routes)) {
