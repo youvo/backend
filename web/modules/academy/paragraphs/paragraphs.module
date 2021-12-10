@@ -24,11 +24,12 @@ function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
   // Add paragraphs base field to entity Lecture.
   if ($entity_type->id() == 'lecture') {
     $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
+      ->setLabel(t('Computed Children'))
       ->setSetting('target_type', 'paragraph')
       ->setDescription(t('Computes the paragraphs referencing this lecture.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(ComputedChildEntityReferenceFieldItemList::class);
   }
 
