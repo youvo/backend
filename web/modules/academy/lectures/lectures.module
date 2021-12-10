@@ -100,7 +100,7 @@ function lectures_form_course_edit_form_redirect($form, FormStateInterface $form
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $course = \Drupal::service('current_route_match')->getParameter('course');
   $url = Url::fromRoute('entity.lecture.collection', [], [
     'query' => ['cr' => $course->id()],
