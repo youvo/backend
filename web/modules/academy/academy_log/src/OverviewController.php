@@ -95,7 +95,7 @@ class OverviewController extends ControllerBase {
         }
       }
       // If a user never clicked on any courses - do not list.
-      if (empty($sheet['courses'])) {
+      if (empty($sheet['courses']) || $overall_progression == 0) {
         continue;
       }
       $sheet['progression'] = $overall_progression;
