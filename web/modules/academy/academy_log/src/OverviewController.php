@@ -95,7 +95,7 @@ class OverviewController extends ControllerBase {
         }
       }
       // If a user never clicked on any courses - do not list.
-      if (empty($sheet['courses'])) {
+      if (empty($sheet['courses']) || $overall_progression == 0) {
         continue;
       }
       $sheet['progression'] = $overall_progression;
@@ -119,7 +119,7 @@ class OverviewController extends ControllerBase {
    */
   private function getCreativeAccounts() {
     // Get all creatives, that are active and not associates.
-    $associates_ids = [1, 14, 50, 130, 136, 616, 621, 1200, 1888, 1889, 5124, 15970];
+    $associates_ids = [1, 14, 50, 130, 134, 136, 616, 621, 1200, 1888, 1889, 5124, 15970];
     $storage = $this->entityTypeManager()->getStorage('user');
     $uids = $storage->getQuery()
       ->condition('status', '1')
