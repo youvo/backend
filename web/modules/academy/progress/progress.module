@@ -47,11 +47,13 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Completed'))
       ->setDescription(t('Computes the completed status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(CompletedFieldItemList::class);
     $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Unlocked'))
       ->setDescription(t('Computes the unlocked status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(UnlockedFieldItemList::class);
   }
 

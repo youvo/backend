@@ -228,7 +228,6 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the lecture author.'))
       ->setSetting('target_type', 'user')
@@ -244,18 +243,11 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the lecture was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the lecture was last edited.'));
-
-    $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Weight'))
-      ->setDescription(t('The weight of this term in relation to other terms.'))
-      ->setDefaultValue(0);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
