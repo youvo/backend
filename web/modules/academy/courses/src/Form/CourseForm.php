@@ -37,7 +37,8 @@ class CourseForm extends ContentEntityForm {
       '#weight' => -4,
     ];
 
-    if ($course->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+    if (!$course->isNew() &&
+      $course->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
       $form['translations'] = [
         '#type' => 'container',
         '#weight' => -10,
