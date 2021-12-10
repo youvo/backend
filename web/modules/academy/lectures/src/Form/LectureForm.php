@@ -13,6 +13,35 @@ class LectureForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
+
+    /** @var \Drupal\lectures\Entity\Lecture $lecture */
+    $lecture = $this->getEntity();
+
+    if (!$lecture->isNew() &&
+      $lecture->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      $form['translations'] = [
+        '#type' => 'container',
+        '#weight' => -10,
+      ];
+
+      $form['translations']['overview'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Translations'),
+        '#url' => $lecture->toUrl('drupal:content-translation-overview'),
+        '#attributes' => [
+          'class' => ['button button--small'],
+        ],
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function save(array $form, FormStateInterface $form_state) {
 
     // Save entity.
