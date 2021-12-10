@@ -26,7 +26,8 @@ function academy_entity_type_alter(array &$entity_types) {
     if ($entity_type->id() == 'course'||
       $entity_type->id() == 'lecture' ||
       $entity_type->id() == 'paragraph' ||
-      $entity_type->id() == 'questionnaire') {
+      $entity_type->id() == 'questionnaire' ||
+      $entity_type->id() == 'question') {
 
       if ($entity_type->isTranslatable()) {
         if (!$entity_type->hasHandlerClass('translation')) {
