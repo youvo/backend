@@ -38,6 +38,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Progress'))
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(ProgressFieldItemList::class);
   }
 
@@ -64,6 +65,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Current Lecture'))
       ->setDescription(t('Computes the last unlocked lecture by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(CurrentLectureFieldItemList::class);
   }
 
