@@ -64,7 +64,7 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
   // Add computed evaluation field to evaluation paragraphs.
   if ($entity_type->id() == 'paragraph' && $bundle == 'evaluation') {
     $fields['questions'] = ComputedFieldStorageDefinition::create('entity_reference')
-      ->setLabel(t('Computed course questions.'))
+      ->setLabel(t('Computed Course Questions'))
       ->setDescription(t('Computes the questions contained in this course.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'question')
