@@ -211,19 +211,16 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the question author.'))
       ->setSetting('target_type', 'user');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the question was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the question was last edited.'));
 
     $fields += static::childBaseFieldDefinitions($entity_type);
