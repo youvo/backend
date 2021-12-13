@@ -53,6 +53,7 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
       ->setLabel(t('User Input'))
       ->setDescription(t('Computes the user input from question submissions.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(SubmissionFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
       ->setTargetBundle($bundle);
