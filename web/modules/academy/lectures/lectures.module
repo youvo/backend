@@ -24,7 +24,7 @@ function lectures_entity_base_field_info(EntityTypeInterface $entity_type) {
   // Add lectures base field to entity Course.
   if ($entity_type->id() == 'course') {
     $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
+      ->setLabel(t('Computed Children'))
       ->setSetting('target_type', 'lecture')
       ->setDescription(t('Computes the lectures referencing this course.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
