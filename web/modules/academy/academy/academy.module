@@ -5,13 +5,13 @@
  * Provides hooks for academy entities.
  */
 
-use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
-
 /**
  * Add content translation alterations here.
  *
  * Need to modify the hook slightly because there are no canonical links for
  * the academy entities.
+ *
+ * @todo Distribute logic to modules.
  *
  * @see content_translation.module
  */
