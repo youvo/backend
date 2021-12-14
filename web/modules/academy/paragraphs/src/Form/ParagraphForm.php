@@ -14,6 +14,8 @@ class ParagraphForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function form(array $form, FormStateInterface $form_state) {
 
@@ -22,6 +24,23 @@ class ParagraphForm extends ContentEntityForm {
 
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $this->getEntity();
+
+    if (!$paragraph->isNew() &&
+      $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      $form['translations'] = [
+        '#type' => 'container',
+        '#weight' => -10,
+      ];
+
+      $form['translations']['overview'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Translations'),
+        '#url' => $paragraph->toUrl('drupal:content-translation-overview'),
+        '#attributes' => [
+          'class' => ['button button--small'],
+        ],
+      ];
+    }
 
     // Add answers multi value form element.
     if ($paragraph->bundle() == 'stats') {
