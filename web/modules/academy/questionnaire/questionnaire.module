@@ -70,6 +70,7 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'question')
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(ContainedQuestionsFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
       ->setTargetBundle($bundle);
