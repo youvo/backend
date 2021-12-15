@@ -200,7 +200,6 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
       ]);
 
     $fields['machine_name'] = BaseFieldDefinition::create('string')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Machine name'))
       ->setDescription(t('The machine name of the course entity.'))
       ->setRequired(TRUE)
@@ -239,19 +238,16 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the course author.'))
       ->setSetting('target_type', 'user');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the course was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the course was last edited.'));
 
     $fields['tags'] = BaseFieldDefinition::create('string')

@@ -9,12 +9,15 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
 use Drupal\user\UserInterface;
 
 /**
  * Defines the question entity class.
+ *
+ * Note that the pattern for the edit-form route does not match the pattern for
+ * the other academy entities. We have to reduce the parameters because somehow
+ * if there are too many parameters the translation routes can not be resolved
+ * and trigger page not found responses.
  *
  * @todo Issue #11: Add revisions to entity.
  *
@@ -26,6 +29,7 @@ use Drupal\user\UserInterface;
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "form" = {
+ *       "add" = "Drupal\questionnaire\Form\QuestionForm",
  *       "edit" = "Drupal\questionnaire\Form\QuestionForm"
  *     },
  *     "route_provider" = {
@@ -47,7 +51,7 @@ use Drupal\user\UserInterface;
  *     "weight" = "weight"
  *   },
  *   links = {
- *     "edit-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}/qu/{question}"
+ *     "edit-form" = "/academy/co/{course}/le/{lecture}/qu/{question}"
  *   },
  *   bundle_entity_type = "question_type",
  *   field_ui_base_route = "entity.question_type.edit_form"
@@ -211,19 +215,16 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
       ]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the question author.'))
       ->setSetting('target_type', 'user');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the question was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the question was last edited.'));
 
     $fields += static::childBaseFieldDefinitions($entity_type);

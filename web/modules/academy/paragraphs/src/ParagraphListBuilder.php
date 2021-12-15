@@ -35,6 +35,26 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   protected $formBuilder;
 
   /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
+   * Returns the language manager service.
+   *
+   * @return \Drupal\Core\Language\LanguageManagerInterface
+   *   The language manager.
+   */
+  protected function languageManager() {
+    if (!$this->languageManager) {
+      $this->languageManager = \Drupal::languageManager();
+    }
+    return $this->languageManager;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function render() {
@@ -47,6 +67,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   public function buildHeader() {
     $header['name'] = $this->t('Name');
     $header['bundle'] = $this->t('Type');
+    $header['translations'] = $this->t('Translation');
     $header['operations'] = [
       'data' => $this->t('Operations'),
       'class' => ['text-align-right'],
@@ -91,6 +112,24 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     ];
     $row['bundle'] = [
       '#markup' => $bundle->label(),
+    ];
+    $translations = '';
+    if ($entity->bundle() != 'evaluation' && $entity->bundle() != 'questionnaire') {
+      foreach ($this->languageManager()->getLanguages() as $language) {
+        if ($language->getId() == $this->languageManager()
+          ->getDefaultLanguage()->getId()) {
+          continue;
+        }
+        if (!$entity->hasTranslation($language->getId())) {
+          $translations .= '<s class="admin-item__description">' . $language->getId() . '</s>&nbsp;';
+        }
+        else {
+          $translations .= $language->getId() . '&nbsp;';
+        }
+      }
+    }
+    $row['translations'] = [
+      '#markup' => $translations,
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);

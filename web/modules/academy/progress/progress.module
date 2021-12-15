@@ -38,6 +38,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Progress'))
       ->setDescription(t('Computes the progress status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(ProgressFieldItemList::class);
   }
 
@@ -47,11 +48,13 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Completed'))
       ->setDescription(t('Computes the completed status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(CompletedFieldItemList::class);
     $fields['unlocked'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Unlocked'))
       ->setDescription(t('Computes the unlocked status by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(UnlockedFieldItemList::class);
   }
 
@@ -62,6 +65,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Current Lecture'))
       ->setDescription(t('Computes the last unlocked lecture by user.'))
       ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
       ->setClass(CurrentLectureFieldItemList::class);
   }
 
