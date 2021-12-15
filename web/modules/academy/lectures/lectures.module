@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
@@ -45,6 +46,7 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
     ]);
+    $operations['edit']['title'] = new TranslatableMarkup('Edit Lecture');
     $operations['delete']['url'] = Url::fromRoute('entity.lecture.delete_form', [
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
