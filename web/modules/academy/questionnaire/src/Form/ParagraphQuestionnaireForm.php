@@ -54,7 +54,6 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     $form['uid']['#access'] = FALSE;
     $form['created']['#access'] = FALSE;
     $form['changed']['#access'] = FALSE;
-    $form['questions']['#access'] = FALSE;
 
     // @todo Target wrapper with drupal-data-selector after
     // https://www.drupal.org/project/drupal/issues/2821793
