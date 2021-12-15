@@ -114,15 +114,18 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#markup' => $bundle->label(),
     ];
     $translations = '';
-    foreach ($this->languageManager()->getLanguages() as $language) {
-      if ($language->getId() == $this->languageManager()->getDefaultLanguage()->getId()) {
-        continue;
-      }
-      if (!$entity->hasTranslation($language->getId())) {
-        $translations .= '<s class="admin-item__description">' . $language->getId() . '</s>&nbsp;';
-      }
-      else {
-        $translations .= $language->getId() . '&nbsp;';
+    if ($entity->bundle() != 'evaluation' && $entity->bundle() != 'questionnaire') {
+      foreach ($this->languageManager()->getLanguages() as $language) {
+        if ($language->getId() == $this->languageManager()
+          ->getDefaultLanguage()->getId()) {
+          continue;
+        }
+        if (!$entity->hasTranslation($language->getId())) {
+          $translations .= '<s class="admin-item__description">' . $language->getId() . '</s>&nbsp;';
+        }
+        else {
+          $translations .= $language->getId() . '&nbsp;';
+        }
       }
     }
     $row['translations'] = [
