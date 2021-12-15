@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\lectures\Entity\Lecture;
 
@@ -24,7 +25,7 @@ function lectures_entity_base_field_info(EntityTypeInterface $entity_type) {
   // Add lectures base field to entity Course.
   if ($entity_type->id() == 'course') {
     $fields['lectures'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Computed Children.'))
+      ->setLabel(t('Computed Children'))
       ->setSetting('target_type', 'lecture')
       ->setDescription(t('Computes the lectures referencing this course.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
@@ -45,6 +46,7 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
     ]);
+    $operations['edit']['title'] = new TranslatableMarkup('Edit Lecture');
     $operations['delete']['url'] = Url::fromRoute('entity.lecture.delete_form', [
       'course' => $entity->getParentEntity()->id(),
       'lecture' => $entity->id(),
@@ -100,7 +102,7 @@ function lectures_form_course_edit_form_redirect($form, FormStateInterface $form
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function paragraphs_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $course = \Drupal::service('current_route_match')->getParameter('course');
   $url = Url::fromRoute('entity.lecture.collection', [], [
     'query' => ['cr' => $course->id()],

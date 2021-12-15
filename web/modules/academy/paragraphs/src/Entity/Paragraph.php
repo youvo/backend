@@ -183,7 +183,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['title'] = BaseFieldDefinition::create('string')
-      ->setTranslatable(TRUE)
+      ->setTranslatable(FALSE)
       ->setLabel(t('Internal Title'))
       ->setDescription(t('The title of the paragraph entity.'))
       ->setSetting('max_length', 255)
@@ -200,19 +200,16 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setTranslatable(TRUE)
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID of the paragraph author.'))
       ->setSetting('target_type', 'user');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the paragraph was created.'));
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setTranslatable(TRUE)
       ->setDescription(t('The time that the paragraph was last edited.'));
 
     $fields += static::childBaseFieldDefinitions($entity_type);

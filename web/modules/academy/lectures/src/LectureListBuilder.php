@@ -30,6 +30,13 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   protected $formBuilder;
 
   /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
    * Returns the form builder.
    *
    * @return \Drupal\Core\Form\FormBuilderInterface
@@ -40,6 +47,19 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       $this->formBuilder = \Drupal::formBuilder();
     }
     return $this->formBuilder;
+  }
+
+  /**
+   * Returns the language manager service.
+   *
+   * @return \Drupal\Core\Language\LanguageManagerInterface
+   *   The language manager.
+   */
+  protected function languageManager() {
+    if (!$this->languageManager) {
+      $this->languageManager = \Drupal::languageManager();
+    }
+    return $this->languageManager;
   }
 
   /**
@@ -130,10 +150,16 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       if (!$course->isEnabled()) {
         $disabled_course = ' ' . $this->t('(Disabled)');
       }
+      $translations = '';
+      foreach ($this->languageManager()->getLanguages() as $language) {
+        if (!$course->hasTranslation($language->getId())) {
+          $translations .= '&nbsp;<s class="admin-item__description">' . $language->getId() . '</s>';
+        }
+      }
       $form['course'][$course_id] = [
         '#type' => 'details',
         '#module_package_listing' => TRUE,
-        '#title' => $this->t('Course: @s', ['@s' => $course->getTitle()]) . $disabled_course,
+        '#title' => $this->t('Course: @s', ['@s' => $course->getTitle()]) . $disabled_course . $translations,
         '#description' => '<h6>' . $course->get('subtitle')->value . '</h6>
         <div>' . $course->get('description')->value . '</div>' . $tags,
         '#open' => $query_parameter_cr == $course_id,
@@ -208,6 +234,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   public function buildHeader() {
     $header['title'] = $this->t('Lecture');
     $header['status'] = $this->t('Status');
+    $header['translations'] = $this->t('Translation');
     $header['operations'] = [
       'data' => $this->t('Operations'),
       'class' => ['text-align-right'],
@@ -233,6 +260,21 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     ];
     $row['status'] = [
       '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
+    ];
+    $translations = '';
+    foreach ($this->languageManager()->getLanguages() as $language) {
+      if ($language->getId() == $this->languageManager()->getDefaultLanguage()->getId()) {
+        continue;
+      }
+      if (!$entity->hasTranslation($language->getId())) {
+        $translations .= '<s class="admin-item__description">' . $language->getId() . '</s>&nbsp;';
+      }
+      else {
+        $translations .= $language->getId() . '&nbsp;';
+      }
+    }
+    $row['translations'] = [
+      '#markup' => $translations,
     ];
     // Contains operation column.
     $row = $row + parent::buildRow($entity);

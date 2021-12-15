@@ -18,6 +18,8 @@ class QuestionForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function form(array $form, FormStateInterface $form_state) {
 
@@ -29,6 +31,26 @@ class QuestionForm extends ContentEntityForm {
 
     /** @var \Drupal\questionnaire\Entity\Question $question */
     $question = $this->getEntity();
+    $disable_correct = FALSE;
+
+    if (!$question->isNew() &&
+      $question->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      $form['translations'] = [
+        '#type' => 'container',
+        '#weight' => -10,
+      ];
+
+      $form['translations']['overview'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Translations'),
+        '#url' => $question->toUrl('drupal:content-translation-overview'),
+        '#attributes' => [
+          'class' => ['button button--small'],
+        ],
+      ];
+
+      $disable_correct = $question->language()->getId() != $question->getUntranslated()->language()->getId();
+    }
 
     // Type container for validation trait.
     $form['type'] = [
@@ -66,6 +88,7 @@ class QuestionForm extends ContentEntityForm {
         'correct' => [
           '#type' => 'checkbox',
           '#title' => $this->t('Correct?'),
+          '#disabled' => $disable_correct,
         ],
         '#weight' => -2,
       ];

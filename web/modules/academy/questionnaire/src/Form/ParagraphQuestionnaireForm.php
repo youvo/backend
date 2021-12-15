@@ -25,6 +25,26 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   use QuestionProcessTrait;
 
   /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
+   * Returns the language manager service.
+   *
+   * @return \Drupal\Core\Language\LanguageManagerInterface
+   *   The language manager.
+   */
+  protected function languageManager() {
+    if (!$this->languageManager) {
+      $this->languageManager = \Drupal::languageManager();
+    }
+    return $this->languageManager;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
@@ -54,7 +74,6 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     $form['uid']['#access'] = FALSE;
     $form['created']['#access'] = FALSE;
     $form['changed']['#access'] = FALSE;
-    $form['questions']['#access'] = FALSE;
 
     // @todo Target wrapper with drupal-data-selector after
     // https://www.drupal.org/project/drupal/issues/2821793
@@ -458,6 +477,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   protected function buildHeader() {
     $header['type'] = $this->t('Type');
     $header['body'] = $this->t('Question');
+    $header['translations'] = $this->t('Translation');
     $header['buttons'] = '';
     $header['weight'] = [
       'data' => $this->t('Weight'),
@@ -493,6 +513,21 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     ];
     $row['body'] = [
       '#markup' => $question->get('body')->value,
+    ];
+    $translations = '';
+    foreach ($this->languageManager()->getLanguages() as $language) {
+      if ($language->getId() == $this->languageManager()->getDefaultLanguage()->getId()) {
+        continue;
+      }
+      if (!$question->hasTranslation($language->getId())) {
+        $translations .= '<s class="admin-item__description">' . $language->getId() . '</s>&nbsp;';
+      }
+      else {
+        $translations .= $language->getId() . '&nbsp;';
+      }
+    }
+    $row['translations'] = [
+      '#markup' => $translations,
     ];
     $row['buttons']['delete'] = [
       '#type' => 'button',

@@ -13,6 +13,8 @@ class CourseForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
@@ -36,6 +38,23 @@ class CourseForm extends ContentEntityForm {
       '#description' => $this->t('A unique machine-readable name for this content type. It must only contain lowercase letters, numbers, and underscores.'),
       '#weight' => -4,
     ];
+
+    if (!$course->isNew() &&
+      $course->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      $form['translations'] = [
+        '#type' => 'container',
+        '#weight' => -10,
+      ];
+
+      $form['translations']['overview'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Translations'),
+        '#url' => $course->toUrl('drupal:content-translation-overview'),
+        '#attributes' => [
+          'class' => ['button button--small'],
+        ],
+      ];
+    }
 
     return $form;
   }
