@@ -183,7 +183,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['title'] = BaseFieldDefinition::create('string')
-      ->setTranslatable(TRUE)
+      ->setTranslatable(FALSE)
       ->setLabel(t('Internal Title'))
       ->setDescription(t('The title of the paragraph entity.'))
       ->setSetting('max_length', 255)
