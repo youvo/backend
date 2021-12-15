@@ -26,7 +26,9 @@ class ParagraphForm extends ContentEntityForm {
     $paragraph = $this->getEntity();
 
     if (!$paragraph->isNew() &&
-      $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview') &&
+      $paragraph->bundle() != 'evaluation' &&
+      $paragraph->bundle() != 'questionnaire') {
       $form['translations'] = [
         '#type' => 'container',
         '#weight' => -10,
