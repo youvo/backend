@@ -1,7 +1,7 @@
 name: Lifecycle
 type: module
 description: Adds a field type which can be used for storing and transitioning states according to workflows.
-core_version_requirement: ^8.9 || ^9
+core_version_requirement: '^9.3 || ^10'
 package: Projects
 
 dependencies:

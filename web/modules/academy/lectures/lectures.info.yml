@@ -2,7 +2,7 @@ name: Lectures
 type: module
 description: 'Provides a Lecture entity.'
 package: Academy
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: '^9.3 || ^10'
 
 dependencies:
   - academy

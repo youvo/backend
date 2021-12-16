@@ -3,7 +3,7 @@ description: 'Defines Project entities and handles business logic.'
 package: Projects
 
 type: module
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: '^9.3 || ^10'
 
 dependencies:
   - drupal:taxonomy (>= 8.8.0)
