@@ -3,7 +3,7 @@ description: Provides REST resources to exchange data with Postman.
 package: Interfaces
 
 type: module
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: '^9.3 || ^10'
 
 dependencies:
   - youvo
