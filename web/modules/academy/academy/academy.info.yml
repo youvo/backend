@@ -1,7 +1,7 @@
 name: Academy
 type: module
 description: Academy base module.
-core_version_requirement: '^8.8 || ^9'
+core_version_requirement: '^9.3 || ^10'
 package: 'Academy'
 
 dependencies:

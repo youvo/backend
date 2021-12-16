@@ -368,7 +368,7 @@ function academy_dummy_site_install_finished() {
 function academy_dummy_get_stock_image(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
-  $image_path = drupal_get_path('module', 'academy_dummy') . '/img/' . $index . '.jpg';
+  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/img/' . $index . '.jpg';
   $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
   $image_file = File::create([
     'uri' => $public_path,
@@ -399,7 +399,7 @@ function academy_dummy_get_stock_image(int $i) {
 function academy_dummy_get_stock_illustration(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
-  $image_path = drupal_get_path('module', 'academy_dummy') . '/gfx/' . $index . '.png';
+  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/gfx/' . $index . '.png';
   $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
   $image_file = File::create([
     'uri' => $public_path,
@@ -426,7 +426,7 @@ function academy_dummy_get_stock_illustration(int $i) {
  */
 function academy_dummy_get_test_file() {
 
-  $file_path = drupal_get_path('module', 'academy_dummy') . '/file/test.txt';
+  $file_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/file/test.txt';
   $public_path = \Drupal::service('file_system')->copy($file_path, 'public://test.txt');
   $file = File::create([
     'uri' => $public_path,
