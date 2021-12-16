@@ -14,7 +14,7 @@
         },
         "drupal/simple_oauth": {
             "Issue #3230707: PHP 8 compatibility": "patches/simple_oauth/3230707--jwt-4-compatibility--5.patch",
-            "Custom: Instantiate OAuth ChildEntity with isConfidential property": "patches/simple_oauth/custom-childentity-is-confidential.patch"
+            "Custom: Instantiate OAuth ClientEntity with isConfidential property": "patches/simple_oauth/custom-cliententity-is-confidential.patch"
         },
         "drupal/filefield_paths": {
             "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/exclude_consumer_entity_type.patch"
