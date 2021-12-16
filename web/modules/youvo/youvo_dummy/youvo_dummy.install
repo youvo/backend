@@ -251,7 +251,7 @@ function youvo_dummy_get_random_causes() {
  */
 function youvo_dummy_get_image_by_path(string $path, string $file_name) {
 
-  $image_path = drupal_get_path('module', 'youvo_dummy') . $path . $file_name;
+  $image_path = \Drupal::service('extension.list.module')->getPath('youvo_dummy') . $path . $file_name;
   $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $file_name);
   $image_file = File::create([
     'uri' => $public_path,

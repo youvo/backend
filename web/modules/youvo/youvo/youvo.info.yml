@@ -3,12 +3,12 @@ description: 'Custom module which provides base framework for platform.'
 package: 'youvo'
 
 type: module
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - drupal:taxonomy (>= 8.8.0)
-  - drupal:field (>= 8.8.0)
-  - drupal:user (>= 8.8.0)
+  - drupal:taxonomy (>= 9.3.0)
+  - drupal:field (>= 9.3.0)
+  - drupal:user (>= 9.3.0)
   - filefield_paths
   - jsonapi_extras
   - jsonapi_include

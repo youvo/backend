@@ -1,7 +1,7 @@
 name: Questionnaire
 type: module
 description: 'Provides a questionnaire paragraph type and a question entity.'
-core_version_requirement: '^8.8 || ^9'
+core_version_requirement: '^9.3 || ^10'
 package: Academy
 dependencies:
   - academy
