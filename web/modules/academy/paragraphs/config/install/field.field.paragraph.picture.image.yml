@@ -28,9 +28,9 @@ third_party_settings:
         transliterate: true
   content_translation:
     translation_sync:
-      alt: alt
-      title: title
-      file: '0'
+      file: file
+      alt: '0'
+      title: '0'
 id: paragraph.picture.image
 field_name: image
 entity_type: paragraph
