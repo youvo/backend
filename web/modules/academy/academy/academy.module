@@ -65,3 +65,13 @@ function academy_entity_type_alter(array &$entity_types) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function academy_preprocess_html(&$variables) {
+  $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+  if ($language == 'en') {
+    $variables['#attached']['library'][] = 'academy/language';
+  }
+}

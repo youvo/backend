@@ -4,3 +4,7 @@ hideweightbutton:
   dependencies:
     - core/jquery
     - core/drupal
+language:
+  css:
+    theme:
+      css/language.css: {}
