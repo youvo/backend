@@ -150,6 +150,7 @@ class ParagraphForm extends ContentEntityForm {
       'lecture' => $lecture->id(),
       'course' => $lecture->getParentEntity()->id(),
     ]);
+    $actions['submit']['#value'] = $this->t('Save %language', ['%language' => $paragraph->language()->getName()]);
     $actions['abort'] = [
       '#type' => 'link',
       '#title' => $this->t('Abort'),

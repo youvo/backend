@@ -58,11 +58,16 @@ function lectures_entity_operation_alter(array &$operations, EntityInterface $en
  * Implements hook_form_FORM_ID_alter().
  */
 function lectures_form_course_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $course = $form_object->getEntity();
+
   // Add abort button.
   $url = Url::fromRoute('entity.lecture.collection');
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $course->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
 }
 
@@ -82,6 +87,7 @@ function lectures_form_course_edit_form_alter(&$form, FormStateInterface $form_s
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $course->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
 }
 
@@ -103,7 +109,11 @@ function lectures_form_course_edit_form_redirect($form, FormStateInterface $form
  * Implements hook_form_FORM_ID_alter().
  */
 function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $course = \Drupal::service('current_route_match')->getParameter('course');
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
+  /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
+  $form_object = $form_state->getFormObject();
+  $lecture = $form_object->getEntity();
+  $course = $lecture->getParentEntity();
   $url = Url::fromRoute('entity.lecture.collection', [], [
     'query' => ['cr' => $course->id()],
     'fragment' => 'edit-course-' . $course->id(),
@@ -111,6 +121,7 @@ function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_s
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $lecture->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_lecture_edit_form_redirect';
 }
 
@@ -120,8 +131,10 @@ function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_s
 function lectures_form_lecture_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   // Add abort button.
+  /** @var \Drupal\Core\Entity\ContentEntityForm $form_object */
   /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
-  $lecture = \Drupal::service('current_route_match')->getParameter('lecture');
+  $form_object = $form_state->getFormObject();
+  $lecture = $form_object->getEntity();
   $url = Url::fromRoute('entity.paragraph.collection', [
     'course' => $lecture->getParentEntity()->id(),
     'lecture' => $lecture->id(),
@@ -129,6 +142,7 @@ function lectures_form_lecture_edit_form_alter(&$form, FormStateInterface $form_
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $lecture->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_lecture_edit_form_redirect';
 }
 
