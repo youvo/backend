@@ -163,7 +163,7 @@ class QuestionForm extends ContentEntityForm {
       'course' => $lecture->getParentEntity()->id(),
       'paragraph' => $paragraph->id(),
     ]);
-    $actions['submit']['#value'] = $this->t('Save %language', ['%language' => $question->language()->getName()]);
+    $actions['submit']['#value'] = $this->t('Save @language', ['@language' => $question->language()->getName()]);
     $actions['abort'] = [
       '#type' => 'link',
       '#title' => $this->t('Abort'),
