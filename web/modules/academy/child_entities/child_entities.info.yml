@@ -6,3 +6,4 @@ package: Academy
 
 dependencies:
   - academy
+  - content_translation
