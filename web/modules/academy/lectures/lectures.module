@@ -67,7 +67,7 @@ function lectures_form_course_add_form_alter(&$form, FormStateInterface $form_st
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
-  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $course->language()->getName()]);
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save @language', ['@language' => $course->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
 }
 
@@ -87,7 +87,7 @@ function lectures_form_course_edit_form_alter(&$form, FormStateInterface $form_s
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
-  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $course->language()->getName()]);
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save @language', ['@language' => $course->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_course_edit_form_redirect';
 }
 
@@ -121,7 +121,7 @@ function lectures_form_lecture_add_form_alter(&$form, FormStateInterface $form_s
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
-  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $lecture->language()->getName()]);
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save @language', ['@language' => $lecture->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_lecture_edit_form_redirect';
 }
 
@@ -142,7 +142,7 @@ function lectures_form_lecture_edit_form_alter(&$form, FormStateInterface $form_
   lectures_add_abort_button($form, $url);
 
   // Alter redirect.
-  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save %language', ['%language' => $lecture->language()->getName()]);
+  $form['actions']['submit']['#value'] = new TranslatableMarkup('Save @language', ['@language' => $lecture->language()->getName()]);
   $form['actions']['submit']['#submit'][] = 'lectures_form_lecture_edit_form_redirect';
 }
 
