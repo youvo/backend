@@ -2,6 +2,7 @@
 
 namespace Drupal\paragraphs\Form;
 
+use Drupal\academy\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -11,6 +12,8 @@ use Drupal\multivalue_form_element\Element\MultiValue;
  * Form controller for the paragraph entity edit forms.
  */
 class ParagraphForm extends ContentEntityForm {
+
+  use TranslationFormButtonsTrait;
 
   /**
    * {@inheritdoc}
@@ -29,19 +32,7 @@ class ParagraphForm extends ContentEntityForm {
       $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview') &&
       $paragraph->bundle() != 'evaluation' &&
       $paragraph->bundle() != 'questionnaire') {
-      $form['translations'] = [
-        '#type' => 'container',
-        '#weight' => -10,
-      ];
-
-      $form['translations']['overview'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Translations'),
-        '#url' => $paragraph->toUrl('drupal:content-translation-overview'),
-        '#attributes' => [
-          'class' => ['button button--small'],
-        ],
-      ];
+      static::addTranslationButtons($form, $paragraph);
     }
 
     // Add answers multi value form element.
