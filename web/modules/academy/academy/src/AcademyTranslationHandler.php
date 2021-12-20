@@ -12,15 +12,21 @@ use Drupal\Core\Form\FormStateInterface;
 class AcademyTranslationHandler extends ContentTranslationHandler {
 
   /**
-   * Hide content translation field.
+   * Hide content translation field. Add buttons on top of form for
+   * translations. These are quick-links to the form of the respective
+   * language. The form container 'translations' is defined in the
+   * `TranslationFormButtonsTrait`.
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
     parent::entityFormAlter($form, $form_state, $entity);
+
+    // Hide content translation field.
     $form['content_translation']['#access'] = FALSE;
 
-    /** @var \Drupal\child_entities\ChildEntityInterface|\Drupal\academy\AcademicFormatInterface $entity */
+    // Amend translation buttons container.
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $translations = $entity->getTranslationLanguages();
     $form_object = $form_state->getFormObject();
     $form_langcode = $form_object->getFormLangcode($form_state);
@@ -43,7 +49,8 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    *
-   * Delete warning.
+   * Delete warning, which is displayed when untranslatable fields are excluded
+   * from display.
    */
   public function entityFormSharedElements($element, FormStateInterface $form_state, $form) {
     $element = parent::entityFormSharedElements($element, $form_state, $form);
