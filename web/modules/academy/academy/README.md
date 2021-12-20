@@ -1,17 +1,11 @@
 # Academy module
 
----
-
 ## Summary
-
----
 
 The `academy` module is the root module for the `academy` package. It defines
 base functionalities that are inherited throughout the dependents.
 
 ## Tasks
-
----
 
 ### Overwrite JSON:API parsing
 
@@ -42,8 +36,6 @@ Therein, we accomplish the following:
 - The maintenance of the `jsonapi_include` module is poor, and we should
   consider forking the project.
 
----
-
 ### Provide fields with cache abilities
 
 **Files:** see `Plugin/Datatype` and `Plugin/Field/FieldType`
@@ -58,8 +50,6 @@ result is empty - then we alter the output, see above.
 **Considerations:**
 - See follow-ups on issue https://www.drupal.org/project/drupal/issues/2997123.
 - Maybe needs to move up to the `youvo` module if projects use computed fields.
-
----
 
 ### Translation handler for academy entities
 
@@ -76,8 +66,6 @@ entity-related route contexts.
 **Considerations:**
 - Track the issue https://www.drupal.org/node/2155787 for access handling of
   the content translation routes.
-
----
 
 ### Miscellaneous tasks
 
