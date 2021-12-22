@@ -104,7 +104,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
         $parent_key = $entity_type->getKey('parent');
         $parent_entity_type = $this->entityTypeManager()->getDefinition($parent_key);
         $parent_class = $parent_entity_type->getOriginalClass();
-      } while (!in_array(ChildEntityTrait::class, class_uses($parent_class)));
+      } while (in_array(ChildEntityTrait::class, class_uses($parent_class)));
 
       return $this->entityTypeManager()
         ->getAccessControlHandler($parent_key)
