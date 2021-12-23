@@ -4,10 +4,13 @@ namespace Drupal\academy;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 
+/**
+ * Trait to add translations container and button to form element.
+ */
 trait TranslationFormButtonsTrait {
 
   /**
-   * Require t.
+   * Require t().
    */
   abstract public function t($string, array $args = [], array $options = []);
 
