@@ -67,13 +67,14 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
         // Manipulate each route.
         foreach ($routes as $route) {
 
-          // Get current route parameters.
+          // Reset parent entity type and get current route parameters.
+          $parent_entity_type = NULL;
           $parameters = $route->getOption('parameters');
 
           // Setup route parameters for all parents and grandparents.
           do {
-            $entity_type = $parent_entity_type ?? $entity_type;
-            $parent_key = $entity_type->getKey('parent');
+            $child_entity_type = $parent_entity_type ?? $entity_type;
+            $parent_key = $child_entity_type->getKey('parent');
             $parameters += [
               $parent_key => [
                 'type' => 'entity:' . $parent_key,
