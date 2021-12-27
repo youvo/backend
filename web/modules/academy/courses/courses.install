@@ -16,6 +16,23 @@ use Drupal\Core\Utility\Error;
  */
 function courses_site_install_finished() {
 
+  // View courses overview.
+  $roles = ['anonymous', 'authenticated'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('view courses overview');
+    try {
+      $role_object->save();
+    }
+    catch (EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      $variables['%permission'] = 'view courses overview';
+      $variables['%role'] = $role;
+      \Drupal::logger('academy')
+        ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+    }
+  }
+
   // View courses.
   $roles = ['creative', 'editor', 'observer', 'manager', 'supervisor'];
   foreach ($roles as $role) {
