@@ -15,27 +15,24 @@
         }
     ],
     "require": {
-        "composer/installers": "^1.9",
+        "composer/installers": "^1.12",
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "9.3.*",
         "drupal/core-project-message": "9.3.*",
         "drupal/core-recommended": "9.3.*",
         "drupal/core-vendor-hardening": "9.3.*",
         "drupal/filefield_paths": "^1.0@beta",
-        "drupal/jsonapi_extras": "^3.19",
+        "drupal/jsonapi_extras": "^3.20",
         "drupal/jsonapi_include": "^1.4",
-        "drupal/mail_login": "^2.4",
+        "drupal/mail_login": "^2.6",
         "drupal/multivalue_form_element": "^1.0@beta",
-        "league/oauth2-server": "8.3.3 as 8.1.1",
-        "lcobucci/jwt": "4.1.5 as 3.4.6",
-        "steverhoades/oauth2-openid-connect-server": "2.4.0 as 1.3.0",
-        "drupal/simple_oauth": "5.0.5",
+        "drupal/simple_oauth": "^5.1@beta",
         "drush/drush": "^10.6"
     },
     "conflict": {
         "drupal/drupal": "*"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "beta",
     "prefer-stable": true,
     "config": {
         "sort-packages": true
@@ -112,7 +109,7 @@
         "drupal/coder": "^8.3",
         "drupal/core-dev": "9.3.*",
         "drupal/devel": "^4.1",
-        "drupal/openapi": "^2.0@RC",
+        "drupal/openapi": "^2.0",
         "drupal/openapi_jsonapi": "^3.0",
         "drupal/openapi_ui": "^1.0@RC",
         "drupal/openapi_ui_redoc": "^1.0@RC",
