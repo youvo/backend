@@ -14,6 +14,8 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
@@ -70,6 +72,26 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
   }
 
   return $fields;
+}
+
+/**
+ * Implements hook_entity_field_access().
+ */
+function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+
+  $result = AccessResult::neutral();
+
+  // We only allow progress, unlocked and completed fields for users with the
+  // view courses permission. This excludes users with the view courses overview
+  // permission.
+  $progess_fields = ['progress', 'unlocked', 'completed'];
+  if (in_array($field_definition->getName(), $progess_fields)) {
+    if (!$account->hasPermission('view courses')) {
+      $result = AccessResult::forbidden();
+    }
+  }
+
+  return $result;
 }
 
 /**

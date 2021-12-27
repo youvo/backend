@@ -11,12 +11,12 @@ use Drupal\questionnaire\Entity\Question;
 trait QuestionProcessTrait {
 
   /**
-   * Require t.
+   * Require t().
    */
   abstract public function t($string, array $args = [], array $options = []);
 
   /**
-   * Require formatPlural.
+   * Require formatPlural().
    */
   abstract public function formatPlural($count, $singular, $plural, array $args = [], array $options = []);
 

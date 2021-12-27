@@ -26,7 +26,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected $entityTypeManager;
 
   /**
    * Constructs a ContentTranslationRouteSubscriber object.
@@ -67,25 +67,22 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
         // Manipulate each route.
         foreach ($routes as $route) {
 
-          // Get current parameters and setup iterable entity type variable.
-          $child_entity_type = $entity_type;
+          // Reset parent entity type and get current route parameters.
+          $parent_entity_type = NULL;
           $parameters = $route->getOption('parameters');
 
           // Setup route parameters for all parents and grandparents.
-          while ($child_entity_type->hasKey('parent')) {
-            $parent_entity_type_id = $child_entity_type->getKey('parent');
+          do {
+            $child_entity_type = $parent_entity_type ?? $entity_type;
+            $parent_key = $child_entity_type->getKey('parent');
             $parameters += [
-              $parent_entity_type_id => [
-                'type' => 'entity:' . $parent_entity_type_id,
+              $parent_key => [
+                'type' => 'entity:' . $parent_key,
               ],
             ];
-            if ($this->entityTypeManager->hasDefinition($parent_entity_type_id)) {
-              $child_entity_type = $this->entityTypeManager->getDefinition($parent_entity_type_id);
-            }
-            else {
-              break;
-            }
-          }
+            $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
+            $parent_class = $parent_entity_type->getOriginalClass();
+          } while (in_array(ChildEntityTrait::class, class_uses($parent_class)));
 
           // Add augmented parameters to route.
           $route->setOption('parameters', $parameters);

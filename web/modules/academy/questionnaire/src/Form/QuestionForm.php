@@ -2,6 +2,7 @@
 
 namespace Drupal\questionnaire\Form;
 
+use Drupal\academy\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -15,6 +16,7 @@ use Drupal\multivalue_form_element\Element\MultiValue;
 class QuestionForm extends ContentEntityForm {
 
   use QuestionProcessTrait;
+  use TranslationFormButtonsTrait;
 
   /**
    * {@inheritdoc}
@@ -35,20 +37,7 @@ class QuestionForm extends ContentEntityForm {
 
     if (!$question->isNew() &&
       $question->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-      $form['translations'] = [
-        '#type' => 'container',
-        '#weight' => -10,
-      ];
-
-      $form['translations']['overview'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Translations'),
-        '#url' => $question->toUrl('drupal:content-translation-overview'),
-        '#attributes' => [
-          'class' => ['button button--small'],
-        ],
-      ];
-
+      static::addTranslationButtons($form, $question);
       $disable_correct = $question->language()->getId() != $question->getUntranslated()->language()->getId();
     }
 

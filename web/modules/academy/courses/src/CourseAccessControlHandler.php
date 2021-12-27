@@ -49,9 +49,16 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
+    // Resolve view access for users with different permissions. This will be
+    // used to grant access for anonymous users to the course overview page.
+    $view_access = AccessResult::allowedIfHasPermission($account, 'view courses');
+    if (!$view_access->isAllowed() && $entity instanceof Course) {
+      $view_access = AccessResult::allowedIfHasPermission($account, 'view courses overview');
+    }
+
     // Return access result by permissions defined in permissions.yml.
     return match ($operation) {
-      'view' => AccessResult::allowedIfHasPermission($account, 'view courses'),
+      'view' => $view_access,
       'delete', 'update' => AccessResult::allowedIfHasPermission($account, 'manage courses'),
       default => AccessResult::neutral(),
     };
