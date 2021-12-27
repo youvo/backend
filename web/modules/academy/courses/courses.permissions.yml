@@ -1,7 +1,12 @@
-# The view and manage permissions are bequeathed to all child
-# entities (Lecture, Paragraph, Question). Therefore, these two
-# permissions govern the accessibility of the academy content.
+# The course overview only applies to course entities.
+view courses overview:
+  title: 'View courses overview'
+
+# The content view and manage permissions are bequeathed to all
+# child entities (Lecture, Paragraph, Question). Therefore, these
+# two permissions govern the accessibility of the academy content.
 # @see Drupal\courses\CourseAccessControlHandler
+# @see Drupal\child_entities\ChildEntityAccessControlHandler
 view courses:
   title: 'View courses content'
 manage courses:
