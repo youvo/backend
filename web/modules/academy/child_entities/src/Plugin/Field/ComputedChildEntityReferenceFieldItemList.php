@@ -13,10 +13,31 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
   use ComputedItemListTrait;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Retrieves the entity type manager.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The entity type manager.
+   */
+  protected function entityTypeManager() {
+    if (!isset($this->entityTypeManager)) {
+      $this->entityTypeManager = \Drupal::entityTypeManager();
+    }
+    return $this->entityTypeManager;
+  }
+
+  /**
    * Computes the field value.
    *
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function computeValue() {
 
@@ -25,17 +46,21 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
     $target_type_id = $this->getSetting('target_type');
 
     // Query for children referencing the parent.
-    $query = \Drupal::entityQuery($target_type_id)
+    $query = $this->entityTypeManager()
+      ->getStorage($target_type_id)->getQuery()
       ->condition($parent->getEntityTypeId(), $parent->id());
 
     // Sort by weight if the field is available.
-    $target_type = \Drupal::entityTypeManager()->getDefinition($target_type_id);
+    $target_type = $this->entityTypeManager()
+      ->getDefinition($target_type_id);
     if ($target_type->hasKey('weight')) {
       $query->sort($target_type->getKey('weight'));
     }
 
     // Attach the query result to the list.
-    $this->setValue(array_map(fn ($id) => ['target_id' => $id], $query->execute()));
+    $this->setValue(
+      array_map(fn ($id) => ['target_id' => $id], $query->execute())
+    );
   }
 
 }

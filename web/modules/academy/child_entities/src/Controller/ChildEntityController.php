@@ -24,6 +24,10 @@ class ChildEntityController extends EntityController {
   /**
    * {@inheritdoc}
    *
+   * This is essentially a copy of the parent method, because it does not allow
+   * to be easily extended. We ensure that the entity type indeed implements a
+   * child entity and add the route parameters in the end.
+   *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -38,6 +42,7 @@ class ChildEntityController extends EntityController {
       '#theme' => 'entity_add_list',
       '#bundles' => [],
     ];
+
     if ($bundle_entity_type_id) {
       $bundle_argument = $bundle_entity_type_id;
       $bundle_entity_type = $this->entityTypeManager->getDefinition($bundle_entity_type_id);
@@ -51,6 +56,7 @@ class ChildEntityController extends EntityController {
         '@entity_type' => $bundle_entity_type_label,
         '@add_link' => Link::createFromRoute($link_text, $link_route_name)->toString(),
       ]);
+
       // Filter out the bundles the user doesn't have access to.
       $access_control_handler = $this->entityTypeManager->getAccessControlHandler($entity_type_id);
       foreach ($bundles as $bundle_name => $bundle_info) {
@@ -60,6 +66,7 @@ class ChildEntityController extends EntityController {
         }
         $this->renderer->addCacheableDependency($build, $access);
       }
+
       // Add descriptions from the bundle entities.
       $bundles = $this->loadBundleDescriptions($bundles, $bundle_entity_type);
     }
@@ -109,7 +116,7 @@ class ChildEntityController extends EntityController {
     $route_arguments[$parent_argument] = $this->getParentEntityFromRoute($parent_argument)->id();
 
     // If parent is another child append its parents.
-    $parent_type = \Drupal::entityTypeManager()->getDefinition($entity_type->getKey('parent'));
+    $parent_type = $this->entityTypeManager->getDefinition($entity_type->getKey('parent'));
     if ($parent_type->hasKey('parent')) {
       $this->addParentRouteArguments($route_arguments, $parent_type);
     }
@@ -122,12 +129,14 @@ class ChildEntityController extends EntityController {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $entity->label();
     }
+    return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function doGetEntity(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+
     // Looking for the matching entity in the route parameters.
     // The entity routes follow the pattern entity.{entity_id}.edit_form!
     $route_name = explode('.', $route_match->getRouteName());
@@ -138,6 +147,7 @@ class ChildEntityController extends EntityController {
         $_entity = $candidate;
       }
     }
+
     return parent::doGetEntity($route_match, $_entity);
   }
 

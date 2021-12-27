@@ -2,23 +2,66 @@
 
 namespace Drupal\child_entities;
 
-use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
+use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Access controller for child entities.
  *
  * @see \Drupal\child_entities\ChildEntityTrait.
  */
-class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
+class ChildEntityAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
 
-  use ChildEntityRouteContextTrait;
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * A logger instance.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
+   * WebformEntityAccessControlHandler constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
+   */
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
+    parent::__construct($entity_type);
+    $this->entityTypeManager = $entity_type_manager;
+    $this->logger = $logger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('entity_type.manager'),
+      $container->get('logger.factory')->get('academy')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -37,16 +80,16 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
-    // First check if user has permission to access courses.
+    // First check if user has permission to access the origin entity.
     try {
       $origin = $entity->getOriginEntity();
-      $access = \Drupal::entityTypeManager()
+      $access = $this->entityTypeManager
         ->getAccessControlHandler($origin->getEntityTypeId())
         ->checkAccess($entity, $operation, $account);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('academy')
+      $this->logger
         ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }
@@ -68,10 +111,11 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
   }
 
   /**
-   * {@inheritdoc}
+   * Separate from the checkAccess because the entity does not yet exist.
    *
-   * Separate from the checkAccess because the entity does not yet exist. It
-   * will be created during the 'add' process.
+   * It will be created during the 'add' process.
+   *
+   * {@inheritdoc}
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
 
@@ -81,20 +125,24 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
-    // Rely on create access of origin.
+    // Get the creation access control handler from the origin entity. We might
+    // encounter a child of a child entity. Therefore, loop until the parent
+    // entity is not a child entity.
     try {
-      /** @var \Drupal\child_entities\ChildEntityInterface $entity */
-      $parent_entity_type = $this->entityType->getKey('parent');
-      $parent = $this->getParentEntityFromRoute($parent_entity_type);
-      $origin = $parent instanceof ChildEntityInterface ?
-        $parent->getOriginEntity() : $parent;
-      return \Drupal::entityTypeManager()
-        ->getAccessControlHandler($origin->getEntityTypeId())
+      do {
+        $entity_type = $parent_entity_type ?? $this->entityType;
+        $parent_key = $entity_type->getKey('parent');
+        $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
+        $parent_class = $parent_entity_type->getOriginalClass();
+      } while (in_array(ChildEntityTrait::class, class_uses($parent_class)));
+
+      return $this->entityTypeManager
+        ->getAccessControlHandler($parent_key)
         ->checkCreateAccess($account, $context, $account);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('academy')
+      $this->logger
         ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }

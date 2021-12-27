@@ -2,6 +2,7 @@
 
 namespace Drupal\lectures\Form;
 
+use Drupal\academy\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -9,6 +10,8 @@ use Drupal\Core\Form\FormStateInterface;
  * Form controller for the lecture entity edit forms.
  */
 class LectureForm extends ContentEntityForm {
+
+  use TranslationFormButtonsTrait;
 
   /**
    * {@inheritdoc}
@@ -23,19 +26,7 @@ class LectureForm extends ContentEntityForm {
 
     if (!$lecture->isNew() &&
       $lecture->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-      $form['translations'] = [
-        '#type' => 'container',
-        '#weight' => -10,
-      ];
-
-      $form['translations']['overview'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Translations'),
-        '#url' => $lecture->toUrl('drupal:content-translation-overview'),
-        '#attributes' => [
-          'class' => ['button button--small'],
-        ],
-      ];
+      static::addTranslationButtons($form, $lecture);
     }
 
     return $form;
