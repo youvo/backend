@@ -32,7 +32,6 @@ use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 
