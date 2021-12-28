@@ -64,20 +64,38 @@ class OverviewController extends ControllerBase {
 
     // Gather progress info for each account.
     foreach ($accounts as $account) {
+
+      // Initialize sheet for this account.
       $sheet = [];
+
+      // Get base information for this account.
       $sheet['name'] = $account->get('fullname')->value;
       $sheet['mail'] = $account->getEmail();
       $overall_progression = $this->calculateProgressionCourses($account);
+
+      // Initialize courses for sheet.
       $sheet['courses'] = [];
+
       foreach ($courses as $course) {
+
+        // Initialize slip.
         $slip = [];
+
+        // Get progress for course and account.
         $progress = $this->progressManager->loadProgress($course, $account);
-        if ($course->id() == 1 && !isset($progress)) {
+
+        // If there is no progress for the first progress, break and skip this
+        // account (see below).
+        if ($course->getMachineName() == 'intro' && !isset($progress)) {
           break;
         }
+
+        // Base information and progress for this course.
         $slip['title'] = $course->getTitle();
         $course_progression = isset($progress) ? $this->calculateProgressionLectures($course, $account) : 0;
         $slip['progression'] = $course_progression;
+
+        // Timestamps for this course and account.
         $slip['enrolled'] = isset($progress) ? $this->dateFormatter->format($progress->getEnrollmentTime(), 'short') : NULL;
         $accessed = $progress?->getAccessTime();
         $slip['accessed'] = isset($accessed) ? $this->dateFormatter->format($accessed, 'short') : NULL;
@@ -94,10 +112,13 @@ class OverviewController extends ControllerBase {
           break;
         }
       }
+
       // If a user never clicked on any courses - do not list.
       if (empty($sheet['courses']) || $overall_progression == 0) {
         continue;
       }
+
+      // Add progression and sheet to page.
       $sheet['progression'] = $overall_progression;
       $page['participants'][$account->id()] = $sheet;
     }
@@ -119,7 +140,9 @@ class OverviewController extends ControllerBase {
    */
   private function getCreativeAccounts() {
     // Get all creatives, that are active and not associates.
-    $associates_ids = [1, 14, 50, 130, 134, 136, 616, 621, 1200, 1888, 1889, 5124, 15970];
+    $associates_ids = [
+      1, 14, 50, 130, 134, 136, 616, 621, 1200, 1888, 1889, 5124, 15970,
+    ];
     $storage = $this->entityTypeManager()->getStorage('user');
     $uids = $storage->getQuery()
       ->condition('status', '1')
