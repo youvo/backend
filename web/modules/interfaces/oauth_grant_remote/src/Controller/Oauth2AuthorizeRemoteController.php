@@ -3,12 +3,14 @@
 namespace Drupal\oauth_grant_remote\Controller;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
+use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -191,7 +193,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // Set the auth relay.
-    $auth_relay_server = $this->configFactory->get('oauth_grant_remote.settings')
+    $auth_relay_server = $this->configFactory
+      ->get('oauth_grant_remote.settings')
       ->get('auth_relay_url');
 
     // Get all cookies registered under the host domain.
@@ -219,9 +222,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // If there are no sessions, the user needs to log in on the original host.
     if (empty($session_cookies)) {
-      $redirect_url = $auth_relay_server . '/user/login?r=a';
-      // Client ID and secret may be passed as Basic Auth. Copy the headers.
-      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
+      return $this->loginRedirectResponse($request, $auth_relay_server);
     }
 
     // If there is a session or multiple sessions, contact the Auth Relay.
@@ -268,9 +269,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // found on the host site, and we have to log in the user on the original
     // host.
     if (!isset($relay_response->jwt)) {
-      $redirect_url = $auth_relay_server . '/user/login?r=a';
-      // Client ID and secret may be passed as Basic Auth. Copy the headers.
-      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
+      return $this->loginRedirectResponse($request, $auth_relay_server);
     }
 
     try {
@@ -413,6 +412,32 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // Call all login hooks for newly logged-in user.
     $this->moduleHandler()->invokeAll('user_login', [$account]);
+  }
+
+  /**
+   * Redirect to login page of auth relay server with destination.
+   */
+  private function loginRedirectResponse(Request $request, string $auth_relay_server) {
+
+    // Create destination for redirect after login on auth relay server.
+    $destination = Url::fromRoute('oauth2_token.authorize', [], [
+      'query' => UrlHelper::parse('/?' . $request->getQueryString())['query'],
+    ]);
+
+    // Compile redirect url.
+    $bubbled_destination = $destination->toString(TRUE);
+    $redirect_url = Url::fromUri($auth_relay_server . '/user/login', [
+      'query' => ['relay' => $bubbled_destination->getGeneratedUrl()],
+    ]);
+
+    // Ensure that bubbleable metadata is collected and added to the response
+    // object.
+    $url = $redirect_url->toString(TRUE);
+    $response = new TrustedRedirectResponse($url->getGeneratedUrl(), 302, $request->headers->all());
+    $response->addCacheableDependency($url);
+
+    // Client ID and secret may be passed as Basic Auth. Copy the headers.
+    return $response;
   }
 
 }
