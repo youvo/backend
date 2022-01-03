@@ -10,7 +10,7 @@ The academy package introduces the content entities `Course`, `Lecture`, `Paragr
 
 - `Course` -> `Lecture` -> `Paragraph` -> `Question`
 
-A general overview of the entity structure can be found here: https://whimsical.com/youvo-academy-E89MFfEmpwiW8QgGqWwiZu.
+A general overview of the entity structure can be found here: [Entities Chart](https://whimsical.com/youvo-academy-E89MFfEmpwiW8QgGqWwiZu).
 
 ## Basic usage
 
@@ -42,6 +42,8 @@ class ChildEntity extends EntityBase implements ChildEntityInterface {
 ### Child Entity Definition
 
 **Files:** `ChildEntityInterface` `ChildEntityTrait` `ChildEntityEnsureTrait` `ChildEntityListBuilder`
+
+The `ChildEntityInterface` and `ChildEntityTrait` define and provide the basic functionality of a child entity, e.g. getting the referenced parent entity. In some cases, we want to make sure that a child entity is properly defined. In that case the `ChildEntityEnsureTrait` can be utilized. The `ChildEntityListBuilder` amends the base methods and is extended for the list builders of the respective entities in the academy.
 
 ### Child Entity Access Handling
 
