@@ -28,7 +28,7 @@ function project_dummy_site_install_finished() {
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')
     ->condition('roles', 'creative')
-    ->condition('uid', 1, '!=')
+    ->condition('uid', [1, 2], 'NOT IN')
     ->execute();
   $organisation_ids = \Drupal::entityQuery('user')
     ->condition('roles', 'organisation')
