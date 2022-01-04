@@ -30,6 +30,27 @@ function youvo_dummy_site_install_finished() {
   // Object for random content.
   $random = new Random();
 
+  // Values for CLI  user.
+  $values = [
+    'fullname' => 'CLI Tasks',
+    'name' => 'cli@youvo.org',
+    'mail' => 'cli@youvo.org',
+    'roles' => ['creative', 'editor'],
+    'pass' => 'password',
+    'status' => 1,
+  ];
+
+  // Create CLI user.
+  $creative = User::create($values);
+  try {
+    $creative->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while creating CLI user. %type: @message in %function (line %line of %file).', $variables);
+  }
+
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
   $values = [
@@ -43,7 +64,7 @@ function youvo_dummy_site_install_finished() {
     'skills' => youvo_dummy_get_random_skills(),
     'name' => 'fred@youvo.org',
     'mail' => 'fred@youvo.org',
-    'roles' => ['creative'],
+    'roles' => ['creative', 'editor'],
     'pass' => 'password',
     'status' => 1,
   ];
