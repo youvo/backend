@@ -44,6 +44,9 @@ install:
   - oauth_grant
   - oauth_grant_remote
   - blocker_mode
+  # Cache warming
+  - warmer
+  - jsonapi_boost
   # Projects
   - lifecycle
   - project
