@@ -11,6 +11,9 @@
         "drupal/jsonapi_boost": {
         	"Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
         },
+        "drupal/warmer": {
+        	"Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
+        },
         "drupal/multivalue_form_element": {
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"

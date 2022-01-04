@@ -100,6 +100,7 @@
             "drupal/core": "-p2",
             "drupal/jsonapi_include": "-p4",
             "drupal/jsonapi_boost": "-p4",
+            "drupal/warmer": "-p4",
             "drupal/simple_oauth": "-p4",
             "drupal/filefield_paths": "-p4",
             "drupal/multivalue_form_element": "-p4"
