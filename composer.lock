@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "587b66f211df041b2e260fc14ab73664",
+    "content-hash": "dfc787d524075ef2371d86f38b6ab68e",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1927,6 +1927,52 @@
             }
         },
         {
+            "name": "drupal/jsonapi_boost",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/jsonapi_boost.git",
+                "reference": "2.0.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/jsonapi_boost-2.0.1.zip",
+                "reference": "2.0.1",
+                "shasum": "2635e54f5e33fcd4744296bfd1ff2fe79abc2e7f"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9",
+                "drupal/jsonapi_extras": "^3.0",
+                "drupal/warmer": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.1",
+                    "datestamp": "1600581498",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "e0ipso",
+                    "homepage": "https://www.drupal.org/user/550110"
+                }
+            ],
+            "description": "Improve the performance of the JSON:API module with a cache-warming strategy.",
+            "homepage": "https://www.drupal.org/project/jsonapi_boost",
+            "support": {
+                "source": "https://git.drupalcode.org/project/jsonapi_boost"
+            }
+        },
+        {
             "name": "drupal/jsonapi_extras",
             "version": "3.20.0",
             "source": {
@@ -2244,6 +2290,62 @@
             "homepage": "https://www.drupal.org/project/simple_oauth",
             "support": {
                 "source": "https://git.drupalcode.org/project/simple_oauth"
+            }
+        },
+        {
+            "name": "drupal/warmer",
+            "version": "2.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/warmer.git",
+                "reference": "2.0.3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/warmer-2.0.3.zip",
+                "reference": "2.0.3",
+                "shasum": "81e6f3537b3871501c7ec36d1cc32a074a133833"
+            },
+            "require": {
+                "drupal/core": "^8.8 || ^9.0",
+                "php": ">=5.6.0",
+                "vipnytt/sitemapparser": "^1.0"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.3",
+                    "datestamp": "1633469550",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                },
+                "drush": {
+                    "services": {
+                        "drush.services.yml": "^9"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Mateu Aguiló Bosch",
+                    "homepage": "https://www.drupal.org/user/550110",
+                    "email": "mateu@mateuaguilo.com"
+                },
+                {
+                    "name": "slv_",
+                    "homepage": "https://www.drupal.org/user/826088"
+                }
+            ],
+            "description": "Module that provides infrastructure for common cache warming/pre-fetching techniques.",
+            "homepage": "https://www.drupal.org/project/warmer",
+            "support": {
+                "source": "https://git.drupalcode.org/project/warmer"
             }
         },
         {
@@ -7242,6 +7344,68 @@
             "time": "2021-09-20T19:19:13+00:00"
         },
         {
+            "name": "vipnytt/sitemapparser",
+            "version": "v1.1.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/VIPnytt/SitemapParser.git",
+                "reference": "f05d00702304e35859ea524553a3229f27c00476"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/VIPnytt/SitemapParser/zipball/f05d00702304e35859ea524553a3229f27c00476",
+                "reference": "f05d00702304e35859ea524553a3229f27c00476",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "ext-simplexml": "*",
+                "guzzlehttp/guzzle": "^6.0 || ^7.0",
+                "lib-libxml": "*",
+                "php": "^5.6 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "^0",
+                "phpunit/phpunit": "^5.0 || ^6.0 || ^7.0 || ^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "vipnytt\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "VIP nytt",
+                    "email": "vipnytt@gmail.com",
+                    "role": "creator"
+                },
+                {
+                    "name": "Jan-Petter Gundersen",
+                    "email": "europe.jpg@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "XML Sitemap parser class compliant with the Sitemaps.org protocol.",
+            "homepage": "https://github.com/VIPnytt/SitemapParser",
+            "keywords": [
+                "Sitemap",
+                "parser",
+                "robots.txt",
+                "sitemaps.org",
+                "xml"
+            ],
+            "support": {
+                "issues": "https://github.com/VIPnytt/SitemapParser/issues",
+                "source": "https://github.com/VIPnytt/SitemapParser/tree/v1.1.5"
+            },
+            "time": "2021-10-20T15:06:45+00:00"
+        },
+        {
             "name": "webflo/drupal-finder",
             "version": "1.2.2",
             "source": {
@@ -12208,7 +12372,6 @@
         "drupal/filefield_paths": 10,
         "drupal/multivalue_form_element": 10,
         "drupal/simple_oauth": 10,
-        "drupal/openapi": 5,
         "drupal/openapi_ui": 5,
         "drupal/openapi_ui_redoc": 5
     },
