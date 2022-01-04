@@ -9,7 +9,7 @@ index e628605..e00addf 100644
 +    $accountSwitcher = \Drupal::service('account_switcher');
 +    $account = \Drupal::entityTypeManager()
 +      ->getStorage('user')
-+      ->load(1);
++      ->load(2);
 +    $accountSwitcher->switchTo($account);
      $normalizations = array_map([$this->entityToJsonapi, 'normalize'], $items);
 +    $accountSwitcher->switchBack();
