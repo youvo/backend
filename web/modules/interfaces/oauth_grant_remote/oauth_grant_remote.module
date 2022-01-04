@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Implementation of oauth_grant_remote hooks.
+ */
+
+use GuzzleHttp\Exception\ClientException;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha512;
+use Lcobucci\JWT\Signer\Key\InMemory;
+
+/**
+ * Implements hook_cron().
+ *
+ * @throws \Exception
+ *
+ * @todo Can be deleted when beta finishes or users are migrated.
+ */
+function oauth_grant_remote_cron() {
+
+  // Load and check config.
+  $settings = \Drupal::configFactory()->get('oauth_grant_remote.settings');
+  if (empty($settings->get('jwt_expiration')) ||
+    empty($settings->get('jwt_key_path')) ||
+    empty($settings->get('auth_relay_url'))) {
+    \Drupal::logger('youvo')
+      ->warning('Cron job is not maintained. Auth Relay is not configured. Check the OAuth Grant Remote settings form.');
+    return NULL;
+  }
+
+  // Get current accounts.
+  $now = \Drupal::time()->getRequestTime();
+  $yesterday = $now - 86400;
+  $account_ids = \Drupal::entityQuery('user')
+    ->condition('access', $yesterday, '>=')
+    ->execute();
+
+  // Prepare a JWT for the Auth Relay.
+  $path = $settings->get('jwt_key_path');
+  $key_path = 'file://' . $path;
+  $key = InMemory::file($key_path);
+  $config = Configuration::forSymmetricSigner(new Sha512(), $key);
+
+  // Build the JWT.
+  $expiry = $settings->get('jwt_expiration');
+  $builder = $config->builder()
+    ->issuedAt(new \DateTimeImmutable('@' . $now))
+    ->issuedBy(\Drupal::request()->getHost())
+    ->expiresAt(new \DateTimeImmutable('@' . ($now + $expiry)))
+    ->withClaim('accounts', $account_ids);
+  $jwt = $builder->getToken($config->signer(), $config->signingKey())->toString();
+
+  // Sending POST Request with the JWT to the Auth Relay.
+  try {
+    $auth_relay_url = $settings->get('auth_relay_url') . '/api/auth/cron';
+    $response = \Drupal::httpClient()
+      ->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
+  }
+  catch (ClientException) {
+    \Drupal::logger('youvo')
+      ->warning('Cron job is not maintained. Unable to contact Auth Relay.');
+    return NULL;
+  }
+
+  if ($response->getStatusCode() != 200) {
+    \Drupal::logger('youvo')
+      ->warning('Cron job failed. Auth Relay delivered error response.');
+  }
+}

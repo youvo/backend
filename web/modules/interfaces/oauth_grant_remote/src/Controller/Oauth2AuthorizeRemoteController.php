@@ -425,18 +425,19 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     ]);
 
     // Compile redirect url.
-    $bubbled_destination = $destination->toString(TRUE);
     $redirect_url = Url::fromUri($auth_relay_server . '/user/login', [
-      'query' => ['relay' => $bubbled_destination->getGeneratedUrl()],
+      'query' => [
+        'relay' => $destination->toString(TRUE)->getGeneratedUrl(),
+      ],
     ]);
 
     // Ensure that bubbleable metadata is collected and added to the response
-    // object.
+    // object. Client ID and secret may be passed as Basic Auth. Copy the
+    // headers.
     $url = $redirect_url->toString(TRUE);
     $response = new TrustedRedirectResponse($url->getGeneratedUrl(), 302, $request->headers->all());
-    $response->addCacheableDependency($url);
+    $response->setMaxAge(0);
 
-    // Client ID and secret may be passed as Basic Auth. Copy the headers.
     return $response;
   }
 
