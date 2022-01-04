@@ -1,0 +1,21 @@
+diff --git a/modules/contrib/warmer/src/Commands/WarmerCommands.php b/modules/contrib/warmer/src/Commands/WarmerCommands.php
+index 03e685d..95bd3d3 100644
+--- a/modules/contrib/warmer/src/Commands/WarmerCommands.php
++++ b/modules/contrib/warmer/src/Commands/WarmerCommands.php
+@@ -101,6 +101,7 @@ public function enqueue(array $warmer_ids, $options = ['run-queue' => FALSE]) {
+       return $count;
+     }, $warmers);
+     $total = array_sum($count_list);
++    $items_limit = max($count_list);
+     $this->logger()->success(
+       dt('@total items enqueued for cache warming.', ['@total' => $total])
+     );
+@@ -111,7 +112,7 @@ public function enqueue(array $warmer_ids, $options = ['run-queue' => FALSE]) {
+       return;
+     }
+     $this->logger()->success(dt('Warming caches in @count batches from the "warmer" queue.', ['@count' => $batch_count]));
+-    $this->queueCommands->run('warmer', ['time-limit' => static::VERY_HIGH_NUMBER]);
++    $this->queueCommands->run('warmer', ['items-limit' => $items_limit, 'time-limit' => static::VERY_HIGH_NUMBER]);
+     return;
+   }
+
