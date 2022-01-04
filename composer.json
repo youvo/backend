@@ -22,6 +22,7 @@
         "drupal/core-recommended": "9.3.*",
         "drupal/core-vendor-hardening": "9.3.*",
         "drupal/filefield_paths": "^1.0@beta",
+        "drupal/jsonapi_boost": "^2.0",
         "drupal/jsonapi_extras": "^3.20",
         "drupal/jsonapi_include": "^1.4",
         "drupal/mail_login": "^2.6",
