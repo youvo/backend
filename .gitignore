@@ -3,8 +3,8 @@
 /vendor/
 /mutagen/
 
-/conf/.env.development
-/conf/.env.production
+/config/.env.development
+/config/.env.production
 /certificates/private.key
 /certificates/public.key
 /certificates/youvo7.key
