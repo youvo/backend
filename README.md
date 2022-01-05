@@ -10,7 +10,7 @@ To set up a Drupal distribution with the `youvo_development` profile, do the fol
 
 1. Clone repository to your server.
 2. Run `composer install`.
-3. Copy or configure `conf/.env.development`.
+3. Copy or configure `config/.env.development`.
 4. Run `scripts/install-development.sh`.
 
 This includes development modules such as `devel`, `coder`, `phpcodesniffer`, `phpunit`, `admin_toolbar` and more.
@@ -24,7 +24,7 @@ To set up a Drupal distribution with the `youvo_platform` profile, do the follow
 
 1. Clone repository to your server.
 2. Run `composer install --no-dev`.
-3. Copy or configure `conf/.env.production`.
+3. Copy or configure `config/.env.production`.
 4. Run `scripts/install-production.sh`.
 
 This provides a clean-state installation. This administrator login can be found in the environment file. The
@@ -81,14 +81,14 @@ To set up a local Drupal distribution with the `youvo_development` profile, do t
 
 1. Clone repository to your system.
 2. Run `composer install --no-interaction --no-progress`.
-3. Consult and configure `conf/.env.local`.
+3. Consult and configure `config/.env.local`.
 4. Run `scripts/install-local.sh`.
 
-Provides development modules as described above. You may need to adjust folder permissions for 
+Provides development modules as described above. You may need to adjust folder permissions for
 dummy content folders `academy` and `projects`. Use
 
-`chmod 0666 -R academy`  
-`chmod 0666 -R projects`  
+`chmod 0666 -R academy`
+`chmod 0666 -R projects`
 
 in the `sites/default/files` folder to grant permissions.
 

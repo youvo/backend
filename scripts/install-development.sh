@@ -8,7 +8,7 @@
 
  cd ~
  cd www/$SITE_FOLDER
- set -a; source conf/.env.development; set +a
+ set -a; source config/.env.development; set +a
 
  # Delete database.
  mysql -e "DROP DATABASE IF EXISTS ${DB_NAME}"
@@ -49,13 +49,13 @@
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1
-	
+
  # Set permissions for settings file.
  cd ~
  cd www/$SITE_FOLDER/web/sites/default
  chmod 0444 settings.php
  chmod 0444 default.settings.php
- 
+
  # Bye bye.
  echo "Exit in 3 seconds!"
  sleep 3

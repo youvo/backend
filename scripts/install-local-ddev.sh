@@ -12,7 +12,7 @@
 
  # Get variables and stop docker containers.
  cd ..
- set -a; source conf/.env.local-ddev; set +a
+ set -a; source config/.env.local-ddev; set +a
  echo "Stopping docker containers ..."
  ddev stop > /dev/null 2>&1
 
