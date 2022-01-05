@@ -18,9 +18,6 @@
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
         },
-        "drupal/simple_oauth": {
-            "Custom: Instantiate OAuth ClientEntity with isConfidential property": "patches/simple_oauth/custom-cliententity-is-confidential.patch"
-        },
         "drupal/filefield_paths": {
             "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/exclude_consumer_entity_type.patch"
         }
