@@ -113,7 +113,7 @@ function oauth_grant_install() {
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException | RuntimeException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
-      ->error('Unable to create consumer. %type: @message in %function (line %line of %file).', $variables);
+      ->info('Skipped development consumer settings. %type: @message in %function (line %line of %file).', $variables);
   }
 
   try {
