@@ -214,10 +214,12 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $local_session_uid = -1;
     if ($this->request->hasSession()) {
       $local_session = $this->request->getSession();
-      $local_session_id = $local_session->getId();
-      $local_session_uid = $local_session->get('uid');
-      $session_cookies = array_filter($session_cookies,
-        fn($c) => $c != $local_session_id);
+      if ($local_session->has('uid')) {
+        $local_session_uid = $local_session->get('uid');
+        $local_session_id = $local_session->getId();
+        $session_cookies = array_filter($session_cookies,
+          fn($c) => $c != $local_session_id);
+      }
     }
 
     // If there are no sessions, the user needs to log in on the original host.
