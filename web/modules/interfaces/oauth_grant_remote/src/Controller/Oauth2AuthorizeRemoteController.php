@@ -424,11 +424,20 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       'query' => UrlHelper::parse('/?' . $request->getQueryString())['query'],
     ]);
 
+    // Determine whether this is a development environment.
+    $development = FALSE;
+    if (!empty($this->configFactory->get('oauth_grant_remote.settings')->get('development')) &&
+      $this->configFactory->get('oauth_grant_remote.settings')->get('development')) {
+      $development = TRUE;
+    }
+
     // Compile redirect url.
+    $query['relay'] = $destination->toString(TRUE)->getGeneratedUrl();
+    if ($development) {
+      $query['dev'] = 1;
+    }
     $redirect_url = Url::fromUri($auth_relay_server . '/user/login', [
-      'query' => [
-        'relay' => $destination->toString(TRUE)->getGeneratedUrl(),
-      ],
+      'query' => $query,
     ]);
 
     // Ensure that bubbleable metadata is collected and added to the response
