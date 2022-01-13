@@ -81,6 +81,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
     $settings->set('jwt_expiration', $form_state->getValue('jwt_expiration'));
     $settings->set('jwt_key_path', $form_state->getValue('jwt_key_path'));
     $settings->set('auth_relay_url', $form_state->getValue('auth_relay_url'));
+    $settings->set('development', $form_state->getValue('development'));
     $settings->save();
     parent::submitForm($form, $form_state);
   }
@@ -119,6 +120,12 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('The URL of the Auth Relay.'),
       '#default_value' => $config->get('auth_relay_url'),
       '#required' => TRUE,
+    ];
+    $form['development'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Development Environment?'),
+      '#default_value' => $config->get('development'),
+      '#required' => FALSE,
     ];
 
     $form['actions'] = [

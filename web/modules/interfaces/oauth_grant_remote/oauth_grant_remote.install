@@ -49,6 +49,9 @@ function oauth_grant_remote_install() {
     if (isset($settings['AUTH_RELAY_URL'])) {
       $config->set('auth_relay_url', $settings['AUTH_RELAY_URL']);
     }
+    if (isset($settings['DEVELOPMENT'])) {
+      $config->set('development', $settings['DEVELOPMENT']);
+    }
     $config->save(TRUE);
   }
   catch (RuntimeException $e) {
