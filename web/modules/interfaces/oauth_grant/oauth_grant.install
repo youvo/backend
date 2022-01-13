@@ -80,7 +80,7 @@ function oauth_grant_install() {
         'uuid' => $consumer_uuids['UUID_LOCAL'],
         'label' => 'Local',
         'third_party' => FALSE,
-        'is_default' => TRUE,
+        'is_default' => FALSE,
         'owner_id' => 1,
         'confidential' => TRUE,
         'secret' => $consumer_secrets['SECRET_LOCAL'],
