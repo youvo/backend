@@ -30,6 +30,8 @@ function oauth_grant_install() {
   $config->set('private_key', dirname(DRUPAL_ROOT) . '/certificates/private.key');
   $config->save(TRUE);
 
+  // The following settings are for development purposes. Production settings
+  // should be determined manually.
   try {
     // Delete default consumer.
     $default_consumer = \Drupal::entityTypeManager()
@@ -37,19 +39,78 @@ function oauth_grant_install() {
       ->load(1);
     $default_consumer->delete();
 
-    // Add new Consumer.
-    $consumer = Consumer::create([
-      'label' => 'youvo Frontend',
-      'third_party' => FALSE,
-      'is_default' => TRUE,
-      'owner_id' => 1,
-      'confidential' => TRUE,
-      'roles' => [['target_id' => 'creative']],
-      'redirect' => 'https://preview.youvo.org/api/auth/callback',
-    ]);
-    $consumer->save();
+    // Load development enviroment. Exit if not available.
+    $module_path = \Drupal::moduleHandler()->getModule('oauth_grant')->getPath();
+    $env_path = $module_path . '/config/env/.env.development';
+    if (!is_readable($env_path)) {
+      throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
+    }
+
+    // Get local and development consumer info.
+    $consumer_uuids = [];
+    $consumer_redirects = [];
+    $consumer_secrets = [];
+    $lines = file($env_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+      if (str_starts_with(trim($line), '#')) {
+        continue;
+      }
+      list($name, $value) = explode('=', $line, 2);
+      $name = trim($name);
+      $value = trim($value);
+
+      if (str_starts_with(trim($line), 'UUID')) {
+        $consumer_uuids[$name] = $value;
+      }
+      elseif (str_starts_with(trim($line), 'REDIRECT')) {
+        $consumer_redirects[$name] = $value;
+      }
+      elseif (str_starts_with(trim($line), 'SECRET')) {
+        $consumer_secrets[$name] = $value;
+      }
+    }
+
+    // Add new consumer for local.
+    if (
+      isset($consumer_uuids['UUID_LOCAL']) &&
+      isset($consumer_redirects['REDIRECT_LOCAL']) &&
+      isset($consumer_secrets['SECRET_LOCAL'])
+    ) {
+      $consumer = Consumer::create([
+        'uuid' => $consumer_uuids['UUID_LOCAL'],
+        'label' => 'Local',
+        'third_party' => FALSE,
+        'is_default' => TRUE,
+        'owner_id' => 1,
+        'confidential' => TRUE,
+        'secret' => $consumer_secrets['SECRET_LOCAL'],
+        'roles' => [['target_id' => 'creative']],
+        'redirect' => $consumer_redirects['REDIRECT_LOCAL'],
+      ]);
+      $consumer->save();
+    }
+
+    // Add new consumer for development.
+    if (
+      isset($consumer_uuids['UUID_DEVELOPMENT']) &&
+      isset($consumer_redirects['REDIRECT_DEVELOPMENT']) &&
+      isset($consumer_secrets['SECRET_DEVELOPMENT'])
+    ) {
+      $consumer = Consumer::create([
+        'uuid' => $consumer_uuids['UUID_DEVELOPMENT'],
+        'label' => 'Development',
+        'third_party' => FALSE,
+        'is_default' => TRUE,
+        'owner_id' => 1,
+        'confidential' => TRUE,
+        'secret' => $consumer_secrets['SECRET_DEVELOPMENT'],
+        'roles' => [['target_id' => 'creative']],
+        'redirect' => $consumer_redirects['REDIRECT_DEVELOPMENT'],
+      ]);
+      $consumer->save();
+    }
   }
-  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException | RuntimeException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
       ->error('Unable to create consumer. %type: @message in %function (line %line of %file).', $variables);
