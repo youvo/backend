@@ -64,7 +64,7 @@ resourceFields:
     disabled: false
   uid:
     fieldName: uid
-    publicName: uid
+    publicName: organisation
     enhancer:
       id: ''
     disabled: false
