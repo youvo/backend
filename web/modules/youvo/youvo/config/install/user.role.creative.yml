@@ -5,4 +5,5 @@ id: creative
 label: Creative
 weight: 3
 is_admin: null
-permissions: {  }
+permissions:
+  - 'access user profiles'
