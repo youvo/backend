@@ -28,6 +28,7 @@
         "drupal/mail_login": "^2.6",
         "drupal/multivalue_form_element": "^1.0@beta",
         "drupal/simple_oauth": "^5.2",
+        "drupal/user_bundle": "^1.1",
         "drush/drush": "^10.6"
     },
     "conflict": {
