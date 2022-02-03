@@ -310,8 +310,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $remote_account = $remote_claims['account'];
 
     // Check if the user is a creative on the host.
-    // If it is not a creative, it must be an organisation or provisional
-    // organisation. We redirect back to Auth Relay where the query parameter
+    // If it is not a creative, it must be an organization or provisional
+    // organization. We redirect back to Auth Relay where the query parameter
     // can be resolved.
     if (!array_key_exists(3, $remote_account['roles'])) {
       $redirect_url = $auth_relay_server . '?r=oa';
