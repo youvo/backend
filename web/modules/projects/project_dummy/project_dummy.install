@@ -31,7 +31,7 @@ function project_dummy_site_install_finished() {
     ->condition('uid', [1, 2], 'NOT IN')
     ->execute();
   $organization_ids = \Drupal::entityQuery('user')
-    ->condition('roles', 'organization')
+    ->condition('type', 'organization')
     ->execute();
 
   // Object for random content.
