@@ -150,7 +150,7 @@ function youvo_dummy_site_install_finished() {
     ],
     'name' => 'hello@brueckengehen.org',
     'mail' => 'hello@brueckengehen.org',
-    'type' => 'organisation',
+    'type' => 'organization',
     'roles' => ['organisation'],
     'pass' => 'admin',
     'status' => 1,
@@ -178,8 +178,8 @@ function youvo_dummy_site_install_finished() {
     ],
     'name' => 'hello@vogelscheuchenseelsorge.org',
     'mail' => 'hello@vogelscheuchenseelsorge.org',
+    'type' => 'organization',
     'roles' => ['organisation'],
-    'type' => 'organisation',
     'pass' => 'admin',
     'status' => 1,
   ];
@@ -206,8 +206,8 @@ function youvo_dummy_site_install_finished() {
     ],
     'name' => 'hello@blk.gov',
     'mail' => 'hello@blk.gov',
+    'type' => 'organization',
     'roles' => ['organisation'],
-    'type' => 'organisation',
     'pass' => 'admin',
     'status' => 1,
   ];
