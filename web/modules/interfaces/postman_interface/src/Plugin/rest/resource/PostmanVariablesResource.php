@@ -85,15 +85,15 @@ class PostmanVariablesResource extends ResourceBase {
       $creative = NULL;
     }
 
-    // Get some organisation.
+    // Get some organization.
     try {
-      $organisation_ids = $this->entityQuery('user')
+      $organization_ids = $this->entityQuery('user')
         ->condition('roles', 'organisation')
         ->execute();
-      $organisation = $this->entityLoad('user', reset($organisation_ids));
+      $organization = $this->entityLoad('user', reset($organization_ids));
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $organisation = NULL;
+      $organization = NULL;
     }
 
     // Get some course.
@@ -250,7 +250,7 @@ class PostmanVariablesResource extends ResourceBase {
       'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
         'creative' => $creative?->uuid(),
-        'organisation' => $organisation?->uuid(),
+        'organization' => $organization?->uuid(),
         'course' => $course?->uuid(),
         'lecture' => $lecture?->uuid(),
         'question_textfield' => $question_textfield?->uuid(),
@@ -268,7 +268,7 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Prevent caching.
     $response->addCacheableDependency($creative);
-    $response->addCacheableDependency($organisation);
+    $response->addCacheableDependency($organization);
     $response->addCacheableDependency($course);
     $response->addCacheableDependency($lecture);
     $response->addCacheableDependency($question_textfield);
