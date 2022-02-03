@@ -88,7 +88,7 @@ class PostmanVariablesResource extends ResourceBase {
     // Get some organization.
     try {
       $organization_ids = $this->entityQuery('user')
-        ->condition('roles', 'organisation')
+        ->condition('roles', 'organization')
         ->execute();
       $organization = $this->entityLoad('user', reset($organization_ids));
     }
