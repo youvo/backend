@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_manager
+    - user_bundle.user_type.organization
+id: user.organization.field_manager
+field_name: field_manager
+entity_type: user
+bundle: organization
+label: Manager
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: 0
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer
