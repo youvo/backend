@@ -13,4 +13,3 @@ dependencies:
   - jsonapi_extras
   - jsonapi_include
   - mail_login
-  - user_bundle
