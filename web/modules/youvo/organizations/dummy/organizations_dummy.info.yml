@@ -1,6 +1,6 @@
-name: 'Project Dummy'
-description: 'Provides dummy project content.'
-package: Projects
+name: 'Organizations Dummy'
+description: 'Custom module which provides organizations dummy content.'
+package: 'youvo'
 
 type: module
 core_version_requirement: '^9.3 || ^10'
@@ -10,4 +10,4 @@ dependencies:
   - drupal:user (>= 9.3.0)
   - youvo
   - youvo_dummy
-  - organizations_dummy
+  - organizations

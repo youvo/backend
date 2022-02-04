@@ -9,4 +9,3 @@ dependencies:
   - drupal:file (>= 9.3.0)
   - drupal:user (>= 9.3.0)
   - youvo
-  - organizations
