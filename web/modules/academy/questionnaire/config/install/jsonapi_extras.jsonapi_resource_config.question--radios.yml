@@ -1,8 +1,11 @@
+uuid: b0d62cf9-c698-4894-b187-dda99becc467
 langcode: en
 status: true
 dependencies:
   config:
     - questionnaire.type.radios
+_core:
+  default_config_hash: yhpFSSwozk_U12wBhYil-wMMguwdd-UaGAbwNdbWHsI
 id: question--radios
 disabled: false
 path: questions/radios
