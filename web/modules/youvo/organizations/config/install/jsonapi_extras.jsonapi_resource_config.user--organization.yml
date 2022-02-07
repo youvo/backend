@@ -164,12 +164,6 @@ resourceFields:
     publicName: country
     enhancer:
       id: ''
-  field_links:
-    disabled: false
-    fieldName: field_links
-    publicName: links
-    enhancer:
-      id: ''
   field_manager:
     disabled: true
     fieldName: field_manager
@@ -186,6 +180,12 @@ resourceFields:
     disabled: false
     fieldName: field_phone
     publicName: phone
+    enhancer:
+      id: ''
+  field_portfolio:
+    disabled: false
+    fieldName: field_portfolio
+    publicName: portfolio
     enhancer:
       id: ''
   field_publicity:

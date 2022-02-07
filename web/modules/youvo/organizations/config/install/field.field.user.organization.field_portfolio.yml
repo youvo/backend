@@ -2,13 +2,13 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.field_links
+    - field.storage.user.field_portfolio
     - user_bundle.user_type.organization
-id: user.organization.field_links
-field_name: field_links
+id: user.organization.field_portfolio
+field_name: field_portfolio
 entity_type: user
 bundle: organization
-label: Links
+label: Portfolio
 description: ''
 required: false
 translatable: false
