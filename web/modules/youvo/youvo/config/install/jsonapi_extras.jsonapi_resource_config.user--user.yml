@@ -1,8 +1,8 @@
 langcode: en
 status: true
 dependencies:
-  module:
-    - user
+  config:
+    - user_bundle.user_type.user
 id: user--user
 disabled: false
 path: users
@@ -15,15 +15,21 @@ resourceFields:
     enhancer:
       id: ''
   uuid:
+    disabled: false
     fieldName: uuid
     publicName: uuid
     enhancer:
       id: ''
-    disabled: false
   langcode:
     disabled: true
     fieldName: langcode
     publicName: langcode
+    enhancer:
+      id: ''
+  type:
+    disabled: true
+    fieldName: type
+    publicName: type
     enhancer:
       id: ''
   preferred_langcode:
@@ -51,17 +57,17 @@ resourceFields:
     enhancer:
       id: ''
   mail:
+    disabled: false
     fieldName: mail
     publicName: mail
     enhancer:
       id: ''
-    disabled: false
   timezone:
+    disabled: true
     fieldName: timezone
     publicName: timezone
     enhancer:
       id: ''
-    disabled: false
   status:
     disabled: true
     fieldName: status
@@ -69,11 +75,11 @@ resourceFields:
     enhancer:
       id: ''
   created:
+    disabled: false
     fieldName: created
     publicName: created
     enhancer:
       id: ''
-    disabled: false
   changed:
     disabled: true
     fieldName: changed
@@ -99,7 +105,7 @@ resourceFields:
     enhancer:
       id: ''
   roles:
-    disabled: true
+    disabled: false
     fieldName: roles
     publicName: roles
     enhancer:
@@ -111,38 +117,38 @@ resourceFields:
     enhancer:
       id: ''
   about:
+    disabled: false
     fieldName: about
     publicName: about
     enhancer:
       id: ''
-    disabled: false
   avatar:
+    disabled: false
     fieldName: avatar
     publicName: avatar
     enhancer:
       id: ''
-    disabled: false
   contact:
+    disabled: false
     fieldName: contact
     publicName: contact
     enhancer:
       id: ''
-    disabled: false
   fullname:
+    disabled: false
     fieldName: fullname
     publicName: name
     enhancer:
       id: ''
-    disabled: false
   position:
+    disabled: false
     fieldName: position
     publicName: position
     enhancer:
       id: ''
-    disabled: false
   skills:
+    disabled: false
     fieldName: skills
     publicName: skills
     enhancer:
       id: ''
-    disabled: false
