@@ -38,8 +38,11 @@ install:
   - multivalue_form_element
   - consumers
   - simple_oauth
+  - user_bundle
   # Base
   - youvo
+  # User types
+  - organizations
   # Authentication
   - oauth_grant
   - oauth_grant_remote
@@ -59,7 +62,7 @@ install:
   - paragraphs
   - questionnaire
   - progress
-  # Change later
+  # Change later.
   - basic_auth
 themes:
   - claro

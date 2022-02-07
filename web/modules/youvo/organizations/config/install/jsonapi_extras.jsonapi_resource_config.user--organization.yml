@@ -2,11 +2,11 @@ langcode: en
 status: true
 dependencies:
   config:
-    - user_bundle.user_type.user
-id: user--user
+    - user_bundle.user_type.organization
+id: user--organization
 disabled: false
-path: users
-resourceType: user
+path: organizations
+resourceType: organization
 resourceFields:
   uid:
     disabled: true
@@ -105,7 +105,7 @@ resourceFields:
     enhancer:
       id: ''
   roles:
-    disabled: false
+    disabled: true
     fieldName: roles
     publicName: roles
     enhancer:
@@ -116,39 +116,105 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
-  about:
+  field_about:
     disabled: false
-    fieldName: about
+    fieldName: field_about
     publicName: about
     enhancer:
       id: ''
-  avatar:
+  field_aim:
     disabled: false
-    fieldName: avatar
+    fieldName: field_aim
+    publicName: aim
+    enhancer:
+      id: ''
+  field_avatar:
+    disabled: false
+    fieldName: field_avatar
     publicName: avatar
     enhancer:
       id: ''
-  contact:
+  field_budget:
     disabled: false
-    fieldName: contact
+    fieldName: field_budget
+    publicName: budget
+    enhancer:
+      id: ''
+  field_causes:
+    disabled: false
+    fieldName: field_causes
+    publicName: causes
+    enhancer:
+      id: ''
+  field_city:
+    disabled: false
+    fieldName: field_city
+    publicName: city
+    enhancer:
+      id: ''
+  field_contact:
+    disabled: false
+    fieldName: field_contact
     publicName: contact
     enhancer:
       id: ''
-  fullname:
+  field_country:
     disabled: false
-    fieldName: fullname
+    fieldName: field_country
+    publicName: country
+    enhancer:
+      id: ''
+  field_manager:
+    disabled: true
+    fieldName: field_manager
+    publicName: field_manager
+    enhancer:
+      id: ''
+  field_name:
+    disabled: false
+    fieldName: field_name
     publicName: name
     enhancer:
       id: ''
-  position:
+  field_phone:
     disabled: false
-    fieldName: position
-    publicName: position
+    fieldName: field_phone
+    publicName: phone
     enhancer:
       id: ''
-  skills:
+  field_portfolio:
     disabled: false
-    fieldName: skills
-    publicName: skills
+    fieldName: field_portfolio
+    publicName: portfolio
+    enhancer:
+      id: ''
+  field_publicity:
+    disabled: false
+    fieldName: field_publicity
+    publicName: publicity
+    enhancer:
+      id: ''
+  field_short_name:
+    disabled: false
+    fieldName: field_short_name
+    publicName: short_name
+    enhancer:
+      id: ''
+  field_street:
+    disabled: false
+    fieldName: field_street
+    publicName: street
+    enhancer:
+      id: ''
+  field_url:
+    disabled: false
+    fieldName: field_url
+    publicName: url
+    enhancer:
+      id: ''
+  field_zip:
+    disabled: false
+    fieldName: field_zip
+    publicName: zip
     enhancer:
       id: ''

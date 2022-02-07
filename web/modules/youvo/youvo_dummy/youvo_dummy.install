@@ -137,88 +137,6 @@ function youvo_dummy_site_install_finished() {
     \Drupal::logger('youvo_dummy')
       ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
   }
-
-  // Values for organisation user.
-  $image_file = youvo_dummy_get_image_by_path('/img/test_images/organisations/', 'test.jpg');
-  $values = [
-    'fullname' => 'BrückengeherInnen e.V.',
-    'about' => rtrim($random->paragraphs(4)),
-    'contact' => 'Helga Peickert',
-    'avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'name' => 'hello@brueckengehen.org',
-    'mail' => 'hello@brueckengehen.org',
-    'roles' => ['organisation'],
-    'pass' => 'admin',
-    'status' => 1,
-  ];
-
-  // Create organisation.
-  $organisation = User::create($values);
-  try {
-    $organisation->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating dummy organisation. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  // Values for organisation user.
-  $values = [
-    'fullname' => 'Vogelscheuchen Seelsorge e.V.',
-    'about' => rtrim($random->paragraphs(4)),
-    'contact' => 'Ursula Ursig',
-    'avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'name' => 'hello@vogelscheuchenseelsorge.org',
-    'mail' => 'hello@vogelscheuchenseelsorge.org',
-    'roles' => ['organisation'],
-    'pass' => 'admin',
-    'status' => 1,
-  ];
-
-  // Create organisation.
-  $organisation = User::create($values);
-  try {
-    $organisation->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating dummy organisation. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  // Values for organisation user.
-  $values = [
-    'fullname' => 'Ball-Luftdruck-Korrektiv',
-    'about' => rtrim($random->paragraphs(4)),
-    'contact' => 'Nadir Ongerer',
-    'avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'name' => 'hello@blk.gov',
-    'mail' => 'hello@blk.gov',
-    'roles' => ['organisation'],
-    'pass' => 'admin',
-    'status' => 1,
-  ];
-
-  // Create organisation.
-  $organisation = User::create($values);
-  try {
-    $organisation->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating dummy organisation. %type: @message in %function (line %line of %file).', $variables);
-  }
 }
 
 /**
@@ -310,17 +228,17 @@ function youvo_dummy_get_random_creative(array $creative_ids) {
 }
 
 /**
- * Returns random organisation id.
+ * Returns random organization id.
  *
- * @param array $organisation_ids
- *   Array of organisation ids.
+ * @param array $organization_ids
+ *   Array of organization ids.
  *
  * @return int
- *   Random organisation id.
+ *   Random organization id.
  */
-function youvo_dummy_get_random_organisation(array $organisation_ids) {
-  if (!empty($organisation_ids)) {
-    return $organisation_ids[array_rand($organisation_ids)];
+function youvo_dummy_get_random_organization(array $organization_ids) {
+  if (!empty($organization_ids)) {
+    return $organization_ids[array_rand($organization_ids)];
   }
   else {
     return 0;

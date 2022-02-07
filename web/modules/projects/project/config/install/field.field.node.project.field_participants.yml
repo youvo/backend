@@ -23,7 +23,7 @@ settings:
       role:
         creative: creative
         administrator: '0'
-        organisation: '0'
+        organization: '0'
         observer: '0'
         editor: '0'
         manager: '0'

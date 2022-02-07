@@ -30,8 +30,8 @@ function project_dummy_site_install_finished() {
     ->condition('roles', 'creative')
     ->condition('uid', [1, 2], 'NOT IN')
     ->execute();
-  $organisation_ids = \Drupal::entityQuery('user')
-    ->condition('roles', 'organisation')
+  $organization_ids = \Drupal::entityQuery('user')
+    ->condition('type', 'organization')
     ->execute();
 
   // Object for random content.
@@ -85,7 +85,7 @@ function project_dummy_site_install_finished() {
       ],
       'langcode' => 'en',
       'created' => $created,
-      'uid' => youvo_dummy_get_random_organisation($organisation_ids),
+      'uid' => youvo_dummy_get_random_organization($organization_ids),
       'status' => 1,
       'field_workload' => rand(1, 5),
       'field_deadline' => $date,
