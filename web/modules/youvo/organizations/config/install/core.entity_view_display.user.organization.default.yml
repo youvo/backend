@@ -9,7 +9,7 @@ dependencies:
     - field.field.user.organization.field_city
     - field.field.user.organization.field_contact
     - field.field.user.organization.field_country
-    - field.field.user.organization.field_links
+    - field.field.user.organization.field_portfolio
     - field.field.user.organization.field_manager
     - field.field.user.organization.field_name
     - field.field.user.organization.field_phone
@@ -80,7 +80,7 @@ content:
     third_party_settings: {  }
     weight: 11
     region: content
-  field_links:
+  field_portfolio:
     type: string
     label: above
     settings:

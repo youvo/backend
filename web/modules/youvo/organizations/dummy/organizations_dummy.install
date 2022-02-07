@@ -51,7 +51,7 @@ function organizations_dummy_site_install_finished() {
     ],
     'field_budget' => rtrim($random->paragraphs(1)),
     'field_publicity' => rtrim($random->paragraphs(1)),
-    'field_links' => [
+    'field_portfolio' => [
       'www.instagromm.com/brueckengehen',
       'www.wurstsalatland.de',
     ],
@@ -97,7 +97,7 @@ function organizations_dummy_site_install_finished() {
     ],
     'field_budget' => rtrim($random->paragraphs(1)),
     'field_publicity' => rtrim($random->paragraphs(1)),
-    'field_links' => [
+    'field_portfolio' => [
       'www.instagromm.com/vogelscheuchenseelsorge',
       'www.schichtsalatland.de',
     ],
@@ -143,7 +143,7 @@ function organizations_dummy_site_install_finished() {
     ],
     'field_budget' => rtrim($random->paragraphs(1)),
     'field_publicity' => rtrim($random->paragraphs(1)),
-    'field_links' => [
+    'field_portfolio' => [
       'www.instagromm.com/ball-luftdruck-korrektiv',
       'www.gurkensalatland.de',
     ],
