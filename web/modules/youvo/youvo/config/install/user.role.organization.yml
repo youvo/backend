@@ -1,8 +1,8 @@
 langcode: en
 status: true
 dependencies: {  }
-id: organisation
-label: Organisation
+id: organization
+label: Organization
 weight: 4
 is_admin: null
 permissions: {  }

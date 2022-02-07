@@ -1,0 +1,168 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the organizations_dummy module.
+ */
+
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Utility\Random;
+use Drupal\user\Entity\User;
+use Drupal\Core\Utility\Error;
+
+/**
+ * Implements hook_install().
+ */
+function organizations_dummy_install() {
+  module_set_weight('organizations_dummy', 1);
+}
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function organizations_dummy_site_install_finished() {
+
+  // Object for random content.
+  $random = new Random();
+
+  // Get field values.
+  $image_file = youvo_dummy_get_image_by_path('/img/test_images/organizations/', 'test.jpg');
+  $causes = youvo_dummy_get_random_causes();
+
+  // Values for organization user.
+  $values = [
+    'field_name' => 'BrückengeherInnen Deutschland e.V.',
+    'field_short_name' => 'BG Deutschland',
+    'field_url' => 'www.brueckengehen.org',
+    'field_aim' => 'Wir lassen uns nicht von den an Brücken anliegenden Landschaften und Städten ablenken!',
+    'field_about' => rtrim($random->paragraphs(2)),
+    'field_causes' => $causes,
+    'field_contact' => 'Helga Peickert',
+    'field_phone' => '0123456789',
+    'field_street' => 'Alt-Moabit 140',
+    'field_zip' => '10557',
+    'field_city' => 'Berlin',
+    'field_country' => 'Deutschland',
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
+    'field_budget' => rtrim($random->paragraphs(1)),
+    'field_publicity' => rtrim($random->paragraphs(1)),
+    'field_portfolio' => [
+      'www.instagromm.com/brueckengehen',
+      'www.wurstsalatland.de',
+    ],
+    'name' => 'hello@brueckengehen.org',
+    'mail' => 'hello@brueckengehen.org',
+    'type' => 'organization',
+    'roles' => ['organization'],
+    'pass' => 'admin',
+    'status' => 1,
+  ];
+
+  // Create organization.
+  $organization = User::create($values);
+  try {
+    $organization->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while creating dummy organization. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  // Get field values.
+  $causes = youvo_dummy_get_random_causes();
+
+  // Values for organization user.
+  $values = [
+    'field_name' => 'Vogelscheuchen Seelsorge e.V.',
+    'field_short_name' => 'VSSeelsorge e.V.',
+    'field_aim' => 'Senden Brieftauben mit Tröstungen zu alleingelassenen Vogelscheuchen!',
+    'field_url' => 'www.vogelscheuchenseelsorge.org',
+    'field_about' => rtrim($random->paragraphs(2)),
+    'field_causes' => $causes,
+    'field_contact' => 'Ursula Ursig',
+    'field_phone' => '0123456789',
+    'field_street' => 'Feldweg 240',
+    'field_zip' => '19217',
+    'field_city' => 'Holdorf',
+    'field_country' => 'Deutschland',
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
+    'field_budget' => rtrim($random->paragraphs(1)),
+    'field_publicity' => rtrim($random->paragraphs(1)),
+    'field_portfolio' => [
+      'www.instagromm.com/vogelscheuchenseelsorge',
+      'www.schichtsalatland.de',
+    ],
+    'name' => 'hello@vogelscheuchenseelsorge.org',
+    'mail' => 'hello@vogelscheuchenseelsorge.org',
+    'type' => 'organization',
+    'roles' => ['organization'],
+    'pass' => 'admin',
+    'status' => 1,
+  ];
+
+  // Create organization.
+  $organization = User::create($values);
+  try {
+    $organization->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while creating dummy organization. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  // Get field values.
+  $causes = youvo_dummy_get_random_causes();
+
+  // Values for organization user.
+  $values = [
+    'field_name' => 'Ball-Luftdruck-Korrektiv',
+    'field_short_name' => 'BLK',
+    'field_aim' => 'Wir greifen schlaffen Bällen unter die Arme!',
+    'field_url' => 'www.blk.gov',
+    'field_about' => rtrim($random->paragraphs(2)),
+    'field_causes' => $causes,
+    'field_contact' => 'Nadir Ongerer',
+    'field_phone' => '0123456789',
+    'field_street' => 'Am Ballpark 11',
+    'field_zip' => '91611',
+    'field_city' => 'Lehrberg Ballstadt',
+    'field_country' => 'Deutschland',
+    'field_avatar' => [
+      'target_id' => $image_file->id(),
+      'alt' => $random->sentences(3, TRUE),
+    ],
+    'field_budget' => rtrim($random->paragraphs(1)),
+    'field_publicity' => rtrim($random->paragraphs(1)),
+    'field_portfolio' => [
+      'www.instagromm.com/ball-luftdruck-korrektiv',
+      'www.gurkensalatland.de',
+    ],
+    'name' => 'hello@blk.gov',
+    'mail' => 'hello@blk.gov',
+    'type' => 'organization',
+    'roles' => ['organization'],
+    'pass' => 'password',
+    'status' => 1,
+  ];
+
+  // Create organization.
+  $organization = User::create($values);
+  try {
+    $organization->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while creating dummy organization. %type: @message in %function (line %line of %file).', $variables);
+  }
+}
