@@ -6,10 +6,9 @@ dependencies:
 id: user.field_manager
 field_name: field_manager
 entity_type: user
-type: integer
+type: entity_reference
 settings:
-  unsigned: false
-  size: normal
+  target_type: user
 module: core
 locked: false
 cardinality: -1
