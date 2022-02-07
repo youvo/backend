@@ -4,15 +4,16 @@ dependencies:
   config:
     - field.field.user.organization.field_about
     - field.field.user.organization.field_aim
+    - field.field.user.organization.field_avatar
     - field.field.user.organization.field_budget
     - field.field.user.organization.field_causes
     - field.field.user.organization.field_city
     - field.field.user.organization.field_contact
     - field.field.user.organization.field_country
-    - field.field.user.organization.field_portfolio
     - field.field.user.organization.field_manager
     - field.field.user.organization.field_name
     - field.field.user.organization.field_phone
+    - field.field.user.organization.field_portfolio
     - field.field.user.organization.field_publicity
     - field.field.user.organization.field_short_name
     - field.field.user.organization.field_street
@@ -20,6 +21,7 @@ dependencies:
     - field.field.user.organization.field_zip
     - user_bundle.user_type.organization
   module:
+    - image
     - text
 id: user.organization.default
 targetEntityType: user
@@ -31,13 +33,22 @@ content:
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 4
+    weight: 5
     region: content
   field_aim:
     type: string
     label: above
     settings:
       link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_avatar:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
     third_party_settings: {  }
     weight: 2
     region: content
@@ -46,7 +57,7 @@ content:
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 13
+    weight: 14
     region: content
   field_causes:
     type: entity_reference_label
@@ -54,7 +65,7 @@ content:
     settings:
       link: true
     third_party_settings: {  }
-    weight: 5
+    weight: 6
     region: content
   field_city:
     type: string
@@ -62,7 +73,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 10
+    weight: 11
     region: content
   field_contact:
     type: string
@@ -70,7 +81,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_country:
     type: string
@@ -78,15 +89,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 11
-    region: content
-  field_portfolio:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 14
+    weight: 12
     region: content
   field_name:
     type: string
@@ -102,14 +105,22 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 7
+    weight: 8
+    region: content
+  field_portfolio:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 15
     region: content
   field_publicity:
     type: basic_string
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 12
+    weight: 13
     region: content
   field_short_name:
     type: string
@@ -125,7 +136,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 8
+    weight: 9
     region: content
   field_url:
     type: string
@@ -133,7 +144,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 3
+    weight: 4
     region: content
   field_zip:
     type: string
@@ -141,7 +152,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 9
+    weight: 10
     region: content
 hidden:
   field_manager: true
