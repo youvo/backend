@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\project\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource;
 
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Route;

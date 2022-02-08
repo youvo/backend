@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\project\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Drupal\project\ProjectInterface;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -27,7 +27,7 @@ class ProjectMediateResource extends ResourceBase {
   /**
    * Responds GET requests.
    *
-   * @param \Drupal\project\ProjectInterface $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The referenced project.
    *
    * @return \Drupal\rest\ResourceResponse
@@ -74,7 +74,7 @@ class ProjectMediateResource extends ResourceBase {
   /**
    * Responds PATCH requests.
    *
-   * @param \Drupal\project\ProjectInterface $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The referenced project.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Contains request data.

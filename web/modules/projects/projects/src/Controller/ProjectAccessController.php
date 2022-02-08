@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\project\Controller;
+namespace Drupal\projects\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\project\Entity\Project;
-use Drupal\project\ProjectInterface;
+use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Access controller for transition forms.
@@ -18,7 +18,7 @@ class ProjectAccessController extends ControllerBase {
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
-   * @param \Drupal\project\Entity\Project|null $project
+   * @param \Drupal\projects\Entity\Project|null $project
    *   The node id.
    * @param string $transition
    *   The requested transition. Defaults in route definition.

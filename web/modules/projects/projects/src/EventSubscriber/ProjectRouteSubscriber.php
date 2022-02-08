@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\project\EventSubscriber;
+namespace Drupal\projects\EventSubscriber;
 
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;

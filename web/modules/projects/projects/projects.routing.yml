@@ -7,11 +7,11 @@
 project.mediate:
   path: '/projects/{project}/mediate'
   defaults:
-    _form: '\Drupal\project\Form\ProjectMediateForm'
+    _form: '\Drupal\projects\Form\ProjectMediateForm'
     _title: 'Mediate Project'
     transition: 'mediate'
   requirements:
-    _custom_access: '\Drupal\project\Controller\ProjectAccessController::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Controller\ProjectAccessController::accessProjectTransition'
     project: \d+
   options:
     _admin_route: TRUE
