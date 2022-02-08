@@ -51,14 +51,8 @@ class ProjectMediateResource extends ResourceBase {
       'data' => [
         'type' => $project->getType(),
         'id' => $project->uuid(),
-        'attributes' => [
-          'title' => $project->getTitle(),
-        ],
-        'relationships' => [
-          'applicants' => [
-            'data' => $applicants,
-          ],
-        ],
+        'title' => $project->getTitle(),
+        'applicants' => $applicants,
       ],
       'patch_required' => [
         'selected_participants' => 'Array of uuid\'s of participants.',
