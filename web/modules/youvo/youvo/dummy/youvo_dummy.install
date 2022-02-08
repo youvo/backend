@@ -31,6 +31,7 @@ function youvo_dummy_site_install_finished() {
   $random = new Random();
 
   // Values for CLI  user.
+  // This user may be used for cache warming.
   $values = [
     'fullname' => 'CLI Tasks',
     'name' => 'cli@youvo.org',
