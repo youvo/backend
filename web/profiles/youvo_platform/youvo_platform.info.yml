@@ -52,7 +52,7 @@ install:
   - jsonapi_boost
   # Projects
   - lifecycle
-  - project
+  - projects
   # Academy
   - academy
   - academy_log

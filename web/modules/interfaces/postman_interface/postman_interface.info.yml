@@ -7,7 +7,7 @@ core_version_requirement: '^9.3 || ^10'
 
 dependencies:
   - youvo
-  - project
+  - projects
   - lifecycle
   - academy
   - courses

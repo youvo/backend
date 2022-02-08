@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\project\Form;
+namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
-use Drupal\project\ProjectInterface;
+use Drupal\projects\ProjectInterface;
 
 /**
  * The ProjectMediateForm provides a simple UI for changing lifecycle state.
@@ -55,7 +55,7 @@ class ProjectMediateForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    /** @var \Drupal\project\Entity\Project $project */
+    /** @var \Drupal\projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];
     $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 

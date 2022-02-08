@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\project;
+namespace Drupal\projects;
 
 use Drupal\node\NodeInterface;
 

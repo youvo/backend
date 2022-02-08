@@ -1,4 +1,4 @@
-name: Project
+name: Projects
 description: 'Defines Project entities and handles business logic.'
 package: Projects
 

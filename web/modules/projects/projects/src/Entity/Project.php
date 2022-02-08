@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\project\Entity;
+namespace Drupal\projects\Entity;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\node\Entity\Node;
-use Drupal\project\ProjectInterface;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Implements lifecycle workflow functionality for Project entities.
