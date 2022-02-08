@@ -91,7 +91,7 @@ class Project extends Node implements ProjectInterface {
     foreach ($applicants->referencedEntities() as $applicant) {
       /** @var \Drupal\user\Entity\User $applicant */
       $id = $use_uuid ? $applicant->uuid() : $applicant->id();
-      $options[$id] = $applicant->get('field_name')->value;
+      $options[$id] = $applicant->get('fullname')->value;
     }
     return $options;
   }
