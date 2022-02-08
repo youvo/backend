@@ -1,4 +1,4 @@
-name: 'Project Dummy'
+name: 'Projects Dummy'
 description: 'Provides dummy project content.'
 package: Projects
 
@@ -11,3 +11,4 @@ dependencies:
   - youvo
   - youvo_dummy
   - organizations_dummy
+  - projects
