@@ -22,7 +22,7 @@ install:
   - openapi_ui_redoc
   # Dummy content
   - youvo_dummy
-  - project_dummy
+  - projects_dummy
   - academy_dummy
   - organizations_dummy
   # Postman

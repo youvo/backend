@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the project_dummy module.
+ * Install, update and uninstall functions for the projects_dummy module.
  */
 
 use Drupal\Core\Entity\EntityStorageException;
@@ -14,8 +14,8 @@ use Drupal\Core\Utility\Error;
 /**
  * Implements hook_install().
  */
-function project_dummy_install() {
-  module_set_weight('project_dummy', 2);
+function projects_dummy_install() {
+  module_set_weight('projects_dummy', 2);
 }
 
 /**
@@ -23,7 +23,7 @@ function project_dummy_install() {
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function project_dummy_site_install_finished() {
+function projects_dummy_site_install_finished() {
 
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')
@@ -61,7 +61,7 @@ function project_dummy_site_install_finished() {
     // Get field values.
     $skills = youvo_dummy_get_random_skills();
     $causes = youvo_dummy_get_random_causes();
-    $image_file = project_dummy_get_stock_image($i);
+    $image_file = projects_dummy_get_stock_image($i);
 
     // Set random time in last year.
     $rnd_time = rand($one_year_ago, $current_time);
@@ -125,7 +125,7 @@ function project_dummy_site_install_finished() {
     }
     catch (EntityStorageException $e) {
       $variables = Error::decodeException($e);
-      \Drupal::logger('project_dummy')
+      \Drupal::logger('youvo')
         ->error('An error occurred while creating dummy projects. %type: @message in %function (line %line of %file).', $variables);
     }
   }
@@ -140,10 +140,10 @@ function project_dummy_site_install_finished() {
  * @return \Drupal\file\Entity\File
  *   Image file.
  */
-function project_dummy_get_stock_image(int $i) {
+function projects_dummy_get_stock_image(int $i) {
 
   $index = sprintf('%02d', (($i - 1) % 12) + 1);
-  $image_path = \Drupal::service('extension.list.module')->getPath('project_dummy') . '/img/' . $index . '.jpg';
+  $image_path = \Drupal::service('extension.list.module')->getPath('projects_dummy') . '/img/' . $index . '.jpg';
   $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
   $image_file = File::create([
     'uri' => $public_path,
@@ -155,7 +155,7 @@ function project_dummy_get_stock_image(int $i) {
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
-    \Drupal::logger('project_dummy')
+    \Drupal::logger('youvo')
       ->error('An error occurred while creating stock project images. %type: @message in %function (line %line of %file).', $variables);
   }
 
