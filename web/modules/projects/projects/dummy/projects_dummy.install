@@ -15,7 +15,7 @@ use Drupal\Core\Utility\Error;
  * Implements hook_install().
  */
 function projects_dummy_install() {
-  module_set_weight('projects_dummy', 2);
+  module_set_weight('projects_dummy', 3);
 }
 
 /**
