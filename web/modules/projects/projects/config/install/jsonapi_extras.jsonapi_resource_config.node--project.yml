@@ -140,12 +140,6 @@ resourceFields:
     enhancer:
       id: ''
     disabled: false
-  field_causes:
-    fieldName: field_causes
-    publicName: causes
-    enhancer:
-      id: ''
-    disabled: false
   field_city:
     fieldName: field_city
     publicName: city
