@@ -60,7 +60,6 @@ function projects_dummy_site_install_finished() {
 
     // Get field values.
     $skills = youvo_dummy_get_random_skills();
-    $causes = youvo_dummy_get_random_causes();
     $image_file = projects_dummy_get_stock_image($i);
 
     // Set random time in last year.
@@ -93,7 +92,6 @@ function projects_dummy_site_install_finished() {
       'field_material' => $random->sentences(4),
       'field_appreciation' => $random->sentences(8),
       'field_skills' => $skills,
-      'field_causes' => $causes,
       'field_image' => [
         'target_id' => $image_file->id(),
         'alt' => $random->sentences(3, TRUE),

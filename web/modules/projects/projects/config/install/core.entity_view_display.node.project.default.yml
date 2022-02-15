@@ -4,7 +4,6 @@ dependencies:
   config:
     - field.field.node.project.body
     - field.field.node.project.field_appreciation
-    - field.field.node.project.field_causes
     - field.field.node.project.field_city
     - field.field.node.project.field_deadline
     - field.field.node.project.field_host
@@ -51,14 +50,6 @@ content:
     region: content
     label: above
     settings: {  }
-    third_party_settings: {  }
-  field_causes:
-    type: entity_reference_label
-    weight: 4
-    region: content
-    label: above
-    settings:
-      link: true
     third_party_settings: {  }
   field_city:
     type: string
