@@ -78,6 +78,7 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function patch(ProjectInterface $project, Request $request) {
 
