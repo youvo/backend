@@ -118,23 +118,32 @@ class Project extends Node implements ProjectInterface {
     $options = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
     $participants = $this->get('field_participants');
-    foreach ($participants->referencedEntities() as $participant) {
+    $tasks = $this->get('field_participants_tasks')->getValue();
+    foreach ($participants->referencedEntities() as $delta => $participant) {
       /** @var \Drupal\user\Entity\User $participant */
       $id = $use_uuid ? $participant->uuid() : $participant->id();
-      $options[$id] = $participant->get('field_name')->value;
+      $options[$participant->id()] = [
+        'type' => 'user',
+        'id' => $id,
+        'name' => $participant->get('fullname')->value,
+        'task' => $tasks[$delta]['value'],
+      ];
     }
     return $options;
   }
 
   /**
    * Set participants for current project.
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function setParticipants(array $participants, bool $reset = FALSE) {
     if ($reset) {
       $this->set('field_participants', NULL);
     }
-    foreach ($participants as $participantId) {
-      $this->get('field_participants')->appendItem($participantId);
+    foreach ($participants as $participant_uid) {
+      $this->get('field_participants')->appendItem($participant_uid);
+      $this->get('field_participant_roles')->appendItem('Creative');
     }
     try {
       $this->save();
