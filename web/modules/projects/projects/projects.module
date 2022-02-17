@@ -44,15 +44,15 @@ function projects_form_node_form_alter(&$form, &$form_state) {
 
     // Load default values for participants.
     $participants_default = [];
-    $participants = $node->getParticipantsAsArray();
-    foreach (array_keys($participants) as $delta) {
-      $task_id = match ($participants[$delta]['task']) {
+    $participants = $node->getParticipantsAsArray(TRUE);
+    foreach (array_keys($participants) as $uid) {
+      $task_id = match ($participants[$uid]['task']) {
         'Organization' => 4,
         'Manager' => 7,
         default => 3,
       };
       $participants_default[] = [
-        'participant' => User::load($participants[$delta]['id']),
+        'participant' => User::load($uid),
         'task' => $task_id,
       ];
     }
