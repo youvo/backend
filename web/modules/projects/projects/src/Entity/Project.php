@@ -110,8 +110,8 @@ class Project extends Node implements ProjectInterface {
    */
   public function setApplicants(array $applicants) {
     $this->set('field_applicants', NULL);
-    foreach ($applicants as $applicant) {
-      $this->get('field_applicants')->appendItem($applicant);
+    foreach ($applicants as $uid) {
+      $this->get('field_applicants')->appendItem(['target_id' => $uid]);
     }
     try {
       $this->save();
@@ -125,7 +125,7 @@ class Project extends Node implements ProjectInterface {
    * Append applicant by uid to project.
    */
   public function appendApplicant(int $applicant_uid) {
-    $this->get('field_applicants')->appendItem($applicant_uid);
+    $this->get('field_applicants')->appendItem(['target_id' => $applicant_uid]);
     try {
       $this->save();
     }
@@ -164,9 +164,11 @@ class Project extends Node implements ProjectInterface {
    */
   public function setParticipants(array $participants, array $tasks = []) {
     $this->set('field_participants', NULL);
+    $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant_uid) {
-      $this->get('field_participants')->appendItem($participant_uid);
-      $this->get('field_participants_tasks')->appendItem($tasks[$delta]);
+      $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
+      $task = $tasks[$delta] ?? 'Creative';
+      $this->get('field_participants_tasks')->appendItem($task);
     }
     try {
       $this->save();
@@ -180,7 +182,7 @@ class Project extends Node implements ProjectInterface {
    * Append  participant by uid to project.
    */
   public function appendParticipant(int $participant_uid, string $task = 'Creative') {
-    $this->get('field_participants')->appendItem($participant_uid);
+    $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
     $this->get('field_participants_tasks')->appendItem($task);
     try {
       $this->save();
