@@ -143,7 +143,7 @@ class Project extends Node implements ProjectInterface {
     }
     foreach ($participants as $participant_uid) {
       $this->get('field_participants')->appendItem($participant_uid);
-      $this->get('field_participant_roles')->appendItem('Creative');
+      $this->get('field_participants_tasks')->appendItem('Creative');
     }
     try {
       $this->save();
