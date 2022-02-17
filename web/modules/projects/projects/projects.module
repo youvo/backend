@@ -53,7 +53,7 @@ function projects_form_node_form_alter(&$form, &$form_state) {
       };
       $participants_default[] = [
         'participant' => User::load($participants[$delta]['id']),
-        'task' => '4',
+        'task' => $task_id,
       ];
     }
 
@@ -76,9 +76,9 @@ function projects_form_node_form_alter(&$form, &$form_state) {
       'task' => [
         '#type' => 'select',
         '#options' => [
-          3 => 'Creative',
-          4 => 'Organization',
-          7 => 'Manager',
+          '3' => 'Creative',
+          '4' => 'Organization',
+          '7' => 'Manager',
         ],
         '#title' => t('Task'),
       ],
