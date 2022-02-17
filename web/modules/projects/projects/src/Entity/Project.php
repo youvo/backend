@@ -84,22 +84,32 @@ class Project extends Node implements ProjectInterface {
   /**
    * Get applicants for current project.
    */
-  public function getApplicantsAsArray(bool $use_uuid = FALSE) {
+  public function getApplicantsAsArray(bool $populated = FALSE) {
     $options = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants */
     $applicants = $this->get('field_applicants');
+    /** @var \Drupal\user\Entity\User $applicant */
     foreach ($applicants->referencedEntities() as $applicant) {
-      /** @var \Drupal\user\Entity\User $applicant */
-      $id = $use_uuid ? $applicant->uuid() : $applicant->id();
-      $options[$id] = $applicant->get('fullname')->value;
+      if ($populated) {
+        $options[$applicant->id()][] = [
+          'type' => 'user',
+          'id' => $applicant->uuid(),
+          'name' => $applicant->get('fullname')->value,
+        ];
+      }
+      else {
+        $options[$applicant->id()] = $applicant->get('fullname')->value;
+      }
+
     }
     return $options;
   }
 
   /**
-   * Set applicants for current project.
+   * Set applicants to project.
    */
   public function setApplicants(array $applicants) {
+    $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')->appendItem($applicant);
     }
@@ -112,44 +122,71 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
+   * Append applicant by uid to project.
+   */
+  public function appendApplicant(int $applicant_uid) {
+    $this->get('field_applicants')->appendItem($applicant_uid);
+    try {
+      $this->save();
+    }
+    catch (EntityStorageException $e) {
+      watchdog_exception('Projects: Could not append applicant.', $e);
+    }
+  }
+
+  /**
    * Get participants for current project.
    */
-  public function getParticipantsAsArray(bool $use_uuid = FALSE) {
+  public function getParticipantsAsArray(bool $populated = FALSE) {
     $options = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
     $participants = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
+    /** @var \Drupal\user\Entity\User $participant */
     foreach ($participants->referencedEntities() as $delta => $participant) {
-      /** @var \Drupal\user\Entity\User $participant */
-      $id = $use_uuid ? $participant->uuid() : $participant->id();
-      $options[$participant->id()] = [
-        'type' => 'user',
-        'id' => $id,
-        'name' => $participant->get('fullname')->value,
-        'task' => $tasks[$delta]['value'],
-      ];
+      if ($populated) {
+        $options[$participant->id()] = [
+          'type' => 'user',
+          'id' => $participant->uuid(),
+          'name' => $participant->get('fullname')->value,
+          'task' => $tasks[$delta]['value'],
+        ];
+      }
+      else {
+        $options[$participant->id()] = $participant->get('fullname')->value;
+      }
     }
     return $options;
   }
 
   /**
    * Set participants for current project.
-   *
-   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function setParticipants(array $participants, bool $reset = FALSE) {
-    if ($reset) {
-      $this->set('field_participants', NULL);
-    }
-    foreach ($participants as $participant_uid) {
+  public function setParticipants(array $participants, array $tasks = []) {
+    $this->set('field_participants', NULL);
+    foreach ($participants as $delta => $participant_uid) {
       $this->get('field_participants')->appendItem($participant_uid);
-      $this->get('field_participants_tasks')->appendItem('Creative');
+      $this->get('field_participants_tasks')->appendItem($tasks[$delta]);
     }
     try {
       $this->save();
     }
     catch (EntityStorageException $e) {
       watchdog_exception('Projects: Could not set participants.', $e);
+    }
+  }
+
+  /**
+   * Append  participant by uid to project.
+   */
+  public function appendParticipant(int $participant_uid, string $task = 'Creative') {
+    $this->get('field_participants')->appendItem($participant_uid);
+    $this->get('field_participants_tasks')->appendItem($task);
+    try {
+      $this->save();
+    }
+    catch (EntityStorageException $e) {
+      watchdog_exception('Projects: Could not append participant.', $e);
     }
   }
 
