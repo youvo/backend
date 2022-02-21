@@ -121,7 +121,7 @@ class ProjectMediateResource extends ResourceBase {
       ->condition('uuid', $selected_creatives, 'IN')
       ->execute();
     if (!empty($selected_creatives_ids) && $project->transitionMediate()) {
-      $project->setParticipants($selected_creatives_ids, TRUE);
+      $project->setParticipants($selected_creatives_ids);
       return new ResourceResponse('Project was mediated successfully.');
     }
 
