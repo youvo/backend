@@ -1,0 +1,13 @@
+id: organization.manage
+plugin_id: 'organization:manage'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+    - DELETE
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
