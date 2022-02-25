@@ -43,11 +43,11 @@ function academy_dummy_site_install_finished() {
 
   // Set course machine names.
   $course_machine_names = [
-    'introduction',
-    'problem',
-    'solution',
-    'practice',
+    'intro',
+    'youvo',
+    'scoping',
     'management',
+    'supervision',
     'workshop',
     'project',
   ];
