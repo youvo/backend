@@ -99,7 +99,7 @@ class ProjectMediateResource extends ResourceBase {
         'title' => $project->getTitle(),
         'applicants' => $applicants,
       ],
-      'patch_required' => [
+      'post_required' => [
         'selected_creatives' => 'Array of uuid\'s of creatives.',
       ],
     ]);
@@ -111,7 +111,7 @@ class ProjectMediateResource extends ResourceBase {
   }
 
   /**
-   * Responds PATCH requests.
+   * Responds POST requests.
    *
    * @param \Drupal\projects\ProjectInterface $project
    *   The referenced project.
@@ -125,7 +125,7 @@ class ProjectMediateResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function patch(ProjectInterface $project, Request $request) {
+  public function post(ProjectInterface $project, Request $request) {
 
     // Decode content of the request.
     $request_content = $this->serializationJson->decode($request->getContent());
