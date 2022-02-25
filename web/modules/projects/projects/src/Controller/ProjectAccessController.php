@@ -14,7 +14,7 @@ use Drupal\projects\ProjectInterface;
 class ProjectAccessController extends ControllerBase {
 
   /**
-   * Checks access for project mediation.
+   * Checks access for project transition.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
@@ -32,6 +32,24 @@ class ProjectAccessController extends ControllerBase {
         $account->hasPermission('use project_lifecycle transition project_' . $transition) &&
         $project->canTransitionByLabel($transition)
       );
+    }
+    return AccessResult::forbidden();
+  }
+
+  /**
+   * Checks access for project apply.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Run access checks for this account.
+   * @param \Drupal\projects\Entity\Project|null $project
+   *   The node id.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access results.
+   */
+  public function accessProjectApply(AccountInterface $account, ProjectInterface $project = NULL) {
+    if ($project instanceof Project) {
+      return AccessResult::allowedIf(in_array('creative', $account->getRoles()));
     }
     return AccessResult::forbidden();
   }
