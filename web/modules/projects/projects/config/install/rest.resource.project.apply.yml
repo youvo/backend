@@ -1,0 +1,12 @@
+id: project.apply
+plugin_id: 'project:apply'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
