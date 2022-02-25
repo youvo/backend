@@ -65,7 +65,7 @@ function youvo_dummy_site_install_finished() {
     'skills' => youvo_dummy_get_random_skills(),
     'name' => 'fred@youvo.org',
     'mail' => 'fred@youvo.org',
-    'roles' => ['creative', 'editor'],
+    'roles' => ['creative', 'editor', 'manager'],
     'pass' => 'password',
     'status' => 1,
   ];
