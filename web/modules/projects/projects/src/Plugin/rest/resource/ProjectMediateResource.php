@@ -123,7 +123,6 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
-   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function post(ProjectInterface $project, Request $request) {
 
@@ -156,8 +155,9 @@ class ProjectMediateResource extends ResourceBase {
 
     // Get applicants for current project and check if selected_creatives are
     // applicable.
-    $applicants = array_unique(array_keys($project->getApplicantsAsArray(TRUE)));
-    if (count(array_intersect($selected_creatives, $applicants)) != count($selected_creatives)) {
+    $applicants = $project->getApplicantsAsArray(TRUE);
+    $applicants_uuids = array_column($applicants, 'id');
+    if (count(array_intersect($selected_creatives, $applicants_uuids)) != count($selected_creatives)) {
       throw new UnprocessableEntityHttpException('Some selected creatives did not apply for this project.');
     }
 
@@ -165,8 +165,20 @@ class ProjectMediateResource extends ResourceBase {
     $selected_creatives_ids = \Drupal::entityQuery('user')
       ->condition('uuid', $selected_creatives, 'IN')
       ->execute();
-    if (!empty($selected_creatives_ids) && $project->transitionMediate()) {
-      $project->setParticipants($selected_creatives_ids);
+    // Get current managers of the project.
+    $managers = $project->getManagersAsArray();
+    $manager_ids = array_keys($managers);
+    // Prepare tasks array.
+    $participant_ids = array_merge($selected_creatives_ids, $manager_ids);
+    $count_creative = count($selected_creatives_ids);
+    $count_manager = count($manager_ids);
+    $tasks = array_merge(
+      array_fill(0, $count_creative, 'Creative'),
+      array_fill($count_creative + 1, $count_manager + $count_creative, 'Manager')
+    );
+    // Mediate project with participants.
+    if (!empty($participant_ids) && $project->transitionMediate()) {
+      $project->setParticipants($participant_ids, $tasks);
       return new ResourceResponse('Project was mediated successfully.');
     }
 
