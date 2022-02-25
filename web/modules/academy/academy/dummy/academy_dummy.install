@@ -33,12 +33,12 @@ function academy_dummy_site_install_finished() {
   // Set course titles.
   $course_titles = [
     'Introduction',
-    'Problem',
-    'Solution',
-    'Practice',
+    'The youvo Logic',
+    'Scoping',
     'Project Management',
+    'Project Support',
     'Workshop',
-    'First Project',
+    'Your Project',
   ];
 
   // Set course machine names.
