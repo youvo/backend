@@ -10,6 +10,7 @@ use Drupal\Component\Utility\Random;
 use Drupal\file\Entity\File;
 use Drupal\projects\Entity\Project;
 use Drupal\Core\Utility\Error;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_install().
@@ -55,6 +56,9 @@ function projects_dummy_site_install_finished() {
   $max_created_increment = 31536000 / $total;
   $created = $one_year_ago;
 
+  // Organization contacts storage.
+  $contacts = [];
+
   // Create random content.
   for ($i = 1; $i <= $total; $i++) {
 
@@ -74,6 +78,17 @@ function projects_dummy_site_install_finished() {
     shuffle($lifecycle_states);
     $state = $lifecycle_states[0];
 
+    // Get organization and contact.
+    $oid = youvo_dummy_get_random_organization($organization_ids);
+    if (!isset($contacts[$oid])) {
+      $organization = User::load($oid);
+      $contact = $organization->get('field_contact')->value;
+      $contacts[$oid] = $contact;
+    }
+    else {
+      $contact = $contacts[$oid];
+    }
+
     // Create node with random information.
     $project = Project::create([
       'type' => 'project',
@@ -84,8 +99,9 @@ function projects_dummy_site_install_finished() {
       ],
       'langcode' => 'en',
       'created' => $created,
-      'uid' => youvo_dummy_get_random_organization($organization_ids),
+      'uid' => $oid,
       'status' => 1,
+      'field_contact' => $contact,
       'field_workload' => rand(1, 5),
       'field_deadline' => $date,
       'field_city' => ucwords($random->word(12)),
