@@ -12,7 +12,7 @@ use Symfony\Component\Routing\RouteCollection;
  * Note that the pluginId of the respective service has to match the routeId of
  * the matching base route which defines the administration form.
  */
-trait ProjectRestResourceRoutesTrait {
+trait ProjectTransitionRestResourceRoutesTrait {
 
   /**
    * {@inheritdoc}

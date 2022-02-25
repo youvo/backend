@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 class ProjectMediateResource extends ResourceBase {
 
-  use ProjectRestResourceRoutesTrait;
+  use ProjectTransitionRestResourceRoutesTrait;
 
   /**
    * The current user.
