@@ -193,6 +193,53 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
+   * Get manager(s) for organization of the project.
+   *
+   * We expect that only one person manages a project but allow multiple
+   * managers for future workflow adjustments.
+   */
+  public function getManagersAsArray(bool $populated = FALSE) {
+    $options = [];
+    $organization = $this->getOwner();
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
+    $managers = $organization->get('field_manager');
+    /** @var \Drupal\user\Entity\User $manager */
+    foreach ($managers->referencedEntities() as $manager) {
+      if ($populated) {
+        $options[$manager->id()][] = [
+          'type' => 'user',
+          'id' => $manager->uuid(),
+          'name' => $manager->get('fullname')->value,
+        ];
+      }
+      else {
+        $options[$manager->id()] = $manager->get('fullname')->value;
+      }
+    }
+    return $options;
+  }
+
+  /**
+   * Does the organization of the project have a manager?
+   *
+   * We expect that only one person manages a project but allow multiple
+   * managers for future workflow adjustments.
+   */
+  public function hasManager() {
+    $count = 0;
+    $organization = $this->getOwner();
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
+    $managers = $organization->get('field_manager');
+    /** @var \Drupal\user\Entity\User $manager */
+    foreach ($managers->referencedEntities() as $manager) {
+      if (in_array('manager', $manager->getRoles())) {
+        $count = $count + 1;
+      }
+    }
+    return (bool) $count;
+  }
+
+  /**
    * Abstraction of forward transition flow check.
    */
   private function hasTransition($current_state, $new_state) {
