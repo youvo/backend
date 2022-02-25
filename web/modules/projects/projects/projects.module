@@ -47,7 +47,6 @@ function projects_form_node_form_alter(&$form, &$form_state) {
     $participants = $node->getParticipantsAsArray(TRUE);
     foreach (array_keys($participants) as $uid) {
       $task_id = match ($participants[$uid]['task']) {
-        'Organization' => 4,
         'Manager' => 7,
         default => 3,
       };
@@ -77,7 +76,6 @@ function projects_form_node_form_alter(&$form, &$form_state) {
         '#type' => 'select',
         '#options' => [
           '3' => 'Creative',
-          '4' => 'Organization',
           '7' => 'Manager',
         ],
         '#title' => t('Task'),
@@ -102,7 +100,6 @@ function projects_form_submit_participants($form, &$form_state) {
     if (!empty($multi_participant['participant'])) {
       $project->get('field_participants')->appendItem(['target_id' => $multi_participant['participant']]);
       $task = match ($multi_participant['task']) {
-        '4' => 'Organization',
         '7' => 'Manager',
         default => 'Creative',
       };

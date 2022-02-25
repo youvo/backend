@@ -14,9 +14,6 @@ settings:
       value: Creative
       label: Creative
     -
-      value: Organization
-      label: Organization
-    -
       value: Manager
       label: Manager
   allowed_values_function: ''
