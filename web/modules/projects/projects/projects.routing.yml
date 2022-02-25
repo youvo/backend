@@ -1,3 +1,4 @@
+# Project Apply REST route is defined in ProjectApplyResource::routes.
 # Transition REST routes are defined in ProjectTransitionRestResourceRoutesTrait::routes.
 # REST routes inherit the transition default, _custom_access requirement
 # and parameters option.
