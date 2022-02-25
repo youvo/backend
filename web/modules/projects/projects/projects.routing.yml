@@ -1,9 +1,8 @@
-# REST routes are defined in ProjectMediateResource::routes.
+# Transition REST routes are defined in ProjectTransitionRestResourceRoutesTrait::routes.
 # REST routes inherit the transition default, _custom_access requirement
 # and parameters option.
-# The converter has to be set as youvo.paramconverter to resolve REST
+# The converter has to be set as paramconverter.uuid to resolve REST
 # requests with UUIDs correctly.
-
 project.mediate:
   path: '/projects/{project}/mediate'
   defaults:
