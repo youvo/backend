@@ -15,11 +15,11 @@ resourceFields:
     enhancer:
       id: ''
   uuid:
+    disabled: false
     fieldName: uuid
     publicName: uuid
     enhancer:
       id: ''
-    disabled: false
   vid:
     disabled: true
     fieldName: vid
@@ -27,11 +27,11 @@ resourceFields:
     enhancer:
       id: ''
   langcode:
+    disabled: false
     fieldName: langcode
     publicName: langcode
     enhancer:
       id: ''
-    disabled: false
   type:
     disabled: true
     fieldName: type
@@ -57,29 +57,29 @@ resourceFields:
     enhancer:
       id: ''
   status:
+    disabled: false
     fieldName: status
     publicName: status
     enhancer:
       id: ''
-    disabled: false
   uid:
+    disabled: false
     fieldName: uid
     publicName: organization
     enhancer:
       id: ''
-    disabled: false
   title:
+    disabled: false
     fieldName: title
     publicName: title
     enhancer:
       id: ''
-    disabled: false
   created:
+    disabled: false
     fieldName: created
     publicName: created
     enhancer:
       id: ''
-    disabled: false
   changed:
     disabled: true
     fieldName: changed
@@ -87,17 +87,17 @@ resourceFields:
     enhancer:
       id: ''
   promote:
+    disabled: false
     fieldName: promote
     publicName: promote
     enhancer:
       id: ''
-    disabled: false
   sticky:
+    disabled: false
     fieldName: sticky
     publicName: sticky
     enhancer:
       id: ''
-    disabled: false
   default_langcode:
     disabled: true
     fieldName: default_langcode
@@ -122,93 +122,117 @@ resourceFields:
     publicName: path
     enhancer:
       id: ''
+  content_translation_source:
+    disabled: false
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: false
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
   body:
+    disabled: false
     fieldName: body
     publicName: body
     enhancer:
       id: ''
-    disabled: false
   field_applicants:
+    disabled: false
     fieldName: field_applicants
     publicName: applicants
     enhancer:
       id: ''
-    disabled: false
   field_appreciation:
+    disabled: false
     fieldName: field_appreciation
     publicName: appreciation
     enhancer:
       id: ''
-    disabled: false
   field_city:
+    disabled: false
     fieldName: field_city
     publicName: city
     enhancer:
       id: ''
+  field_contact:
     disabled: false
+    fieldName: field_contact
+    publicName: contact
+    enhancer:
+      id: ''
   field_deadline:
+    disabled: false
     fieldName: field_deadline
     publicName: deadline
     enhancer:
       id: ''
-    disabled: false
   field_host:
+    disabled: false
     fieldName: field_host
     publicName: host
     enhancer:
       id: ''
-    disabled: false
   field_image:
+    disabled: false
     fieldName: field_image
     publicName: image
     enhancer:
       id: ''
-    disabled: false
   field_lifecycle:
+    disabled: false
     fieldName: field_lifecycle
     publicName: lifecycle
     enhancer:
       id: ''
-    disabled: false
   field_local:
+    disabled: false
     fieldName: field_local
     publicName: local
     enhancer:
       id: ''
-    disabled: false
   field_material:
+    disabled: false
     fieldName: field_material
     publicName: material
     enhancer:
       id: ''
-    disabled: false
   field_participants:
+    disabled: false
     fieldName: field_participants
     publicName: participants
     enhancer:
       id: ''
+  field_participants_tasks:
     disabled: false
+    fieldName: field_participants_tasks
+    publicName: participants_tasks
+    enhancer:
+      id: ''
   field_result_files:
+    disabled: false
     fieldName: field_result_files
     publicName: result_files
     enhancer:
       id: ''
-    disabled: false
   field_result_text:
+    disabled: false
     fieldName: field_result_text
     publicName: result_text
     enhancer:
       id: ''
-    disabled: false
   field_skills:
+    disabled: false
     fieldName: field_skills
     publicName: skills
     enhancer:
       id: ''
-    disabled: false
   field_workload:
+    disabled: false
     fieldName: field_workload
     publicName: workload
     enhancer:
       id: ''
-    disabled: false
