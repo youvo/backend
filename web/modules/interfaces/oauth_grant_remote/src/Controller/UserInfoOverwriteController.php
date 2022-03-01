@@ -80,7 +80,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
       throw new AccessDeniedHttpException('This route is only available for authenticated requests using OAuth2.');
     }
     assert($this->serializer instanceof NormalizerInterface);
-    $identifier = $this->user->uuid();
+    $identifier = $this->user->id();
     $user_entity = new UserEntityWithClaims();
     $user_entity->setIdentifier($identifier);
     $data = $this->serializer
@@ -90,6 +90,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
       $data['name'] = $this->user->get('fullname')->value;
     }
     $data['preferred_username'] = $data['name'];
+    $data['uuid'] = $this->user->uuid();
     return JsonResponse::create($data);
   }
 
