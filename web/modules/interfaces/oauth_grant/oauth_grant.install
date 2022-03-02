@@ -25,7 +25,7 @@ function oauth_grant_install() {
   $config->set('refresh_token_expiration', 1209600);
   $config->set('remember_clients', TRUE);
   $config->set('disable_openid_connect', TRUE);
-  $config->set('use_implicite', FALSE);
+  $config->set('use_implicit', FALSE);
   $config->set('public_key', dirname(DRUPAL_ROOT) . '/certificates/public.key');
   $config->set('private_key', dirname(DRUPAL_ROOT) . '/certificates/private.key');
   $config->save(TRUE);
