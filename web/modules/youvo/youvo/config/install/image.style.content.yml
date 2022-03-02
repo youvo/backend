@@ -1,0 +1,14 @@
+langcode: en
+status: true
+dependencies: {  }
+name: content
+label: Content
+effects:
+  728e5e0d-f08e-4f23-b234-ae9217c2b775:
+    uuid: 728e5e0d-f08e-4f23-b234-ae9217c2b775
+    id: image_scale
+    weight: 1
+    data:
+      width: 1472
+      height: null
+      upscale: false
