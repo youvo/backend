@@ -90,6 +90,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
       $data['name'] = $this->user->get('fullname')->value;
     }
     $data['preferred_username'] = $data['name'];
+    $data['uuid'] = $this->user->uuid();
     return JsonResponse::create($data);
   }
 

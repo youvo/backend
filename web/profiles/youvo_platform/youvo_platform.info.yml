@@ -37,6 +37,7 @@ install:
   - mail_login
   - multivalue_form_element
   - consumers
+  - consumer_image_styles
   - simple_oauth
   - user_bundle
   # Base
