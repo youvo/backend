@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Projects module.
+ */
+
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Utility\Error;
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function projects_site_install_finished() {
+
+  // Project apply.
+  $role_object = Role::load('creative');
+  $role_object->grantPermission('restful get project:apply');
+  $role_object->grantPermission('restful post project:apply');
+  try {
+    $role_object->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    $variables['%permission'] = 'restful METHOD project:apply';
+    $variables['%role'] = 'creative';
+    \Drupal::logger('youvo')
+      ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  // Project mediate.
+  $roles = ['manager', 'organization', 'supervisor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('restful get project:mediate');
+    $role_object->grantPermission('restful post project:mediate');
+    try {
+      $role_object->save();
+    }
+    catch (EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      $variables['%permission'] = 'restful METHOD project:mediate';
+      $variables['%role'] = $role;
+      \Drupal::logger('youvo')
+        ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+    }
+  }
+}
