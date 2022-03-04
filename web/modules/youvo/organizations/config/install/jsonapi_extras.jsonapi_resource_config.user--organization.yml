@@ -165,9 +165,9 @@ resourceFields:
     enhancer:
       id: ''
   field_manager:
-    disabled: true
+    disabled: false
     fieldName: field_manager
-    publicName: field_manager
+    publicName: manager
     enhancer:
       id: ''
   field_name:

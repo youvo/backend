@@ -9,6 +9,10 @@ use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
 
 /**
  * Implements hook_entity_bundle_info_alter().
@@ -107,4 +111,26 @@ function projects_form_submit_participants($form, &$form_state) {
     }
   }
   $project->save();
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add projects base field to entity User.
+  if ($entity_type->id() == 'user') {
+    $fields['projects'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Computed Projects'))
+      ->setSetting('target_type', 'node')
+      ->setSetting('handler_settings', ['target_bundles' => ['project']])
+      ->setDescription(t('Computes the projects referencing this user.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setComputed(TRUE)
+      ->setClass(ComputedProjectReferenceFieldItemList::class);
+  }
+
+  return $fields;
 }
