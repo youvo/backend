@@ -11,8 +11,8 @@ settings:
   target_type: user
 module: core
 locked: false
-cardinality: -1
-translatable: true
+cardinality: 1
+translatable: false
 indexes: {  }
 persist_with_no_fields: false
 custom_storage: false
