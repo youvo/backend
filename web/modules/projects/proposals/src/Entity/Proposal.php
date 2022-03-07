@@ -25,7 +25,7 @@ use Drupal\user\UserInterface;
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider"
  *     }
  *   },
  *   base_table = "proposal",
@@ -39,10 +39,10 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "canonical" = "/proposal/{proposal}
+ *     "canonical" = "/proposal/{proposal}",
  *     "add-form" = "/proposal/add",
  *     "edit-form" = "/proposal/{proposal}/edit",
- *     "delete-form" = "/proposal/{proposal}/delete",
+ *     "delete-form" = "/proposal/{proposal}/delete"
  *   },
  * )
  */
