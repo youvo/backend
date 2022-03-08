@@ -1,0 +1,13 @@
+id: prospect.manage
+plugin_id: 'prospect:manage'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+    - DELETE
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
