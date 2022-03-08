@@ -41,4 +41,22 @@ class ProspectAccessController extends ControllerBase {
     return AccessResult::neutral();
   }
 
+  /**
+   * Checks access for prospect create resource.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Run access checks for this account.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access results.
+   */
+  public function accessProspectCreate(AccountInterface $account) {
+
+    if ($account->isAnonymous()) {
+      return AccessResult::allowed();
+    }
+
+    return AccessResult::neutral();
+  }
+
 }
