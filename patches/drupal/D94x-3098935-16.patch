@@ -1,0 +1,16 @@
+diff --git a/core/modules/jsonapi/src/EventSubscriber/DefaultExceptionSubscriber.php b/core/modules/jsonapi/src/EventSubscriber/DefaultExceptionSubscriber.php
+index b8d0c1826b..792808eec5 100644
+--- a/core/modules/jsonapi/src/EventSubscriber/DefaultExceptionSubscriber.php
++++ b/core/modules/jsonapi/src/EventSubscriber/DefaultExceptionSubscriber.php
+@@ -85,7 +85,10 @@ protected function setEventResponse(ExceptionEvent $event, $status) {
+   protected function isJsonApiExceptionEvent(ExceptionEvent $exception_event) {
+     $request = $exception_event->getRequest();
+     $parameters = $request->attributes->all();
+-    return $request->getRequestFormat() === 'api_json' || (bool) Routes::getResourceTypeNameFromParameters($parameters);
++    $accept = $request->headers->get('accept');
++    return $request->getRequestFormat() === 'api_json' ||
++      (bool) Routes::getResourceTypeNameFromParameters($parameters) ||
++      strpos($accept, 'application/vnd.api+json') !== FALSE;
+   }
+
+ }
