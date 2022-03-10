@@ -94,11 +94,11 @@ class Project extends Node implements ProjectInterface {
         $options[$applicant->id()] = [
           'type' => 'user',
           'id' => $applicant->uuid(),
-          'name' => $applicant->get('fullname')->value,
+          'name' => $applicant->get('field_name')->value,
         ];
       }
       else {
-        $options[$applicant->id()] = $applicant->get('fullname')->value;
+        $options[$applicant->id()] = $applicant->get('field_name')->value;
       }
 
     }
@@ -148,12 +148,12 @@ class Project extends Node implements ProjectInterface {
         $options[$participant->id()] = [
           'type' => 'user',
           'id' => $participant->uuid(),
-          'name' => $participant->get('fullname')->value,
+          'name' => $participant->get('field_name')->value,
           'task' => $tasks[$delta]['value'],
         ];
       }
       else {
-        $options[$participant->id()] = $participant->get('fullname')->value;
+        $options[$participant->id()] = $participant->get('field_name')->value;
       }
     }
     return $options;
@@ -209,11 +209,11 @@ class Project extends Node implements ProjectInterface {
         $options[$manager->id()][] = [
           'type' => 'user',
           'id' => $manager->uuid(),
-          'name' => $manager->get('fullname')->value,
+          'name' => $manager->get('field_name')->value,
         ];
       }
       else {
-        $options[$manager->id()] = $manager->get('fullname')->value;
+        $options[$manager->id()] = $manager->get('field_name')->value;
       }
     }
     return $options;

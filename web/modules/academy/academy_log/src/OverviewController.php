@@ -69,7 +69,7 @@ class OverviewController extends ControllerBase {
       $sheet = [];
 
       // Get base information for this account.
-      $sheet['name'] = $account->get('fullname')->value;
+      $sheet['name'] = $account->get('field_name')->value;
       $sheet['mail'] = $account->getEmail();
       $overall_progression = $this->calculateProgressionCourses($account);
 
