@@ -34,7 +34,7 @@ function creatives_site_install_finished() {
   }
   catch (EntityStorageException $e) {
     $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
+    \Drupal::logger('youvo')
       ->error('An error occurred while creating CLI user. %type: @message in %function (line %line of %file).', $variables);
   }
 }

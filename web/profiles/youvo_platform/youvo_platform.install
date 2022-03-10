@@ -94,6 +94,6 @@ function youvo_platform_install() {
   $first_user->addRole('administrator');
   $first_user->addRole('manager');
   $first_user->addRole('creative');
-  $first_user->set('fullname', 'Admira Mineur');
+  $first_user->set('field_name', 'Admira Mineur');
   $first_user->save();
 }
