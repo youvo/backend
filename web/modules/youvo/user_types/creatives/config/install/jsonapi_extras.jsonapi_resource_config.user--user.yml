@@ -1,4 +1,5 @@
-langcode: en
+uuid: 0f4ca4ca-fb8b-4cf2-a962-5c759d52beb5
+langcode: de
 status: true
 dependencies:
   config:
@@ -51,7 +52,7 @@ resourceFields:
     enhancer:
       id: ''
   pass:
-    disabled: true
+    disabled: false
     fieldName: pass
     publicName: pass
     enhancer:
@@ -105,7 +106,7 @@ resourceFields:
     enhancer:
       id: ''
   roles:
-    disabled: false
+    disabled: true
     fieldName: roles
     publicName: roles
     enhancer:
@@ -116,39 +117,45 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
-  about:
+  projects:
     disabled: false
-    fieldName: about
+    fieldName: projects
+    publicName: projects
+    enhancer:
+      id: ''
+  field_about:
+    disabled: false
+    fieldName: field_about
     publicName: about
     enhancer:
       id: ''
-  avatar:
+  field_avatar:
     disabled: false
-    fieldName: avatar
+    fieldName: field_avatar
     publicName: avatar
     enhancer:
       id: ''
-  contact:
+  field_name:
     disabled: false
-    fieldName: contact
-    publicName: contact
-    enhancer:
-      id: ''
-  fullname:
-    disabled: false
-    fieldName: fullname
+    fieldName: field_name
     publicName: name
     enhancer:
       id: ''
-  position:
+  field_portfolio:
     disabled: false
-    fieldName: position
+    fieldName: field_portfolio
+    publicName: portfolio
+    enhancer:
+      id: ''
+  field_position:
+    disabled: false
+    fieldName: field_position
     publicName: position
     enhancer:
       id: ''
-  skills:
+  field_skills:
     disabled: false
-    fieldName: skills
+    fieldName: field_skills
     publicName: skills
     enhancer:
       id: ''
