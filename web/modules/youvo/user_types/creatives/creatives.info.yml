@@ -1,0 +1,10 @@
+name: 'Creatives'
+description: 'Custom module which provides base framework for creatives.'
+package: 'youvo'
+
+type: module
+core_version_requirement: '^9.3 || ^10'
+
+dependencies:
+  - youvo
+  - user_types
