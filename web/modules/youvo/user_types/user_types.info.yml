@@ -1,0 +1,9 @@
+name: 'User Types'
+description: 'Custom module which provides storage definitions for different user types.'
+package: 'youvo'
+
+type: module
+core_version_requirement: '^9.3 || ^10'
+
+dependencies:
+  - youvo
