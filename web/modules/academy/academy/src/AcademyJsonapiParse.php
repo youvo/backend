@@ -57,7 +57,10 @@ class AcademyJsonapiParse extends JsonapiParse {
    */
   protected function resolveRelationshipData($links, $key) {
     if (empty($links['data'])) {
-      return [];
+      if (is_array($links['data'])) {
+        return [];
+      }
+      return NULL;
     }
     return parent::resolveRelationshipData($links, $key);
   }
