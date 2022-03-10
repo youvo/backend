@@ -2,18 +2,19 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.user.about
+    - field.storage.user.field_name
+    - user_bundle.user_type.user
   module:
     - user
-id: user.user.about
-field_name: about
+id: user.user.field_name
+field_name: field_name
 entity_type: user
 bundle: user
-label: 'About me'
+label: Name
 description: ''
 required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
 settings: {  }
-field_type: string_long
+field_type: string
