@@ -19,8 +19,17 @@ use Lcobucci\JWT\Signer\Key\InMemory;
  */
 function oauth_grant_remote_cron() {
 
-  // Load and check config.
+  // Load config.
   $settings = \Drupal::configFactory()->get('oauth_grant_remote.settings');
+
+  // Skip cron job for development environment.
+  if ($settings->get('development')) {
+    \Drupal::logger('youvo')
+      ->warning('Cron job is not maintained. Skipped in development mode.');
+    return NULL;
+  }
+
+  // Check validity of settings.
   if (empty($settings->get('jwt_expiration')) ||
     empty($settings->get('jwt_key_path')) ||
     empty($settings->get('auth_relay_url'))) {
