@@ -5,6 +5,10 @@
  * Install, update and uninstall functions for the Creatives module.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\user\Entity\User;
+use Drupal\Core\Utility\Error;
+
 /**
  * Implements hook_site_install_finished().
  *
@@ -12,4 +16,25 @@
  */
 function creatives_site_install_finished() {
 
+  // Values for CLI  user.
+  // This user may be used for cache warming.
+  $values = [
+    'name' => 'cli@youvo.org',
+    'mail' => 'cli@youvo.org',
+    'roles' => ['creative', 'editor'],
+    'pass' => 'password',
+    'status' => 1,
+    'field_name' => 'CLI Tasks',
+  ];
+
+  // Create CLI user.
+  $creative = User::create($values);
+  try {
+    $creative->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while creating CLI user. %type: @message in %function (line %line of %file).', $variables);
+  }
 }
