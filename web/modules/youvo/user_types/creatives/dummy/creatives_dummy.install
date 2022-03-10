@@ -43,6 +43,10 @@ function creatives_dummy_site_install_finished() {
     'field_position' => 'Treppenstufenlauscherin',
     'field_about' => rtrim($random->paragraphs(2)),
     'field_skills' => youvo_dummy_get_random_skills(),
+    'field_portfolio' => [
+      'www.instagromm.com/fredolina',
+      'www.fredolina.de',
+    ],
   ];
 
   // Create creative.
@@ -72,6 +76,10 @@ function creatives_dummy_site_install_finished() {
     'field_position' => 'Hebelwirkungstesterin',
     'field_about' => rtrim($random->paragraphs(2)),
     'field_skills' => youvo_dummy_get_random_skills(),
+    'field_portfolio' => [
+      'www.instagromm.com/alexfrezza',
+      'www.alexfrezza.de',
+    ],
   ];
 
   // Create creative.
@@ -101,6 +109,10 @@ function creatives_dummy_site_install_finished() {
     'field_position' => 'Laternenbetrachter',
     'field_about' => rtrim($random->paragraphs(2)),
     'field_skills' => youvo_dummy_get_random_skills(),
+    'field_portfolio' => [
+      'www.instagromm.com/frechiedaxon',
+      'www.frechdachs.de',
+    ],
   ];
 
   // Create creative.
