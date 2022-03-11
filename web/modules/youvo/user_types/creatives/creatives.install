@@ -19,6 +19,7 @@ function creatives_site_install_finished() {
   // Values for CLI  user.
   // This user may be used for cache warming.
   $values = [
+    'type' => 'user',
     'name' => 'cli@youvo.org',
     'mail' => 'cli@youvo.org',
     'roles' => ['creative', 'editor'],
