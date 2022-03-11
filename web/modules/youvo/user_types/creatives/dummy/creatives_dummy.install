@@ -30,6 +30,7 @@ function creatives_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
   $values = [
+    'type' => 'user',
     'name' => 'fred@youvo.org',
     'mail' => 'fred@youvo.org',
     'roles' => ['creative', 'editor', 'manager'],
@@ -63,6 +64,7 @@ function creatives_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'anne.jpg');
   $values = [
+    'type' => 'user',
     'name' => 'hello@youvo.org',
     'mail' => 'hello@youvo.org',
     'roles' => ['creative'],
@@ -96,6 +98,7 @@ function creatives_dummy_site_install_finished() {
   // Values for creative user.
   $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'frank.jpg');
   $values = [
+    'type' => 'user',
     'name' => 'frechie@youvo.org',
     'mail' => 'frechie@youvo.org',
     'roles' => ['creative'],
