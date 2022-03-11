@@ -1,6 +1,0 @@
-langcode: en
-status: true
-dependencies: {  }
-id: prospects
-label: Prospect
-description: 'An prospect organization.'
