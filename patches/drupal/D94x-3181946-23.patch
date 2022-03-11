@@ -1,0 +1,153 @@
+diff --git a/core/core.services.yml b/core/core.services.yml
+index 7780dfd0..e3ef8cec 100644
+--- a/core/core.services.yml
++++ b/core/core.services.yml
+@@ -386,6 +386,11 @@ services:
+     arguments: ['@settings', '@datetime.time', '@session']
+     tags:
+       - { name: event_subscriber }
++  database.replica_kill_switch.request:
++    class: Drupal\Core\Database\ReplicaKillSwitchRequest
++    arguments: [ '@request_stack' ]
++    tags:
++      - { name: event_subscriber }
+   datetime.time:
+     class: Drupal\Component\Datetime\Time
+     arguments: ['@request_stack']
+diff --git a/core/lib/Drupal/Core/Database/ReplicaKillSwitch.php b/core/lib/Drupal/Core/Database/ReplicaKillSwitch.php
+index 584a97c6..2c07766f 100644
+--- a/core/lib/Drupal/Core/Database/ReplicaKillSwitch.php
++++ b/core/lib/Drupal/Core/Database/ReplicaKillSwitch.php
+@@ -10,9 +10,9 @@
+ use Symfony\Component\HttpKernel\KernelEvents;
+ 
+ /**
+- * Provides replica server kill switch to ignore it.
++ * Provides a session-based replica kill switch.
+  */
+-class ReplicaKillSwitch implements EventSubscriberInterface {
++class ReplicaKillSwitch implements EventSubscriberInterface, ReplicaKillSwitchInterface {
+ 
+   /**
+    * The settings object.
+@@ -52,9 +52,7 @@ public function __construct(Settings $settings, TimeInterface $time, SessionInte
+   }
+ 
+   /**
+-   * Denies access to replica database on the current request.
+-   *
+-   * @see https://www.drupal.org/node/2286193
++   * {@inheritdoc}
+    */
+   public function trigger() {
+     $connection_info = Database::getConnectionInfo();
+@@ -71,10 +69,7 @@ public function trigger() {
+   }
+ 
+   /**
+-   * Checks and disables the replica database server if appropriate.
+-   *
+-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+-   *   The Event to process.
++   * {@inheritdoc}
+    */
+   public function checkReplicaServer(RequestEvent $event) {
+     // Ignore replica database servers for this request.
+diff --git a/core/lib/Drupal/Core/Database/ReplicaKillSwitchInterface.php b/core/lib/Drupal/Core/Database/ReplicaKillSwitchInterface.php
+new file mode 100644
+index 00000000..67bfe16b
+--- /dev/null
++++ b/core/lib/Drupal/Core/Database/ReplicaKillSwitchInterface.php
+@@ -0,0 +1,27 @@
++<?php
++
++namespace Drupal\Core\Database;
++
++use Symfony\Component\HttpKernel\Event\RequestEvent;
++
++/**
++ * Provides replica server kill switch to ignore it.
++ */
++interface ReplicaKillSwitchInterface {
++
++  /**
++   * Denies access to replica database on the current request.
++   *
++   * @see https://www.drupal.org/node/2286193
++   */
++  public function trigger();
++
++  /**
++   * Checks and disables the replica database server if appropriate.
++   *
++   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
++   *   The Event to process.
++   */
++  public function checkReplicaServer(RequestEvent $event);
++
++}
+diff --git a/core/lib/Drupal/Core/Database/ReplicaKillSwitchRequest.php b/core/lib/Drupal/Core/Database/ReplicaKillSwitchRequest.php
+new file mode 100644
+index 00000000..96b8a44a
+--- /dev/null
++++ b/core/lib/Drupal/Core/Database/ReplicaKillSwitchRequest.php
+@@ -0,0 +1,59 @@
++<?php
++
++namespace Drupal\Core\Database;
++
++use Drupal\Core\Http\RequestStack;
++use Symfony\Component\HttpKernel\Event\RequestEvent;
++use Symfony\Component\HttpKernel\KernelEvents;
++use Symfony\Component\EventDispatcher\EventSubscriberInterface;
++
++/**
++ * Provides a request-based replica kill switch.
++ */
++class ReplicaKillSwitchRequest implements ReplicaKillSwitchInterface, EventSubscriberInterface {
++
++  /**
++   * @var \Drupal\Core\Http\RequestStack
++   */
++  protected $requestStack;
++
++  /**
++   * ReplicaKillSwitchRequest constructor.
++   *
++   * @param \Drupal\Core\Http\RequestStack $requestStack
++   *   The request stack.
++   */
++  public function __construct(RequestStack $requestStack) {
++    $this->requestStack = $requestStack;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function getSubscribedEvents() {
++    $events[KernelEvents::REQUEST][] = ['checkReplicaServer'];
++    return $events;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function trigger() {
++    $connection_info = Database::getConnectionInfo();
++    // Only set ignore_replica_server if there are replica servers being used,
++    // which is assumed if there are more than one.
++    if (count($connection_info) > 1) {
++      $this->requestStack->getCurrentRequest()->attributes->set('ignore_replica_server', TRUE);
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function checkReplicaServer(RequestEvent $event) {
++    if ($event->getRequest()->attributes->has('ignore_replica_server')) {
++      Database::ignoreTarget('default', 'replica');
++    }
++  }
++
++}
