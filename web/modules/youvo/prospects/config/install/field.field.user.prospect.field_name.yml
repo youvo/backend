@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_name
+    - user_bundle.user_type.prospect
+id: user.prospect.field_name
+field_name: field_name
+entity_type: user
+bundle: prospect
+label: Name
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_country
+    - user_bundle.user_type.prospect
+id: user.prospect.field_country
+field_name: field_country
+entity_type: user
+bundle: prospect
+label: Country
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
