@@ -1,0 +1,12 @@
+id: organization.create
+plugin_id: 'organization:create'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
