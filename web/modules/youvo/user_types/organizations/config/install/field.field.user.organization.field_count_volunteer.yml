@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_count_volunteer
+    - user_bundle.user_type.organization
+id: user.organization.field_count_volunteer
+field_name: field_count_volunteer
+entity_type: user
+bundle: organization
+label: 'Count Volunteer'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
