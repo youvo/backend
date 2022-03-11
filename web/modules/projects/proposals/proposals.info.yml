@@ -1,0 +1,14 @@
+name: Proposals
+description: 'Defines Proposal entities and handles business logic.'
+package: Projects
+
+type: module
+core_version_requirement: '^9.3 || ^10'
+
+dependencies:
+  - drupal:taxonomy (>= 8.8.0)
+  - drupal:field (>= 8.8.0)
+  - drupal:user (>= 8.8.0)
+  - filefield_paths
+  - organizations
+  - youvo

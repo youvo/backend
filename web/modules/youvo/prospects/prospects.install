@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Prospects module.
+ */
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function prospects_site_install_finished() {
+
+}
