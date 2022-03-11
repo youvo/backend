@@ -372,8 +372,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       ]);
 
       // Set full name.
-      if ($shell_user->hasField('fullname')) {
-        $shell_user->set('fullname', $remote_account['fullname']);
+      if ($shell_user->hasField('field_name')) {
+        $shell_user->set('field_name', $remote_account['field_name']);
       }
 
       // Save shell user.
