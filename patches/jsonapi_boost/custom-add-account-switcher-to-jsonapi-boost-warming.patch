@@ -1,18 +1,25 @@
 diff --git a/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php b/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
-index e628605..e00addf 100644
+index e628605..0efa7b6 100644
 --- a/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
 +++ b/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
-@@ -119,7 +119,13 @@ public function loadMultiple(array $ids = []) {
+@@ -5,6 +5,7 @@
+ use Drupal\Core\Annotation\Translation;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\Form\SubformStateInterface;
++use Drupal\Core\Session\UserSession;
+ use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
+ use Drupal\jsonapi_extras\Entity\JsonapiResourceConfig;
+ use Drupal\jsonapi_extras\EntityToJsonApi;
+@@ -119,8 +120,11 @@ public function loadMultiple(array $ids = []) {
     * {@inheritdoc}
     */
    public function warmMultiple(array $items = []) {
 +    $accountSwitcher = \Drupal::service('account_switcher');
-+    $account = \Drupal::entityTypeManager()
-+      ->getStorage('user')
-+      ->load(2);
-+    $accountSwitcher->switchTo($account);
++    $accountSwitcher->switchTo(new UserSession(['uid' => 2]));
      $normalizations = array_map([$this->entityToJsonapi, 'normalize'], $items);
-+    $accountSwitcher->switchBack();
      count($normalizations);
++    $accountSwitcher->switchBack();
    }
+
+   /**
 
