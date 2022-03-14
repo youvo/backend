@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_public_profile
+    - user_bundle.user_type.user
+id: user.user.field_public_profile
+field_name: field_public_profile
+entity_type: user
+bundle: user
+label: 'Public Profile'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean
