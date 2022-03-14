@@ -1,4 +1,3 @@
-uuid: 0f4ca4ca-fb8b-4cf2-a962-5c759d52beb5
 langcode: de
 status: true
 dependencies:
@@ -135,10 +134,40 @@ resourceFields:
     publicName: avatar
     enhancer:
       id: ''
+  field_city:
+    disabled: false
+    fieldName: field_city
+    publicName: city
+    enhancer:
+      id: ''
+  field_education:
+    disabled: false
+    fieldName: field_education
+    publicName: education
+    enhancer:
+      id: ''
+  field_jobs:
+    disabled: false
+    fieldName: field_jobs
+    publicName: jobs
+    enhancer:
+      id: ''
   field_name:
     disabled: false
     fieldName: field_name
     publicName: name
+    enhancer:
+      id: ''
+  field_newsletter:
+    disabled: false
+    fieldName: field_newsletter
+    publicName: newsletter
+    enhancer:
+      id: ''
+  field_phone:
+    disabled: false
+    fieldName: field_phone
+    publicName: phone
     enhancer:
       id: ''
   field_portfolio:
@@ -153,9 +182,21 @@ resourceFields:
     publicName: position
     enhancer:
       id: ''
+  field_public_profile:
+    disabled: false
+    fieldName: field_public_profile
+    publicName: public_profile
+    enhancer:
+      id: ''
   field_skills:
     disabled: false
     fieldName: field_skills
     publicName: skills
+    enhancer:
+      id: ''
+  field_url:
+    disabled: false
+    fieldName: field_url
+    publicName: url
     enhancer:
       id: ''
