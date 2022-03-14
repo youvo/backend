@@ -76,7 +76,7 @@ class PostmanVariablesResource extends ResourceBase {
     // Get some creative.
     try {
       $creative_ids = $this->entityQuery('user')
-        ->condition('uid', [1, 2], 'NOT IN')
+        ->condition('uid', 1, '!=')
         ->condition('roles', 'creative')
         ->execute();
       $creative = $this->entityLoad('user', reset($creative_ids));
