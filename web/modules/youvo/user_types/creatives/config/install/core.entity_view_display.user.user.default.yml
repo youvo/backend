@@ -1,14 +1,20 @@
-uuid: 5e22f1ed-f3a1-4b9c-b1f6-a155ba1f1676
-langcode: de
+langcode: en
 status: true
 dependencies:
   config:
     - field.field.user.user.field_about
     - field.field.user.user.field_avatar
+    - field.field.user.user.field_city
+    - field.field.user.user.field_education
+    - field.field.user.user.field_jobs
     - field.field.user.user.field_name
+    - field.field.user.user.field_newsletter
+    - field.field.user.user.field_phone
     - field.field.user.user.field_portfolio
     - field.field.user.user.field_position
+    - field.field.user.user.field_public_profile
     - field.field.user.user.field_skills
+    - field.field.user.user.field_url
     - user_bundle.user_type.user
   module:
     - image
@@ -33,6 +39,22 @@ content:
       image_style: ''
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_city:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_education:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 7
     region: content
   field_name:
     type: string
@@ -66,6 +88,18 @@ content:
     third_party_settings: {  }
     weight: 4
     region: content
+  field_url:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 8
+    region: content
 hidden:
+  field_jobs: true
+  field_newsletter: true
+  field_phone: true
+  field_public_profile: true
   langcode: true
   member_for: true
