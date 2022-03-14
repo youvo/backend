@@ -46,8 +46,14 @@ function creatives_dummy_site_install_finished() {
     'field_skills' => youvo_dummy_get_random_skills(),
     'field_portfolio' => [
       'www.instagromm.com/fredolina',
-      'www.fredolina.de',
+      'www.behonce.com/fredfred',
     ],
+    'field_phone' => '0123456789',
+    'field_url' => 'www.fredolina.de',
+    'field_education' => 'Universität des Lauschens',
+    'field_jobs' => rand(0, 1),
+    'field_public_profile' => rand(0, 1),
+    'field_newsletter' => rand(0, 1),
   ];
 
   // Create creative.
@@ -80,8 +86,14 @@ function creatives_dummy_site_install_finished() {
     'field_skills' => youvo_dummy_get_random_skills(),
     'field_portfolio' => [
       'www.instagromm.com/alexfrezza',
-      'www.alexfrezza.de',
+      'www.drabbble.com/alexandria',
     ],
+    'field_phone' => '0123456789',
+    'field_url' => 'www.alexfrezza.de',
+    'field_education' => 'Fachhochschule für Hebelwirkung',
+    'field_jobs' => rand(0, 1),
+    'field_public_profile' => rand(0, 1),
+    'field_newsletter' => rand(0, 1),
   ];
 
   // Create creative.
@@ -113,9 +125,14 @@ function creatives_dummy_site_install_finished() {
     'field_about' => rtrim($random->paragraphs(2)),
     'field_skills' => youvo_dummy_get_random_skills(),
     'field_portfolio' => [
-      'www.instagromm.com/frechiedaxon',
-      'www.frechdachs.de',
+      'www.instagromm.com/frechiedaxon'
     ],
+    'field_phone' => '0123456789',
+    'field_url' => 'www.frechdachs.de',
+    'field_education' => 'Ausbildung für Frechheit',
+    'field_jobs' => rand(0, 1),
+    'field_public_profile' => rand(0, 1),
+    'field_newsletter' => rand(0, 1),
   ];
 
   // Create creative.
