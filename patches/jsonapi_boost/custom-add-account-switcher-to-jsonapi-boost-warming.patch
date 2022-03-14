@@ -15,7 +15,7 @@ index e628605..0efa7b6 100644
     */
    public function warmMultiple(array $items = []) {
 +    $accountSwitcher = \Drupal::service('account_switcher');
-+    $accountSwitcher->switchTo(new UserSession(['uid' => 2]));
++    $accountSwitcher->switchTo(new UserSession(['roles' => ['creative', 'editor']]));
      $normalizations = array_map([$this->entityToJsonapi, 'normalize'], $items);
      count($normalizations);
 +    $accountSwitcher->switchBack();
