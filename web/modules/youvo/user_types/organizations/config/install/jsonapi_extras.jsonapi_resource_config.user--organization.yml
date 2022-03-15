@@ -116,6 +116,12 @@ resourceFields:
     publicName: default_langcode
     enhancer:
       id: ''
+  projects:
+    disabled: false
+    fieldName: projects
+    publicName: projects
+    enhancer:
+      id: ''
   field_about:
     disabled: false
     fieldName: field_about
@@ -164,6 +170,18 @@ resourceFields:
     publicName: country
     enhancer:
       id: ''
+  field_count_fulltime:
+    disabled: false
+    fieldName: field_count_fulltime
+    publicName: count_fulltime
+    enhancer:
+      id: ''
+  field_count_volunteer:
+    disabled: false
+    fieldName: field_count_volunteer
+    publicName: count_volunteer
+    enhancer:
+      id: ''
   field_manager:
     disabled: false
     fieldName: field_manager
@@ -192,6 +210,18 @@ resourceFields:
     disabled: false
     fieldName: field_publicity
     publicName: publicity
+    enhancer:
+      id: ''
+  field_reachability:
+    disabled: false
+    fieldName: field_reachability
+    publicName: reachability
+    enhancer:
+      id: ''
+  field_referral:
+    disabled: false
+    fieldName: field_referral
+    publicName: referral
     enhancer:
       id: ''
   field_short_name:
