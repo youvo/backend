@@ -4,6 +4,7 @@ dependencies:
   config:
     - field.storage.node.field_host
     - node.type.project
+    - user_bundle.user_type.user
 id: node.project.field_host
 field_name: field_host
 entity_type: node
@@ -17,7 +18,13 @@ default_value_callback: ''
 settings:
   handler: 'default:user'
   handler_settings:
-    include_anonymous: 0
+    target_bundles:
+      user: user
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
     filter:
       type: role
       role:
@@ -28,9 +35,5 @@ settings:
         editor: '0'
         manager: '0'
         supervisor: '0'
-    target_bundles: null
-    sort:
-      field: name
-      direction: ASC
-    auto_create: 0
+    include_anonymous: false
 field_type: entity_reference
