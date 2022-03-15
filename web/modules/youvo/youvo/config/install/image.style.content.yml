@@ -7,8 +7,14 @@ effects:
   728e5e0d-f08e-4f23-b234-ae9217c2b775:
     uuid: 728e5e0d-f08e-4f23-b234-ae9217c2b775
     id: image_scale
-    weight: 1
+    weight: -9
     data:
       width: 1472
       height: null
       upscale: false
+  5f79e7e0-2456-4fe0-a5cd-e9644a7e8a3d:
+    uuid: 5f79e7e0-2456-4fe0-a5cd-e9644a7e8a3d
+    id: image_convert
+    weight: -10
+    data:
+      extension: jpg

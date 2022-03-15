@@ -12,9 +12,9 @@ effects:
       width: 768
       height: 480
       anchor: center-center
-  5f13595c-ec38-48a4-a396-0d0633032fb9:
-    uuid: 5f13595c-ec38-48a4-a396-0d0633032fb9
+  57958ade-c106-449a-a068-85cd5d71b4f3:
+    uuid: 57958ade-c106-449a-a068-85cd5d71b4f3
     id: image_convert
     weight: -10
     data:
-      extension: jpeg
+      extension: jpg
