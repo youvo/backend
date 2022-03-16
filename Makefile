@@ -1,26 +1,51 @@
 default: help
 
-## help	:	Print commands help.
+## help		:	Print commands help.
 .PHONY: help
 help : Makefile
 	@sed -n 's/^##//p' $<
 
-## mm-on	:	Maintenance mode on.
+## mm-on		:	Maintenance mode on.
 .PHONY: mm-on
 mm-on:
 	@vendor/bin/drush sset system.maintenance_mode 1
-	@vendor/bin/drush cr
+	@vendor/bin/drush cr --quiet
 	@echo "Maintenance mode on."
 
-## mm-off	:	Maintenance mode off.
+## mm-off		:	Maintenance mode off.
 .PHONY: mm-off
 mm-off:
 	@vendor/bin/drush sset system.maintenance_mode 0
-	@vendor/bin/drush cr
+	@vendor/bin/drush cr --quiet
 	@echo "Maintenance mode off."
 
-## cr	:	Clear caches.
+## cr		:	Clear caches.
 .PHONY: cr
 cr:
-	@vendor/bin/drush cr
+	@vendor/bin/drush cr --quiet
+	@echo "Caches cleared."
+
+## warm		:	Warm caches.
+.PHONY: warm
+warm:
+	@vendor/bin/drush warmer:enqueue jsonapi --run-queue
+
+## install	:	(Re-)install Drupal.
+.PHONY: install
+install:
+	@if [[ ${PWD} == *"_dev/backend"* ]]; \
+		then ./scripts/install-development.sh;	\
+		else	echo "Command not available outside of development environment.";	\
+	fi
+
+## rebuild	:	Calculate rebuild token.
+.PHONY: rebuild
+rebuild:
+	@echo "/core/rebuild.php?"\
+	"$(shell ./web/core/scripts/rebuild_token_calculator.sh)"
+
+## restart-php	:	Restart Uberspace PHP.
+.PHONY: restart-php
+restart-php:
+	@uberspace tools restart php
 
