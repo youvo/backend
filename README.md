@@ -32,15 +32,15 @@ The database is `youvo_prod`.
 
 ### Make commands
 
-> Help: `make help`
-> Drush: `make drush`
-> Maintenance mode on: `make mm-on`
-> Maintenance mode off: `make mm-off`
-> Clear caches: `make cr`
-> Warm caches: `make warm`
-> (Re-)install Drupal: `make install` (only available in Development)
-> Calculate rebuild token: `make rebuild`
-> Restart Uberspace PHP: `make restart-php`
+- Help: `make help`
+- Drush: `make drush`
+- Maintenance mode on: `make mm-on`
+- Maintenance mode off: `make mm-off`
+- Clear caches: `make cr`
+- Warm caches: `make warm`
+- (Re-)install Drupal: `make install` (only available in Development)
+- Calculate rebuild token: `make rebuild`
+- Restart Uberspace PHP: `make restart-php`
 
 ### Notes
 
@@ -86,17 +86,16 @@ in the `web/sites/default/files` folder to grant permissions.
 
 ### DDEV commands
 
-> Help: `ddev help`
-> Drush: `ddev drush`
-> Container status: `ddev status`
-> Start containers: `ddev start`
-> Destroy containers: `ddev stop`
-> Show PHP logs: `ddev logs`
+- Help: `ddev help`
+- Drush: `ddev drush`
+- Container status: `ddev status`
+- Start containers: `ddev start`
+- Destroy containers: `ddev stop`
+- Show PHP logs: `ddev logs`
 
 ## Notes
 
 ### URLs of interest for local site
-
 
 | URL                          | Description |
 | ------------------------------ | ------------- |
@@ -104,7 +103,6 @@ in the `web/sites/default/files` folder to grant permissions.
 | https://youvo.ddev.site:8037 | phpMyAdmin  |
 
 ### PHPStorm connection to database
-
 
 |          |                                     |
 | ---------- | ------------------------------------- |
