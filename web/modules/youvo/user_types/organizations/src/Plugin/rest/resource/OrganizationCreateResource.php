@@ -8,6 +8,8 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\user_bundle\Entity\TypedUser;
+use Drupal\youvo\FieldValidator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -135,9 +137,34 @@ class OrganizationCreateResource extends ResourceBase {
       throw new BadRequestHttpException('Malformed request body.');
     }
 
-    // @todo Create new organization user.
+    // @todo Check if attributes are empty.
+    $attributes = $request_content['attributes'];
 
-    // @todo Create new project proposal entity.
+    if (empty($attributes['mail'])) {
+      throw new BadRequestHttpException('Need to provide email to register organization.');
+    }
+
+    // @todo Create new organization user.
+    $organization = TypedUser::create(['type' => 'organization']);
+    foreach ($attributes as $field_key => $value) {
+
+      // Validate if field is available.
+      if (!$organization->hasField($field_key)) {
+        $field_key = 'field_' . $field_key;
+        if (!$organization->hasField($field_key)) {
+          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
+        }
+      }
+
+      // Validate field value.
+      $field_config = $organization->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_config, $value)) {
+        throw new BadRequestHttpException('Malformed request body. Unable to validate the field ' . $field_key);
+      }
+
+      // Set the field value.
+      $organization->set($field_key, $value);
+    }
 
     return new ModifiedResourceResponse();
   }
