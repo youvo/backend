@@ -10,16 +10,15 @@ index e628605..0efa7b6 100644
  use Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface;
  use Drupal\jsonapi_extras\Entity\JsonapiResourceConfig;
  use Drupal\jsonapi_extras\EntityToJsonApi;
-@@ -119,8 +120,12 @@ public function loadMultiple(array $ids = []) {
+@@ -119,8 +120,11 @@ public function loadMultiple(array $ids = []) {
     * {@inheritdoc}
     */
    public function warmMultiple(array $items = []) {
-+    $current_user = \Drupal::service('current_user');
-+    if (!in_array('editor', $current_user->getRoles())) {
-+      $current_user->setAccount(new UserSession(['roles' => ['creative', 'editor']]));
-+    }
++    $accountSwitcher = \Drupal::service('account_switcher');
++    $accountSwitcher->switchTo(new UserSession(['roles' => ['creative', 'editor']]));
      $normalizations = array_map([$this->entityToJsonapi, 'normalize'], $items);
      count($normalizations);
++    $accountSwitcher->switchBack();
    }
 
    /**
