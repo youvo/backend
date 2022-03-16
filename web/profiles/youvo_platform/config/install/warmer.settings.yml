@@ -1,7 +1,7 @@
 warmers:
   jsonapi:
     id: jsonapi
-    frequency: 300
+    frequency: 9999999
     batchSize: 50
     resource_types:
       course--course: course--course
