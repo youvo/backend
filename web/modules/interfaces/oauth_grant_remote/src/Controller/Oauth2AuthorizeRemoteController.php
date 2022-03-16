@@ -219,6 +219,14 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         $local_session_id = $local_session->getId();
         $session_cookies = array_filter($session_cookies,
           fn($c) => $c != $local_session_id);
+
+        // Experimental development shortcut. If there is a local session, we
+        // continue with the authorization directly. This way the session is not
+        // cross-validated with the auth relay.
+        if (!empty($this->configFactory->get('oauth_grant_remote.settings')->get('development')) &&
+          $this->configFactory->get('oauth_grant_remote.settings')->get('development')) {
+          return parent::authorize($request);
+        }
       }
     }
 
@@ -412,7 +420,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $this->session->migrate();
     $this->session->set('uid', $account->id());
     $this->session->set('check_logged_in', TRUE);
-    
+
     // Call all login hooks for newly logged-in user.
     $this->moduleHandler()->invokeAll('user_login', [$account]);
   }
