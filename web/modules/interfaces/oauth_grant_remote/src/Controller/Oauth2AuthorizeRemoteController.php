@@ -411,7 +411,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $user_storage->updateLastLoginTimestamp($account);
     $this->session->migrate();
     $this->session->set('uid', $account->id());
-
+    $this->session->set('check_logged_in', TRUE);
+    
     // Call all login hooks for newly logged-in user.
     $this->moduleHandler()->invokeAll('user_login', [$account]);
   }
