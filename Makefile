@@ -33,10 +33,22 @@ warm:
 ## install	:	(Re-)install Drupal.
 .PHONY: install
 install:
-	@if [[ ${PWD} == *"_dev/backend"* ]]; \
-		then ./scripts/install-development.sh;	\
-		else	echo "Command not available outside of development environment.";	\
+	@if [[ ${PWD} == *"_dev/backend"* ]] ; then \
+  	if $(MAKE) -s confirm-install 2>/dev/null ; then \
+  	  ./scripts/install-development.sh ;	\
+  	fi \
+	else \
+		echo "Command not available outside of development environment." ;	\
 	fi
+
+.PHONY: confirm-install
+confirm-install:
+	@if [[ -z "$(CI)" ]]; then \
+  	echo "Execution will reset current installation. Are you sure? [y/n] > " ; \
+		REPLY="" ; read -r ; \
+		if [[ ! $$REPLY =~ ^[Yy]$$ ]]; then exit 1; else exit 0; fi \
+	fi
+
 
 ## rebuild	:	Calculate rebuild token.
 .PHONY: rebuild
