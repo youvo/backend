@@ -182,6 +182,14 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    */
   public function authorize(Request $request) {
 
+    // Experimental development shortcut. If there is a local session, we
+    // continue with the authorization directly. This way the session is not
+    // cross-validated with the auth relay.
+    if ($this->configFactory->get('oauth_grant_remote.settings')->get('development') &&
+      !$this->currentUser()->isAnonymous()) {
+      return parent::authorize($request);
+    }
+
     // Check configuration.
     if (empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_expiration')) ||
       empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_key_path')) ||
@@ -411,6 +419,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $user_storage->updateLastLoginTimestamp($account);
     $this->session->migrate();
     $this->session->set('uid', $account->id());
+    $this->session->set('check_logged_in', TRUE);
 
     // Call all login hooks for newly logged-in user.
     $this->moduleHandler()->invokeAll('user_login', [$account]);
