@@ -21,6 +21,11 @@ class FieldValidator {
       ($max_length == - 1 || strlen($value) <= $max_length);
   }
 
+  public static function validateText(FieldDefinitionInterface $field, mixed $value) {
+    // @todo Validate different structures with summary etc.
+    return is_string($value);
+  }
+
   public static function validateBool(FieldDefinitionInterface $field, mixed $value) {
     return is_bool($value);
   }
