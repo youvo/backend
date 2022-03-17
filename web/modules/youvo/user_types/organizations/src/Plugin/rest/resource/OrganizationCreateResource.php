@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\projects\Entity\Project;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user_bundle\Entity\TypedUser;
@@ -143,11 +144,6 @@ class OrganizationCreateResource extends ResourceBase {
     // Decode content of the request.
     $content = $this->serializationJson->decode($request->getContent());
 
-    // Decline empty request body.
-    if (empty($content)) {
-      throw new BadRequestHttpException('Empty request body.');
-    }
-
     // Decline request body without both organization and project data.
     if (empty($content['data']) ||
       !in_array('organization', array_column($content['data'], 'type')) ||
@@ -155,66 +151,28 @@ class OrganizationCreateResource extends ResourceBase {
       throw new BadRequestHttpException('Request body does not provide organization and project.');
     }
 
-    // Pop values for organization from request.
-    $content_organization = array_filter($content['data'], fn ($a) => $a['type'] == 'organization');
-    $attributes_organization = array_shift($content_organization)['attributes'];
+    // Pop values for organization from request and create user.
+    $attributes_organization = $this->popAttributes($content, 'organization');
+    $organization = $this->createOrganization($attributes_organization);
 
-    // Check if valid email is provided.
-    if (empty($attributes_organization['mail']) ||
-      !$this->emailValidator->isValid($attributes_organization['mail'])) {
-      throw new BadRequestHttpException('Need to provide valid mail to register organization.');
-    }
+    // Pop values for project from request and create node.
+    $attributes_project = $this->popAttributes($content, 'project');
+    $project = $this->createProject($attributes_project);
 
-    // Check whether there is already an account for this email.
-    try {
-      if ($this->accountExistsForEmail($attributes_organization['mail'])) {
-        throw new BadRequestHttpException('There already exists an account for the provided email address.');
-      }
-    }
-    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
-    }
-
-    // Create new organization user.
-    $organization = TypedUser::create(['type' => 'organization']);
-
-    // Populate fields.
-    foreach ($attributes_organization as $field_key => $value) {
-
-      // Validate if field is available. Target field_name instead of name.
-      if ($field_key == 'name' || !$organization->hasField($field_key)) {
-        $field_key = 'field_' . $field_key;
-        if (!$organization->hasField($field_key)) {
-          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
-        }
-      }
-
-      // Validate field value.
-      $field_definition = $organization->getFieldDefinition($field_key);
-      if (!FieldValidator::validate($field_definition, $value)) {
-        throw new BadRequestHttpException('Malformed request body. Unable to validate the field ' . $field_key);
-      }
-
-      // Set the field value.
-      $organization->get($field_key)->value = $value;
-
-      // Set username identical to provided mail.
-      if ($field_key == 'mail') {
-        $organization->setUsername($value);
-      }
-    }
-
-    // @todo Create project draft.
-
-
-    // Add role, activate and save.
+    // Add role, activate and save organization.
     $organization->addRole('organization');
     $organization->activate();
     $organization->save();
 
+    // Establish project author reference, set state and save.
+    $project->get('uid')->value = $organization->id();
+    $project->get('field_lifecycle')->value = 'draft';
+    $project->get('status')->value = 1;
+    $project->save();
+
     // @todo Login organization.
 
-    // @todo Save project draft.
+    // @todo langcode.
 
     return new ModifiedResourceResponse();
   }
@@ -244,10 +202,7 @@ class OrganizationCreateResource extends ResourceBase {
    * Check whether email used by already existing account.
    *
    * @param string $mail
-   *   The email in question.
-   *
    * @return bool
-   *   Whether an account already exists.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -255,5 +210,117 @@ class OrganizationCreateResource extends ResourceBase {
   private function accountExistsForEmail(string $mail) {
     return !empty($this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $mail]));
+  }
+
+  /**
+   * Pop attributes from request content by type.
+   *
+   * @param array $content
+   * @param string $type
+   * @return array
+   */
+  private function popAttributes(array $content, string $type) {
+    if (empty($content['data'])) {
+      return [];
+    }
+    $content = array_filter($content['data'], fn ($a) => $a['type'] == $type);
+    return array_shift($content)['attributes'];
+  }
+
+
+  /**
+   * Create new organization user with some validation.
+   *
+   * @param array $attributes
+   * @return \Drupal\user_bundle\Entity\TypedUser
+   */
+  private function createOrganization(array $attributes) {
+
+    // Check if valid email is provided.
+    if (empty($attributes['mail']) ||
+      !$this->emailValidator->isValid($attributes['mail'])) {
+      throw new BadRequestHttpException('Need to provide valid mail to register organization.');
+    }
+
+    // Check whether there is already an account for this email.
+    try {
+      if ($this->accountExistsForEmail($attributes['mail'])) {
+        throw new BadRequestHttpException('There already exists an account for the provided email address.');
+      }
+    }
+    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    // Create new organization user.
+    $organization = TypedUser::create(['type' => 'organization']);
+
+    // Populate fields.
+    foreach ($attributes as $field_key => $value) {
+
+      // Validate if field is available. Target field_name instead of name.
+      if ($field_key == 'name' || !$organization->hasField($field_key)) {
+        $field_key = 'field_' . $field_key;
+        if (!$organization->hasField($field_key)) {
+          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
+        }
+      }
+
+      // Validate field value.
+      $field_definition = $organization->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_definition, $value)) {
+        throw new BadRequestHttpException('Malformed request body. Unable to validate the organization field ' . $field_key);
+      }
+
+      // Set the field value.
+      $organization->get($field_key)->value = $value;
+
+      // Set username identical to provided mail.
+      if ($field_key == 'mail') {
+        $organization->setUsername($value);
+      }
+    }
+
+    return $organization;
+  }
+
+  /**
+   * Create new project node with some validation.
+   *
+   * @param $attributes
+   * @return \Drupal\projects\Entity\Project
+   */
+  private function createProject($attributes) {
+
+    // Check if body is provided.
+    if (empty($attributes['body'])) {
+      throw new BadRequestHttpException('Need to provide body to create project.');
+    }
+
+    // Create new project node.
+    $project = Project::create(['type' => 'project']);
+
+    // Populate fields.
+    foreach ($attributes as $field_key => $value) {
+
+      // Validate if field is available.
+      if (!$project->hasField($field_key)) {
+        $field_key = 'field_' . $field_key;
+        if (!$project->hasField($field_key)) {
+          throw new BadRequestHttpException('Malformed request body. Projects do not provide the field ' . $field_key);
+        }
+      }
+
+      // Validate field value.
+      $field_definition = $project->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_definition, $value)) {
+        throw new BadRequestHttpException('Malformed request body. Unable to validate the project field ' . $field_key);
+      }
+
+      // Set the field value.
+      $project->get($field_key)->value = $value;
+    }
+
+    return $project;
   }
 }
