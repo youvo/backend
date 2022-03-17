@@ -1,0 +1,467 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Academy Dummy module.
+ */
+
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\file\Entity\File;
+use Drupal\Core\Utility\Error;
+use Drupal\courses\Entity\Course;
+use Drupal\Component\Utility\Random;
+use Drupal\lectures\Entity\Lecture;
+use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\questionnaire\Entity\Question;
+
+/**
+ * Implements hook_install().
+ */
+function academy_dummy_install() {
+  module_set_weight('academy_dummy', 3);
+}
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function academy_dummy_site_install_finished() {
+
+  // Set course titles.
+  $course_titles = [
+    'Introduction',
+    'The youvo Logic',
+    'Scoping',
+    'Project Management',
+    'Project Support',
+    'Workshop',
+    'Your Project',
+  ];
+
+  // Set course machine names.
+  $course_machine_names = [
+    'intro',
+    'youvo',
+    'scoping',
+    'management',
+    'supervision',
+    'workshop',
+    'project',
+  ];
+
+  // Object for random content.
+  $random = new Random();
+
+  // Create courses.
+  for ($j = 0; $j < 7; $j++) {
+
+    // Initialize lectures.
+    $lectures = [];
+
+    // Add course.
+    $course = Course::create([
+      'title' => $course_titles[$j],
+      'subtitle' => $random->sentences(5, TRUE),
+      'description' => rtrim($random->paragraphs(1)),
+      'status' => 1,
+      'uid' => 1,
+      'machine_name' => $course_machine_names[$j],
+      'weight' => -7 + $j,
+    ]);
+    $max = rand(3, 6);
+    for ($k = 0; $k < $max; $k++) {
+      $course->get('tags')->appendItem($random->sentences(1, TRUE));
+    }
+    $course->save();
+
+    // Create lectures.
+    for ($i = 1; $i <= 5; $i++) {
+
+      // Create lecture.
+      $lecture = Lecture::create([
+        'title' => $random->sentences(4, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'uid' => 1,
+        'weight' => -8 + $i,
+      ]);
+      $lecture->save();
+      $lectures[] = $lecture;
+    }
+
+    // Add some paragraphs to the lectures.
+    foreach ($lectures as $lecture) {
+
+      // Text paragraph.
+      $paragraph = Paragraph::create([
+        'bundle' => 'text',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -6,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Illustration paragraph.
+      $illustration_file = academy_dummy_get_stock_illustration($lecture->id());
+      $paragraph = Paragraph::create([
+        'bundle' => 'illustration',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'image' => [
+          'target_id' => $illustration_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
+        'lecture' => $lecture->id(),
+        'weight' => -5,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Excursus paragraph.
+      $paragraph = Paragraph::create([
+        'bundle' => 'excursus',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -4,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Checklist paragraph.
+      $paragraph = Paragraph::create([
+        'bundle' => 'checklist',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -3,
+        'uid' => 1,
+      ]);
+      $max = rand(3, 6);
+      for ($k = 0; $k < $max; $k++) {
+        $paragraph->get('list')->appendItem($random->sentences(3, TRUE));
+      }
+      $paragraph->save();
+
+      // Picture paragraph.
+      $picture_file = academy_dummy_get_stock_image($lecture->id());
+      $paragraph = Paragraph::create([
+        'bundle' => 'picture',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'image' => [
+          'target_id' => $picture_file->id(),
+          'alt' => $random->sentences(3, TRUE),
+        ],
+        'lecture' => $lecture->id(),
+        'weight' => -2,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Video paragraph.
+      $paragraph = Paragraph::create([
+        'bundle' => 'video',
+        'title' => $random->sentences(2, TRUE),
+        'url' => 'https://www.youtube-nocookie.com/embed/W04eOUz3HBg?rel=0&cc_load_policy=1',
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => -1,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Download paragraph.
+      $file = academy_dummy_get_test_file();
+      $paragraph = Paragraph::create([
+        'bundle' => 'download',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'files' => [
+          'target_id' => $file->id(),
+          'description' => $random->sentences(3, TRUE),
+        ],
+        'lecture' => $lecture->id(),
+        'weight' => 0,
+        'uid' => 1,
+      ]);
+      $paragraph->save();
+
+      // Stats paragraph.
+      $paragraph = Paragraph::create([
+        'bundle' => 'stats',
+        'title' => $random->sentences(2, TRUE),
+        'lecture' => $lecture->id(),
+        'weight' => 1,
+        'uid' => 1,
+      ]);
+      $max = rand(1, 3);
+      $i = 1;
+      while ($i <= $max) {
+        $paragraph->get('list')->appendItem(ceil(rand(1,300)) * 100);
+        $paragraph->get('description')->appendItem($random->sentences(5, TRUE));
+        $i++;
+      }
+      $paragraph->save();
+
+      // Update computed fields.
+      $lecture->save();
+    }
+
+    // Add a lecture that contains a questionnaire.
+    if (\Drupal::service('module_handler')->moduleExists('questionnaire')) {
+
+      // Create lecture.
+      $lecture = Lecture::create([
+        'title' => 'Questionnaire: ' . $random->sentences(3, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'weight' => -2,
+        'uid' => 1,
+      ]);
+      $lecture->save();
+
+      // Create questionnaire.
+      $questionnaire = Paragraph::create([
+        'bundle' => 'questionnaire',
+        'title' => $random->sentences(2, TRUE),
+        'body' => rtrim($random->paragraphs(1)),
+        'lecture' => $lecture->id(),
+        'weight' => 0,
+        'uid' => 1,
+      ]);
+      $questionnaire->save();
+
+      // Update computed fields.
+      $lecture->save();
+
+      // Create questions for questionnaire.
+      $question_targets = [];
+
+      // Textarea question.
+      $question = Question::create([
+        'bundle' => 'textarea',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -4,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Textfield question.
+      $question = Question::create([
+        'bundle' => 'textfield',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -3,
+        'uid' => 1,
+      ]);
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Radios question.
+      $question = Question::create([
+        'bundle' => 'radios',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -2,
+        'required' => rand(0, 1) == 1,
+        'uid' => 1,
+      ]);
+      $max = rand(3, 5);
+      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
+      $i = 1;
+      while ($i <= $max) {
+        $question->get('options')->appendItem($random->sentences(3, TRUE));
+        if ($correct) {
+          if ($i == $correct) {
+            $question->get('answers')->appendItem(TRUE);
+          }
+          else {
+            $question->get('answers')->appendItem(FALSE);
+          }
+        }
+        $i++;
+      }
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Checkboxes question.
+      $question = Question::create([
+        'bundle' => 'checkboxes',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -1,
+        'required' => rand(0, 1) == 1,
+        'uid' => 1,
+      ]);
+      $max = rand(3, 5);
+      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
+      $i = 1;
+      while ($i <= $max) {
+        $question->get('options')->appendItem($random->sentences(3, TRUE));
+        if ($correct) {
+          if ($i == $correct) {
+            $question->get('answers')->appendItem(TRUE);
+          }
+          else {
+            $question->get('answers')->appendItem(rand(0, 100) < 20);
+          }
+        }
+        $i++;
+      }
+
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Task question.
+      $question = Question::create([
+        'bundle' => 'task',
+        'body' => $random->sentences(8, TRUE) . '?',
+        'help' => rtrim($random->paragraphs(1)),
+        'explanation' => rtrim($random->paragraphs(1)),
+        'paragraph' => $questionnaire->id(),
+        'weight' => -1,
+        'required' => rand(0, 1) == 1,
+        'uid' => 1,
+      ]);
+
+      $question->save();
+      $question_targets[] = ['target_id' => $question->id()];
+
+      // Append questions to questionnaire.
+      $questionnaire->set('questions', $question_targets);
+      $questionnaire->save();
+
+      // Add a lecture that contains the evaluation of the questionnaire.
+      $lecture = Lecture::create([
+        'title' => 'Evaluation: ' . $random->sentences(3, TRUE),
+        'description' => rtrim($random->paragraphs(1)),
+        'status' => 1,
+        'course' => $course->id(),
+        'weight' => -1,
+        'uid' => 1,
+      ]);
+      $lecture->save();
+
+      // Create evaluation.
+      $evaluation = Paragraph::create([
+        'bundle' => 'evaluation',
+        'title' => $random->sentences(2, TRUE),
+        'lecture' => $lecture->id(),
+        'weight' => -1,
+        'uid' => 1,
+      ]);
+      $evaluation->save();
+
+      // Update computed fields.
+      $lecture->save();
+    }
+  }
+
+}
+
+/**
+ * Returns stock image file.
+ *
+ * @param int $i
+ *   Iteration index.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_stock_image(int $i) {
+
+  $index = sprintf('%02d', (($i - 1) % 7) + 1);
+  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/img/' . $index . '.jpg';
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
+  $image_file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $image_file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy')
+      ->error('An error occurred while creating stock academy images. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $image_file;
+}
+
+/**
+ * Returns stock illustration file.
+ *
+ * @param int $i
+ *   Iteration index.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_stock_illustration(int $i) {
+
+  $index = sprintf('%02d', (($i - 1) % 7) + 1);
+  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/gfx/' . $index . '.png';
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
+  $image_file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $image_file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy')
+      ->error('An error occurred while creating stock academy illustration. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $image_file;
+}
+
+/**
+ * Returns test file.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function academy_dummy_get_test_file() {
+
+  $file_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/file/test.txt';
+  $public_path = \Drupal::service('file_system')->copy($file_path, 'public://test.txt');
+  $file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('academy')
+      ->error('An error occurred while creating test file. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $file;
+}

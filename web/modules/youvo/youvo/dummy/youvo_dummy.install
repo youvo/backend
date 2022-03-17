@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the youvo_dummy module.
+ */
+
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Utility\Random;
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
+use Drupal\Core\Utility\Error;
+
+/**
+ * Implements hook_install().
+ */
+function youvo_dummy_install() {
+  module_set_weight('youvo_dummy', 1);
+}
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function youvo_dummy_site_install_finished() {
+
+}
+
+/**
+ * Returns skills array.
+ */
+function youvo_dummy_get_random_skills() {
+  $skills = [];
+  $skills_select = [1, 2, 3, 4, 5, 6];
+  shuffle($skills_select);
+  $skills_select = array_slice($skills_select, 0, rand(1, 3));
+  foreach ($skills_select as $skill) {
+    $skills[] = ['target_id' => $skill];
+  }
+  return $skills;
+}
+
+/**
+ * Returns skills array.
+ */
+function youvo_dummy_get_random_causes() {
+  $causes = [];
+  /** @var \Drupal\taxonomy\Entity\Term[] $causes_select */
+  try {
+    $causes_select = \Drupal::entityTypeManager()
+      ->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'causes']);
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while loading taxonomy terms. %type: @message in %function (line %line of %file).', $variables);
+  }
+  shuffle($causes_select);
+  $causes_select = array_slice($causes_select, 0, rand(0, 2));
+  foreach ($causes_select as $cause) {
+    $causes[] = ['target_id' => $cause->id()];
+  }
+  return $causes;
+}
+
+/**
+ * Returns stock image file.
+ *
+ * @param string $path
+ *   Path to image.
+ * @param string $file_name
+ *   File name of image.
+ *
+ * @return \Drupal\file\Entity\File
+ *   Image file.
+ */
+function youvo_dummy_get_image_by_path(string $path, string $file_name) {
+
+  $image_path = \Drupal::service('extension.list.module')->getPath('youvo_dummy') . $path . $file_name;
+  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $file_name);
+  $image_file = File::create([
+    'uri' => $public_path,
+    'uid' => 1,
+    'status' => 1,
+  ]);
+  try {
+    $image_file->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo_dummy')
+      ->error('An error occurred while creating project images by path. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  return $image_file;
+}
+
+/**
+ * Returns random creative id.
+ *
+ * @param array $creative_ids
+ *   Array of creative ids.
+ *
+ * @return int
+ *   Random creative id.
+ */
+function youvo_dummy_get_random_creative(array $creative_ids) {
+  if (!empty($creative_ids)) {
+    return $creative_ids[array_rand($creative_ids)];
+  }
+  else {
+    return 0;
+  }
+}
+
+/**
+ * Returns random organization id.
+ *
+ * @param array $organization_ids
+ *   Array of organization ids.
+ *
+ * @return int
+ *   Random organization id.
+ */
+function youvo_dummy_get_random_organization(array $organization_ids) {
+  if (!empty($organization_ids)) {
+    return $organization_ids[array_rand($organization_ids)];
+  }
+  else {
+    return 0;
+  }
+}

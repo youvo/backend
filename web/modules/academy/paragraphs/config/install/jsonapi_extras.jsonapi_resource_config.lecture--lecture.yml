@@ -15,35 +15,35 @@ resourceFields:
     enhancer:
       id: ''
   uuid:
+    disabled: false
     fieldName: uuid
     publicName: uuid
     enhancer:
       id: ''
-    disabled: false
   langcode:
+    disabled: false
     fieldName: langcode
     publicName: langcode
     enhancer:
       id: ''
-    disabled: false
   title:
+    disabled: false
     fieldName: title
     publicName: title
     enhancer:
       id: ''
-    disabled: false
   status:
+    disabled: false
     fieldName: status
     publicName: status
     enhancer:
       id: ''
-    disabled: false
   uid:
+    disabled: false
     fieldName: uid
     publicName: author
     enhancer:
       id: ''
-    disabled: false
   created:
     disabled: true
     fieldName: created
@@ -56,27 +56,75 @@ resourceFields:
     publicName: changed
     enhancer:
       id: ''
-  weight:
-    fieldName: weight
-    publicName: weight
-    enhancer:
-      id: ''
-    disabled: false
-  paragraphs:
-    fieldName: paragraphs
-    publicName: paragraphs
-    enhancer:
-      id: ''
-    disabled: false
   course:
+    disabled: false
     fieldName: course
     publicName: course
     enhancer:
       id: ''
+  weight:
     disabled: false
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
   default_langcode:
     disabled: true
     fieldName: default_langcode
     publicName: default_langcode
+    enhancer:
+      id: ''
+  paragraphs:
+    disabled: false
+    fieldName: paragraphs
+    publicName: paragraphs
+    enhancer:
+      id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  unlocked:
+    disabled: false
+    fieldName: unlocked
+    publicName: unlocked
+    enhancer:
+      id: ''
+  content_translation_source:
+    disabled: true
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: true
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
+  content_translation_uid:
+    disabled: true
+    fieldName: content_translation_uid
+    publicName: content_translation_uid
+    enhancer:
+      id: ''
+  content_translation_status:
+    disabled: true
+    fieldName: content_translation_status
+    publicName: content_translation_status
+    enhancer:
+      id: ''
+  content_translation_created:
+    disabled: true
+    fieldName: content_translation_created
+    publicName: content_translation_created
+    enhancer:
+      id: ''
+  content_translation_changed:
+    disabled: true
+    fieldName: content_translation_changed
+    publicName: content_translation_changed
     enhancer:
       id: ''

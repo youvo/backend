@@ -1,5 +1,0 @@
-services:
-  project.route_subscriber:
-    class: Drupal\project\EventSubscriber\ProjectRouteSubscriber
-    tags:
-      - { name: event_subscriber }

@@ -3,7 +3,8 @@
 	    "drupal/core": {
           "Issue #1356276: Introduce base profiles (Scheduled Drupal 9.4.0)": "patches/drupal/D93x-1356276-675.patch",
           "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.4.0)": "patches/drupal/D91x-2924549-38.patch",
-          "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request (Scheduled Drupal 9.4.0)": "patches/drupal/D94x-3181946-23.patch"
+          "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request (Scheduled Drupal 9.4.0)": "patches/drupal/D94x-3181946-23.patch",
+          "Issue #3098935: JSON:API can't handle exceptions thrown during authentication (Scheduled Drupal 9.4.0)": "patches/drupal/D94x-3098935-16.patch"
         },
         "drupal/jsonapi_include": {
           "Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
@@ -21,6 +22,9 @@
         },
         "drupal/filefield_paths": {
           "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/exclude_consumer_entity_type.patch"
+        },
+        "drupal/simple_oauth": {
+          "Issue #2946882: Auth revoke on profile update": "patches/simple_oauth/simple_oauth-auth-revoke-2946882-11.patch"
         }
     }
 }

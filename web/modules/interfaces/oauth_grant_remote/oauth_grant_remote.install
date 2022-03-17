@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the oauth_grant_remote module.
+ */
+
+use Drupal\Core\Utility\Error;
+
+/**
+ * Implements hook_install().
+ */
+function oauth_grant_remote_install() {
+
+  // Overwrite simple_oauth settings.
+  $config = \Drupal::configFactory()
+    ->getEditable('oauth_grant_remote.settings');
+
+  try {
+    // Load development enviroment. Exit if not available.
+    $module_path = \Drupal::moduleHandler()
+      ->getModule('oauth_grant_remote')
+      ->getPath();
+    $env_path = $module_path . '/config/env/.env.development';
+    if (!is_readable($env_path)) {
+      throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
+    }
+
+    // Get env file info.
+    $settings = [];
+    $lines = file($env_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+      if (str_starts_with(trim($line), '#')) {
+        continue;
+      }
+      [$name, $value] = explode('=', $line, 2);
+      $name = trim($name);
+      $value = trim($value);
+      $settings[$name] = $value;
+    }
+
+    // Transfer settings from env file.
+    if (isset($settings['JWT_EXPIRATION']) && is_numeric($settings['JWT_EXPIRATION'])) {
+      $config->set('jwt_expiration', $settings['JWT_EXPIRATION']);
+    }
+    if (isset($settings['JWT_KEY_PATH'])) {
+      $config->set('jwt_key_path', $settings['JWT_KEY_PATH']);
+    }
+    if (isset($settings['AUTH_RELAY_URL'])) {
+      $config->set('auth_relay_url', $settings['AUTH_RELAY_URL']);
+    }
+    if (isset($settings['DEVELOPMENT'])) {
+      $config->set('development', $settings['DEVELOPMENT']);
+    }
+    $config->save(TRUE);
+  }
+  catch (RuntimeException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->info('Skipped development grant remote auth relay settings. %type: @message in %function (line %line of %file).', $variables);
+  }
+}

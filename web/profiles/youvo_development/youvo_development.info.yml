@@ -13,6 +13,7 @@ install:
   - field_ui
   - menu_ui
   - restui
+  - find_uuid
   # OpenAPI for documentation
   - schemata
   - schemata_json_schema
@@ -22,7 +23,9 @@ install:
   - openapi_ui_redoc
   # Dummy content
   - youvo_dummy
-  - project_dummy
+  - projects_dummy
   - academy_dummy
+  - creatives_dummy
+  - organizations_dummy
   # Postman
   - postman_interface

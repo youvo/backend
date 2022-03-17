@@ -92,7 +92,8 @@ function youvo_platform_install() {
   // Load first user and add administrator and creative role.
   $first_user = User::load(1);
   $first_user->addRole('administrator');
+  $first_user->addRole('manager');
   $first_user->addRole('creative');
-  $first_user->set('fullname', 'Admira Mineur');
+  $first_user->set('field_name', 'Admira Mineur');
   $first_user->save();
 }

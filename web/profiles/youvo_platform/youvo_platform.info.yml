@@ -37,9 +37,14 @@ install:
   - mail_login
   - multivalue_form_element
   - consumers
+  - consumer_image_styles
   - simple_oauth
+  - user_bundle
   # Base
   - youvo
+  # User types
+  - user_types
+  - organizations
   # Authentication
   - oauth_grant
   - oauth_grant_remote
@@ -49,7 +54,7 @@ install:
   - jsonapi_boost
   # Projects
   - lifecycle
-  - project
+  - projects
   # Academy
   - academy
   - academy_log
@@ -59,7 +64,7 @@ install:
   - paragraphs
   - questionnaire
   - progress
-  # Change later
+  # Change later.
   - basic_auth
 themes:
   - claro

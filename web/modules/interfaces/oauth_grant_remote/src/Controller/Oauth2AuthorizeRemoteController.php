@@ -214,10 +214,12 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $local_session_uid = -1;
     if ($this->request->hasSession()) {
       $local_session = $this->request->getSession();
-      $local_session_id = $local_session->getId();
-      $local_session_uid = $local_session->get('uid');
-      $session_cookies = array_filter($session_cookies,
-        fn($c) => $c != $local_session_id);
+      if ($local_session->has('uid')) {
+        $local_session_uid = $local_session->get('uid');
+        $local_session_id = $local_session->getId();
+        $session_cookies = array_filter($session_cookies,
+          fn($c) => $c != $local_session_id);
+      }
     }
 
     // If there are no sessions, the user needs to log in on the original host.
@@ -308,8 +310,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $remote_account = $remote_claims['account'];
 
     // Check if the user is a creative on the host.
-    // If it is not a creative, it must be an organisation or provisional
-    // organisation. We redirect back to Auth Relay where the query parameter
+    // If it is not a creative, it must be an organization or provisional
+    // organization. We redirect back to Auth Relay where the query parameter
     // can be resolved.
     if (!array_key_exists(3, $remote_account['roles'])) {
       $redirect_url = $auth_relay_server . '?r=oa';
@@ -370,8 +372,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       ]);
 
       // Set full name.
-      if ($shell_user->hasField('fullname')) {
-        $shell_user->set('fullname', $remote_account['fullname']);
+      if ($shell_user->hasField('field_name')) {
+        $shell_user->set('field_name', $remote_account['fullname']);
       }
 
       // Save shell user.
@@ -424,11 +426,16 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       'query' => UrlHelper::parse('/?' . $request->getQueryString())['query'],
     ]);
 
+    // Determine whether this is a development environment.
+    if (!empty($this->configFactory->get('oauth_grant_remote.settings')->get('development')) &&
+      $this->configFactory->get('oauth_grant_remote.settings')->get('development')) {
+      $query['dev'] = 1;
+    }
+
     // Compile redirect url.
+    $query['relay'] = $destination->toString(TRUE)->getGeneratedUrl();
     $redirect_url = Url::fromUri($auth_relay_server . '/user/login', [
-      'query' => [
-        'relay' => $destination->toString(TRUE)->getGeneratedUrl(),
-      ],
+      'query' => $query,
     ]);
 
     // Ensure that bubbleable metadata is collected and added to the response

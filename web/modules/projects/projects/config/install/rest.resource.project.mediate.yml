@@ -1,0 +1,12 @@
+id: project.mediate
+plugin_id: 'project:mediate'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

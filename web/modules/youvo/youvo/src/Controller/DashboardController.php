@@ -25,14 +25,14 @@ class DashboardController extends ControllerBase {
       $current_user = $this->entityTypeManager()
         ->getStorage('user')
         ->load($this->currentUser()->id());
-      $page['fullname'] = $current_user->get('fullname')->value;
+      $page['field_name'] = $current_user->get('field_name')->value;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
       $variables['%id'] = $this->currentUser()->id();
       $this->loggerFactory->get('youvo')
         ->error('Could not load user with ID %id on dashboard.', $variables);
-      $page['fullname'] = $this->t('User');
+      $page['field_name'] = $this->t('User');
     }
 
     // Is academy activated?

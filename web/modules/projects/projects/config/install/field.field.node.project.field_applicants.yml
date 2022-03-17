@@ -1,0 +1,39 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_applicants
+    - node.type.project
+    - user_bundle.user_type.user
+id: node.project.field_applicants
+field_name: field_applicants
+entity_type: node
+bundle: project
+label: Applicants
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:user'
+  handler_settings:
+    target_bundles:
+      user: user
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+    filter:
+      type: role
+      role:
+        creative: creative
+        administrator: '0'
+        organization: '0'
+        observer: '0'
+        editor: '0'
+        manager: '0'
+        supervisor: '0'
+    include_anonymous: false
+field_type: entity_reference

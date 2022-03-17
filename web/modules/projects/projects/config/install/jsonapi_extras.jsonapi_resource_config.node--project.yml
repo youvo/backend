@@ -1,0 +1,238 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.project
+id: node--project
+disabled: false
+path: projects
+resourceType: project
+resourceFields:
+  nid:
+    disabled: true
+    fieldName: nid
+    publicName: nid
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  vid:
+    disabled: true
+    fieldName: vid
+    publicName: vid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  type:
+    disabled: true
+    fieldName: type
+    publicName: type
+    enhancer:
+      id: ''
+  revision_timestamp:
+    disabled: true
+    fieldName: revision_timestamp
+    publicName: revision_timestamp
+    enhancer:
+      id: ''
+  revision_uid:
+    disabled: true
+    fieldName: revision_uid
+    publicName: revision_uid
+    enhancer:
+      id: ''
+  revision_log:
+    disabled: true
+    fieldName: revision_log
+    publicName: revision_log
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  uid:
+    disabled: false
+    fieldName: uid
+    publicName: organization
+    enhancer:
+      id: ''
+  title:
+    disabled: false
+    fieldName: title
+    publicName: title
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  promote:
+    disabled: false
+    fieldName: promote
+    publicName: promote
+    enhancer:
+      id: ''
+  sticky:
+    disabled: false
+    fieldName: sticky
+    publicName: sticky
+    enhancer:
+      id: ''
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  revision_default:
+    disabled: true
+    fieldName: revision_default
+    publicName: revision_default
+    enhancer:
+      id: ''
+  revision_translation_affected:
+    disabled: true
+    fieldName: revision_translation_affected
+    publicName: revision_translation_affected
+    enhancer:
+      id: ''
+  path:
+    disabled: true
+    fieldName: path
+    publicName: path
+    enhancer:
+      id: ''
+  content_translation_source:
+    disabled: false
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: false
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
+  body:
+    disabled: false
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+  field_applicants:
+    disabled: false
+    fieldName: field_applicants
+    publicName: applicants
+    enhancer:
+      id: ''
+  field_appreciation:
+    disabled: false
+    fieldName: field_appreciation
+    publicName: appreciation
+    enhancer:
+      id: ''
+  field_city:
+    disabled: false
+    fieldName: field_city
+    publicName: city
+    enhancer:
+      id: ''
+  field_contact:
+    disabled: false
+    fieldName: field_contact
+    publicName: contact
+    enhancer:
+      id: ''
+  field_deadline:
+    disabled: false
+    fieldName: field_deadline
+    publicName: deadline
+    enhancer:
+      id: ''
+  field_host:
+    disabled: false
+    fieldName: field_host
+    publicName: host
+    enhancer:
+      id: ''
+  field_image:
+    disabled: false
+    fieldName: field_image
+    publicName: image
+    enhancer:
+      id: ''
+  field_lifecycle:
+    disabled: false
+    fieldName: field_lifecycle
+    publicName: lifecycle
+    enhancer:
+      id: ''
+  field_local:
+    disabled: false
+    fieldName: field_local
+    publicName: local
+    enhancer:
+      id: ''
+  field_material:
+    disabled: false
+    fieldName: field_material
+    publicName: material
+    enhancer:
+      id: ''
+  field_participants:
+    disabled: false
+    fieldName: field_participants
+    publicName: participants
+    enhancer:
+      id: ''
+  field_participants_tasks:
+    disabled: false
+    fieldName: field_participants_tasks
+    publicName: participants_tasks
+    enhancer:
+      id: ''
+  field_result_files:
+    disabled: false
+    fieldName: field_result_files
+    publicName: result_files
+    enhancer:
+      id: ''
+  field_result_text:
+    disabled: false
+    fieldName: field_result_text
+    publicName: result_text
+    enhancer:
+      id: ''
+  field_skills:
+    disabled: false
+    fieldName: field_skills
+    publicName: skills
+    enhancer:
+      id: ''
+  field_workload:
+    disabled: false
+    fieldName: field_workload
+    publicName: workload
+    enhancer:
+      id: ''

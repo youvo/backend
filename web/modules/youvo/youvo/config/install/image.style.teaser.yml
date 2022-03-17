@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies: {  }
+name: teaser
+label: Teaser
+effects:
+  2c617fcb-7654-4c66-9a77-b41bd14f4fc6:
+    uuid: 2c617fcb-7654-4c66-9a77-b41bd14f4fc6
+    id: image_scale_and_crop
+    weight: -9
+    data:
+      width: 768
+      height: 480
+      anchor: center-center
+  57958ade-c106-449a-a068-85cd5d71b4f3:
+    uuid: 57958ade-c106-449a-a068-85cd5d71b4f3
+    id: image_convert
+    weight: -10
+    data:
+      extension: jpg

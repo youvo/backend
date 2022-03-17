@@ -1,0 +1,29 @@
+diff --git a/modules/contrib/simple_oauth/simple_oauth.module b/modules/contrib/simple_oauth/simple_oauth.module
+index b769bba..908fc83 100644
+--- a/modules/contrib/simple_oauth/simple_oauth.module
++++ b/modules/contrib/simple_oauth/simple_oauth.module
+@@ -34,7 +34,23 @@ function simple_oauth_entity_update(EntityInterface $entity) {
+   $collector = \Drupal::service('simple_oauth.expired_collector');
+   // Collect the affected tokens and expire them.
+   if ($entity instanceof AccountInterface) {
+-    $collector->deleteMultipleTokens($collector->collectForAccount($entity));
++
++    // Following the Drupal core pattern, revoke access to the system when
++    // password has been changed.
++    $password_changed = $entity->pass->value !== $entity->original->pass->value;
++
++    // When the account got blocked, we should revoke user's access to the site.
++    $account_blocked = !$entity->status->value && $entity->original->status->value;
++
++    // When roles have changed, we should revoke the token to prevent potential
++    // access to the content where the user has no access to anymore.
++    $roles_new = $entity->getRoles();
++    $roles_old = $entity->original->getRoles();
++    $roles_changed = array_merge(array_diff($roles_new, $roles_old), array_diff($roles_old, $roles_new));
++
++    if ($password_changed || $account_blocked || $roles_changed) {
++      $collector->deleteMultipleTokens($collector->collectForAccount($entity));
++    }
+   }
+   if ($entity instanceof Consumer) {
+     $collector->deleteMultipleTokens($collector->collectForClient($entity));

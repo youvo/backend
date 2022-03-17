@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * @file
+ * Custom module which handles business logic for project entities.
+ */
+
+use Drupal\multivalue_form_element\Element\MultiValue;
+use Drupal\projects\Entity\Project;
+use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
+
+/**
+ * Implements hook_entity_bundle_info_alter().
+ */
+function projects_entity_bundle_info_alter(&$bundles) {
+  if (isset($bundles['node']['project'])) {
+    $bundles['node']['project']['class'] = Project::class;
+  }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function projects_menu_local_tasks_alter(&$data, $route_name) {
+  // @todo Change when other content types land.
+  if (isset($data['tabs'][0]['system.admin_content'])) {
+    $data['tabs'][0]['system.admin_content']['#link']['title'] = 'Projects';
+  }
+}
+
+/**
+ * Implements hook_form_node_form_alter().
+ */
+function projects_form_node_form_alter(&$form, &$form_state) {
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Alter projects form.
+  if ($node->bundle() == 'project') {
+
+    // Disallow access to form widget provided by fields.
+    $form['field_participants']['#access'] = FALSE;
+    $form['field_participants_tasks']['#access'] = FALSE;
+
+    // Load default values for participants.
+    $participants_default = [];
+    $participants = $node->getParticipantsAsArray(TRUE);
+    foreach (array_keys($participants) as $uid) {
+      $task_id = match ($participants[$uid]['task']) {
+        'Manager' => 7,
+        default => 3,
+      };
+      $participants_default[] = [
+        'participant' => User::load($uid),
+        'task' => $task_id,
+      ];
+    }
+
+    // Compile participants and respective roles in a single multi-value field.
+    $form['multi_participants'] = [
+      '#title' => t('Participants'),
+      '#type' => 'multivalue',
+      '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
+      '#add_more_label' => t('Add participant'),
+      '#default_value' => $participants_default,
+      'participant' => [
+        '#type' => 'entity_autocomplete',
+        '#title' => t('Participant'),
+        '#target_type' => 'user',
+        '#selection_settings' => [
+          'include_anonymous' => FALSE,
+        ],
+        '#maxlength' => UserInterface::USERNAME_MAX_LENGTH,
+      ],
+      'task' => [
+        '#type' => 'select',
+        '#options' => [
+          '3' => 'Creative',
+          '7' => 'Manager',
+        ],
+        '#title' => t('Task'),
+      ],
+      '#weight' => -2,
+    ];
+
+    // Add submit handler for multi-value field.
+    $form['actions']['submit']['#submit'][] = 'projects_form_submit_participants';
+  }
+}
+
+/**
+ * Saves participants to fields from multi-value field.
+ */
+function projects_form_submit_participants($form, &$form_state) {
+  $project = $form_state->getFormObject()->getEntity();
+  $multi_participants = $form_state->getValues()['multi_participants'];
+  $project->set('field_participants', NULL);
+  $project->set('field_participants_tasks', NULL);
+  foreach ($multi_participants as $multi_participant) {
+    if (!empty($multi_participant['participant'])) {
+      $project->get('field_participants')->appendItem(['target_id' => $multi_participant['participant']]);
+      $task = match ($multi_participant['task']) {
+        '7' => 'Manager',
+        default => 'Creative',
+      };
+      $project->get('field_participants_tasks')->appendItem($task);
+    }
+  }
+  $project->save();
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
+
+  $fields = [];
+
+  // Add projects base field to entity User.
+  if ($entity_type->id() == 'user') {
+    $fields['projects'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Computed Projects'))
+      ->setSetting('target_type', 'node')
+      ->setSetting('handler_settings', ['target_bundles' => ['project']])
+      ->setDescription(t('Computes the projects referencing this user.'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setComputed(TRUE)
+      ->setClass(ComputedProjectReferenceFieldItemList::class);
+  }
+
+  return $fields;
+}
