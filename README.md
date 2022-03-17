@@ -108,15 +108,17 @@ The database is `youvo_prod`.
 
 ### Make commands
 
-- Help: `make help`
-- Drush: `make drush`
-- Maintenance mode on: `make mm-on`
-- Maintenance mode off: `make mm-off`
-- Clear caches: `make cr`
-- Warm caches: `make warm`
-- (Re-)install Drupal: `make install` (only available in Development)
-- Calculate rebuild token: `make rebuild`
-- Restart Uberspace PHP: `make restart-php`
+```bash
+make help # show commands help
+make drush foo # execute drush commands
+make mm-on # maintenance mode on
+make mm-off # maintenance mode off
+make cr # clear caches
+make warm # warm caches
+make install # (re-)install Drupal (only available in development)
+make rebuild # calculate rebuild token
+make restart-php # restart Uberspace php
+```
 
 ### Notes
 
