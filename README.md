@@ -1,6 +1,8 @@
-# youvo Backend Repository
+# Backend
 
-Provides the backend for `data.youvo.org` based on `Drupal 9`.
+**Backend repository for youvo based on Drupal 9.**
+
+<img src="/resources/logo.png" width="200px">
 
 ## Getting started locally
 
@@ -20,7 +22,7 @@ mkdir youvo-backend
 cd youvo-backend
 git clone git@github.com:youvo/backend.git .
 ddev config --auto
-ddev composer install --no-interaction --no-progress
+ddev composer install
 ./scripts/install-local-ddev.sh
 ```
 
@@ -80,7 +82,7 @@ To set up a Drupal distribution with the `youvo_development` profile, do the fol
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.development # and adjust settings
-composer install --no-interaction --no-progress
+composer install
 ./scripts/install-development.sh
 ```
 
@@ -96,7 +98,7 @@ To set up a Drupal distribution with the `youvo_platform` profile, do the follow
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.production # and adjust settings
-composer install --no-interaction --no-progress
+composer install
 ./scripts/install-production.sh
 ```
 
