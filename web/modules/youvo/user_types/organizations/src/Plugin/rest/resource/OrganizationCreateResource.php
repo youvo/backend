@@ -5,6 +5,7 @@ namespace Drupal\organizations\Plugin\rest\resource;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -45,6 +46,13 @@ class OrganizationCreateResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
+   * The email validator service.
+   *
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
+   */
+  protected $emailValidator;
+
+  /**
    * Constructs a OrganizationCreateResource object.
    *
    * @param array $configuration
@@ -62,10 +70,11 @@ class OrganizationCreateResource extends ResourceBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->entityTypeManager = $entity_type_manager;
+    $this->emailValidator = $email_validator;
   }
 
   /**
@@ -79,7 +88,8 @@ class OrganizationCreateResource extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
       $container->get('serialization.json'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('email.validator')
     );
   }
 
@@ -126,30 +136,53 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(Request $request) {
 
     // Decode content of the request.
-    $request_content = $this->serializationJson
-      ->decode($request->getContent());
+    $content = $this->serializationJson->decode($request->getContent());
 
-    if (empty($request_content)) {
-      throw new BadRequestHttpException('Malformed request body.');
+    // Decline empty request body.
+    if (empty($content)) {
+      throw new BadRequestHttpException('Empty request body.');
     }
 
-    // @todo Check if attributes are empty.
-    $attributes = $request_content['attributes'];
-
-    if (empty($attributes['mail'])) {
-      throw new BadRequestHttpException('Need to provide email to register organization.');
+    // Decline request body without both organization and project data.
+    if (empty($content['data']) ||
+      !in_array('organization', array_column($content['data'], 'type')) ||
+      !in_array('project', array_column($content['data'], 'type'))) {
+      throw new BadRequestHttpException('Request body does not provide organization and project.');
     }
 
-    // @todo Create new organization user.
+    // Pop values for organization from request.
+    $content_organization = array_filter($content['data'], fn ($a) => $a['type'] == 'organization');
+    $attributes_organization = array_shift($content_organization)['attributes'];
+
+    // Check if valid email is provided.
+    if (empty($attributes_organization['mail']) ||
+      !$this->emailValidator->isValid($attributes_organization['mail'])) {
+      throw new BadRequestHttpException('Need to provide valid mail to register organization.');
+    }
+
+    // Check whether there is already an account for this email.
+    try {
+      if ($this->accountExistsForEmail($attributes_organization['mail'])) {
+        throw new BadRequestHttpException('There already exists an account for the provided email address.');
+      }
+    }
+    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    // Create new organization user.
     $organization = TypedUser::create(['type' => 'organization']);
-    foreach ($attributes as $field_key => $value) {
 
-      // Validate if field is available.
-      if (!$organization->hasField($field_key)) {
+    // Populate fields.
+    foreach ($attributes_organization as $field_key => $value) {
+
+      // Validate if field is available. Target field_name instead of name.
+      if ($field_key == 'name' || !$organization->hasField($field_key)) {
         $field_key = 'field_' . $field_key;
         if (!$organization->hasField($field_key)) {
           throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
@@ -157,14 +190,31 @@ class OrganizationCreateResource extends ResourceBase {
       }
 
       // Validate field value.
-      $field_config = $organization->getFieldDefinition($field_key);
-      if (!FieldValidator::validate($field_config, $value)) {
+      $field_definition = $organization->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_definition, $value)) {
         throw new BadRequestHttpException('Malformed request body. Unable to validate the field ' . $field_key);
       }
 
       // Set the field value.
-      $organization->set($field_key, $value);
+      $organization->get($field_key)->value = $value;
+
+      // Set username identical to provided mail.
+      if ($field_key == 'mail') {
+        $organization->setUsername($value);
+      }
     }
+
+    // @todo Create project draft.
+
+
+    // Add role, activate and save.
+    $organization->addRole('organization');
+    $organization->activate();
+    $organization->save();
+
+    // @todo Login organization.
+
+    // @todo Save project draft.
 
     return new ModifiedResourceResponse();
   }
