@@ -100,11 +100,6 @@ composer install --no-interaction --no-progress
 ./scripts/install-production.sh
 ```
 
-1. Clone repository to your server.
-2. Run `composer install --no-dev`.
-3. Copy or configure `config/.env.production`.
-4. Run `scripts/install-production.sh`.
-
 This provides a clean-state installation. For the login you may need to navigate to `/user/login`, because the site is in blocker mode (see `/admin/config/development/blockermode`). The administration can be found under `/admin/index` and `/admin/configuration`.
 
 The database is `youvo_prod`.
