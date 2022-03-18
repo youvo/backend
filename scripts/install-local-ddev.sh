@@ -37,6 +37,10 @@
  fi
  mkdir files
  chmod 0777 files
+ cd files || exit
+ mkdir academy creatives organizations projects
+ chmod 0777 academy creatives organizations projects
+ cd ..
  echo "Files folder reset ..."
 
  # Start docker containers.
