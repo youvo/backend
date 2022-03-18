@@ -8,9 +8,9 @@
 
 ### Prerequisites
 
-For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/). 
+For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.    
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.1` `docker desktop 4.6.0` `ddev 1.18.2`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
@@ -27,7 +27,7 @@ cd youvo-backend
 git clone git@github.com:youvo/backend.git .
 ddev config --auto
 ddev composer install
-./scripts/install-local-ddev.sh
+./scripts/install-local.sh
 ```
 
 Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.org:admin`.
@@ -37,8 +37,8 @@ Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.o
 ### Configuration
 
 - DDEV configuration `.ddev/config.yml`
-- Drupal setup parameters `config/.env.local-ddev`
-- XDebug port `.ddev/php/xdebug_client_port.ini` 
+- Drupal setup parameters `config/.env.local`
+- XDebug port `.ddev/php/xdebug_client_port.ini`
 
 ### DDEV Commands
 
@@ -79,7 +79,7 @@ chmod 0666 -R academy projects creatives organizations
 
 ## Distribution
 
-### Development 
+### Development
 
 To set up a Drupal distribution with the `youvo_development` profile, do the following:
 
