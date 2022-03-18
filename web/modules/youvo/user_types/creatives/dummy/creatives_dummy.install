@@ -35,10 +35,15 @@ function creatives_dummy_site_install_finished() {
     if ($i == 1) {
       $firstname = 'Fredolina';
       $mail = 'fred@youvo.org';
+      $roles = ['creative', 'editor', 'manager'];
     }
     else {
       $firstname = $faker->firstName();
       $mail = strtolower($firstname) . '@' . $faker->safeEmailDomain();
+      $roles = ['creative'];
+      if (rand(1,100) < 20) {
+        $roles[] = ['manager'];
+      }
     }
 
     $portfolio = [];
@@ -50,7 +55,7 @@ function creatives_dummy_site_install_finished() {
       'type' => 'user',
       'name' => $mail,
       'mail' => $mail,
-      'roles' => ['creative'],
+      'roles' => $roles,
       'pass' => 'password',
       'status' => 1,
       'field_avatar' => [
