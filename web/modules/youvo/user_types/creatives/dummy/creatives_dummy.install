@@ -29,12 +29,13 @@ function creatives_dummy_site_install_finished() {
   $faker->seed(96886);
 
   // Iterate some dummy creatives.
-  $images_names = ['anne', 'frank', 'paula'];
-  for ($i = 1; $i <=10; $i++) {
+  $images_names = ['anne', 'paula', 'frank'];
+  for ($i = 1; $i <= 30; $i++) {
 
     // Values for creative user.
     shuffle($images_names);
     $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', $images_names[0] . '.jpg');
+    $roles = [];
     if ($i == 1) {
       $firstname = 'Fredolina';
       $mail = 'fred@youvo.org';
@@ -43,9 +44,9 @@ function creatives_dummy_site_install_finished() {
     else {
       $firstname = $faker->unique()->firstName();
       $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.com';
-      $roles = ['creative'];
+      $roles[] = 'creative';
       if (rand(1,100) < 20) {
-        $roles[] = ['manager'];
+        $roles[] = 'manager';
       }
     }
 
@@ -73,7 +74,7 @@ function creatives_dummy_site_install_finished() {
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
       'field_url' => 'https://www.' . $faker->optional(0.8)->domainName(),
-      'field_education' => $faker->optional(0.8)->passthrough($faker->randomElement(['Gymnasium', 'Fachschule', 'Hochschule', 'Akademie', 'Fachhochschule', 'Universität']) . ' ' . $faker->city()),
+      'field_education' => $faker->optional(0.8)->passthrough($faker->randomElement(['Fachschule', 'Hochschule', 'Akademie', 'Fachhochschule', 'Universität']) . ' ' . $faker->city()),
       'field_jobs' => $faker->boolean(),
       'field_public_profile' => $faker->boolean(),
       'field_newsletter' => $faker->boolean(),
