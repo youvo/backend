@@ -18,7 +18,7 @@
 
  # Set permissions.
  cd web/sites || exit
- chmod 0755 default
+ chmod -R 0755 default
 
  # Remove settings file.
  cd default || exit
