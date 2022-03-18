@@ -38,8 +38,8 @@ function creatives_dummy_site_install_finished() {
       $roles = ['creative', 'editor', 'manager'];
     }
     else {
-      $firstname = $faker->firstName();
-      $mail = strtolower($firstname) . '@' . $faker->safeEmailDomain();
+      $firstname = $faker->unique()->firstName();
+      $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.com';
       $roles = ['creative'];
       if (rand(1,100) < 20) {
         $roles[] = ['manager'];
