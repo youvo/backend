@@ -101,7 +101,7 @@ function projects_dummy_site_install_finished() {
     // Create node with random information.
     $project = Project::create([
       'type' => 'project',
-      'title' => ucwords($faker->words(3, TRUE)),
+      'title' => ucwords($faker->words(4, TRUE)),
       'body' => [
         'value' => rtrim($faker->text(600)),
         'summary' => rtrim($faker->text(300)),
@@ -154,10 +154,10 @@ function projects_dummy_site_install_finished() {
 
     // Set result text.
     if ($state === 'completed') {
-      $project->get('field_result_text')->value = $faker->realText(300);
+      $project->get('field_result_text')->value = $faker->text(300);
       $project->get('field_result_files')->appendItem([
         'target_id' => $image_file->id(),
-        'alt' => $faker->realText(20),
+        'alt' => $faker->text(20),
       ]);
     }
 
