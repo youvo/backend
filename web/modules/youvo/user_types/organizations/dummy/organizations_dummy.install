@@ -46,11 +46,16 @@ function organizations_dummy_site_install_finished() {
     }
     $firstname = $faker->unique()->firstName();
     $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.org';
+    $name_extension = $faker->optional(0.7)->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']) ?: '';
+    $organization_name = ucwords($faker->words(3, TRUE)) . $name_extension;
+    $short_name = explode(' ', $organization_name);
+    $short_name = array_map(fn ($s) => substr($s, 0, rand(3,10)), $short_name);
+    $short_name = implode('', $short_name) . $name_extension;
 
     // Values for organization user.
     $values = [
-      'field_name' => $faker->words(3, TRUE) . $faker->optional(0.7)->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']),
-      'field_short_name' => ucwords($faker->words(2, TRUE)),
+      'field_name' => $organization_name . $name_extension,
+      'field_short_name' => $short_name,
       'field_url' => 'https://www.' . $faker->domainName(),
       'field_aim' => $faker->text(80),
       'field_about' => $faker->text(600),
@@ -67,7 +72,7 @@ function organizations_dummy_site_install_finished() {
       ],
       'field_budget' => $faker->text(),
       'field_publicity' => $faker->optional()->text(),
-      'field_portfolio' => $portfolio,
+      'field_portfolio' => $faker->optional(0.8)->passthrough($portfolio),
       'field_manager' => $faker->optional(0.3)->randomElement($manager_ids),
       'name' => $mail,
       'mail' => $mail,
