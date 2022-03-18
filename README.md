@@ -8,12 +8,16 @@
 
 ### Prerequisites
 
-For the local development environment we use DDEV based on Docker. For the system requirements please see [DDEV docs](https://ddev.readthedocs.io/en/stable/). 
+For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/). 
 
-Tested on Ubuntu with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.    
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.    
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.1` `docker desktop 4.6.0` `ddev 1.18.2`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
+
+### Composer
+
+**Composer** is based on the package `drupal/core-recommended`. The configuration can be found in `composer.json`. Patches are defined in `composer.patches.json`. The patch files are located in the folder `patches`.
 
 ### Project Initialization and Drupal Setup
 
@@ -59,6 +63,7 @@ In some system configurations dummy content folders require further permissions.
 cd web/sites/default/files
 chmod 0666 -R academy projects creatives organizations
 ```
+
 ### PHPStorm connection to database
 
 - Host: `localhost`
@@ -123,5 +128,3 @@ make restart-php # restart Uberspace php
 ### Notes
 
 **Deploy** is defined in the script `scripts/deploy.sh`.
-
-**Composer** is based on the package `drupal/core-recommended`. The configuration can be found in `composer.json`. Patches are defined in `composer.patches.json`. The patch files are located in the folder `patches`.
