@@ -18,7 +18,7 @@
 
  # Set permissions.
  cd web/sites || exit
- chmod 0755 default
+ chmod -R 0755 default
 
  # Remove settings file.
  cd default || exit
@@ -37,6 +37,10 @@
  fi
  mkdir files
  chmod 0777 files
+ cd files || exit
+ mkdir academy creatives organizations projects
+ chmod 0777 academy creatives organizations projects
+ cd ..
  echo "Files folder reset ..."
 
  # Start docker containers.
