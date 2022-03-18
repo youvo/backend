@@ -6,11 +6,11 @@
  */
 
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Component\Utility\Random;
 use Drupal\file\Entity\File;
 use Drupal\projects\Entity\Project;
 use Drupal\Core\Utility\Error;
 use Drupal\user\Entity\User;
+use Faker\Factory;
 
 /**
  * Implements hook_install().
@@ -36,7 +36,7 @@ function projects_dummy_site_install_finished() {
     ->execute();
 
   // Object for random content.
-  $random = new Random();
+  $faker = Factory::create('de_DE');
 
   // Array of cycle states.
   $lifecycle_states = [
@@ -56,8 +56,9 @@ function projects_dummy_site_install_finished() {
   $max_created_increment = 31536000 / $total;
   $created = $one_year_ago;
 
-  // Organization contacts storage.
+  // Organization contacts and manager storage.
   $contacts = [];
+  $managers = [];
 
   // Create random content.
   for ($i = 1; $i <= $total; $i++) {
@@ -67,71 +68,96 @@ function projects_dummy_site_install_finished() {
     $image_file = projects_dummy_get_stock_image($i);
 
     // Set random time in last year.
-    $rnd_time = rand($one_year_ago, $current_time);
-    $date = \Drupal::service('date.formatter')
+    $rnd_time = rand($created, $created + 1209600);
+    $deadline = \Drupal::service('date.formatter')
       ->format($rnd_time, 'custom', 'Y-m-d');
 
     // Increase created time randomly.
-    $created += rand(1, $max_created_increment);
+    $created += rand(min(86400, $max_created_increment), $max_created_increment);
 
     // Get random state.
     shuffle($lifecycle_states);
     $state = $lifecycle_states[0];
 
-    // Get organization and contact.
+    // Get organization with contact and manager.
     $oid = youvo_dummy_get_random_organization($organization_ids);
     if (!isset($contacts[$oid])) {
       $organization = User::load($oid);
       $contact = $organization->get('field_contact')->value;
       $contacts[$oid] = $contact;
+      /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
+      $manager_field = $organization->get('field_manager');
+      $manager_user = $manager_field->referencedEntities();
+      $manager_user = array_shift($manager_user);
+      $manager = $manager_user instanceof User ? $manager_user->id() : 0;
+      $managers[$oid] = $manager;
     }
     else {
       $contact = $contacts[$oid];
+      $manager = $managers[$oid];
     }
 
     // Create node with random information.
     $project = Project::create([
       'type' => 'project',
-      'title' => ucwords($random->word(10) . ' ' . $random->word(6)),
+      'title' => ucwords($faker->words(3, TRUE)),
       'body' => [
-        'value' => rtrim($random->paragraphs(3)),
-        'summary' => rtrim($random->paragraphs(1)),
+        'value' => rtrim($faker->realTextBetween(300,600)),
+        'summary' => rtrim($faker->realText(300)),
       ],
-      'langcode' => 'en',
+      'langcode' => 'de',
       'created' => $created,
       'uid' => $oid,
       'status' => 1,
       'field_contact' => $contact,
       'field_workload' => rand(1, 5),
-      'field_deadline' => $date,
-      'field_city' => ucwords($random->word(12)),
-      'field_material' => $random->sentences(4),
-      'field_appreciation' => $random->sentences(8),
+      'field_deadline' => $deadline,
+      'field_city' => $faker->city(),
+      'field_material' => $faker->realText(20),
+      'field_appreciation' => $faker->realtext(20),
       'field_skills' => $skills,
       'field_image' => [
         'target_id' => $image_file->id(),
-        'alt' => $random->sentences(3, TRUE),
+        'alt' => $faker->realText(20),
       ],
       'field_lifecycle' => $state,
-      'field_local' => rand(0, 1),
+      'field_local' => $faker->boolean(),
     ]);
 
     // Set applicants for open projects.
     if ($state === 'open') {
       shuffle($creative_ids);
       $applicants = array_slice($creative_ids, 0, rand(0, count($creative_ids)));
+      $applicants = array_diff($applicants, [$manager]);
       if (!empty($applicants)) {
         $project->setApplicants($applicants);
+      }
+      if ($manager) {
+        $project->appendParticipant($manager, 'Manager');
       }
     }
 
     // Set applicants and participants for ongoing or completed projects.
     if ($state === 'ongoing' || $state === 'completed') {
       shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(1, count($creative_ids)));
+      $applicants = array_slice($creative_ids, 0, rand(1, min(5, count($creative_ids))));
+      $applicants = array_diff($applicants, [$manager]);
       $project->setApplicants($applicants);
       $participants = array_slice($applicants, 0, rand(1, count($applicants)));
-      $project->setParticipants($participants);
+      $tasks = array_fill(0, count($participants), 'Creative');
+      $project->setParticipants($participants, $tasks);
+      if ($manager) {
+        $project->appendParticipant($manager, 'Manager');
+      }
+    }
+
+    // Set result text.
+    if ($state === 'completed') {
+      $project->get('field_result_text')->value = $faker->realText(50);
+      $project->get('field_result_files')->appendItem([
+        'target_id' => $image_file->id(),
+        'alt' => $faker->realText(20),
+      ]);
     }
 
     try {
