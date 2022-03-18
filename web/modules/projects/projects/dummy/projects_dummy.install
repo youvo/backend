@@ -89,7 +89,7 @@ function projects_dummy_site_install_finished() {
       /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
       $manager_field = $organization->get('field_manager');
       $manager_user = $manager_field->referencedEntities();
-      $manager_user = array_shift($manager_user);
+      $manager_user = !empty($manager_user) ? array_shift($manager_user) : NULL;
       $manager = $manager_user instanceof User ? $manager_user->id() : 0;
       $managers[$oid] = $manager;
     }
@@ -103,8 +103,8 @@ function projects_dummy_site_install_finished() {
       'type' => 'project',
       'title' => ucwords($faker->words(3, TRUE)),
       'body' => [
-        'value' => rtrim($faker->realTextBetween(300,600)),
-        'summary' => rtrim($faker->realText(300)),
+        'value' => rtrim($faker->text(600)),
+        'summary' => rtrim($faker->text(300)),
       ],
       'langcode' => 'de',
       'created' => $created,
@@ -114,12 +114,12 @@ function projects_dummy_site_install_finished() {
       'field_workload' => rand(1, 5),
       'field_deadline' => $deadline,
       'field_city' => $faker->city(),
-      'field_material' => $faker->realText(20),
-      'field_appreciation' => $faker->realtext(20),
+      'field_material' => $faker->text(100),
+      'field_appreciation' => $faker->text(100),
       'field_skills' => $skills,
       'field_image' => [
         'target_id' => $image_file->id(),
-        'alt' => $faker->realText(20),
+        'alt' => $faker->text(50),
       ],
       'field_lifecycle' => $state,
       'field_local' => $faker->boolean(),
@@ -154,7 +154,7 @@ function projects_dummy_site_install_finished() {
 
     // Set result text.
     if ($state === 'completed') {
-      $project->get('field_result_text')->value = $faker->realText(50);
+      $project->get('field_result_text')->value = $faker->realText(300);
       $project->get('field_result_files')->appendItem([
         'target_id' => $image_file->id(),
         'alt' => $faker->realText(20),
