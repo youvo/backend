@@ -37,6 +37,7 @@ function projects_dummy_site_install_finished() {
 
   // Object for random content.
   $faker = Factory::create('de_DE');
+  $faker->seed(96886);
 
   // Array of cycle states.
   $lifecycle_states = [

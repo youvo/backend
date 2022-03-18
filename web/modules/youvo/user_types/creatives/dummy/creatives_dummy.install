@@ -26,6 +26,7 @@ function creatives_dummy_site_install_finished() {
 
   // Object for random content.
   $faker = Factory::create('de_DE');
+  $faker->seed(96886);
   $images_names = ['anne', 'frank', 'paula'];
 
   // Iterate some dummy creatives.
