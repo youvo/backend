@@ -47,7 +47,7 @@ function creatives_dummy_site_install_finished() {
     }
 
     $portfolio = [];
-    for ($i = 0; $i <= rand(0,5); $i++) {
+    for ($j = 0; $j <= rand(0,5); $j++) {
       $portfolio[] = $faker->url();
     }
 
