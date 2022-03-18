@@ -27,9 +27,9 @@ function creatives_dummy_site_install_finished() {
   // Object for random content.
   $faker = Factory::create('de_DE');
   $faker->seed(96886);
-  $images_names = ['anne', 'frank', 'paula'];
 
   // Iterate some dummy creatives.
+  $images_names = ['anne', 'frank', 'paula'];
   for ($i = 1; $i <=10; $i++) {
 
     // Values for creative user.
@@ -63,12 +63,12 @@ function creatives_dummy_site_install_finished() {
       'status' => 1,
       'field_avatar' => [
         'target_id' => $image_file->id(),
-        'alt' => $faker->realText(10),
+        'alt' => $faker->text(10),
       ],
       'field_city' => $faker->optional(0.8)->city(),
       'field_name' => $firstname . ' ' . $faker->lastName(),
       'field_position' => $faker->optional(0.8)->jobTitle(),
-      'field_about' => $faker->optional(0.9)->realText(400),
+      'field_about' => $faker->optional(0.9)->text(400),
       'field_skills' => youvo_dummy_get_random_skills(),
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
