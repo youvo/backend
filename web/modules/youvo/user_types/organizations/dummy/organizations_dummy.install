@@ -47,7 +47,7 @@ function organizations_dummy_site_install_finished() {
     $firstname = $faker->unique()->firstName();
     $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.org';
     $name_extension = $faker->optional(0.7)->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']) ?: '';
-    $organization_name = ucwords($faker->words(3, TRUE)) . $name_extension;
+    $organization_name = ucwords($faker->words(3, TRUE));
     $short_name = explode(' ', $organization_name);
     $short_name = array_map(fn ($s) => substr($s, 0, rand(3,10)), $short_name);
     $short_name = implode('', $short_name) . $name_extension;
