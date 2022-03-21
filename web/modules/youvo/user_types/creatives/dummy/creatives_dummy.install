@@ -5,6 +5,8 @@
  * Install, update and uninstall functions for the organizations_dummy module.
  */
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\user\Entity\User;
 use Drupal\Core\Utility\Error;
@@ -21,6 +23,7 @@ function creatives_dummy_install() {
  * Implements hook_site_install_finished().
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
+ * @throws \Drupal\Core\Entity\EntityStorageException
  */
 function creatives_dummy_site_install_finished() {
 
@@ -30,7 +33,7 @@ function creatives_dummy_site_install_finished() {
 
   // Iterate some dummy creatives.
   $images_names = ['anne', 'paula', 'frank'];
-  for ($i = 1; $i <= 30; $i++) {
+  for ($i = 1; $i <= 31; $i++) {
 
     // Values for creative user.
     shuffle($images_names);
@@ -90,5 +93,18 @@ function creatives_dummy_site_install_finished() {
       \Drupal::logger('youvo')
         ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
     }
+  }
+
+  // Delete user with ID 14 for legacy user.
+  try {
+    if ($account = \Drupal::entityTypeManager()
+      ->getStorage('user')->load(14)) {
+      $account->delete();
+    }
+  } 
+  catch (InvalidPluginDefinitionException|PluginNotFoundException|EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while deleting dummy creative. %type: @message in %function (line %line of %file).', $variables);
   }
 }
