@@ -23,7 +23,6 @@ function creatives_dummy_install() {
  * Implements hook_site_install_finished().
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
- * @throws \Drupal\Core\Entity\EntityStorageException
  */
 function creatives_dummy_site_install_finished() {
 
@@ -101,7 +100,7 @@ function creatives_dummy_site_install_finished() {
       ->getStorage('user')->load(14)) {
       $account->delete();
     }
-  } 
+  }
   catch (InvalidPluginDefinitionException|PluginNotFoundException|EntityStorageException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
