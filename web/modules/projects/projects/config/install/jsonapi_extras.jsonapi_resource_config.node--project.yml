@@ -140,6 +140,12 @@ resourceFields:
     publicName: body
     enhancer:
       id: ''
+  field_allowance:
+    disabled: false
+    fieldName: field_allowance
+    publicName: allowance
+    enhancer:
+      id: ''
   field_applicants:
     disabled: false
     fieldName: field_applicants
