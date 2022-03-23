@@ -138,7 +138,7 @@ class UserUpdateEmailResponse extends ResourceBase {
     // Double-check if user is logged in. This should already be caught by the
     // access handler.
     if ($this->currentUser->isAnonymous()) {
-      return new ResourceResponse('The user is not logged in.', 400);
+      return new ResourceResponse('The user is not logged in.', 403);
     }
 
     // Decode content of the request.
