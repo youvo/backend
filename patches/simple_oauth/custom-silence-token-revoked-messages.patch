@@ -8,8 +8,8 @@ index b55b3ce..976e741 100644
      catch (OAuthServerException $exception) {
 +
 +      // Silence token revoked messages.
-+      if (strcmp($exception->getMessage(), 'The refresh token is invalid.') ||
-+        strcmp($exception->getMessage(), 'The resource owner or authorization server denied the request.')) {
++      if (str_contains($exception->getMessage(), 'The refresh token is invalid') ||
++        str_contains($exception->getMessage(), 'The resource owner or authorization server denied the request')) {
 +        return NULL;
 +      }
 +
