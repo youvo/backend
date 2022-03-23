@@ -7,7 +7,9 @@ use Drupal\Core\Render\BareHtmlPageRendererInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -70,7 +72,18 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
 
     if ($this->blockerMode->applies($request, $this->account)) {
       if (!$this->blockerMode->exempt($route_match, $this->account)) {
-        $this->forbiddenResponse($event);
+
+        // One last effort to redirect the user. Can happen if logged-in user
+        // tries to access /user/login which redirects to user canonical.
+        if ($this->account->hasPermission('access site') &&
+          RouteMatch::createFromRequest($event->getRequest())->getRouteName() == 'entity.user.canonical') {
+          $redirect_url = Url::fromRoute('youvo.dashboard');
+          $event->setResponse(new RedirectResponse($redirect_url->toString()));
+        }
+        // Access forbidden.
+        else {
+          $this->forbiddenResponse($event);
+        }
       }
     }
   }
