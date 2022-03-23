@@ -90,7 +90,7 @@ class UserUpdatePasswordResponse extends ResourceBase {
    * @return \Drupal\rest\ResourceResponse
    *   Response.
    */
-  public function post(Request $request) {
+  public function patch(Request $request) {
 
     // Double-check if user is logged in. This should already be caught by the
     // access handler.

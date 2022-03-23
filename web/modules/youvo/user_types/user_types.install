@@ -20,7 +20,7 @@ function user_types_site_install_finished() {
   $roles = ['authenticated'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('restful post user:update:password');
+    $role_object->grantPermission('restful patch user:update:password');
     try {
       $role_object->save();
     }
