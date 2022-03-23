@@ -35,7 +35,6 @@ class Access extends ControllerBase {
       return AccessResult::forbidden();
     }
 
-    // Gather properties.
     return AccessResult::allowed();
   }
 }
