@@ -5,10 +5,12 @@
  * Install, update and uninstall functions for the organizations_dummy module.
  */
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Component\Utility\Random;
 use Drupal\user\Entity\User;
 use Drupal\Core\Utility\Error;
+use Faker\Factory;
 
 /**
  * Implements hook_install().
@@ -25,124 +27,83 @@ function creatives_dummy_install() {
 function creatives_dummy_site_install_finished() {
 
   // Object for random content.
-  $random = new Random();
+  $faker = Factory::create('de_DE');
+  $faker->seed(96886);
 
-  // Values for creative user.
-  $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'paula.jpg');
-  $values = [
-    'type' => 'user',
-    'name' => 'fred@youvo.org',
-    'mail' => 'fred@youvo.org',
-    'roles' => ['creative', 'editor', 'manager'],
-    'pass' => 'password',
-    'status' => 1,
-    'field_avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'field_name' => 'Fredolina Tonito',
-    'field_position' => 'Treppenstufenlauscherin',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
-    'field_portfolio' => [
-      'www.instagromm.com/fredolina',
-      'www.behonce.com/fredfred',
-    ],
-    'field_phone' => '0123456789',
-    'field_url' => 'www.fredolina.de',
-    'field_education' => 'Universität des Lauschens',
-    'field_jobs' => rand(0, 1),
-    'field_public_profile' => rand(0, 1),
-    'field_newsletter' => rand(0, 1),
-  ];
+  // Iterate some dummy creatives.
+  $images_names = ['anne', 'paula', 'frank'];
+  for ($i = 1; $i <= 31; $i++) {
 
-  // Create creative.
-  $creative = User::create($values);
-  try {
-    $creative->save();
+    // Values for creative user.
+    shuffle($images_names);
+    $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', $images_names[0] . '.jpg');
+    $roles = [];
+    if ($i == 1) {
+      $firstname = 'Fredolina';
+      $mail = 'fred@youvo.org';
+      $roles = ['creative', 'editor', 'manager'];
+    }
+    else {
+      $firstname = $faker->unique()->firstName();
+      $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.com';
+      $roles[] = 'creative';
+      if (rand(1,100) < 20) {
+        $roles[] = 'manager';
+      }
+    }
+
+    $portfolio = [];
+    for ($j = 0; $j <= rand(0,5); $j++) {
+      $portfolio[] = $faker->url();
+    }
+
+    $values = [
+      'type' => 'user',
+      'name' => $mail,
+      'mail' => $mail,
+      'roles' => $roles,
+      'pass' => 'password',
+      'status' => 1,
+      'field_avatar' => [
+        'target_id' => $image_file->id(),
+        'alt' => $faker->text(10),
+      ],
+      'field_city' => $faker->optional(0.8)->city(),
+      'field_name' => $firstname . ' ' . $faker->lastName(),
+      'field_position' => $faker->optional(0.8)->jobTitle(),
+      'field_about' => $faker->optional(0.9)->text(400),
+      'field_skills' => youvo_dummy_get_random_skills(),
+      'field_portfolio' => $portfolio,
+      'field_phone' => $faker->optional()->phoneNumber(),
+      'field_url' => 'https://www.' . $faker->optional(0.8)->domainName(),
+      'field_education' => $faker->optional(0.8)->passthrough($faker->randomElement(['Fachschule', 'Hochschule', 'Akademie', 'Fachhochschule', 'Universität']) . ' ' . $faker->city()),
+      'field_jobs' => $faker->boolean(),
+      'field_public_profile' => $faker->boolean(),
+      'field_newsletter' => $faker->boolean(),
+    ];
+
+    // Create creative.
+    $creative = User::create($values);
+    try {
+      $creative->save();
+    }
+    catch (EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('youvo')
+        ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
+    }
   }
-  catch (EntityStorageException $e) {
+
+  // Delete user with ID 14 for legacy user.
+  try {
+    if ($account = \Drupal::entityTypeManager()
+      ->getStorage('user')->load(14)) {
+      $account->delete();
+    }
+  }
+  catch (InvalidPluginDefinitionException|PluginNotFoundException|EntityStorageException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
-      ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  // Values for creative user.
-  $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'anne.jpg');
-  $values = [
-    'type' => 'user',
-    'name' => 'hello@youvo.org',
-    'mail' => 'hello@youvo.org',
-    'roles' => ['creative'],
-    'pass' => 'admin',
-    'status' => 1,
-    'field_avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'field_name' => 'Alexandria Frezza',
-    'field_position' => 'Hebelwirkungstesterin',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
-    'field_portfolio' => [
-      'www.instagromm.com/alexfrezza',
-      'www.drabbble.com/alexandria',
-    ],
-    'field_phone' => '0123456789',
-    'field_url' => 'www.alexfrezza.de',
-    'field_education' => 'Fachhochschule für Hebelwirkung',
-    'field_jobs' => rand(0, 1),
-    'field_public_profile' => rand(0, 1),
-    'field_newsletter' => rand(0, 1),
-  ];
-
-  // Create creative.
-  $creative = User::create($values);
-  try {
-    $creative->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo')
-      ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  // Values for creative user.
-  $image_file = youvo_dummy_get_image_by_path('/img/test_images/portrait/', 'frank.jpg');
-  $values = [
-    'type' => 'user',
-    'name' => 'frechie@youvo.org',
-    'mail' => 'frechie@youvo.org',
-    'roles' => ['creative'],
-    'pass' => 'admin',
-    'status' => 1,
-    'field_avatar' => [
-      'target_id' => $image_file->id(),
-      'alt' => $random->sentences(3, TRUE),
-    ],
-    'field_name' => 'Frechie Daxon',
-    'field_position' => 'Laternenbetrachter',
-    'field_about' => rtrim($random->paragraphs(2)),
-    'field_skills' => youvo_dummy_get_random_skills(),
-    'field_portfolio' => [
-      'www.instagromm.com/frechiedaxon'
-    ],
-    'field_phone' => '0123456789',
-    'field_url' => 'www.frechdachs.de',
-    'field_education' => 'Ausbildung für Frechheit',
-    'field_jobs' => rand(0, 1),
-    'field_public_profile' => rand(0, 1),
-    'field_newsletter' => rand(0, 1),
-  ];
-
-  // Create creative.
-  $creative = User::create($values);
-  try {
-    $creative->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo')
-      ->error('An error occurred while creating dummy creative. %type: @message in %function (line %line of %file).', $variables);
+      ->error('An error occurred while deleting dummy creative. %type: @message in %function (line %line of %file).', $variables);
   }
 }

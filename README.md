@@ -1,17 +1,23 @@
-# youvo Backend Repository
+# Backend
 
-Provides the backend for `data.youvo.org` based on `Drupal 9`.
+**Backend repository for youvo based on Drupal 9.**
+
+<img src="/resources/logo.png" width="200px">
 
 ## Getting started locally
 
 ### Prerequisites
 
-For the local development environment we use DDEV based on Docker. For the system requirements please see [DDEV docs](https://ddev.readthedocs.io/en/stable/). 
+For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Ubuntu with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.    
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.1` `docker desktop 4.6.0` `ddev 1.18.2`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
+
+### Composer
+
+**Composer** is based on the package `drupal/core-recommended`. The configuration can be found in `composer.json`. Patches are defined in `composer.patches.json`. The patch files are located in the folder `patches`.
 
 ### Project Initialization and Drupal Setup
 
@@ -20,8 +26,8 @@ mkdir youvo-backend
 cd youvo-backend
 git clone git@github.com:youvo/backend.git .
 ddev config --auto
-ddev composer install --no-interaction --no-progress
-./scripts/install-local-ddev.sh
+ddev composer install
+./scripts/install-local.sh
 ```
 
 Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.org:admin`.
@@ -31,8 +37,8 @@ Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.o
 ### Configuration
 
 - DDEV configuration `.ddev/config.yml`
-- Drupal setup parameters `config/.env.local-ddev`
-- XDebug port `.ddev/php/xdebug_client_port.ini` 
+- Drupal setup parameters `config/.env.local`
+- XDebug port `.ddev/php/xdebug_client_port.ini`
 
 ### DDEV Commands
 
@@ -57,6 +63,7 @@ In some system configurations dummy content folders require further permissions.
 cd web/sites/default/files
 chmod 0666 -R academy projects creatives organizations
 ```
+
 ### PHPStorm connection to database
 
 - Host: `localhost`
@@ -72,7 +79,7 @@ chmod 0666 -R academy projects creatives organizations
 
 ## Distribution
 
-### Development 
+### Development
 
 To set up a Drupal distribution with the `youvo_development` profile, do the following:
 
@@ -80,7 +87,7 @@ To set up a Drupal distribution with the `youvo_development` profile, do the fol
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.development # and adjust settings
-composer install --no-interaction --no-progress
+composer install
 ./scripts/install-development.sh
 ```
 
@@ -96,7 +103,7 @@ To set up a Drupal distribution with the `youvo_platform` profile, do the follow
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.production # and adjust settings
-composer install --no-interaction --no-progress
+composer install
 ./scripts/install-production.sh
 ```
 
@@ -106,18 +113,18 @@ The database is `youvo_prod`.
 
 ### Make commands
 
-- Help: `make help`
-- Drush: `make drush`
-- Maintenance mode on: `make mm-on`
-- Maintenance mode off: `make mm-off`
-- Clear caches: `make cr`
-- Warm caches: `make warm`
-- (Re-)install Drupal: `make install` (only available in Development)
-- Calculate rebuild token: `make rebuild`
-- Restart Uberspace PHP: `make restart-php`
+```bash
+make help # show commands help
+make drush foo # execute drush commands
+make mm-on # maintenance mode on
+make mm-off # maintenance mode off
+make cr # clear caches
+make warm # warm caches
+make install # (re-)install Drupal (only available in development)
+make rebuild # calculate rebuild token
+make restart-php # restart Uberspace php
+```
 
 ### Notes
 
 **Deploy** is defined in the script `scripts/deploy.sh`.
-
-**Composer** is based on the package `drupal/core-recommended`. The configuration can be found in `composer.json`. Patches are defined in `composer.patches.json`. The patch files are located in the folder `patches`.
