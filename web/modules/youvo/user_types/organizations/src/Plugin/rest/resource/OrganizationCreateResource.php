@@ -5,9 +5,14 @@ namespace Drupal\organizations\Plugin\rest\resource;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\user_bundle\Entity\TypedUser;
+use Drupal\youvo\FieldValidator;
+use Drupal\youvo\RestContentShifter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,6 +48,20 @@ class OrganizationCreateResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
+   * The email validator service.
+   *
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
+   */
+  protected $emailValidator;
+
+  /**
+   * The project REST responder service.
+   *
+   * @var \Drupal\projects\ProjectRestResponder
+   */
+  protected $projectRestResponder;
+
+  /**
    * Constructs a OrganizationCreateResource object.
    *
    * @param array $configuration
@@ -59,11 +78,17 @@ class OrganizationCreateResource extends ResourceBase {
    *   The serialization by Json service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   *   The email validator service.
+   * @param \Drupal\projects\ProjectRestResponder $project_rest_responder
+   *   The project REST responder service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator, ProjectRestResponder $project_rest_responder) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->entityTypeManager = $entity_type_manager;
+    $this->emailValidator = $email_validator;
+    $this->projectRestResponder = $project_rest_responder;
   }
 
   /**
@@ -77,7 +102,9 @@ class OrganizationCreateResource extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
       $container->get('serialization.json'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('email.validator'),
+      $container->get('project.rest.responder')
     );
   }
 
@@ -124,20 +151,30 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(Request $request) {
 
-    // Decode content of the request.
-    $request_content = $this->serializationJson
-      ->decode($request->getContent());
+    // Create organization.
+    $organization = $this->createOrganization($request);
 
-    if (empty($request_content)) {
-      throw new BadRequestHttpException('Malformed request body.');
-    }
+    // Create project.
+    $project = $this->projectRestResponder->createProject($request);
 
-    // @todo Create new organization user.
+    // Add role, activate and save organization.
+    $organization->addRole('organization');
+    $organization->activate();
+    $organization->save();
 
-    // @todo Create new project proposal entity.
+    // Establish project author reference, set as draft, activate and save.
+    $project->get('uid')->value = $organization->id();
+    $project->get('field_lifecycle')->value = 'draft';
+    $project->get('status')->value = 1;
+    $project->save();
+
+    // @todo Login organization.
+
+    // @todo langcode.
 
     return new ModifiedResourceResponse();
   }
@@ -164,13 +201,79 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
+   * Create new organization user with some validation.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Drupal\user_bundle\Entity\TypedUser
+   */
+  private function createOrganization(Request $request) {
+
+    // Decode content of the request.
+    $content = $this->serializationJson->decode($request->getContent());
+
+    // Decline request body without organization data.
+    if (empty($content['data']) ||
+      !in_array('organization', array_column($content['data'], 'type'))) {
+      throw new BadRequestHttpException('Request body does not provide organization.');
+    }
+
+    // Get attributes from request content.
+    $attributes = RestContentShifter::shiftAttributesByType($content, 'organization');
+
+    // Check if valid email is provided.
+    if (empty($attributes['mail']) ||
+      !$this->emailValidator->isValid($attributes['mail'])) {
+      throw new BadRequestHttpException('Need to provide valid mail to register organization.');
+    }
+
+    // Check whether there is already an account for this email.
+    try {
+      if ($this->accountExistsForEmail($attributes['mail'])) {
+        throw new BadRequestHttpException('There already exists an account for the provided email address.');
+      }
+    }
+    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
+      throw new HttpException(500, 'Internal Server Error', $e);
+    }
+
+    // Create new organization user.
+    $organization = TypedUser::create(['type' => 'organization']);
+
+    // Populate fields.
+    foreach ($attributes as $field_key => $value) {
+
+      // Validate if field is available. Target field_name instead of name.
+      if ($field_key == 'name' || !$organization->hasField($field_key)) {
+        $field_key = 'field_' . $field_key;
+        if (!$organization->hasField($field_key)) {
+          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
+        }
+      }
+
+      // Validate field value.
+      $field_definition = $organization->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_definition, $value)) {
+        throw new BadRequestHttpException('Malformed request body. Unable to validate the organization field ' . $field_key);
+      }
+
+      // Set the field value.
+      $organization->get($field_key)->value = $value;
+
+      // Set username identical to provided mail.
+      if ($field_key == 'mail') {
+        $organization->setUsername($value);
+      }
+    }
+
+    return $organization;
+  }
+
+  /**
    * Check whether email used by already existing account.
    *
    * @param string $mail
-   *   The email in question.
-   *
    * @return bool
-   *   Whether an account already exists.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -179,4 +282,5 @@ class OrganizationCreateResource extends ResourceBase {
     return !empty($this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $mail]));
   }
+
 }
