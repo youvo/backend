@@ -6,4 +6,3 @@ services:
   project.rest.responder:
     class: Drupal\projects\ProjectRestResponder
     arguments: [ '@serialization.json' ]
-
