@@ -78,6 +78,8 @@ class OrganizationCreateResource extends ResourceBase {
    *   The serialization by Json service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   *   The email validator service.
    * @param \Drupal\projects\ProjectRestResponder $project_rest_responder
    *   The project REST responder service.
    */
