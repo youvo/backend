@@ -188,6 +188,12 @@ resourceFields:
     publicName: image
     enhancer:
       id: ''
+  field_image_copyright:
+    disabled: false
+    fieldName: field_image_copyright
+    publicName: image_copyright
+    enhancer:
+      id: ''
   field_lifecycle:
     disabled: false
     fieldName: field_lifecycle
