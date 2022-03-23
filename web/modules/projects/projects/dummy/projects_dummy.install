@@ -122,6 +122,7 @@ function projects_dummy_site_install_finished() {
         'target_id' => $image_file->id(),
         'alt' => $faker->text(50),
       ],
+      'field_image_copyright' => $faker->optional()->name(),
       'field_lifecycle' => $state,
       'field_local' => $faker->boolean(),
     ]);
