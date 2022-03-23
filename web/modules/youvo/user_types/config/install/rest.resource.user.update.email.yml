@@ -1,0 +1,12 @@
+id: user.update.email
+plugin_id: 'user:update:email'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - PATCH
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
