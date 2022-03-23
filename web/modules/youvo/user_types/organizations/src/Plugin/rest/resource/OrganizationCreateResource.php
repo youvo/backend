@@ -7,11 +7,12 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\youvo\FieldValidator;
+use Drupal\youvo\RestContentShifter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,6 +55,13 @@ class OrganizationCreateResource extends ResourceBase {
   protected $emailValidator;
 
   /**
+   * The project REST responder service.
+   *
+   * @var \Drupal\projects\ProjectRestResponder
+   */
+  protected $projectRestResponder;
+
+  /**
    * Constructs a OrganizationCreateResource object.
    *
    * @param array $configuration
@@ -70,12 +78,15 @@ class OrganizationCreateResource extends ResourceBase {
    *   The serialization by Json service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\projects\ProjectRestResponder $project_rest_responder
+   *   The project REST responder service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator, ProjectRestResponder $project_rest_responder) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->entityTypeManager = $entity_type_manager;
     $this->emailValidator = $email_validator;
+    $this->projectRestResponder = $project_rest_responder;
   }
 
   /**
@@ -90,7 +101,8 @@ class OrganizationCreateResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('serialization.json'),
       $container->get('entity_type.manager'),
-      $container->get('email.validator')
+      $container->get('email.validator'),
+      $container->get('project.rest.responder')
     );
   }
 
@@ -152,12 +164,11 @@ class OrganizationCreateResource extends ResourceBase {
     }
 
     // Pop values for organization from request and create user.
-    $attributes_organization = $this->popAttributes($content, 'organization');
+    $attributes_organization = RestContentShifter::shiftAttributesByType($content, 'organization');
     $organization = $this->createOrganization($attributes_organization);
 
     // Pop values for project from request and create node.
-    $attributes_project = $this->popAttributes($content, 'project');
-    $project = $this->createProject($attributes_project);
+    $project = $this->projectRestResponder->createProject($request);
 
     // Add role, activate and save organization.
     $organization->addRole('organization');
@@ -210,21 +221,6 @@ class OrganizationCreateResource extends ResourceBase {
   private function accountExistsForEmail(string $mail) {
     return !empty($this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $mail]));
-  }
-
-  /**
-   * Pop attributes from request content by type.
-   *
-   * @param array $content
-   * @param string $type
-   * @return array
-   */
-  private function popAttributes(array $content, string $type) {
-    if (empty($content['data'])) {
-      return [];
-    }
-    $content = array_filter($content['data'], fn ($a) => $a['type'] == $type);
-    return array_shift($content)['attributes'];
   }
 
 
@@ -284,43 +280,4 @@ class OrganizationCreateResource extends ResourceBase {
     return $organization;
   }
 
-  /**
-   * Create new project node with some validation.
-   *
-   * @param $attributes
-   * @return \Drupal\projects\Entity\Project
-   */
-  private function createProject($attributes) {
-
-    // Check if body is provided.
-    if (empty($attributes['body'])) {
-      throw new BadRequestHttpException('Need to provide body to create project.');
-    }
-
-    // Create new project node.
-    $project = Project::create(['type' => 'project']);
-
-    // Populate fields.
-    foreach ($attributes as $field_key => $value) {
-
-      // Validate if field is available.
-      if (!$project->hasField($field_key)) {
-        $field_key = 'field_' . $field_key;
-        if (!$project->hasField($field_key)) {
-          throw new BadRequestHttpException('Malformed request body. Projects do not provide the field ' . $field_key);
-        }
-      }
-
-      // Validate field value.
-      $field_definition = $project->getFieldDefinition($field_key);
-      if (!FieldValidator::validate($field_definition, $value)) {
-        throw new BadRequestHttpException('Malformed request body. Unable to validate the project field ' . $field_key);
-      }
-
-      // Set the field value.
-      $project->get($field_key)->value = $value;
-    }
-
-    return $project;
-  }
 }

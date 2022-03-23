@@ -3,3 +3,7 @@ services:
     class: Drupal\projects\EventSubscriber\ProjectRouteSubscriber
     tags:
       - { name: event_subscriber }
+  project.rest.responder:
+    class: Drupal\projects\ProjectRestResponder
+    arguments: [ '@serialization.json' ]
+
