@@ -134,8 +134,8 @@ class UserUpdatePasswordResponse extends ResourceBase {
      * be requested with the current refresh token. @see simple_oauth.module
      * simple_oauth_entity_update() and the respective patch.
      **/
-    $account->setPassword(trim($content['new_password']));
     try {
+      $account->setPassword(trim($content['new_password']));
       $account->save();
     }
     catch (EntityStorageException $e) {
