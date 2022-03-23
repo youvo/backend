@@ -7,11 +7,9 @@ package: 'youvo'
 
 install:
   # Core
-  - block
   - config
   - content_translation
   - datetime
-  - datetime_range
   - dblog
   - dynamic_page_cache
   - field
@@ -20,16 +18,13 @@ install:
   - jsonapi
   - jsonapi_extras
   - jsonapi_include
-  - link
   - menu_link_content
   - node
   - options
-  - page_cache
   - path
   - rest
   - serialization
   - taxonomy
-  - telephone
   - text
   - workflows
   # Contrib
