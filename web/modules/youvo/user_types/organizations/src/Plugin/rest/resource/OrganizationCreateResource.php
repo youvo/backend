@@ -153,21 +153,10 @@ class OrganizationCreateResource extends ResourceBase {
    */
   public function post(Request $request) {
 
-    // Decode content of the request.
-    $content = $this->serializationJson->decode($request->getContent());
+    // Create organization.
+    $organization = $this->createOrganization($request);
 
-    // Decline request body without both organization and project data.
-    if (empty($content['data']) ||
-      !in_array('organization', array_column($content['data'], 'type')) ||
-      !in_array('project', array_column($content['data'], 'type'))) {
-      throw new BadRequestHttpException('Request body does not provide organization and project.');
-    }
-
-    // Pop values for organization from request and create user.
-    $attributes_organization = RestContentShifter::shiftAttributesByType($content, 'organization');
-    $organization = $this->createOrganization($attributes_organization);
-
-    // Pop values for project from request and create node.
+    // Create project.
     $project = $this->projectRestResponder->createProject($request);
 
     // Add role, activate and save organization.
@@ -175,7 +164,7 @@ class OrganizationCreateResource extends ResourceBase {
     $organization->activate();
     $organization->save();
 
-    // Establish project author reference, set state and save.
+    // Establish project author reference, set as draft, activate and save.
     $project->get('uid')->value = $organization->id();
     $project->get('field_lifecycle')->value = 'draft';
     $project->get('status')->value = 1;
@@ -210,27 +199,25 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
-   * Check whether email used by already existing account.
-   *
-   * @param string $mail
-   * @return bool
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  private function accountExistsForEmail(string $mail) {
-    return !empty($this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['mail' => $mail]));
-  }
-
-
-  /**
    * Create new organization user with some validation.
    *
-   * @param array $attributes
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
    * @return \Drupal\user_bundle\Entity\TypedUser
    */
-  private function createOrganization(array $attributes) {
+  private function createOrganization(Request $request) {
+
+    // Decode content of the request.
+    $content = $this->serializationJson->decode($request->getContent());
+
+    // Decline request body without organization data.
+    if (empty($content['data']) ||
+      !in_array('organization', array_column($content['data'], 'type'))) {
+      throw new BadRequestHttpException('Request body does not provide organization.');
+    }
+
+    // Get attributes from request content.
+    $attributes = RestContentShifter::shiftAttributesByType($content, 'organization');
 
     // Check if valid email is provided.
     if (empty($attributes['mail']) ||
@@ -278,6 +265,20 @@ class OrganizationCreateResource extends ResourceBase {
     }
 
     return $organization;
+  }
+
+  /**
+   * Check whether email used by already existing account.
+   *
+   * @param string $mail
+   * @return bool
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
+  private function accountExistsForEmail(string $mail) {
+    return !empty($this->entityTypeManager->getStorage('user')
+      ->loadByProperties(['mail' => $mail]));
   }
 
 }
