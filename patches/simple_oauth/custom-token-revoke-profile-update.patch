@@ -1,0 +1,73 @@
+diff --git a/modules/contrib/simple_oauth/simple_oauth.module b/modules/contrib/simple_oauth/simple_oauth.module
+index 04fc84d..61d86e2 100644
+--- a/modules/contrib/simple_oauth/simple_oauth.module
++++ b/modules/contrib/simple_oauth/simple_oauth.module
+@@ -30,7 +30,7 @@ function simple_oauth_cron() {
+   if (!empty($expired_tokens = $collector->collect($token_cron_batch_size))) {
+     $collector->deleteMultipleTokens($expired_tokens);
+     $logger->notice('Deleted @limit expired tokens in cron.', [
+-      '@limit' => $token_cron_batch_size,
++      '@limit' => count($expired_tokens),
+     ]);
+   }
+ }
+@@ -43,7 +43,22 @@ function simple_oauth_entity_update(EntityInterface $entity) {
+   $collector = \Drupal::service('simple_oauth.expired_collector');
+   // Collect the affected tokens and expire them.
+   if ($entity instanceof AccountInterface) {
+-    $collector->deleteMultipleTokens($collector->collectForAccount($entity));
++    // Following the Drupal core pattern, revoke access to the system when
++    // password has been changed.
++    $password_changed = $entity->pass->value !== $entity->original->pass->value;
++
++    // When the account got blocked, we should revoke user's access to the site.
++    $account_blocked = !$entity->pass->value && $entity->original->status->value;
++
++    // When roles have changed, we should revoke the token to prevent potential
++    // access to the content where the user has no access to anymore.
++    $roles_new = $entity->getRoles();
++    $roles_old = $entity->original->getRoles();
++    $roles_changed = array_merge(array_diff($roles_new, $roles_old), array_diff($roles_old, $roles_new));
++
++    if ($password_changed || $account_blocked || $roles_changed) {
++      $collector->revokeMultipleTokens($collector->collectForAccount($entity, FALSE));
++    }
+   }
+   if ($entity instanceof Consumer) {
+     $collector->deleteMultipleTokens($collector->collectForClient($entity));
+diff --git a/modules/contrib/simple_oauth/src/ExpiredCollector.php b/modules/contrib/simple_oauth/src/ExpiredCollector.php
+index 296f794..7e47655 100644
+--- a/modules/contrib/simple_oauth/src/ExpiredCollector.php
++++ b/modules/contrib/simple_oauth/src/ExpiredCollector.php
+@@ -81,10 +81,12 @@ public function collect($limit = 0) {
+    * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
+    *   The tokens.
+    */
+-  public function collectForAccount(AccountInterface $account) {
++  public function collectForAccount(AccountInterface $account, $exclude_refresh_token = TRUE) {
+     $query = $this->tokenStorage->getQuery();
+     $query->condition('auth_user_id', $account->id());
+-    $query->condition('bundle', 'refresh_token', '!=');
++    if ($exclude_refresh_token) {
++      $query->condition('bundle', 'refresh_token', '!=');
++    }
+     $entity_ids = $query->execute();
+     $output = $entity_ids
+       ? array_values($this->tokenStorage->loadMultiple(array_values($entity_ids)))
+@@ -142,4 +144,16 @@ public function deleteMultipleTokens(array $tokens = []) {
+     $this->tokenStorage->delete($tokens);
+   }
+
++  /**
++   * Revokes multiple tokens based on ID.
++   *
++   * @param \Drupal\simple_oauth\Entity\Oauth2TokenInterface[] $tokens
++   *   The token entity IDs.
++   */
++  public function revokeMultipleTokens(array $tokens = []) {
++    foreach ($tokens as $token) {
++      $token->revoke();
++    }
++  }
++
+ }
