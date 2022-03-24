@@ -54,7 +54,7 @@ index 296f794..7e47655 100644
      $entity_ids = $query->execute();
      $output = $entity_ids
        ? array_values($this->tokenStorage->loadMultiple(array_values($entity_ids)))
-@@ -142,4 +144,16 @@ public function deleteMultipleTokens(array $tokens = []) {
+@@ -142,4 +144,17 @@ public function deleteMultipleTokens(array $tokens = []) {
      $this->tokenStorage->delete($tokens);
    }
 
@@ -67,6 +67,7 @@ index 296f794..7e47655 100644
 +  public function revokeMultipleTokens(array $tokens = []) {
 +    foreach ($tokens as $token) {
 +      $token->revoke();
++      $token->save();
 +    }
 +  }
 +
