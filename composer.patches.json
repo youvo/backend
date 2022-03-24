@@ -24,7 +24,7 @@
           "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/exclude_consumer_entity_type.patch"
         },
         "drupal/simple_oauth": {
-          "Issue #2946882: Auth revoke on profile update": "patches/simple_oauth/simple_oauth-auth-revoke-2946882-11.patch",
+          "Custom: Token revoke on profile update": "patches/simple_oauth/custom-token-revoke-profile-update.patch",
           "Custom: Silence token revoked messages": "patches/simple_oauth/custom-silence-token-revoked-messages.patch"
         }
     }
