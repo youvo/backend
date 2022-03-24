@@ -1,0 +1,12 @@
+diff --git a/core/modules/jsonapi/src/Controller/FileUpload.php b/core/modules/jsonapi/src/Controller/FileUpload.php
+index c11244a..e595649 100644
+--- a/core/modules/jsonapi/src/Controller/FileUpload.php
++++ b/core/modules/jsonapi/src/Controller/FileUpload.php
+@@ -180,7 +180,7 @@ public function handleFileUploadForNewResource(Request $request, ResourceType $r
+     }
+
+     // @todo Remove line below in favor of commented line in https://www.drupal.org/project/drupal/issues/2878463.
+-    $self_link = new Link(new CacheableMetadata(), Url::fromRoute('jsonapi.file--file.individual', ['entity' => $file->uuid()]), 'self');
++    $self_link = new Link(new CacheableMetadata(), Url::fromRoute('jsonapi.file.individual', ['entity' => $file->uuid()]), 'self');
+     /* $self_link = new Link(new CacheableMetadata(), $this->entity->toUrl('jsonapi'), ['self']); */
+     $links = new LinkCollection(['self' => $self_link]);
