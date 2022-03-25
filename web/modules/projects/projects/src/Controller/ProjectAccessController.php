@@ -30,7 +30,7 @@ class ProjectAccessController extends ControllerBase {
     if ($project instanceof Project && !empty($transition)) {
       return AccessResult::allowedIf(
         $account->hasPermission('use project_lifecycle transition project_' . $transition) &&
-        $project->canTransitionByLabel($transition)
+        $project->workflowManager()->canTransitionByLabel($transition)
       );
     }
     return AccessResult::forbidden();

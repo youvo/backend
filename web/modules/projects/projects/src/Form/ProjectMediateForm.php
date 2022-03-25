@@ -60,7 +60,7 @@ class ProjectMediateForm extends FormBase {
     $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
     // Mediate project.
-    if ($project->transitionMediate()) {
+    if ($project->workflowManager()->transitionMediate()) {
       $project->setParticipants($participants, TRUE);
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }

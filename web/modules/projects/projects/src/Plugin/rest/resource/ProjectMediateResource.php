@@ -177,7 +177,7 @@ class ProjectMediateResource extends ResourceBase {
       array_fill($count_creative + 1, $count_manager + $count_creative, 'Manager')
     );
     // Mediate project with participants.
-    if (!empty($participant_ids) && $project->transitionMediate()) {
+    if (!empty($participant_ids) && $project->workflowManager()->transitionMediate()) {
       $project->setParticipants($participant_ids, $tasks);
       return new ResourceResponse('Project was mediated successfully.');
     }

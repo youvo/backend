@@ -78,7 +78,7 @@ class ProjectApplyResource extends ResourceBase {
   public function get(ProjectInterface $project) {
 
     // Is the project open?
-    if ($project->getState() !== Project::STATE_OPEN) {
+    if (!$project->workflowManager()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
@@ -107,7 +107,7 @@ class ProjectApplyResource extends ResourceBase {
   public function post(Project $project) {
 
     // Is the project open?
-    if ($project->getState() !== Project::STATE_OPEN) {
+    if (!$project->workflowManager()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
