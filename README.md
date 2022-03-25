@@ -1,16 +1,19 @@
-# Backend
+<h1 align="center">Backend</h1>
+<p align="center">
+  <img width="200" src="/resources/logo.png">
+</p>
 
-**Backend repository for youvo based on Drupal 9.**
+## :wave: &nbsp;Introduction
 
-<img src="/resources/logo.png" width="200px">
+Backend repository for youvo based on Drupal 9.
 
-## Getting started locally
+## :whale: &nbsp;Getting started locally
 
 ### Prerequisites
 
 For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.  
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.9` `docker desktop 4.6.1` `ddev 1.19.1`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
@@ -32,7 +35,7 @@ ddev composer install
 
 Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.org:admin`.
 
-## Local Configuration and Development Setup
+## :hammer_and_wrench: &nbsp;Local Configuration and Development Setup
 
 ### Configuration
 
@@ -77,7 +80,7 @@ chmod 0666 -R academy projects creatives organizations
 * https://www.drupal.org/node/1419988
 * Set in idea configuration file `<option name="CODING_STANDARD" value="Drupal,DrupalPractice,PHPCompatibility" />`
 
-## Distribution
+## :globe_with_meridians: &nbsp;Distribution
 
 ### Development
 
