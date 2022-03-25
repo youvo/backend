@@ -8,3 +8,7 @@ services:
   logger.channel.youvo:
     parent: logger.channel_base
     arguments: [ 'youvo' ]
+  unauthorized.exception.subscriber:
+    class: Drupal\youvo\EventSubscriber\UnauthorizedExceptionSubscriber
+    tags:
+      - { name: event_subscriber }
