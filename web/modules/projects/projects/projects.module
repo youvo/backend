@@ -5,8 +5,13 @@
  * Custom module which handles business logic for project entities.
  */
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectFieldAccess;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -21,6 +26,16 @@ function projects_entity_bundle_info_alter(&$bundles) {
   if (isset($bundles['node']['project'])) {
     $bundles['node']['project']['class'] = Project::class;
   }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function projects_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+  if ($items->getEntity() instanceof Project) {
+    return ProjectFieldAccess::checkFieldAccess($operation, $field_definition, $account, $items);
+  }
+  return AccessResult::neutral();
 }
 
 /**
