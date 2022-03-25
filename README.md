@@ -10,8 +10,8 @@
 
 For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.1` `docker 20.10.10` `ddev 1.18.2`.
-Tested on macOS with `macOS Monterey 12.3` `composer 2.2.1` `docker desktop 4.6.0` `ddev 1.18.2`.
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.
+Tested on macOS with `macOS Monterey 12.3` `composer 2.2.9` `docker desktop 4.6.1` `ddev 1.19.1`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
 
