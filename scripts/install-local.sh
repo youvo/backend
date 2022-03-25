@@ -1,7 +1,7 @@
 #!/bin/bash
 
  # Exit on error.
- # set -e
+ set -e
 
  # Login sudo.
  sudo true
@@ -51,16 +51,19 @@
  # Wait for containers to be accessible.
  sleep 5
 
+ # Enable auth.
+ ddev auth ssh
+
  # Reinstall drupal.
  echo "Installing Drupal ..."
- ddev drush "si -y youvo_development \
+ ddev drush si -y youvo_development \
   --locale=en \
-  --db-url=${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} \
-  --site-name=${SITE_NAME} \
-  --site-mail=${SITE_MAIL} \
-  --account-name=${ACCOUNT_NAME} \
-  --account-mail=${ACCOUNT_MAIL} \
-  --account-pass=${ACCOUNT_PASS}"
+  --db-url="${DB_DRIVER}"://"${DB_USER}":"${DB_PASSWORD}"@"${DB_HOST}":"${DB_PORT}"/"${DB_NAME}" \
+  --site-name="${SITE_NAME}" \
+  --site-mail="${SITE_MAIL}" \
+  --account-name="${ACCOUNT_NAME}" \
+  --account-mail="${ACCOUNT_MAIL}" \
+  --account-pass="${ACCOUNT_PASS}"
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
