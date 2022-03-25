@@ -9,12 +9,5 @@ use Drupal\node\NodeInterface;
  */
 interface ProjectInterface extends NodeInterface {
 
-  /**
-   * Method to determine current state of project.
-   *
-   * @return string
-   *   String with current state of project.
-   */
-  public function getState();
 
 }
