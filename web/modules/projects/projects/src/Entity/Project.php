@@ -221,22 +221,9 @@ class Project extends Node implements ProjectInterface {
 
   /**
    * Does the organization of the project have a manager?
-   *
-   * We expect that only one person manages a project but allow multiple
-   * managers for future workflow adjustments.
    */
   public function hasManager() {
-    $count = 0;
-    $organization = $this->getOwner();
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if (in_array('manager', $manager->getRoles())) {
-        $count = $count + 1;
-      }
-    }
-    return (bool) $count;
+    return $this->getOwner()->hasManager();
   }
 
   /**
