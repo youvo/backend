@@ -1,0 +1,415 @@
+diff --git a/modules/contrib/simple_oauth/simple_oauth.services.yml b/modules/contrib/simple_oauth/simple_oauth.services.yml
+index 0455a1a..2e296f8 100644
+--- a/modules/contrib/simple_oauth/simple_oauth.services.yml
++++ b/modules/contrib/simple_oauth/simple_oauth.services.yml
+@@ -17,6 +17,7 @@ services:
+       - '@simple_oauth.server.resource_server'
+       - '@entity_type.manager'
+       - '@simple_oauth.page_cache_request_policy.disallow_oauth2_token_requests'
++      - '@simple_oauth.logger.channel'
+     tags:
+       - { name: authentication_provider, provider_id: oauth2, global: TRUE, priority: 35 }
+   simple_oauth.page_cache_request_policy.disallow_oauth2_token_requests:
+@@ -24,7 +25,13 @@ services:
+     public: false
+     tags:
+       - { name: page_cache_request_policy }
+-
++  simple_oauth.logger.channel:
++    parent: logger.channel_base
++    arguments: [ 'simple_oauth' ]
++  simple_oauth.unauthorized_exception.subscriber:
++    class: Drupal\simple_oauth\EventSubscriber\UnauthorizedExceptionSubscriber
++    tags:
++      - { name: event_subscriber }
+   simple_oauth.normalizer.oauth2_token:
+     class: Drupal\simple_oauth\Normalizer\TokenEntityNormalizer
+     arguments: [ '@entity_type.manager' ]
+diff --git a/modules/contrib/simple_oauth/src/Authentication/Provider/SimpleOauthAuthenticationProvider.php b/modules/contrib/simple_oauth/src/Authentication/Provider/SimpleOauthAuthenticationProvider.php
+index b55b3ce..828c5fe 100644
+--- a/modules/contrib/simple_oauth/src/Authentication/Provider/SimpleOauthAuthenticationProvider.php
++++ b/modules/contrib/simple_oauth/src/Authentication/Provider/SimpleOauthAuthenticationProvider.php
+@@ -2,14 +2,16 @@
+
+ namespace Drupal\simple_oauth\Authentication\Provider;
+
++use Drupal\Component\Render\FormattableMarkup;
+ use Drupal\Core\Authentication\AuthenticationProviderInterface;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\simple_oauth\Authentication\TokenAuthUser;
+ use Drupal\simple_oauth\PageCache\SimpleOauthRequestPolicyInterface;
+ use Drupal\simple_oauth\Server\ResourceServerInterface;
+ use League\OAuth2\Server\Exception\OAuthServerException;
++use Psr\Log\LoggerInterface;
+ use Symfony\Component\HttpFoundation\Request;
+-use Symfony\Component\HttpKernel\Exception\HttpException;
++use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+
+ /**
+  * @internal
+@@ -31,6 +33,11 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
+    */
+   protected $oauthPageCacheRequestPolicy;
+
++  /**
++   * @var \Psr\Log\LoggerInterface
++   */
++  protected $logger;
++
+   /**
+    * Constructs a HTTP basic authentication provider object.
+    *
+@@ -40,15 +47,19 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
+    *   The entity type manager service.
+    * @param \Drupal\simple_oauth\PageCache\SimpleOauthRequestPolicyInterface $page_cache_request_policy
+    *   The page cache request policy.
++   * @param \Psr\Log\LoggerInterface $logger
++   *   The logger channel.
+    */
+   public function __construct(
+     ResourceServerInterface $resource_server,
+     EntityTypeManagerInterface $entity_type_manager,
+-    SimpleOauthRequestPolicyInterface $page_cache_request_policy
++    SimpleOauthRequestPolicyInterface $page_cache_request_policy,
++    LoggerInterface $logger
+   ) {
+     $this->resourceServer = $resource_server;
+     $this->entityTypeManager = $entity_type_manager;
+     $this->oauthPageCacheRequestPolicy = $page_cache_request_policy;
++    $this->logger = $logger;
+   }
+
+   /**
+@@ -75,12 +86,12 @@ public function authenticate(Request $request) {
+       $auth_request = $this->resourceServer->validateAuthenticatedRequest($request);
+     }
+     catch (OAuthServerException $exception) {
+-      // Procedural code here is hard to avoid.
+-      watchdog_exception('simple_oauth', $exception);
+-
+-      throw new HttpException(
+-        $exception->getHttpStatusCode(),
+-        $exception->getHint(),
++      // $this->logger->notice($exception->getMessage() .
++      //   ' Hint: ' . $exception->getHint() . '.');
++      // Forward authentication challenge to be interpreted by the requester.
++      throw new UnauthorizedHttpException(
++        $this->getUnauthorizedExceptionChallenge($request, $exception),
++        $exception->getMessage(),
+         $exception
+       );
+     }
+@@ -97,15 +108,18 @@ public function authenticate(Request $request) {
+       $token->revoke();
+       $token->save();
+       $exception = OAuthServerException::accessDenied(
+-        t(
++        new FormattableMarkup(
+           '%name is blocked or has not been activated yet.',
+           ['%name' => $account->getAccountName()]
+         )
+       );
+-      watchdog_exception('simple_oauth', $exception);
+-      throw new HttpException(
+-        $exception->getHttpStatusCode(),
+-        $exception->getHint(),
++
++      $this->logger->notice($exception->getMessage() .
++        ' Hint: ' . $exception->getHint() . '.');
++      // Forward authentication challenge to be interpreted by the requester.
++      throw new UnauthorizedHttpException(
++        $this->getUnauthorizedExceptionChallenge($request, $exception),
++        $exception->getMessage(),
+         $exception
+       );
+     }
+@@ -120,4 +134,27 @@ public function authenticate(Request $request) {
+     return $account;
+   }
+
++
++  /**
++   * Formats challenge for unauthorized exception.
++   *
++   * @param \Symfony\Component\HttpFoundation\Request $request
++   * @param \League\OAuth2\Server\Exception\OAuthServerException $exception
++   *
++   * @return \Drupal\Component\Render\FormattableMarkup
++   */
++  protected function getUnauthorizedExceptionChallenge(Request $request, OAuthServerException $exception) {
++    $error = match ($exception->getHint()) {
++      'Access token could not be verified' => 'token_invalid',
++      'Access token has been revoked' => 'token_revoked',
++      default => $exception->getErrorType(),
++    };
++    return new FormattableMarkup(
++      '@auth_scheme realm="OAuth", error="@error", error_description="@hint"', [
++      '@auth_scheme' => strpos($request->headers->get('Authorization'), 'Bearer') === 0 ? 'Bearer' : 'Basic',
++      '@error' => $error,
++      '@hint' => $exception->getHint()
++    ]);
++  }
++
+ }
+diff --git a/modules/contrib/simple_oauth/src/Controller/Oauth2AuthorizeController.php b/modules/contrib/simple_oauth/src/Controller/Oauth2AuthorizeController.php
+index 6646036..7f3eddc 100644
+--- a/modules/contrib/simple_oauth/src/Controller/Oauth2AuthorizeController.php
++++ b/modules/contrib/simple_oauth/src/Controller/Oauth2AuthorizeController.php
+@@ -16,6 +16,7 @@
+ use League\OAuth2\Server\Entities\ScopeEntityInterface;
+ use League\OAuth2\Server\Exception\OAuthServerException;
+ use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
++use Psr\Log\LoggerInterface;
+ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+ use Symfony\Component\HttpFoundation\RedirectResponse;
+@@ -54,6 +55,13 @@ class Oauth2AuthorizeController extends ControllerBase {
+    */
+   protected $knownClientRepository;
+
++  /**
++   * The logger channel.
++   *
++   * @var \Psr\Log\LoggerInterface
++   */
++  protected $logger;
++
+   /**
+    * Oauth2AuthorizeController construct.
+    *
+@@ -65,17 +73,21 @@ class Oauth2AuthorizeController extends ControllerBase {
+    *   The config factory.
+    * @param \Drupal\simple_oauth\KnownClientsRepositoryInterface $known_clients_repository
+    *   The known client repository service.
++   * @param \Psr\Log\LoggerInterface $logger
++   *   The logger channel.
+    */
+   public function __construct(
+     HttpMessageFactoryInterface $message_factory,
+     Oauth2GrantManagerInterface $grant_manager,
+     ConfigFactoryInterface $config_factory,
+-    KnownClientsRepositoryInterface $known_clients_repository
++    KnownClientsRepositoryInterface $known_clients_repository,
++    LoggerInterface $logger
+   ) {
+     $this->messageFactory = $message_factory;
+     $this->grantManager = $grant_manager;
+     $this->configFactory = $config_factory;
+     $this->knownClientRepository = $known_clients_repository;
++    $this->logger = $logger;
+   }
+
+   /**
+@@ -86,7 +98,8 @@ public static function create(ContainerInterface $container) {
+       $container->get('psr7.http_message_factory'),
+       $container->get('plugin.manager.oauth2_grant.processor'),
+       $container->get('config.factory'),
+-      $container->get('simple_oauth.known_clients')
++      $container->get('simple_oauth.known_clients'),
++      $container->get('simple_oauth.logger.channel')
+     );
+   }
+
+@@ -158,7 +171,8 @@ public function authorize(Request $request) {
+       }
+       catch (OAuthServerException $exception) {
+         $this->messenger()->addError($this->t('Fatal error. Unable to get the authorization server.'));
+-        watchdog_exception('simple_oauth', $exception);
++        $this->logger->error($exception->getMessage() .
++          ' Hint: ' . $exception->getHint() . '.');
+         return RedirectResponse::create(Url::fromRoute('<front>')->toString());
+       }
+       if ($auth_request) {
+diff --git a/modules/contrib/simple_oauth/src/Controller/Oauth2Token.php b/modules/contrib/simple_oauth/src/Controller/Oauth2Token.php
+index 1341fc8..a820268 100644
+--- a/modules/contrib/simple_oauth/src/Controller/Oauth2Token.php
++++ b/modules/contrib/simple_oauth/src/Controller/Oauth2Token.php
+@@ -8,6 +8,7 @@
+ use League\OAuth2\Server\AuthorizationServer;
+ use League\OAuth2\Server\Exception\OAuthServerException;
+ use Psr\Http\Message\ServerRequestInterface;
++use Psr\Log\LoggerInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+
+ class Oauth2Token extends ControllerBase {
+@@ -17,14 +18,22 @@ class Oauth2Token extends ControllerBase {
+    */
+   protected $grantManager;
+
++  /**
++   * @var \Psr\Log\LoggerInterface
++   */
++  protected $logger;
++
+   /**
+    * Oauth2Token constructor.
+    *
+    * @param \Drupal\simple_oauth\Plugin\Oauth2GrantManagerInterface $grant_manager
+    *   The grant manager.
++   * @param \Psr\Log\LoggerInterface $logger
++   *   The logger channel.
+    */
+-  public function __construct(Oauth2GrantManagerInterface $grant_manager) {
++  public function __construct(Oauth2GrantManagerInterface $grant_manager, LoggerInterface $logger) {
+     $this->grantManager = $grant_manager;
++    $this->logger = $logger;
+   }
+
+   /**
+@@ -32,7 +41,8 @@ public function __construct(Oauth2GrantManagerInterface $grant_manager) {
+    */
+   public static function create(ContainerInterface $container) {
+     return new static(
+-      $container->get('plugin.manager.oauth2_grant.processor')
++      $container->get('plugin.manager.oauth2_grant.processor'),
++      $container->get('simple_oauth.logger.channel')
+     );
+   }
+
+@@ -63,7 +73,8 @@ public function token(ServerRequestInterface $request) {
+       $response = $this->handleToken($request, $auth_server);
+     }
+     catch (OAuthServerException $exception) {
+-      watchdog_exception('simple_oauth', $exception);
++      $this->logger->error($exception->getMessage() .
++        ' Hint: ' . $exception->getHint() . '.');
+       $response = $exception->generateHttpResponse(new Response());
+     }
+     return $response;
+diff --git a/modules/contrib/simple_oauth/src/Entity/Form/Oauth2GenerateKeyForm.php b/modules/contrib/simple_oauth/src/Entity/Form/Oauth2GenerateKeyForm.php
+index a51b22a..eff0cb0 100755
+--- a/modules/contrib/simple_oauth/src/Entity/Form/Oauth2GenerateKeyForm.php
++++ b/modules/contrib/simple_oauth/src/Entity/Form/Oauth2GenerateKeyForm.php
+@@ -8,7 +8,9 @@
+ use Drupal\Core\Ajax\InvokeCommand;
+ use Drupal\Core\Form\FormBase;
+ use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Utility\Error;
+ use Drupal\simple_oauth\Service\KeyGeneratorService;
++use Psr\Log\LoggerInterface;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+
+ /**
+@@ -21,13 +23,20 @@ class Oauth2GenerateKeyForm extends FormBase {
+    */
+   private $keyGen;
+
++  /**
++   * @var \Psr\Log\LoggerInterface
++   */
++  protected $logger;
++
+   /**
+    * Oauth2GenerateKeyForm constructor.
+    *
+    * @param \Drupal\simple_oauth\Service\KeyGeneratorService $key_generator_service
++   * @param \Psr\Log\LoggerInterface $logger
+    */
+-  public function __construct(KeyGeneratorService $key_generator_service) {
++  public function __construct(KeyGeneratorService $key_generator_service, LoggerInterface $logger) {
+     $this->keyGen = $key_generator_service;
++    $this->logger = $logger;
+   }
+
+   /**
+@@ -35,7 +44,8 @@ public function __construct(KeyGeneratorService $key_generator_service) {
+    */
+   public static function create(ContainerInterface $container) {
+     return new static(
+-      $container->get('simple_oauth.key.generator')
++      $container->get('simple_oauth.key.generator'),
++      $container->get('simple_oauth.logger.channel')
+     );
+   }
+
+@@ -126,7 +136,8 @@ public function generateKeys(&$form, FormStateInterface $form_state) {
+     }
+     catch (\Exception $exception) {
+       // If exception log it and return an error message.
+-      watchdog_exception('simple_oauth', $exception);
++      $variables = Error::decodeException($exception);
++      $this->logger->error('%type: @message in %function (line %line of %file).', $variables);
+       $response->addCommand(new InvokeCommand('#key-error-message', 'show'));
+       return $response->addCommand(new HtmlCommand('#key-error-message', $exception->getMessage()));
+     }
+diff --git a/modules/contrib/simple_oauth/src/EventSubscriber/UnauthorizedExceptionSubscriber.php b/modules/contrib/simple_oauth/src/EventSubscriber/UnauthorizedExceptionSubscriber.php
+new file mode 100644
+index 0000000..a0d8e6f
+--- /dev/null
++++ b/modules/contrib/simple_oauth/src/EventSubscriber/UnauthorizedExceptionSubscriber.php
+@@ -0,0 +1,49 @@
++<?php
++
++namespace Drupal\simple_oauth\EventSubscriber;
++
++use Symfony\Component\EventDispatcher\EventSubscriberInterface;
++use Symfony\Component\HttpFoundation\Response;
++use Symfony\Component\HttpKernel\Event\RequestEvent;
++use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
++use Symfony\Component\HttpKernel\KernelEvents;
++
++/**
++ * Unauthorized exception subscriber.
++ */
++class UnauthorizedExceptionSubscriber implements EventSubscriberInterface {
++
++  /**
++   * Try to catch unauthorized requests and forward the exception to the
++   * requester. Triggers before the core exception logging service.
++   *
++   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
++   *   The event to process.
++   */
++  public function onUnauthorizedException(RequestEvent $event) {
++    /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
++    $exception = $event->getThrowable();
++    if ($exception instanceof UnauthorizedHttpException) {
++      $headers = $exception->getHeaders();
++      if (array_key_exists('WWW-Authenticate', $headers) &&
++        strpos($headers['WWW-Authenticate'], 'OAuth') !== FALSE) {
++        $response = new Response(
++          $exception->getMessage(),
++          $exception->getStatusCode(),
++          $exception->getHeaders()
++        );
++        $event->setResponse($response);
++      }
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function getSubscribedEvents() {
++    // Triggers before ExceptionLoggingSubscriber with priority 50.
++    $events[KernelEvents::EXCEPTION][] = ['onUnauthorizedException', 55];
++    return $events;
++  }
++
++}
+diff --git a/modules/contrib/simple_oauth/tests/src/Unit/Authentication/Provider/SimpleOauthAuthenticationTest.php b/modules/contrib/simple_oauth/tests/src/Unit/Authentication/Provider/SimpleOauthAuthenticationTest.php
+index 9b29eb7..1b1992c 100644
+--- a/modules/contrib/simple_oauth/tests/src/Unit/Authentication/Provider/SimpleOauthAuthenticationTest.php
++++ b/modules/contrib/simple_oauth/tests/src/Unit/Authentication/Provider/SimpleOauthAuthenticationTest.php
+@@ -8,6 +8,7 @@
+ use Drupal\simple_oauth\PageCache\DisallowSimpleOauthRequests;
+ use Drupal\simple_oauth\Server\ResourceServerInterface;
+ use Drupal\Tests\UnitTestCase;
++use Psr\Log\LoggerInterface;
+ use Symfony\Component\HttpFoundation\Request;
+
+ /**
+@@ -37,11 +38,13 @@ protected function setUp() {
+
+     $resource_server = $this->prophesize(ResourceServerInterface::class);
+     $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
++    $logger = $this->prophesize(LoggerInterface::class);
+     $this->oauthPageCacheRequestPolicy = new DisallowSimpleOauthRequests();
+     $this->provider = new SimpleOauthAuthenticationProvider(
+       $resource_server->reveal(),
+       $entity_type_manager->reveal(),
+-      $this->oauthPageCacheRequestPolicy
++      $this->oauthPageCacheRequestPolicy,
++      $logger->reveal(),
+     );
+   }

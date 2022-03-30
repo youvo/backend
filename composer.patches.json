@@ -28,7 +28,7 @@
         },
         "drupal/simple_oauth": {
           "Custom: Token revoke on profile update": "patches/simple_oauth/custom-token-revoke-profile-update.patch",
-          "Custom: Intercept 401 to throw unauthorized exception": "patches/simple_oauth/custom-intercept-401-to-throw-unauthorized-exception.patch"
+          "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/SO52-3082984-12.patch"
         }
     }
 }
