@@ -111,6 +111,11 @@ class UserUpdateEmailResponse extends ResourceBase {
       return new ModifiedResourceResponse('The email parameter was not provided.', 400);
     }
 
+    // Check whether the email has changed. Nothing to do.
+    if ($email == $this->currentUser->getEmail()) {
+      return new ModifiedResourceResponse();
+    }
+
     // Check whether email is valid.
     if (!$this->emailValidator->isValid($email)) {
       return new ModifiedResourceResponse('The provided email is not valid.', 400);
@@ -152,6 +157,11 @@ class UserUpdateEmailResponse extends ResourceBase {
     // Check whether email was provided.
     if (empty($content['new_email'])) {
       return new ResourceResponse('The value new_email was not provided.', 400);
+    }
+
+    // Check whether the email has changed. Nothing to do.
+    if ($content['new_email'] == $this->currentUser->getEmail()) {
+      return new ResourceResponse();
     }
 
     // Check whether email is valid.
