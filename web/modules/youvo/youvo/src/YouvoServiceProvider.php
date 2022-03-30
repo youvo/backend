@@ -1,14 +1,15 @@
 <?php
 
-namespace Drupal\academy;
+namespace Drupal\youvo;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Alters services for academy use.
+ * Alters services.
  */
-class AcademyServiceProvider extends ServiceProviderBase {
+class YouvoServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}
@@ -18,7 +19,8 @@ class AcademyServiceProvider extends ServiceProviderBase {
     // Overwrite class for jsonapi_include.parse service.
     if ($container->hasDefinition('jsonapi_include.parse')) {
       $definition = $container->getDefinition('jsonapi_include.parse');
-      $definition->setClass('Drupal\academy\AcademyJsonapiParse');
+      $definition->setClass('Drupal\youvo\AlterJsonapiParse')
+        ->addArgument(new Reference('event_dispatcher'));
     }
   }
 

@@ -2,3 +2,7 @@ services:
   logger.channel.academy:
     parent: logger.channel_base
     arguments: [ 'academy' ]
+  academy.parse_jsonapi.relationships:
+    class: Drupal\academy\EventSubscriber\AcademyParseJsonapiRelationshipsSubscriber
+    tags:
+      - { name: event_subscriber }
