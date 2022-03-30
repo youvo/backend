@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy\Plugin\DataType;
+namespace Drupal\youvo\Plugin\DataType;
 
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
