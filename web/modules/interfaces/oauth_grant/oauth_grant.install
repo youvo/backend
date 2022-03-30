@@ -40,8 +40,7 @@ function oauth_grant_install() {
     $default_consumer->delete();
 
     // Load development environment. Exit if not available.
-    $module_path = \Drupal::moduleHandler()->getModule('oauth_grant')->getPath();
-    $env_path = $module_path . '/config/env/.env.development';
+    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.consumers.development';
     if (!is_readable($env_path)) {
       throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
     }
