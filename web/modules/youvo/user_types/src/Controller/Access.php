@@ -27,10 +27,6 @@ class Access extends ControllerBase {
       return AccessResult::forbidden();
     }
 
-    if (!$account instanceof User || $account->isBlocked()) {
-      return AccessResult::forbidden();
-    }
-
     return AccessResult::allowed();
   }
 
@@ -46,10 +42,6 @@ class Access extends ControllerBase {
   public function updateEmail(AccountInterface $account) {
 
     if ($account->isAnonymous()) {
-      return AccessResult::forbidden();
-    }
-
-    if (!$account instanceof User || $account->isBlocked()) {
       return AccessResult::forbidden();
     }
 
