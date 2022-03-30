@@ -1,0 +1,13 @@
+diff --git a/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php b/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
+index 945c77f..d9674fc 100644
+--- a/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
++++ b/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
+@@ -328,6 +328,9 @@ public static function checkFileUploadAccess(AccountInterface $account, FieldDef
+       ? $entity_access_control_handler->access($entity, 'update', $account, TRUE)
+       : $entity_access_control_handler->createAccess($bundle, $account, [], TRUE);
+     $field_access_result = $entity_access_control_handler->fieldAccess('edit', $field_definition, NULL, NULL, TRUE);
++    if ($bundle == 'user' && $field_definition->getName() == 'field_avatar') {
++      return $field_access_result;
++    }
+     return $entity_access_result->andIf($field_access_result);
+   }
