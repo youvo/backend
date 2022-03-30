@@ -5,7 +5,6 @@ namespace Drupal\user_types\Controller;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\user\Entity\User;
 
 /**
  * Access controller for user update resources.
