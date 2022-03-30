@@ -4,7 +4,7 @@ namespace Drupal\user_types\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\User;
 
 /**
@@ -15,23 +15,19 @@ class Access extends ControllerBase {
   /**
    * Checks access for change password REST resources.
    *
-   * @param \Drupal\Core\Session\AccountProxyInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function updatePassword(AccountProxyInterface $account) {
+  public function updatePassword(AccountInterface $account) {
 
-    // Forbidden if anonymous or blocked.
     if ($account->isAnonymous()) {
       return AccessResult::forbidden();
     }
 
-    // Forbidden for blocked users.
-    $account_entity = $account->getAccount();
-    if (!$account_entity instanceof User ||
-      $account_entity->isBlocked()) {
+    if (!$account instanceof User || $account->isBlocked()) {
       return AccessResult::forbidden();
     }
 
@@ -41,23 +37,19 @@ class Access extends ControllerBase {
   /**
    * Checks access for change email REST resources.
    *
-   * @param \Drupal\Core\Session\AccountProxyInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function updateEmail(AccountProxyInterface $account) {
+  public function updateEmail(AccountInterface $account) {
 
-    // Forbidden if anonymous or blocked.
     if ($account->isAnonymous()) {
       return AccessResult::forbidden();
     }
 
-    // Forbidden for blocked users.
-    $account_entity = $account->getAccount();
-    if (!$account_entity instanceof User ||
-      $account_entity->isBlocked()) {
+    if (!$account instanceof User || $account->isBlocked()) {
       return AccessResult::forbidden();
     }
 
