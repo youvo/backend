@@ -103,12 +103,18 @@ class UserUpdatePasswordResponse extends ResourceBase {
 
     // Check whether current_password was provided.
     if (empty($content['current_password'])) {
-      return new ResourceResponse('The value current_password was not provided.', 400);
+      return new ResourceResponse([
+          'message' => 'The value current_password was not provided.',
+          'field' => 'current_password'
+        ], 400);
     }
 
     // Check whether current_password was provided.
     if (empty($content['new_password'])) {
-      return new ResourceResponse('The value password was not provided.', 400);
+      return new ResourceResponse([
+        'message' => 'The value new_password was not provided.',
+        'field' => 'new_password'
+      ], 400);
     }
 
     // Load the user object from the account proxy and set existing password.
@@ -121,7 +127,10 @@ class UserUpdatePasswordResponse extends ResourceBase {
     /** @var \Drupal\user\UserInterface $account_unchanged */
     $account_unchanged = $this->userStorage->loadUnchanged($account->id());
     if (!$account->checkExistingPassword($account_unchanged)) {
-      return new ResourceResponse('The provided current password is incorrect.', 409);
+      return new ResourceResponse([
+        'message' => 'The provided current password is incorrect.',
+        'field' => 'current_password'
+      ], 409);
     }
 
     /**
