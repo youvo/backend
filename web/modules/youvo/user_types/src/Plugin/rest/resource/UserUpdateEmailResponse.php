@@ -171,26 +171,13 @@ class UserUpdateEmailResponse extends ResourceBase {
       ], 400);
     }
 
-    // Check whether the email has changed. Nothing to do.
-    if ($content['new_email'] == $this->currentUser->getEmail()) {
-      return new ResourceResponse();
-    }
-
-      // Check whether email is valid.
+    // Check whether email is valid.
     $email = trim($content['new_email']);
     if (!$this->emailValidator->isValid($email)) {
       return new ResourceResponse([
         'message' => 'The new email is not valid.',
         'field' => 'new_email'
       ], 400);
-    }
-
-    // Check if there already exists an account with given email.
-    if ($this->accountExistsForEmail($email)) {
-      return new ResourceResponse([
-        'message' => 'There already exists an account for the new email.',
-        'field' => 'new_email'
-      ], 409);
     }
 
     // Load the user object from the account proxy and set existing password.
@@ -206,6 +193,19 @@ class UserUpdateEmailResponse extends ResourceBase {
       return new ResourceResponse([
         'message' => 'The provided current password is incorrect.',
         'field' => 'current_password'
+      ], 409);
+    }
+
+    // Check whether the email has changed. Nothing to do.
+    if ($content['new_email'] == $this->currentUser->getEmail()) {
+      return new ResourceResponse();
+    }
+
+    // Check if there already exists an account with given email.
+    if ($this->accountExistsForEmail($email)) {
+      return new ResourceResponse([
+        'message' => 'There already exists an account for the new email.',
+        'field' => 'new_email'
       ], 409);
     }
 
