@@ -5,12 +5,14 @@
  * Custom module which handles business logic for project entities.
  */
 
+use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
+use Drupal\projects\Plugin\Field\AppliedFieldItemList;
 use Drupal\projects\ProjectFieldAccess;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -145,6 +147,30 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
       ->setClass(ComputedProjectReferenceFieldItemList::class);
+  }
+
+  return $fields;
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ */
+function projects_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+
+  $fields = [];
+
+  // Add computed applied field to projects.
+  if ($entity_type->id() == 'node' && $bundle == 'project') {
+    // It is not a base-field, so we need a custom field storage definition see
+    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
+    $fields['applied'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+      ->setLabel(t('Applied'))
+      ->setDescription(t('Computes the project applied status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(AppliedFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
+      ->setTargetBundle($bundle);
   }
 
   return $fields;

@@ -70,6 +70,7 @@ class ProjectFieldAccess {
     }
 
     $public_fields = [
+      'applied',
       'created',
       'field_contact',
       'field_lifecycle',
