@@ -7,7 +7,6 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\SerializationInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Utility\Error;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\projects\ProjectInterface;
@@ -106,12 +105,15 @@ class ProjectMediateResource extends ResourceBase {
 
     // Fetch applicants in desired structure.
     $applicants = [];
+    $manager = $project->getManager();
     foreach ($project->getApplicants() as $applicant) {
-      $applicants[] = [
-        'type' => 'user',
-        'id' => $applicant->uuid(),
-        'name' => $applicant->get('field_name')->value,
-      ];
+      if ($applicant->id() != $manager?->id()) {
+        $applicants[] = [
+          'type' => 'user',
+          'id' => $applicant->uuid(),
+          'name' => $applicant->get('field_name')->value,
+        ];
+      }
     }
 
     // Compile response with structured data.
@@ -191,34 +193,24 @@ class ProjectMediateResource extends ResourceBase {
         ->execute();
     }
     catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
-      $variables = Error::decodeException($e);
-      $this->logger->error('%type: @message in %function (line %line of %file). Unable to mediate project.', $variables);
-      throw new UnprocessableEntityHttpException('Could not mediate project.');
+      throw new UnprocessableEntityHttpException('Could not mediate project.', $e);
     }
 
-    // Get current managers of the project.
-    $managers = $project->getManagersAsArray();
-    $manager_ids = array_keys($managers);
-
-    // Prepare tasks array.
-    $participant_ids = array_merge($selected_creatives_ids, $manager_ids);
-    $count_creative = count($selected_creatives_ids);
-    $count_manager = count($manager_ids);
-    $tasks = array_merge(
-      array_fill(0, $count_creative, 'Creative'),
-      array_fill($count_creative + 1, $count_manager + $count_creative, 'Manager')
-    );
-
     // Mediate project with participants.
-    if (!empty($participant_ids) && $project->workflowManager()->transitionMediate()) {
-      $project->setParticipants($participant_ids, $tasks);
+    if (!empty($selected_creatives_ids) && $project->workflowManager()->transitionMediate()) {
+
+      $project->setParticipants($selected_creatives_ids);
+      if ($manager = $project->getManager()) {
+        $project->appendParticipant($manager, 'Manager');
+      }
+
       try {
         $project->save();
-      } catch (EntityStorageException $e) {
-        $variables = Error::decodeException($e);
-        $this->logger->error('%type: @message in %function (line %line of %file). Unable to save project.', $variables);
-        throw new UnprocessableEntityHttpException('Could not save project.');
       }
+      catch (EntityStorageException $e) {
+        throw new UnprocessableEntityHttpException('Could not save project.', $e);
+      }
+
       return new ResourceResponse('Project was mediated successfully.');
     }
 

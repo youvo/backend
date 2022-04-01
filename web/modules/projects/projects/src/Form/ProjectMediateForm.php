@@ -70,6 +70,9 @@ class ProjectMediateForm extends FormBase {
     // Mediate project.
     if ($project->workflowManager()->transitionMediate()) {
       $project->setParticipants($participants);
+      if ($manager = $project->getManager()) {
+        $project->appendParticipant($manager, 'Manager');
+      }
       $project->save();
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
