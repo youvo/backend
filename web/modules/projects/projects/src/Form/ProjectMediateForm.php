@@ -2,7 +2,6 @@
 
 namespace Drupal\projects\Form;
 
-use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
