@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\oauth_grant_remote\Controller;
+namespace Drupal\oauth_grant\Controller;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -91,6 +91,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
     }
     $data['preferred_username'] = $data['name'];
     $data['uuid'] = $this->user->uuid();
+    $data['roles'] = $this->user->getRoles();
     return JsonResponse::create($data);
   }
 

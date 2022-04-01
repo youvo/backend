@@ -1,0 +1,5 @@
+services:
+  oauth_grant.route_subscriber:
+    class: Drupal\oauth_grant\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
