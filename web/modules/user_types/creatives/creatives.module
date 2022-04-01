@@ -4,3 +4,14 @@
  * @file
  * Custom module which handles business logic for creative entities.
  */
+
+use Drupal\creatives\Entity\Creative;
+
+/**
+ * Implements hook_entity_bundle_info_alter().
+ */
+function creatives_entity_bundle_info_alter(&$bundles) {
+  if (isset($bundles['user']['user'])) {
+    $bundles['user']['user']['class'] = Creative::class;
+  }
+}
