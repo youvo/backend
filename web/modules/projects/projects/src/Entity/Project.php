@@ -36,13 +36,12 @@ class Project extends Node implements ProjectInterface {
    * {@inheritdoc}
    */
   public function getApplicants() {
-    $applicants = [];
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
     $applicants_field = $this->get('field_applicants');
     foreach ($applicants_field->referencedEntities() as $applicant) {
       $applicants[$applicant->id()] = $applicant;
     }
-    return $applicants;
+    return $applicants ?? [];
   }
 
   /**
@@ -52,23 +51,24 @@ class Project extends Node implements ProjectInterface {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')
-        ->appendItem(['target_id' => $applicant->id()]);
+        ->appendItem(['target_id' => $this->getUid($applicant)]);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function appendApplicant(AccountInterface $applicant) {
-    $this->get('field_applicants')
-      ->appendItem(['target_id' => $applicant->id()]);
+  public function appendApplicant(AccountInterface|int $applicant) {
+    $uid = $applicant instanceof AccountInterface ?
+      $applicant->id() : $applicant;
+    $this->get('field_applicants')->appendItem(['target_id' => $uid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isApplicant(AccountInterface $account) {
-    return array_key_exists($account->id(), $this->getApplicants());
+  public function isApplicant(AccountInterface|int $applicant) {
+    return array_key_exists($this->getUid($applicant), $this->getApplicants());
   }
 
   /**
@@ -79,28 +79,17 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
-   * Get participants for current project.
+   * {@inheritdoc}
    */
-  public function getParticipantsAsArray(bool $populated = FALSE) {
-    $options = [];
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
-    $participants = $this->get('field_participants');
+  public function getParticipants() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
+    $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
-    /** @var \Drupal\user\Entity\User $participant */
-    foreach ($participants->referencedEntities() as $delta => $participant) {
-      if ($populated) {
-        $options[$participant->id()] = [
-          'type' => 'user',
-          'id' => $participant->uuid(),
-          'name' => $participant->get('field_name')->value,
-          'task' => $tasks[$delta]['value'],
-        ];
-      }
-      else {
-        $options[$participant->id()] = $participant->get('field_name')->value;
-      }
+    foreach ($participants_field->referencedEntities() as $delta => $participant) {
+        $participant->task = $tasks[$delta]['value'];
+        $participants[$participant->id()] = $participant;
     }
-    return $options;
+    return $participants ?? [];
   }
 
   /**
@@ -109,31 +98,35 @@ class Project extends Node implements ProjectInterface {
   public function setParticipants(array $participants, array $tasks = []) {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
-    foreach ($participants as $delta => $participant_uid) {
-      $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
+    foreach ($participants as $delta => $participant) {
+      $this->get('field_participants')
+        ->appendItem(['target_id' => $this->getUid($participant)]);
       $task = $tasks[$delta] ?? 'Creative';
       $this->get('field_participants_tasks')->appendItem($task);
-    }
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not set participants.', $e);
     }
   }
 
   /**
-   * Append  participant by uid to project.
+   * {@inheritdoc}
    */
-  public function appendParticipant(int $participant_uid, string $task = 'Creative') {
-    $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
+  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative') {
+    $this->get('field_participants')
+      ->appendItem(['target_id' => $this->getUid($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not append participant.', $e);
-    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isParticipant(AccountInterface|int $participant) {
+    return array_key_exists($this->getUid($participant), $this->getParticipants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasParticipant() {
+    return !empty($this->getParticipants());
   }
 
   /**
@@ -168,6 +161,18 @@ class Project extends Node implements ProjectInterface {
    */
   public function hasManager() {
     return $this->getOwner()->hasManager();
+  }
+
+  /**
+   * Helper to get uid of an account.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $account
+   *   The account or the uid.
+   * @return \Drupal\Core\Session\AccountInterface|int
+   *   The uid.
+   */
+  private function getUid(AccountInterface|int $account) {
+    return $account instanceof AccountInterface ? $account->id() : $account;
   }
 
 }
