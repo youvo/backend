@@ -82,7 +82,7 @@ class ProjectApplyResource extends ResourceBase {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
-    elseif (array_key_exists($this->currentUser->id(), $project->getApplicantsAsArray())) {
+    elseif ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
     // Otherwise, project is open to apply for creative.
@@ -111,13 +111,12 @@ class ProjectApplyResource extends ResourceBase {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
-    elseif (array_key_exists($this->currentUser->id(), $project->getApplicantsAsArray())) {
+    elseif ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
     // Otherwise, project is open to apply for creative.
     else {
-      $creative_id = $this->currentUser->id();
-      $project->appendApplicant($creative_id);
+      $project->appendApplicant($this->currentUser);
       $project->save();
       return new ModifiedResourceResponse('Added creative to applicants.', 201);
     }

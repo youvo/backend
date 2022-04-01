@@ -3,9 +3,11 @@
 namespace Drupal\projects\Entity;
 
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
+use Drupal\user\UserInterface;
 
 /**
  * Implements lifecycle workflow functionality for Project entities.
@@ -31,56 +33,49 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
-   * Get applicants for current project.
+   * {@inheritdoc}
    */
-  public function getApplicantsAsArray(bool $populated = FALSE) {
-    $options = [];
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants */
-    $applicants = $this->get('field_applicants');
-    /** @var \Drupal\user\Entity\User $applicant */
-    foreach ($applicants->referencedEntities() as $applicant) {
-      if ($populated) {
-        $options[$applicant->id()] = [
-          'type' => 'user',
-          'id' => $applicant->uuid(),
-          'name' => $applicant->get('field_name')->value,
-        ];
-      }
-      else {
-        $options[$applicant->id()] = $applicant->get('field_name')->value;
-      }
-
+  public function getApplicants() {
+    $applicants = [];
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
+    $applicants_field = $this->get('field_applicants');
+    foreach ($applicants_field->referencedEntities() as $applicant) {
+      $applicants[$applicant->id()] = $applicant;
     }
-    return $options;
+    return $applicants;
   }
 
   /**
-   * Set applicants to project.
+   * {@inheritdoc}
    */
   public function setApplicants(array $applicants) {
     $this->set('field_applicants', NULL);
-    foreach ($applicants as $uid) {
-      $this->get('field_applicants')->appendItem(['target_id' => $uid]);
-    }
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not set applicants.', $e);
+    foreach ($applicants as $applicant) {
+      $this->get('field_applicants')
+        ->appendItem(['target_id' => $applicant->id()]);
     }
   }
 
   /**
-   * Append applicant by uid to project.
+   * {@inheritdoc}
    */
-  public function appendApplicant(int $applicant_uid) {
-    $this->get('field_applicants')->appendItem(['target_id' => $applicant_uid]);
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not append applicant.', $e);
-    }
+  public function appendApplicant(AccountInterface $applicant) {
+    $this->get('field_applicants')
+      ->appendItem(['target_id' => $applicant->id()]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isApplicant(AccountInterface $account) {
+    return array_key_exists($account->id(), $this->getApplicants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasApplicant() {
+    return !empty($this->getApplicants());
   }
 
   /**
