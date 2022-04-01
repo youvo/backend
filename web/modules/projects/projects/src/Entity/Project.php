@@ -2,14 +2,11 @@
 
 namespace Drupal\projects\Entity;
 
-use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
-use Drupal\user\UserInterface;
-use Psy\Exception\TypeErrorException;
 
 /**
  * Implements lifecycle workflow functionality for Project entities.
