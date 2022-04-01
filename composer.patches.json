@@ -7,7 +7,8 @@
           "Issue #3098935: JSON:API can't handle exceptions thrown during authentication (Scheduled Drupal 9.4.0)": "patches/drupal/D94x-3098935-16.patch",
           "Custom: Change file upload route for jsonapi extras": "patches/drupal/custom-change-file-upload-route-for-jsonapi-extras.patch",
           "Custom: Modify upload user avatar access check": "patches/drupal/custom-modify-upload-user-avatar-access-check.patch",
-          "Custom: Jsonapi Upload route is recognized as jsonapi request": "patches/drupal/custom-file-upload-route-is-jsonapi-request.patch"
+          "Custom: Jsonapi Upload route is recognized as jsonapi request": "patches/drupal/custom-file-upload-route-is-jsonapi-request.patch",
+          "Custom: Hide meta drupal IDs in JSON:API response": "patches/drupal/custom-hide-meta-drupal-ids-jsonapi.patch"
         },
         "drupal/jsonapi_include": {
           "Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
