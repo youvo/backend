@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\oauth_grant_remote\Routing;
+namespace Drupal\oauth_grant\Routing;
 
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
@@ -14,9 +14,9 @@ class RouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   public function alterRoutes(RouteCollection $collection) {
-    if ($route = $collection->get('oauth2_token.authorize')) {
+    if ($route = $collection->get('simple_oauth.userinfo')) {
       $route->setDefaults([
-        '_controller' => '\Drupal\oauth_grant_remote\Controller\Oauth2AuthorizeRemoteController::authorize',
+        '_controller' => '\Drupal\oauth_grant\Controller\UserInfoOverwriteController::handle',
       ]);
     }
   }

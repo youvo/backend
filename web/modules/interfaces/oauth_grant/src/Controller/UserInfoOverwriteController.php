@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\oauth_grant_remote\Controller;
+namespace Drupal\oauth_grant\Controller;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
