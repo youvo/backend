@@ -134,7 +134,7 @@ function projects_dummy_site_install_finished() {
       $applicants = array_slice($creative_ids, 0, rand(0, count($creative_ids)));
       $applicants = array_diff($applicants, [$manager]);
       if (!empty($applicants)) {
-        projects_set_applicants_by_uid($project, $applicants);
+        $project->setApplicants($applicants);
       }
       if ($manager) {
         $project->appendParticipant($manager, 'Manager');
@@ -146,7 +146,7 @@ function projects_dummy_site_install_finished() {
       shuffle($creative_ids);
       $applicants = array_slice($creative_ids, 0, rand(1, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
-      projects_set_applicants_by_uid($project, $applicants);
+      $project->setApplicants($applicants);
       $participants = array_slice($applicants, 0, rand(1, count($applicants)));
       $tasks = array_fill(0, count($participants), 'Creative');
       $project->setParticipants($participants, $tasks);
@@ -204,14 +204,4 @@ function projects_dummy_get_stock_image(int $i) {
   }
 
   return $image_file;
-}
-
-/**
- * Helper to set applicants by uid.
- */
-function projects_set_applicants_by_uid(ProjectInterface $project, array $UIDs) {
-  $project->set('field_applicants', NULL);
-  foreach ($UIDs as $uid) {
-    $project->get('field_applicants')->appendItem(['target_id' => $uid]);
-  }
 }

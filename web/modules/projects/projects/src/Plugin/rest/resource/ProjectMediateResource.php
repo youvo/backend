@@ -5,6 +5,7 @@ namespace Drupal\projects\Plugin\rest\resource;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\SerializationInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\rest\Plugin\ResourceBase;
@@ -143,9 +144,6 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ResourceResponse
    *   Response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    */
   public function post(ProjectInterface $project, Request $request) {
 
@@ -214,6 +212,13 @@ class ProjectMediateResource extends ResourceBase {
     // Mediate project with participants.
     if (!empty($participant_ids) && $project->workflowManager()->transitionMediate()) {
       $project->setParticipants($participant_ids, $tasks);
+      try {
+        $project->save();
+      } catch (EntityStorageException $e) {
+        $variables = Error::decodeException($e);
+        $this->logger->error('%type: @message in %function (line %line of %file). Unable to save project.', $variables);
+        throw new UnprocessableEntityHttpException('Could not save project.');
+      }
       return new ResourceResponse('Project was mediated successfully.');
     }
 

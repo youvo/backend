@@ -54,10 +54,10 @@ function projects_menu_local_tasks_alter(&$data, $route_name) {
  * Implements hook_form_node_form_alter().
  */
 function projects_form_node_form_alter(&$form, &$form_state) {
-  $node = $form_state->getFormObject()->getEntity();
 
   // Alter projects form.
-  if ($node->bundle() == 'project') {
+  $project = $form_state->getFormObject()->getEntity();
+  if ($project->bundle() == 'project') {
 
     // Disallow access to form widget provided by fields.
     $form['field_participants']['#access'] = FALSE;
@@ -65,14 +65,13 @@ function projects_form_node_form_alter(&$form, &$form_state) {
 
     // Load default values for participants.
     $participants_default = [];
-    $participants = $node->getParticipantsAsArray(TRUE);
-    foreach (array_keys($participants) as $uid) {
-      $task_id = match ($participants[$uid]['task']) {
+    foreach ($project->getParticipants() as $participant) {
+      $task_id = match ($participant->task) {
         'Manager' => 7,
         default => 3,
       };
       $participants_default[] = [
-        'participant' => User::load($uid),
+        'participant' => $participant,
         'task' => $task_id,
       ];
     }

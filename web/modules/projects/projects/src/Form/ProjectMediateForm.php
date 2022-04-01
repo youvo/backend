@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Form;
 
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
@@ -57,6 +58,8 @@ class ProjectMediateForm extends FormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
@@ -66,7 +69,8 @@ class ProjectMediateForm extends FormBase {
 
     // Mediate project.
     if ($project->workflowManager()->transitionMediate()) {
-      $project->setParticipants($participants, TRUE);
+      $project->setParticipants($participants);
+      $project->save();
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
     else {

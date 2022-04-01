@@ -13,16 +13,16 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Checks whether user is an applicant.
    *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user.
+   * @param \Drupal\Core\Session\AccountInterface|int $applicant
+   *   The user or the uid.
    *
    * @return bool
    *   Is applicant?
    */
-  public function isApplicant(AccountInterface $account);
+  public function isApplicant(AccountInterface|int $applicant);
 
   /**
-   * Checks whether project has applicants.
+   * Checks whether project has applicant.
    *
    * @return bool
    *   Has applicants?
@@ -40,7 +40,7 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Set applicants to project.
    *
-   * @param \Drupal\Core\Session\AccountInterface[]
+   * @param \Drupal\Core\Session\AccountInterface[]|int[]
    *   The applicants.
    */
   public function setApplicants(array $applicants);
@@ -48,9 +48,56 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Append applicant to project.
    *
-   * @param \Drupal\Core\Session\AccountInterface
-   *   The applicant.
+   * @param \Drupal\Core\Session\AccountInterface|int
+   *   The applicant or the uid.
    */
-  public function appendApplicant(AccountInterface $applicant);
+  public function appendApplicant(AccountInterface|int $applicant);
+
+  /**
+   * Checks whether user is a participant.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $participant
+   *   The user or the uid.
+   *
+   * @return bool
+   *   Is applicant?
+   */
+  public function isParticipant(AccountInterface|int $participant);
+
+  /**
+   * Checks whether project has participant.
+   *
+   * @return bool
+   *   Has applicants?
+   */
+  public function hasParticipant();
+
+  /**
+   * Get participants array keyed by UID.
+   *
+   * @return \Drupal\user\UserInterface[]
+   *   Array of participant.
+   */
+  public function getParticipants();
+
+  /**
+   * Set participants to project.
+   *
+   * @param \Drupal\Core\Session\AccountInterface[]|int[] $participants
+   *   The participants.
+   * @param string[] $tasks
+   *   Array of task per participant.
+   */
+  public function setParticipants(array $participants, array $tasks = []);
+
+  /**
+   * Append participant to project.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $participant
+   *   The participant or the uid of the participant.
+   * @param string $task
+   *   The task of the participant. Defaults to creative.
+   */
+  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative');
 
 }
