@@ -198,15 +198,7 @@ class ProjectWorkflowManager {
   private function transition($transition, $new_state) {
     if ($this->canTransitionByLabel($transition)) {
       $this->project->set('field_lifecycle', $new_state);
-      try {
-        $this->project->save();
-        return TRUE;
-      }
-      catch (EntityStorageException $exception) {
-        $variables = Error::decodeException($exception);
-        \Drupal::logger('youvo')
-          ->error('Projects: Could not perform transition. %type: @message in %function (line %line of %file).', $variables);
-      }
+      return TRUE;
     }
     return FALSE;
   }
