@@ -62,13 +62,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
   private $time;
 
   /**
-   * The youvo logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  private $logger;
-
-  /**
    * Database connection.
    *
    * @var \Drupal\Core\Database\Connection
@@ -138,11 +131,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     Session $session,
     AccountProxyInterface $account
   ) {
-    parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository);
+    parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $logger);
     $this->httpClient = $http_client;
     $this->request = $request;
     $this->time = $time;
-    $this->logger = $logger;
     $this->database = $database;
     $this->sessionManager = $session_manager;
     $this->session = $session;
@@ -447,7 +439,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       'query' => $query,
     ]);
 
-    // Ensure that bubbleable metadata is collected and added to the response
+    // Ensure that bubble-able metadata is collected and added to the response
     // object. Client ID and secret may be passed as Basic Auth. Copy the
     // headers.
     $url = $redirect_url->toString(TRUE);
