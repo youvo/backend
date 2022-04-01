@@ -5,6 +5,8 @@
  * Custom module which handles business logic for project entities.
  */
 
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\simple_oauth\Authentication\TokenAuthUser;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -34,8 +36,9 @@ function projects_entity_bundle_info_alter(&$bundles) {
  * Implements hook_entity_type_alter().
  */
 function projects_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
-  if ($items->getEntity() instanceof Project) {
-    return ProjectFieldAccess::checkFieldAccess($operation, $field_definition, $account, $items);
+  $entity = $items->getEntity();
+  if ($entity instanceof Project) {
+    return ProjectFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
   }
   return AccessResult::neutral();
 }

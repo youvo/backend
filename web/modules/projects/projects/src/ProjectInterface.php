@@ -100,4 +100,35 @@ interface ProjectInterface extends NodeInterface {
    */
   public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative');
 
+  /**
+   * Determines whether account is author (organization) of this project.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $account
+   *   The account.
+   *
+   * @return bool
+   *   Is author?
+   */
+  public function isAuthor(AccountInterface|int $account);
+
+  /**
+   * Determines whether account is author (organization) or manager of this
+   * project.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $account
+   *   The account.
+   *
+   * @return bool
+   *   Is author or manager?
+   */
+  public function isAuthorOrManager(AccountInterface|int $account);
+
+  /**
+   * Get manager.
+   *
+   * @return \Drupal\user\UserInterface
+   *   The Manager.
+   */
+  public function getManager();
+
 }

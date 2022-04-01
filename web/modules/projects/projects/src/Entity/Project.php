@@ -5,9 +5,11 @@ namespace Drupal\projects\Entity;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
 use Drupal\user\UserInterface;
+use Psy\Exception\TypeErrorException;
 
 /**
  * Implements lifecycle workflow functionality for Project entities.
@@ -130,37 +132,29 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
-   * Get manager(s) for organization of the project.
-   *
-   * We expect that only one person manages a project but allow multiple
-   * managers for future workflow adjustments.
+   * {@inheritdoc}
    */
-  public function getManagersAsArray(bool $populated = FALSE) {
-    $options = [];
-    $organization = $this->getOwner();
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if ($populated) {
-        $options[$manager->id()][] = [
-          'type' => 'user',
-          'id' => $manager->uuid(),
-          'name' => $manager->get('field_name')->value,
-        ];
-      }
-      else {
-        $options[$manager->id()] = $manager->get('field_name')->value;
-      }
-    }
-    return $options;
+  public function isAuthor(AccountInterface|int $account) {
+    return $this->getUid($account) == $this->getOwner()->id();
   }
 
   /**
-   * Does the organization of the project have a manager?
+   * {@inheritdoc}
    */
-  public function hasManager() {
-    return $this->getOwner()->hasManager();
+  public function isAuthorOrManager(AccountInterface|int $account) {
+    $organization = $this->getOwner();
+    return $this->isAuthor($account) ||
+      ($organization instanceof Organization &&
+        $organization->isManager($account));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getManager() {
+    $organization = $this->getOwner();
+    return $organization instanceof Organization ?
+      $organization->getManager() : NULL;
   }
 
   /**
