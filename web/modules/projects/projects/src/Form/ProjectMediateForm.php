@@ -35,9 +35,14 @@ class ProjectMediateForm extends FormBase {
       '#value' => $project,
     ];
 
+    $options = [];
+    foreach ($project->getApplicants() as $applicant) {
+      $options[$applicant->id()] = $applicant->get('field_name')->value;
+    }
+
     $form['select_participants'] = [
       '#type' => 'checkboxes',
-      '#options' => $project->getApplicantsAsArray(),
+      '#options' => $options,
       '#title' => $this->t('Select Participants'),
       '#required' => 1,
     ];

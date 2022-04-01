@@ -174,7 +174,7 @@ class ProjectWorkflowManager {
    * Checks if project can transition to state 'ongoing'.
    */
   private function canTransitionMediate() {
-    return !empty($this->project->getApplicantsAsArray()) &&
+    return $this->project->hasApplicant() &&
       $this->hasTransition($this->getState(), self::STATE_ONGOING);
   }
 
