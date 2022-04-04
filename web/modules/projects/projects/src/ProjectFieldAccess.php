@@ -29,7 +29,7 @@ class ProjectFieldAccess extends FieldAccess {
     'title',
   ];
 
-  const PUBLIC_FIELDS = self::UNRESTRICTED_FIELDS + [
+  const PUBLIC_FIELDS = [
     'created',
     'field_contact',
     'field_lifecycle',
@@ -73,7 +73,9 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
-      self::isFieldOfGroup($field_definition, self::PUBLIC_FIELDS)) {
+      self::isFieldOfGroup($field_definition,
+        array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
+    ) {
       return AccessResult::neutral();
     }
 
