@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\youvo;
+namespace Drupal\youvo\Utility;
 
 class RestContentShifter {
 

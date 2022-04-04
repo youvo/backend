@@ -4,8 +4,8 @@ namespace Drupal\projects;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\projects\Entity\Project;
-use Drupal\youvo\FieldValidator;
-use Drupal\youvo\RestContentShifter;
+use Drupal\youvo\Utility\FieldValidator;
+use Drupal\youvo\Utility\RestContentShifter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
