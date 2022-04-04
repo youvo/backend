@@ -73,13 +73,13 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
-      self::isFieldOfGroup($field_definition, 'PUBLIC_FIELDS')) {
+      self::isFieldOfGroup($field_definition, self::PUBLIC_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Editing unrestricted fields is handled downstream.
     if ($operation == 'edit' &&
-      self::isFieldOfGroup($field_definition, 'UNRESTRICTED_FIELDS')) {
+      self::isFieldOfGroup($field_definition, self::UNRESTRICTED_FIELDS)) {
       return AccessResult::neutral();
     }
 
@@ -94,7 +94,7 @@ class ProjectFieldAccess extends FieldAccess {
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
       $entity->workflowManager()->isCompleted() &&
-      self::isFieldOfGroup($field_definition, 'RESULT_FIELDS')) {
+      self::isFieldOfGroup($field_definition, self::RESULT_FIELDS)) {
       return AccessResult::neutral();
     }
 
