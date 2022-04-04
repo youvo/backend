@@ -51,7 +51,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
       }
 
       // If there is no submission, create empty item with attached cache info.
-      // @see \Drupal\academy\Plugin\Field\FieldType\CacheableStringItem
+      // @see \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem
       else {
         $item = $this->createItem(0, "");
         $item->get('value')->mergeCacheMaxAge(0);

@@ -3,3 +3,7 @@ services:
     class: Drupal\paragraphs\Routing\RouteSubscriber
     tags:
       - { name: event_subscriber }
+  paragraphs.parse_jsonapi.attributes:
+    class: Drupal\paragraphs\EventSubscriber\ParagraphsParseJsonapiAttributesSubscriber
+    tags:
+      - { name: event_subscriber }

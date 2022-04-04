@@ -10,10 +10,10 @@ install:
   # Development
   - admin_toolbar
   - devel
+  - druqs
   - field_ui
   - menu_ui
   - restui
-  - find_uuid
   # OpenAPI for documentation
   - schemata
   - schemata_json_schema

@@ -2,13 +2,16 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -78,11 +81,11 @@ class ProjectApplyResource extends ResourceBase {
   public function get(ProjectInterface $project) {
 
     // Is the project open?
-    if ($project->getState() !== Project::STATE_OPEN) {
+    if (!$project->workflowManager()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
-    elseif (array_key_exists($this->currentUser->id(), $project->getApplicantsAsArray())) {
+    elseif ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
     // Otherwise, project is open to apply for creative.
@@ -99,26 +102,27 @@ class ProjectApplyResource extends ResourceBase {
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(Project $project) {
 
     // Is the project open?
-    if ($project->getState() !== Project::STATE_OPEN) {
+    if (!$project->workflowManager()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
     // Did creative already apply to project?
-    elseif (array_key_exists($this->currentUser->id(), $project->getApplicantsAsArray())) {
+    elseif ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
     // Otherwise, project is open to apply for creative.
     else {
-      $creative_id = $this->currentUser->id();
-      $project->appendApplicant($creative_id);
-      $project->save();
+      $project->appendApplicant($this->currentUser);
+      try {
+        $project->save();
+      } catch (EntityStorageException $e) {
+        $variables = Error::decodeException($e);
+        $this->logger->error('%type: @message in %function (line %line of %file). Unable to save project.', $variables);
+        throw new UnprocessableEntityHttpException('Could not save project.');
+      }
       return new ModifiedResourceResponse('Added creative to applicants.', 201);
     }
   }

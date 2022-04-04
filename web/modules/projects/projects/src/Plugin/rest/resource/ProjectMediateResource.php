@@ -2,7 +2,11 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\SerializationInterface;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\projects\ProjectInterface;
@@ -35,6 +39,13 @@ class ProjectMediateResource extends ResourceBase {
   protected $serializationJson;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
    * @param array $configuration
@@ -49,10 +60,21 @@ class ProjectMediateResource extends ResourceBase {
    *   A logger instance.
    * @param \Drupal\Component\Serialization\SerializationInterface $serialization_json
    *   Serialization with Json.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, SerializationInterface $serialization_json) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    SerializationInterface $serialization_json,
+    EntityTypeManagerInterface $entity_type_manager
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -65,7 +87,8 @@ class ProjectMediateResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('serialization.json')
+      $container->get('serialization.json'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -82,12 +105,15 @@ class ProjectMediateResource extends ResourceBase {
 
     // Fetch applicants in desired structure.
     $applicants = [];
-    foreach ($project->getApplicantsAsArray(TRUE) as $uuid => $applicant) {
-      $applicants[] = [
-        'type' => 'user',
-        'id' => $uuid,
-        'name' => $applicant,
-      ];
+    $manager = $project->getManager();
+    foreach ($project->getApplicants() as $applicant) {
+      if ($applicant->id() != $manager?->id()) {
+        $applicants[] = [
+          'type' => 'user',
+          'id' => $applicant->uuid(),
+          'name' => $applicant->get('field_name')->value,
+        ];
+      }
     }
 
     // Compile response with structured data.
@@ -104,7 +130,7 @@ class ProjectMediateResource extends ResourceBase {
       ],
     ]);
 
-    // Add cacheable dependency to refresh response when project is udpated.
+    // Add cacheable dependency to refresh response when project is updated.
     $response->addCacheableDependency($project);
 
     return $response;
@@ -120,9 +146,6 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ResourceResponse
    *   Response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
    */
   public function post(ProjectInterface $project, Request $request) {
 
@@ -155,30 +178,39 @@ class ProjectMediateResource extends ResourceBase {
 
     // Get applicants for current project and check if selected_creatives are
     // applicable.
-    $applicants = $project->getApplicantsAsArray(TRUE);
-    $applicants_uuids = array_column($applicants, 'id');
+    $applicants = $project->getApplicants();
+    $applicants_uuids = array_map(fn ($a) => $a->uuid(), $applicants);
     if (count(array_intersect($selected_creatives, $applicants_uuids)) != count($selected_creatives)) {
       throw new UnprocessableEntityHttpException('Some selected creatives did not apply for this project.');
     }
 
     // Now we are finally sure to mediate the project. We get the UIDs by query.
-    $selected_creatives_ids = \Drupal::entityQuery('user')
-      ->condition('uuid', $selected_creatives, 'IN')
-      ->execute();
-    // Get current managers of the project.
-    $managers = $project->getManagersAsArray();
-    $manager_ids = array_keys($managers);
-    // Prepare tasks array.
-    $participant_ids = array_merge($selected_creatives_ids, $manager_ids);
-    $count_creative = count($selected_creatives_ids);
-    $count_manager = count($manager_ids);
-    $tasks = array_merge(
-      array_fill(0, $count_creative, 'Creative'),
-      array_fill($count_creative + 1, $count_manager + $count_creative, 'Manager')
-    );
+    try {
+      $selected_creatives_ids = $this->entityTypeManager
+        ->getStorage('user')
+        ->getQuery()
+        ->condition('uuid', $selected_creatives, 'IN')
+        ->execute();
+    }
+    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
+      throw new UnprocessableEntityHttpException('Could not mediate project.', $e);
+    }
+
     // Mediate project with participants.
-    if (!empty($participant_ids) && $project->transitionMediate()) {
-      $project->setParticipants($participant_ids, $tasks);
+    if (!empty($selected_creatives_ids) && $project->workflowManager()->transitionMediate()) {
+
+      $project->setParticipants($selected_creatives_ids);
+      if ($manager = $project->getManager()) {
+        $project->appendParticipant($manager, 'Manager');
+      }
+
+      try {
+        $project->save();
+      }
+      catch (EntityStorageException $e) {
+        throw new UnprocessableEntityHttpException('Could not save project.', $e);
+      }
+
       return new ResourceResponse('Project was mediated successfully.');
     }
 

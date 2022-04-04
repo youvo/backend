@@ -40,8 +40,7 @@ function oauth_grant_install() {
     $default_consumer->delete();
 
     // Load development environment. Exit if not available.
-    $module_path = \Drupal::moduleHandler()->getModule('oauth_grant')->getPath();
-    $env_path = $module_path . '/config/env/.env.development';
+    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.consumers.development';
     if (!is_readable($env_path)) {
       throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
     }
@@ -84,7 +83,10 @@ function oauth_grant_install() {
         'owner_id' => 1,
         'confidential' => TRUE,
         'secret' => $consumer_secrets['SECRET_LOCAL'],
-        'roles' => [['target_id' => 'creative']],
+        'roles' => [
+          ['target_id' => 'creative'],
+          ['target_id' => 'manager'],
+        ],
         'image_styles' => [
           ['target_id' => 'avatar'],
           ['target_id' => 'content'],
@@ -109,7 +111,10 @@ function oauth_grant_install() {
         'owner_id' => 1,
         'confidential' => TRUE,
         'secret' => $consumer_secrets['SECRET_DEVELOPMENT'],
-        'roles' => [['target_id' => 'creative']],
+        'roles' => [
+          ['target_id' => 'creative'],
+          ['target_id' => 'manager'],
+        ],
         'image_styles' => [
           ['target_id' => 'avatar'],
           ['target_id' => 'content'],

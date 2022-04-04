@@ -2,161 +2,93 @@
 
 namespace Drupal\projects\Entity;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectWorkflowManager;
 
 /**
- * Implements lifecycle workflow functionality for Project entities.
+ * Implements bundle class for Project entities.
  */
 class Project extends Node implements ProjectInterface {
 
-  const STATE_DRAFT = 'draft';
-  const STATE_PENDING = 'pending';
-  const STATE_OPEN = 'open';
-  const STATE_ONGOING = 'ongoing';
-  const STATE_COMPLETED = 'completed';
-
-  const TRANSITION_SUBMIT = 'submit';
-  const TRANSITION_PUBLISH = 'publish';
-  const TRANSITION_MEDIATE = 'mediate';
-  const TRANSITION_COMPLETE = 'complete';
-  const TRANSITION_RESET = 'reset';
+  /**
+   * The workflow manager for this project.
+   *
+   * @var \Drupal\projects\ProjectWorkflowManager $workflow
+   */
+  private ProjectWorkflowManager $workflowManager;
 
   /**
-   * Gets current state of project.
+   * Call the workflow manager holding and manipulating the state of the
+   * project.
    */
-  public function getState() {
-    return $this->get('field_lifecycle')->value;
-  }
-
-  /**
-   * Checks if project can transition.
-   */
-  public function canTransitionByLabel($transition) {
-    return match ($transition) {
-      self::TRANSITION_SUBMIT => $this->canTransitionSubmit(),
-      self::TRANSITION_PUBLISH => $this->canTransitionPublish(),
-      self::TRANSITION_MEDIATE => $this->canTransitionMediate(),
-      self::TRANSITION_COMPLETE => $this->canTransitionComplete(),
-      self::TRANSITION_RESET => $this->canTransitionReset(),
-      default => FALSE,
-    };
-  }
-
-  /**
-   * Submit project.
-   */
-  public function transitionSubmit() {
-    return $this->transition(self::TRANSITION_SUBMIT, self::STATE_PENDING);
-  }
-
-  /**
-   * Publish project.
-   */
-  public function transitionPublish() {
-    return $this->transition(self::TRANSITION_PUBLISH, self::STATE_OPEN);
-  }
-
-  /**
-   * Mediate project.
-   */
-  public function transitionMediate() {
-    return $this->transition(self::TRANSITION_MEDIATE, self::STATE_ONGOING);
-  }
-
-  /**
-   * Complete project.
-   */
-  public function transitionComplete() {
-    return $this->transition(self::TRANSITION_COMPLETE, self::STATE_COMPLETED);
-  }
-
-  /**
-   * Reset project.
-   */
-  public function transitionReset() {
-    return $this->transition(self::TRANSITION_RESET, self::STATE_DRAFT);
-  }
-
-  /**
-   * Get applicants for current project.
-   */
-  public function getApplicantsAsArray(bool $populated = FALSE) {
-    $options = [];
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants */
-    $applicants = $this->get('field_applicants');
-    /** @var \Drupal\user\Entity\User $applicant */
-    foreach ($applicants->referencedEntities() as $applicant) {
-      if ($populated) {
-        $options[$applicant->id()] = [
-          'type' => 'user',
-          'id' => $applicant->uuid(),
-          'name' => $applicant->get('field_name')->value,
-        ];
-      }
-      else {
-        $options[$applicant->id()] = $applicant->get('field_name')->value;
-      }
-
+  public function workflowManager() {
+    if (!isset($this->workflowManager)) {
+      $this->workflowManager = new ProjectWorkflowManager($this, $this->entityTypeManager());
     }
-    return $options;
+    return $this->workflowManager;
   }
 
   /**
-   * Set applicants to project.
+   * {@inheritdoc}
+   */
+  public function getApplicants() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
+    $applicants_field = $this->get('field_applicants');
+    foreach ($applicants_field->referencedEntities() as $applicant) {
+      $applicants[$applicant->id()] = $applicant;
+    }
+    return $applicants ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function setApplicants(array $applicants) {
     $this->set('field_applicants', NULL);
-    foreach ($applicants as $uid) {
-      $this->get('field_applicants')->appendItem(['target_id' => $uid]);
-    }
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not set applicants.', $e);
+    foreach ($applicants as $applicant) {
+      $this->get('field_applicants')
+        ->appendItem(['target_id' => $this->getUid($applicant)]);
     }
   }
 
   /**
-   * Append applicant by uid to project.
+   * {@inheritdoc}
    */
-  public function appendApplicant(int $applicant_uid) {
-    $this->get('field_applicants')->appendItem(['target_id' => $applicant_uid]);
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not append applicant.', $e);
-    }
+  public function appendApplicant(AccountInterface|int $applicant) {
+    $uid = $applicant instanceof AccountInterface ?
+      $applicant->id() : $applicant;
+    $this->get('field_applicants')->appendItem(['target_id' => $uid]);
   }
 
   /**
-   * Get participants for current project.
+   * {@inheritdoc}
    */
-  public function getParticipantsAsArray(bool $populated = FALSE) {
-    $options = [];
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants */
-    $participants = $this->get('field_participants');
+  public function isApplicant(AccountInterface|int $applicant) {
+    return array_key_exists($this->getUid($applicant), $this->getApplicants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasApplicant() {
+    return !empty($this->getApplicants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getParticipants() {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
+    $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
-    /** @var \Drupal\user\Entity\User $participant */
-    foreach ($participants->referencedEntities() as $delta => $participant) {
-      if ($populated) {
-        $options[$participant->id()] = [
-          'type' => 'user',
-          'id' => $participant->uuid(),
-          'name' => $participant->get('field_name')->value,
-          'task' => $tasks[$delta]['value'],
-        ];
-      }
-      else {
-        $options[$participant->id()] = $participant->get('field_name')->value;
-      }
+    foreach ($participants_field->referencedEntities() as $delta => $participant) {
+        $participant->task = $tasks[$delta]['value'];
+        $participants[$participant->id()] = $participant;
     }
-    return $options;
+    return $participants ?? [];
   }
 
   /**
@@ -165,156 +97,73 @@ class Project extends Node implements ProjectInterface {
   public function setParticipants(array $participants, array $tasks = []) {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
-    foreach ($participants as $delta => $participant_uid) {
-      $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
+    foreach ($participants as $delta => $participant) {
+      $this->get('field_participants')
+        ->appendItem(['target_id' => $this->getUid($participant)]);
       $task = $tasks[$delta] ?? 'Creative';
       $this->get('field_participants_tasks')->appendItem($task);
     }
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not set participants.', $e);
-    }
   }
 
   /**
-   * Append  participant by uid to project.
+   * {@inheritdoc}
    */
-  public function appendParticipant(int $participant_uid, string $task = 'Creative') {
-    $this->get('field_participants')->appendItem(['target_id' => $participant_uid]);
+  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative') {
+    $this->get('field_participants')
+      ->appendItem(['target_id' => $this->getUid($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
-    try {
-      $this->save();
-    }
-    catch (EntityStorageException $e) {
-      watchdog_exception('Projects: Could not append participant.', $e);
-    }
   }
 
   /**
-   * Get manager(s) for organization of the project.
-   *
-   * We expect that only one person manages a project but allow multiple
-   * managers for future workflow adjustments.
+   * {@inheritdoc}
    */
-  public function getManagersAsArray(bool $populated = FALSE) {
-    $options = [];
+  public function isParticipant(AccountInterface|int $participant) {
+    return array_key_exists($this->getUid($participant), $this->getParticipants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasParticipant() {
+    return !empty($this->getParticipants());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isAuthor(AccountInterface|int $account) {
+    return $this->getUid($account) == $this->getOwner()->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isAuthorOrManager(AccountInterface|int $account) {
     $organization = $this->getOwner();
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if ($populated) {
-        $options[$manager->id()][] = [
-          'type' => 'user',
-          'id' => $manager->uuid(),
-          'name' => $manager->get('field_name')->value,
-        ];
-      }
-      else {
-        $options[$manager->id()] = $manager->get('field_name')->value;
-      }
-    }
-    return $options;
+    return $this->isAuthor($account) ||
+      ($organization instanceof Organization &&
+        $organization->isManager($account));
   }
 
   /**
-   * Does the organization of the project have a manager?
-   *
-   * We expect that only one person manages a project but allow multiple
-   * managers for future workflow adjustments.
+   * {@inheritdoc}
    */
-  public function hasManager() {
-    $count = 0;
+  public function getManager() {
     $organization = $this->getOwner();
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if (in_array('manager', $manager->getRoles())) {
-        $count = $count + 1;
-      }
-    }
-    return (bool) $count;
+    return $organization instanceof Organization ?
+      $organization->getManager() : NULL;
   }
 
   /**
-   * Abstraction of forward transition flow check.
+   * Helper to get uid of an account.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $account
+   *   The account or the uid.
+   * @return \Drupal\Core\Session\AccountInterface|int
+   *   The uid.
    */
-  private function hasTransition($current_state, $new_state) {
-    /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = $this->loadWorkflowForProject();
-    return $current_state != $new_state &&
-      $workflow->getTypePlugin()->hasTransitionFromStateToState($current_state, $new_state);
-  }
-
-  /**
-   * Checks if project can transition to state 'ongoing'.
-   */
-  private function canTransitionSubmit() {
-    return $this->hasTransition($this->getState(), self::STATE_PENDING);
-  }
-
-  /**
-   * Checks if project can transition to state 'open'.
-   */
-  private function canTransitionPublish() {
-    return $this->hasTransition($this->getState(), self::STATE_OPEN);
-  }
-
-  /**
-   * Checks if project can transition to state 'ongoing'.
-   */
-  private function canTransitionMediate() {
-    return !empty($this->getApplicantsAsArray()) &&
-      $this->hasTransition($this->getState(), self::STATE_ONGOING);
-  }
-
-  /**
-   * Checks if project can transition to state 'completed'.
-   */
-  private function canTransitionComplete() {
-    return $this->hasTransition($this->getState(), self::STATE_COMPLETED);
-  }
-
-  /**
-   * Checks if project can transition to state 'draft'.
-   */
-  private function canTransitionReset() {
-    return $this->hasTransition($this->getState(), self::STATE_DRAFT);
-  }
-
-  /**
-   * Set new lifecycle for transition.
-   */
-  private function transition($transition, $new_state) {
-    if ($this->canTransitionByLabel($transition)) {
-      $this->set('field_lifecycle', $new_state);
-      try {
-        $this->save();
-        return TRUE;
-      }
-      catch (EntityStorageException $e) {
-        watchdog_exception('Projects: Could not perform transition.', $e);
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Loads workflow for current project.
-   */
-  private function loadWorkflowForProject() {
-    try {
-      $workflow = $this->entityTypeManager()
-        ->getStorage('workflow')
-        ->load('project_lifecycle');
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      watchdog_exception('Projects: Could not load workflow.', $e);
-    }
-    return $workflow ?? NULL;
+  private function getUid(AccountInterface|int $account) {
+    return $account instanceof AccountInterface ? $account->id() : $account;
   }
 
 }

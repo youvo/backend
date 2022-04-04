@@ -5,8 +5,17 @@
  * Custom module which handles business logic for project entities.
  */
 
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\simple_oauth\Authentication\TokenAuthUser;
+use Drupal\youvo\ComputedFieldStorageDefinition;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
+use Drupal\projects\Plugin\Field\AppliedFieldItemList;
+use Drupal\projects\ProjectFieldAccess;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -24,6 +33,17 @@ function projects_entity_bundle_info_alter(&$bundles) {
 }
 
 /**
+ * Implements hook_entity_type_alter().
+ */
+function projects_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+  $entity = $items->getEntity();
+  if ($entity instanceof Project) {
+    return ProjectFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
+  }
+  return AccessResult::neutral();
+}
+
+/**
  * Implements hook_menu_local_tasks_alter().
  */
 function projects_menu_local_tasks_alter(&$data, $route_name) {
@@ -37,10 +57,10 @@ function projects_menu_local_tasks_alter(&$data, $route_name) {
  * Implements hook_form_node_form_alter().
  */
 function projects_form_node_form_alter(&$form, &$form_state) {
-  $node = $form_state->getFormObject()->getEntity();
 
   // Alter projects form.
-  if ($node->bundle() == 'project') {
+  $project = $form_state->getFormObject()->getEntity();
+  if ($project->bundle() == 'project') {
 
     // Disallow access to form widget provided by fields.
     $form['field_participants']['#access'] = FALSE;
@@ -48,14 +68,13 @@ function projects_form_node_form_alter(&$form, &$form_state) {
 
     // Load default values for participants.
     $participants_default = [];
-    $participants = $node->getParticipantsAsArray(TRUE);
-    foreach (array_keys($participants) as $uid) {
-      $task_id = match ($participants[$uid]['task']) {
+    foreach ($project->getParticipants() as $participant) {
+      $task_id = match ($participant->task) {
         'Manager' => 7,
         default => 3,
       };
       $participants_default[] = [
-        'participant' => User::load($uid),
+        'participant' => $participant,
         'task' => $task_id,
       ];
     }
@@ -130,6 +149,30 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
       ->setClass(ComputedProjectReferenceFieldItemList::class);
+  }
+
+  return $fields;
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ */
+function projects_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+
+  $fields = [];
+
+  // Add computed applied field to projects.
+  if ($entity_type->id() == 'node' && $bundle == 'project') {
+    // It is not a base-field, so we need a custom field storage definition see
+    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
+    $fields['applied'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+      ->setLabel(t('Applied'))
+      ->setDescription(t('Computes the project applied status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(AppliedFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
+      ->setTargetBundle($bundle);
   }
 
   return $fields;

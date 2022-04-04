@@ -1,0 +1,27 @@
+<?php
+
+namespace Drupal\youvo;
+
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\DependencyInjection\ServiceProviderBase;
+use Symfony\Component\DependencyInjection\Reference;
+
+/**
+ * Alters services.
+ */
+class YouvoServiceProvider extends ServiceProviderBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function alter(ContainerBuilder $container) {
+
+    // Overwrite class for jsonapi_include.parse service.
+    if ($container->hasDefinition('jsonapi_include.parse')) {
+      $definition = $container->getDefinition('jsonapi_include.parse');
+      $definition->setClass('Drupal\youvo\AlterJsonapiParse')
+        ->addArgument(new Reference('event_dispatcher'));
+    }
+  }
+
+}

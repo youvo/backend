@@ -7,3 +7,7 @@ services:
   submission.manager:
     class: Drupal\questionnaire\SubmissionManager
     arguments: [ '@current_user', '@entity_type.manager', '@logger.channel.academy' ]
+  questionnaire.parse_jsonapi.attributes:
+    class: Drupal\questionnaire\EventSubscriber\QuestionnaireParseJsonapiAttributesSubscriber
+    tags:
+      - { name: event_subscriber }

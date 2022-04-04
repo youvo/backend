@@ -4,6 +4,8 @@
 /mutagen/
 
 /config/.env.development
+/config/.env.consumers.development
+/config/.env.oauth_remote.development
 /config/.env.production
 /certificates/private.key
 /certificates/public.key

@@ -35,9 +35,14 @@ class ProjectMediateForm extends FormBase {
       '#value' => $project,
     ];
 
+    $options = [];
+    foreach ($project->getApplicants() as $applicant) {
+      $options[$applicant->id()] = $applicant->get('field_name')->value;
+    }
+
     $form['select_participants'] = [
       '#type' => 'checkboxes',
-      '#options' => $project->getApplicantsAsArray(),
+      '#options' => $options,
       '#title' => $this->t('Select Participants'),
       '#required' => 1,
     ];
@@ -52,6 +57,8 @@ class ProjectMediateForm extends FormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
@@ -60,8 +67,12 @@ class ProjectMediateForm extends FormBase {
     $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
     // Mediate project.
-    if ($project->transitionMediate()) {
-      $project->setParticipants($participants, TRUE);
+    if ($project->workflowManager()->transitionMediate()) {
+      $project->setParticipants($participants);
+      if ($manager = $project->getManager()) {
+        $project->appendParticipant($manager, 'Manager');
+      }
+      $project->save();
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
     else {
