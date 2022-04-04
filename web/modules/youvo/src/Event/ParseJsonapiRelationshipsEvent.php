@@ -2,7 +2,7 @@
 
 namespace Drupal\youvo\Event;
 
-use Symfony\Contracts\EventDispatcher\Event;
+use Drupal\Component\EventDispatcher\Event;
 
 /**
  * Event that is fired when json api relationships are parsed.
