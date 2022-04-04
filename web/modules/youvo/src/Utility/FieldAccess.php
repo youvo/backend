@@ -41,7 +41,7 @@ abstract class FieldAccess {
   /**
    * With different authorization methods the account object may be a
    * AccountProxy or a TokenAuthUser. Use this helper to determine whether
-   * the account is a creative.
+   * the account is of a specific user type.
    */
   protected static function isUserType(
     AccountInterface $account,
