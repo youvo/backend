@@ -123,13 +123,13 @@ resourceFields:
     enhancer:
       id: ''
   content_translation_source:
-    disabled: false
+    disabled: true
     fieldName: content_translation_source
     publicName: content_translation_source
     enhancer:
       id: ''
   content_translation_outdated:
-    disabled: false
+    disabled: true
     fieldName: content_translation_outdated
     publicName: content_translation_outdated
     enhancer:
@@ -246,5 +246,11 @@ resourceFields:
     disabled: false
     fieldName: field_workload
     publicName: workload
+    enhancer:
+      id: ''
+  applied:
+    disabled: false
+    fieldName: applied
+    publicName: applied
     enhancer:
       id: ''
