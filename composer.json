@@ -124,6 +124,7 @@
         "drupal/coder": "^8.3",
         "drupal/core-dev": "9.3.*",
         "drupal/devel": "^4.1",
+        "drupal/druqs": "^2.0@beta",
         "drupal/find_uuid": "^1.0",
         "drupal/openapi": "^2.0",
         "drupal/openapi_jsonapi": "^3.0",
