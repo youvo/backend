@@ -7,7 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Entity\Project;
-use Drupal\youvo\FieldAccess;
+use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the project bundle.
