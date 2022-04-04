@@ -25,6 +25,8 @@ class ProjectWorkflowManager {
   const TRANSITION_COMPLETE = 'complete';
   const TRANSITION_RESET = 'reset';
 
+  const WORKFLOW_ID = 'project_lifecycle';
+
   /**
    * The project calling the workflow manager.
    *
@@ -208,7 +210,7 @@ class ProjectWorkflowManager {
   private function loadWorkflow() {
     try {
       $workflow = $this->entityTypeManager->getStorage('workflow')
-        ->load('project_lifecycle');
+        ->load(self::WORKFLOW_ID);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $exception) {
       $variables = Error::decodeException($exception);

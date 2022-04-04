@@ -3,26 +3,68 @@
 namespace Drupal\projects;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\creatives\Entity\Creative;
+use Drupal\projects\Entity\Project;
+use Drupal\youvo\FieldAccess;
 
 /**
  * Provides field access methods for the project bundle.
  */
-class ProjectFieldAccess {
+class ProjectFieldAccess extends FieldAccess {
+
+  const UNRESTRICTED_FIELDS = [
+    'body',
+    'field_allowance',
+    'field_appreciation',
+    'field_city',
+    'field_deadline',
+    'field_image',
+    'field_image_copyright',
+    'field_local',
+    'field_material',
+    'field_skills',
+    'field_workload',
+    'title',
+  ];
+
+  const PUBLIC_FIELDS = self::UNRESTRICTED_FIELDS + [
+    'created',
+    'field_contact',
+    'field_lifecycle',
+    'langcode',
+    'promote',
+    'status',
+    'sticky',
+    'uid',
+  ];
+
+  const RESULT_FIELDS = [
+    'field_participants',
+    'field_participants_tasks',
+    'field_result_files',
+    'field_result_text'
+  ];
+
+  const APPLIED_FIELD = 'applied';
+  const APPLICANTS_FIELD = 'field_applicants';
+  const PARTICIPANTS_FIELD = 'field_participants';
 
   /**
-   * Static call for the hook to check field access.
-   * @see projects.module projects_entity_field_access()
+   * {@inheritdoc}
    */
   public static function checkFieldAccess(
-    ProjectInterface $project,
+    ContentEntityInterface $entity,
     string $operation,
     FieldDefinitionInterface $field_definition,
     AccountInterface $account
   ) {
+
+    // Only project fields should be controlled by this class.
+    if (!$entity instanceof Project) {
+      return AccessResult::forbidden();
+    }
 
     // Administrators pass through.
     if ($account->hasPermission('administer site')) {
@@ -31,143 +73,49 @@ class ProjectFieldAccess {
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
-      self::isPublicField($field_definition)) {
+      self::isFieldOfGroup($field_definition, 'PUBLIC_FIELDS')) {
       return AccessResult::neutral();
     }
 
     // Editing unrestricted fields is handled downstream.
     if ($operation == 'edit' &&
-      self::isUnrestrictedField($field_definition)) {
+      self::isFieldOfGroup($field_definition, 'UNRESTRICTED_FIELDS')) {
       return AccessResult::neutral();
     }
 
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
       self::isCreative($account) &&
-      $field_definition->getName() == 'applied' &&
-      $project->workflowManager()->isOpen()) {
+      $field_definition->getName() == self::APPLIED_FIELD &&
+      $entity->workflowManager()->isOpen()) {
       return AccessResult::neutral();
     }
 
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
-      $project->workflowManager()->isCompleted() &&
-      self::isResultField($field_definition)) {
+      $entity->workflowManager()->isCompleted() &&
+      self::isFieldOfGroup($field_definition, 'RESULT_FIELDS')) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view applicants for open projects.
     if ($operation == 'view' &&
-      $project->workflowManager()->isOpen() &&
-      $field_definition->getName() == 'field_applicants' &&
-      $project->isAuthorOrManager($account)) {
+      $entity->workflowManager()->isOpen() &&
+      $field_definition->getName() == self::APPLICANTS_FIELD &&
+      $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view participants for ongoing projects. Note
     // that completed projects are handled above.
     if ($operation == 'view' &&
-      $project->workflowManager()->isOngoing() &&
-      $field_definition->getName() == 'field_participants' &&
-      $project->isAuthorOrManager($account)) {
+      $entity->workflowManager()->isOngoing() &&
+      $field_definition->getName() == self::PARTICIPANTS_FIELD &&
+      $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral();
     }
 
     return AccessResult::forbidden();
-  }
-
-  /**
-   * We hard-code unrestricted fields for projects here. This approach might
-   * be less flexible and lead to confusion when adding new fields. But, it is
-   * most secure when granting access to setting field values during creation
-   * of new project entities. @see ProjectRestResponder
-   */
-  public static function isUnrestrictedField(FieldDefinitionInterface|string $field) {
-
-    // Resolve field name.
-    $field_name = $field instanceof FieldDefinitionInterface ?
-      $field->getName() : $field;
-
-    $unrestricted_fields = [
-      'body',
-      'field_allowance',
-      'field_appreciation',
-      'field_city',
-      'field_deadline',
-      'field_image',
-      'field_image_copyright',
-      'field_local',
-      'field_material',
-      'field_skills',
-      'field_workload',
-      'title',
-    ];
-
-    return in_array($field_name, $unrestricted_fields);
-  }
-
-  /**
-   * We hard-code public fields for projects here. See comment above.
-   */
-  public static function isPublicField(FieldDefinitionInterface|string $field) {
-
-    // Resolve field name.
-    $field_name = $field instanceof FieldDefinitionInterface ?
-      $field->getName() : $field;
-
-    // An unrestricted field is public.
-    if (self::isUnrestrictedField($field_name)) {
-      return TRUE;
-    }
-
-    $public_fields = [
-      'created',
-      'field_contact',
-      'field_lifecycle',
-      'langcode',
-      'promote',
-      'status',
-      'sticky',
-      'uid',
-    ];
-
-    return in_array($field_name, $public_fields);
-  }
-
-  /**
-   * We hard-code result fields for projects here. See comment above.
-   */
-  public static function isResultField(FieldDefinitionInterface|string $field) {
-
-    // Resolve field name.
-    $field_name = $field instanceof FieldDefinitionInterface ?
-      $field->getName() : $field;
-
-    $result_fields = [
-      'field_participants',
-      'field_participants_tasks',
-      'field_result_files',
-      'field_result_text'
-    ];
-
-    return in_array($field_name, $result_fields);
-  }
-
-  /**
-   * With different authorization methods the account object may be a
-   * AccountProxy or a TokenAuthUser. Use this helper to determine whether
-   * the account is a creative.
-   */
-  private static function isCreative(AccountInterface $account) {
-    if ($account instanceof AccountProxyInterface) {
-      $account = $account->getAccount();
-      if (class_exists('Drupal\\simple_oauth\\Authentication\\TokenAuthUser') &&
-        $account instanceof \Drupal\simple_oauth\Authentication\TokenAuthUser) {
-        return $account->bundle() == 'user';
-      }
-      return $account instanceof Creative;
-    }
-    return $account instanceof Creative;
   }
 
 }

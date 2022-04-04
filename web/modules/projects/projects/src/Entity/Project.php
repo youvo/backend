@@ -9,7 +9,7 @@ use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
 
 /**
- * Implements lifecycle workflow functionality for Project entities.
+ * Implements bundle class for Project entities.
  */
 class Project extends Node implements ProjectInterface {
 
