@@ -26,7 +26,7 @@ abstract class FieldAccess {
   /**
    * Determines if a field is part of a defined group.
    */
-  protected static function isFieldOfGroup(FieldDefinitionInterface|string $field, array $group) {
+  public static function isFieldOfGroup(FieldDefinitionInterface|string $field, array $group) {
     return in_array(static::getFieldName($field), $group);
   }
 
