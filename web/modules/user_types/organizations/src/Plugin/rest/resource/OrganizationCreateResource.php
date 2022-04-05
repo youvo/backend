@@ -12,6 +12,7 @@ use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user_bundle\Entity\TypedUser;
+use Drupal\youvo\Exception\FieldHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Psr\Log\LoggerInterface;
@@ -152,6 +153,7 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
+   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(Request $request) {
@@ -166,8 +168,19 @@ class OrganizationCreateResource extends ResourceBase {
 
     // Create new project node.
     $project = Project::create(['type' => 'project']);
-    $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
-    $project = $this->projectRestResponder->populateFields($attributes, $project);
+    try {
+      $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
+      $project = $this->projectRestResponder->populateFields($attributes, $project);
+    }
+    catch (FieldHttpException $e) {
+      return new ModifiedResourceResponse([
+        'message' => $e->getMessage(),
+        'field' => $e->getField()
+      ], $e->getStatusCode());
+    }
+    catch (HttpException $e) {
+      return new ModifiedResourceResponse($e->getMessage(), $e->getStatusCode());
+    }
     $project->get('uid')->value = $organization->id();
     $project->get('field_lifecycle')->value = 'draft';
     $project->get('status')->value = 1;

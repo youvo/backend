@@ -3,10 +3,11 @@
 namespace Drupal\projects;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\youvo\Exception\FieldHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Provides project REST responder service.
@@ -39,6 +40,9 @@ class ProjectRestResponder {
    *
    * @return array
    *   The shifted project attributes.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   * @throws \Drupal\youvo\Exception\FieldHttpException
    */
   public function validateAndShiftRequest(Request $request) {
 
@@ -48,7 +52,7 @@ class ProjectRestResponder {
     // Decline request body without project data.
     if (empty($content['data']) ||
       !in_array('project', array_column($content['data'], 'type'))) {
-      throw new BadRequestHttpException('Request body does not provide project data.');
+      throw new HttpException(400, 'Request body does not provide project data.');
     }
 
     // Get attributes from request content.
@@ -56,7 +60,9 @@ class ProjectRestResponder {
 
     // Check if body is provided.
     if (empty($attributes['body'])) {
-      throw new BadRequestHttpException('Need to provide body to create project.');
+      throw new FieldHttpException(400,
+        'Need to provide body to create project.',
+        'body');
     }
 
     return $attributes;
@@ -72,6 +78,8 @@ class ProjectRestResponder {
    *
    * @return \Drupal\projects\ProjectInterface
    *   The project with populated fields.
+   *
+   * @throws \Drupal\youvo\Exception\FieldHttpException
    */
   public function populateFields(array $attributes, ProjectInterface $project) {
 
@@ -82,17 +90,26 @@ class ProjectRestResponder {
       if (!$project->hasField($field_key)) {
         $field_key = 'field_' . $field_key;
         if (!$project->hasField($field_key)) {
-          throw new BadRequestHttpException('Malformed request body. Projects do not provide the field ' . $field_key);
+          throw new FieldHttpException(400,
+            'Malformed request body. Projects do not provide the field ' . $field_key,
+            $field_key);
         }
       }
 
       // Check access to edit field.
-      // @todo
+      if (!ProjectFieldAccess::isFieldOfGroup($field_key,
+        ProjectFieldAccess::UNRESTRICTED_FIELDS)) {
+        throw new FieldHttpException(403,
+          'Access Denied. Not allowed to set ' . $field_key,
+          $field_key);
+      }
 
       // Validate field value.
       $field_definition = $project->getFieldDefinition($field_key);
       if (!FieldValidator::validate($field_definition, $value)) {
-        throw new BadRequestHttpException('Malformed request body. Unable to validate the project field ' . $field_key);
+        throw new FieldHttpException(400,
+          'Malformed request body. Unable to validate the project field ' . $field_key,
+          $field_key);
       }
 
       // Set the field value.
