@@ -3,7 +3,6 @@
 namespace Drupal\projects;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\projects\Entity\Project;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,15 +30,17 @@ class ProjectRestResponder {
   public function __construct(Json $serialization_json) {
     $this->serializationJson = $serialization_json;
   }
+
   /**
-   * Create new project node with some validation.
+   * Checks and distills values for projects.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Contains request data.
+   *   The request.
    *
-   * @return \Drupal\projects\Entity\Project
+   * @return array
+   *   The shifted project attributes.
    */
-  public function createProject(Request $request) {
+  public function validateAndShiftRequest(Request $request) {
 
     // Decode content of the request.
     $content = $this->serializationJson->decode($request->getContent());
@@ -58,8 +59,21 @@ class ProjectRestResponder {
       throw new BadRequestHttpException('Need to provide body to create project.');
     }
 
-    // Create new project node.
-    $project = Project::create(['type' => 'project']);
+    return $attributes;
+  }
+
+  /**
+   * Create new project node with some validation.
+   *
+   * @param array $attributes
+   *   Contains project attributes.
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The project to populate.
+   *
+   * @return \Drupal\projects\ProjectInterface
+   *   The project with populated fields.
+   */
+  public function populateFields(array $attributes, ProjectInterface $project) {
 
     // Populate fields.
     foreach ($attributes as $field_key => $value) {
@@ -71,6 +85,9 @@ class ProjectRestResponder {
           throw new BadRequestHttpException('Malformed request body. Projects do not provide the field ' . $field_key);
         }
       }
+
+      // Check access to edit field.
+      // @todo
 
       // Validate field value.
       $field_definition = $project->getFieldDefinition($field_key);

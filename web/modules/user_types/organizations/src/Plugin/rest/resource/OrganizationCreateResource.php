@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -155,24 +156,22 @@ class OrganizationCreateResource extends ResourceBase {
    */
   public function post(Request $request) {
 
-    // Create organization.
-    $organization = $this->createOrganization($request);
-
-    // Create project.
-    $project = $this->projectRestResponder->createProject($request);
-
-    // Add role, activate and save organization.
-    $organization->addRole('organization');
+    // Create new organization user.
+    $organization = TypedUser::create(['type' => 'organization']);
+    $attributes = $this->validateAndShiftRequest($request);
+    $organization = $this->populateFields($attributes, $organization);
+    $organization->addRole('prospect');
     $organization->activate();
     $organization->save();
 
-    // Establish project author reference, set as draft, activate and save.
+    // Create new project node.
+    $project = Project::create(['type' => 'project']);
+    $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
+    $project = $this->projectRestResponder->populateFields($attributes, $project);
     $project->get('uid')->value = $organization->id();
     $project->get('field_lifecycle')->value = 'draft';
     $project->get('status')->value = 1;
     $project->save();
-
-    // @todo Login organization.
 
     // @todo langcode.
 
@@ -203,11 +202,58 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Create new organization user with some validation.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @param array $attributes
+   *   Contains organization attributes.
+   * @param \Drupal\user_bundle\Entity\TypedUser $organization
+   *   The organization.
    *
    * @return \Drupal\user_bundle\Entity\TypedUser
+   *   The organization with populated fields.
    */
-  private function createOrganization(Request $request) {
+  protected function populateFields(array $attributes, TypedUser $organization) {
+
+    // Populate fields.
+    foreach ($attributes as $field_key => $value) {
+
+      // Validate if field is available. Target field_name instead of name.
+      if ($field_key == 'name' || !$organization->hasField($field_key)) {
+        $field_key = 'field_' . $field_key;
+        if (!$organization->hasField($field_key)) {
+          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
+        }
+      }
+
+      // Check access to edit field.
+      // @todo When field access for organizations is complete.
+
+      // Validate field value.
+      $field_definition = $organization->getFieldDefinition($field_key);
+      if (!FieldValidator::validate($field_definition, $value)) {
+        throw new BadRequestHttpException('Malformed request body. Unable to validate the organization field ' . $field_key);
+      }
+
+      // Set the field value.
+      $organization->get($field_key)->value = $value;
+
+      // Set username identical to provided mail.
+      if ($field_key == 'mail') {
+        $organization->setUsername($value);
+      }
+    }
+
+    return $organization;
+  }
+
+  /**
+   * Checks and distills values for organizations.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
+   *
+   * @return array
+   *   The shifted organization attributes.
+   */
+  protected function validateAndShiftRequest(Request $request) {
 
     // Decode content of the request.
     $content = $this->serializationJson->decode($request->getContent());
@@ -237,36 +283,7 @@ class OrganizationCreateResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error', $e);
     }
 
-    // Create new organization user.
-    $organization = TypedUser::create(['type' => 'organization']);
-
-    // Populate fields.
-    foreach ($attributes as $field_key => $value) {
-
-      // Validate if field is available. Target field_name instead of name.
-      if ($field_key == 'name' || !$organization->hasField($field_key)) {
-        $field_key = 'field_' . $field_key;
-        if (!$organization->hasField($field_key)) {
-          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
-        }
-      }
-
-      // Validate field value.
-      $field_definition = $organization->getFieldDefinition($field_key);
-      if (!FieldValidator::validate($field_definition, $value)) {
-        throw new BadRequestHttpException('Malformed request body. Unable to validate the organization field ' . $field_key);
-      }
-
-      // Set the field value.
-      $organization->get($field_key)->value = $value;
-
-      // Set username identical to provided mail.
-      if ($field_key == 'mail') {
-        $organization->setUsername($value);
-      }
-    }
-
-    return $organization;
+    return $attributes;
   }
 
   /**
@@ -278,7 +295,7 @@ class OrganizationCreateResource extends ResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  private function accountExistsForEmail(string $mail) {
+  protected function accountExistsForEmail(string $mail) {
     return !empty($this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $mail]));
   }
