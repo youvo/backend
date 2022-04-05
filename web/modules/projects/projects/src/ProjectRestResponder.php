@@ -3,7 +3,7 @@
 namespace Drupal\projects;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\youvo\Exception\FieldHttpException;
+use Drupal\youvo\Exception\FieldAwareHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +42,7 @@ class ProjectRestResponder {
    *   The shifted project attributes.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   * @throws \Drupal\youvo\Exception\FieldHttpException
+   * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
   public function validateAndShiftRequest(Request $request) {
 
@@ -60,7 +60,7 @@ class ProjectRestResponder {
 
     // Check if body is provided.
     if (empty($attributes['body'])) {
-      throw new FieldHttpException(400,
+      throw new FieldAwareHttpException(400,
         'Need to provide body to create project.',
         'body');
     }
@@ -79,7 +79,7 @@ class ProjectRestResponder {
    * @return \Drupal\projects\ProjectInterface
    *   The project with populated fields.
    *
-   * @throws \Drupal\youvo\Exception\FieldHttpException
+   * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
   public function populateFields(array $attributes, ProjectInterface $project) {
 
@@ -90,7 +90,7 @@ class ProjectRestResponder {
       if (!$project->hasField($field_key)) {
         $field_key = 'field_' . $field_key;
         if (!$project->hasField($field_key)) {
-          throw new FieldHttpException(400,
+          throw new FieldAwareHttpException(400,
             'Malformed request body. Projects do not provide the field ' . $field_key,
             $field_key);
         }
@@ -99,7 +99,7 @@ class ProjectRestResponder {
       // Check access to edit field.
       if (!ProjectFieldAccess::isFieldOfGroup($field_key,
         ProjectFieldAccess::UNRESTRICTED_FIELDS)) {
-        throw new FieldHttpException(403,
+        throw new FieldAwareHttpException(403,
           'Access Denied. Not allowed to set ' . $field_key,
           $field_key);
       }
@@ -107,7 +107,7 @@ class ProjectRestResponder {
       // Validate field value.
       $field_definition = $project->getFieldDefinition($field_key);
       if (!FieldValidator::validate($field_definition, $value)) {
-        throw new FieldHttpException(400,
+        throw new FieldAwareHttpException(400,
           'Malformed request body. Unable to validate the project field ' . $field_key,
           $field_key);
       }

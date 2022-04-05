@@ -12,7 +12,7 @@ use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user_bundle\Entity\TypedUser;
-use Drupal\youvo\Exception\FieldHttpException;
+use Drupal\youvo\Exception\FieldAwareHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Psr\Log\LoggerInterface;
@@ -172,7 +172,7 @@ class OrganizationCreateResource extends ResourceBase {
       $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
       $project = $this->projectRestResponder->populateFields($attributes, $project);
     }
-    catch (FieldHttpException $e) {
+    catch (FieldAwareHttpException $e) {
       return new ModifiedResourceResponse([
         'message' => $e->getMessage(),
         'field' => $e->getField()

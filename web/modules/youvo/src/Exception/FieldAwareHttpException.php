@@ -4,7 +4,7 @@ namespace Drupal\youvo\Exception;
 
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class FieldHttpException extends HttpException {
+class FieldAwareHttpException extends HttpException {
 
   private $field;
 
