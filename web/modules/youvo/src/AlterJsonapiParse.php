@@ -74,28 +74,12 @@ class AlterJsonapiParse extends JsonapiParse {
    */
   protected function resolveAttributes($item) {
 
-    // Unset links from items.
-    unset($item['links']);
-
     // Allow other modules to alter the item.
     $event = new ParseJsonapiAttributesEvent($item);
     $event = $this->eventDispatcher
       ->dispatch($event, ParseJsonapiAttributesEvent::EVENT_NAME);
 
     return parent::resolveAttributes($event->getItem());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function parseJsonContent($response) {
-    $json = parent::parseJsonContent($response);
-
-    // Unset links and jsonapi information in response.
-    unset($json['links']);
-    unset($json['jsonapi']);
-
-    return $json;
   }
 
 }
