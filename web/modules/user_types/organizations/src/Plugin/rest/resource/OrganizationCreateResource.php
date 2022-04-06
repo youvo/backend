@@ -166,8 +166,8 @@ class OrganizationCreateResource extends ResourceBase {
       $organization = TypedUser::create(['type' => 'organization']);
       $attributes = $this->validateAndShiftRequest($request);
       $organization = $this->populateFields($attributes, $organization);
-      $organization->setPassword(Random);
-      $user->enforceIsNew();
+      $organization->setPassword((new Random)->string(32));
+      $organization->enforceIsNew();
       $organization->addRole('prospect');
       $organization->activate();
       $organization->save();
