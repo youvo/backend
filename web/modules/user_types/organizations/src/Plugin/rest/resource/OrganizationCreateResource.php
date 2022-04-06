@@ -181,7 +181,7 @@ class OrganizationCreateResource extends ResourceBase {
       $project = $this->projectRestResponder->populateFields($attributes, $project);
       $project->get('uid')->value = $organization->id();
       $project->get('field_lifecycle')->value = 'draft';
-      $project->get('status')->value = 1;
+      $project->get('status')->value = '1';
       $project->save();
 
       // @todo langcode.
