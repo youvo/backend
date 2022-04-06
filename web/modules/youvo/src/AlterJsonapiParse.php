@@ -33,10 +33,6 @@ class AlterJsonapiParse extends JsonapiParse {
 
   /**
    * {@inheritdoc}
-   *
-   * Overwrite this method to sort includes from different bundles, e.g.
-   * associated includes from /api/questions/radios and /api/questions/textarea.
-   * Otherwise, entries will only be sorted per resource.
    */
   protected function resolveRelationships($resource, $parent_key) {
 
@@ -75,16 +71,11 @@ class AlterJsonapiParse extends JsonapiParse {
 
   /**
    * {@inheritdoc}
-   *
-   * Overwrite this method to pop empty values from submission arrays. These
-   * empty values are added beforehand to deliver the caching information.
-   *
-   * Also, handle multi-value fields.
-   *
-   * @see SubmissionFieldItemList
-   * @see ParagraphForm
    */
   protected function resolveAttributes($item) {
+
+    // Unset links from items.
+    unset($item['links']);
 
     // Allow other modules to alter the item.
     $event = new ParseJsonapiAttributesEvent($item);
@@ -92,6 +83,19 @@ class AlterJsonapiParse extends JsonapiParse {
       ->dispatch($event, ParseJsonapiAttributesEvent::EVENT_NAME);
 
     return parent::resolveAttributes($event->getItem());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function parseJsonContent($response) {
+    $json = parent::parseJsonContent($response);
+
+    // Unset links and jsonapi information in response.
+    unset($json['links']);
+    unset($json['jsonapi']);
+
+    return $json;
   }
 
 }

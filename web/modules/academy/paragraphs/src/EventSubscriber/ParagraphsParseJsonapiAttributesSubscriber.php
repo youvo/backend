@@ -15,6 +15,8 @@ class ParagraphsParseJsonapiAttributesSubscriber implements EventSubscriberInter
   /**
    * Resolve attributes in json api parsing.
    *
+   * Handle multi-value fields in paragraphs.
+   *
    * @param \Drupal\youvo\Event\ParseJsonapiAttributesEvent $event
    *   The event to process.
    */

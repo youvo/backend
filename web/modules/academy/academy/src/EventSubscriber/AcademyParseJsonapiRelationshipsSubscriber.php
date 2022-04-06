@@ -15,6 +15,10 @@ class AcademyParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
   /**
    * Resolve relationships in json api parsing.
    *
+    * Overwrite this method to sort includes from different bundles, e.g.
+   * associated includes from /api/questions/radios and /api/questions/textarea.
+   * Otherwise, entries will only be sorted per resource.
+   *
    * @param \Drupal\youvo\Event\ParseJsonapiRelationshipsEvent $event
    *   The event to process.
    */
