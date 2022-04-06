@@ -97,10 +97,13 @@ class ProjectRestResponder {
     // Populate fields.
     foreach ($attributes as $field_key => $value) {
 
-      // Validate if field is available.
-      if (!$project->hasField($field_key)) {
-        $field_key = 'field_' . $field_key;
-        if (!$project->hasField($field_key)) {
+      // Validate that field is available.
+      if ($project->hasField($field_key) && $field_key != 'name') {
+        $field_name = $field_key;
+      }
+      else {
+        $field_name = 'field_' . $field_key;
+        if (!$project->hasField($field_name)) {
           throw new FieldAwareHttpException(400,
             'Malformed request body. Projects do not provide the field ' . $field_key,
             $field_key);
@@ -108,7 +111,7 @@ class ProjectRestResponder {
       }
 
       // Check access to edit field.
-      if (!ProjectFieldAccess::isFieldOfGroup($field_key,
+      if (!ProjectFieldAccess::isFieldOfGroup($field_name,
         ProjectFieldAccess::UNRESTRICTED_FIELDS)) {
         throw new FieldAwareHttpException(403,
           'Access Denied. Not allowed to set ' . $field_key,
@@ -116,7 +119,7 @@ class ProjectRestResponder {
       }
 
       // Validate field value.
-      $field_definition = $project->getFieldDefinition($field_key);
+      $field_definition = $project->getFieldDefinition($field_name);
       if (!FieldValidator::validate($field_definition, $value)) {
         throw new FieldAwareHttpException(400,
           'Malformed request body. Unable to validate the project field ' . $field_key,
@@ -124,7 +127,7 @@ class ProjectRestResponder {
       }
 
       // Set the field value.
-      $project->get($field_key)->value = $value;
+      $project->get($field_name)->value = $value;
     }
 
     return $project;
