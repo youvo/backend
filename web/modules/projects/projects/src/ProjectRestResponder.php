@@ -3,6 +3,7 @@
 namespace Drupal\projects;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\projects\Entity\Project;
 use Drupal\youvo\Exception\FieldAwareHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
@@ -30,6 +31,16 @@ class ProjectRestResponder {
    */
   public function __construct(Json $serialization_json) {
     $this->serializationJson = $serialization_json;
+  }
+
+  /**
+   * Create new project.
+   *
+   * @return \Drupal\projects\ProjectInterface
+   *   The project.
+   */
+  public function createProject() {
+    return Project::create(['type' => 'project']);
   }
 
   /**

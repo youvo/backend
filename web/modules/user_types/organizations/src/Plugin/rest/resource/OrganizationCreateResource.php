@@ -6,8 +6,8 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
+use Drupal\Component\Utility\Random;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectRestResponder;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -43,11 +43,11 @@ class OrganizationCreateResource extends ResourceBase {
   protected $serializationJson;
 
   /**
-   * The entity type manager.
+   * The user storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\user\UserStorageInterface
    */
-  protected $entityTypeManager;
+  protected $userStorage;
 
   /**
    * The email validator service.
@@ -84,11 +84,14 @@ class OrganizationCreateResource extends ResourceBase {
    *   The email validator service.
    * @param \Drupal\projects\ProjectRestResponder $project_rest_responder
    *   The project REST responder service.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, EntityTypeManagerInterface $entity_type_manager, EmailValidatorInterface $email_validator, ProjectRestResponder $project_rest_responder) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->userStorage = $entity_type_manager->getStorage('user');
     $this->emailValidator = $email_validator;
     $this->projectRestResponder = $project_rest_responder;
   }
@@ -158,35 +161,35 @@ class OrganizationCreateResource extends ResourceBase {
    */
   public function post(Request $request) {
 
-    // Create new organization user.
-    $organization = TypedUser::create(['type' => 'organization']);
-    $attributes = $this->validateAndShiftRequest($request);
-    $organization = $this->populateFields($attributes, $organization);
-    $organization->addRole('prospect');
-    $organization->activate();
-    $organization->save();
-
-    // Create new project node.
-    $project = Project::create(['type' => 'project']);
     try {
+      // Create new organization user.
+      $organization = TypedUser::create(['type' => 'organization']);
+      $attributes = $this->validateAndShiftRequest($request);
+      $organization = $this->populateFields($attributes, $organization);
+      $organization->setPassword(Random);
+      $user->enforceIsNew();
+      $organization->addRole('prospect');
+      $organization->activate();
+      $organization->save();
+
+      // Create new project node.
+      $project = $this->projectRestResponder->createProject();
       $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
       $project = $this->projectRestResponder->populateFields($attributes, $project);
+      $project->get('uid')->value = $organization->id();
+      $project->get('field_lifecycle')->value = 'draft';
+      $project->get('status')->value = 1;
+      $project->save();
+
+      // @todo langcode.
     }
     catch (FieldAwareHttpException $e) {
-      return new ModifiedResourceResponse([
-        'message' => $e->getMessage(),
-        'field' => $e->getField()
-      ], $e->getStatusCode());
+      return new ModifiedResourceResponse(['message' => $e->getMessage(),
+        'field' => $e->getField()], $e->getStatusCode());
     }
     catch (HttpException $e) {
       return new ModifiedResourceResponse($e->getMessage(), $e->getStatusCode());
     }
-    $project->get('uid')->value = $organization->id();
-    $project->get('field_lifecycle')->value = 'draft';
-    $project->get('status')->value = 1;
-    $project->save();
-
-    // @todo langcode.
 
     return new ModifiedResourceResponse();
   }
@@ -232,17 +235,26 @@ class OrganizationCreateResource extends ResourceBase {
       if ($field_key == 'name' || !$organization->hasField($field_key)) {
         $field_key = 'field_' . $field_key;
         if (!$organization->hasField($field_key)) {
-          throw new BadRequestHttpException('Malformed request body. Organizations do not provide the field ' . $field_key);
+          throw new FieldAwareHttpException(400,
+            'Malformed request body. Organizations do not provide the field ' . $field_key,
+            $field_key);
         }
       }
 
       // Check access to edit field.
       // @todo When field access for organizations is complete.
+      if ($field_key == 'no access') {
+        throw new FieldAwareHttpException(403,
+          'Access Denied. Not allowed to set ' . $field_key,
+          $field_key);
+      }
 
       // Validate field value.
       $field_definition = $organization->getFieldDefinition($field_key);
       if (!FieldValidator::validate($field_definition, $value)) {
-        throw new BadRequestHttpException('Malformed request body. Unable to validate the organization field ' . $field_key);
+        throw new FieldAwareHttpException(400,
+          'Malformed request body. Unable to validate the organization field ' . $field_key,
+          $field_key);
       }
 
       // Set the field value.
@@ -265,6 +277,9 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @return array
    *   The shifted organization attributes.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
   protected function validateAndShiftRequest(Request $request) {
 
@@ -274,7 +289,7 @@ class OrganizationCreateResource extends ResourceBase {
     // Decline request body without organization data.
     if (empty($content['data']) ||
       !in_array('organization', array_column($content['data'], 'type'))) {
-      throw new BadRequestHttpException('Request body does not provide organization.');
+      throw new HttpException(400, 'Request body does not provide organization data.');
     }
 
     // Get attributes from request content.
@@ -283,17 +298,16 @@ class OrganizationCreateResource extends ResourceBase {
     // Check if valid email is provided.
     if (empty($attributes['mail']) ||
       !$this->emailValidator->isValid($attributes['mail'])) {
-      throw new BadRequestHttpException('Need to provide valid mail to register organization.');
+      throw new FieldAwareHttpException(400,
+        'Need to provide valid mail to register organization.',
+        'mail');
     }
 
     // Check whether there is already an account for this email.
-    try {
-      if ($this->accountExistsForEmail($attributes['mail'])) {
-        throw new BadRequestHttpException('There already exists an account for the provided email address.');
-      }
-    }
-    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
-      throw new HttpException(500, 'Internal Server Error', $e);
+    if ($this->accountExistsForEmail($attributes['mail'])) {
+      throw new FieldAwareHttpException(409,
+        'There already exists an account for the provided email address.',
+        'mail');
     }
 
     return $attributes;
@@ -304,13 +318,9 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @param string $mail
    * @return bool
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function accountExistsForEmail(string $mail) {
-    return !empty($this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['mail' => $mail]));
+    return !empty($this->userStorage->loadByProperties(['mail' => $mail]));
   }
 
 }
