@@ -29,7 +29,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   id = "organization:create",
  *   label = @Translation("Organization Create Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/organizations/create"
+ *     "canonical" = "/api/organizations/create/prospect"
  *   }
  * )
  */
