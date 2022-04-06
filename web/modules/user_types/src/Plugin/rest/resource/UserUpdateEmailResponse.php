@@ -245,7 +245,7 @@ class UserUpdateEmailResponse extends ResourceBase {
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\user_types\Controller\Access::updateEmail');
+      $route->setRequirement('_custom_access', '\Drupal\user_types\Controller\UserTypeAccessController::updateEmail');
       $collection->add("$route_name.$method", $route);
     }
 
