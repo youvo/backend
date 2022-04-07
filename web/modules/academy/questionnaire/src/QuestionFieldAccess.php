@@ -35,9 +35,8 @@ class QuestionFieldAccess extends FieldAccess {
     }
 
     // Administrators and editors pass through.
-    if (in_array('administrator', $account->getRoles()) ||
-      ($operation == 'edit ' && $account->hasPermission('manage courses'))) {
-      return AccessResult::neutral();
+    if ($account->hasPermission('manage courses')) {
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Restrict accessing the question answer fields when viewing questionnaire.
