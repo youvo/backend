@@ -102,7 +102,7 @@ class OrganizationFieldAccess extends FieldAccess {
     }
 
     // Administrators and supervisors pass through. This targets editing.
-    if ($account->hasPermission('administer site') ||
+    if (in_array('administrator', $account->getRoles()) ||
       in_array('supervisor', $account->getRoles())) {
       return AccessResult::neutral();
     }

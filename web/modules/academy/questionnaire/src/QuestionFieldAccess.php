@@ -35,7 +35,7 @@ class QuestionFieldAccess extends FieldAccess {
     }
 
     // Administrators and editors pass through.
-    if ($account->hasPermission('administer site') ||
+    if (in_array('administrator', $account->getRoles()) ||
       ($operation == 'edit ' && $account->hasPermission('manage courses'))) {
       return AccessResult::neutral();
     }

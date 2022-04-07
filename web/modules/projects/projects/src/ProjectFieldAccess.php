@@ -67,7 +67,7 @@ class ProjectFieldAccess extends FieldAccess {
     }
 
     // Administrators pass through.
-    if ($account->hasPermission('administer site')) {
+    if (in_array('administrator', $account->getRoles())) {
       return AccessResult::neutral()->cachePerUser();
     }
 

@@ -78,7 +78,7 @@ class BlockerMode implements BlockerModeInterface {
   public function exempt(RouteMatchInterface $route_match, AccountInterface $account) {
 
     // Administrators are welcome.
-    if ($account->hasPermission('administer site')) {
+    if (in_array('administrator', $account->getRoles())) {
       return TRUE;
     }
 
