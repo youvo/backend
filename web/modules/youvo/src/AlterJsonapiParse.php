@@ -94,4 +94,17 @@ class AlterJsonapiParse extends JsonapiParse {
     return parent::resolveAttributes($event->getItem());
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function parseJsonContent($response) {
+    $json = parent::parseJsonContent($response);
+
+    // Unset the display name here, because in some cases we don't want to leak
+    // the user email or name.
+    unset($json['data']['display_name']);
+
+    return $json;
+  }
+
 }
