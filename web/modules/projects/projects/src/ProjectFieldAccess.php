@@ -68,7 +68,7 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Administrators pass through.
     if ($account->hasPermission('administer site')) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Viewing public fields is handled downstream.
@@ -90,7 +90,7 @@ class ProjectFieldAccess extends FieldAccess {
       self::isCreative($account) &&
       $field->getName() == self::APPLIED_FIELD &&
       $entity->workflowManager()->isOpen()) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Result fields for completed projects are handled downstream.
@@ -105,7 +105,7 @@ class ProjectFieldAccess extends FieldAccess {
       $entity->workflowManager()->isOpen() &&
       $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Authors and managers may view participants for ongoing projects. Note
@@ -114,7 +114,7 @@ class ProjectFieldAccess extends FieldAccess {
       $entity->workflowManager()->isOngoing() &&
       $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     return AccessResult::forbidden();
