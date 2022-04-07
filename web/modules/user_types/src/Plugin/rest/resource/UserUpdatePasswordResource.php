@@ -3,10 +3,8 @@
 namespace Drupal\user_types\Plugin\rest\resource;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user\UserStorageInterface;
@@ -17,17 +15,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Provides User Update Email Resource.
+ * Provides User Update Password Resource.
  *
  * @RestResource(
- *   id = "user:update:email",
- *   label = @Translation("User Update Email"),
+ *   id = "user:update:password",
+ *   label = @Translation("User Update Password"),
  *   uri_paths = {
- *     "canonical" = "/api/users/update/email"
+ *     "canonical" = "/api/users/update/password"
  *   }
  * )
  */
-class UserUpdateEmailResponse extends ResourceBase {
+class UserUpdatePasswordResource extends ResourceBase {
 
   /**
    * The current user.
@@ -51,13 +49,6 @@ class UserUpdateEmailResponse extends ResourceBase {
   protected $userStorage;
 
   /**
-   * The email validator service.
-   *
-   * @var \Drupal\Component\Utility\EmailValidatorInterface
-   */
-  protected $emailValidator;
-
-  /**
    * Constructs a OrganizationCreateResource object.
    *
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
@@ -67,12 +58,11 @@ class UserUpdateEmailResponse extends ResourceBase {
    * @param \Drupal\user\UserStorageInterface $user_storage
    *   The user storage handler.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user, Json $serialization_json, UserStorageInterface $user_storage, EmailValidatorInterface $email_validator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user, Json $serialization_json, UserStorageInterface $user_storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;
     $this->serializationJson = $serialization_json;
     $this->userStorage = $user_storage;
-    $this->emailValidator = $email_validator;
   }
 
   /**
@@ -87,52 +77,8 @@ class UserUpdateEmailResponse extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('current_user'),
       $container->get('serialization.json'),
-      $container->get('entity_type.manager')->getStorage('user'),
-      $container->get('email.validator')
+      $container->get('entity_type.manager')->getStorage('user')
     );
-  }
-
-  /**
-   * Responds GET requests.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Contains request data.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
-   */
-  public function get(Request $request) {
-
-    // Get email query parameter.
-    $email = trim($request->query->get('email'));
-
-    // Check whether email was provided.
-    if (empty($email)) {
-      return new ModifiedResourceResponse([
-        'message' => 'The email parameter was not provided.',
-        'field' => 'email'
-      ], 400);
-    }
-
-    // Check whether email is valid.
-    if (!$this->emailValidator->isValid($email)) {
-      return new ModifiedResourceResponse([
-        'message' => 'The provided email is not valid.',
-        'field' => 'email'
-      ], 400);
-    }
-
-    // Check if there already exists an account with given email.
-    $current_email = $this->currentUser->isAuthenticated() &&
-      $this->currentUser->getEmail() == $email;
-    if ($this->accountExistsForEmail($email) && !$current_email) {
-      return new ModifiedResourceResponse([
-        'message' => 'There already exists an account for the provided email.',
-        'field' => 'email'
-      ], 409);
-    }
-
-    return new ModifiedResourceResponse();
   }
 
   /**
@@ -158,25 +104,16 @@ class UserUpdateEmailResponse extends ResourceBase {
     // Check whether current_password was provided.
     if (empty($content['current_password'])) {
       return new ResourceResponse([
-        'message' => 'The value current_password was not provided.',
-        'field' => 'current_password'
+          'message' => 'The value current_password was not provided.',
+          'field' => 'current_password'
         ], 400);
     }
 
-    // Check whether email was provided.
-    if (empty($content['new_email'])) {
+    // Check whether current_password was provided.
+    if (empty($content['new_password'])) {
       return new ResourceResponse([
-        'message' => 'The value new_email was not provided.',
-        'field' => 'new_email'
-      ], 400);
-    }
-
-    // Check whether email is valid.
-    $email = trim($content['new_email']);
-    if (!$this->emailValidator->isValid($email)) {
-      return new ResourceResponse([
-        'message' => 'The new email is not valid.',
-        'field' => 'new_email'
+        'message' => 'The value new_password was not provided.',
+        'field' => 'new_password'
       ], 400);
     }
 
@@ -196,21 +133,8 @@ class UserUpdateEmailResponse extends ResourceBase {
       ], 409);
     }
 
-    // Check whether the email has changed. Nothing to do.
-    if ($content['new_email'] == $this->currentUser->getEmail()) {
-      return new ResourceResponse();
-    }
-
-    // Check if there already exists an account with given email.
-    if ($this->accountExistsForEmail($email)) {
-      return new ResourceResponse([
-        'message' => 'There already exists an account for the new email.',
-        'field' => 'new_email'
-      ], 409);
-    }
-
     /**
-     * Set new email and save user.
+     * Set new password and save user.
      *
      * Note that all sessions are destroyed and a new session is migrated from
      * the current user. @see \Drupal\user\Entity\User::postSave()
@@ -220,8 +144,7 @@ class UserUpdateEmailResponse extends ResourceBase {
      * simple_oauth_entity_update() and the respective patch.
      **/
     try {
-      $account->setEmail($email);
-      $account->setUsername($email);
+      $account->setPassword(trim($content['new_password']));
       $account->save();
     }
     catch (EntityStorageException $e) {
@@ -245,21 +168,11 @@ class UserUpdateEmailResponse extends ResourceBase {
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\user_types\Controller\Access::updateEmail');
+      $route->setRequirement('_custom_access', '\Drupal\user_types\Controller\Access::updatePassword');
       $collection->add("$route_name.$method", $route);
     }
 
     return $collection;
-  }
-
-  /**
-   * Check whether email used by already existing account.
-   *
-   * @param string $email
-   * @return bool
-   */
-  private function accountExistsForEmail(string $email) {
-    return !empty($this->userStorage->loadByProperties(['mail' => $email]));
   }
 
 }
