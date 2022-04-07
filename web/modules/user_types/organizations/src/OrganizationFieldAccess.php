@@ -20,7 +20,7 @@ class OrganizationFieldAccess extends FieldAccess {
   public static function checkFieldAccess(
     ContentEntityInterface $entity,
     string $operation,
-    FieldDefinitionInterface $field_definition,
+    FieldDefinitionInterface $field,
     AccountInterface $account
   ) {
 

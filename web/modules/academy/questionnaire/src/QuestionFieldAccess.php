@@ -25,7 +25,7 @@ class QuestionFieldAccess extends FieldAccess {
   public static function checkFieldAccess(
     ContentEntityInterface $entity,
     string $operation,
-    FieldDefinitionInterface $field_definition,
+    FieldDefinitionInterface $field,
     AccountInterface $account
   ) {
 
@@ -42,7 +42,7 @@ class QuestionFieldAccess extends FieldAccess {
 
     // Restrict accessing the question answer fields when viewing questionnaire.
     if ($entity->getParentEntity()->bundle() == 'questionnaire' &&
-      self::isFieldOfGroup($field_definition, self::ANSWER_FIELDS)) {
+      self::isFieldOfGroup($field, self::ANSWER_FIELDS)) {
       return AccessResult::forbidden();
     }
 

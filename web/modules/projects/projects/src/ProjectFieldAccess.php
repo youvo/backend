@@ -57,7 +57,7 @@ class ProjectFieldAccess extends FieldAccess {
   public static function checkFieldAccess(
     ContentEntityInterface $entity,
     string $operation,
-    FieldDefinitionInterface $field_definition,
+    FieldDefinitionInterface $field,
     AccountInterface $account
   ) {
 
@@ -73,7 +73,7 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
-      self::isFieldOfGroup($field_definition,
+      self::isFieldOfGroup($field,
         array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
     ) {
       return AccessResult::neutral();
@@ -81,14 +81,14 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Editing unrestricted fields is handled downstream.
     if ($operation == 'edit' &&
-      self::isFieldOfGroup($field_definition, self::UNRESTRICTED_FIELDS)) {
+      self::isFieldOfGroup($field, self::UNRESTRICTED_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
       self::isCreative($account) &&
-      $field_definition->getName() == self::APPLIED_FIELD &&
+      $field->getName() == self::APPLIED_FIELD &&
       $entity->workflowManager()->isOpen()) {
       return AccessResult::neutral();
     }
@@ -96,14 +96,14 @@ class ProjectFieldAccess extends FieldAccess {
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
       $entity->workflowManager()->isCompleted() &&
-      self::isFieldOfGroup($field_definition, self::RESULT_FIELDS)) {
+      self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view applicants for open projects.
     if ($operation == 'view' &&
       $entity->workflowManager()->isOpen() &&
-      $field_definition->getName() == self::APPLICANTS_FIELD &&
+      $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral();
     }
@@ -112,7 +112,7 @@ class ProjectFieldAccess extends FieldAccess {
     // that completed projects are handled above.
     if ($operation == 'view' &&
       $entity->workflowManager()->isOngoing() &&
-      $field_definition->getName() == self::PARTICIPANTS_FIELD &&
+      $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral();
     }
