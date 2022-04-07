@@ -11,8 +11,80 @@ use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the organization user bundle.
+ *
+ * The method checkFieldAccess() is used for field access control, when viewing
+ * or editing the organization through the JSON:API or the administration. Also,
+ * we use constants of this class when creating an organization prospect.
+ * @see \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource
+ *
+ * Note that some fields (mail, pass and manager) are edited through special
+ * endpoints, which have separate access controllers.
+ * @see \Drupal\organizations\Plugin\rest\resource\OrganizationManageResource
+ * @see \Drupal\user_types\Plugin\rest\resource\UserUpdateEmailResource
+ * @see \Drupal\user_types\Plugin\rest\resource\UserUpdatePasswordResource
+ *
+ * The field projects is a computed field.
+ * @see \Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList
+ *
+ * Note that the default access result is allowed.
+ * @see \Drupal\Core\Entity\EntityAccessControlHandler::checkFieldAccess()
  */
 class OrganizationFieldAccess extends FieldAccess {
+
+  const EDIT_OWNER_OR_MANAGER = [
+    'field_about',
+    'field_aim',
+    'field_avatar',
+    'field_budget',
+    'field_causes',
+    'field_city',
+    'field_contact',
+    'field_count_fulltime',
+    'field_count_volunteer',
+    'field_country',
+    'field_name',
+    'field_phone',
+    'field_portfolio',
+    'field_publicity',
+    'field_reachability',
+    'field_short_name',
+    'field_street',
+    'field_url',
+    'field_zip',
+  ];
+
+  const VIEW_PUBLIC = [
+    'created',
+    'field_about',
+    'field_aim',
+    'field_avatar',
+    'field_budget',
+    'field_causes',
+    'field_contact',
+    'field_manager',
+    'field_name',
+    'field_portfolio',
+    'field_publicity',
+    'field_short_name',
+    'field_url',
+    'langcode',
+    'projects',
+    'uid',
+  ];
+
+  const VIEW_PRIVATE = [
+    'field_city',
+    'field_count_fulltime',
+    'field_count_volunteer',
+    'field_country',
+    'field_phone',
+    'field_reachability',
+    'field_referral',
+    'field_street',
+    'field_zip',
+    'mail',
+    'name',
+  ];
 
   /**
    * {@inheritdoc}
@@ -29,13 +101,29 @@ class OrganizationFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
-    // Administrators pass through.
-    if ($account->hasPermission('administer site')) {
+    // Administrators and supervisors pass through. This targets editing.
+    if ($account->hasPermission('administer site') ||
+      in_array('supervisor', $account->getRoles())) {
       return AccessResult::neutral();
     }
 
-    // @todo Placeholder! Introduce field dependent access decisions.
-    if ($operation == 'view' || $operation == 'edit') {
+    // Viewing public fields is handled downstream.
+    if ($operation == 'view' &&
+      self::isFieldOfGroup($field, self::VIEW_PUBLIC)) {
+      return AccessResult::neutral();
+    }
+
+    // Viewing private fields when owner or manager is handled downstream.
+    if ($operation == 'view' &&
+      self::isFieldOfGroup($field, self::VIEW_PRIVATE) &&
+      $entity->isOwnerOrManager($account)) {
+      return AccessResult::neutral();
+    }
+
+    // Editing fields when owner or manager is handled downstream.
+    if ($operation == 'edit' &&
+      self::isFieldOfGroup($field, self::EDIT_OWNER_OR_MANAGER) &&
+      $entity->isOwnerOrManager($account)) {
       return AccessResult::neutral();
     }
 
