@@ -63,14 +63,14 @@ abstract class FieldAccess {
    * Helper to determine if account is creative.
    */
   protected static function isCreative(AccountInterface $account) {
-    return self::isUserType($account, 'user', 'Creative');
+    return self::isUserType($account, 'user', 'Drupal\\creatives\\Entity\\Creative');
   }
 
   /**
    * Helper to determine if account is organization.
    */
   protected static function isOrganization(AccountInterface $account) {
-    return self::isUserType($account, 'organization', 'Organization');
+    return self::isUserType($account, 'organization', 'Drupal\\organizations\\Entity\\Organization');
   }
 
 }
