@@ -63,7 +63,7 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Only project fields should be controlled by this class.
     if (!$entity instanceof Project) {
-      return AccessResult::forbidden();
+      return AccessResult::neutral();
     }
 
     // Administrators pass through.
