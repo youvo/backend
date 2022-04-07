@@ -10,6 +10,12 @@
  * questionnaires.
  */
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\questionnaire\QuestionFieldAccess;
+use Drupal\questionnaire\Entity\Question;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -24,6 +30,17 @@ function questionnaire_entity_bundle_info_alter(&$bundles) {
   if (isset($bundles['paragraph']['questionnaire'])) {
     $bundles['paragraph']['questionnaire']['class'] = Questionnaire::class;
   }
+}
+
+/**
+ * Implements hook_entity_field_access().
+ */
+function questionnaire_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+  $entity = $items?->getEntity();
+  if ($entity instanceof Question) {
+    return QuestionFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
+  }
+  return AccessResult::neutral();
 }
 
 /**
