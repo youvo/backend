@@ -104,4 +104,18 @@ class AcademyJsonapiParse extends JsonapiParse {
     return parent::resolveAttributes($item);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function parseJsonContent($response) {
+    $json = parent::parseJsonContent($response);
+
+    // Unset the display name here, because in some cases we don't want to leak
+    // the user email or name.
+    // @todo https://www.drupal.org/project/drupal/issues/3257608
+    unset($json['data']['display_name']);
+
+    return $json;
+  }
+
 }
