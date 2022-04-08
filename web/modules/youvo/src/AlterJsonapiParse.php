@@ -91,6 +91,11 @@ class AlterJsonapiParse extends JsonapiParse {
     $event = $this->eventDispatcher
       ->dispatch($event, ParseJsonapiAttributesEvent::EVENT_NAME);
 
+    // Unset the display name here, because in some cases we don't want to leak
+    // the user email or name.
+    // @todo https://www.drupal.org/project/drupal/issues/3257608
+    unset($item['attributes']['display_name']);
+
     return parent::resolveAttributes($event->getItem());
   }
 
