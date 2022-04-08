@@ -6,6 +6,11 @@
  # Login sudo.
  sudo true
 
+ # Display time.
+ START_TIME=$SECONDS
+ NOW=$(date +"%T")
+ echo "Installation started at: $NOW"
+
  # Navigate to directory.
  SCRIPT_PATH="$( cd -- "$(dirname "$0")" || exit >/dev/null 2>&1  ; pwd -P )"
  cd "$SCRIPT_PATH" || exit
@@ -75,6 +80,8 @@
  chmod 0444 default.settings.php
 
  # Bye bye.
+ DURATION=$((SECONDS - START_TIME))
+ echo "Installation duration: $DURATION seconds."
  echo "Exit in 3 seconds!"
  sleep 3
 
