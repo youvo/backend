@@ -1,0 +1,13 @@
+<?php
+
+use Drupal\youvo\Utility\RestPrefix;
+
+/**
+* Implements hook_install().
+*/
+function youvo_install() {
+  \Drupal::configFactory()
+    ->getEditable('youvo.settings')
+    ->set('rest_prefix', RestPrefix::getPrefixFromEnvironment())
+    ->save();
+}

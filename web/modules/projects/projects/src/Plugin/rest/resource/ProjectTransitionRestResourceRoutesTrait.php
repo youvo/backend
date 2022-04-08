@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\youvo\Utility\RestPrefix;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -61,6 +62,7 @@ trait ProjectTransitionRestResourceRoutesTrait {
         $route->setDefault('transition', $base_route->getDefault('transition'));
         $route->setRequirement('_custom_access', $base_route->getRequirement('_custom_access'));
         $route->addOptions(['parameters' => $base_route->getOption('parameters')]);
+        $route->setPath(RestPrefix::prependPrefix($canonical_path));
       }
 
       // Appended method is crucial for recognition in parameter converter.

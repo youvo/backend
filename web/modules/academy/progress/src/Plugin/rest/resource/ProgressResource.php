@@ -10,6 +10,7 @@ use Drupal\progress\ProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\youvo\Utility\RestPrefix;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -135,6 +136,7 @@ abstract class ProgressResource extends ResourceBase {
           'converter' => 'paramconverter.uuid',
         ],
       ]);
+      $route->setPath(RestPrefix::prependPrefix($canonical_path));
       $collection->add("$route_name.$method", $route);
     }
 

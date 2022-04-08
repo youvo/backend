@@ -1,0 +1,8 @@
+youvo.settings:
+  type: config_object
+  label: 'youvo Settings'
+  mapping:
+    rest_prefix:
+      type: string
+      label: 'REST Prefix'
+      description: 'An obscurity prefix for the rest paths.'

@@ -13,6 +13,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
+use Drupal\youvo\Utility\RestPrefix;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -194,6 +195,7 @@ class OrganizationCreateResource extends ResourceBase {
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
       $route->setRequirement('_custom_access', '\Drupal\organizations\Controller\OrganizationAccessController::accessCreate');
+      $route->setPath(RestPrefix::prependPrefix($canonical_path));
       $collection->add("$route_name.$method", $route);
     }
 

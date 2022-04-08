@@ -7,8 +7,10 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\youvo\Utility\RestPrefix;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Postman Variables Resource.
@@ -322,6 +324,27 @@ class PostmanVariablesResource extends ResourceBase {
     return $this->entityTypeManager
       ->getStorage($entity_type)
       ->load($entity_id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function routes() {
+
+    // Gather properties.
+    $collection = new RouteCollection();
+    $definition = $this->getPluginDefinition();
+    $canonical_path = $definition['uri_paths']['canonical'];
+    $route_name = strtr($this->pluginId, ':', '.');
+
+    // Add access check and route entity context parameter for each method.
+    foreach ($this->availableMethods() as $method) {
+      $route = $this->getBaseRoute($canonical_path, $method);
+      $route->setPath(RestPrefix::prependPrefix($canonical_path));
+      $collection->add("$route_name.$method", $route);
+    }
+
+    return $collection;
   }
 
 }

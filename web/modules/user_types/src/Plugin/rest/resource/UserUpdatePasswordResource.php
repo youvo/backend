@@ -8,6 +8,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user\UserStorageInterface;
+use Drupal\youvo\Utility\RestPrefix;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -169,6 +170,7 @@ class UserUpdatePasswordResource extends ResourceBase {
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
       $route->setRequirement('_custom_access', '\Drupal\user_types\Controller\Access::updatePassword');
+      $route->setPath(RestPrefix::prependPrefix($canonical_path));
       $collection->add("$route_name.$method", $route);
     }
 
