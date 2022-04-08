@@ -121,13 +121,13 @@ class OrganizationCreateResource extends ResourceBase {
   public function get(Request $request) {
 
     // Get email query parameter.
-    $email = trim($request->query->get('email'));
+    $email = trim($request->query->get('mail'));
 
     // Check whether email was provided.
     if (empty($email)) {
       return new ModifiedResourceResponse([
         'message' => 'The email parameter was not provided.',
-        'field' => 'email'
+        'field' => 'mail'
       ], 400);
     }
 
@@ -135,7 +135,7 @@ class OrganizationCreateResource extends ResourceBase {
     if (!$this->emailValidator->isValid($email)) {
       return new ModifiedResourceResponse([
         'message' => 'The provided email is not valid.',
-        'field' => 'email'
+        'field' => 'mail'
       ], 400);
     }
 
@@ -143,7 +143,7 @@ class OrganizationCreateResource extends ResourceBase {
     if ($this->accountExistsForEmail($email)) {
       return new ModifiedResourceResponse([
         'message' => 'There already exists an account for the provided email.',
-        'field' => 'email'
+        'field' => 'mail'
       ], 409);
     }
 
