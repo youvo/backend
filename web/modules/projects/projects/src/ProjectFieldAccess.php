@@ -11,6 +11,9 @@ use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the project bundle.
+ *
+ * @todo Maybe introduce permissions and cache per permissions when dust has
+ *   settled.
  */
 class ProjectFieldAccess extends FieldAccess {
 

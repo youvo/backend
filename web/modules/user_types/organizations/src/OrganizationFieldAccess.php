@@ -12,6 +12,9 @@ use Drupal\youvo\Utility\FieldAccess;
 /**
  * Provides field access methods for the organization user bundle.
  *
+ * The entity access governs field access.
+ * @see \Drupal\organizations\OrganizationAccessControlHandler
+ *
  * The method checkFieldAccess() is used for field access control, when viewing
  * or editing the organization through the JSON:API or the administration. Also,
  * we use constants of this class when creating an organization prospect.
@@ -28,6 +31,9 @@ use Drupal\youvo\Utility\FieldAccess;
  *
  * Note that the default access result is allowed.
  * @see \Drupal\Core\Entity\EntityAccessControlHandler::checkFieldAccess()
+ *
+ * @todo Maybe introduce permissions and cache per permissions when the dust has
+ *   settled.
  */
 class OrganizationFieldAccess extends FieldAccess {
 
@@ -101,10 +107,10 @@ class OrganizationFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
-    // Administrators and supervisors pass through. This targets editing.
+    // Administrators and supervisors pass through. This also targets editing.
     if (in_array('administrator', $account->getRoles()) ||
       in_array('supervisor', $account->getRoles())) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Viewing public fields is handled downstream.
@@ -117,13 +123,13 @@ class OrganizationFieldAccess extends FieldAccess {
     if ($operation == 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PRIVATE) &&
       $entity->isOwnerOrManager($account)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
-    // Editing fields when owner or manager is handled downstream.
+    // Editing fields when owner or manager is handled downstream. Note that
+    // edit permissions are handled by the organization access handler.
     if ($operation == 'edit' &&
-      self::isFieldOfGroup($field, self::EDIT_OWNER_OR_MANAGER) &&
-      $entity->isOwnerOrManager($account)) {
+      self::isFieldOfGroup($field, self::EDIT_OWNER_OR_MANAGER)) {
       return AccessResult::neutral();
     }
 
