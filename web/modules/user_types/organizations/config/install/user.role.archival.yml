@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {  }
+id: archival
+label: 'Archival Organization'
+weight: 9
+is_admin: false
+permissions: {  }

@@ -15,6 +15,12 @@ class QuestionnaireParseJsonapiAttributesSubscriber implements EventSubscriberIn
   /**
    * Resolve attributes in json api parsing.
    *
+   * Hook this method to pop empty values from submission arrays. These
+   * empty values are added beforehand to deliver the caching information.
+   *
+   * @see SubmissionFieldItemList
+   * @see ParagraphForm
+   *
    * @param \Drupal\youvo\Event\ParseJsonapiAttributesEvent $event
    *   The event to process.
    */

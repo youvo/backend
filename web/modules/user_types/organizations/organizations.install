@@ -28,10 +28,25 @@ function organizations_site_install_finished() {
     }
     catch (EntityStorageException $e) {
       $variables = Error::decodeException($e);
-      $variables['%permission'] = 'restful METHOD project:apply';
+      $variables['%permission'] = 'restful METHOD organization:manage';
       $variables['%role'] = $role;
       \Drupal::logger('youvo')
         ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
     }
+  }
+
+  // Organization create.
+  $role_object = Role::load('anonymous');
+  $role_object->grantPermission('restful get organization:create');
+  $role_object->grantPermission('restful post organization:create');
+  try {
+    $role_object->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    $variables['%permission'] = 'restful METHOD organization:create';
+    $variables['%role'] = $role;
+    \Drupal::logger('youvo')
+      ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
   }
 }

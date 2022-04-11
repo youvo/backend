@@ -4,7 +4,6 @@ namespace Drupal\projects\Entity;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
-use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
 
@@ -140,8 +139,7 @@ class Project extends Node implements ProjectInterface {
    */
   public function isAuthorOrManager(AccountInterface|int $account) {
     $organization = $this->getOwner();
-    return $this->isAuthor($account) ||
-      ($organization instanceof Organization &&
+    return $this->isAuthor($account) || ($this->isOrganization($organization) &&
         $organization->isManager($account));
   }
 
@@ -150,7 +148,7 @@ class Project extends Node implements ProjectInterface {
    */
   public function getManager() {
     $organization = $this->getOwner();
-    return $organization instanceof Organization ?
+    return $this->isOrganization($organization) ?
       $organization->getManager() : NULL;
   }
 
@@ -164,6 +162,20 @@ class Project extends Node implements ProjectInterface {
    */
   private function getUid(AccountInterface|int $account) {
     return $account instanceof AccountInterface ? $account->id() : $account;
+  }
+
+  /**
+   * Helper to ensure that owner is an organization
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account in question.
+   *
+   * @return bool
+   *   Is organization?
+   */
+  private function isOrganization(AccountInterface $account) {
+    return class_exists('Drupal\\organizations\\Entity\\Organization') &&
+      $account instanceof \Drupal\organizations\Entity\Organization;
   }
 
 }

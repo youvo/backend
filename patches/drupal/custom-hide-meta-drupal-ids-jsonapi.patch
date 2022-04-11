@@ -1,5 +1,5 @@
 diff --git a/core/modules/jsonapi/jsonapi.services.yml b/core/modules/jsonapi/jsonapi.services.yml
-index 33852841aa804c8e6fa30891027e3dfb78d9545c..a06d562913aff97c2633b01b4a2222ba42a76019 100644
+index 56e585f..ef90598 100644
 --- a/core/modules/jsonapi/jsonapi.services.yml
 +++ b/core/modules/jsonapi/jsonapi.services.yml
 @@ -1,5 +1,6 @@
@@ -9,66 +9,8 @@ index 33852841aa804c8e6fa30891027e3dfb78d9545c..a06d562913aff97c2633b01b4a2222ba
 
  services:
    jsonapi.serializer:
-@@ -90,7 +91,7 @@ services:
-       - { name: route_enhancer }
-   jsonapi.field_resolver:
-     class: Drupal\jsonapi\Context\FieldResolver
--    arguments: ['@entity_type.manager', '@entity_field.manager', '@entity_type.bundle.info', '@jsonapi.resource_type.repository', '@module_handler', '@current_user']
-+    arguments: ['@entity_type.manager', '@entity_field.manager', '@entity_type.bundle.info', '@jsonapi.resource_type.repository', '@module_handler', '@current_user', '%jsonapi.include_drupal_ids%']
-   jsonapi.include_resolver:
-     class: Drupal\jsonapi\IncludeResolver
-     arguments:
-diff --git a/core/modules/jsonapi/src/Context/FieldResolver.php b/core/modules/jsonapi/src/Context/FieldResolver.php
-index 58d1e4c4051d464626766489a0ab0f16f9e71cfc..87b730bd9e0bcd1016d33613700652bbe5e51912 100644
---- a/core/modules/jsonapi/src/Context/FieldResolver.php
-+++ b/core/modules/jsonapi/src/Context/FieldResolver.php
-@@ -115,6 +115,13 @@ class FieldResolver {
-    */
-   protected $currentUser;
-
-+  /**
-+   * Parameter indicating support for drupal internal ID meta in linkages.
-+   *
-+   * @var bool
-+   */
-+  protected bool $includeDrupalIds;
-+
-   /**
-    * Creates a FieldResolver instance.
-    *
-@@ -130,8 +137,10 @@ class FieldResolver {
-    *   The module handler.
-    * @param \Drupal\Core\Session\AccountInterface|null $current_user
-    *   The current user account.
-+   * @param bool $include_drupal_ids
-+   *   Parameter indicating support for drupal internal ID meta in linkages.
-    */
--  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $field_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ResourceTypeRepositoryInterface $resource_type_repository, ModuleHandlerInterface $module_handler, AccountInterface $current_user = NULL) {
-+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $field_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ResourceTypeRepositoryInterface $resource_type_repository, ModuleHandlerInterface $module_handler, AccountInterface $current_user = NULL, bool $include_drupal_ids = TRUE) {
-     if (is_null($current_user)) {
-       @trigger_error('Calling ' . __METHOD__ . '() without the $current_user argument is deprecated in drupal:9.3.0 and will be required in drupal:10.0.0.', E_USER_DEPRECATED);
-       $current_user = \Drupal::currentUser();
-@@ -143,6 +152,7 @@ public function __construct(EntityTypeManagerInterface $entity_type_manager, Ent
-     $this->entityTypeBundleInfo = $entity_type_bundle_info;
-     $this->resourceTypeRepository = $resource_type_repository;
-     $this->moduleHandler = $module_handler;
-+    $this->includeDrupalIds = $include_drupal_ids;
-   }
-
-   /**
-@@ -359,7 +369,9 @@ public function resolveInternalEntityQueryPath(ResourceType $resource_type, $ext
-           }
-           if ($is_data_reference_definition) {
-             $at_least_one_entity_reference_field = TRUE;
--            $property_names[] = "drupal_internal__$property_name";
-+            if ($this->includeDrupalIds) {
-+              $property_names[] = "drupal_internal__$property_name";
-+            }
-           }
-           return $property_names;
-         }, []);
 diff --git a/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php b/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php
-index ca8b6e4427f2de8aa4aa4daae2de1283d0670da4..4eb59fe0fe7358fc35d53eb18bfe45585c5ac969 100644
+index ca8b6e4..4eb59fe 100644
 --- a/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php
 +++ b/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php
 @@ -297,7 +297,9 @@ public static function toResourceIdentifier(EntityReferenceItem $item, $arity =
@@ -81,4 +23,3 @@ index ca8b6e4427f2de8aa4aa4daae2de1283d0670da4..4eb59fe0fe7358fc35d53eb18bfe4558
 +    }
      return new static($resource_type, $target->uuid(), $meta);
    }
-
