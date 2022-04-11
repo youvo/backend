@@ -36,7 +36,7 @@ class UserStatusFieldItemList extends FieldItemList implements FieldItemListInte
       $item->get('value')->mergeCacheMaxAge(0);
       $this->list[] = $item;
 
-      // Set particant status.
+      // Set participant status.
       $item = $this->createItem(0, $project->isParticipant($account));
       $item->get('value')->mergeCacheMaxAge(0);
       $this->list[] = $item;
