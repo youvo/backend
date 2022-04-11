@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\jsonapi_include\JsonapiParse;
 use Drupal\youvo\Event\ParseJsonapiAttributesEvent;
 use Drupal\youvo\Event\ParseJsonapiRelationshipsEvent;
@@ -74,6 +75,9 @@ class AlterJsonapiParse extends JsonapiParse {
    */
   protected function resolveAttributes($item) {
 
+    // Unset links from items.
+    unset($item['links']);
+
     // Allow other modules to alter the item.
     $event = new ParseJsonapiAttributesEvent($item);
     $event = $this->eventDispatcher
@@ -93,12 +97,31 @@ class AlterJsonapiParse extends JsonapiParse {
   protected function parseJsonContent($response) {
     $json = parent::parseJsonContent($response);
 
+    // Resolve offsets when pagination is requested.
+    if ($json['links']['next'] || $json['links']['prev']) {
+      foreach ($json['links'] as $key => $link) {
+        $json['offsets'][$key] = $this->getOffset($link);
+      }
+    }
+
+    // Unset links and jsonapi information in response.
+    unset($json['links']);
+    unset($json['jsonapi']);
+
     // Unset the display name here, because in some cases we don't want to leak
     // the user email or name.
     // @todo https://www.drupal.org/project/drupal/issues/3257608
     unset($json['data']['display_name']);
 
     return $json;
+  }
+
+  /**
+   * Gets offset from URL in jsonapi links property.
+   */
+  protected function getOffset(array $link) {
+    $url_parsed = UrlHelper::parse($link['href']);
+    return $url_parsed['query']['page']['offset'] ?? NULL;
   }
 
 }
