@@ -5,8 +5,6 @@
  * Custom module which handles business logic for project entities.
  */
 
-use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\simple_oauth\Authentication\TokenAuthUser;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -14,9 +12,8 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\Plugin\Field\AppliedFieldItemList;
+use Drupal\projects\Plugin\Field\UserStatusFieldItemList;
 use Drupal\projects\ProjectFieldAccess;
-use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -165,13 +162,14 @@ function projects_entity_bundle_field_info(EntityTypeInterface $entity_type, $bu
   if ($entity_type->id() == 'node' && $bundle == 'project') {
     // It is not a base-field, so we need a custom field storage definition see
     // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
-    $fields['applied'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
-      ->setLabel(t('Applied'))
-      ->setDescription(t('Computes the project applied status for user.'))
+    $fields['user_status'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the project status for user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
-      ->setClass(AppliedFieldItemList::class)
+      ->setClass(UserStatusFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
+      ->setCardinality(3)
       ->setTargetBundle($bundle);
   }
 

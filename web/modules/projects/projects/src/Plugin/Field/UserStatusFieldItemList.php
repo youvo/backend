@@ -13,7 +13,7 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
  *   https://www.drupal.org/project/drupal/issues/2914419 or
  *   https://www.drupal.org/project/drupal/issues/2053415
  */
-class AppliedFieldItemList extends FieldItemList implements FieldItemListInterface {
+class UserStatusFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
 
@@ -24,20 +24,29 @@ class AppliedFieldItemList extends FieldItemList implements FieldItemListInterfa
    */
   protected function computeValue() {
 
-    if (!isset($this->list[0])) {
+    if (empty($this->list)) {
 
       // Get project and user.
       /** @var \Drupal\projects\ProjectInterface $project */
       $project = $this->getEntity();
       $account = \Drupal::currentUser();
 
-      // Set applied status.
-      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
+      // Set applicant status.
       $item = $this->createItem(0, $project->isApplicant($account));
-
-      // Set cache max age zero.
       $item->get('value')->mergeCacheMaxAge(0);
-      $this->list[0] = $item;
+      $this->list[] = $item;
+
+      // Set particant status.
+      $item = $this->createItem(0, $project->isParticipant($account));
+      $item->get('value')->mergeCacheMaxAge(0);
+      $this->list[] = $item;
+
+      // Set manager status.
+      /** @var \Drupal\organizations\Entity\Organization $organization */
+      $organization = $project->getOwner();
+      $item = $this->createItem(0, $organization->isManager($account));
+      $item->get('value')->mergeCacheMaxAge(0);
+      $this->list[] = $item;
     }
   }
 
