@@ -8,3 +8,9 @@ services:
   logger.channel.youvo:
     parent: logger.channel_base
     arguments: [ 'youvo' ]
+  rest.prefix:
+    class: Drupal\youvo\Routing\RestPrefixRouteSubscriber
+    tags:
+      - { name: event_subscriber }
+    arguments:
+      [ '@entity_type.manager' ]

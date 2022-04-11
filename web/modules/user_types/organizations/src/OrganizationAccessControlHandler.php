@@ -44,6 +44,9 @@ class OrganizationAccessControlHandler extends UserAccessControlHandler {
      *
      * @todo Find out how to DI in entity access control handler.
      * @todo Requires testing.
+     *
+     * @todo This should route match should be deleted and covered by a proper
+     *   scope for managers (see implications for basic auth requests in dev).
      */
     $route_defaults = \Drupal::routeMatch()->getRouteObject()->getDefaults();
     if ($operation == 'edit' &&

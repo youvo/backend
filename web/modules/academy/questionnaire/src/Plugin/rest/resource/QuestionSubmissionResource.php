@@ -14,7 +14,6 @@ use Drupal\questionnaire\SubmissionManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Drupal\youvo\Utility\RestPrefix;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -282,7 +281,6 @@ class QuestionSubmissionResource extends ResourceBase {
           'converter' => 'paramconverter.uuid',
         ],
       ]);
-      $route->setPath(RestPrefix::prependPrefix($canonical_path));
       $collection->add("$route_name.$method", $route);
     }
 
