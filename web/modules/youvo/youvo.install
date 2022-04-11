@@ -24,9 +24,11 @@ function youvo_site_install_finished() {
   // Update the jsonapi path with the prefix from the environment
   // variables.
   $prefix = youvo_get_api_prefix_from_environment();
-  $config_factory->getEditable('jsonapi_extras.settings')
-    ->set('path_prefix', $prefix . '/' . $jsonapi_path)
-    ->save();
+  if (!empty($prefix)) {
+    $config_factory->getEditable('jsonapi_extras.settings')
+      ->set('path_prefix', $prefix . '/' . $jsonapi_path)
+      ->save();
+  }
 }
 
 /**
