@@ -9,7 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Access controller for user update resources.
  */
-class Access extends ControllerBase {
+class UserTypeAccessController extends ControllerBase {
 
   /**
    * Checks access for change password REST resources.

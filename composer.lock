@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "410b46a0a16ad31a69e74a12d0aae71a",
+    "content-hash": "415e1f23c579d51c403c88e40c5f71ec",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -9218,26 +9218,23 @@
         },
         {
             "name": "drupal/druqs",
-            "version": "2.0.0-beta1",
+            "version": "dev-2.0.x",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/druqs.git",
-                "reference": "2.0.0-beta1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/druqs-2.0.0-beta1.zip",
-                "reference": "2.0.0-beta1",
-                "shasum": "0075f3f144032993f7427fd2b472587f09f0d82b"
+                "reference": "652366d85931a61392d8817a9cb20a1b900677b0"
             },
             "require": {
                 "drupal/core": "^8 || ^9"
             },
             "type": "drupal-module",
             "extra": {
+                "branch-alias": {
+                    "dev-2.0.x": "2.0.x-dev"
+                },
                 "drupal": {
-                    "version": "2.0.0-beta1",
-                    "datestamp": "1649053253",
+                    "version": "2.0.x-dev",
+                    "datestamp": "1649053273",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "Project has not opted into security advisory coverage!"
@@ -13002,7 +12999,7 @@
     "stability-flags": {
         "drupal/filefield_paths": 10,
         "drupal/multivalue_form_element": 10,
-        "drupal/druqs": 10,
+        "drupal/druqs": 20,
         "drupal/openapi_ui": 5,
         "drupal/openapi_ui_redoc": 5
     },

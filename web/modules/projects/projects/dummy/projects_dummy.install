@@ -34,6 +34,7 @@ function projects_dummy_site_install_finished() {
     ->execute();
   $organization_ids = \Drupal::entityQuery('user')
     ->condition('type', 'organization')
+    ->condition('roles', 'organization')
     ->execute();
 
   // Object for random content.
@@ -111,6 +112,7 @@ function projects_dummy_site_install_finished() {
       'created' => $created,
       'uid' => $oid,
       'status' => 1,
+      'promote' => 0,
       'field_allowance' => $faker->boolean(),
       'field_contact' => $contact,
       'field_workload' => rand(1, 5),
@@ -163,6 +165,39 @@ function projects_dummy_site_install_finished() {
         'alt' => $faker->text(20),
       ]);
     }
+
+    try {
+      $project->save();
+    }
+    catch (EntityStorageException $e) {
+      $variables = Error::decodeException($e);
+      \Drupal::logger('youvo')
+        ->error('An error occurred while creating dummy projects. %type: @message in %function (line %line of %file).', $variables);
+    }
+  }
+
+  // Create shell projects for prospect organizations.
+  $prospect_ids = \Drupal::entityQuery('user')
+    ->condition('type', 'organization')
+    ->condition('roles', 'prospect')
+    ->execute();
+
+  foreach ($prospect_ids as $prospect_id) {
+
+    // Create node with random information.
+    $project = Project::create([
+      'type' => 'project',
+      'title' => ucwords($faker->words(4, TRUE)),
+      'body' => [
+        'value' => rtrim($faker->text(600)),
+        'summary' => rtrim($faker->text(300)),
+      ],
+      'langcode' => 'de',
+      'uid' => $prospect_id,
+      'field_lifecycle' => 'draft',
+      'status' => 1,
+      'promote' => 0,
+    ]);
 
     try {
       $project->save();
