@@ -98,7 +98,7 @@ class AlterJsonapiParse extends JsonapiParse {
     $json = parent::parseJsonContent($response);
 
     // Resolve offsets when pagination is requested.
-    if ($json['links']['next'] || $json['links']['prev']) {
+    if (isset($json['links']['next']) || isset($json['links']['prev'])) {
       foreach ($json['links'] as $key => $link) {
         $json['offsets'][$key] = $this->getOffset($link);
       }
