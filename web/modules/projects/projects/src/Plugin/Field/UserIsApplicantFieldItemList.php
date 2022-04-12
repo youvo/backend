@@ -13,7 +13,7 @@ use Drupal\Core\TypedData\ComputedItemListTrait;
  *   https://www.drupal.org/project/drupal/issues/2914419 or
  *   https://www.drupal.org/project/drupal/issues/2053415
  */
-class UserStatusFieldItemList extends FieldItemList implements FieldItemListInterface {
+class UserIsApplicantFieldItemList extends FieldItemList implements FieldItemListInterface {
 
   use ComputedItemListTrait;
 
@@ -33,18 +33,6 @@ class UserStatusFieldItemList extends FieldItemList implements FieldItemListInte
 
       // Set applicant status.
       $item = $this->createItem(0, $project->isApplicant($account));
-      $item->get('value')->mergeCacheMaxAge(0);
-      $this->list[] = $item;
-
-      // Set participant status.
-      $item = $this->createItem(0, $project->isParticipant($account));
-      $item->get('value')->mergeCacheMaxAge(0);
-      $this->list[] = $item;
-
-      // Set manager status.
-      /** @var \Drupal\organizations\Entity\Organization $organization */
-      $organization = $project->getOwner();
-      $item = $this->createItem(0, $organization->isManager($account));
       $item->get('value')->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }

@@ -5,6 +5,8 @@
  * Custom module which handles business logic for project entities.
  */
 
+use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
+use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -12,7 +14,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\Plugin\Field\UserStatusFieldItemList;
+use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\ProjectFieldAccess;
 use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -162,14 +164,31 @@ function projects_entity_bundle_field_info(EntityTypeInterface $entity_type, $bu
   if ($entity_type->id() == 'node' && $bundle == 'project') {
     // It is not a base-field, so we need a custom field storage definition see
     // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
-    $fields['user_status'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+    $fields['user_is_applicant'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
       ->setLabel(t('User Status'))
-      ->setDescription(t('Computes the project status for user.'))
+      ->setDescription(t('Computes the applicant status for user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
-      ->setClass(UserStatusFieldItemList::class)
+      ->setClass(UserIsApplicantFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
-      ->setCardinality(3)
+      ->setTargetBundle($bundle);
+
+    $fields['user_is_participant'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the participant status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserIsParticipantFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
+      ->setTargetBundle($bundle);
+
+    $fields['user_is_manager'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the manager status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserIsManagerFieldItemList::class)
+      ->setTargetEntityTypeId($entity_type->id())
       ->setTargetBundle($bundle);
   }
 

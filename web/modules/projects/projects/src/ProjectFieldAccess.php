@@ -50,7 +50,12 @@ class ProjectFieldAccess extends FieldAccess {
     'field_result_text'
   ];
 
-  const USER_STATUS_FIELD = 'user_status';
+  const USER_STATUS_FIELDS = [
+    'user_is_applicant',
+    'user_is_participant',
+    'user_is_manager'
+  ];
+
   const APPLICANTS_FIELD = 'field_applicants';
   const PARTICIPANTS_FIELD = 'field_participants';
 
@@ -91,7 +96,7 @@ class ProjectFieldAccess extends FieldAccess {
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
       self::isCreative($account) &&
-      $field->getName() == self::USER_STATUS_FIELD &&
+      self::isFieldOfGroup($field, self::USER_STATUS_FIELD &&
       $entity->isPublished()) {
       return AccessResult::neutral()->cachePerUser();
     }
