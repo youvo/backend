@@ -6,7 +6,6 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\organizations\Entity\Organization;
-use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**

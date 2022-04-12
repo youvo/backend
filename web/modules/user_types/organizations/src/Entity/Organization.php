@@ -9,19 +9,35 @@ use Drupal\user_types\Utility\Profiler;
 class Organization extends TypedUser {
 
   public function hasManager() {
-    return !empty($this->getManager());
+    return !$this->get('field_manager')->isEmpty();
   }
 
   public function getManager() {
-    return $this->get('field_manager')->getEntity();
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
+    $manager_field = $this->get('field_manager');
+    return $manager_field->referencedEntities()[0] ?? NULL;
   }
 
-  public function isManager(AccountInterface|int $account) {
-    return $this->getManager()->id() == Profiler::id($account);
+  public function setManager(AccountInterface $account) {
+    if ($this->hasManager()) {
+      return FALSE;
+    }
+    $this->get('field_manager')->appendItem($account->id());
+    return $this;
   }
 
-  public function isOwnerOrManager(AccountInterface|int $account) {
-    return $this->id() == Profiler::id($account) || $this->isManager($account);
+  public function deleteManager() {
+    $this->get('field_manager')->removeItem(0);
+    return $this;
+  }
+
+  public function isManagedBy(AccountInterface|int $account) {
+    return $this->hasManager() &&
+      $this->getManager()->id() == Profiler::id($account);
+  }
+
+  public function isOwnedOrManagedBy(AccountInterface|int $account) {
+    return $this->id() == Profiler::id($account) || $this->isManagedBy($account);
   }
 
 }

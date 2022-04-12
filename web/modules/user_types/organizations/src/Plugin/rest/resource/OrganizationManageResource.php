@@ -3,9 +3,9 @@
 namespace Drupal\organizations\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\user\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -68,116 +68,76 @@ class OrganizationManageResource extends ResourceBase {
   /**
    * Responds GET requests.
    *
-   * @param \Drupal\Core\Session\AccountInterface $organization
+   * @param \Drupal\organizations\Entity\Organization $organization
    *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
    */
-  public function get(AccountInterface $organization) {
+  public function get(Organization $organization) {
 
-    // Does the organization have a manager?
-    $count = 0;
-    $current = FALSE;
-    /** @var \Drupal\user\Entity\User $organization */
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if ($this->currentUser->id() == $manager->id()) {
-        $current = TRUE;
-      }
-      if (in_array('manager', $manager->getRoles())) {
-        $count = $count + 1;
-      }
+    if ($organization->isManagedBy($this->currentUser)) {
+      return new ModifiedResourceResponse('Creative already manages this organization.', 200);
     }
-    if ($current) {
-      return new ModifiedResourceResponse('Organization already managed by current creative.', 200);
+
+    if ($organization->hasManager()) {
+      return new ModifiedResourceResponse('Organization already has a manager.', 409);
     }
-    if ($count) {
-      return new ModifiedResourceResponse('Organization already has a manager. Creative may still add themself as a manager.', 409);
-    }
-    // Otherwise, project is open to apply for creative.
-    else {
-      return new ModifiedResourceResponse('Creative can manage this organization.', 200);
-    }
+
+    return new ModifiedResourceResponse('Creative can manage this organization.', 200);
   }
 
   /**
-   * Responds POST requests.
+   * Responds PATCH requests.
    *
-   * @param \Drupal\user\Entity\User $organization
-   *   The referenced project.
+   * @param \Drupal\organizations\Entity\Organization $organization
+   *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
    *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function post(User $organization) {
-    $current = FALSE;
-    /** @var \Drupal\user\Entity\User $organization */
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if ($this->currentUser->id() == $manager->id()) {
-        $current = TRUE;
-      }
+  public function patch(Organization $organization) {
+
+    if ($organization->isManagedBy($this->currentUser)) {
+      return new ModifiedResourceResponse('Creative already manages this organization.', 200);
     }
-    if (!$current) {
-      $organization->get('field_manager')->appendItem([
-        'target_id' => $this->currentUser->id(),
-      ]);
-      $organization->save();
-      return new ModifiedResourceResponse(NULL, 201);
+
+    if ($organization->hasManager()) {
+      return new ModifiedResourceResponse('Organization already has a manager.', 409);
     }
-    else {
-      return new ModifiedResourceResponse('Organization already managed by current creative.', 200);
-    }
+
+    $organization->setManager($this->currentUser);
+    $organization->save();
+
+    return new ModifiedResourceResponse();
   }
 
   /**
-   * Responds POST requests.
+   * Responds DELETE requests.
    *
-   * @param \Drupal\user\Entity\User $organization
-   *   The referenced project.
+   * @param \Drupal\organizations\Entity\Organization $organization
+   *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   Response.
    *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function delete(User $organization) {
-    $new_managers = [];
-    $current = FALSE;
-    /** @var \Drupal\user\Entity\User $organization */
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $managers */
-    $managers = $organization->get('field_manager');
-    /** @var \Drupal\user\Entity\User $manager */
-    foreach ($managers->referencedEntities() as $manager) {
-      if ($this->currentUser->id() != $manager->id()) {
-        $new_managers[] = ['target_id' => $manager->id()];
-      }
-      else {
-        $current = TRUE;
-      }
+  public function delete(Organization $organization) {
+
+    if ($organization->isManagedBy($this->currentUser)) {
+      $organization->deleteManager();
+      $organization->save();
+      return new ModifiedResourceResponse();
     }
 
-    // Update managers without current creative.
-    if ($current) {
-      $organization->set('field_manager', $new_managers);
-      $organization->save();
-      return new ModifiedResourceResponse(NULL, 201);
+    if ($organization->hasManager()) {
+      return new ModifiedResourceResponse('Another creative manages this organization.', 409);
     }
-    // The creative does not manage this organization.
-    else {
-      return new ModifiedResourceResponse(NULL, 200);
-    }
+
+    return new ModifiedResourceResponse();
   }
 
   /**
