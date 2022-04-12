@@ -7,6 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Entity\Project;
+use Drupal\user_types\Utility\Profiler;
 use Drupal\youvo\Utility\FieldAccess;
 
 /**
@@ -95,9 +96,8 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
-      self::isCreative($account) &&
-      self::isFieldOfGroup($field, self::USER_STATUS_FIELD &&
-      $entity->isPublished()) {
+      Profiler::isCreative($account) &&
+      self::isFieldOfGroup($field, self::USER_STATUS_FIELDS)) {
       return AccessResult::neutral()->cachePerUser();
     }
 
