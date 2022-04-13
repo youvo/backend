@@ -57,6 +57,9 @@ class RestPrefixRouteSubscriber extends RouteSubscriberBase {
     $rest_resources = $this->resourceConfigStorage
       ->loadByProperties(['status' => 1]);
 
+    // Exclude postman interface.
+    unset($rest_resources['postman.variables']);
+
     // Prepend prefix to all available resource paths.
     foreach ($rest_resources as $resource) {
       foreach (self::REQUEST_METHODS as $method) {
