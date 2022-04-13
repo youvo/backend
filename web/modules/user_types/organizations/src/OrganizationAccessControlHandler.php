@@ -50,7 +50,7 @@ class OrganizationAccessControlHandler extends UserAccessControlHandler {
      */
     $route_defaults = \Drupal::routeMatch()->getRouteObject()->getDefaults();
     if ($operation == 'edit' &&
-      $entity->isManagedBy($account) &&
+      $entity->isManager($account) &&
       class_exists('Drupal\\jsonapi\\Routing\\Routes') &&
       \Drupal\jsonapi\Routing\Routes::isJsonApiRequest($route_defaults)) {
       return AccessResult::allowed()->cachePerUser();

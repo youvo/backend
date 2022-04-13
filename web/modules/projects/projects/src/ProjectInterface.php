@@ -6,12 +6,12 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
 
 /**
- * Provides an interface defining a project node entity.
+ * Interface that provides methods for a project node entity.
  */
 interface ProjectInterface extends NodeInterface {
 
   /**
-   * Checks whether user is an applicant.
+   * Checks whether the user is an applicant.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $applicant
    *   The user or the uid.
@@ -22,86 +22,98 @@ interface ProjectInterface extends NodeInterface {
   public function isApplicant(AccountInterface|int $applicant);
 
   /**
-   * Checks whether project has applicant.
+   * Checks whether the project has an applicant.
    *
    * @return bool
-   *   Has applicants?
+   *   Has applicant?
    */
   public function hasApplicant();
 
   /**
-   * Get applicants array keyed by UID.
+   * Gets the applicants array keyed by UID.
    *
    * @return \Drupal\user\UserInterface[]
-   *   Array of applicants.
+   *   The applicants.
    */
   public function getApplicants();
 
   /**
-   * Set applicants to project.
+   * Sets the applicants to the project.
    *
    * @param \Drupal\Core\Session\AccountInterface[]|int[]
    *   The applicants.
+   *
+   * @return $this
+   *   The current project.
    */
   public function setApplicants(array $applicants);
 
   /**
-   * Append applicant to project.
+   * Appends an applicant to the project.
    *
    * @param \Drupal\Core\Session\AccountInterface|int
    *   The applicant or the uid.
+   *
+   * @return $this
+   *   The current project.
    */
   public function appendApplicant(AccountInterface|int $applicant);
 
   /**
-   * Checks whether user is a participant.
+   * Checks whether the user is a participant.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $participant
    *   The user or the uid.
    *
    * @return bool
-   *   Is applicant?
+   *   Is participant?
    */
   public function isParticipant(AccountInterface|int $participant);
 
   /**
-   * Checks whether project has participant.
+   * Checks whether the project has a participant.
    *
    * @return bool
-   *   Has applicants?
+   *   Has participant?
    */
   public function hasParticipant();
 
   /**
-   * Get participants array keyed by UID.
+   * Gets the participants array keyed by UID.
    *
    * @return \Drupal\user\UserInterface[]
-   *   Array of participant.
+   *   The participants.
    */
   public function getParticipants();
 
   /**
-   * Set participants to project.
+   * Sets the participants to the project.
    *
    * @param \Drupal\Core\Session\AccountInterface[]|int[] $participants
    *   The participants.
    * @param string[] $tasks
-   *   Array of task per participant.
+   *   The array of tasks per participant.
+   *
+   * @return $this
+   *   The current project.
    */
   public function setParticipants(array $participants, array $tasks = []);
 
   /**
-   * Append participant to project.
+   * Appends a participant to the project.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $participant
    *   The participant or the uid of the participant.
    * @param string $task
    *   The task of the participant. Defaults to creative.
+   *
+   * @return $this
+   *   The current project.
    */
   public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative');
 
   /**
-   * Determines whether account is author (organization) of this project.
+   * Determines whether the account is the author (organization).
    *
    * @param \Drupal\Core\Session\AccountInterface|int $account
    *   The account.
@@ -112,8 +124,7 @@ interface ProjectInterface extends NodeInterface {
   public function isAuthor(AccountInterface|int $account);
 
   /**
-   * Determines whether account is author (organization) or manager of this
-   * project.
+   * Determines whether the account is the author (organization) or the manager.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $account
    *   The account.
@@ -124,10 +135,10 @@ interface ProjectInterface extends NodeInterface {
   public function isAuthorOrManager(AccountInterface|int $account);
 
   /**
-   * Get manager.
+   * Gets the manager.
    *
    * @return \Drupal\user\UserInterface
-   *   The Manager.
+   *   The manager.
    */
   public function getManager();
 

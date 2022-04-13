@@ -8,7 +8,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 /**
  * Utility class to determine account types by different account objects.
  */
-final class Profiler {
+final class Profile {
 
   /**
    * Helper to get uid of an account.

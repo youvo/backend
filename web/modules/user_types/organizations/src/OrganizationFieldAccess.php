@@ -122,7 +122,7 @@ class OrganizationFieldAccess extends FieldAccess {
     // Viewing private fields when owner or manager is handled downstream.
     if ($operation == 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PRIVATE) &&
-      $entity->isOwnedOrManagedBy($account)) {
+      $entity->isOwnerOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();
     }
 

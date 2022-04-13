@@ -4,9 +4,10 @@ namespace Drupal\projects\Entity;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
+use Drupal\organizations\ManagerInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
-use Drupal\user_types\Utility\Profiler;
+use Drupal\user_types\Utility\Profile;
 
 /**
  * Implements bundle class for Project entities.
@@ -50,24 +51,25 @@ class Project extends Node implements ProjectInterface {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')
-        ->appendItem(['target_id' => Profiler::id($applicant)]);
+        ->appendItem(['target_id' => Profile::id($applicant)]);
     }
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function appendApplicant(AccountInterface|int $applicant) {
-    $uid = $applicant instanceof AccountInterface ?
-      $applicant->id() : $applicant;
-    $this->get('field_applicants')->appendItem(['target_id' => $uid]);
+    $this->get('field_applicants')
+      ->appendItem(['target_id' => Profile::id($applicant)]);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isApplicant(AccountInterface|int $applicant) {
-    return array_key_exists(Profiler::id($applicant), $this->getApplicants());
+    return array_key_exists(Profile::id($applicant), $this->getApplicants());
   }
 
   /**
@@ -92,17 +94,18 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
-   * Set participants for current project.
+   * {@inheritdoc}
    */
   public function setParticipants(array $participants, array $tasks = []) {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant) {
       $this->get('field_participants')
-        ->appendItem(['target_id' => Profiler::id($participant)]);
+        ->appendItem(['target_id' => Profile::id($participant)]);
       $task = $tasks[$delta] ?? 'Creative';
       $this->get('field_participants_tasks')->appendItem($task);
     }
+    return $this;
   }
 
   /**
@@ -110,15 +113,16 @@ class Project extends Node implements ProjectInterface {
    */
   public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative') {
     $this->get('field_participants')
-      ->appendItem(['target_id' => Profiler::id($participant)]);
+      ->appendItem(['target_id' => Profile::id($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isParticipant(AccountInterface|int $participant) {
-    return array_key_exists(Profiler::id($participant), $this->getParticipants());
+    return array_key_exists(Profile::id($participant), $this->getParticipants());
   }
 
   /**
@@ -132,26 +136,24 @@ class Project extends Node implements ProjectInterface {
    * {@inheritdoc}
    */
   public function isAuthor(AccountInterface|int $account) {
-    return Profiler::id($account) == $this->getOwner()->id();
+    return Profile::id($account) == $this->getOwner()->id();
   }
 
   /**
    * {@inheritdoc}
    */
   public function isAuthorOrManager(AccountInterface|int $account) {
-    $organization = $this->getOwner();
+    $owner = $this->getOwner();
     return $this->isAuthor($account) ||
-      (Profiler::isOrganization($organization) &&
-        $organization->isManager($account));
+      ($owner instanceof ManagerInterface && $owner->isManager($account));
   }
 
   /**
    * {@inheritdoc}
    */
   public function getManager() {
-    $organization = $this->getOwner();
-    return Profiler::isOrganization($organization) ?
-      $organization->getManager() : NULL;
+    $owner = $this->getOwner();
+    return $owner instanceof ManagerInterface ? $owner->getManager() : NULL;
   }
 
 }

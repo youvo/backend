@@ -76,7 +76,7 @@ class OrganizationManageResource extends ResourceBase {
    */
   public function get(Organization $organization) {
 
-    if ($organization->isManagedBy($this->currentUser)) {
+    if ($organization->isManager($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already manages this organization.', 200);
     }
 
@@ -100,7 +100,7 @@ class OrganizationManageResource extends ResourceBase {
    */
   public function patch(Organization $organization) {
 
-    if ($organization->isManagedBy($this->currentUser)) {
+    if ($organization->isManager($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already manages this organization.', 200);
     }
 
@@ -127,7 +127,7 @@ class OrganizationManageResource extends ResourceBase {
    */
   public function delete(Organization $organization) {
 
-    if ($organization->isManagedBy($this->currentUser)) {
+    if ($organization->isManager($this->currentUser)) {
       $organization->deleteManager();
       $organization->save();
       return new ModifiedResourceResponse();
