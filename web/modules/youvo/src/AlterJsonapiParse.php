@@ -84,7 +84,10 @@ class AlterJsonapiParse extends JsonapiParse {
   protected function resolveAttributes($item) {
 
     // Unset links from items.
-    unset($item['links']);
+    unset($item['links']['self']);
+    if (empty($item['links'])) {
+      unset($item['links']);
+    }
 
     // Unset the display name here, because in some cases we don't want to leak
     // the user email or name.
