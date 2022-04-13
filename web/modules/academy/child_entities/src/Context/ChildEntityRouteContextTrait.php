@@ -2,6 +2,8 @@
 
 namespace Drupal\child_entities\Context;
 
+use Drupal\Core\Routing\RouteMatchInterface;
+
 /**
  * Trait to get the parent entity from the current route.
  *
@@ -18,7 +20,7 @@ trait ChildEntityRouteContextTrait {
    *
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
-  protected $currentRouteMatch;
+  protected RouteMatchInterface $currentRouteMatch;
 
   /**
    * Gets the current route match object.
@@ -27,7 +29,7 @@ trait ChildEntityRouteContextTrait {
    *   The current route match object.
    */
   protected function getCurrentRouteMatch() {
-    if (!$this->currentRouteMatch) {
+    if (!isset($this->currentRouteMatch)) {
       $this->currentRouteMatch = \Drupal::service('current_route_match');
     }
     return $this->currentRouteMatch;

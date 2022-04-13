@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 
 /**
- * Provides routes for Child Entities.
+ * Provides routes for child entities.
  *
  * @see \Drupal\Core\Entity\Routing\AdminHtmlRouteProvider
  * @see \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
@@ -55,12 +55,12 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
   }
 
   /**
-   * Append option parameters with parent entities.
+   * Appends the option parameters with parent entities.
    *
    * @param array $option_parameters
    *   The option parameters.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The Child Entity Type.
+   *   The child entity type.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */

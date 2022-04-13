@@ -28,10 +28,10 @@ interface ChildEntityInterface extends EntityInterface {
   public function getParentEntityType();
 
   /**
-   * Check if the Parent is also a Child Entity.
+   * Checks if the parent is also a child entity.
    *
    * @return bool
-   *   True if the Parent is also a Child Entity.
+   *   Parent is a child entity?
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */

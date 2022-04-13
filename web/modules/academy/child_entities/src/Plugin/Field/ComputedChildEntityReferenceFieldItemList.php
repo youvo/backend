@@ -2,6 +2,7 @@
 
 namespace Drupal\child_entities\Plugin\Field;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
@@ -17,7 +18,7 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Retrieves the entity type manager.

@@ -27,17 +27,17 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * A logger instance.
    *
    * @var \Psr\Log\LoggerInterface
    */
-  protected $logger;
+  protected LoggerInterface $logger;
 
   /**
-   * WebformEntityAccessControlHandler constructor.
+   * Constructs a ChildEntityAccessControlHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
@@ -83,9 +83,10 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     // First check if user has permission to access the origin entity.
     try {
       $origin = $entity->getOriginEntity();
-      $access = $this->entityTypeManager
-        ->getAccessControlHandler($origin->getEntityTypeId())
-        ->checkAccess($entity, $operation, $account);
+      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
+      $access_handler = $this->entityTypeManager
+        ->getAccessControlHandler($origin->getEntityTypeId());
+      $access = $access_handler->checkAccess($entity, $operation, $account);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -136,9 +137,10 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
         $parent_class = $parent_entity_type->getOriginalClass();
       } while (in_array(ChildEntityTrait::class, class_uses($parent_class)));
 
-      return $this->entityTypeManager
-        ->getAccessControlHandler($parent_key)
-        ->checkCreateAccess($account, $context, $account);
+      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
+      $access_handler = $this->entityTypeManager
+        ->getAccessControlHandler($parent_key);
+      return $access_handler->checkCreateAccess($account, $context, $entity_bundle);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);

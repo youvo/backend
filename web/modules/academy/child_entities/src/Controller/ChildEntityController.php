@@ -14,7 +14,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Class ChildEntityController.
  *
- * Returns responses for Child Entity routes.
+ * Returns responses for child entity routes.
  */
 class ChildEntityController extends EntityController {
 
@@ -101,12 +101,12 @@ class ChildEntityController extends EntityController {
   }
 
   /**
-   * Append parent arguments.
+   * Appends the parent arguments.
    *
    * @param array $route_arguments
    *   The option parameters.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The Child Entity Type.
+   *   The child entity type.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
