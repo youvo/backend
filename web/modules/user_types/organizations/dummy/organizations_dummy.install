@@ -35,7 +35,7 @@ function organizations_dummy_site_install_finished() {
     ->execute();
 
   // Create some organizations.
-  for ($i = 1; $i <=15; $i++) {
+  for ($i = 1; $i <= 20; $i++) {
 
     // Get field values.
     $image_file = youvo_dummy_get_image_by_path('/img/test_images/organizations/', 'test.jpg');
@@ -77,7 +77,6 @@ function organizations_dummy_site_install_finished() {
       'field_budget' => $faker->text(),
       'field_publicity' => $faker->optional()->text(),
       'field_portfolio' => $faker->optional(0.8)->passthrough($portfolio),
-      'field_manager' => $faker->optional(0.3)->randomElement($manager_ids),
       'name' => $mail,
       'mail' => $mail,
       'type' => 'organization',
@@ -88,13 +87,16 @@ function organizations_dummy_site_install_finished() {
     // Create organization.
     $organization = User::create($values);
 
-    if ($i <= 10) {
+    if ($i <= 15) {
+      if ($faker->boolean(0.3)) {
+        $organization->get('field_manager')
+          ->appendItem($faker->randomElement($manager_ids));
+      }
       $organization->addRole('organization');
     }
     else {
       $organization->addRole('prospect');
     }
-
 
     try {
       $organization->save();
