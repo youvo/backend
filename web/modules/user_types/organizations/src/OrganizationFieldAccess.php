@@ -95,6 +95,8 @@ class OrganizationFieldAccess extends FieldAccess {
     'name',
   ];
 
+  const ROLES = 'roles';
+
   /**
    * {@inheritdoc}
    */
@@ -114,6 +116,11 @@ class OrganizationFieldAccess extends FieldAccess {
     if (in_array('administrator', $account->getRoles()) ||
       in_array('supervisor', $account->getRoles())) {
       return AccessResult::neutral()->cachePerUser();
+    }
+
+    // Viewing public fields is handled downstream.
+    if ($operation == 'view' && $field->getName() == self::ROLES) {
+      return AccessResult::allowed();
     }
 
     // Viewing public fields is handled downstream.
