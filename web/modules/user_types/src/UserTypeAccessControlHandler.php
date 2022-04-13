@@ -47,11 +47,14 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+    if (in_array('administrator', $account->getRoles())) {
+      return parent::checkCreateAccess($account, $context, $entity_bundle);
+    }
     if ($entity_bundle == 'organization') {
-      return OrganizationAccessControlHandler::checkCreateAccess($account, $context, $entity_bundle);
+      return OrganizationAccessControlHandler::checkCreateAccess();
     }
     if ($entity_bundle == 'creative') {
-      return CreativeAccessControlHandler::checkCreateAccess($account, $context, $entity_bundle);
+      return CreativeAccessControlHandler::checkCreateAccess();
     }
     return AccessResult::neutral();
   }

@@ -34,10 +34,7 @@ class CreativeAccessControlHandler {
    *
    * @see \Drupal\user_types\UserTypeAccessControlHandler::checkCreateAccess()
    */
-  public static function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    if (in_array('administrator', $account->getRoles())) {
-      return AccessResult::allowed()->cachePerUser();
-    }
+  public static function checkCreateAccess() {
     return AccessResult::forbidden();
   }
 

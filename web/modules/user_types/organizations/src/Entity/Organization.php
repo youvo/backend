@@ -9,6 +9,10 @@ use Drupal\user_types\Utility\Profile;
 
 class Organization extends TypedUser implements ManagerInterface {
 
+  const ROLE_PROSPECT = 'prospect';
+  const ROLE_ORGANIZATION = 'organization';
+  const ROLE_ARCHIVAL = 'archival';
+
   /**
    * {@inheritdoc}
    */
@@ -59,6 +63,18 @@ class Organization extends TypedUser implements ManagerInterface {
   public function isOwnerOrManager(AccountInterface|int $account) {
     return $this->id() == Profile::id($account) ||
       $this->isManager($account);
+  }
+
+  public function hasRoleArchival() {
+    return in_array(self::ROLE_ARCHIVAL, $this->getRoles());
+  }
+
+  public function hasRoleProspect() {
+    return in_array(self::ROLE_PROSPECT, $this->getRoles());
+  }
+
+  public function hasRoleOrganization() {
+    return in_array(self::ROLE_ORGANIZATION, $this->getRoles());
   }
 
   /**

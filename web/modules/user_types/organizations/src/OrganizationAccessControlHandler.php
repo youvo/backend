@@ -24,27 +24,21 @@ class OrganizationAccessControlHandler {
       return AccessResult::neutral();
     }
 
-    // @todo Access check for viewing prospect organizations.
-
-    // @todo Access check for viewing archival organizations.
-
-    /** Explicitly allow managers of organizations to edit the account of the
-     * organization. Only allowed for JSON:API requests. This ability will be
-     * narrowed down to certain fields in the field access handler.
+    /**
+     * Explicitly allow managers of organizations to edit the account of the
+     * organization. This ability will be narrowed down to certain fields in
+     * the field access handler.
+     *
      * @see \Drupal\organizations\OrganizationFieldAccess
-     *
-     * @todo Find out how to DI in entity access control handler.
-     * @todo Requires testing.
-     *
-     * @todo This should route match should be deleted and covered by a proper
-     *   scope for managers (see implications for basic auth requests in dev).
      */
-    $route_defaults = \Drupal::routeMatch()->getRouteObject()->getDefaults();
-    if ($operation == 'edit' &&
-      $entity->isManager($account) &&
-      class_exists('Drupal\\jsonapi\\Routing\\Routes') &&
-      \Drupal\jsonapi\Routing\Routes::isJsonApiRequest($route_defaults)) {
+    if ($operation == 'edit' && $entity->isManager($account)) {
       return AccessResult::allowed()->cachePerUser();
+    }
+
+    // Only managers can access prospect organizations.
+    if ($entity->hasRoleProspect() &&
+      !in_array('manager', $account->getRoles())) {
+      return AccessResult::forbidden()->cachePerUser();
     }
 
     return AccessResult::neutral();
@@ -59,10 +53,7 @@ class OrganizationAccessControlHandler {
    *
    * @todo Maybe we can cover this case by permissions.
    */
-  public static function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    if (in_array('administrator', $account->getRoles())) {
-      return AccessResult::allowed()->cachePerUser();
-    }
+  public static function checkCreateAccess() {
     return AccessResult::forbidden();
   }
 
