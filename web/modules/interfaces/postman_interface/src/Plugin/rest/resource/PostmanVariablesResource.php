@@ -80,7 +80,8 @@ class PostmanVariablesResource extends ResourceBase {
         ->condition('uid', 1, '!=')
         ->condition('roles', 'creative')
         ->execute();
-      $creative = $this->entityLoad('user', reset($creative_ids));
+      $creative = !empty($creative_ids) ?
+        $this->entityLoad('user', reset($creative_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $creative = NULL;
@@ -90,18 +91,34 @@ class PostmanVariablesResource extends ResourceBase {
     try {
       $organization_ids = $this->entityQuery('user')
         ->condition('type', 'organization')
+        ->condition('roles', 'organization')
         ->execute();
-      $organization = $this->entityLoad('user', reset($organization_ids));
+      $organization = !empty($organization_ids) ?
+        $this->entityLoad('user', reset($organization_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $organization = NULL;
+    }
+
+    // Get some prospect.
+    try {
+      $prospect_ids = $this->entityQuery('user')
+        ->condition('type', 'organization')
+        ->condition('roles', 'prospect')
+        ->execute();
+      $prospect = !empty($prospect_ids) ?
+        $this->entityLoad('user', reset($prospect_ids)) : NULL;
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $prospect = NULL;
     }
 
     // Get some course.
     try {
       $course_ids = $this->entityQuery('course')
         ->execute();
-      $course = $this->entityLoad('course', reset($course_ids));
+      $course = !empty($course_ids) ?
+        $this->entityLoad('course', reset($course_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $course = NULL;
@@ -111,7 +128,8 @@ class PostmanVariablesResource extends ResourceBase {
     try {
       $lecture_ids = $this->entityQuery('lecture')
         ->execute();
-      $lecture = $this->entityLoad('lecture', reset($lecture_ids));
+      $lecture = !empty($lecture_ids) ?
+        $this->entityLoad('lecture', reset($lecture_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $lecture = NULL;
@@ -122,7 +140,8 @@ class PostmanVariablesResource extends ResourceBase {
       $question_ids = $this->entityQuery('question')
         ->condition('bundle', 'textfield')
         ->execute();
-      $question_textfield = $this->entityLoad('question', reset($question_ids));
+      $question_textfield = !empty($question_ids) ?
+        $this->entityLoad('question', reset($question_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $question_textfield = NULL;
@@ -133,7 +152,8 @@ class PostmanVariablesResource extends ResourceBase {
       $question_ids = $this->entityQuery('question')
         ->condition('bundle', 'textarea')
         ->execute();
-      $question_textarea = $this->entityLoad('question', reset($question_ids));
+      $question_textarea = !empty($question_ids) ?
+        $this->entityLoad('question', reset($question_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $question_textarea = NULL;
@@ -144,7 +164,8 @@ class PostmanVariablesResource extends ResourceBase {
       $question_ids = $this->entityQuery('question')
         ->condition('bundle', 'checkboxes')
         ->execute();
-      $question_checkboxes = $this->entityLoad('question', reset($question_ids));
+      $question_checkboxes = !empty($question_ids) ?
+        $this->entityLoad('question', reset($question_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $question_checkboxes = NULL;
@@ -155,7 +176,8 @@ class PostmanVariablesResource extends ResourceBase {
       $question_ids = $this->entityQuery('question')
         ->condition('bundle', 'radios')
         ->execute();
-      $question_radios = $this->entityLoad('question', reset($question_ids));
+      $question_radios = !empty($question_ids) ?
+        $this->entityLoad('question', reset($question_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $question_radios = NULL;
@@ -163,13 +185,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is a draft.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'draft')
         ->range(0, 1)
         ->execute();
-      $project_draft = $this->entityLoad('node', reset($projects_id));
+      $project_draft = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_draft = NULL;
@@ -177,13 +200,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is pending.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'pending')
         ->range(0, 1)
         ->execute();
-      $project_pending = $this->entityLoad('node', reset($projects_id));
+      $project_pending = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_pending = NULL;
@@ -191,13 +215,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is open.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'open')
         ->range(0, 1)
         ->execute();
-      $project_open = $this->entityLoad('node', reset($projects_id));
+      $project_open = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_open = NULL;
@@ -205,14 +230,15 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that can mediate.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'open')
         ->condition('field_applicants.%delta', 1, '>=')
         ->range(0, 1)
         ->execute();
-      $project_can_mediate = $this->entityLoad('node', reset($projects_id));
+      $project_can_mediate = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_can_mediate = NULL;
@@ -220,13 +246,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is ongoing.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'ongoing')
         ->range(0, 1)
         ->execute();
-      $project_ongoing = $this->entityLoad('node', reset($projects_id));
+      $project_ongoing = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_ongoing = NULL;
@@ -234,13 +261,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is completed.
     try {
-      $projects_id = $this->entityQuery('node')
+      $project_ids = $this->entityQuery('node')
         ->condition('type', 'project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'completed')
         ->range(0, 1)
         ->execute();
-      $project_completed = $this->entityLoad('node', reset($projects_id));
+      $project_completed = !empty($project_ids) ?
+        $this->entityLoad('node', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_completed = NULL;
@@ -252,6 +280,7 @@ class PostmanVariablesResource extends ResourceBase {
       'data' => [
         'creative' => $creative?->uuid(),
         'organization' => $organization?->uuid(),
+        'prospect' => $prospect?->uuid(),
         'course' => $course?->uuid(),
         'lecture' => $lecture?->uuid(),
         'question_textfield' => $question_textfield?->uuid(),
@@ -270,6 +299,7 @@ class PostmanVariablesResource extends ResourceBase {
     // Prevent caching.
     $response->addCacheableDependency($creative);
     $response->addCacheableDependency($organization);
+    $response->addCacheableDependency($prospect);
     $response->addCacheableDependency($course);
     $response->addCacheableDependency($lecture);
     $response->addCacheableDependency($question_textfield);
@@ -302,7 +332,8 @@ class PostmanVariablesResource extends ResourceBase {
   protected function entityQuery(string $entity_type) {
     return $this->entityTypeManager
       ->getStorage($entity_type)
-      ->getQuery();
+      ->getQuery()
+      ->accessCheck(TRUE);
   }
 
   /**
