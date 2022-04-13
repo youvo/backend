@@ -24,7 +24,7 @@ class CreativeAccessControlHandler {
       return AccessResult::neutral();
     }
 
-    return AccessResult::neutral();
+    return AccessResult::allowed();
   }
 
   /**
