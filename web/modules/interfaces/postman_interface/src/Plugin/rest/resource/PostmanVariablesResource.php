@@ -274,6 +274,10 @@ class PostmanVariablesResource extends ResourceBase {
       $project_completed = NULL;
     }
 
+    $prefix = \Drupal::configFactory()
+      ->getEditable('youvo.settings')
+      ->get('rest_prefix');
+
     // Compile response with structured data.
     $response = new ResourceResponse([
       'resource' => strtr($this->pluginId, ':', '.'),
@@ -293,6 +297,7 @@ class PostmanVariablesResource extends ResourceBase {
         'project_open_can_mediate' => $project_can_mediate?->uuid(),
         'project_ongoing' => $project_ongoing?->uuid(),
         'project_completed' => $project_completed?->uuid(),
+        'prefix' => $prefix,
       ],
     ]);
 
