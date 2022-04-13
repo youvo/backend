@@ -30,6 +30,7 @@ function organizations_dummy_site_install_finished() {
 
   // Get possible managers.
   $manager_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
     ->condition('roles', 'manager')
     ->condition('uid', 1, '!=')
     ->execute();

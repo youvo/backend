@@ -6,31 +6,22 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\organizations\Entity\Organization;
-use Drupal\user\UserAccessControlHandler;
 
 /**
  * Access controller for the Organization entity.
  */
-class OrganizationAccessControlHandler extends UserAccessControlHandler {
+class OrganizationAccessControlHandler {
 
   /**
-   * {@inheritdoc}
+   * Checks access.
+   *
+   * @see \Drupal\user_types\UserTypeAccessControlHandler::checkAccess()
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public static function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
 
     // Only organizations should be handled by this handler.
     if (!$entity instanceof Organization) {
-      return parent::checkAccess($entity, $operation, $account);
-    }
-
-    // Prevent deletion when entity is new.
-    if ($operation == 'delete' && $entity->isNew()) {
-      return AccessResult::forbidden()->addCacheableDependency($entity);
-    }
-
-    // Handle access check downstream for administrators.
-    if (in_array('administrator', $account->getRoles())) {
-      return parent::checkAccess($entity, $operation, $account);
+      return AccessResult::neutral();
     }
 
     // @todo Access check for viewing prospect organizations.
@@ -56,11 +47,11 @@ class OrganizationAccessControlHandler extends UserAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
-    return parent::checkAccess($entity, $operation, $account);
+    return AccessResult::neutral();
   }
 
   /**
-   * {@inheritdoc}
+   * Checks create access.
    *
    * Only administrators should use the organization creation via admin form.
    * The creation of an organization is implemented in the following.
@@ -68,7 +59,7 @@ class OrganizationAccessControlHandler extends UserAccessControlHandler {
    *
    * @todo Maybe we can cover this case by permissions.
    */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+  public static function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
     if (in_array('administrator', $account->getRoles())) {
       return AccessResult::allowed()->cachePerUser();
     }
