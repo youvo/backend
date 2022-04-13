@@ -95,7 +95,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
     return AccessResult::allowedIf(
       $account->hasPermission($permission) &&
       $lecture->getParentEntity()->isPublished() &&
-      $lecture->isEnabled() &&
+      $lecture->isPublished() &&
       $this->progressManager->isUnlocked($lecture->getParentEntity(), $account) &&
       $this->progressManager->isUnlocked($lecture, $account)
     )->cachePerUser();
