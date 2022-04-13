@@ -27,7 +27,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-class UserUpdateEmailResponse extends ResourceBase {
+class UserUpdateEmailResource extends ResourceBase {
 
   /**
    * The current user.

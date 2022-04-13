@@ -25,7 +25,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-class UserUpdatePasswordResponse extends ResourceBase {
+class UserUpdatePasswordResource extends ResourceBase {
 
   /**
    * The current user.

@@ -68,23 +68,4 @@ interface CourseInterface extends ContentEntityInterface, EntityOwnerInterface, 
    */
   public function setCreatedTime(int $timestamp);
 
-  /**
-   * Returns the course status.
-   *
-   * @return bool
-   *   TRUE if the course is enabled, FALSE otherwise.
-   */
-  public function isEnabled();
-
-  /**
-   * Sets the course status.
-   *
-   * @param bool $status
-   *   TRUE to enable this course, FALSE to disable.
-   *
-   * @return \Drupal\courses\CourseInterface
-   *   The called course entity.
-   */
-  public function setStatus(bool $status);
-
 }

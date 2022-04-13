@@ -7,10 +7,14 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Entity\Project;
+use Drupal\user_types\Utility\Profile;
 use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the project bundle.
+ *
+ * @todo Maybe introduce permissions and cache per permissions when dust has
+ *   settled.
  */
 class ProjectFieldAccess extends FieldAccess {
 
@@ -47,7 +51,12 @@ class ProjectFieldAccess extends FieldAccess {
     'field_result_text'
   ];
 
-  const APPLIED_FIELD = 'applied';
+  const USER_STATUS_FIELDS = [
+    'user_is_applicant',
+    'user_is_participant',
+    'user_is_manager'
+  ];
+
   const APPLICANTS_FIELD = 'field_applicants';
   const PARTICIPANTS_FIELD = 'field_participants';
 
@@ -57,23 +66,23 @@ class ProjectFieldAccess extends FieldAccess {
   public static function checkFieldAccess(
     ContentEntityInterface $entity,
     string $operation,
-    FieldDefinitionInterface $field_definition,
+    FieldDefinitionInterface $field,
     AccountInterface $account
   ) {
 
     // Only project fields should be controlled by this class.
     if (!$entity instanceof Project) {
-      return AccessResult::forbidden();
+      return AccessResult::neutral();
     }
 
     // Administrators pass through.
-    if ($account->hasPermission('administer site')) {
-      return AccessResult::neutral();
+    if (in_array('administrator', $account->getRoles())) {
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
-      self::isFieldOfGroup($field_definition,
+      self::isFieldOfGroup($field,
         array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
     ) {
       return AccessResult::neutral();
@@ -81,40 +90,39 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Editing unrestricted fields is handled downstream.
     if ($operation == 'edit' &&
-      self::isFieldOfGroup($field_definition, self::UNRESTRICTED_FIELDS)) {
+      self::isFieldOfGroup($field, self::UNRESTRICTED_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
-      self::isCreative($account) &&
-      $field_definition->getName() == self::APPLIED_FIELD &&
-      $entity->workflowManager()->isOpen()) {
-      return AccessResult::neutral();
+      Profile::isCreative($account) &&
+      self::isFieldOfGroup($field, self::USER_STATUS_FIELDS)) {
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
       $entity->workflowManager()->isCompleted() &&
-      self::isFieldOfGroup($field_definition, self::RESULT_FIELDS)) {
+      self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view applicants for open projects.
     if ($operation == 'view' &&
       $entity->workflowManager()->isOpen() &&
-      $field_definition->getName() == self::APPLICANTS_FIELD &&
+      $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     // Authors and managers may view participants for ongoing projects. Note
     // that completed projects are handled above.
     if ($operation == 'view' &&
       $entity->workflowManager()->isOngoing() &&
-      $field_definition->getName() == self::PARTICIPANTS_FIELD &&
+      $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerUser();
     }
 
     return AccessResult::forbidden();

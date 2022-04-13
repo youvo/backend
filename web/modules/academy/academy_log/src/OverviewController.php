@@ -53,6 +53,10 @@ class OverviewController extends ControllerBase {
 
   /**
    * Simple overview of academy participants.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function overview() {
 
@@ -137,6 +141,9 @@ class OverviewController extends ControllerBase {
 
   /**
    * Gets creative accounts.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   private function getCreativeAccounts() {
     // Get all creatives, that are active and not associates.
@@ -144,28 +151,33 @@ class OverviewController extends ControllerBase {
       1, 14, 50, 130, 134, 136, 616, 621, 1200, 1888, 1889, 5124, 15970,
     ];
     $storage = $this->entityTypeManager()->getStorage('user');
-    $uids = $storage->getQuery()
+    $user_ids = $storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('status', '1')
       ->condition('roles', 'creative')
       ->condition('uid', $associates_ids, 'NOT IN')
       ->execute();
     /** @var \Drupal\user\UserInterface[] $accounts */
-    $accounts = $storage->loadMultiple($uids);
+    $accounts = $storage->loadMultiple($user_ids);
     return $accounts;
   }
 
   /**
-   * Gets creative accounts.
+   * Gets all courses.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   private function getAllCourses() {
     // Get all creatives, that are active and not associates.
     $storage = $this->entityTypeManager()->getStorage('course');
-    $cids = $storage->getQuery()
+    $course_ids = $storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('status', '1')
       ->sort('weight')
       ->execute();
     /** @var \Drupal\courses\Entity\Course[] $courses */
-    $courses = $storage->loadMultiple($cids);
+    $courses = $storage->loadMultiple($course_ids);
     return $courses;
   }
 
@@ -185,7 +197,7 @@ class OverviewController extends ControllerBase {
     // Calculate percentage.
     $total = count($lectures);
     $completed = count(array_filter($lectures, fn($l) => $l->completed));
-    return ceil($completed / $total * 100);
+    return (int) ceil($completed / $total * 100);
   }
 
   /**
@@ -204,7 +216,7 @@ class OverviewController extends ControllerBase {
     // Calculate percentage.
     $total = count($courses);
     $completed = count(array_filter($courses, fn($c) => $c->completed));
-    return ceil($completed / $total * 100);
+    return (int) ceil($completed / $total * 100);
   }
 
 }

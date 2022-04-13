@@ -1,7 +1,8 @@
 /vendor/
 
-/config/.env.development
+/config/.env.api
 /config/.env.consumers.development
+/config/.env.development
 /config/.env.oauth_remote.development
 /config/.env.production
 /certificates/private.key

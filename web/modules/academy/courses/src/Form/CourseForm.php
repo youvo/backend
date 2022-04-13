@@ -68,6 +68,8 @@ class CourseForm extends ContentEntityForm {
     else {
       $this->messenger()->addStatus($this->t('The course %label has been updated.', $message_arguments));
     }
+
+    return $result;
   }
 
 }

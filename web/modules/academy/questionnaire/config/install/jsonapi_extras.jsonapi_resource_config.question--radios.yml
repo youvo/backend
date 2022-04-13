@@ -1,11 +1,8 @@
-uuid: b0d62cf9-c698-4894-b187-dda99becc467
 langcode: en
 status: true
 dependencies:
   config:
     - questionnaire.type.radios
-_core:
-  default_config_hash: yhpFSSwozk_U12wBhYil-wMMguwdd-UaGAbwNdbWHsI
 id: question--radios
 disabled: false
 path: questions/radios
@@ -18,17 +15,17 @@ resourceFields:
     enhancer:
       id: ''
   uuid:
+    disabled: false
     fieldName: uuid
     publicName: uuid
     enhancer:
       id: ''
-    disabled: false
   langcode:
+    disabled: false
     fieldName: langcode
     publicName: langcode
     enhancer:
       id: ''
-    disabled: false
   bundle:
     disabled: true
     fieldName: bundle
@@ -36,35 +33,29 @@ resourceFields:
     enhancer:
       id: ''
   body:
+    disabled: false
     fieldName: body
     publicName: body
     enhancer:
       id: ''
-    disabled: false
   help:
+    disabled: false
     fieldName: help
     publicName: help
     enhancer:
       id: ''
-    disabled: false
-  options:
-    fieldName: options
-    publicName: options
-    enhancer:
-      id: ''
-    disabled: false
-  answers:
-    fieldName: answers
-    publicName: answers
-    enhancer:
-      id: ''
-    disabled: false
   explanation:
+    disabled: false
     fieldName: explanation
     publicName: explanation
     enhancer:
       id: ''
+  required:
     disabled: false
+    fieldName: required
+    publicName: required
+    enhancer:
+      id: ''
   uid:
     disabled: true
     fieldName: uid
@@ -84,20 +75,74 @@ resourceFields:
     enhancer:
       id: ''
   paragraph:
+    disabled: false
     fieldName: paragraph
     publicName: paragraph
     enhancer:
       id: ''
-    disabled: false
   weight:
+    disabled: false
     fieldName: weight
     publicName: weight
     enhancer:
       id: ''
-    disabled: false
   default_langcode:
     disabled: true
     fieldName: default_langcode
     publicName: default_langcode
+    enhancer:
+      id: ''
+  content_translation_source:
+    disabled: true
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: true
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
+  content_translation_uid:
+    disabled: true
+    fieldName: content_translation_uid
+    publicName: content_translation_uid
+    enhancer:
+      id: ''
+  content_translation_status:
+    disabled: true
+    fieldName: content_translation_status
+    publicName: content_translation_status
+    enhancer:
+      id: ''
+  content_translation_created:
+    disabled: true
+    fieldName: content_translation_created
+    publicName: content_translation_created
+    enhancer:
+      id: ''
+  content_translation_changed:
+    disabled: true
+    fieldName: content_translation_changed
+    publicName: content_translation_changed
+    enhancer:
+      id: ''
+  answers:
+    disabled: false
+    fieldName: answers
+    publicName: answers
+    enhancer:
+      id: ''
+  options:
+    disabled: false
+    fieldName: options
+    publicName: options
+    enhancer:
+      id: ''
+  submission:
+    disabled: false
+    fieldName: submission
+    publicName: submission
     enhancer:
       id: ''

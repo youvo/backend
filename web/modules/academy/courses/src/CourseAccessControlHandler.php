@@ -15,7 +15,7 @@ use Drupal\courses\Entity\Course;
  *
  * Note that the Course entity is the ("grand"-)parent of Lecture, Paragraph and
  * Question entities. All inherit the access handling from this controller. The
- * inheritence is defined in:
+ * inheritance is defined in:
  *
  * @see \Drupal\child_entities\ChildEntityAccessControlHandler
  */

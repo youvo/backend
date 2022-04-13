@@ -45,7 +45,7 @@ class ParagraphsParseJsonapiAttributesSubscriber implements EventSubscriberInter
    */
   public static function getSubscribedEvents() {
     return [
-      ParseJsonapiAttributesEvent::EVENT_NAME => 'resolveAttributes',
+      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
     ];
   }
 

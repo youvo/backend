@@ -106,7 +106,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
    */
   protected function accessCourseProgress(AccountInterface $account, Course $course, string $permission) {
     return AccessResult::allowedIf(
-      $course->isEnabled() &&
+      $course->isPublished() &&
       $account->hasPermission($permission) &&
       $this->progressManager->isUnlocked($course, $account)
     )->cachePerUser();

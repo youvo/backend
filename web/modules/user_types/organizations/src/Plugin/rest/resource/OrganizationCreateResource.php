@@ -5,7 +5,9 @@ namespace Drupal\organizations\Plugin\rest\resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
-use Drupal\projects\ProjectRestResponder;
+use Drupal\organizations\Entity\Organization;
+use Drupal\organizations\Event\OrganizationCreateEvent;
+use Drupal\organizations\OrganizationFieldAccess;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user\UserStorageInterface;
@@ -18,6 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides Organization Create Resource.
@@ -79,15 +82,24 @@ class OrganizationCreateResource extends ResourceBase {
    *   The user storage.
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator service.
-   * @param \Drupal\projects\ProjectRestResponder $project_rest_responder
-   *   The project REST responder service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, UserStorageInterface $user_storage, EmailValidatorInterface $email_validator, ProjectRestResponder $project_rest_responder) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    Json $serialization_json,
+    UserStorageInterface $user_storage,
+    EmailValidatorInterface $email_validator,
+    EventDispatcherInterface $event_dispatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->userStorage = $user_storage;
     $this->emailValidator = $email_validator;
-    $this->projectRestResponder = $project_rest_responder;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -103,7 +115,7 @@ class OrganizationCreateResource extends ResourceBase {
       $container->get('serialization.json'),
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('email.validator'),
-      $container->get('project.rest.responder')
+      $container->get('event_dispatcher')
     );
   }
 
@@ -166,7 +178,7 @@ class OrganizationCreateResource extends ResourceBase {
 
     try {
       // Create new organization user.
-      $organization = TypedUser::create(['type' => 'organization']);
+      $organization = Organization::create(['type' => 'organization']);
       $attributes = $this->validateAndShiftRequest($request);
       $organization = $this->populateFields($attributes, $organization);
       $organization->setPassword((new Random)->string(32));
@@ -175,14 +187,10 @@ class OrganizationCreateResource extends ResourceBase {
       $organization->activate();
       $organization->save();
 
-      // Create new project node.
-      $project = $this->projectRestResponder->createProject();
-      $attributes = $this->projectRestResponder->validateAndShiftRequest($request);
-      $project = $this->projectRestResponder->populateFields($attributes, $project);
-      $project->setOwner($organization);
-      $project->get('field_lifecycle')->value = 'draft';
-      $project->setPublished();
-      $project->save();
+      // Dispatch organization create event.
+      /** @var \Drupal\organizations\Entity\Organization $organization */
+      $event = new OrganizationCreateEvent($organization, $request);
+      $this->eventDispatcher->dispatch($event);
 
       // @todo langcode.
     }
@@ -257,36 +265,10 @@ class OrganizationCreateResource extends ResourceBase {
     // Populate fields.
     foreach ($attributes as $field_key => $value) {
 
-      // Validate if field is available. Target field_name instead of name.
-      if ($organization->hasField($field_key) && $field_key != 'name') {
-        $field_name = $field_key;
-      }
-      else {
-        $field_name = 'field_' . $field_key;
-        if (!$organization->hasField($field_name)) {
-          throw new FieldAwareHttpException(400,
-            'Malformed request body. Organizations do not provide the field ' . $field_key,
-            $field_key);
-        }
-      }
-
-      // Check access to edit field.
-      // @todo When field access for organizations is complete.
-      if ($field_name == 'no access') {
-        throw new FieldAwareHttpException(403,
-          'Access Denied. Not allowed to set ' . $field_key,
-          $field_key);
-      }
-
-      // Validate field value.
-      $field_definition = $organization->getFieldDefinition($field_name);
-      if (!FieldValidator::validate($field_definition, $value)) {
-        throw new FieldAwareHttpException(400,
-          'Malformed request body. Unable to validate the organization field ' . $field_key,
-          $field_key);
-      }
-
-      // Set the field value.
+      // Validate and set value.
+      $field_name = $this->validateAndRenameField($field_key, $organization);
+      $this->checkFieldAccess($field_name, $field_key);
+      $this->validateFieldValue($field_name, $field_key, $value, $organization);
       $organization->get($field_name)->value = $value;
 
       // Set username identical to provided mail.
@@ -327,6 +309,50 @@ class OrganizationCreateResource extends ResourceBase {
     }
 
     return $collection;
+  }
+
+  /**
+   * Resolves the field name.
+   */
+  protected function validateAndRenameField(string $field_key, TypedUser $organization) {
+    // Validate if field is available. Target field_name instead of name.
+    if ($organization->hasField($field_key) && $field_key != 'name') {
+      $field_name = $field_key;
+    }
+    else {
+      $field_name = 'field_' . $field_key;
+      if (!$organization->hasField($field_name)) {
+        throw new FieldAwareHttpException(400,
+          'Malformed request body. Organizations do not provide the field ' . $field_key,
+          $field_key);
+      }
+    }
+    return $field_name;
+  }
+
+  /**
+   * Checks the field access with the help of OrganizationFieldAccess.
+   */
+  protected function checkFieldAccess(string $field_name, string $field_key) {
+    $fields_allowed = array_merge(['mail', 'field_referral'],
+      OrganizationFieldAccess::EDIT_OWNER_OR_MANAGER);
+    if (!OrganizationFieldAccess::isFieldOfGroup($field_name, $fields_allowed)) {
+      throw new FieldAwareHttpException(403,
+        'Access Denied. Not allowed to set ' . $field_key,
+        $field_key);
+    }
+  }
+
+  /**
+   * Validates the field value with the help of the FieldValidator.
+   */
+  protected function validateFieldValue(string $field_name, string $field_key, mixed $value, TypedUser $organization) {
+    $field_definition = $organization->getFieldDefinition($field_name);
+    if (!FieldValidator::validate($field_definition, $value)) {
+      throw new FieldAwareHttpException(400,
+        'Malformed request body. Unable to validate the organization field ' . $field_key,
+        $field_key);
+    }
   }
 
 }

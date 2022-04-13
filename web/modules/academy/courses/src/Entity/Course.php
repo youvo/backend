@@ -5,12 +5,14 @@ namespace Drupal\courses\Entity;
 use Drupal\academy\AcademicFormatInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Url;
 use Drupal\courses\CourseInterface;
+use Drupal\user\EntityOwnerTrait;
 use Drupal\user\UserInterface;
 
 /**
@@ -39,6 +41,8 @@ use Drupal\user\UserInterface;
  *     "id" = "id",
  *     "langcode" = "langcode",
  *     "label" = "title",
+ *     "published" = "status",
+ *     "owner" = "uid",
  *     "uuid" = "uuid"
  *   },
  *   links = {
@@ -51,6 +55,8 @@ use Drupal\user\UserInterface;
 class Course extends ContentEntityBase implements CourseInterface, AcademicFormatInterface {
 
   use EntityChangedTrait;
+  use EntityPublishedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -97,23 +103,8 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function isEnabled() {
-    return (bool) $this->get('status')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setStatus($status) {
-    $this->set('status', $status);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getCreatedTime() {
-    return $this->get('created')->value;
+    return (int) $this->get('created')->value;
   }
 
   /**
@@ -121,28 +112,6 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
     return $this;
   }
 
@@ -162,15 +131,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
-    return $this;
-  }
-
-  /**
-   * Get lectures.
+   * Gets the referenced lectures.
    *
    * @return \Drupal\lectures\Entity\Lecture[]
    *   Array of referenced lectures.
@@ -178,7 +139,9 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   public function getLectures() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $lectures_field */
     $lectures_field = $this->get('lectures');
-    return $lectures_field->referencedEntities();
+    /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
+    $lectures = $lectures_field->referencedEntities();
+    return $lectures;
   }
 
   /**

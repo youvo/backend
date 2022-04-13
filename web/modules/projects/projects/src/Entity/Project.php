@@ -4,8 +4,10 @@ namespace Drupal\projects\Entity;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
+use Drupal\organizations\ManagerInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectWorkflowManager;
+use Drupal\user_types\Utility\Profile;
 
 /**
  * Implements bundle class for Project entities.
@@ -49,24 +51,25 @@ class Project extends Node implements ProjectInterface {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')
-        ->appendItem(['target_id' => $this->getUid($applicant)]);
+        ->appendItem(['target_id' => Profile::id($applicant)]);
     }
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function appendApplicant(AccountInterface|int $applicant) {
-    $uid = $applicant instanceof AccountInterface ?
-      $applicant->id() : $applicant;
-    $this->get('field_applicants')->appendItem(['target_id' => $uid]);
+    $this->get('field_applicants')
+      ->appendItem(['target_id' => Profile::id($applicant)]);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isApplicant(AccountInterface|int $applicant) {
-    return array_key_exists($this->getUid($applicant), $this->getApplicants());
+    return array_key_exists(Profile::id($applicant), $this->getApplicants());
   }
 
   /**
@@ -91,17 +94,18 @@ class Project extends Node implements ProjectInterface {
   }
 
   /**
-   * Set participants for current project.
+   * {@inheritdoc}
    */
   public function setParticipants(array $participants, array $tasks = []) {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant) {
       $this->get('field_participants')
-        ->appendItem(['target_id' => $this->getUid($participant)]);
+        ->appendItem(['target_id' => Profile::id($participant)]);
       $task = $tasks[$delta] ?? 'Creative';
       $this->get('field_participants_tasks')->appendItem($task);
     }
+    return $this;
   }
 
   /**
@@ -109,15 +113,16 @@ class Project extends Node implements ProjectInterface {
    */
   public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative') {
     $this->get('field_participants')
-      ->appendItem(['target_id' => $this->getUid($participant)]);
+      ->appendItem(['target_id' => Profile::id($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isParticipant(AccountInterface|int $participant) {
-    return array_key_exists($this->getUid($participant), $this->getParticipants());
+    return array_key_exists(Profile::id($participant), $this->getParticipants());
   }
 
   /**
@@ -131,51 +136,24 @@ class Project extends Node implements ProjectInterface {
    * {@inheritdoc}
    */
   public function isAuthor(AccountInterface|int $account) {
-    return $this->getUid($account) == $this->getOwner()->id();
+    return Profile::id($account) == $this->getOwner()->id();
   }
 
   /**
    * {@inheritdoc}
    */
   public function isAuthorOrManager(AccountInterface|int $account) {
-    $organization = $this->getOwner();
-    return $this->isAuthor($account) || ($this->isOrganization($organization) &&
-        $organization->isManager($account));
+    $owner = $this->getOwner();
+    return $this->isAuthor($account) ||
+      ($owner instanceof ManagerInterface && $owner->isManager($account));
   }
 
   /**
    * {@inheritdoc}
    */
   public function getManager() {
-    $organization = $this->getOwner();
-    return $this->isOrganization($organization) ?
-      $organization->getManager() : NULL;
-  }
-
-  /**
-   * Helper to get uid of an account.
-   *
-   * @param \Drupal\Core\Session\AccountInterface|int $account
-   *   The account or the uid.
-   * @return \Drupal\Core\Session\AccountInterface|int
-   *   The uid.
-   */
-  private function getUid(AccountInterface|int $account) {
-    return $account instanceof AccountInterface ? $account->id() : $account;
-  }
-
-  /**
-   * Helper to ensure that owner is an organization
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The account in question.
-   *
-   * @return bool
-   *   Is organization?
-   */
-  private function isOrganization(AccountInterface $account) {
-    return class_exists('Drupal\\organizations\\Entity\\Organization') &&
-      $account instanceof \Drupal\organizations\Entity\Organization;
+    $owner = $this->getOwner();
+    return $owner instanceof ManagerInterface ? $owner->getManager() : NULL;
   }
 
 }

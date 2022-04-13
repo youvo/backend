@@ -4,3 +4,18 @@
  * @file
  * Custom module which handles business logic for user types.
  */
+
+use Drupal\user_types\UserTypeAccessControlHandler;
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function user_types_entity_type_build(array &$entity_types) {
+
+  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
+
+  // Be careful here, because user_bundle_entity_type_build() already alters the
+  // entity handlers.
+  $entity_types['user']
+    ->setHandlerClass('access', UserTypeAccessControlHandler::class);
+}

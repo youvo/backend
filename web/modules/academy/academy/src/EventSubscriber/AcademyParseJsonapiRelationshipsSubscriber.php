@@ -51,7 +51,7 @@ class AcademyParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
    */
   public static function getSubscribedEvents() {
     return [
-      ParseJsonapiRelationshipsEvent::EVENT_NAME => 'resolveRelationships',
+      ParseJsonapiRelationshipsEvent::class => 'resolveRelationships',
     ];
   }
 

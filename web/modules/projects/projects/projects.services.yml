@@ -3,6 +3,13 @@ services:
     class: Drupal\projects\EventSubscriber\ProjectRouteSubscriber
     tags:
       - { name: event_subscriber }
-  project.rest.responder:
-    class: Drupal\projects\ProjectRestResponder
-    arguments: [ '@serialization.json' ]
+  project.parse_jsonapi.attributes:
+    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiAttributesSubscriber
+    tags:
+      - { name: event_subscriber }
+  project.organization.create:
+    class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
+    tags:
+      - { name: event_subscriber }
+    arguments:
+      [ '@serialization.json' ]

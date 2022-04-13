@@ -5,7 +5,7 @@ namespace Drupal\organizations\Controller;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\user\Entity\User;
+use Drupal\organizations\Entity\Organization;
 use Drupal\user\UserInterface;
 
 /**
@@ -14,7 +14,7 @@ use Drupal\user\UserInterface;
 class OrganizationAccessController extends ControllerBase {
 
   /**
-   * Checks access for project apply.
+   * Checks access for organization manage.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
@@ -24,18 +24,14 @@ class OrganizationAccessController extends ControllerBase {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessOrganizationManage(AccountInterface $account, UserInterface $organization = NULL) {
+  public function accessManage(AccountInterface $account, UserInterface $organization = NULL) {
 
     // Return, if organizations is empty.
-    if (!$organization) {
+    if (!$organization instanceof Organization) {
       return AccessResult::neutral();
     }
 
-    if ($organization instanceof User) {
-      return AccessResult::allowedIf(in_array('manager', $account->getRoles()));
-    }
-
-    return AccessResult::neutral();
+    return AccessResult::allowedIf(in_array('manager', $account->getRoles()));
   }
 
   /**
@@ -49,6 +45,7 @@ class OrganizationAccessController extends ControllerBase {
    */
   public function accessCreate(AccountInterface $account) {
 
+    //@todo Remove after development.
     if ($account->hasPermission('administer site configuration')) {
       return AccessResult::allowed();
     }

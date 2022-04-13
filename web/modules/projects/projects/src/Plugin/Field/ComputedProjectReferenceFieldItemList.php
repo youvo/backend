@@ -43,7 +43,7 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
 
     // Fetch the user and determine respective field.
     $account = $this->getEntity();
-    $field = $account->bundle() == 'creative' ? 'field_participants' : 'uid';
+    $field = $account->bundle() == 'user' ? 'field_participants' : 'uid';
 
     // Query projects referencing user.
     $query = $this->entityTypeManager()

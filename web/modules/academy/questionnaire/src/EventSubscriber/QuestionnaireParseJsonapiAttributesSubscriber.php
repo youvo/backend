@@ -46,7 +46,7 @@ class QuestionnaireParseJsonapiAttributesSubscriber implements EventSubscriberIn
    */
   public static function getSubscribedEvents() {
     return [
-      ParseJsonapiAttributesEvent::EVENT_NAME => 'resolveAttributes',
+      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
     ];
   }
 

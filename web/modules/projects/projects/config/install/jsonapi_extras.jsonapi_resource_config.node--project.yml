@@ -176,12 +176,6 @@ resourceFields:
     publicName: deadline
     enhancer:
       id: ''
-  field_host:
-    disabled: false
-    fieldName: field_host
-    publicName: host
-    enhancer:
-      id: ''
   field_image:
     disabled: false
     fieldName: field_image

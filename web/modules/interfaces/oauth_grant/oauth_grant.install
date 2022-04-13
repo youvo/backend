@@ -85,7 +85,6 @@ function oauth_grant_install() {
         'secret' => $consumer_secrets['SECRET_LOCAL'],
         'roles' => [
           ['target_id' => 'creative'],
-          ['target_id' => 'manager'],
         ],
         'image_styles' => [
           ['target_id' => 'avatar'],
@@ -113,7 +112,6 @@ function oauth_grant_install() {
         'secret' => $consumer_secrets['SECRET_DEVELOPMENT'],
         'roles' => [
           ['target_id' => 'creative'],
-          ['target_id' => 'manager'],
         ],
         'image_styles' => [
           ['target_id' => 'avatar'],
