@@ -25,13 +25,13 @@ class OrganizationAccessControlHandler {
     }
 
     /**
-     * Explicitly allow managers of organizations to edit the account of the
-     * organization. This ability will be narrowed down to certain fields in
-     * the field access handler.
+     * Explicitly allow managers and owners of organizations to edit the account
+     * of the organization. This ability will be narrowed down to certain fields
+     * in the field access handler.
      *
      * @see \Drupal\organizations\OrganizationFieldAccess
      */
-    if ($operation == 'edit' && $entity->isManager($account)) {
+    if ($operation == 'edit' && $entity->isOwnerOrManager($account)) {
       return AccessResult::allowed()->cachePerUser();
     }
 
