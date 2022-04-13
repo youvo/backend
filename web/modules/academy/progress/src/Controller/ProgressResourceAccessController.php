@@ -94,7 +94,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
     // the course and lecture are enabled and unlocked.
     return AccessResult::allowedIf(
       $account->hasPermission($permission) &&
-      $lecture->getParentEntity()->isEnabled() &&
+      $lecture->getParentEntity()->isPublished() &&
       $lecture->isEnabled() &&
       $this->progressManager->isUnlocked($lecture->getParentEntity(), $account) &&
       $this->progressManager->isUnlocked($lecture, $account)
