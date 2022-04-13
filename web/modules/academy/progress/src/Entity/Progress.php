@@ -19,14 +19,14 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
    * {@inheritdoc}
    */
   public function getEnrollmentTime() {
-    return $this->get('enrolled')->value;
+    return (int) $this->get('enrolled')->value;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAccessTime() {
-    return $this->get('accessed')->value;
+    return (int) $this->get('accessed')->value;
   }
 
   /**
@@ -41,7 +41,7 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
    * {@inheritdoc}
    */
   public function getCompletedTime() {
-    return $this->get('completed')->value;
+    return (int) $this->get('completed')->value;
   }
 
   /**
@@ -56,14 +56,17 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
    * {@inheritdoc}
    */
   public function getOwner() {
-    return $this->get('uid')->entity;
+    $key = $this->getEntityType()->getKey('owner');
+    /** @var \Drupal\user\UserInterface $owner */
+    $owner = $this->get($key)->entity;
+    return $owner;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOwnerId() {
-    return $this->get('uid')->target_id;
+    return $this->getEntityKey('owner');
   }
 
   /**
@@ -73,7 +76,7 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+    $fields[$entity_type->getKey('owner')] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
       ->setDescription(t('The user ID associated with the progress.'))
       ->setSetting('target_type', 'user')

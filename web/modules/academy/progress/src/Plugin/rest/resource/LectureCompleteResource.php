@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
- * Provides Progress Lecture Complete Resource.
+ * Provides progress lecture complete resource.
  *
  * @RestResource(
  *   id = "progress:lecture:complete",
@@ -27,13 +27,13 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class LectureCompleteResource extends ProgressResource {
 
   /**
-   * Responds POST requests.
+   * Responds to POST requests.
    *
    * @param \Drupal\lectures\Entity\Lecture $entity
    *   The referenced lecture.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
@@ -84,8 +84,9 @@ class LectureCompleteResource extends ProgressResource {
       }
 
       // Load the respective course progress.
-      $course_progress = $this->progressManager
-        ->loadProgress($entity->getParentEntity());
+      /** @var \Drupal\courses\Entity\Course $course */
+      $course = $entity->getParentEntity();
+      $course_progress = $this->progressManager->loadProgress($course);
 
       // This should never happen. We create the course progress if not present.
       // A sneaky way to ensure that the course progress exists before the

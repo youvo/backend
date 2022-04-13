@@ -18,7 +18,7 @@ trait ProgressManagerInjectionTrait {
    *
    * @var \Drupal\progress\ProgressManager
    */
-  protected $progressManager;
+  protected ProgressManager $progressManager;
 
   /**
    * Gets the progress manager.
@@ -27,7 +27,7 @@ trait ProgressManagerInjectionTrait {
    *   The progress manager.
    */
   protected function progressManager() {
-    if (!$this->progressManager) {
+    if (!isset($this->progressManager)) {
       $this->progressManager = \Drupal::service('progress.manager');
     }
     return $this->progressManager;

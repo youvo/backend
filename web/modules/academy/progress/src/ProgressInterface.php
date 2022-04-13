@@ -6,47 +6,47 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 
 /**
- * Provides an interface defining a LectureProgress entity type.
+ * Provides an interface defining a lecture progress entity.
  */
 interface ProgressInterface extends ContentEntityInterface, EntityChangedInterface {
 
   /**
-   * Gets the Lecture enrollment timestamp.
+   * Gets the lecture enrollment timestamp.
    *
    * @return int
-   *   Enrollment timestamp of the Lecture.
+   *   Enrollment timestamp of the lecture.
    */
   public function getEnrollmentTime();
 
   /**
-   * Gets the Lecture access timestamp.
+   * Gets the lecture access timestamp.
    *
    * @return int
-   *   Access timestamp of the Lecture.
+   *   Access timestamp of the lecture.
    */
   public function getAccessTime();
 
   /**
-   * Sets the Lecture access timestamp.
+   * Sets the lecture access timestamp.
    *
    * @param int $timestamp
-   *   The Lecture access timestamp.
+   *   The lecture access timestamp.
    *
    * @return \Drupal\progress\ProgressInterface
-   *   The called LectureProgress entity.
+   *   The lecture progress entity.
    */
   public function setAccessTime(int $timestamp);
 
   /**
-   * Gets the Lecture completed timestamp.
+   * Gets the lecture completed timestamp.
    *
    * @return int
-   *   Completed timestamp of the Lecture.
+   *   Completed timestamp of the lecture.
    */
   public function getCompletedTime();
 
   /**
-   * Sets the Lecture completed timestamp.
+   * Sets the lecture completed timestamp.
    *
    * @param int $timestamp
    *   The Lecture completed timestamp.

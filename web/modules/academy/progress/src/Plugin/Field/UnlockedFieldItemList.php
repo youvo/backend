@@ -24,12 +24,13 @@ class UnlockedFieldItemList extends FieldItemList implements FieldItemListInterf
 
     if (!isset($this->list[0])) {
 
-      // Set completed status.
+      // Set unlocked status.
+      /** @var \Drupal\courses\Entity\Course|\Drupal\lectures\Entity\Lecture $entity */
+      $entity = $this->getEntity();
+      $is_unlocked = $this->progressManager()->isUnlocked($entity);
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->isUnlocked($this->getEntity()));
-
-      // Set cache max age zero.
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item = $this->createItem(0, $is_unlocked);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }

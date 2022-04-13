@@ -17,18 +17,21 @@ class CurrentLectureFieldItemList extends FieldItemList implements FieldItemList
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function computeValue() {
 
     if (!isset($this->list[0])) {
 
       // Get uuid of current unlocked lecture.
-      $lecture = $this->progressManager()->currentLecture($this->getEntity());
+      /** @var \Drupal\courses\Entity\Course $course */
+      $course = $this->getEntity();
+      $lecture = $this->progressManager()->currentLecture($course);
       $uuid = isset($lecture) ? $lecture->uuid() : '';
+      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
       $item = $this->createItem(0, $uuid);
-
-      // Set cache max age zero.
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }

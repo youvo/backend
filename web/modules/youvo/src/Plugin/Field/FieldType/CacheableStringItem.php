@@ -45,4 +45,17 @@ class CacheableStringItem extends StringItem {
     return $value === NULL;
   }
 
+  /**
+   * Gets the value property.
+   *
+   * @returns \Drupal\youvo\Plugin\DataType\CacheableStringData
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
+   */
+  public function getValueProperty() {
+    /** @var \Drupal\youvo\Plugin\DataType\CacheableStringData $value */
+    $value = $this->get('value');
+    return $value;
+  }
+
 }

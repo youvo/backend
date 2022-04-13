@@ -24,12 +24,13 @@ class ProgressFieldItemList extends FieldItemList implements FieldItemListInterf
 
     if (!isset($this->list[0])) {
 
-      // Set completed status.
+      // Set progression.
+      /** @var \Drupal\courses\Entity\Course $course */
+      $course = $this->getEntity();
+      $progression = $this->progressManager()->calculateProgression($course);
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->calculateProgression($this->getEntity()));
-
-      // Set cache max age zero.
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item = $this->createItem(0, $progression);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }

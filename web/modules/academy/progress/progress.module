@@ -84,8 +84,8 @@ function progress_entity_field_access($operation, FieldDefinitionInterface $fiel
   // We only allow progress, unlocked and completed fields for users with the
   // view courses permission. This excludes users with the view courses overview
   // permission.
-  $progess_fields = ['progress', 'unlocked', 'completed'];
-  if (in_array($field_definition->getName(), $progess_fields)) {
+  $progress_fields = ['progress', 'unlocked', 'completed'];
+  if (in_array($field_definition->getName(), $progress_fields)) {
     if (!$account->hasPermission('view courses')) {
       $result = AccessResult::forbidden();
     }
@@ -109,6 +109,7 @@ function progress_child_entities_check_access(AccessResultInterface &$access, Co
   // Check enrollment status. Therefore, from an access point of view, all
   // contents of the course are revealed once a user enrolls into a course.
   if ($access->isAllowed()) {
+    /** @var \Drupal\courses\Entity\Course $origin */
     $access = AccessResult::allowedIf(\Drupal::service('progress.manager')
       ->isUnlocked($origin, $account));
   }

@@ -30,4 +30,17 @@ class CacheableIntegerItem extends IntegerItem {
     return $properties;
   }
 
+  /**
+   * Gets the value property.
+   *
+   * @returns \Drupal\youvo\Plugin\DataType\CacheableIntegerData
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
+   */
+  public function getValueProperty() {
+    /** @var \Drupal\youvo\Plugin\DataType\CacheableIntegerData $value */
+    $value = $this->get('value');
+    return $value;
+  }
+
 }

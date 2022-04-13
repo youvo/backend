@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Provides Abstract for Lecture Progress Resources.
+ * Provides an abstract for lecture progress resources.
  */
 abstract class ProgressResource extends ResourceBase {
 
@@ -26,10 +26,10 @@ abstract class ProgressResource extends ResourceBase {
    *
    * @var \Drupal\progress\ProgressManager
    */
-  protected $progressManager;
+  protected ProgressManager $progressManager;
 
   /**
-   * Constructs a Drupal\rest\Plugin\ResourceBase object.
+   * Constructs a ProgressResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -44,7 +44,14 @@ abstract class ProgressResource extends ResourceBase {
    * @param \Drupal\progress\ProgressManager $progress_manager
    *   The progress manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, ProgressManager $progress_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    ProgressManager $progress_manager
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->progressManager = $progress_manager;
   }
@@ -52,7 +59,12 @@ abstract class ProgressResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $configuration,
       $plugin_id,
@@ -64,13 +76,13 @@ abstract class ProgressResource extends ResourceBase {
   }
 
   /**
-   * Responds GET requests.
+   * Responds to GET requests.
    *
    * @param \Drupal\academy\AcademicFormatInterface $entity
    *   The referenced lecture or course.
    *
    * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
-   *   Response.
+   *   The response.
    */
   public function get(AcademicFormatInterface $entity) {
 
@@ -106,7 +118,7 @@ abstract class ProgressResource extends ResourceBase {
     ]);
 
     // Add cacheable dependency to refresh response when lecture or course is
-    // udpated.
+    // updated.
     $response->addCacheableDependency($progress);
 
     return $response;

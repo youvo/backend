@@ -18,7 +18,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "id" = "id",
  *     "uuid" = "uuid",
  *     "lecture" = "lecture",
- *     "uid" = "uid"
+ *     "owner" = "uid"
  *   }
  * )
  */
