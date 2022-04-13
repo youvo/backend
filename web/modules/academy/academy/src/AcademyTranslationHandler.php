@@ -28,6 +28,7 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
     // Amend translation buttons container.
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $translations = $entity->getTranslationLanguages();
+    /** @var \Drupal\Core\Entity\ContentEntityFormInterface $form_object */
     $form_object = $form_state->getFormObject();
     $form_langcode = $form_object->getFormLangcode($form_state);
 

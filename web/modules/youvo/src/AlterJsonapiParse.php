@@ -48,17 +48,25 @@ class AlterJsonapiParse extends JsonapiParse {
 
     // Allow other modules to alter the response.
     $event = new ParseJsonapiRelationshipsEvent($resource, $keys, $parent_key);
-    $event = $this->eventDispatcher
-      ->dispatch($event, ParseJsonapiRelationshipsEvent::EVENT_NAME);
+    $event = $this->eventDispatcher->dispatch($event);
 
     return $event->getResource();
   }
 
   /**
-   * {@inheritdoc}
+   * Resolve data.
    *
    * Overwrite this method to provide an empty array, when the data is empty.
    * This ensures a consistent data type for includes.
+   *
+   * @param array|mixed $links
+   *   The data for resolve.
+   *
+   * @param string $key
+   *   Relationship key.
+   *
+   * @return array|null
+   *   Result.
    */
   protected function resolveRelationshipData($links, $key) {
     if (empty($links['data'])) {
@@ -80,8 +88,7 @@ class AlterJsonapiParse extends JsonapiParse {
 
     // Allow other modules to alter the item.
     $event = new ParseJsonapiAttributesEvent($item);
-    $event = $this->eventDispatcher
-      ->dispatch($event, ParseJsonapiAttributesEvent::EVENT_NAME);
+    $event = $this->eventDispatcher->dispatch($event);
 
     // Unset the display name here, because in some cases we don't want to leak
     // the user email or name.

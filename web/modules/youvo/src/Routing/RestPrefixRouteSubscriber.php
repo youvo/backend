@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo\Routing;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
@@ -29,6 +30,13 @@ class RestPrefixRouteSubscriber extends RouteSubscriberBase {
     'CONNECT',
     'PATCH',
   ];
+
+  /**
+   * The resource config storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected EntityStorageInterface $resourceConfigStorage;
 
   /**
    * Constructs a RestPrefixRouteSubscriber object.

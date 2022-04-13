@@ -2,6 +2,8 @@
 
 namespace Drupal\youvo\ParamConverter;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\ParamConverter\EntityConverter;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
@@ -25,10 +27,18 @@ class UuidParamConverter extends EntityConverter implements ParamConverterInterf
     // Convert request with UUIDs to IDs by querying the database.
     if ($this->isRestRequest($defaults) && Uuid::isValid($value)) {
       $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-      $query = \Drupal::entityQuery($entity_type_id)
-        ->condition('uuid', $value)
-        ->execute();
-      $value = reset($query);
+      try {
+        $query = $this->entityTypeManager
+          ->getStorage($entity_type_id)
+          ->getQuery()
+          ->accessCheck(FALSE)
+          ->condition('uuid', $value)
+          ->execute();
+        $value = reset($query);
+      }
+      catch (InvalidPluginDefinitionException|PluginNotFoundException) {
+        // Do nothing.
+      }
     }
 
     return parent::convert($value, $definition, $name, $defaults);

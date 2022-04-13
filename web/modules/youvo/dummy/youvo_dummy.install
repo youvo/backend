@@ -48,8 +48,9 @@ function youvo_dummy_get_random_skills() {
  */
 function youvo_dummy_get_random_causes() {
   $causes = [];
-  /** @var \Drupal\taxonomy\Entity\Term[] $causes_select */
+  $causes_select = [];
   try {
+    /** @var \Drupal\taxonomy\Entity\Term[] $causes_select */
     $causes_select = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
       ->loadByProperties(['vid' => 'causes']);

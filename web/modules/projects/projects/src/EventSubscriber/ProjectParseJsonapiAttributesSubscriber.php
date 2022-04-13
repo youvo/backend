@@ -43,7 +43,7 @@ class ProjectParseJsonapiAttributesSubscriber implements EventSubscriberInterfac
    */
   public static function getSubscribedEvents() {
     return [
-      ParseJsonapiAttributesEvent::EVENT_NAME => 'resolveAttributes',
+      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
     ];
   }
 

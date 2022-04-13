@@ -147,7 +147,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         $tags .= '<div class="button button--extrasmall is-disabled">' . $tag['value'] . '</div>';
       }
       $disabled_course = '';
-      if (!$course->isEnabled()) {
+      if (!$course->isPublished()) {
         $disabled_course = ' ' . $this->t('(Disabled)');
       }
       $translations = '';
