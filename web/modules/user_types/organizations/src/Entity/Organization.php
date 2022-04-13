@@ -61,4 +61,19 @@ class Organization extends TypedUser implements ManagerInterface {
       $this->isManager($account);
   }
 
+  /**
+   * Promotes a prospect to a proper organization.
+   *
+   * @return $this|false
+   *   The current organization or FALSE if organization is not a prospect.
+   */
+  public function promoteProspect() {
+    if (!in_array('prospect', $this->getRoles())) {
+      return FALSE;
+    }
+    $this->removeRole('prospect');
+    $this->addRole('organization');
+    return $this;
+  }
+
 }

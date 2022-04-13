@@ -4,7 +4,7 @@ granularity: resource
 configuration:
   methods:
     - GET
-    - PATCH
+    - POST
     - DELETE
   formats:
     - json

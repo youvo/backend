@@ -66,13 +66,13 @@ class OrganizationManageResource extends ResourceBase {
   }
 
   /**
-   * Responds GET requests.
+   * Responds to GET requests.
    *
    * @param \Drupal\organizations\Entity\Organization $organization
    *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    */
   public function get(Organization $organization) {
 
@@ -88,17 +88,17 @@ class OrganizationManageResource extends ResourceBase {
   }
 
   /**
-   * Responds PATCH requests.
+   * Responds to PATCH requests.
    *
    * @param \Drupal\organizations\Entity\Organization $organization
    *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function patch(Organization $organization) {
+  public function post(Organization $organization) {
 
     if ($organization->isManager($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already manages this organization.', 200);
@@ -109,19 +109,20 @@ class OrganizationManageResource extends ResourceBase {
     }
 
     $organization->setManager($this->currentUser);
+    $organization->promoteProspect();
     $organization->save();
 
     return new ModifiedResourceResponse();
   }
 
   /**
-   * Responds DELETE requests.
+   * Responds to DELETE requests.
    *
    * @param \Drupal\organizations\Entity\Organization $organization
    *   The referenced organization.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
@@ -134,7 +135,8 @@ class OrganizationManageResource extends ResourceBase {
     }
 
     if ($organization->hasManager()) {
-      return new ModifiedResourceResponse('Another creative manages this organization.', 409);
+      // Passing a message will cause a decoding error in Symfony.
+      return new ModifiedResourceResponse(NULL, 409);
     }
 
     return new ModifiedResourceResponse();

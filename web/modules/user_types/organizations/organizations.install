@@ -21,7 +21,7 @@ function organizations_site_install_finished() {
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('restful get organization:manage');
-    $role_object->grantPermission('restful patch organization:manage');
+    $role_object->grantPermission('restful post organization:manage');
     $role_object->grantPermission('restful delete organization:manage');
     try {
       $role_object->save();
