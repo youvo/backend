@@ -40,28 +40,21 @@ class OrganizationCreateResource extends ResourceBase {
    *
    * @var \Drupal\Component\Serialization\Json
    */
-  protected $serializationJson;
+  protected Json $serializationJson;
 
   /**
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
    */
-  protected $userStorage;
+  protected UserStorageInterface $userStorage;
 
   /**
    * The email validator service.
    *
    * @var \Drupal\Component\Utility\EmailValidatorInterface
    */
-  protected $emailValidator;
-
-  /**
-   * The project REST responder service.
-   *
-   * @var \Drupal\projects\ProjectRestResponder
-   */
-  protected $projectRestResponder;
+  protected EmailValidatorInterface $emailValidator;
 
   /**
    * Constructs a OrganizationCreateResource object.
@@ -83,7 +76,7 @@ class OrganizationCreateResource extends ResourceBase {
    * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
    *   The email validator service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher
+   *   The event dispatcher.
    */
   public function __construct(
     array $configuration,
@@ -120,13 +113,13 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
-   * Responds GET requests.
+   * Responds to GET requests.
    *
-    * @param \Symfony\Component\HttpFoundation\Request $request
+   * @param \Symfony\Component\HttpFoundation\Request $request
    *   Contains request data.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
@@ -138,24 +131,24 @@ class OrganizationCreateResource extends ResourceBase {
     // Check whether email was provided.
     if (empty($email)) {
       return new ModifiedResourceResponse([
-        'message' => 'The email parameter was not provided.',
-        'field' => 'mail'
+        'message' => 'The email address was not provided.',
+        'field' => 'mail',
       ], 400);
     }
 
     // Check whether email is valid.
     if (!$this->emailValidator->isValid($email)) {
       return new ModifiedResourceResponse([
-        'message' => 'The provided email is not valid.',
-        'field' => 'mail'
+        'message' => 'The provided email address is not valid.',
+        'field' => 'mail',
       ], 400);
     }
 
     // Check whether there exists an account for the given email.
     if ($this->accountExistsForEmail($email)) {
       return new ModifiedResourceResponse([
-        'message' => 'There already exists an account for the provided email.',
-        'field' => 'mail'
+        'message' => 'There already exists an account for the provided email address.',
+        'field' => 'mail',
       ], 409);
     }
 
@@ -195,8 +188,10 @@ class OrganizationCreateResource extends ResourceBase {
       // @todo langcode.
     }
     catch (FieldAwareHttpException $e) {
-      return new ModifiedResourceResponse(['message' => $e->getMessage(),
-        'field' => $e->getField()], $e->getStatusCode());
+      return new ModifiedResourceResponse([
+        'message' => $e->getMessage(),
+        'field' => $e->getField(),
+      ], $e->getStatusCode());
     }
     catch (HttpException $e) {
       return new ModifiedResourceResponse($e->getMessage(), $e->getStatusCode());
@@ -281,13 +276,10 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
-   * Check whether email used by already existing account.
-   *
-   * @param string $mail
-   * @return bool
+   * Checks whether email used by already existing account.
    */
-  protected function accountExistsForEmail(string $mail) {
-    return !empty($this->userStorage->loadByProperties(['mail' => $mail]));
+  protected function accountExistsForEmail(string $email) {
+    return !empty($this->userStorage->loadByProperties(['mail' => $email]));
   }
 
   /**
