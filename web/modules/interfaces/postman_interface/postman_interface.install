@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Projects module.
+ */
+
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Utility\Error;
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function postman_interface_site_install_finished() {
+
+  // Get uuid.
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('restful get postman:uuid');
+  try {
+    $role_object->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    $variables['%permission'] = 'restful GET postman:uuid';
+    $variables['%role'] = 'authenticated';
+    \Drupal::logger('youvo')
+      ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+  }
+}

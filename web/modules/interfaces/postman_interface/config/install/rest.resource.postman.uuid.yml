@@ -1,0 +1,11 @@
+id: postman.uuid
+plugin_id: 'postman:uuid'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
