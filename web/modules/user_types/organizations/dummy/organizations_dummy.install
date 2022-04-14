@@ -6,7 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\user\Entity\User;
+use Drupal\organizations\Entity\Organization;
 use Drupal\Core\Utility\Error;
 use Faker\Factory;
 
@@ -42,15 +42,16 @@ function organizations_dummy_site_install_finished() {
     $image_file = youvo_dummy_get_image_by_path('/img/test_images/organizations/', 'test.jpg');
     $causes = youvo_dummy_get_random_causes();
     $portfolio = [];
-    for ($j = 0; $j <= rand(0,5); $j++) {
+    for ($j = 0; $j <= rand(0, 5); $j++) {
       $portfolio[] = $faker->url();
     }
     $firstname = $faker->unique()->firstName();
     $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.org';
-    $name_extension = $faker->optional(0.7)->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']) ?: '';
+    $name_extension = $faker->optional(0.7)
+      ->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']) ?: '';
     $organization_name = ucwords($faker->words(3, TRUE));
     $short_name = explode(' ', $organization_name);
-    $short_name = array_map(fn ($s) => substr($s, 0, rand(3,10)), $short_name);
+    $short_name = array_map(fn ($s) => substr($s, 0, rand(3, 10)), $short_name);
     $short_name = implode('', $short_name) . $name_extension;
 
     // Values for organization user.
@@ -61,8 +62,8 @@ function organizations_dummy_site_install_finished() {
       'field_aim' => $faker->text(80),
       'field_about' => $faker->text(600),
       'field_causes' => $causes,
-      'field_count_volunteer' => $faker->numberBetween(5,20),
-      'field_count_fulltime' => $faker->numberBetween(1,5),
+      'field_count_volunteer' => $faker->numberBetween(5, 20),
+      'field_count_fulltime' => $faker->numberBetween(1, 5),
       'field_contact' => $firstname . ' ' . $faker->lastName(),
       'field_phone' => $faker->phoneNumber(),
       'field_reachability' => $faker->text(80),
@@ -86,10 +87,10 @@ function organizations_dummy_site_install_finished() {
     ];
 
     // Create organization.
-    $organization = User::create($values);
+    $organization = Organization::create($values);
 
     if ($i <= 15) {
-      if ($faker->boolean(0.3)) {
+      if ($faker->boolean(40)) {
         $organization->get('field_manager')
           ->appendItem($faker->randomElement($manager_ids));
       }
