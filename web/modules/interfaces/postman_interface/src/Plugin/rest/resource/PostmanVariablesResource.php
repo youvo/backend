@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Provides Postman Variables Resource.
+ * Provides postman variables resource.
  *
  * @RestResource(
  *   id = "postman:variables",
@@ -29,7 +29,7 @@ class PostmanVariablesResource extends ResourceBase {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Constructs a QuestionSubmissionResource object.
@@ -67,10 +67,10 @@ class PostmanVariablesResource extends ResourceBase {
   }
 
   /**
-   * Responds GET requests.
+   * Responds to GET requests.
    *
    * @return \Drupal\rest\ResourceResponse
-   *   Response.
+   *   The response.
    */
   public function get() {
 
@@ -85,6 +85,19 @@ class PostmanVariablesResource extends ResourceBase {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $creative = NULL;
+    }
+
+    // Get some manager.
+    try {
+      $manager_ids = $this->entityQuery('user')
+        ->condition('uid', 1, '!=')
+        ->condition('roles', 'manager')
+        ->execute();
+      $manager = !empty($manager_ids) ?
+        $this->entityLoad('user', reset($manager_ids)) : NULL;
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $manager = NULL;
     }
 
     // Get some organization.
@@ -279,6 +292,7 @@ class PostmanVariablesResource extends ResourceBase {
       'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
         'creative' => $creative?->uuid(),
+        'manager' => $manager?->uuid(),
         'organization' => $organization?->uuid(),
         'prospect' => $prospect?->uuid(),
         'course' => $course?->uuid(),
@@ -292,12 +306,13 @@ class PostmanVariablesResource extends ResourceBase {
         'project_open' => $project_open?->uuid(),
         'project_open_can_mediate' => $project_can_mediate?->uuid(),
         'project_ongoing' => $project_ongoing?->uuid(),
-        'project_completed' => $project_completed?->uuid()
+        'project_completed' => $project_completed?->uuid(),
       ],
     ]);
 
-    // Prevent caching.
+    // Add cacheable dependencies for content.
     $response->addCacheableDependency($creative);
+    $response->addCacheableDependency($manager);
     $response->addCacheableDependency($organization);
     $response->addCacheableDependency($prospect);
     $response->addCacheableDependency($course);

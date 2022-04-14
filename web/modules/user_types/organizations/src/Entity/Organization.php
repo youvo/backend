@@ -45,7 +45,6 @@ class Organization extends TypedUser implements ManagerInterface {
    */
   public function deleteManager() {
     $this->set('field_manager', NULL);
-    //$this->get('field_manager')->removeItem(0);
     return $this;
   }
 
