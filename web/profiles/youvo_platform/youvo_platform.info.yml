@@ -36,6 +36,7 @@ install:
   - consumers
   - consumer_image_styles
   - simple_oauth
+  - subrequests
   - user_bundle
   # Base
   - youvo
