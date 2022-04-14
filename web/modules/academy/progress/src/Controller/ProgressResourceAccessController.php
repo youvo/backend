@@ -92,11 +92,13 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
 
     // Access is granted if the creative has permission to use this resource,
     // the course and lecture are enabled and unlocked.
+    /** @var \Drupal\courses\Entity\Course $course */
+    $course = $lecture->getParentEntity();
     return AccessResult::allowedIf(
       $account->hasPermission($permission) &&
-      $lecture->getParentEntity()->isEnabled() &&
-      $lecture->isEnabled() &&
-      $this->progressManager->isUnlocked($lecture->getParentEntity(), $account) &&
+      $course->isPublished() &&
+      $lecture->isPublished() &&
+      $this->progressManager->isUnlocked($course, $account) &&
       $this->progressManager->isUnlocked($lecture, $account)
     )->cachePerUser();
   }

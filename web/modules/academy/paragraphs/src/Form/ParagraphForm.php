@@ -53,7 +53,7 @@ class ParagraphForm extends ContentEntityForm {
       }
 
       // Attach answers multi value form element.
-      $form['multistats'] = [
+      $form['multi_stats'] = [
         '#title' => $this->t('Stats'),
         '#type' => 'multivalue',
         '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
@@ -83,12 +83,12 @@ class ParagraphForm extends ContentEntityForm {
   public function save(array $form, FormStateInterface $form_state) {
 
     // Describe relevant entities.
-    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
+    /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $this->getEntity();
 
-    // Add values from multistats form element.
+    // Add values from multi-stats form element.
     if ($paragraph->bundle() == 'stats') {
-      $stats = $form_state->getValue('multistats');
+      $stats = $form_state->getValue('multi_stats');
       $paragraph->set('list', []);
       $paragraph->set('description', []);
       foreach ($stats as $stat) {
@@ -122,6 +122,8 @@ class ParagraphForm extends ContentEntityForm {
       'lecture' => $lecture->id(),
       'course' => $lecture->getParentEntity()->id(),
     ]);
+
+    return $result;
   }
 
   /**
@@ -129,13 +131,13 @@ class ParagraphForm extends ContentEntityForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
 
-    // Get entitys actions.
+    // Get entities actions.
     $actions = parent::actions($form, $form_state);
 
     // Add an abort button.
     /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
-    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $paragraph = $this->getEntity();
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $lecture = $paragraph->getParentEntity();
     $url = Url::fromRoute('entity.paragraph.collection', [
       'lecture' => $lecture->id(),

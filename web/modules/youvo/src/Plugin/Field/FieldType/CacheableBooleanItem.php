@@ -5,6 +5,7 @@ namespace Drupal\youvo\Plugin\Field\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\BooleanItem;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\youvo\Plugin\DataType\CacheableBooleanData;
 
 /**
  * Defines the 'boolean' entity field type with cacheability metadata.
@@ -28,6 +29,19 @@ class CacheableBooleanItem extends BooleanItem {
       ->setLabel(t('Cacheable boolean value'))
       ->setRequired(TRUE);
     return $properties;
+  }
+
+  /**
+   * Gets the value property.
+   *
+   * @returns \Drupal\youvo\Plugin\DataType\CacheableBooleanData
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
+   */
+  public function getValueProperty() {
+    /** @var \Drupal\youvo\Plugin\DataType\CacheableBooleanData $value */
+    $value = $this->get('value');
+    return $value;
   }
 
 }

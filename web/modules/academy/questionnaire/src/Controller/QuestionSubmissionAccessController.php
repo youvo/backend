@@ -44,8 +44,8 @@ class QuestionSubmissionAccessController extends ControllerBase {
 
     // Return access result.
     return AccessResult::allowedIf(
-      $course->isEnabled() &&
-      $lecture->isEnabled() &&
+      $course->isPublished() &&
+      $lecture->isPublished() &&
       $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource)
     );
   }

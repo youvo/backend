@@ -25,56 +25,56 @@ use Psr\Log\LoggerInterface;
 class ProgressManager {
 
   /**
-   * Stores progress results.
+   * The progress results cache.
    *
    * @var array
    */
-  private $progressCache;
+  protected array $progressCache;
 
   /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $currentUser;
+  protected AccountInterface $currentUser;
 
   /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The time service.
    *
    * @var \Drupal\Component\Datetime\TimeInterface
    */
-  protected $time;
+  protected TimeInterface $time;
 
   /**
    * Logger channel.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  protected $logger;
+  protected LoggerInterface $logger;
 
   /**
    * Database connection.
    *
    * @var \Drupal\Core\Database\Connection
    */
-  protected $database;
+  protected Connection $database;
 
   /**
    * The submission manager.
    *
    * @var \Drupal\questionnaire\SubmissionManager
    */
-  protected $submissionManager;
+  protected SubmissionManager $submissionManager;
 
   /**
-   * Constructs a QuestionSubmissionResource object.
+   * Constructs a ProgressManager object.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
@@ -89,7 +89,14 @@ class ProgressManager {
    * @param \Drupal\questionnaire\SubmissionManager $submission_manager
    *   The submission manager service.
    */
-  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, LoggerInterface $logger, Connection $database, SubmissionManager $submission_manager) {
+  public function __construct(
+    AccountInterface $current_user,
+    EntityTypeManagerInterface $entity_type_manager,
+    TimeInterface $time,
+    LoggerInterface $logger,
+    Connection $database,
+    SubmissionManager $submission_manager
+  ) {
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
@@ -99,7 +106,7 @@ class ProgressManager {
   }
 
   /**
-   * Returns current user ID.
+   * Returns the current user ID.
    */
   public function getCurrentUserId(): int {
     return $this->currentUser->id();
@@ -130,7 +137,7 @@ class ProgressManager {
   }
 
   /**
-   * Determines unlocked status.
+   * Determines the unlocked status.
    */
   public function isUnlocked(AcademicFormatInterface $entity, AccountInterface $account = NULL): bool {
 
@@ -196,6 +203,7 @@ class ProgressManager {
   protected function isLectureUnlocked(Lecture $lecture, ?AccountInterface $account): bool {
 
     // Get all lecture IDs in this course.
+    /** @var \Drupal\courses\Entity\Course $course */
     $course = $lecture->getParentEntity();
     $lectures = $this->getReferencedLecturesByCompleted($course, $account);
 
@@ -223,7 +231,7 @@ class ProgressManager {
   }
 
   /**
-   * Returns progress in percent for course.
+   * Returns the progress in percent for course.
    */
   public function calculateProgression(Course $course): int {
 
@@ -275,7 +283,7 @@ class ProgressManager {
       }
     }
 
-    return $progression;
+    return (int) $progression;
   }
 
   /**
@@ -332,7 +340,9 @@ class ProgressManager {
    *    The decision if last lecture.
    */
   public function isLastLecture(Lecture $lecture): bool {
-    $lectures = $this->getReferencedLecturesByCompleted($lecture->getParentEntity());
+    /** @var \Drupal\courses\Entity\Course $course */
+    $course = $lecture->getParentEntity();
+    $lectures = $this->getReferencedLecturesByCompleted($course);
     return !empty($lectures) &&
       $lectures[array_key_last($lectures)]->id == $lecture->id();
   }
@@ -351,7 +361,6 @@ class ProgressManager {
     if ($questionnaires = array_filter($lecture->getParagraphs(),
       fn($p) => $p->bundle() == 'questionnaire')) {
       /** @var \Drupal\questionnaire\Entity\Questionnaire[] $questionnaires */
-      /** @var \Drupal\questionnaire\Entity\Question[] $questions */
       foreach ($questionnaires as $questionnaire) {
         $questions = $questionnaire->getQuestions();
         foreach ($questions as $question) {
@@ -398,7 +407,6 @@ class ProgressManager {
     // Something went wrong here.
     if (count($progress_id) > 1) {
       throw new EntityMalformedException(
-        $progress_entity_type_id,
         sprintf('The "%s" entity type query has inconsistent persistent data.', $progress_entity_type_id)
       );
     }
@@ -435,7 +443,7 @@ class ProgressManager {
   }
 
   /**
-   * Get referenced lectures with completed status.
+   * Gets the referenced lectures with completed status.
    */
   public function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL): array {
 
@@ -462,7 +470,7 @@ class ProgressManager {
   }
 
   /**
-   * Get referenced lectures with completed status.
+   * Gets the courses with completed status.
    */
   public function getCoursesByCompleted(AccountInterface $account = NULL) {
 
@@ -480,7 +488,7 @@ class ProgressManager {
   }
 
   /**
-   * Get cache for previously calculated results.
+   * Gets the cache for previously calculated results.
    */
   private function getProgressCache(AcademicFormatInterface $entity, string $request): ?bool {
     if (!in_array($request, ['unlocked', 'completed'])) {
@@ -493,7 +501,7 @@ class ProgressManager {
   }
 
   /**
-   * Set cache for calculated results.
+   * Sets the cache for calculated results.
    */
   private function setProgressCache(AcademicFormatInterface $entity, string $request, bool $value) {
     if (!in_array($request, ['unlocked', 'completed'])) {

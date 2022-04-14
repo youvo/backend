@@ -4,19 +4,22 @@ namespace Drupal\paragraphs;
 
 use Drupal\child_entities\ChildEntityListBuilder;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Utility\Error;
 use Drupal\paragraphs\Entity\ParagraphType;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a list controller for the paragraph entity type.
  */
-class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterface {
+final class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterface {
 
   use ChildEntityRouteContextTrait;
 
@@ -25,40 +28,83 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    *
    * @var \Drupal\Core\Entity\EntityInterface[]
    */
-  protected $entities = [];
+  protected array $entities = [];
 
   /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
-  protected $formBuilder;
+  protected FormBuilderInterface $formBuilder;
 
   /**
    * The language manager.
    *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
-  protected $languageManager;
+  protected LanguageManagerInterface $languageManager;
 
   /**
-   * Returns the language manager service.
+   * The paragraph type storage.
    *
-   * @return \Drupal\Core\Language\LanguageManagerInterface
-   *   The language manager.
+   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected function languageManager() {
-    if (!$this->languageManager) {
-      $this->languageManager = \Drupal::languageManager();
-    }
-    return $this->languageManager;
+  protected EntityStorageInterface $paragraphTypeStorage;
+
+  /**
+   * Constructs a new LectureListBuilder object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage class.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The child entity route match.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $paragraph_type_storage
+   *   The paragraph type storage.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager service.
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
+   */
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityStorageInterface $storage,
+    RouteMatchInterface $route_match,
+    EntityStorageInterface $paragraph_type_storage,
+    FormBuilderInterface $form_builder,
+    LanguageManagerInterface $language_manager
+  ) {
+    parent::__construct($entity_type, $storage, $route_match);
+    $this->paragraphTypeStorage = $paragraph_type_storage;
+    $this->formBuilder = $form_builder;
+    $this->languageManager = $language_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(
+    ContainerInterface $container,
+    EntityTypeInterface $entity_type
+  ) {
+    return new self(
+      $entity_type,
+      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('current_route_match'),
+      $container->get('entity_type.manager')->getStorage('paragraph_type'),
+      $container->get('form_builder'),
+      $container->get('language_manager')
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function render() {
-    return $this->formBuilder()->getForm($this);
+    return $this->formBuilder->getForm($this);
   }
 
   /**
@@ -85,21 +131,9 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
   public function buildRow(EntityInterface $entity) {
     // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
-    $bundle = '';
-    try {
-      $bundle = \Drupal::entityTypeManager()
-        ->getStorage('paragraph_type')
-        ->load($entity->bundle());
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      $variables = Error::decodeException($e);
-      \Drupal::logger('academy')
-        ->error('An error occurred while loading paragraph types. %type: @message in %function (line %line of %file).', $variables);
-    }
+    $bundle = $this->paragraphTypeStorage->load($entity->bundle());
 
     if (!($bundle instanceof ParagraphType)) {
-      \Drupal::logger('academy')
-        ->warning('Paragraphs Collection: Could not fetch bundle for entity type %try.', ['%try' => $entity->bundle()]);
       return [];
     }
 
@@ -115,8 +149,8 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
     ];
     $translations = '';
     if ($entity->bundle() != 'evaluation' && $entity->bundle() != 'questionnaire') {
-      foreach ($this->languageManager()->getLanguages() as $language) {
-        if ($language->getId() == $this->languageManager()
+      foreach ($this->languageManager->getLanguages() as $language) {
+        if ($language->getId() == $this->languageManager
           ->getDefaultLanguage()->getId()) {
           continue;
         }
@@ -142,6 +176,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       '#default_value' => $entity->get('weight')->value,
       '#attributes' => ['class' => ['weight']],
     ];
+
     return $row;
   }
 
@@ -244,7 +279,7 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     foreach ($form_state->getValue('entities') as $id => $value) {
-      /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+      /** @var \Drupal\paragraphs\Entity\Paragraph|null $paragraph */
       $paragraph = $this->entities[$id];
       if (isset($paragraph) && $paragraph->get('weight')->value != $value['weight']) {
         // Save entity only when its weight was changed.
@@ -253,19 +288,6 @@ class ParagraphListBuilder extends ChildEntityListBuilder implements FormInterfa
       }
     }
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * Returns the form builder.
-   *
-   * @return \Drupal\Core\Form\FormBuilderInterface
-   *   The form builder.
-   */
-  protected function formBuilder() {
-    if (!$this->formBuilder) {
-      $this->formBuilder = \Drupal::formBuilder();
-    }
-    return $this->formBuilder;
   }
 
 }

@@ -40,7 +40,7 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
 
     // Also run the access checks for users.
     return $access_result
-      ->andIf(parent::checkAccess($entity, $operation, $account));
+      ->orIf(parent::checkAccess($entity, $operation, $account));
   }
 
   /**

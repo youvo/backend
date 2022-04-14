@@ -292,7 +292,7 @@ class PostmanVariablesResource extends ResourceBase {
         'project_open' => $project_open?->uuid(),
         'project_open_can_mediate' => $project_can_mediate?->uuid(),
         'project_ongoing' => $project_ongoing?->uuid(),
-        'project_completed' => $project_completed?->uuid(),
+        'project_completed' => $project_completed?->uuid()
       ],
     ]);
 

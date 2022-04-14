@@ -31,8 +31,11 @@ class OrganizationAccessControlHandler {
      *
      * @see \Drupal\organizations\OrganizationFieldAccess
      */
-    if ($operation == 'edit' && $entity->isOwnerOrManager($account)) {
-      return AccessResult::allowed()->cachePerUser();
+    if ($operation == 'edit') {
+      if ($entity->isOwnerOrManager($account)) {
+        return AccessResult::allowed()->cachePerUser();
+      }
+      return AccessResult::forbidden()->cachePerUser();
     }
 
     // Only managers can access prospect organizations.
@@ -41,7 +44,7 @@ class OrganizationAccessControlHandler {
       return AccessResult::forbidden()->cachePerUser();
     }
 
-    return AccessResult::neutral();
+    return AccessResult::allowed();
   }
 
   /**

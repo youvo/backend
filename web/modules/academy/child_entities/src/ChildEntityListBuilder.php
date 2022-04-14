@@ -3,6 +3,7 @@
 namespace Drupal\child_entities;
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -24,21 +25,25 @@ class ChildEntityListBuilder extends EntityListBuilder {
    *
    * @var \Drupal\Core\Entity\EntityInterface
    */
-  protected $parent;
+  protected EntityInterface $parent;
 
   /**
-   * ChildEntityListBuilder constructor.
+   * Constructs a ChildEntityListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The Child Entity Type.
+   *   The child entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The Child Entity Storage.
+   *   The child entity storage.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The Child Entity Route Match.
+   *   The child entity route match.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, RouteMatchInterface $route_match) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityStorageInterface $storage,
+    RouteMatchInterface $route_match
+  ) {
     $this->entityImplementsChildEntityInterface($entity_type);
     parent::__construct($entity_type, $storage);
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
@@ -49,7 +54,10 @@ class ChildEntityListBuilder extends EntityListBuilder {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(
+    ContainerInterface $container,
+    EntityTypeInterface $entity_type
+  ) {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),

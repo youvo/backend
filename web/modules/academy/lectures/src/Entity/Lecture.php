@@ -7,10 +7,11 @@ use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\user\UserInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the lecture entity class.
@@ -41,6 +42,8 @@ use Drupal\user\UserInterface;
  *     "id" = "id",
  *     "langcode" = "langcode",
  *     "label" = "title",
+ *     "owner" = "uid",
+ *     "published" = "status",
  *     "uuid" = "uuid",
  *     "parent" = "course",
  *     "weight" = "weight"
@@ -56,6 +59,8 @@ use Drupal\user\UserInterface;
 class Lecture extends ContentEntityBase implements ChildEntityInterface, AcademicFormatInterface {
 
   use EntityChangedTrait;
+  use EntityPublishedTrait;
+  use EntityOwnerTrait;
   use ChildEntityTrait;
 
   /**
@@ -82,11 +87,12 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   public function preSave(EntityStorageInterface $storage) {
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
+      /** @var \Drupal\courses\Entity\Course $parent */
       $parent = $this->getParentEntity();
       $children = $parent->getLectures();
       if (!empty($children)) {
         $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', $max_weight + 1);
+        $this->set('weight', intval($max_weight) + 1);
       }
     }
   }
@@ -108,14 +114,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   }
 
   /**
-   * Get title.
+   * Gets the title.
    */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
   /**
-   * Set title.
+   * Sets the title.
    */
   public function setTitle(string $title) {
     $this->set('title', $title);
@@ -123,29 +129,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   }
 
   /**
-   * Get status.
-   */
-  public function isEnabled() {
-    return (bool) $this->get('status')->value;
-  }
-
-  /**
-   * Set status.
-   */
-  public function setStatus(bool $status) {
-    $this->set('status', $status);
-    return $this;
-  }
-
-  /**
-   * Get created time.
+   * Gets the created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * Set created time.
+   * Sets the created time.
    */
   public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
@@ -153,45 +144,17 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   }
 
   /**
-   * Get owner.
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * Get owner ID.
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * Set owner ID.
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * Set owner.
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
-    return $this;
-  }
-
-  /**
-   * Get paragraphs.
+   * Gets the referenced paragraphs.
    *
    * @return \Drupal\paragraphs\Entity\Paragraph[]
-   *   Array of referenced paragraphs.
+   *   The referenced paragraphs.
    */
   public function getParagraphs() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $paragraphs_field */
     $paragraphs_field = $this->get('paragraphs');
-    return $paragraphs_field->referencedEntities();
+    /** @var \Drupal\paragraphs\Entity\Paragraph[] $paragraphs */
+    $paragraphs = $paragraphs_field->referencedEntities();
+    return $paragraphs;
   }
 
   /**

@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\user\UserInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the paragraph entity class.
@@ -41,6 +41,7 @@ use Drupal\user\UserInterface;
  *     "langcode" = "langcode",
  *     "bundle" = "bundle",
  *     "label" = "title",
+ *     "owner" = "uid",
  *     "uuid" = "uuid",
  *     "parent" = "lecture",
  *     "weight" = "weight"
@@ -59,6 +60,7 @@ use Drupal\user\UserInterface;
 class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;
+  use EntityOwnerTrait;
   use ChildEntityTrait;
 
   /**
@@ -85,11 +87,12 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   public function preSave(EntityStorageInterface $storage) {
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
+      /** @var \Drupal\lectures\Entity\Lecture $parent */
       $parent = $this->getParentEntity();
       $children = $parent->getParagraphs();
       if (!empty($children)) {
         $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', $max_weight + 1);
+        $this->set('weight', intval($max_weight) + 1);
       }
     }
 
@@ -114,14 +117,14 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * Get title.
+   * Gets the title.
    */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
   /**
-   * Set title.
+   * Sets the title.
    */
   public function setTitle(string $title) {
     $this->set('title', $title);
@@ -129,47 +132,17 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   }
 
   /**
-   * Get created time.
+   * Gets the created time.
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * Set created time.
+   * Sets the created time.
    */
   public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * Get owner.
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * Get owner ID.
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * Set owner ID.
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * Set owner.
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
     return $this;
   }
 

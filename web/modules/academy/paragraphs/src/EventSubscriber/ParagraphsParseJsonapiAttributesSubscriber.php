@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ParagraphsParseJsonapiAttributesSubscriber implements EventSubscriberInterface {
 
   /**
-   * Resolve attributes in json api parsing.
+   * Resolves attributes in json api parsing.
    *
    * Handle multi-value fields in paragraphs.
    *

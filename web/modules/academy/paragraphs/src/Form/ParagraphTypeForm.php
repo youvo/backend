@@ -79,7 +79,6 @@ class ParagraphTypeForm extends BundleEntityFormBase {
     $t_args = ['%name' => $entity_type->label()];
     if ($status == SAVED_NEW) {
       $message = $this->t('The paragraph type %name has been added.', $t_args);
-
     }
     else {
       $message = $this->t('The paragraph type %name has been updated.', $t_args);
@@ -87,6 +86,8 @@ class ParagraphTypeForm extends BundleEntityFormBase {
     $this->messenger()->addStatus($message);
 
     $form_state->setRedirectUrl($entity_type->toUrl('collection'));
+
+    return $status;
   }
 
 }

@@ -38,7 +38,7 @@ trait ChildEntityTrait {
    *   The entity type to add the publishing status field to.
    *
    * @return \Drupal\Core\Field\BaseFieldDefinition[]
-   *   An array of base field definitions.
+   *   The base field definitions.
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
@@ -61,10 +61,10 @@ trait ChildEntityTrait {
    * Checks whether entity is child entity.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The Child Entity Type.
+   *   The child entity type.
    *
    * @return bool
-   *   True if the Entity Type is a Child Entity.
+   *   Entity type is a child entity?
    */
   private function isChildEntity(EntityTypeInterface $entity_type) {
     $original_class = $entity_type->getOriginalClass();
@@ -75,15 +75,15 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Build route parameters.
+   * Builds the route parameters.
    *
    * @param array $uri_route_parameters
-   *   The Child Route Parameters.
+   *   The child entity route parameters.
    * @param \Drupal\child_entities\ChildEntityInterface $parent_entity
-   *   The Parent Entity.
+   *   The parent entity.
    *
    * @return array
-   *   The Parent Entity Route Parameters.
+   *   The parent entity route parameters.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -187,7 +187,7 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Overwrite call toUrl for non-present canonical route.
+   * Overwrites toUrl method for non-present canonical route.
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
@@ -201,7 +201,7 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Invalidate the cache of the parent.
+   * Invalidates the cache of the parent.
    */
   private function invalidateParentCache() {
     $parent = $this->getParentEntity();

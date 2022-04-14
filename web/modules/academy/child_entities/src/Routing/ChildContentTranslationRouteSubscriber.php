@@ -19,17 +19,17 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
    *
    * @var \Drupal\content_translation\ContentTranslationManagerInterface
    */
-  protected $contentTranslationManager;
+  protected ContentTranslationManagerInterface $contentTranslationManager;
 
   /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * Constructs a ContentTranslationRouteSubscriber object.
+   * Constructs a ChildContentTranslationRouteSubscriber object.
    *
    * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
    *   The content translation manager.

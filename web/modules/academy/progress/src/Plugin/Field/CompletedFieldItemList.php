@@ -25,11 +25,12 @@ class CompletedFieldItemList extends FieldItemList implements FieldItemListInter
     if (!isset($this->list[0])) {
 
       // Set completed status.
+      /** @var \Drupal\courses\Entity\Course|\Drupal\lectures\Entity\Lecture $entity */
+      $entity = $this->getEntity();
+      $is_completed = $this->progressManager()->isCompleted($entity);
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $this->progressManager()->isCompleted($this->getEntity()));
-
-      // Set cache max age zero.
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item = $this->createItem(0, $is_completed);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[0] = $item;
     }
   }

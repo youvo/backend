@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
- * Provides Progress Lecture Complete Resource.
+ * Provides progress lecture complete resource.
  *
  * @RestResource(
  *   id = "progress:course:access",
@@ -26,13 +26,13 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class CourseAccessResource extends ProgressResource {
 
   /**
-   * Responds POST requests.
+   * Responds to POST requests.
    *
    * @param \Drupal\courses\Entity\Course $entity
    *   The referenced course.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException

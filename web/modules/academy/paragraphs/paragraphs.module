@@ -64,7 +64,9 @@ function paragraphs_tokens($type, $tokens, array $data, array $options, Bubbleab
   if ($type == 'paragraph' && !empty($data['paragraph'])) {
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $data['paragraph'];
+    /** @var \Drupal\lectures\Entity\Lecture $lecture */
     $lecture = $paragraph->getParentEntity();
+    /** @var \Drupal\courses\Entity\Course $course */
     $course = $lecture->getParentEntity();
 
     foreach ($tokens as $name => $original) {

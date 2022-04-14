@@ -2,71 +2,108 @@
 
 namespace Drupal\lectures;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Utility\Error;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides a list controller for the lecture entity type.
  */
-class LectureListBuilder extends EntityListBuilder implements FormInterface {
+final class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
   /**
    * The entities being listed.
    *
    * @var array
    */
-  protected $entities = [];
+  protected array $entities = [];
 
   /**
    * The form builder.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
-  protected $formBuilder;
+  protected FormBuilderInterface $formBuilder;
 
   /**
    * The language manager.
    *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
-  protected $languageManager;
+  protected LanguageManagerInterface $languageManager;
 
   /**
-   * Returns the form builder.
+   * The course storage.
    *
-   * @return \Drupal\Core\Form\FormBuilderInterface
-   *   The form builder.
+   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected function formBuilder() {
-    if (!$this->formBuilder) {
-      $this->formBuilder = \Drupal::formBuilder();
-    }
-    return $this->formBuilder;
+  protected EntityStorageInterface $courseStorage;
+
+  /**
+   * The current request.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected Request $request;
+
+  /**
+   * Constructs a new LectureListBuilder object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage class.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager service.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
+   */
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityStorageInterface $storage,
+    EntityStorageInterface $course_storage,
+    FormBuilderInterface $form_builder,
+    LanguageManagerInterface $language_manager,
+    Request $request
+  ) {
+    parent::__construct($entity_type, $storage);
+    $this->courseStorage = $course_storage;
+    $this->formBuilder = $form_builder;
+    $this->languageManager = $language_manager;
+    $this->request = $request;
   }
 
   /**
-   * Returns the language manager service.
-   *
-   * @return \Drupal\Core\Language\LanguageManagerInterface
-   *   The language manager.
+   * {@inheritdoc}
    */
-  protected function languageManager() {
-    if (!$this->languageManager) {
-      $this->languageManager = \Drupal::languageManager();
-    }
-    return $this->languageManager;
+  public static function createInstance(
+    ContainerInterface $container,
+    EntityTypeInterface $entity_type
+  ) {
+    return new self(
+      $entity_type,
+      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('entity_type.manager')->getStorage('course'),
+      $container->get('form_builder'),
+      $container->get('language_manager'),
+      $container->get('request_stack')->getCurrentRequest()
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function render() {
-    return $this->formBuilder()->getForm($this);
+    return $this->formBuilder->getForm($this);
   }
 
   /**
@@ -82,7 +119,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     // Get query parameter.
-    $query_parameter_cr = \Drupal::request()->get('cr') ?? NULL;
+    $query_parameter_cr = $this->request->get('cr') ?? NULL;
 
     // Attach js to hide 'show row weights' buttons.
     $form['#attached']['library'][] = 'academy/hideweightbutton';
@@ -99,7 +136,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
     // Find empty courses. This is a little squishy. But just an easy workaround
     // because this is the lecture collection.
-    $empty_query = \Drupal::entityQuery('course');
+    $empty_query = $this->courseStorage->getQuery()->accessCheck(TRUE);
     if (!empty($course_ids)) {
       $empty_query->condition('id', $course_ids, 'NOT IN');
     }
@@ -112,7 +149,8 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     // Use this light-weight trick to sort by courses weight.
     $lectures_grouped_sorted = [];
     if (!empty($course_ids)) {
-      $sorted_query = \Drupal::entityQuery('course')
+      $sorted_query = $this->courseStorage->getQuery()
+        ->accessCheck(TRUE)
         ->condition('id', $course_ids, 'IN')
         ->sort('weight')
         ->execute();
@@ -131,16 +169,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     foreach ($lectures_grouped_sorted as $course_id => $lectures) {
 
       /** @var \Drupal\courses\Entity\Course $course */
-      try {
-        $course = \Drupal::entityTypeManager()
-          ->getStorage('course')
-          ->load($course_id);
-      }
-      catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-        $variables = Error::decodeException($e);
-        \Drupal::logger('academy')
-          ->error('An error occurred while loading a course. %type: @message in %function (line %line of %file).', $variables);
-      }
+      $course = $this->courseStorage->load($course_id);
 
       $tags = '';
       foreach ($course->get('tags')->getValue() as $tag) {
@@ -151,7 +180,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
         $disabled_course = ' ' . $this->t('(Disabled)');
       }
       $translations = '';
-      foreach ($this->languageManager()->getLanguages() as $language) {
+      foreach ($this->languageManager->getLanguages() as $language) {
         if (!$course->hasTranslation($language->getId())) {
           $translations .= '&nbsp;<s class="admin-item__description">' . $language->getId() . '</s>';
         }
@@ -259,11 +288,11 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
       '#markup' => $entity->getTitle(),
     ];
     $row['status'] = [
-      '#markup' => $entity->isEnabled() ? $this->t('Enabled') : $this->t('Disabled'),
+      '#markup' => $entity->isPublished() ? $this->t('Enabled') : $this->t('Disabled'),
     ];
     $translations = '';
-    foreach ($this->languageManager()->getLanguages() as $language) {
-      if ($language->getId() == $this->languageManager()->getDefaultLanguage()->getId()) {
+    foreach ($this->languageManager->getLanguages() as $language) {
+      if ($language->getId() == $this->languageManager->getDefaultLanguage()->getId()) {
         continue;
       }
       if (!$entity->hasTranslation($language->getId())) {
@@ -313,7 +342,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   public function submitOrder(array &$form, FormStateInterface $form_state) {
     $course_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
     foreach ($form_state->getValue(['course', $course_id, 'lectures']) as $id => $value) {
-      /** @var \Drupal\lectures\Entity\Lecture $lecture */
+      /** @var \Drupal\lectures\Entity\Lecture|null $lecture */
       $lecture = $this->entities[$course_id][$id];
       if (isset($lecture) && $lecture->get('weight')->value != $value['weight']) {
         // Save entity only when its weight was changed.
@@ -328,7 +357,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   }
 
   /**
-   * Submit handler that redirects user to lecture add page.
+   * Redirects user to lecture add page.
    *
    * @param array $form
    *   The current form.
@@ -341,7 +370,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   }
 
   /**
-   * Submit handler that redirects user to course edit page.
+   * Redirects user to course edit page.
    *
    * @param array $form
    *   The current form.

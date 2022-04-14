@@ -26,7 +26,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  private EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Constructs a new ChildEntityRouteContext.
@@ -74,6 +74,8 @@ class ChildEntityRouteContext implements ContextProviderInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function getAvailableContexts() {
     $contexts = [];
@@ -88,10 +90,10 @@ class ChildEntityRouteContext implements ContextProviderInterface {
   }
 
   /**
-   * Get the all the Entity Types that implement ChildEntityTrait.
+   * Gets all the entity types that implement ChildEntityTrait.
    *
    * @return array
-   *   The Entity Types that implement the ChildEntityTrait.
+   *   The entity types that implement the ChildEntityTrait.
    */
   private function getChildEntityTypes() {
     $child_entity_types = [];
