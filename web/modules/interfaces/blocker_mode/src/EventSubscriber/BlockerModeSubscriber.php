@@ -3,6 +3,7 @@
 namespace Drupal\blocker_mode\EventSubscriber;
 
 use Drupal\blocker_mode\BlockerModeInterface;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Render\BareHtmlPageRendererInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Session\AccountInterface;
@@ -25,23 +26,30 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   /**
    * The maintenance mode.
    *
-   * @var \Drupal\Core\Site\MaintenanceModeInterface
+   * @var \Drupal\blocker_mode\BlockerModeInterface
    */
-  protected $blockerMode;
+  protected BlockerModeInterface $blockerMode;
 
   /**
    * The current account.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $account;
+  protected AccountInterface $account;
 
   /**
    * The bare HTML page renderer.
    *
    * @var \Drupal\Core\Render\BareHtmlPageRendererInterface
    */
-  protected $bareHtmlPageRenderer;
+  protected BareHtmlPageRendererInterface $bareHtmlPageRenderer;
+
+  /**
+   * The page cache kill switch.
+   *
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   */
+  protected KillSwitch $pageCacheKillSwitch;
 
   /**
    * Constructs a new MaintenanceModeSubscriber.
@@ -52,11 +60,19 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    *   The current user.
    * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bare_html_page_renderer
    *   The bare HTML page renderer.
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $page_cache_kill_switch
+   *   The page cache kill switch.
    */
-  public function __construct(BlockerModeInterface $blocker_mode, AccountInterface $account, BareHtmlPageRendererInterface $bare_html_page_renderer) {
+  public function __construct(
+    BlockerModeInterface $blocker_mode,
+    AccountInterface $account,
+    BareHtmlPageRendererInterface $bare_html_page_renderer,
+    KillSwitch $page_cache_kill_switch
+  ) {
     $this->blockerMode = $blocker_mode;
     $this->account = $account;
     $this->bareHtmlPageRenderer = $bare_html_page_renderer;
+    $this->pageCacheKillSwitch = $page_cache_kill_switch;
   }
 
   /**
@@ -129,7 +145,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    */
   private function forbiddenResponse(RequestEvent $event) {
     $request = $event->getRequest();
-    \Drupal::service('page_cache_kill_switch')->trigger();
+    $this->pageCacheKillSwitch->trigger();
     if ($request->getRequestFormat() !== 'html') {
       $response = new Response('Forbidden', 403, ['Content-Type' => 'text/plain']);
       $event->setResponse($response);
