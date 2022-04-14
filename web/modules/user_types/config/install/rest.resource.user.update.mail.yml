@@ -1,5 +1,5 @@
-id: user.update.email
-plugin_id: 'user:update:email'
+id: user.update.mail
+plugin_id: 'user:update:mail'
 granularity: resource
 configuration:
   methods:
