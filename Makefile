@@ -69,10 +69,10 @@ phpstan:
 ## phpcs 		:	Analyze module with phpcs Drupal standard.
 .PHONY: phpcs
 phpcs:
-	@vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md,yml $(filter-out $@,$(MAKECMDGOALS))
+	@vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,yml $(filter-out $@,$(MAKECMDGOALS))
 
 ## phpcs 		:	Analyze module with phpcs DrupalPractice standard.
 .PHONY: phpcs-p
 phpcs-p:
-	@vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md,yml $(filter-out $@,$(MAKECMDGOALS))
+	@vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,yml $(filter-out $@,$(MAKECMDGOALS))
 
