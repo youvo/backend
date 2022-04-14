@@ -89,6 +89,8 @@ class QuestionTypeForm extends BundleEntityFormBase {
     $this->messenger()->addStatus($message);
 
     $form_state->setRedirectUrl($entity_type->toUrl('collection'));
+
+    return $status;
   }
 
 }

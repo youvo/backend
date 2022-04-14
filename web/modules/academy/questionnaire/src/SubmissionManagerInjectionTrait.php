@@ -18,7 +18,7 @@ trait SubmissionManagerInjectionTrait {
    *
    * @var \Drupal\questionnaire\SubmissionManager
    */
-  protected $submissionManager;
+  protected SubmissionManager $submissionManager;
 
   /**
    * Gets the submission manager.
@@ -27,7 +27,7 @@ trait SubmissionManagerInjectionTrait {
    *   The submission manager.
    */
   protected function submissionManager() {
-    if (!$this->submissionManager) {
+    if (!isset($this->submissionManager)) {
       $this->submissionManager = \Drupal::service('submission.manager');
     }
     return $this->submissionManager;

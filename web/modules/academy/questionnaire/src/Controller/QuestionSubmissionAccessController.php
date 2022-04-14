@@ -31,8 +31,11 @@ class QuestionSubmissionAccessController extends ControllerBase {
     // Gather properties.
     $methods = $route->getMethods();
     $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+    /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $question->getParentEntity();
+    /** @var \Drupal\lectures\Entity\Lecture $lecture */
     $lecture = $paragraph->getParentEntity();
+    /** @var \Drupal\courses\Entity\Course $course */
     $course = $lecture->getParentEntity();
 
     // Give access to editors.

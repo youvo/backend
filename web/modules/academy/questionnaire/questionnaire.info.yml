@@ -4,7 +4,7 @@ description: 'Provides a questionnaire paragraph type and a question entity.'
 core_version_requirement: '^9.3 || ^10'
 package: Academy
 dependencies:
-  - academy
-  - paragraphs
+  - academy:academy
+  - paragraphs:paragraphs
   - drupal:text
 configure: entity.question_type.collection

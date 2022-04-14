@@ -2,12 +2,16 @@
 
 namespace Drupal\questionnaire\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\MessageCommand;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
@@ -15,6 +19,7 @@ use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\paragraphs\Form\ParagraphForm;
 use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\Questionnaire;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form controller for the paragraph entity with questionnaire edit forms.
@@ -29,19 +34,40 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
    *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
-  protected $languageManager;
+  protected LanguageManagerInterface $languageManager;
 
   /**
-   * Returns the language manager service.
+   * Constructs a ContentEntityForm object.
    *
-   * @return \Drupal\Core\Language\LanguageManagerInterface
-   *   The language manager.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager service.
    */
-  protected function languageManager() {
-    if (!$this->languageManager) {
-      $this->languageManager = \Drupal::languageManager();
-    }
-    return $this->languageManager;
+  public function __construct(
+    EntityRepositoryInterface $entity_repository,
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
+    TimeInterface $time,
+    LanguageManagerInterface $language_manager
+  ) {
+    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+    $this->languageManager = $language_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity.repository'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('datetime.time'),
+      $container->get('language_manager')
+    );
   }
 
   /**
@@ -175,7 +201,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       ];
     }
 
-    // We use hidden elements here, because multivalue form element requires
+    // We use hidden elements here, because multi-value form element requires
     // the $form element to be build in order to generate more fields.
     $answers_hidden = FALSE;
     $hidden = ['class' => ['hidden']];
@@ -222,7 +248,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       '#rows' => 3,
     ];
 
-    $form['questions']['elements']['multianswers'] = [
+    $form['questions']['elements']['multi_answers'] = [
       '#title' => $this->t('Answers'),
       '#type' => 'multivalue',
       '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
@@ -276,7 +302,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
         ['body'],
         ['help'],
         ['options'],
-        ['multianswers'],
+        ['multi_answers'],
         ['explanation'],
         ['required'],
         ['elements'],
@@ -330,7 +356,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   public function save(array $form, FormStateInterface $form_state) {
 
     // Save Questionnaire as Paragraph.
-    parent::save($form, $form_state);
+    $result = parent::save($form, $form_state);
 
     if ($this->entity instanceof Questionnaire) {
       // Save the new and persistent questions with weights.
@@ -344,6 +370,8 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
         $question->save();
       }
     }
+
+    return $result;
   }
 
   /**
@@ -354,7 +382,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     unset($current_input['body']);
     unset($current_input['help']);
     unset($current_input['explanation']);
-    unset($current_input['multianswers']);
+    unset($current_input['multi_answers']);
     unset($current_input['required']);
     $form_state->setUserInput($current_input);
     $form_state->setValue('type', $form_state->getTriggeringElement()['#attributes']['data-type']);
@@ -409,7 +437,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       'required' => $form_state->getValue('required'),
     ]);
 
-    // Add values from multianswers form element.
+    // Add values from multi_answers form element.
     if ($form_state->getValue('type') == 'checkboxes' ||
       $form_state->getValue('type') == 'radios') {
       $this->populateMultiAnswerToQuestion($new_question, $form_state);
@@ -425,7 +453,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   }
 
   /**
-   * Prepopulate hidden fields for deletion.
+   * Populates hidden fields for deletion.
    */
   public function prepareDeleteQuestion(array &$form, FormStateInterface $form_state) {
 
@@ -515,8 +543,8 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       '#markup' => $question->get('body')->value,
     ];
     $translations = '';
-    foreach ($this->languageManager()->getLanguages() as $language) {
-      if ($language->getId() == $this->languageManager()->getDefaultLanguage()->getId()) {
+    foreach ($this->languageManager->getLanguages() as $language) {
+      if ($language->getId() == $this->languageManager->getDefaultLanguage()->getId()) {
         continue;
       }
       if (!$question->hasTranslation($language->getId())) {
@@ -549,8 +577,8 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       ],
     ];
     /** @var \Drupal\child_entities\ChildEntityInterface $questionnaire */
-    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $questionnaire = $this->entity;
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $lecture = $questionnaire->getParentEntity();
     $is_disabled = $buttons_disabled ? ' is-disabled' : '';
     $url = !$buttons_disabled ?

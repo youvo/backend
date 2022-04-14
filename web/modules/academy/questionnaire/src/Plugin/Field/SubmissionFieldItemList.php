@@ -18,6 +18,8 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function computeValue() {
 
@@ -25,6 +27,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
     if (empty($this->list)) {
 
       // Get question and respective submission.
+      /** @var \Drupal\questionnaire\Entity\Question $question */
       $question = $this->getEntity();
       $submission = $this->submissionManager()->getSubmission($question);
 
@@ -37,15 +40,17 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
         if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
           $values = explode(',', $input);
           foreach ($values as $value) {
+            /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
             $item = $this->createItem(0, $value);
-            $item->get('value')->mergeCacheMaxAge(0);
+            $item->getValueProperty()->mergeCacheMaxAge(0);
             $this->list[] = $item;
           }
         }
         // Append list with input for other types.
         else {
+          /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
           $item = $this->createItem(0, $input);
-          $item->get('value')->mergeCacheMaxAge(0);
+          $item->getValueProperty()->mergeCacheMaxAge(0);
           $this->list[0] = $item;
         }
       }
@@ -53,8 +58,9 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
       // If there is no submission, create empty item with attached cache info.
       // @see \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem
       else {
+        /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
         $item = $this->createItem(0, "");
-        $item->get('value')->mergeCacheMaxAge(0);
+        $item->getValueProperty()->mergeCacheMaxAge(0);
         $this->list[0] = $item;
       }
     }
