@@ -5,6 +5,6 @@ core_version_requirement: '^9.3 || ^10'
 package: Academy
 
 dependencies:
-  - academy
-  - child_entities
+  - academy:academy
+  - child_entities:child_entities
   - drupal:text
