@@ -204,7 +204,7 @@ function academy_dummy_site_install_finished() {
       $max = rand(1, 3);
       $i = 1;
       while ($i <= $max) {
-        $paragraph->get('list')->appendItem(ceil(rand(1,300)) * 100);
+        $paragraph->get('list')->appendItem(ceil(rand(1, 300)) * 100);
         $paragraph->get('description')->appendItem($random->sentences(5, TRUE));
         $i++;
       }

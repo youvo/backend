@@ -12,6 +12,8 @@ use Drupal\Core\Form\FormStateInterface;
 class AcademyTranslationHandler extends ContentTranslationHandler {
 
   /**
+   * Alters forms for translatable entities.
+   *
    * Hide content translation field. Add buttons on top of form for
    * translations. These are quick-links to the form of the respective
    * language. The form container 'translations' is defined in the
