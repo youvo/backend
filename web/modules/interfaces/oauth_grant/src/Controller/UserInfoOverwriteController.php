@@ -85,6 +85,10 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
     $user_entity->setIdentifier($identifier);
     $data = $this->serializer
       ->normalize($user_entity, 'json', [$identifier => $this->user]);
+    $data['mail'] = $data['email'];
+    unset($data['email']);
+    $data['mail_verified'] = $data['email_verified'];
+    unset($data['email_verified']);
     $data['profile'] = 'https://www.youvo.org/kreative/' . $identifier;
     if ($this->user->hasField('field_name')) {
       $data['name'] = $this->user->get('field_name')->value;
