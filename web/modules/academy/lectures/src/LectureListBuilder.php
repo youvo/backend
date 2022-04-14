@@ -60,6 +60,8 @@ final class LectureListBuilder extends EntityListBuilder implements FormInterfac
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $course_storage
+   *   The course storage class.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
