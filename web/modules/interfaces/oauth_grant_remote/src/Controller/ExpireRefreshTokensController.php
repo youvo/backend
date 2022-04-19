@@ -2,7 +2,6 @@
 
 namespace Drupal\oauth_grant_remote\Controller;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -33,36 +32,27 @@ class ExpireRefreshTokensController extends ControllerBase {
    *
    * @var \Psr\Log\LoggerInterface
    */
-  protected $logger;
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
+  protected LoggerInterface $logger;
 
   /**
    * The token storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $tokenStorage;
+  protected EntityStorageInterface $tokenStorage;
 
   /**
    * The session manager.
    *
    * @var \Drupal\Core\Session\SessionManager
    */
-  private $sessionManager;
+  private SessionManager $sessionManager;
 
   /**
    * ExpireRefreshTokensController constructor.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\Core\Entity\EntityStorageInterface $token_storage
    *   The token storage.
    * @param \Drupal\Core\Session\SessionManager $session_manager
@@ -70,12 +60,10 @@ class ExpireRefreshTokensController extends ControllerBase {
    */
   public function __construct(
     LoggerInterface $logger,
-    ConfigFactoryInterface $config_factory,
     EntityStorageInterface $token_storage,
     SessionManager $session_manager,
   ) {
     $this->logger = $logger;
-    $this->configFactory = $config_factory;
     $this->tokenStorage = $token_storage;
     $this->sessionManager = $session_manager;
   }
@@ -86,7 +74,6 @@ class ExpireRefreshTokensController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('logger.factory')->get('rest'),
-      $container->get('config.factory'),
       $container->get('entity_type.manager')->getStorage('oauth2_token'),
       $container->get('session_manager')
     );
@@ -98,15 +85,14 @@ class ExpireRefreshTokensController extends ControllerBase {
   public function response(ServerRequestInterface $request) {
 
     // Check configuration.
-    if (empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_key_path'))) {
+    if (empty($this->config('oauth_grant_remote.settings')->get('jwt_key_path'))) {
       $this->logger
         ->error('Remote user logout resource requires key configuration.');
       throw new HttpException(500, 'Internal Server Error');
     }
 
     // Prepare a JWT for the Remote Logout.
-    $path = $this->configFactory
-      ->get('oauth_grant_remote.settings')
+    $path = $this->config('oauth_grant_remote.settings')
       ->get('jwt_key_path');
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
@@ -126,6 +112,7 @@ class ExpireRefreshTokensController extends ControllerBase {
 
     try {
       // Parse JWT.
+      /** @var \Lcobucci\JWT\Token\Plain $remote_jwt */
       $remote_jwt = $config->parser()->parse($jwt);
     }
     catch (CannotDecodeContent | InvalidTokenStructure | UnsupportedHeaderFound $e) {
