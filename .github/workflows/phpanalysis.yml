@@ -22,7 +22,7 @@ jobs:
         run: |
           composer require --dev 'phpstan/phpstan:^1.5'
           composer require --dev 'phpstan/extension-installer:^1.1'
-          composer require --dev 'phpstan-deprecation-rules:^1.0'
+          composer require --dev 'phpstan/phpstan-deprecation-rules:^1.0'
           composer require --dev 'mglaman/phpstan-drupal:^1.1'
 
       - name: Static code analysis
