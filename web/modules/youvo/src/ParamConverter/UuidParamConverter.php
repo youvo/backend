@@ -36,7 +36,7 @@ class UuidParamConverter extends EntityConverter implements ParamConverterInterf
           ->execute();
         $value = reset($query);
       }
-      catch (InvalidPluginDefinitionException|PluginNotFoundException) {
+      catch (InvalidPluginDefinitionException | PluginNotFoundException) {
         // Do nothing.
       }
     }

@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * Class to dispatch events to alter JsonapiParse.
  *
- * @see jsonapi_include
+ * See jsonapi_include module.
  */
 class AlterJsonapiParse extends JsonapiParse {
 
@@ -61,7 +61,6 @@ class AlterJsonapiParse extends JsonapiParse {
    *
    * @param array|mixed $links
    *   The data for resolve.
-   *
    * @param string $key
    *   Relationship key.
    *

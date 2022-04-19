@@ -5,7 +5,6 @@ namespace Drupal\youvo\Utility;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Session\AccountProxyInterface;
 
 /**
  * Provides field access methods for the project bundle.
@@ -14,7 +13,8 @@ abstract class FieldAccess {
 
   /**
    * Static call for the hook to check field access.
-   * @see hook_entity_field_access()
+   *
+   * See hook_entity_field_access().
    */
   abstract public static function checkFieldAccess(
     ContentEntityInterface $entity,

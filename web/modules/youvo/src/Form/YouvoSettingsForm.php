@@ -5,6 +5,9 @@ namespace Drupal\youvo\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Provides settings form for youvo base module.
+ */
 class YouvoSettingsForm extends ConfigFormBase {
 
   /**
@@ -62,4 +65,5 @@ class YouvoSettingsForm extends ConfigFormBase {
 
     return parent::buildForm($form, $form_state);
   }
+
 }

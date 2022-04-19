@@ -9,18 +9,36 @@ use Drupal\Component\EventDispatcher\Event;
  */
 class ParseJsonapiRelationshipsEvent extends Event {
 
-  const EVENT_NAME = 'parse_jsonapi_relationships_event';
-
+  /**
+   * The resource.
+   *
+   * @var array
+   */
   protected array $resource;
+
+  /**
+   * The parent key of the resource.
+   *
+   * @var string
+   */
   protected string $parentKey;
+
+  /**
+   * The keys of the resource.
+   *
+   * @var array
+   */
   protected array $keys;
 
   /**
-   * Constructs the object.
+   * Constructs a ParseJsonapiRelationshipsEvent object.
    *
    * @param array $resource
+   *   The resource.
    * @param array $keys
+   *   The keys of the resource.
    * @param string $parent_key
+   *   The parent key of the resource.
    */
   public function __construct(array $resource, array $keys, string $parent_key) {
     $this->resource = $resource;
@@ -28,19 +46,31 @@ class ParseJsonapiRelationshipsEvent extends Event {
     $this->parentKey = $parent_key;
   }
 
+  /**
+   * Gets the resource.
+   */
   public function getResource() {
     return $this->resource;
   }
 
+  /**
+   * Sets the resource.
+   */
   public function setResource(array $resource) {
     $this->resource = $resource;
     return $this;
   }
 
+  /**
+   * Gets the keys.
+   */
   public function getKeys() {
     return $this->keys;
   }
 
+  /**
+   * Gets the parent key.
+   */
   public function getParentKey() {
     return $this->parentKey;
   }
