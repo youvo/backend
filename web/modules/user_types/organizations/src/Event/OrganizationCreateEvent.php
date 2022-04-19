@@ -51,4 +51,5 @@ class OrganizationCreateEvent extends Event {
   public function getRequest() {
     return $this->request;
   }
+
 }

@@ -28,7 +28,7 @@ class OrganizationManageResource extends ResourceBase {
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $currentUser;
+  protected AccountInterface $currentUser;
 
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.

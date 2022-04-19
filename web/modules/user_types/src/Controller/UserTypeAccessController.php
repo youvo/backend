@@ -46,4 +46,5 @@ class UserTypeAccessController extends ControllerBase {
 
     return AccessResult::allowed();
   }
+
 }

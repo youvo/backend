@@ -7,6 +7,9 @@ use Drupal\organizations\ManagerInterface;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\user_types\Utility\Profile;
 
+/**
+ * Provides methods for the organization entity.
+ */
 class Organization extends TypedUser implements ManagerInterface {
 
   const ROLE_PROSPECT = 'prospect';
@@ -26,7 +29,9 @@ class Organization extends TypedUser implements ManagerInterface {
   public function getManager() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
     $manager_field = $this->get('field_manager');
-    return $manager_field->referencedEntities()[0] ?? NULL;
+    /** @var \Drupal\user\UserInterface|null $manager */
+    $manager = $manager_field->referencedEntities()[0];
+    return !empty($manager) ? $manager : NULL;
   }
 
   /**
@@ -64,14 +69,23 @@ class Organization extends TypedUser implements ManagerInterface {
       $this->isManager($account);
   }
 
+  /**
+   * Determines if this organization has the role archival.
+   */
   public function hasRoleArchival() {
     return in_array(self::ROLE_ARCHIVAL, $this->getRoles());
   }
 
+  /**
+   * Determines if this organization has the role prospect.
+   */
   public function hasRoleProspect() {
     return in_array(self::ROLE_PROSPECT, $this->getRoles());
   }
 
+  /**
+   * Determines if this organization has the role organization.
+   */
   public function hasRoleOrganization() {
     return in_array(self::ROLE_ORGANIZATION, $this->getRoles());
   }

@@ -6,6 +6,6 @@ type: module
 core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - youvo
-  - user_types
-  - projects
+  - youvo:youvo
+  - user_types:user_types
+  - projects:projects
