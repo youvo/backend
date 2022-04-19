@@ -11,11 +11,9 @@ jobs:
 
       - name: Install PHP CodeSniffer
         run: |
-          cd integration
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev drupal/coder
 
       - name: Check coding standards
         run: |
-          cd integration
           vendor/bin/phpcs --report=summary
