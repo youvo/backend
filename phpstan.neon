@@ -1,0 +1,46 @@
+parameters:
+  level: 5
+  reportUnmatchedIgnoredErrors: false
+  excludePaths:
+    - web/modules/contrib/*
+  ignoreErrors:
+    # new static() is a best practice in Drupal, so we cannot fix that.
+    - "#^Unsafe usage of new static#"
+  drupal:
+    entityMapping:
+      project:
+        class: Drupal\projects\Entity\Project
+        storage: Drupal\node\NodeStorage
+      taxonomy_term:
+        class: Drupal\taxonomy\Entity\Term
+        storage: Drupal\taxonomy\TermStorage
+      user:
+        class: Drupal\user_bundle\Entity\TypedUser
+        storage: Drupal\user_bundle\TypedUserStorage
+      course:
+        class: Drupal\courses\Entity\Course
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      lecture:
+        class: Drupal\lectures\Entity\Lecture
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      paragraph:
+        class: Drupal\paragraphs\Entity\Paragraph
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      paragraph_type:
+        class: Drupal\paragraphs\Entity\ParagraphType
+        storage: Drupal\Core\Config\Entity\ConfigEntityStorage
+      lecture_progress:
+        class: Drupal\progress\Entity\LectureProgress
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      course_progress:
+        class: Drupal\progress\Entity\CourseProgress
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      question:
+        class: Drupal\questionnaire\Entity\Question
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      question_submission:
+        class: Drupal\questionnaire\Entity\QuestionSubmission
+        storage: Drupal\Core\Entity\Sql\SqlContentEntityStorage
+      question_type:
+        class: Drupal\questionnaire\Entity\QuestionType
+        storage: Drupal\Core\Config\Entity\ConfigEntityStorage
