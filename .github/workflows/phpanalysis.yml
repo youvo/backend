@@ -3,7 +3,7 @@ name: PHP Code Analysis
 on: pull_request
 
 jobs:
-  phpcs:
+  phpanalysis:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
