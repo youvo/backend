@@ -1,0 +1,35 @@
+name: PHP Code Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install PHP CodeSniffer
+        run: |
+          composer require --dev dealerdirect/phpcodesniffer-composer-installer
+          composer require --dev drupal/coder
+
+      - name: Check coding standards
+        run: |
+          vendor/bin/phpcs --report=summary
+
+      - name: Install PHPStan
+        run: |
+          composer require --dev \
+          phpstan/phpstan \
+          phpstan/extension-installer \
+          phpstan-deprecation-rules \
+          mglaman/phpstan-drupal
+
+      - name: Static code analysis
+        run: |
+          vendor/bin/phpstan analyze web/modules
