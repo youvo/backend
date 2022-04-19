@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install PHP CodeSniffer
+      - name: Install PHP_CodeSniffer and PHPStan
         run: |
           composer require --dev dealerdirect/phpcodesniffer-composer-installer
           composer require --dev drupal/coder
