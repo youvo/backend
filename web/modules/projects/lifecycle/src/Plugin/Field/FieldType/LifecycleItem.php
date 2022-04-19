@@ -23,7 +23,7 @@ use Drupal\lifecycle\Permissions;
  *   label = @Translation("Workflows"),
  *   description = @Translation("Allows you to store a workflow state."),
  *   constraints = {"LifecycleConstraint" = {}},
- *   default_formatter = "list_default",
+ *   default_formatter = "lifecycle_state_list",
  *   default_widget = "options_select"
  * )
  *
@@ -36,7 +36,7 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties['value'] = DataDefinition::create('string')
-      ->setLabel(t('State'))
+      ->setLabel('State')
       ->setRequired(TRUE);
     return $properties;
   }

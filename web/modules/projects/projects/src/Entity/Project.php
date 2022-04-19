@@ -17,13 +17,12 @@ class Project extends Node implements ProjectInterface {
   /**
    * The workflow manager for this project.
    *
-   * @var \Drupal\projects\ProjectWorkflowManager $workflow
+   * @var \Drupal\projects\ProjectWorkflowManager
    */
   private ProjectWorkflowManager $workflowManager;
 
   /**
-   * Call the workflow manager holding and manipulating the state of the
-   * project.
+   * Calls project workflow manager which holds/manipulates the state.
    */
   public function workflowManager() {
     if (!isset($this->workflowManager)) {
@@ -38,8 +37,9 @@ class Project extends Node implements ProjectInterface {
   public function getApplicants() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
     $applicants_field = $this->get('field_applicants');
+    /** @var \Drupal\user\UserInterface $applicant */
     foreach ($applicants_field->referencedEntities() as $applicant) {
-      $applicants[$applicant->id()] = $applicant;
+      $applicants[intval($applicant->id())] = $applicant;
     }
     return $applicants ?? [];
   }
@@ -86,9 +86,10 @@ class Project extends Node implements ProjectInterface {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
     $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
+    /** @var \Drupal\user\UserInterface $participant */
     foreach ($participants_field->referencedEntities() as $delta => $participant) {
-        $participant->task = $tasks[$delta]['value'];
-        $participants[$participant->id()] = $participant;
+      $participant->task = $tasks[$delta]['value'];
+      $participants[intval($participant->id())] = $participant;
     }
     return $participants ?? [];
   }

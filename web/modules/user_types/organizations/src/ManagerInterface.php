@@ -20,7 +20,7 @@ interface ManagerInterface {
   /**
    * Gets the manager.
    *
-   * @return \Drupal\Core\Entity\EntityInterface|null
+   * @return \Drupal\user\UserInterface|null
    *   The manager.
    */
   public function getManager();

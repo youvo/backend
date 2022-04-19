@@ -48,13 +48,13 @@ class ProjectFieldAccess extends FieldAccess {
     'field_participants',
     'field_participants_tasks',
     'field_result_files',
-    'field_result_text'
+    'field_result_text',
   ];
 
   const USER_STATUS_FIELDS = [
     'user_is_applicant',
     'user_is_participant',
-    'user_is_manager'
+    'user_is_manager',
   ];
 
   const APPLICANTS_FIELD = 'field_applicants';

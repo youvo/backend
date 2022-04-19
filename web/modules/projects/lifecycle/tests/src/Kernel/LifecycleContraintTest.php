@@ -12,8 +12,8 @@ use Drupal\node\Entity\Node;
 class LifecycleContraintTest extends WorkflowsTestBase {
 
   /**
-   * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleContraint
-   * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleContraintValidator
+   * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraint
+   * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraintValidator
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testValidTransitionsNoViolations() {

@@ -32,7 +32,7 @@ class ProjectApplyResource extends ResourceBase {
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $currentUser;
+  protected AccountInterface $currentUser;
 
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
@@ -118,7 +118,8 @@ class ProjectApplyResource extends ResourceBase {
       $project->appendApplicant($this->currentUser);
       try {
         $project->save();
-      } catch (EntityStorageException $e) {
+      }
+      catch (EntityStorageException $e) {
         $variables = Error::decodeException($e);
         $this->logger->error('%type: @message in %function (line %line of %file). Unable to save project.', $variables);
         throw new UnprocessableEntityHttpException('Could not save project.');

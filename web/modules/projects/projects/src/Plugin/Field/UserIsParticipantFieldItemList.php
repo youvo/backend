@@ -32,8 +32,9 @@ class UserIsParticipantFieldItemList extends FieldItemList implements FieldItemL
       $account = \Drupal::currentUser();
 
       // Set participant status.
+      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
       $item = $this->createItem(0, $project->isParticipant($account));
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }
   }
