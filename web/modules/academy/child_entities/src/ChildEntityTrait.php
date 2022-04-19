@@ -111,7 +111,9 @@ trait ChildEntityTrait {
     ];
 
     if ($this->isParentAnotherChildEntity()) {
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $this->getParentEntity());
+      /** @var \Drupal\child_entities\ChildEntityInterface $parent */
+      $parent = $this->getParentEntity();
+      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $parent);
     }
 
     return $uri_route_parameters;
