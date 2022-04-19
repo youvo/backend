@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Plugin\Field;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
@@ -17,7 +18,7 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Retrieves the entity type manager.
@@ -48,6 +49,7 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
     // Query projects referencing user.
     $query = $this->entityTypeManager()
       ->getStorage('node')->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', 'project')
       ->condition($field, $account->id());
 

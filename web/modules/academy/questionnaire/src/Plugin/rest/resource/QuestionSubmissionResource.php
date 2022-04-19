@@ -33,21 +33,21 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-class QuestionSubmissionResource extends ResourceBase {
+final class QuestionSubmissionResource extends ResourceBase {
 
   /**
    * The serialization by Json service.
    *
    * @var \Drupal\Component\Serialization\Json
    */
-  protected $serializationJson;
+  protected Json $serializationJson;
 
   /**
-   * The serialization by Json service.
+   * The submission manager service.
    *
-   * @var \Drupal\Component\Serialization\Json
+   * @var \Drupal\questionnaire\SubmissionManager
    */
-  protected $submissionManager;
+  protected SubmissionManager $submissionManager;
 
   /**
    * Constructs a QuestionSubmissionResource object.
@@ -67,7 +67,15 @@ class QuestionSubmissionResource extends ResourceBase {
    * @param \Drupal\questionnaire\SubmissionManager $submission_manager
    *   The submission manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, Json $serialization_json, SubmissionManager $submission_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    Json $serialization_json,
+    SubmissionManager $submission_manager
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->submissionManager = $submission_manager;
@@ -76,8 +84,13 @@ class QuestionSubmissionResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
+    return new self(
       $configuration,
       $plugin_id,
       $plugin_definition,
@@ -89,13 +102,13 @@ class QuestionSubmissionResource extends ResourceBase {
   }
 
   /**
-   * Responds GET requests.
+   * Responds to GET requests.
    *
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
    *
    * @return \Drupal\rest\ModifiedResourceResponse|ResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
@@ -134,14 +147,14 @@ class QuestionSubmissionResource extends ResourceBase {
       ],
     ]);
 
-    // Add cacheable dependency to refresh response when submission is udpated.
+    // Add cacheable dependency to refresh response when submission is updated.
     $response->addCacheableDependency($submission);
 
     return $response;
   }
 
   /**
-   * Responds POST requests.
+   * Responds to POST requests.
    *
    * @param \Drupal\questionnaire\Entity\Question $question
    *   The referenced question.
@@ -149,7 +162,7 @@ class QuestionSubmissionResource extends ResourceBase {
    *   Contains request data.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
@@ -199,6 +212,7 @@ class QuestionSubmissionResource extends ResourceBase {
         'radios' => in_array($v, array_keys($question->get('options')->getValue())),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
         'task' => empty($v) || intval($v[0]) == 0,
+        default => FALSE,
       };
       if (!$valid_value) {
         throw new BadRequestHttpException('Invalid submission value.');

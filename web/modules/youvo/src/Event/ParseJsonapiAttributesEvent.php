@@ -9,23 +9,33 @@ use Drupal\Component\EventDispatcher\Event;
  */
 class ParseJsonapiAttributesEvent extends Event {
 
-  const EVENT_NAME = 'parse_jsonapi_attributes_event';
-
+  /**
+   * The item.
+   *
+   * @var array
+   */
   protected array $item;
 
   /**
-   * Constructs the object.
+   * Constructs a ParseJsonapiAttributesEvent object.
    *
    * @param array $item
+   *   The item.
    */
   public function __construct(array $item) {
     $this->item = $item;
   }
 
+  /**
+   * Gets the item.
+   */
   public function getItem() {
     return $this->item;
   }
 
+  /**
+   * Sets the item.
+   */
   public function setItem(array $item) {
     $this->item = $item;
     return $this;

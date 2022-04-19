@@ -84,11 +84,12 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   public function preSave(EntityStorageInterface $storage) {
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
+      /** @var \Drupal\questionnaire\Entity\Questionnaire $parent */
       $parent = $this->getParentEntity();
       $children = $parent->getQuestions();
       if (!empty($children)) {
         $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', $max_weight + 1);
+        $this->set('weight', intval($max_weight) + 1);
       }
     }
   }

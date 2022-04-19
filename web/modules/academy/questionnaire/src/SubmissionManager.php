@@ -24,21 +24,21 @@ class SubmissionManager {
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
-  protected $currentUser;
+  protected AccountInterface $currentUser;
 
   /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Logger channel.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  protected $logger;
+  protected LoggerInterface $logger;
 
   /**
    * Constructs a SubmissionManager object.
@@ -74,7 +74,8 @@ class SubmissionManager {
     // Get referenced submission.
     $query = $this->entityTypeManager
       ->getStorage('question_submission')
-      ->getQuery();
+      ->getQuery()
+      ->accessCheck(TRUE);
     $submission_id = $query->condition('question', $question->id())
       ->condition('uid', $this->currentUser->id())
       ->execute();

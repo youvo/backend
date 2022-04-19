@@ -20,7 +20,9 @@ class Questionnaire extends Paragraph {
   public function getQuestions() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $questions_field */
     $questions_field = $this->get('questions');
-    return $questions_field->referencedEntities();
+    /** @var \Drupal\questionnaire\Entity\Question[] $questions */
+    $questions = $questions_field->referencedEntities();
+    return $questions;
   }
 
   /**
@@ -33,6 +35,7 @@ class Questionnaire extends Paragraph {
 
     // If questionnaire is updated all evaluations in this course need updating.
     // Invalidate cache to recalculate referenced questions in evaluations.
+    /** @var \Drupal\courses\Entity\Course $course */
     $course = $this->getOriginEntity();
     $lectures = $course->getLectures();
     $evaluations = [];

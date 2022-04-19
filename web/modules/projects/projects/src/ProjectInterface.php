@@ -11,6 +11,14 @@ use Drupal\node\NodeInterface;
 interface ProjectInterface extends NodeInterface {
 
   /**
+   * Calls project workflow manager which holds/manipulates the state.
+   *
+   * @return \Drupal\projects\ProjectWorkflowManager
+   *   The project workflow manager.
+   */
+  public function workflowManager();
+
+  /**
    * Checks whether the user is an applicant.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $applicant
@@ -40,7 +48,7 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Sets the applicants to the project.
    *
-   * @param \Drupal\Core\Session\AccountInterface[]|int[]
+   * @param \Drupal\Core\Session\AccountInterface[]|int[] $applicants
    *   The applicants.
    *
    * @return $this
@@ -51,7 +59,7 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Appends an applicant to the project.
    *
-   * @param \Drupal\Core\Session\AccountInterface|int
+   * @param \Drupal\Core\Session\AccountInterface|int $applicant
    *   The applicant or the uid.
    *
    * @return $this
@@ -137,7 +145,7 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Gets the manager.
    *
-   * @return \Drupal\user\UserInterface
+   * @return \Drupal\user\UserInterface|null
    *   The manager.
    */
   public function getManager();

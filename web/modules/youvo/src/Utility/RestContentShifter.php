@@ -2,14 +2,13 @@
 
 namespace Drupal\youvo\Utility;
 
+/**
+ * Helper to shift arrays from REST requests.
+ */
 class RestContentShifter {
 
   /**
-   * Pop attributes from request content by type.
-   *
-   * @param array $content
-   * @param string $type
-   * @return array
+   * Pops attributes from request content by type.
    */
   public static function shiftAttributesByType(array $content, string $type) {
     if (empty($content['data'])) {

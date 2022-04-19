@@ -5,6 +5,6 @@ core_version_requirement: '^9.3 || ^10'
 package: 'Academy'
 
 dependencies:
-  - youvo
-  - jsonapi_include
-  - content_translation
+  - youvo:youvo
+  - jsonapi_include:jsonapi_include
+  - drupal:content_translation

@@ -6,12 +6,11 @@ type: module
 core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - youvo
-  - projects
-  - lifecycle
-  - academy
-  - courses
-  - lectures
-  - paragraphs
-  - questionnaire
-
+  - youvo:youvo
+  - projects:projects
+  - lifecycle:lifecycle
+  - academy:academy
+  - courses:courses
+  - lectures:lectures
+  - paragraphs:paragraphs
+  - questionnaire:questionnaire

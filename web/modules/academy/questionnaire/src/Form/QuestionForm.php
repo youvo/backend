@@ -62,7 +62,7 @@ class QuestionForm extends ContentEntityForm {
       }
 
       // Attach answers multi value form element.
-      $form['multianswers'] = [
+      $form['multi_answers'] = [
         '#title' => $this->t('Answers'),
         '#type' => 'multivalue',
         '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
@@ -95,18 +95,18 @@ class QuestionForm extends ContentEntityForm {
 
     // Describe relevant entities.
     /** @var \Drupal\questionnaire\Entity\Question $question */
-    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $question = $this->getEntity();
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $paragraph = $question->getParentEntity();
 
-    // Add values from multianswers form element.
+    // Add values from multi_answers form element.
     if ($form_state->getValue('type') == 'checkboxes' ||
       $form_state->getValue('type') == 'radios') {
       $this->populateMultiAnswerToQuestion($question, $form_state);
     }
 
     // Save entity.
-    parent::save($form, $form_state);
+    $result = parent::save($form, $form_state);
 
     // Save questionnaire.
     $paragraph->save();
@@ -122,14 +122,17 @@ class QuestionForm extends ContentEntityForm {
       'course' => $lecture->getParentEntity()->id(),
       'paragraph' => $paragraph->id(),
     ]);
+
+    return $result;
   }
 
   /**
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
+    $entity = parent::validateForm($form, $form_state);
     $this->validateQuestion($form, $form_state);
+    return $entity;
   }
 
   /**
@@ -137,15 +140,15 @@ class QuestionForm extends ContentEntityForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
 
-    // Get entitys actions.
+    // Get entities actions.
     $actions = parent::actions($form, $form_state);
 
     // Add an abort button.
     /** @var \Drupal\child_entities\ChildEntityInterface $question */
-    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
-    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $question = $this->getEntity();
+    /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $paragraph = $question->getParentEntity();
+    /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $lecture = $paragraph->getParentEntity();
     $url = Url::fromRoute('entity.paragraph.edit_form', [
       'lecture' => $lecture->id(),

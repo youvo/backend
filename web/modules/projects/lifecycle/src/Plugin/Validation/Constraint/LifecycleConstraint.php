@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraint;
  *   label = @Translation("LifecyleConstraint provider constraint", context = "Validation"),
  * )
  */
-class LifecycleContraint extends Constraint {
+class LifecycleConstraint extends Constraint {
 
   /**
    * Message displayed during an invalid transition.

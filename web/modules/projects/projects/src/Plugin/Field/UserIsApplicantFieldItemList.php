@@ -32,8 +32,9 @@ class UserIsApplicantFieldItemList extends FieldItemList implements FieldItemLis
       $account = \Drupal::currentUser();
 
       // Set applicant status.
+      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
       $item = $this->createItem(0, $project->isApplicant($account));
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }
   }

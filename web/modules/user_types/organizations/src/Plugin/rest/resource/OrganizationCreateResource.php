@@ -57,6 +57,13 @@ class OrganizationCreateResource extends ResourceBase {
   protected EmailValidatorInterface $emailValidator;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected EventDispatcherInterface $eventDispatcher;
+
+  /**
    * Constructs a OrganizationCreateResource object.
    *
    * @param array $configuration

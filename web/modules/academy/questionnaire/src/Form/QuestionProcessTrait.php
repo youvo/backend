@@ -34,7 +34,7 @@ trait QuestionProcessTrait {
       $required_fields[] = $this->t('Question');
     }
     if ($question_type === 'radios' || $question_type === 'checkboxes') {
-      $answers = $form_state->getValue('multianswers');
+      $answers = $form_state->getValue('multi_answers');
       $option_set = 0;
       foreach ($answers as $answer) {
         if (!empty($answer['option'])) {
@@ -58,7 +58,7 @@ trait QuestionProcessTrait {
 
     // Check if correct options are satisfying.
     if ($question_type === 'radios') {
-      $answers = $form_state->getValue('multianswers');
+      $answers = $form_state->getValue('multi_answers');
       $correct_set = 0;
       foreach ($answers as $answer) {
         if ($answer['correct']) {
@@ -76,7 +76,7 @@ trait QuestionProcessTrait {
    * Adds answers to question from form_state.
    */
   public function populateMultiAnswerToQuestion(Question &$question, FormStateInterface $form_state) {
-    $answers = $form_state->getValue('multianswers');
+    $answers = $form_state->getValue('multi_answers');
     $correct_set = count(array_filter($answers, fn($a) => $a['correct']));
     $question->set('options', []);
     $question->set('answers', []);

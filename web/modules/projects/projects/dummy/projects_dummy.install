@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\file\Entity\File;
 use Drupal\projects\Entity\Project;
 use Drupal\Core\Utility\Error;
-use Drupal\projects\ProjectInterface;
 use Drupal\user\Entity\User;
 use Faker\Factory;
 
@@ -29,10 +28,12 @@ function projects_dummy_site_install_finished() {
 
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
     ->condition('roles', 'creative')
     ->condition('uid', 1, '!=')
     ->execute();
   $organization_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
     ->condition('type', 'organization')
     ->condition('roles', 'organization')
     ->execute();
@@ -79,8 +80,7 @@ function projects_dummy_site_install_finished() {
     $created += rand(min(86400, $max_created_increment), $max_created_increment);
 
     // Get random state.
-    shuffle($lifecycle_states);
-    $state = $lifecycle_states[0];
+    $state = $faker->randomElement($lifecycle_states);
 
     // Get organization with contact and manager.
     $oid = youvo_dummy_get_random_organization($organization_ids);
@@ -131,12 +131,12 @@ function projects_dummy_site_install_finished() {
     ]);
 
     // Set applicants for open projects.
-    if ($state === 'open') {
+    if ($state == 'open') {
       shuffle($creative_ids);
       $applicants = array_slice($creative_ids, 0, rand(0, count($creative_ids)));
       $applicants = array_diff($applicants, [$manager]);
       if (!empty($applicants)) {
-        $project->setApplicants($applicants);
+        $project->setApplicants(array_map('intval', $applicants));
       }
       if ($manager) {
         $project->appendParticipant($manager, 'Manager');
@@ -144,21 +144,21 @@ function projects_dummy_site_install_finished() {
     }
 
     // Set applicants and participants for ongoing or completed projects.
-    if ($state === 'ongoing' || $state === 'completed') {
+    if ($state == 'ongoing' || $state == 'completed') {
       shuffle($creative_ids);
       $applicants = array_slice($creative_ids, 0, rand(1, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
-      $project->setApplicants($applicants);
+      $project->setApplicants(array_map('intval', $applicants));
       $participants = array_slice($applicants, 0, rand(1, count($applicants)));
       $tasks = array_fill(0, count($participants), 'Creative');
-      $project->setParticipants($participants, $tasks);
+      $project->setParticipants(array_map('intval', $participants), $tasks);
       if ($manager) {
         $project->appendParticipant($manager, 'Manager');
       }
     }
 
     // Set result text.
-    if ($state === 'completed') {
+    if ($state == 'completed') {
       $project->get('field_result_text')->value = $faker->text(300);
       $project->get('field_result_files')->appendItem([
         'target_id' => $image_file->id(),

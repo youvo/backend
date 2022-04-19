@@ -7,7 +7,7 @@ type: module
 core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - youvo
-  - consumers
-  - simple_oauth
-  - rest
+  - youvo:youvo
+  - consumers:consumers
+  - simple_oauth:simple_oauth
+  - drupal:rest

@@ -7,6 +7,6 @@ type: module
 core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - youvo
-  - creatives
-  - organizations
+  - youvo:youvo
+  - creatives:creatives
+  - organizations:organizations

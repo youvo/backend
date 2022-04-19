@@ -88,4 +88,3 @@ type_settings:
       to: pending
       weight: 1
   initial_state: draft
-

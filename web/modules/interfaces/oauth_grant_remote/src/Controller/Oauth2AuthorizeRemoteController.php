@@ -45,35 +45,28 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *
    * @var \GuzzleHttp\Client
    */
-  private $httpClient;
-
-  /**
-   * Current request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  private $request;
+  private Client $httpClient;
 
   /**
    * The time service.
    *
    * @var \Drupal\Component\Datetime\TimeInterface
    */
-  private $time;
+  private TimeInterface $time;
 
   /**
    * Database connection.
    *
    * @var \Drupal\Core\Database\Connection
    */
-  private $database;
+  private Connection $database;
 
   /**
    * The session manager.
    *
    * @var \Drupal\Core\Session\SessionManager
    */
-  private $sessionManager;
+  private SessionManager $sessionManager;
 
   /**
    * The session.
@@ -87,7 +80,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
-  protected $account;
+  protected AccountProxyInterface $account;
 
   /**
    * Extend the Oauth2AuthorizeController construct.
@@ -102,8 +95,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *   The known client repository service.
    * @param \GuzzleHttp\Client $http_client
    *   Guzzle http client service.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The current request.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
@@ -123,7 +114,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     ConfigFactoryInterface $config_factory,
     KnownClientsRepositoryInterface $known_clients_repository,
     Client $http_client,
-    Request $request,
     TimeInterface $time,
     LoggerChannelInterface $logger,
     Connection $database,
@@ -133,7 +123,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
   ) {
     parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $logger);
     $this->httpClient = $http_client;
-    $this->request = $request;
     $this->time = $time;
     $this->database = $database;
     $this->sessionManager = $session_manager;
@@ -151,7 +140,6 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       $container->get('config.factory'),
       $container->get('simple_oauth.known_clients'),
       $container->get('http_client'),
-      $container->get('request_stack')->getCurrentRequest(),
       $container->get('datetime.time'),
       $container->get('logger.factory')->get('youvo'),
       $container->get('database'),
@@ -177,15 +165,15 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // Experimental development shortcut. If there is a local session, we
     // continue with the authorization directly. This way the session is not
     // cross-validated with the auth relay.
-    if ($this->configFactory->get('oauth_grant_remote.settings')->get('development') &&
+    if ($this->config('oauth_grant_remote.settings')->get('development') &&
       !$this->currentUser()->isAnonymous()) {
       return parent::authorize($request);
     }
 
     // Check configuration.
-    if (empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_expiration')) ||
-      empty($this->configFactory->get('oauth_grant_remote.settings')->get('jwt_key_path')) ||
-      empty($this->configFactory->get('oauth_grant_remote.settings')->get('auth_relay_url'))) {
+    if (empty($this->config('oauth_grant_remote.settings')->get('jwt_expiration')) ||
+      empty($this->config('oauth_grant_remote.settings')->get('jwt_key_path')) ||
+      empty($this->config('oauth_grant_remote.settings')->get('auth_relay_url'))) {
       $this->logger
         ->error('Auth Relay is not configured. Check the OAuth Grant Remote settings form.');
       return OAuthServerException::serverError('Auth Relay is not configured.')
@@ -193,14 +181,13 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     }
 
     // Set the auth relay.
-    $auth_relay_server = $this->configFactory
-      ->get('oauth_grant_remote.settings')
+    $auth_relay_server = $this->config('oauth_grant_remote.settings')
       ->get('auth_relay_url');
 
     // Get all cookies registered under the host domain.
     // Note we can not get all the session cookies directly. Therefore, we
     // extract them from all present session cookies.
-    $cookies = $this->request->cookies->all();
+    $cookies = $request->cookies->all();
     $prefix = (Request::createFromGlobals()->isSecure() ? 'SSESS' : 'SESS');
     $session_cookies = array_filter(
       $cookies, fn($c) => str_starts_with($c, $prefix) &&
@@ -212,8 +199,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // also cross-check the Uid provided by the current session with the Uid
     // delivered by the Auth Relay.
     $local_session_uid = -1;
-    if ($this->request->hasSession()) {
-      $local_session = $this->request->getSession();
+    if ($request->hasSession()) {
+      $local_session = $request->getSession();
       if ($local_session->has('uid')) {
         $local_session_uid = $local_session->get('uid');
         $local_session_id = $local_session->getId();
@@ -229,8 +216,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // If there is a session or multiple sessions, contact the Auth Relay.
     // Prepare a JWT for the Auth Relay.
-    $path = $this->configFactory
-      ->get('oauth_grant_remote.settings')
+    $path = $this->config('oauth_grant_remote.settings')
       ->get('jwt_key_path');
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
@@ -238,13 +224,12 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $config->setValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
 
     // Build the JWT.
-    $expiry = $this->configFactory
-      ->get('oauth_grant_remote.settings')
+    $expiry = $this->config('oauth_grant_remote.settings')
       ->get('jwt_expiration');
     $state = bin2hex(random_bytes(16));
     $builder = $config->builder()
       ->issuedAt(new \DateTimeImmutable('@' . $this->time->getCurrentTime()))
-      ->issuedBy($this->request->getHost())
+      ->issuedBy($request->getHost())
       ->expiresAt(new \DateTimeImmutable('@' . ($this->time->getCurrentTime() + $expiry)))
       ->withClaim('sessions', $session_cookies)
       ->withClaim('state', $state);
@@ -276,6 +261,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     try {
       // Parse JWT.
+      /** @var \Lcobucci\JWT\Token\Plain $remote_jwt */
       $remote_jwt = $config->parser()->parse($relay_response->jwt);
     }
     catch (CannotDecodeContent | InvalidTokenStructure | UnsupportedHeaderFound $e) {
@@ -322,7 +308,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // Compare local session Uid and relayed account Uid. If both match, we can
     // continue with the parent authorize callback. The currently logged in user
     // is valid for both original host and data provider.
-    // If the Uids do not match. We log out the user from the data provider,
+    // If the UIDs do not match. We log out the user from the data provider,
     // destroy the current session and use the relayed account in the following.
     // @todo This should be moved to the beginning. Therefore, we need to
     //   disable logins on the current page. Then, the sessions never collide.
@@ -343,6 +329,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // See if the relayed user already exists in the database.
     $user_ids = $this->entityTypeManager()
       ->getStorage('user')->getQuery()
+      ->accessCheck(FALSE)
       ->condition('uid', $remote_account['uid'])
       ->range(0, 1)
       ->execute();
@@ -428,8 +415,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     ]);
 
     // Determine whether this is a development environment.
-    if (!empty($this->configFactory->get('oauth_grant_remote.settings')->get('development')) &&
-      $this->configFactory->get('oauth_grant_remote.settings')->get('development')) {
+    if (!empty($this->config('oauth_grant_remote.settings')->get('development')) &&
+      intval($this->config('oauth_grant_remote.settings')->get('development'))) {
       $query['dev'] = 1;
     }
 

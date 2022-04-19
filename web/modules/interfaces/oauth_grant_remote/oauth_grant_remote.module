@@ -42,6 +42,7 @@ function oauth_grant_remote_cron() {
   $now = \Drupal::time()->getRequestTime();
   $yesterday = $now - 86400;
   $account_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
     ->condition('access', $yesterday, '>=')
     ->execute();
 

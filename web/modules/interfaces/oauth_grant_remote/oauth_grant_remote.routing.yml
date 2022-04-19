@@ -14,4 +14,5 @@ oauth_grant_remote.expire:
     _controller: 'Drupal\oauth_grant_remote\Controller\ExpireRefreshTokensController::response'
   methods: [POST]
   requirements:
+    # Expiry is available to third parties. JWT is verified in controller.
     _access: 'TRUE'

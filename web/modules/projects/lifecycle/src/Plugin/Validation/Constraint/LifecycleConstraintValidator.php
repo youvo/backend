@@ -16,7 +16,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the workflows field.
  */
-class LifecycleContraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+class LifecycleConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
    * Entity type manager.
@@ -50,8 +50,9 @@ class LifecycleContraintValidator extends ConstraintValidator implements Contain
    */
   public function validate($value, Constraint $constraint): void {
     assert($value instanceof LifecycleItem);
-    assert($constraint instanceof LifecycleContraint);
+    assert($constraint instanceof LifecycleConstraint);
 
+    /** @var \Drupal\projects\ProjectInterface $entity */
     $entity = $value->getEntity();
     $workflow_type = $value->getWorkflow()->getTypePlugin();
     $newState = $value->value ?? NULL;
@@ -61,7 +62,7 @@ class LifecycleContraintValidator extends ConstraintValidator implements Contain
       return;
     }
 
-    /** @var \Drupal\Core\Entity\FieldableEntityInterface $original_entity */
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $original_entity */
     $original_entity = $this->entityTypeManager->getStorage($entity->getEntityTypeId())->loadUnchanged($entity->id());
     if (!$entity->isDefaultTranslation() && $original_entity->hasTranslation($entity->language()->getId())) {
       $original_entity = $original_entity->getTranslation($entity->language()->getId());

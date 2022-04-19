@@ -32,25 +32,35 @@ class UserUpdatePasswordResource extends ResourceBase {
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
-  protected $currentUser;
+  protected AccountProxyInterface $currentUser;
 
   /**
    * The serialization by Json service.
    *
    * @var \Drupal\Component\Serialization\Json
    */
-  protected $serializationJson;
+  protected Json $serializationJson;
 
   /**
    * User storage handler.
    *
    * @var \Drupal\user\UserStorageInterface
    */
-  protected $userStorage;
+  protected UserStorageInterface $userStorage;
 
   /**
    * Constructs a OrganizationCreateResource object.
    *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param array $serializer_formats
+   *   The available serialization formats.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
    * @param \Drupal\Component\Serialization\Json $serialization_json
@@ -104,16 +114,16 @@ class UserUpdatePasswordResource extends ResourceBase {
     // Check whether current_password was provided.
     if (empty($content['current_password'])) {
       return new ResourceResponse([
-          'message' => 'The value current_password was not provided.',
-          'field' => 'current_password'
-        ], 400);
+        'message' => 'The value current_password was not provided.',
+        'field' => 'current_password',
+      ], 400);
     }
 
     // Check whether current_password was provided.
     if (empty($content['new_password'])) {
       return new ResourceResponse([
         'message' => 'The value new_password was not provided.',
-        'field' => 'new_password'
+        'field' => 'new_password',
       ], 400);
     }
 
@@ -129,20 +139,16 @@ class UserUpdatePasswordResource extends ResourceBase {
     if (!$account->checkExistingPassword($account_unchanged)) {
       return new ResourceResponse([
         'message' => 'The provided current password is incorrect.',
-        'field' => 'current_password'
+        'field' => 'current_password',
       ], 409);
     }
 
-    /**
-     * Set new password and save user.
-     *
-     * Note that all sessions are destroyed and a new session is migrated from
-     * the current user. @see \Drupal\user\Entity\User::postSave()
-     *
-     * Further, we invalidate all access tokens and a new access token should
-     * be requested with the current refresh token. @see simple_oauth.module
-     * simple_oauth_entity_update() and the respective patch.
-     **/
+    // Sets the new password and saves the user.
+    // Note that all sessions are destroyed and a new session is migrated from
+    // the current user. See \Drupal\user\Entity\User::postSave().
+    // Further, we invalidate all access tokens and a new access token should
+    // be requested with the current refresh token. See simple_oauth.module
+    // simple_oauth_entity_update() and the respective patch.
     try {
       $account->setPassword(trim($content['new_password']));
       $account->save();

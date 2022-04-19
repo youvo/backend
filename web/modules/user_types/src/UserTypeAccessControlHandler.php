@@ -12,6 +12,9 @@ use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\OrganizationAccessControlHandler;
 
+/**
+ * Provides access checks for bundled user entities.
+ */
 class UserTypeAccessControlHandler extends EntityAccessControlHandler {
 
   /**
@@ -58,4 +61,5 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
     }
     return AccessResult::neutral();
   }
+
 }

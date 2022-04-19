@@ -34,6 +34,6 @@ trait TranslationFormButtonsTrait {
         'class' => ['button button--small'],
       ],
     ];
-
   }
+
 }

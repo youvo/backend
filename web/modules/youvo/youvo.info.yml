@@ -9,8 +9,8 @@ dependencies:
   - drupal:taxonomy (>= 9.3.0)
   - drupal:field (>= 9.3.0)
   - drupal:user (>= 9.3.0)
-  - filefield_paths
-  - jsonapi_extras
-  - jsonapi_include
-  - mail_login
-  - user_bundle
+  - filefield_paths:filefield_paths
+  - jsonapi_extras:jsonapi_extras
+  - jsonapi_include:jsonapi_include
+  - mail_login:mail_login
+  - user_bundle:user_bundle

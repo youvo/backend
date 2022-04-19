@@ -45,7 +45,7 @@ class OrganizationAccessController extends ControllerBase {
    */
   public function accessCreate(AccountInterface $account) {
 
-    //@todo Remove after development.
+    // @todo Remove after development.
     if ($account->hasPermission('administer site configuration')) {
       return AccessResult::allowed();
     }

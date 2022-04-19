@@ -5,7 +5,7 @@ core_version_requirement: '^9.3 || ^10'
 package: Academy
 
 dependencies:
-  - academy
-  - lectures
-  - paragraphs
-  - youvo_dummy
+  - academy:academy
+  - lectures:lectures
+  - paragraphs:paragraphs
+  - youvo_dummy:youvo_dummy

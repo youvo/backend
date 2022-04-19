@@ -13,27 +13,27 @@ use Drupal\youvo\Utility\FieldAccess;
  * Provides field access methods for the organization user bundle.
  *
  * The entity access governs field access.
- * @see \Drupal\organizations\OrganizationAccessControlHandler
+ * See \Drupal\organizations\OrganizationAccessControlHandler.
  *
  * The method checkFieldAccess() is used for field access control, when viewing
  * or editing the organization through the JSON:API or the administration. Also,
  * we use constants of this class when creating an organization prospect.
- * @see \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource
+ * See \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource.
  *
  * Note that some fields (mail, pass and manager) are edited through special
  * endpoints, which have separate access controllers.
- * @see \Drupal\organizations\Plugin\rest\resource\OrganizationManageResource
- * @see \Drupal\user_types\Plugin\rest\resource\UserUpdateEmailResource
- * @see \Drupal\user_types\Plugin\rest\resource\UserUpdatePasswordResource
+ * See \Drupal\organizations\Plugin\rest\resource\OrganizationManageResource
+ * See \Drupal\user_types\Plugin\rest\resource\UserUpdateEmailResource.
+ * See \Drupal\user_types\Plugin\rest\resource\UserUpdatePasswordResource.
  * These may have their own access controller.
- * @see \Drupal\organizations\Controller\OrganizationAccessController
- * @see \Drupal\user_types\Controller\UserTypeAccessController
+ * See \Drupal\organizations\Controller\OrganizationAccessController.
+ * See \Drupal\user_types\Controller\UserTypeAccessController.
  *
  * The field projects is a computed field.
- * @see \Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList
+ * See \Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList.
  *
  * Note that the default access result is allowed.
- * @see \Drupal\Core\Entity\EntityAccessControlHandler::checkFieldAccess()
+ * See \Drupal\Core\Entity\EntityAccessControlHandler::checkFieldAccess().
  *
  * @todo Maybe introduce permissions and cache per permissions when the dust has
  *   settled.

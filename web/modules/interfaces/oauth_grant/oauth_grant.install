@@ -54,7 +54,7 @@ function oauth_grant_install() {
       if (str_starts_with(trim($line), '#')) {
         continue;
       }
-      list($name, $value) = explode('=', $line, 2);
+      [$name, $value] = explode('=', $line, 2);
       $name = trim($name);
       $value = trim($value);
 

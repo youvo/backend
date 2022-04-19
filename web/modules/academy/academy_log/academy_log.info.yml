@@ -5,6 +5,6 @@ core_version_requirement: '^9.3 || ^10'
 package: 'Academy'
 
 dependencies:
-  - academy
-  - progress
-  - questionnaire
+  - academy:academy
+  - progress:progress
+  - questionnaire:questionnaire

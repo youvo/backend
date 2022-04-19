@@ -6,7 +6,7 @@ type: module
 core_version_requirement: '^9.3 || ^10'
 
 dependencies:
-  - youvo
-  - consumers
-  - consumer_image_styles
-  - simple_oauth
+  - youvo:youvo
+  - consumers:consumers
+  - consumer_image_styles:consumer_image_styles
+  - simple_oauth:simple_oauth

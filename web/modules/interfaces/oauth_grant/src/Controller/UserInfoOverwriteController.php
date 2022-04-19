@@ -2,7 +2,6 @@
 
 namespace Drupal\oauth_grant\Controller;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\simple_oauth\Authentication\TokenAuthUser;
@@ -33,27 +32,19 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
   private $serializer;
 
   /**
-   * The configuration object.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  private $config;
-
-  /**
    * UserInfo constructor.
    *
    * @param \Drupal\Core\Session\AccountProxyInterface $user
    *   The user.
    * @param \Symfony\Component\Serializer\SerializerInterface $serializer
    *   The serializer service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The configuration factory.
    */
-  private function __construct(AccountProxyInterface $user, SerializerInterface $serializer, ConfigFactoryInterface $config_factory) {
+  private function __construct(
+    AccountProxyInterface $user,
+    SerializerInterface $serializer
+  ) {
     $this->user = $user->getAccount();
     $this->serializer = $serializer;
-    $this->config = $config_factory
-      ->get('simple_oauth.settings');
   }
 
   /**
@@ -62,8 +53,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('current_user'),
-      $container->get('serializer'),
-      $container->get('config.factory')
+      $container->get('serializer')
     );
   }
 
@@ -85,10 +75,14 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
     $user_entity->setIdentifier($identifier);
     $data = $this->serializer
       ->normalize($user_entity, 'json', [$identifier => $this->user]);
-    $data['mail'] = $data['email'];
-    unset($data['email']);
-    $data['mail_verified'] = $data['email_verified'];
-    unset($data['email_verified']);
+    if (isset($data['email'])) {
+      $data['mail'] = $data['email'];
+      unset($data['email']);
+    }
+    if (isset($data['email_verified'])) {
+      $data['mail_verified'] = $data['email_verified'];
+      unset($data['email_verified']);
+    }
     $data['profile'] = 'https://www.youvo.org/kreative/' . $identifier;
     if ($this->user->hasField('field_name')) {
       $data['name'] = $this->user->get('field_name')->value;

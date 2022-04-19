@@ -36,7 +36,7 @@ class ProjectMediateResource extends ResourceBase {
    *
    * @var \Drupal\Component\Serialization\SerializationInterface
    */
-  protected $serializationJson;
+  protected SerializationInterface $serializationJson;
 
   /**
    * The entity type manager.
@@ -189,17 +189,18 @@ class ProjectMediateResource extends ResourceBase {
       $selected_creatives_ids = $this->entityTypeManager
         ->getStorage('user')
         ->getQuery()
+        ->accessCheck(FALSE)
         ->condition('uuid', $selected_creatives, 'IN')
         ->execute();
     }
-    catch (InvalidPluginDefinitionException|PluginNotFoundException $e) {
+    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       throw new UnprocessableEntityHttpException('Could not mediate project.', $e);
     }
 
     // Mediate project with participants.
     if (!empty($selected_creatives_ids) && $project->workflowManager()->transitionMediate()) {
 
-      $project->setParticipants($selected_creatives_ids);
+      $project->setParticipants(array_map('intval', $selected_creatives_ids));
       if ($manager = $project->getManager()) {
         $project->appendParticipant($manager, 'Manager');
       }

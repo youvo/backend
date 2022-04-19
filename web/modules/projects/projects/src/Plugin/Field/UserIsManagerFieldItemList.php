@@ -34,8 +34,9 @@ class UserIsManagerFieldItemList extends FieldItemList implements FieldItemListI
       $organization = $project->getOwner();
 
       // Set manager status.
+      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
       $item = $this->createItem(0, $organization->isManager($account));
-      $item->get('value')->mergeCacheMaxAge(0);
+      $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }
   }

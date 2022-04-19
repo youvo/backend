@@ -5,4 +5,4 @@ description: Adds test workflows.
 core_version_requirement: ^9.3 || ^10
 
 dependencies:
-  - lifecycle
+  - lifecycle:lifecycle

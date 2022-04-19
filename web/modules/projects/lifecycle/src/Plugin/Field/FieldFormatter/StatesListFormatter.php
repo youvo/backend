@@ -4,12 +4,14 @@ namespace Drupal\lifecycle\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Assertion\Inspector;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\Entity\ConfigEntityStorage;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\StateInterface;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'lifecycle_state_list' formatter.
@@ -25,17 +27,82 @@ use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 class StatesListFormatter extends FormatterBase {
 
   /**
+   * The workflow storage.
+   *
+   * @var \Drupal\Core\Config\Entity\ConfigEntityStorage
+   */
+  protected ConfigEntityStorage $workflowStorage;
+
+  /**
+   * Constructs a FormatterBase object.
+   *
+   * @param string $plugin_id
+   *   The plugin_id for the formatter.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition of the field to which the formatter is associated.
+   * @param array $settings
+   *   The formatter settings.
+   * @param string $label
+   *   The formatter label display setting.
+   * @param string $view_mode
+   *   The view mode.
+   * @param array $third_party_settings
+   *   Any third party settings.
+   * @param \Drupal\Core\Config\Entity\ConfigEntityStorage $workflow_storage
+   *   The workflow storage.
+   */
+  public function __construct(
+    $plugin_id,
+    $plugin_definition,
+    FieldDefinitionInterface $field_definition,
+    array $settings,
+    $label,
+    $view_mode,
+    array $third_party_settings,
+    ConfigEntityStorage $workflow_storage
+  ) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+    $this->workflowStorage = $workflow_storage;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
+    return new static(
+      $plugin_id,
+      $plugin_definition,
+      $configuration['field_definition'],
+      $configuration['settings'],
+      $configuration['label'],
+      $configuration['view_mode'],
+      $configuration['third_party_settings'],
+      $container->get('entity_type.manager')->getStorage('workflow')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    return array_map(function (LifecycleItem $item) {
-      return [
+    $elements = [];
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem $item */
+    foreach (iterator_to_array($items) as $item) {
+      $elements[] = [
         '#theme' => 'item_list__states_list',
         '#context' => ['list_style' => 'workflows-states-list'],
         '#attributes' => ['class' => [Html::cleanCssIdentifier($item->value) . '--active']],
         '#items' => $this->buildItems($item),
       ];
-    }, iterator_to_array($items));
+    }
+    return $elements;
   }
 
   /**
@@ -101,7 +168,7 @@ class StatesListFormatter extends FormatterBase {
    */
   protected function getStatesFromWorkflow(): array {
     /** @var \Drupal\workflows\WorkflowInterface|null $workflow */
-    $workflow = Workflow::load($this->getFieldSetting('workflow'));
+    $workflow = $this->workflowStorage->load($this->getFieldSetting('workflow'));
     $type = $workflow->getTypePlugin();
     $states = $type->getStates();
     assert(Inspector::assertAllObjects($states, StateInterface::class));
@@ -117,7 +184,7 @@ class StatesListFormatter extends FormatterBase {
       '#type' => 'checkboxes',
       '#title' => $this->t('Excluded states'),
       '#options' => array_map(function (StateInterface $state): string {
-        return (string) $state->label();
+        return $state->label();
       }, $this->getStatesFromWorkflow()),
       '#default_value' => $this->getSetting('excluded_states'),
     ];

@@ -15,7 +15,7 @@ class OrganizationAccessControlHandler {
   /**
    * Checks access.
    *
-   * @see \Drupal\user_types\UserTypeAccessControlHandler::checkAccess()
+   * See \Drupal\user_types\UserTypeAccessControlHandler::checkAccess().
    */
   public static function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
 
@@ -24,13 +24,10 @@ class OrganizationAccessControlHandler {
       return AccessResult::neutral();
     }
 
-    /**
-     * Explicitly allow managers and owners of organizations to edit the account
-     * of the organization. This ability will be narrowed down to certain fields
-     * in the field access handler.
-     *
-     * @see \Drupal\organizations\OrganizationFieldAccess
-     */
+    // Explicitly allow managers and owners of organizations to edit the account
+    // of the organization. This ability will be narrowed down to certain fields
+    // in the field access handler.
+    // See \Drupal\organizations\OrganizationFieldAccess.
     if ($operation == 'edit') {
       if ($entity->isOwnerOrManager($account)) {
         return AccessResult::allowed()->cachePerUser();
@@ -52,7 +49,7 @@ class OrganizationAccessControlHandler {
    *
    * Only administrators should use the organization creation via admin form.
    * The creation of an organization is implemented in the following.
-   * @see \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource
+   * See \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource.
    *
    * @todo Maybe we can cover this case by permissions.
    */

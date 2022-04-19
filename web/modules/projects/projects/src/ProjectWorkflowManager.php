@@ -2,10 +2,7 @@
 
 namespace Drupal\projects;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Utility\Error;
 use Drupal\projects\Entity\Project;
 
 /**
@@ -30,7 +27,7 @@ class ProjectWorkflowManager {
   /**
    * The project calling the workflow manager.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @var \Drupal\projects\Entity\Project
    */
   private Project $project;
 
@@ -42,6 +39,8 @@ class ProjectWorkflowManager {
   private EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * Constructs a ProjectWorkflowManager object.
+   *
    * @param \Drupal\projects\Entity\Project $project
    *   The project.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -115,35 +114,35 @@ class ProjectWorkflowManager {
    * Submit project.
    */
   public function transitionSubmit() {
-    return $this->transition(self::TRANSITION_SUBMIT,self::STATE_PENDING);
+    return $this->transition(self::TRANSITION_SUBMIT, self::STATE_PENDING);
   }
 
   /**
    * Publish project.
    */
   public function transitionPublish() {
-    return $this->transition(self::TRANSITION_PUBLISH,self::STATE_OPEN);
+    return $this->transition(self::TRANSITION_PUBLISH, self::STATE_OPEN);
   }
 
   /**
    * Mediate project.
    */
   public function transitionMediate() {
-    return $this->transition(self::TRANSITION_MEDIATE,self::STATE_ONGOING);
+    return $this->transition(self::TRANSITION_MEDIATE, self::STATE_ONGOING);
   }
 
   /**
    * Complete project.
    */
   public function transitionComplete() {
-    return $this->transition(self::TRANSITION_COMPLETE,self::STATE_COMPLETED);
+    return $this->transition(self::TRANSITION_COMPLETE, self::STATE_COMPLETED);
   }
 
   /**
    * Reset project.
    */
   public function transitionReset() {
-    return $this->transition(self::TRANSITION_RESET,self::STATE_DRAFT);
+    return $this->transition(self::TRANSITION_RESET, self::STATE_DRAFT);
   }
 
   /**
@@ -208,16 +207,9 @@ class ProjectWorkflowManager {
    * Loads workflow for current project.
    */
   private function loadWorkflow() {
-    try {
-      $workflow = $this->entityTypeManager->getStorage('workflow')
-        ->load(self::WORKFLOW_ID);
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $exception) {
-      $variables = Error::decodeException($exception);
-      \Drupal::logger('youvo')
-        ->error('Projects: Could not load workflow. %type: @message in %function (line %line of %file).', $variables);
-    }
-    return $workflow ?? NULL;
+    $entity_type_manager = $this->entityTypeManager;
+    return $entity_type_manager->getStorage('workflow')
+      ->load(self::WORKFLOW_ID);
   }
 
 }
