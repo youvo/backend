@@ -6,6 +6,6 @@ package: Projects
 
 dependencies:
   - drupal:system (>=8.4)
-  - options
-  - workflows
-  - youvo
+  - drupal:options
+  - drupal:workflows
+  - youvo:youvo
