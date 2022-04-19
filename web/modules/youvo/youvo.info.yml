@@ -14,3 +14,4 @@ dependencies:
   - jsonapi_include:jsonapi_include
   - mail_login:mail_login
   - user_bundle:user_bundle
+
