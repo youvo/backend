@@ -18,4 +18,4 @@ jobs:
       - name: Check coding standards
         run: |
           cd integration
-          vendor/bin/phpcs
+          vendor/bin/phpcs --report=summary
