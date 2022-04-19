@@ -130,6 +130,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
       $questions_storage = $this->entityTypeManager
         ->getStorage('question');
       $questions_query = $questions_storage->getQuery()
+        ->accessCheck(TRUE)
         ->condition('paragraph', $this->entity->id())
         ->sort('weight')
         ->execute();

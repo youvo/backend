@@ -74,7 +74,8 @@ class SubmissionManager {
     // Get referenced submission.
     $query = $this->entityTypeManager
       ->getStorage('question_submission')
-      ->getQuery();
+      ->getQuery()
+      ->accessCheck(TRUE);
     $submission_id = $query->condition('question', $question->id())
       ->condition('uid', $this->currentUser->id())
       ->execute();
