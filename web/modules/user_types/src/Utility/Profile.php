@@ -32,6 +32,8 @@ final class Profile {
   }
 
   /**
+   * Determines if account is of a user type.
+   *
    * With different authorization methods the account object may be a
    * AccountProxy or a TokenAuthUser. Use this helper to determine whether
    * the account is of a specific user type.
@@ -43,12 +45,12 @@ final class Profile {
   ) {
     if ($account instanceof AccountProxyInterface) {
       $account = $account->getAccount();
-      if (class_exists('Drupal\\simple_oauth\\Authentication\\TokenAuthUser') &&
-        $account instanceof \Drupal\simple_oauth\Authentication\TokenAuthUser) {
-        return $account->bundle() == $type;
-      }
-      return class_exists($class) && $account instanceof $class;
+    }
+    if (class_exists('Drupal\\simple_oauth\\Authentication\\TokenAuthUser') &&
+      get_class($account) == 'Drupal\\simple_oauth\\Authentication\\TokenAuthUser') {
+      return $account->bundle() == $type;
     }
     return class_exists($class) && $account instanceof $class;
   }
+
 }
