@@ -27,6 +27,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class StatesListFormatter extends FormatterBase {
 
   /**
+   * The workflow storage.
+   *
+   * @var \Drupal\Core\Config\Entity\ConfigEntityStorage
+   */
+  protected ConfigEntityStorage $workflowStorage;
+
+  /**
    * Constructs a FormatterBase object.
    *
    * @param string $plugin_id
