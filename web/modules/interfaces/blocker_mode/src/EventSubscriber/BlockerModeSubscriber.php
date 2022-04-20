@@ -53,6 +53,11 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    */
   protected KillSwitch $pageCacheKillSwitch;
 
+  /**
+   * The youvo settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
   protected ImmutableConfig $config;
 
   /**
