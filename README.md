@@ -21,7 +21,7 @@ We are not using the issue queue in this repository, yet. Just write an email to
 
 For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.  
+Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.9` `docker desktop 4.6.1` `ddev 1.19.1`.
 
 Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
@@ -36,6 +36,7 @@ Further installation steps may be required to setup SSH agent and XDebug, see [D
 mkdir youvo-backend
 cd youvo-backend
 git clone git@github.com:youvo/backend.git .
+# You may need to set up some configuration - see below.
 ddev config --auto
 ddev composer install
 ./scripts/install-local.sh
@@ -49,7 +50,12 @@ Navigate to https://youvo.ddev.site:844/user/login and login with `admin@youvo.o
 
 - DDEV configuration `.ddev/config.yml`
 - Drupal setup parameters `config/.env.local`
+- Consumers configuration `config/.env.consumers.development`
+- OAuth Remote configuration `config/.env.oauth_remote.development`
+- API configuration `config/.env.api`
 - XDebug port `.ddev/php/xdebug_client_port.ini`
+
+Note that some of the environment variables files will be merged in the future. We entertain some separation at the moment for development purposes.
 
 ### DDEV Commands
 
@@ -78,7 +84,7 @@ chmod 0666 -R academy projects creatives organizations
 ### PHPStorm connection to database
 
 - Host: `localhost`
-- Port: run `ddev status` for database port
+- Port: `59002`
 - Database: `db`
 - User: `db`
 - Password: `db`
@@ -98,6 +104,9 @@ To set up a Drupal distribution with the `youvo_development` profile, do the fol
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.development # and adjust settings
+cp config/.env.api.example config/.env.api # and adjust settings
+cp config/.env.consumers.example config/.env.consumers.development # and adjust settings
+cp config/.env.oauth_remote.example config/.env.oauth_remote.development # and adjust settings
 composer install
 ./scripts/install-development.sh
 ```
@@ -114,6 +123,9 @@ To set up a Drupal distribution with the `youvo_platform` profile, do the follow
 git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.production # and adjust settings
+cp config/.env.api.example config/.env.api # and adjust settings
+cp config/.env.consumers.example config/.env.consumers.development # and adjust settings
+cp config/.env.oauth_remote.example config/.env.oauth_remote.development # and adjust settings
 composer install
 ./scripts/install-production.sh
 ```
@@ -134,6 +146,8 @@ make warm # warm caches
 make install # (re-)install Drupal (only available in development)
 make rebuild # calculate rebuild token
 make restart-php # restart Uberspace php
+make phpstan %PATH # run PHPStan analysis at specified path
+make phpcs # run PHP_CodeSniffer analysis for custom modules
 ```
 
 ### Notes
