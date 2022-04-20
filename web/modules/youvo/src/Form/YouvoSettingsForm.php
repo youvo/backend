@@ -37,7 +37,7 @@ class YouvoSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $settings = $this->config('youvo.settings');
-    $settings->set('rest_prefix', $form_state->getValue('rest_prefix'));
+    $settings->set('api_prefix', $form_state->getValue('api_prefix'));
     $settings->save();
     parent::submitForm($form, $form_state);
   }
@@ -56,11 +56,11 @@ class YouvoSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('youvo.settings');
 
-    $form['rest_prefix'] = [
+    $form['api_prefix'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('REST Prefix'),
-      '#description' => $this->t('An obscurity prefix for the rest paths.'),
-      '#default_value' => $config->get('rest_prefix'),
+      '#title' => $this->t('API Prefix'),
+      '#description' => $this->t('An obscurity prefix for API paths.'),
+      '#default_value' => $config->get('api_prefix'),
     ];
 
     return parent::buildForm($form, $form_state);

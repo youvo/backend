@@ -2,7 +2,7 @@ youvo.settings:
   type: config_object
   label: 'youvo Settings'
   mapping:
-    rest_prefix:
+    api_prefix:
       type: string
-      label: 'REST Prefix'
-      description: 'An obscurity prefix for the rest paths.'
+      label: 'API Prefix'
+      description: 'An obscurity prefix for API paths.'

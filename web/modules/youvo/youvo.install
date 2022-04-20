@@ -11,7 +11,7 @@
 function youvo_install() {
   \Drupal::configFactory()
     ->getEditable('youvo.settings')
-    ->set('rest_prefix', youvo_get_api_prefix_from_environment())
+    ->set('api_prefix', youvo_get_api_prefix_from_environment())
     ->save();
 }
 
