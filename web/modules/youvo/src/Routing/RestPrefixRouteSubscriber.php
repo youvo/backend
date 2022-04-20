@@ -82,7 +82,7 @@ class RestPrefixRouteSubscriber extends RouteSubscriberBase {
    * Prepends rest prefix to path.
    */
   public static function prependPrefix(string $path) {
-    $prefix = \Drupal::config('youvo.settings')->get('rest_prefix');
+    $prefix = \Drupal::config('youvo.settings')->get('api_prefix');
     return !empty($prefix) ? '/' . $prefix . $path : $path;
   }
 

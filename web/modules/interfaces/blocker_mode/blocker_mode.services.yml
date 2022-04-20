@@ -4,6 +4,6 @@ services:
     arguments: [ '@state' ]
   blocker_mode_subscriber:
     class: Drupal\blocker_mode\EventSubscriber\BlockerModeSubscriber
-    arguments: [ '@blocker_mode', '@current_user', '@bare_html_page_renderer', '@page_cache_kill_switch' ]
+    arguments: [ '@blocker_mode', '@current_user', '@bare_html_page_renderer', '@page_cache_kill_switch', '@config.factory' ]
     tags:
       - { name: event_subscriber }

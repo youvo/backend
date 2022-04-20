@@ -18,7 +18,7 @@ class BlockerMode implements BlockerModeInterface {
    *
    * @var \Drupal\Core\State\StateInterface
    */
-  protected $state;
+  protected StateInterface $state;
 
   /**
    * Constructs a new blocker mode service.
