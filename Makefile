@@ -64,15 +64,9 @@ restart-php:
 ## phpstan 	:	Analyze module with phpstan.
 .PHONY: phpstan
 phpstan:
-	@vendor/bin/phpstan analyze $(filter-out $@,$(MAKECMDGOALS))
+	@vendor/bin/phpstan analyze $(filter-out $@,$(MAKECMDGOALS)) --memory-limit 256M
 
 ## phpcs 		:	Analyze module with phpcs Drupal standard.
 .PHONY: phpcs
 phpcs:
-	@vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,yml $(filter-out $@,$(MAKECMDGOALS))
-
-## phpcs 		:	Analyze module with phpcs DrupalPractice standard.
-.PHONY: phpcs-p
-phpcs-p:
-	@vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,yml $(filter-out $@,$(MAKECMDGOALS))
-
+	@vendor/bin/phpcs $(filter-out $@,$(MAKECMDGOALS))
