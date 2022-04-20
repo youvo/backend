@@ -3,6 +3,8 @@
 namespace Drupal\blocker_mode\EventSubscriber;
 
 use Drupal\blocker_mode\BlockerModeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Render\BareHtmlPageRendererInterface;
 use Drupal\Core\Routing\RouteMatch;
@@ -51,6 +53,8 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    */
   protected KillSwitch $pageCacheKillSwitch;
 
+  protected ImmutableConfig $config;
+
   /**
    * Constructs a new MaintenanceModeSubscriber.
    *
@@ -62,17 +66,21 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    *   The bare HTML page renderer.
    * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $page_cache_kill_switch
    *   The page cache kill switch.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
   public function __construct(
     BlockerModeInterface $blocker_mode,
     AccountInterface $account,
     BareHtmlPageRendererInterface $bare_html_page_renderer,
-    KillSwitch $page_cache_kill_switch
+    KillSwitch $page_cache_kill_switch,
+    ConfigFactoryInterface $config_factory
   ) {
     $this->blockerMode = $blocker_mode;
     $this->account = $account;
     $this->bareHtmlPageRenderer = $bare_html_page_renderer;
     $this->pageCacheKillSwitch = $page_cache_kill_switch;
+    $this->config = $config_factory->get('youvo.settings');
   }
 
   /**
@@ -114,7 +122,8 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
-    if ((str_starts_with($path, '/api') || str_starts_with($path, '/oauth')) &&
+    $prefix = $this->config->get('rest_prefix');
+    if ((str_contains($path, $prefix . '/api') || str_contains($path, '/oauth/')) &&
       $exception instanceof HttpException) {
       $response = new Response(
         $exception->getMessage(),
