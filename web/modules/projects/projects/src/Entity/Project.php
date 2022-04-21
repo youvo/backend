@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Entity;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
 use Drupal\organizations\ManagerInterface;
@@ -48,6 +49,19 @@ class Project extends Node implements ProjectInterface {
     if (isset($organization)) {
       $organization->save();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * This is a quick hack to recalculate the project field of the owner of the
+   * project.
+   *
+   * @todo TEMPORARY - remove when projects field for organizations is removed.
+   */
+  public function postCreate(EntityStorageInterface $storage) {
+    $this->getOwner()->save();
+    parent::postCreate($storage);
   }
 
   /**
