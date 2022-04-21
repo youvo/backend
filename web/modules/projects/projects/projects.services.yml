@@ -1,6 +1,6 @@
 services:
   project.route_subscriber:
-    class: Drupal\projects\EventSubscriber\ProjectRouteSubscriber
+    class: Drupal\projects\Routing\ProjectRouteSubscriber
     tags:
       - { name: event_subscriber }
   project.parse_jsonapi.attributes:
