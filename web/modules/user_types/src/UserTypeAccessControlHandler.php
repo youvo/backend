@@ -56,7 +56,7 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
     if ($entity_bundle == 'organization') {
       return OrganizationAccessControlHandler::checkCreateAccess();
     }
-    if ($entity_bundle == 'creative') {
+    if ($entity_bundle == 'user') {
       return CreativeAccessControlHandler::checkCreateAccess();
     }
     return AccessResult::neutral();
