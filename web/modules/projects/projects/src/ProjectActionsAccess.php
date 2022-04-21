@@ -1,17 +1,16 @@
 <?php
 
-namespace Drupal\projects\Controller;
+namespace Drupal\projects;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\ProjectInterface;
 
 /**
  * Access controller for transition forms.
  */
-class ProjectAccessController extends ControllerBase {
+class ProjectActionsAccess extends ControllerBase {
 
   /**
    * Checks access for project transition.

@@ -142,7 +142,7 @@ class ProjectApplyResource extends ResourceBase {
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\projects\Controller\ProjectAccessController::accessProjectApply');
+      $route->setRequirement('_custom_access', '\Drupal\projects\ProjectActionsAccess::accessProjectApply');
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'project' => [

@@ -11,7 +11,7 @@ project.mediate:
     _title: 'Mediate Project'
     transition: 'mediate'
   requirements:
-    _custom_access: '\Drupal\projects\Controller\ProjectAccessController::accessProjectTransition'
+    _custom_access: '\Drupal\projects\ProjectActionsAccess::accessProjectTransition'
     project: \d+
   options:
     _admin_route: TRUE
