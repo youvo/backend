@@ -143,7 +143,8 @@ class OrganizationFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
-    return AccessResult::forbidden();
+    return AccessResult::forbidden()
+      ->addCacheableDependency($entity);
   }
 
 }
