@@ -2,6 +2,7 @@
 
 namespace Drupal\projects;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeAccessControlHandler;
@@ -21,10 +22,15 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
 
     // Only projects should be handled by this access controller.
     if (!$node instanceof Project) {
-      parent::checkAccess($node, $operation, $account);
+      return parent::checkAccess($node, $operation, $account);
     }
 
-    parent::checkAccess($node, $operation, $account);
+    // Check access for delete action.
+    if ($operation == 'delete') {
+      return $this->checkDeleteAccess($node, $account);
+    }
+
+    return parent::checkAccess($node, $operation, $account);
   }
 
   /**
@@ -38,6 +44,27 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
     }
 
     return parent::checkCreateAccess($account, $context, $entity_bundle);
+  }
+
+  /**
+   * Helps to check access for delete operation.
+   */
+  private function checkDeleteAccess(ProjectInterface $project, AccountInterface $account) {
+
+    // Supervisors and managers can delete projects.
+    if (in_array('supervisor', $account->getRoles()) ||
+      $project->isManager($account)) {
+      return AccessResult::allowed();
+    }
+
+    // Managers and the organization can delete pending or draft projects.
+    if (($project->workflowManager()->isPending() ||
+        $project->workflowManager()->isDraft()) &&
+      $project->isAuthorOrManager($account)) {
+      return AccessResult::allowed();
+    }
+
+    return AccessResult::forbidden();
   }
 
 }

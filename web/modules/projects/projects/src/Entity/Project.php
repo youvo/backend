@@ -33,6 +33,25 @@ class Project extends Node implements ProjectInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * This is a quick hack to recalculate the project field of the owner of the
+   * project.
+   *
+   * @todo TEMPORARY - remove when projects field for organizations is removed.
+   */
+  public function delete() {
+    if (!$this->isNew()) {
+      // Delete all referenced paragraphs.
+      $organization = $this->getOwner();
+    }
+    parent::delete();
+    if (isset($organization)) {
+      $organization->save();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getApplicants() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
@@ -147,6 +166,14 @@ class Project extends Node implements ProjectInterface {
     $owner = $this->getOwner();
     return $this->isAuthor($account) ||
       ($owner instanceof ManagerInterface && $owner->isManager($account));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isManager(AccountInterface|int $account) {
+    $owner = $this->getOwner();
+    return $owner instanceof ManagerInterface && $owner->isManager($account);
   }
 
   /**
