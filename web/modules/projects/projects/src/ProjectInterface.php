@@ -143,6 +143,17 @@ interface ProjectInterface extends NodeInterface {
   public function isAuthorOrManager(AccountInterface|int $account);
 
   /**
+   * Determines whether the account is the manager of the organization.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|int $account
+   *   The account.
+   *
+   * @return bool
+   *   Is manager?
+   */
+  public function isManager(AccountInterface|int $account);
+
+  /**
    * Gets the manager.
    *
    * @return \Drupal\user\UserInterface|null

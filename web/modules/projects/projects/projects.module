@@ -7,6 +7,7 @@
 
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
+use Drupal\projects\ProjectEntityAccess;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -29,6 +30,16 @@ function projects_entity_bundle_info_alter(&$bundles) {
   if (isset($bundles['node']['project'])) {
     $bundles['node']['project']['class'] = Project::class;
   }
+}
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function projects_entity_type_build(array &$entity_types) {
+
+  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
+  $entity_types['node']
+    ->setHandlerClass('access', ProjectEntityAccess::class);
 }
 
 /**

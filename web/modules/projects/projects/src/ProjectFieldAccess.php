@@ -94,6 +94,14 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
+    // A manager can determine the organization when creating a project.
+    if ($operation == 'edit' &&
+      $entity->isManager($account) &&
+      $field->getName() == 'uid' &&
+      $entity->isNew()) {
+      return AccessResult::allowed()->cachePerUser();
+    }
+
     // Creatives may view the computed applied field for open projects.
     if ($operation == 'view' &&
       Profile::isCreative($account) &&
@@ -125,7 +133,9 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral()->cachePerUser();
     }
 
-    return AccessResult::forbidden();
+    return AccessResult::forbidden()
+      ->addCacheableDependency($entity)
+      ->addCacheableDependency($entity->getOwner());
   }
 
 }

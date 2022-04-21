@@ -133,7 +133,7 @@ function projects_dummy_site_install_finished() {
     // Set applicants for open projects.
     if ($state == 'open') {
       shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(0, count($creative_ids)));
+      $applicants = array_slice($creative_ids, 0, rand(0, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
       if (!empty($applicants)) {
         $project->setApplicants(array_map('intval', $applicants));
