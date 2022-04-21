@@ -80,6 +80,13 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
    */
   private function checkDeleteAccess(ProjectInterface $project, AccountInterface $account) {
 
+    // Only managers of the organization can delete the project.
+    if (in_array('manager', $account->getRoles())) {
+      return AccessResult::forbiddenIf(!$project->isManager($account))
+        ->addCacheableDependency($project->getOwner())
+        ->cachePerUser();
+    }
+
     // The organization can only delete pending or draft projects.
     if ($project->isAuthor($account) &&
       !($project->workflowManager()->isPending() ||
