@@ -9,7 +9,7 @@ use Drupal\node\Entity\Node;
  *
  * @group lifecycle
  */
-class LifecycleContraintTest extends WorkflowsTestBase {
+class LifecycleConstraintTest extends WorkflowsTestBase {
 
   /**
    * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraint
