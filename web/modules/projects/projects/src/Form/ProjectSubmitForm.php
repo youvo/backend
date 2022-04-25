@@ -4,11 +4,10 @@ namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element\Checkboxes;
 use Drupal\projects\ProjectInterface;
 
 /**
- * The ProjectMediateForm provides a simple UI for changing lifecycle state.
+ * The project submit form provides a simple UI to change the lifecycle state.
  */
 class ProjectSubmitForm extends FormBase {
 
@@ -35,10 +34,9 @@ class ProjectSubmitForm extends FormBase {
       '#value' => $project,
     ];
 
-
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Mediate Project'),
+      '#value' => $this->t('Submit Project'),
     ];
 
     return $form;
@@ -53,19 +51,14 @@ class ProjectSubmitForm extends FormBase {
 
     /** @var \Drupal\projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];
-    $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
     // Mediate project.
-    if ($project->workflowManager()->transitionMediate()) {
-      $project->setParticipants($participants);
-      if ($manager = $project->getManager()) {
-        $project->appendParticipant($manager, 'Manager');
-      }
+    if ($project->workflowManager()->transitionSubmit()) {
       $project->save();
-      $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
+      $this->messenger()->addMessage($this->t('Project was submitted successfully.'));
     }
     else {
-      $this->messenger()->addError($this->t('Could not mediate project.'));
+      $this->messenger()->addError($this->t('Could not submit project.'));
     }
 
     // Set redirect after submission.
