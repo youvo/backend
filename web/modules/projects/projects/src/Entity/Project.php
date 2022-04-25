@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
@@ -34,33 +35,29 @@ class Project extends Node implements ProjectInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * This is a quick hack to recalculate the project field of the owner of the
-   * project.
-   *
-   * @todo TEMPORARY - remove when projects field for organizations is removed.
    */
   public function delete() {
+
+    // Invalidate cache to recalculate the field projects of the organization.
     if (!$this->isNew()) {
-      // Delete all referenced paragraphs.
+      /** @var \Drupal\organizations\Entity\Organization $organization */
       $organization = $this->getOwner();
+      Cache::invalidateTags($organization->getCacheTagsToInvalidate());
     }
+
     parent::delete();
-    if (isset($organization)) {
-      $organization->save();
-    }
   }
 
   /**
    * {@inheritdoc}
-   *
-   * This is a quick hack to recalculate the project field of the owner of the
-   * project.
-   *
-   * @todo TEMPORARY - remove when projects field for organizations is removed.
    */
   public function postCreate(EntityStorageInterface $storage) {
-    $this->getOwner()->save();
+
+    // Invalidate cache to recalculate the field projects of the organization.
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $this->getOwner();
+    Cache::invalidateTags($organization->getCacheTagsToInvalidate());
+
     parent::postCreate($storage);
   }
 
