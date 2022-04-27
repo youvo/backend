@@ -53,4 +53,22 @@ class ProjectActionsAccess extends ControllerBase {
     return AccessResult::forbidden();
   }
 
+  /**
+   * Checks access for project apply.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Run access checks for this account.
+   * @param \Drupal\projects\Entity\Project|null $project
+   *   The node id.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access results.
+   */
+  public function accessProjectNotify(AccountInterface $account, ProjectInterface $project = NULL) {
+    if ($project instanceof Project) {
+      return AccessResult::allowedIf(in_array('creative', $account->getRoles()));
+    }
+    return AccessResult::forbidden();
+  }
+
 }

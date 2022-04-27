@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Project Notify Resource.
@@ -24,6 +23,8 @@ use Symfony\Component\Routing\RouteCollection;
  * )
  */
 class ProjectNotifyResource extends ResourceBase {
+
+  use ProjectActionRestResourceRoutesTrait;
 
   /**
    * The event dispatcher.
@@ -100,28 +101,7 @@ class ProjectNotifyResource extends ResourceBase {
    * {@inheritdoc}
    */
   public function routes() {
-
-    // Gather properties.
-    $collection = new RouteCollection();
-    $definition = $this->getPluginDefinition();
-    $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
-
-    // Add access check and route entity context parameter for each method.
-    foreach ($this->availableMethods() as $method) {
-      $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\projects\ProjectActionsAccess::accessProjectNotify');
-      $parameters = $route->getOption('parameters') ?: [];
-      $route->setOption('parameters', $parameters + [
-        'project' => [
-          'type' => 'entity:node',
-          'converter' => 'paramconverter.uuid',
-        ],
-      ]);
-      $collection->add("$route_name.$method", $route);
-    }
-
-    return $collection;
+    return $this->routesWithAccessCallback('accessProjectNotify');
   }
 
 }
