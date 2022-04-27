@@ -59,6 +59,9 @@
  # Enable auth.
  ddev auth ssh
 
+ # Disable xdebug for installation.
+ ddev xdebug disable
+
  # Reinstall drupal.
  echo "Installing Drupal ..."
  ddev drush si -y youvo_development \
@@ -78,6 +81,10 @@
  cd web/sites/default || exit
  chmod 0444 settings.php
  chmod 0444 default.settings.php
+ cd ../../..
+
+ # Enable xdebug.
+ ddev xdebug enable
 
  # Bye bye.
  DURATION=$((SECONDS - START_TIME))
