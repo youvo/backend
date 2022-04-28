@@ -3,7 +3,6 @@
 namespace Drupal\projects;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\projects\Entity\Project;
 
 /**
  * Provides methods to manage the workflow of a project.
@@ -27,9 +26,9 @@ class ProjectWorkflowManager {
   /**
    * The project calling the workflow manager.
    *
-   * @var \Drupal\projects\Entity\Project
+   * @var \Drupal\projects\ProjectInterface
    */
-  private Project $project;
+  private ProjectInterface $project;
 
   /**
    * The entity type manager.
@@ -41,13 +40,13 @@ class ProjectWorkflowManager {
   /**
    * Constructs a ProjectWorkflowManager object.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
   public function __construct(
-    Project $project,
+    ProjectInterface $project,
     EntityTypeManagerInterface $entity_type_manager
   ) {
     $this->project = $project;
