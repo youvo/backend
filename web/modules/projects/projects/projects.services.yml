@@ -13,3 +13,6 @@ services:
       - { name: event_subscriber }
     arguments:
       [ '@serialization.json' ]
+  logger.channel.projects:
+    parent: logger.channel_base
+    arguments: [ 'projects' ]
