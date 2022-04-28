@@ -9,4 +9,14 @@ use Drupal\user_bundle\Entity\TypedUser;
  */
 class Creative extends TypedUser {
 
+  /**
+   * Gets the name.
+   *
+   * @return string
+   *   The name.
+   */
+  public function getName() {
+    return $this->get('field_name')->value;
+  }
+
 }
