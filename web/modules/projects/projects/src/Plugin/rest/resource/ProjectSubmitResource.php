@@ -2,10 +2,10 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\projects\ProjectWorkflowManager;
+use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\Plugin\ResourceBase;
 use Drupal\projects\ProjectInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
@@ -19,32 +19,35 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectSubmitResource extends ResourceBase {
-
-  use ProjectTransitionRestResourceRoutesTrait;
+class ProjectSubmitResource extends ProjectTransitionResourceBase {
 
   /**
    * Responds to POST requests.
    *
    * @param \Drupal\projects\ProjectInterface $project
-   *   The referenced project.
+   *   The project.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   *   Thrown if unable to save project.
    */
-  public function post(ProjectInterface $project) {
+  public function post(ProjectInterface $project, Request $request) {
 
-    if (!$project->workflowManager()
-      ->canTransitionByLabel(ProjectWorkflowManager::TRANSITION_SUBMIT)) {
+    if ($project->workflowManager()->transitionPublish()) {
+      $project->save();
+      $this->eventDispatcher->dispatch(
+        new ProjectSubmitEvent($this->currentUser, $project, $request)
+      );
+      return new ModifiedResourceResponse('Project submitted.');
+    }
+    else {
       throw new ConflictHttpException('Project can not be published.');
     }
 
-    $project->workflowManager()->transitionPublish();
-    $project->save();
-
-    return new ModifiedResourceResponse('Project submitted.');
   }
 
 }
