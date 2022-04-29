@@ -20,6 +20,22 @@ project.mediate:
         type: entity:node
         converter: paramconverter.uuid
 
+project.publish:
+  path: '/projects/{project}/publish'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectPublishForm'
+    _title: 'Publish Project'
+    transition: 'publish'
+  requirements:
+    _custom_access: '\Drupal\projects\ProjectTransitionAccess::accessProjectTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
 project.submit:
   path: '/projects/{project}/submit'
   defaults:

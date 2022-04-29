@@ -1,0 +1,11 @@
+id: project.publish
+plugin_id: 'project:publish'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
