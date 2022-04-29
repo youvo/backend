@@ -4,12 +4,12 @@
 # and parameters option.
 # The converter has to be set as paramconverter.uuid to resolve REST
 # requests with UUIDs correctly.
-project.mediate:
-  path: '/projects/{project}/mediate'
+project.submit:
+  path: '/projects/{project}/submit'
   defaults:
-    _form: '\Drupal\projects\Form\ProjectMediateForm'
-    _title: 'Mediate Project'
-    transition: 'mediate'
+    _form: '\Drupal\projects\Form\ProjectSubmitForm'
+    _title: 'Submit Project'
+    transition: 'submit'
   requirements:
     _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
     project: \d+
@@ -36,12 +36,28 @@ project.publish:
         type: entity:node
         converter: paramconverter.uuid
 
-project.submit:
-  path: '/projects/{project}/submit'
+project.mediate:
+  path: '/projects/{project}/mediate'
   defaults:
-    _form: '\Drupal\projects\Form\ProjectSubmitForm'
-    _title: 'Submit Project'
-    transition: 'submit'
+    _form: '\Drupal\projects\Form\ProjectMediateForm'
+    _title: 'Mediate Project'
+    transition: 'mediate'
+  requirements:
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
+project.complete:
+  path: '/projects/{project}/complete'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectCompleteForm'
+    _title: 'Complete Project'
+    transition: 'complete'
   requirements:
     _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
     project: \d+
