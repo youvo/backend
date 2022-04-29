@@ -2,6 +2,7 @@
 
 namespace Drupal\projects;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -22,193 +23,176 @@ class ProjectWorkflowManager {
   const TRANSITION_RESET = 'reset';
 
   const WORKFLOW_ID = 'project_lifecycle';
+  const LIFECYCLE_FIELD = 'field_lifecycle';
 
   /**
    * The project calling the workflow manager.
    *
-   * @var \Drupal\projects\ProjectInterface
+   * @var \Drupal\projects\ProjectInterface|null
    */
-  private ProjectInterface $project;
+  protected ?ProjectInterface $project = NULL;
 
   /**
-   * The entity type manager.
+   * The workflow storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  private EntityTypeManagerInterface $entityTypeManager;
+  protected EntityStorageInterface $workflowStorage;
 
   /**
    * Constructs a ProjectWorkflowManager object.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(
-    ProjectInterface $project,
-    EntityTypeManagerInterface $entity_type_manager
-  ) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->workflowStorage = $entity_type_manager->getStorage('workflow');
+  }
+
+  /**
+   * Sets the project property.
+   */
+  public function setProject(ProjectInterface $project): void {
     $this->project = $project;
-    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * Calls the project property.
+   */
+  protected function project(): ProjectInterface {
+    if (isset($this->project)) {
+      return $this->project;
+    }
+    throw new \UnexpectedValueException('Project not set properly in workflow manager.');
   }
 
   /**
    * Gets current state of project.
    */
-  private function getState() {
-    return $this->project->get('field_lifecycle')->value;
+  protected function getState(): string {
+    return $this->project()->get(self::LIFECYCLE_FIELD)->value;
   }
 
   /**
    * Is the project a draft?
    */
-  public function isDraft() {
+  public function isDraft(): bool {
     return $this->getState() === self::STATE_DRAFT;
   }
 
   /**
    * Is the project pending?
    */
-  public function isPending() {
+  public function isPending(): bool {
     return $this->getState() === self::STATE_PENDING;
   }
 
   /**
    * Is the project open?
    */
-  public function isOpen() {
+  public function isOpen(): bool {
     return $this->getState() === self::STATE_OPEN;
   }
 
   /**
    * Is the project ongoing?
    */
-  public function isOngoing() {
+  public function isOngoing(): bool {
     return $this->getState() === self::STATE_ONGOING;
   }
 
   /**
    * Is the project completed?
    */
-  public function isCompleted() {
+  public function isCompleted(): bool {
     return $this->getState() === self::STATE_COMPLETED;
   }
 
   /**
    * Checks if project can transition.
    */
-  public function canTransitionByLabel($transition) {
-    return match ($transition) {
-      self::TRANSITION_SUBMIT => $this->canTransitionSubmit(),
-      self::TRANSITION_PUBLISH => $this->canTransitionPublish(),
-      self::TRANSITION_MEDIATE => $this->canTransitionMediate(),
-      self::TRANSITION_COMPLETE => $this->canTransitionComplete(),
-      self::TRANSITION_RESET => $this->canTransitionReset(),
-      default => FALSE,
-    };
+  public function canTransition(string $transition): bool {
+    $new_state = $this->getSuccessorFromTransition($transition);
+    $has_transition = $this->hasTransition($this->getState(), $new_state);
+    if ($transition == self::TRANSITION_MEDIATE) {
+      return $this->project()->hasApplicant() && $has_transition;
+    }
+    return $has_transition;
   }
 
   /**
    * Submit project.
    */
-  public function transitionSubmit() {
-    return $this->transition(self::TRANSITION_SUBMIT, self::STATE_PENDING);
+  public function submit() {
+    return $this->transition(self::TRANSITION_SUBMIT);
   }
 
   /**
    * Publish project.
    */
-  public function transitionPublish() {
-    return $this->transition(self::TRANSITION_PUBLISH, self::STATE_OPEN);
+  public function publish() {
+    return $this->transition(self::TRANSITION_PUBLISH);
   }
 
   /**
    * Mediate project.
    */
-  public function transitionMediate() {
-    return $this->transition(self::TRANSITION_MEDIATE, self::STATE_ONGOING);
+  public function mediate() {
+    return $this->transition(self::TRANSITION_MEDIATE);
   }
 
   /**
    * Complete project.
    */
-  public function transitionComplete() {
-    return $this->transition(self::TRANSITION_COMPLETE, self::STATE_COMPLETED);
+  public function complete() {
+    return $this->transition(self::TRANSITION_COMPLETE);
   }
 
   /**
    * Reset project.
    */
-  public function transitionReset() {
-    return $this->transition(self::TRANSITION_RESET, self::STATE_DRAFT);
+  public function reset() {
+    return $this->transition(self::TRANSITION_RESET);
   }
 
   /**
    * Abstraction of forward transition flow check.
    */
-  private function hasTransition($current_state, $new_state) {
+  protected function hasTransition($current_state, $new_state): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = $this->loadWorkflow();
+    $workflow = $this->workflowStorage->load(self::WORKFLOW_ID);
     return $current_state != $new_state &&
       $workflow->getTypePlugin()
         ->hasTransitionFromStateToState($current_state, $new_state);
   }
 
   /**
-   * Checks if project can transition to state 'ongoing'.
-   */
-  private function canTransitionSubmit() {
-    return $this->hasTransition($this->getState(), self::STATE_PENDING);
-  }
-
-  /**
-   * Checks if project can transition to state 'open'.
-   */
-  private function canTransitionPublish() {
-    return $this->hasTransition($this->getState(), self::STATE_OPEN);
-  }
-
-  /**
-   * Checks if project can transition to state 'ongoing'.
-   */
-  private function canTransitionMediate() {
-    return $this->project->hasApplicant() &&
-      $this->hasTransition($this->getState(), self::STATE_ONGOING);
-  }
-
-  /**
-   * Checks if project can transition to state 'completed'.
-   */
-  private function canTransitionComplete() {
-    return $this->hasTransition($this->getState(), self::STATE_COMPLETED);
-  }
-
-  /**
-   * Checks if project can transition to state 'draft'.
-   */
-  private function canTransitionReset() {
-    return $this->hasTransition($this->getState(), self::STATE_DRAFT);
-  }
-
-  /**
    * Set new lifecycle for transition.
    */
-  private function transition($transition, $new_state) {
-    if ($this->canTransitionByLabel($transition)) {
-      $this->project->set('field_lifecycle', $new_state);
+  protected function transition(string $transition) {
+    if ($this->canTransition($transition)) {
+      $new_state = $this->getSuccessorFromTransition($transition);
+      $this->project()->set(self::LIFECYCLE_FIELD, $new_state);
       return TRUE;
     }
     return FALSE;
   }
 
   /**
-   * Loads workflow for current project.
+   * Gets new state assuming linear transition flow.
    */
-  private function loadWorkflow() {
-    $entity_type_manager = $this->entityTypeManager;
-    return $entity_type_manager->getStorage('workflow')
-      ->load(self::WORKFLOW_ID);
+  protected function getSuccessorFromTransition(string $transition): string {
+    return match ($transition) {
+      self::TRANSITION_SUBMIT => self::STATE_PENDING,
+      self::TRANSITION_PUBLISH => self::STATE_OPEN,
+      self::TRANSITION_MEDIATE => self::STATE_ONGOING,
+      self::TRANSITION_COMPLETE => self::STATE_COMPLETED,
+      self::TRANSITION_RESET => self::STATE_DRAFT,
+      default => '',
+    };
   }
 
 }

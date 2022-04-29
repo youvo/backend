@@ -28,7 +28,8 @@ class Project extends Node implements ProjectInterface {
    */
   public function workflowManager() {
     if (!isset($this->workflowManager)) {
-      $this->workflowManager = new ProjectWorkflowManager($this, $this->entityTypeManager());
+      $this->workflowManager = \Drupal::service('project.workflow_manager');
+      $this->workflowManager->setProject($this);
     }
     return $this->workflowManager;
   }

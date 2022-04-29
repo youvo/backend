@@ -220,7 +220,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     }
 
     // Mediate project with participants.
-    if (!empty($selected_creatives_ids) && $project->workflowManager()->transitionMediate()) {
+    if (!empty($selected_creatives_ids) && $project->workflowManager()->mediate()) {
 
       $project->setParticipants($selected_creatives_ids);
       if ($manager = $project->getManager()) {

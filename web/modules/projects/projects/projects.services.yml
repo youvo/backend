@@ -1,4 +1,8 @@
 services:
+  project.workflow_manager:
+    class: Drupal\projects\ProjectWorkflowManager
+    arguments:
+      [ '@entity_type.manager' ]
   project.route_subscriber:
     class: Drupal\projects\Routing\ProjectRouteSubscriber
     tags:
