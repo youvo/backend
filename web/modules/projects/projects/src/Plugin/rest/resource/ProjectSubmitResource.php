@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
- * Provides Project Mediate Resource.
+ * Provides Project Submit Resource.
  *
  * @RestResource(
  *   id = "project:submit",
@@ -37,7 +37,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request) {
 
-    if ($project->lifecycle()->publish()) {
+    if ($project->lifecycle()->submit()) {
       $project->save();
       $this->eventDispatcher->dispatch(
         new ProjectSubmitEvent($this->currentUser, $project, $request)
@@ -45,7 +45,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
       return new ModifiedResourceResponse('Project submitted.');
     }
     else {
-      throw new ConflictHttpException('Project can not be published.');
+      throw new ConflictHttpException('Project can not be submitted.');
     }
 
   }
