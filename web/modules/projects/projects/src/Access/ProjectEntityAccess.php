@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\projects;
+namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeAccessControlHandler;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Access handler for project entities.
@@ -25,7 +25,7 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
   public function checkAccess(EntityInterface $node, $operation, AccountInterface $account) {
 
     // Only projects should be handled by this access controller.
-    if (!$node instanceof Project) {
+    if (!$node instanceof ProjectInterface) {
       return parent::checkAccess($node, $operation, $account);
     }
 

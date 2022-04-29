@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\projects;
+namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\user_types\Utility\Profile;
 use Drupal\youvo\Utility\FieldAccess;
 
@@ -71,7 +71,7 @@ class ProjectFieldAccess extends FieldAccess {
   ) {
 
     // Only project fields should be controlled by this class.
-    if (!$entity instanceof Project) {
+    if (!$entity instanceof ProjectInterface) {
       return AccessResult::neutral();
     }
 

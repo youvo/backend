@@ -4,7 +4,7 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\ProjectActionAccess;
+use Drupal\projects\Access\ProjectActionAccess;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
