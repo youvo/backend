@@ -4,7 +4,7 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\ProjectActionsAccess;
+use Drupal\projects\ProjectActionAccess;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -114,7 +114,7 @@ class ProjectActionResourceBase extends ResourceBase {
 
       // Check if access callback exists and set requirement.
       if (!empty($access_callback)) {
-        $access_class = ProjectActionsAccess::class;
+        $access_class = ProjectActionAccess::class;
         if (method_exists($access_class, $access_callback)) {
           $route->setRequirement('_custom_access', $access_class . '::' . $access_callback);
         }
