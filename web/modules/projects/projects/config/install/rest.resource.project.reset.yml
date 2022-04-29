@@ -1,0 +1,11 @@
+id: project.reset
+plugin_id: 'project:reset'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
