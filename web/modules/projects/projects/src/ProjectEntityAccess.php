@@ -65,9 +65,9 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
     if ($project->isAuthor($account)) {
       return AccessResult::forbiddenIf(
         !$project->isPublished() ||
-        !($project->workflowManager()->isPending() ||
-        $project->workflowManager()->isDraft() ||
-        $project->workflowManager()->isOpen()))
+        !($project->lifecycle()->isPending() ||
+        $project->lifecycle()->isDraft() ||
+        $project->lifecycle()->isOpen()))
         ->cachePerUser()
         ->addCacheableDependency($project);
     }
@@ -89,8 +89,8 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
 
     // The organization can only delete pending or draft projects.
     if ($project->isAuthor($account) &&
-      !($project->workflowManager()->isPending() ||
-        $project->workflowManager()->isDraft())) {
+      !($project->lifecycle()->isPending() ||
+        $project->lifecycle()->isDraft())) {
       return AccessResult::forbidden()
         ->cachePerUser()
         ->addCacheableDependency($project);

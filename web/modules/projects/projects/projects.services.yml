@@ -1,6 +1,6 @@
 services:
-  project.workflow_manager:
-    class: Drupal\projects\ProjectWorkflowManager
+  project.lifecycle:
+    class: Drupal\projects\ProjectLifecycle
     arguments:
       [ '@entity_type.manager' ]
   project.route_subscriber:

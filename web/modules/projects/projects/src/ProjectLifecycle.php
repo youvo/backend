@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 /**
  * Provides methods to manage the workflow of a project.
  */
-class ProjectWorkflowManager {
+class ProjectLifecycle {
 
   const STATE_DRAFT = 'draft';
   const STATE_PENDING = 'pending';
@@ -40,7 +40,7 @@ class ProjectWorkflowManager {
   protected EntityStorageInterface $workflowStorage;
 
   /**
-   * Constructs a ProjectWorkflowManager object.
+   * Constructs a ProjectLifecycle object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -115,64 +115,61 @@ class ProjectWorkflowManager {
    * Checks if project can transition.
    */
   public function canTransition(string $transition): bool {
-    $new_state = $this->getSuccessorFromTransition($transition);
-    $has_transition = $this->hasTransition($this->getState(), $new_state);
     if ($transition == self::TRANSITION_MEDIATE) {
-      return $this->project()->hasApplicant() && $has_transition;
+      return $this->project()->hasApplicant() &&
+        $this->hasTransition($transition);
     }
-    return $has_transition;
+    return $this->hasTransition($transition);
   }
 
   /**
    * Submit project.
    */
   public function submit() {
-    return $this->transition(self::TRANSITION_SUBMIT);
+    return $this->doTransition(self::TRANSITION_SUBMIT);
   }
 
   /**
    * Publish project.
    */
   public function publish() {
-    return $this->transition(self::TRANSITION_PUBLISH);
+    return $this->doTransition(self::TRANSITION_PUBLISH);
   }
 
   /**
    * Mediate project.
    */
   public function mediate() {
-    return $this->transition(self::TRANSITION_MEDIATE);
+    return $this->doTransition(self::TRANSITION_MEDIATE);
   }
 
   /**
    * Complete project.
    */
   public function complete() {
-    return $this->transition(self::TRANSITION_COMPLETE);
+    return $this->doTransition(self::TRANSITION_COMPLETE);
   }
 
   /**
    * Reset project.
    */
   public function reset() {
-    return $this->transition(self::TRANSITION_RESET);
+    return $this->doTransition(self::TRANSITION_RESET);
   }
 
   /**
    * Abstraction of forward transition flow check.
    */
-  protected function hasTransition($current_state, $new_state): bool {
+  protected function hasTransition($transition): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->workflowStorage->load(self::WORKFLOW_ID);
-    return $current_state != $new_state &&
-      $workflow->getTypePlugin()
-        ->hasTransitionFromStateToState($current_state, $new_state);
+    return $workflow->getTypePlugin()->hasTransition($transition);
   }
 
   /**
    * Set new lifecycle for transition.
    */
-  protected function transition(string $transition) {
+  protected function doTransition(string $transition) {
     if ($this->canTransition($transition)) {
       $new_state = $this->getSuccessorFromTransition($transition);
       $this->project()->set(self::LIFECYCLE_FIELD, $new_state);

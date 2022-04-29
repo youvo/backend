@@ -13,10 +13,10 @@ interface ProjectInterface extends NodeInterface {
   /**
    * Calls project workflow manager which holds/manipulates the state.
    *
-   * @return \Drupal\projects\ProjectWorkflowManager
+   * @return \Drupal\projects\ProjectLifecycle
    *   The project workflow manager.
    */
-  public function workflowManager();
+  public function lifecycle();
 
   /**
    * Checks whether the user is an applicant.

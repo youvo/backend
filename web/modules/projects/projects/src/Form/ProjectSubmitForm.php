@@ -53,7 +53,7 @@ class ProjectSubmitForm extends FormBase {
     $project = $form_state->getValues()['project'];
 
     // Mediate project.
-    if ($project->workflowManager()->submit()) {
+    if ($project->lifecycle()->submit()) {
       $project->save();
       $this->messenger()->addMessage($this->t('Project was submitted successfully.'));
     }

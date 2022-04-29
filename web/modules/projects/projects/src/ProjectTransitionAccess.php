@@ -5,6 +5,7 @@ namespace Drupal\projects;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\lifecycle\Permissions;
 use Drupal\projects\Entity\Project;
 
 /**
@@ -28,8 +29,8 @@ class ProjectTransitionAccess extends ControllerBase {
   public function accessProjectTransition(AccountInterface $account, ProjectInterface $project = NULL, string $transition = '') {
     if ($project instanceof Project && !empty($transition)) {
       return AccessResult::allowedIf(
-        $account->hasPermission('use project_lifecycle transition project_' . $transition) &&
-        $project->workflowManager()->canTransition($transition)
+        Permissions::useTransition($account, 'project_lifecycle', $transition) &&
+        $project->lifecycle()->canTransition($transition)
       );
     }
     return AccessResult::forbidden();

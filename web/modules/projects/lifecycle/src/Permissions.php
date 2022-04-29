@@ -47,14 +47,15 @@ class Permissions {
    *   The user accounts.
    * @param string $workflowId
    *   The workflow the transition belongs to.
-   * @param \Drupal\workflows\TransitionInterface $transition
-   *   The transition.
+   * @param \Drupal\workflows\TransitionInterface|string $transition
+   *   The transition or the transition ID.
    *
    * @return bool
    *   Whether the user can use the transition.
    */
-  public static function useTransition(AccountInterface $account, string $workflowId, TransitionInterface $transition): bool {
-    return $account->hasPermission(sprintf('use %s transition %s', $workflowId, $transition->id()));
+  public static function useTransition(AccountInterface $account, string $workflowId, TransitionInterface|string $transition): bool {
+    $transition_id = $transition instanceof TransitionInterface ? $transition->id() : $transition;
+    return $account->hasPermission(sprintf('use %s transition %s', $workflowId, $transition_id));
   }
 
 }

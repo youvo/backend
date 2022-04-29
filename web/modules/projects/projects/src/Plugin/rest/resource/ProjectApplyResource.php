@@ -33,7 +33,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   public function get(ProjectInterface $project) {
 
     // Is the project open?
-    if (!$project->workflowManager()->isOpen()) {
+    if (!$project->lifecycle()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
 
@@ -65,7 +65,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   public function post(Project $project, Request $request) {
 
     // Is the project open?
-    if (!$project->workflowManager()->isOpen()) {
+    if (!$project->lifecycle()->isOpen()) {
       return new ModifiedResourceResponse('Project is not open to apply.', 403);
     }
 

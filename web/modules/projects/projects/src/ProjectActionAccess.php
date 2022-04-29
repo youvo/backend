@@ -28,7 +28,7 @@ class ProjectActionAccess extends ControllerBase {
     if ($project instanceof Project) {
       return AccessResult::allowedIf(
         Profile::isCreative($account) &&
-        $project->workflowManager()->isOpen()
+        $project->lifecycle()->isOpen()
       );
     }
     return AccessResult::forbidden();
@@ -48,7 +48,7 @@ class ProjectActionAccess extends ControllerBase {
   public function accessProjectNotify(AccountInterface $account, ProjectInterface $project = NULL) {
     if ($project instanceof Project) {
       return AccessResult::allowedIf(
-        $project->workflowManager()->isDraft() &&
+        $project->lifecycle()->isDraft() &&
         $project->isAuthorOrManager($account)
       );
     }

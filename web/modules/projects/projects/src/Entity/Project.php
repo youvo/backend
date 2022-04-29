@@ -8,7 +8,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
 use Drupal\organizations\ManagerInterface;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectWorkflowManager;
+use Drupal\projects\ProjectLifecycle;
 use Drupal\user_types\Utility\Profile;
 
 /**
@@ -17,21 +17,21 @@ use Drupal\user_types\Utility\Profile;
 class Project extends Node implements ProjectInterface {
 
   /**
-   * The workflow manager for this project.
+   * The project lifecycle.
    *
-   * @var \Drupal\projects\ProjectWorkflowManager
+   * @var \Drupal\projects\ProjectLifecycle
    */
-  private ProjectWorkflowManager $workflowManager;
+  protected ProjectLifecycle $lifecycle;
 
   /**
    * Calls project workflow manager which holds/manipulates the state.
    */
-  public function workflowManager() {
-    if (!isset($this->workflowManager)) {
-      $this->workflowManager = \Drupal::service('project.workflow_manager');
-      $this->workflowManager->setProject($this);
+  public function lifecycle() {
+    if (!isset($this->lifecycle)) {
+      $this->lifecycle = \Drupal::service('project.lifecycle');
+      $this->lifecycle->setProject($this);
     }
-    return $this->workflowManager;
+    return $this->lifecycle;
   }
 
   /**

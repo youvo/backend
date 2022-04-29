@@ -37,7 +37,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request) {
 
-    if ($project->workflowManager()->publish()) {
+    if ($project->lifecycle()->publish()) {
       $project->save();
       $this->eventDispatcher->dispatch(
         new ProjectSubmitEvent($this->currentUser, $project, $request)

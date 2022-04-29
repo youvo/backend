@@ -111,14 +111,14 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isCompleted() &&
+      $entity->lifecycle()->isCompleted() &&
       self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view applicants for open projects.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isOpen() &&
+      $entity->lifecycle()->isOpen() &&
       $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();
@@ -127,7 +127,7 @@ class ProjectFieldAccess extends FieldAccess {
     // Authors and managers may view participants for ongoing projects. Note
     // that completed projects are handled above.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isOngoing() &&
+      $entity->lifecycle()->isOngoing() &&
       $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();
