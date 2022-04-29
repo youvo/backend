@@ -2,7 +2,6 @@
 
 namespace Drupal\projects\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
 use Drupal\projects\ProjectInterface;
@@ -10,7 +9,7 @@ use Drupal\projects\ProjectInterface;
 /**
  * The ProjectMediateForm provides a simple UI for changing lifecycle state.
  */
-class ProjectMediateForm extends FormBase {
+class ProjectMediateForm extends ProjectActionFormBase {
 
   /**
    * {@inheritdoc}

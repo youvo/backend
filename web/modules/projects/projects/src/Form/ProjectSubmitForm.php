@@ -2,14 +2,13 @@
 
 namespace Drupal\projects\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\projects\ProjectInterface;
 
 /**
  * The project submit form provides a simple UI to change the lifecycle state.
  */
-class ProjectSubmitForm extends FormBase {
+class ProjectSubmitForm extends ProjectActionFormBase {
 
   /**
    * {@inheritdoc}
