@@ -26,7 +26,7 @@ class ProjectLifecycle {
   const LIFECYCLE_FIELD = 'field_lifecycle';
 
   /**
-   * The project calling the workflow manager.
+   * The project calling the lifecycle.
    *
    * @var \Drupal\projects\ProjectInterface|null
    */
