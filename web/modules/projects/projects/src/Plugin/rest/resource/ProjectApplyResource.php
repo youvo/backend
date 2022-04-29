@@ -6,7 +6,6 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides Project Apply Resource.
@@ -53,8 +52,6 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    *
    * @param \Drupal\projects\Entity\Project $project
    *   The project.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The response.
@@ -62,7 +59,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   Thrown if project can not be saved.
    */
-  public function post(Project $project, Request $request) {
+  public function post(Project $project) {
 
     // Is the project open?
     if (!$project->lifecycle()->isOpen()) {
@@ -82,7 +79,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
       $project->save();
 
       // Dispatch project apply event.
-      $event = new ProjectApplyEvent($this->currentUser, $project, $request);
+      $event = new ProjectApplyEvent($this->currentUser, $project);
       $this->eventDispatcher->dispatch($event);
 
       return new ModifiedResourceResponse('Added creative to applicants.', 200);

@@ -5,7 +5,6 @@ namespace Drupal\projects\Event;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\ProjectInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Defines a base class for project events.
@@ -27,30 +26,19 @@ abstract class ProjectEventBase extends Event {
   protected ProjectInterface $project;
 
   /**
-   * The request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected Request $request;
-
-  /**
-   * Constructs a ProjectNotifyEvent object.
+   * Constructs a ProjectEventBase object.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    * @param \Drupal\projects\ProjectInterface $project
    *   The project.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
    */
   public function __construct(
     AccountInterface $current_user,
-    ProjectInterface $project,
-    Request $request
+    ProjectInterface $project
   ) {
     $this->currentUser = $current_user;
     $this->project = $project;
-    $this->request = $request;
   }
 
   /**
@@ -65,13 +53,6 @@ abstract class ProjectEventBase extends Event {
    */
   public function getProject() {
     return $this->project;
-  }
-
-  /**
-   * Gets the request.
-   */
-  public function getRequest() {
-    return $this->request;
   }
 
 }

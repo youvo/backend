@@ -3,6 +3,7 @@
 namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
@@ -54,6 +55,9 @@ class ProjectSubmitForm extends ProjectActionFormBase {
     // Mediate project.
     if ($project->lifecycle()->submit()) {
       $project->save();
+      $this->eventDispatcher->dispatch(
+        new ProjectSubmitEvent($this->currentUser(), $project)
+      );
       $this->messenger()->addMessage($this->t('Project was submitted successfully.'));
     }
     else {

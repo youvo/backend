@@ -3,6 +3,7 @@
 namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
@@ -54,6 +55,9 @@ class ProjectPublishForm extends ProjectActionFormBase {
     // Mediate project.
     if ($project->lifecycle()->publish()) {
       $project->save();
+      $this->eventDispatcher->dispatch(
+        new ProjectPublishEvent($this->currentUser(), $project)
+      );
       $this->messenger()->addMessage($this->t('Project was published successfully.'));
     }
     else {

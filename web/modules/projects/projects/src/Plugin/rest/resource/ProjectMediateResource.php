@@ -229,7 +229,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       $project->save();
 
       $this->eventDispatcher->dispatch(
-        new ProjectMediateEvent($this->currentUser, $project, $request)
+        new ProjectMediateEvent($this->currentUser, $project)
       );
 
       return new ResourceResponse('Project was mediated successfully.');
