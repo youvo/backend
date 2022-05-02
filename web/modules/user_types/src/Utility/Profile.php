@@ -11,23 +11,23 @@ use Drupal\Core\Session\AccountProxyInterface;
 final class Profile {
 
   /**
-   * Helper to get uid of an account.
+   * Gets UID of an account.
    */
-  public static function id(AccountInterface|int $account) {
+  public static function id(AccountInterface|int $account): int {
     return $account instanceof AccountInterface ? $account->id() : $account;
   }
 
   /**
-   * Helper to determine if account is creative.
+   * Determines if account is creative.
    */
-  public static function isCreative(AccountInterface $account) {
+  public static function isCreative(AccountInterface $account): bool {
     return self::isUserType($account, 'user', 'Drupal\\creatives\\Entity\\Creative');
   }
 
   /**
-   * Helper to determine if account is organization.
+   * Determines if account is organization.
    */
-  public static function isOrganization(AccountInterface $account) {
+  public static function isOrganization(AccountInterface $account): bool {
     return self::isUserType($account, 'organization', 'Drupal\\organizations\\Entity\\Organization');
   }
 
@@ -42,7 +42,7 @@ final class Profile {
     AccountInterface $account,
     string $type,
     string $class
-  ) {
+  ): bool {
     if ($account instanceof AccountProxyInterface) {
       $account = $account->getAccount();
     }

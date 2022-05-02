@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\projects;
+namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\user_types\Utility\Profile;
 use Drupal\youvo\Utility\FieldAccess;
 
@@ -71,7 +71,7 @@ class ProjectFieldAccess extends FieldAccess {
   ) {
 
     // Only project fields should be controlled by this class.
-    if (!$entity instanceof Project) {
+    if (!$entity instanceof ProjectInterface) {
       return AccessResult::neutral();
     }
 
@@ -111,14 +111,14 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isCompleted() &&
+      $entity->lifecycle()->isCompleted() &&
       self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
       return AccessResult::neutral();
     }
 
     // Authors and managers may view applicants for open projects.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isOpen() &&
+      $entity->lifecycle()->isOpen() &&
       $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();
@@ -127,7 +127,7 @@ class ProjectFieldAccess extends FieldAccess {
     // Authors and managers may view participants for ongoing projects. Note
     // that completed projects are handled above.
     if ($operation == 'view' &&
-      $entity->workflowManager()->isOngoing() &&
+      $entity->lifecycle()->isOngoing() &&
       $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();

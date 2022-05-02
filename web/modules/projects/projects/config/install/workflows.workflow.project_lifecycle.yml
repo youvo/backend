@@ -24,55 +24,55 @@ type_settings:
       label: Pending
       weight: 1
   transitions:
-    project_remain_draft:
+    remain_draft:
       label: 'Project Remain Draft'
       from:
         - draft
       to: draft
       weight: 0
-    project_complete:
+    complete:
       label: 'Project Complete'
       from:
         - ongoing
       to: completed
       weight: 7
-    project_mediate:
+    mediate:
       label: 'Project Mediate'
       from:
         - open
       to: ongoing
       weight: 5
-    project_publish:
+    publish:
       label: 'Project Publish'
       from:
         - pending
       to: open
       weight: 3
-    project_remain_completed:
+    remain_completed:
       label: 'Project Remain Completed'
       from:
         - completed
       to: completed
       weight: 8
-    project_remain_ongoing:
+    remain_ongoing:
       label: 'Project Remain Ongoing'
       from:
         - ongoing
       to: ongoing
       weight: 6
-    project_remain_open:
+    remain_open:
       label: 'Project Remain Open'
       from:
         - open
       to: open
       weight: 4
-    project_remain_pending:
+    remain_pending:
       label: 'Project Remain Pending'
       from:
         - pending
       to: pending
       weight: 2
-    project_reset:
+    reset:
       label: 'Project Reset'
       from:
         - completed
@@ -81,7 +81,7 @@ type_settings:
         - pending
       to: draft
       weight: 9
-    project_submit:
+    submit:
       label: 'Project Submit'
       from:
         - draft

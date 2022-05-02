@@ -1,4 +1,8 @@
 services:
+  project.lifecycle:
+    class: Drupal\projects\ProjectLifecycle
+    arguments:
+      [ '@entity_type.manager' ]
   project.route_subscriber:
     class: Drupal\projects\Routing\ProjectRouteSubscriber
     tags:
@@ -13,3 +17,6 @@ services:
       - { name: event_subscriber }
     arguments:
       [ '@serialization.json' ]
+  logger.channel.projects:
+    parent: logger.channel_base
+    arguments: [ 'projects' ]

@@ -2,15 +2,15 @@
 
 namespace Drupal\projects\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
+use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
  * The ProjectMediateForm provides a simple UI for changing lifecycle state.
  */
-class ProjectMediateForm extends FormBase {
+class ProjectMediateForm extends ProjectActionFormBase {
 
   /**
    * {@inheritdoc}
@@ -67,12 +67,15 @@ class ProjectMediateForm extends FormBase {
     $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
     // Mediate project.
-    if ($project->workflowManager()->transitionMediate()) {
+    if ($project->lifecycle()->mediate()) {
       $project->setParticipants($participants);
       if ($manager = $project->getManager()) {
         $project->appendParticipant($manager, 'Manager');
       }
       $project->save();
+      $this->eventDispatcher->dispatch(
+        new ProjectMediateEvent($this->currentUser(), $project)
+      );
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
     else {

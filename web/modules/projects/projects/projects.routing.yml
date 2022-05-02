@@ -4,6 +4,38 @@
 # and parameters option.
 # The converter has to be set as paramconverter.uuid to resolve REST
 # requests with UUIDs correctly.
+project.submit:
+  path: '/projects/{project}/submit'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectSubmitForm'
+    _title: 'Submit Project'
+    transition: 'submit'
+  requirements:
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
+project.publish:
+  path: '/projects/{project}/publish'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectPublishForm'
+    _title: 'Publish Project'
+    transition: 'publish'
+  requirements:
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
 project.mediate:
   path: '/projects/{project}/mediate'
   defaults:
@@ -11,7 +43,39 @@ project.mediate:
     _title: 'Mediate Project'
     transition: 'mediate'
   requirements:
-    _custom_access: '\Drupal\projects\ProjectActionsAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
+project.complete:
+  path: '/projects/{project}/complete'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectCompleteForm'
+    _title: 'Complete Project'
+    transition: 'complete'
+  requirements:
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:node
+        converter: paramconverter.uuid
+
+project.reset:
+  path: '/projects/{project}/reset'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectResetForm'
+    _title: 'Reset Project'
+    transition: 'reset'
+  requirements:
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE

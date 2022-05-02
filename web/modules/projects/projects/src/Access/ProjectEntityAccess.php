@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\projects;
+namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeAccessControlHandler;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Access handler for project entities.
@@ -25,7 +25,7 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
   public function checkAccess(EntityInterface $node, $operation, AccountInterface $account) {
 
     // Only projects should be handled by this access controller.
-    if (!$node instanceof Project) {
+    if (!$node instanceof ProjectInterface) {
       return parent::checkAccess($node, $operation, $account);
     }
 
@@ -65,9 +65,9 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
     if ($project->isAuthor($account)) {
       return AccessResult::forbiddenIf(
         !$project->isPublished() ||
-        !($project->workflowManager()->isPending() ||
-        $project->workflowManager()->isDraft() ||
-        $project->workflowManager()->isOpen()))
+        !($project->lifecycle()->isPending() ||
+        $project->lifecycle()->isDraft() ||
+        $project->lifecycle()->isOpen()))
         ->cachePerUser()
         ->addCacheableDependency($project);
     }
@@ -89,8 +89,8 @@ class ProjectEntityAccess extends NodeAccessControlHandler {
 
     // The organization can only delete pending or draft projects.
     if ($project->isAuthor($account) &&
-      !($project->workflowManager()->isPending() ||
-        $project->workflowManager()->isDraft())) {
+      !($project->lifecycle()->isPending() ||
+        $project->lifecycle()->isDraft())) {
       return AccessResult::forbidden()
         ->cachePerUser()
         ->addCacheableDependency($project);

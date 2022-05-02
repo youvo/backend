@@ -2,12 +2,13 @@
 
 namespace Drupal\projects\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\Entity\Node;
 use Drupal\organizations\ManagerInterface;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectWorkflowManager;
+use Drupal\projects\ProjectLifecycle;
 use Drupal\user_types\Utility\Profile;
 
 /**
@@ -16,51 +17,48 @@ use Drupal\user_types\Utility\Profile;
 class Project extends Node implements ProjectInterface {
 
   /**
-   * The workflow manager for this project.
+   * The project lifecycle.
    *
-   * @var \Drupal\projects\ProjectWorkflowManager
+   * @var \Drupal\projects\ProjectLifecycle
    */
-  private ProjectWorkflowManager $workflowManager;
+  protected ProjectLifecycle $lifecycle;
 
   /**
-   * Calls project workflow manager which holds/manipulates the state.
+   * Calls project lifecycle service which holds/manipulates the state.
    */
-  public function workflowManager() {
-    if (!isset($this->workflowManager)) {
-      $this->workflowManager = new ProjectWorkflowManager($this, $this->entityTypeManager());
+  public function lifecycle() {
+    if (!isset($this->lifecycle)) {
+      $this->lifecycle = \Drupal::service('project.lifecycle');
+      $this->lifecycle->setProject($this);
     }
-    return $this->workflowManager;
+    return $this->lifecycle;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * This is a quick hack to recalculate the project field of the owner of the
-   * project.
-   *
-   * @todo TEMPORARY - remove when projects field for organizations is removed.
    */
   public function delete() {
+
+    // Invalidate cache to recalculate the field projects of the organization.
     if (!$this->isNew()) {
-      // Delete all referenced paragraphs.
+      /** @var \Drupal\organizations\Entity\Organization $organization */
       $organization = $this->getOwner();
+      Cache::invalidateTags($organization->getCacheTagsToInvalidate());
     }
+
     parent::delete();
-    if (isset($organization)) {
-      $organization->save();
-    }
   }
 
   /**
    * {@inheritdoc}
-   *
-   * This is a quick hack to recalculate the project field of the owner of the
-   * project.
-   *
-   * @todo TEMPORARY - remove when projects field for organizations is removed.
    */
   public function postCreate(EntityStorageInterface $storage) {
-    $this->getOwner()->save();
+
+    // Invalidate cache to recalculate the field projects of the organization.
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $this->getOwner();
+    Cache::invalidateTags($organization->getCacheTagsToInvalidate());
+
     parent::postCreate($storage);
   }
 

@@ -5,7 +5,7 @@ namespace Drupal\projects\EventSubscriber;
 use Drupal\Component\Serialization\Json;
 use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\ProjectFieldAccess;
+use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\ProjectInterface;
 use Drupal\youvo\Exception\FieldAwareHttpException;
 use Drupal\youvo\Utility\FieldValidator;
