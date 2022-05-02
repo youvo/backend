@@ -38,7 +38,7 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    * {@inheritdoc}
    */
   public function routes() {
-    return $this->routesWithAccessCallback('accessProjectNotify');
+    return $this->routesWithAccessCallback('accessNotify');
   }
 
 }

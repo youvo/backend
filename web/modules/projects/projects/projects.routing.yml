@@ -11,7 +11,7 @@ project.submit:
     _title: 'Submit Project'
     transition: 'submit'
   requirements:
-    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE
@@ -27,7 +27,7 @@ project.publish:
     _title: 'Publish Project'
     transition: 'publish'
   requirements:
-    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE
@@ -43,7 +43,7 @@ project.mediate:
     _title: 'Mediate Project'
     transition: 'mediate'
   requirements:
-    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE
@@ -59,7 +59,7 @@ project.complete:
     _title: 'Complete Project'
     transition: 'complete'
   requirements:
-    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE
@@ -75,7 +75,7 @@ project.reset:
     _title: 'Reset Project'
     transition: 'reset'
   requirements:
-    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessProjectTransition'
+    _custom_access: '\Drupal\projects\Access\ProjectTransitionAccess::accessTransition'
     project: \d+
   options:
     _admin_route: TRUE

@@ -90,7 +90,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    * {@inheritdoc}
    */
   public function routes() {
-    return $this->routesWithAccessCallback('accessProjectApply');
+    return $this->routesWithAccessCallback('accessApply');
   }
 
 }
