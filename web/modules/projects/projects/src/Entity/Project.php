@@ -24,7 +24,7 @@ class Project extends Node implements ProjectInterface {
   protected ProjectLifecycle $lifecycle;
 
   /**
-   * Calls project workflow manager which holds/manipulates the state.
+   * Calls project lifecycle service which holds/manipulates the state.
    */
   public function lifecycle() {
     if (!isset($this->lifecycle)) {

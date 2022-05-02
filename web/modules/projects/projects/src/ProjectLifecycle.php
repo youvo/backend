@@ -70,49 +70,49 @@ class ProjectLifecycle {
   }
 
   /**
-   * Gets current state of project.
+   * Gets the current state of the project.
    */
   protected function getState(): string {
     return $this->project()->get(self::LIFECYCLE_FIELD)->value;
   }
 
   /**
-   * Is the project a draft?
+   * Checks if the project is a draft.
    */
   public function isDraft(): bool {
     return $this->getState() === self::STATE_DRAFT;
   }
 
   /**
-   * Is the project pending?
+   * Checks if the project is pending.
    */
   public function isPending(): bool {
     return $this->getState() === self::STATE_PENDING;
   }
 
   /**
-   * Is the project open?
+   * Checks if the project is open.
    */
   public function isOpen(): bool {
     return $this->getState() === self::STATE_OPEN;
   }
 
   /**
-   * Is the project ongoing?
+   * Checks if the project is ongoing.
    */
   public function isOngoing(): bool {
     return $this->getState() === self::STATE_ONGOING;
   }
 
   /**
-   * Is the project completed?
+   * Checks if the project is completed.
    */
   public function isCompleted(): bool {
     return $this->getState() === self::STATE_COMPLETED;
   }
 
   /**
-   * Checks if project can transition.
+   * Checks if the project can transition by transition label.
    */
   public function canTransition(string $transition): bool {
     if ($transition == self::TRANSITION_MEDIATE) {
@@ -123,37 +123,37 @@ class ProjectLifecycle {
   }
 
   /**
-   * Submit project.
+   * Submits the project.
    */
-  public function submit() {
+  public function submit(): bool {
     return $this->doTransition(self::TRANSITION_SUBMIT);
   }
 
   /**
-   * Publish project.
+   * Publishes the project.
    */
-  public function publish() {
+  public function publish(): bool {
     return $this->doTransition(self::TRANSITION_PUBLISH);
   }
 
   /**
-   * Mediate project.
+   * Mediates the project.
    */
-  public function mediate() {
+  public function mediate(): bool {
     return $this->doTransition(self::TRANSITION_MEDIATE);
   }
 
   /**
-   * Complete project.
+   * Completes the project.
    */
-  public function complete() {
+  public function complete(): bool {
     return $this->doTransition(self::TRANSITION_COMPLETE);
   }
 
   /**
-   * Reset project.
+   * Resets the project.
    */
-  public function reset() {
+  public function reset(): bool {
     return $this->doTransition(self::TRANSITION_RESET);
   }
 
@@ -167,9 +167,9 @@ class ProjectLifecycle {
   }
 
   /**
-   * Set new lifecycle for transition.
+   * Sets new project state for given transition.
    */
-  protected function doTransition(string $transition) {
+  protected function doTransition(string $transition): bool {
     if ($this->canTransition($transition)) {
       $new_state = $this->getSuccessorFromTransition($transition);
       $this->project()->set(self::LIFECYCLE_FIELD, $new_state);
