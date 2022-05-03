@@ -1,0 +1,5 @@
+entity.transactional_email.add_form:
+  route_name: 'entity.transactional_email.add_form'
+  title: 'Add transactional email'
+  appears_on:
+    - entity.transactional_email.collection

@@ -1,0 +1,12 @@
+mailer.settings_form:
+  title: mailer
+  description: Configure mailer.
+  parent: system.admin_config_system
+  route_name: mailer.settings_form
+  weight: 10
+
+entity.transactional_email.overview:
+  title: Transactional Emails
+  parent: system.admin_structure
+  description: 'List of transactional emails to extend site functionality.'
+  route_name: entity.transactional_email.collection

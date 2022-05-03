@@ -1,0 +1,39 @@
+mailer.settings_form:
+  path: '/admin/config/system/mailer'
+  defaults:
+    _title: 'mailer settings'
+    _form: 'Drupal\mailer\Form\SettingsForm'
+  requirements:
+    _permission: 'administer mailer configuration'
+
+entity.transactional_email.collection:
+  path: '/admin/structure/transactional-email'
+  defaults:
+    _entity_list: 'transactional_email'
+    _title: 'Transactional Email configuration'
+  requirements:
+    _permission: 'administer transactional_email'
+
+entity.transactional_email.add_form:
+  path: '/admin/structure/transactional_email/add'
+  defaults:
+    _entity_form: 'transactional_email.add'
+    _title: 'Add a transactional email'
+  requirements:
+    _permission: 'administer transactional_email'
+
+entity.transactional_email.edit_form:
+  path: '/admin/structure/transactional-email/{transactional_email}'
+  defaults:
+    _entity_form: 'transactional_email.edit'
+    _title: 'Edit a transactional email'
+  requirements:
+    _permission: 'administer transactional_email'
+
+entity.transactional_email.delete_form:
+  path: '/admin/structure/transactional-email/{transactional_email}/delete'
+  defaults:
+    _entity_form: 'transactional_email.delete'
+    _title: 'Delete a transactional email'
+  requirements:
+    _permission: 'administer transactional_email'

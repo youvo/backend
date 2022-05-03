@@ -1,0 +1,6 @@
+services:
+  mailer.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerSubscriber
+    arguments: ['@messenger']
+    tags:
+      - { name: event_subscriber }

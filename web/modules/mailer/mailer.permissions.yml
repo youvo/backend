@@ -1,0 +1,7 @@
+administer mailer configuration:
+  title: 'Administer mailer configuration'
+  description: 'Optional description.'
+  restrict access: true
+
+administer transactional_email:
+  title: 'Administer transactional email'
