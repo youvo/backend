@@ -5,6 +5,7 @@ namespace Drupal\organizations\Plugin\rest\resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\organizations\OrganizationFieldAccess;
@@ -123,7 +124,7 @@ class OrganizationCreateResource extends ResourceBase {
    * Responds to GET requests.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Contains request data.
+   *   The request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The response.
@@ -164,13 +165,13 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
-   * Responds POST requests.
+   * Responds to POST requests.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Contains request data.
+   *   The request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
+   *   The response.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
@@ -180,7 +181,7 @@ class OrganizationCreateResource extends ResourceBase {
       // Create new organization user.
       $organization = Organization::create(['type' => 'organization']);
       $attributes = $this->validateAndShiftRequest($request);
-      $organization = $this->populateFields($attributes, $organization);
+      $this->populateFields($attributes, $organization);
       $organization->setPassword((new Random)->string(32));
       $organization->enforceIsNew();
       $organization->addRole('prospect');
@@ -252,34 +253,28 @@ class OrganizationCreateResource extends ResourceBase {
   }
 
   /**
-   * Create new organization user with some validation.
+   * Populate organization fields from request attributes.
    *
    * @param array $attributes
    *   Contains organization attributes.
    * @param \Drupal\user_bundle\Entity\TypedUser $organization
    *   The organization.
-   *
-   * @return \Drupal\user_bundle\Entity\TypedUser
-   *   The organization with populated fields.
    */
   protected function populateFields(array $attributes, TypedUser $organization) {
 
-    // Populate fields.
+    // Prepare, validate and set each field.
     foreach ($attributes as $field_key => $value) {
-
-      // Validate and set value.
       $field_name = $this->validateAndRenameField($field_key, $organization);
-      $this->checkFieldAccess($field_name, $field_key);
-      $this->validateFieldValue($field_name, $field_key, $value, $organization);
-      $organization->get($field_name)->value = $value;
+      $field_definition = $organization->getFieldDefinition($field_name);
+      $this->checkFieldAccess($field_definition, $field_key);
+      $this->validateFieldValue($field_definition, $field_key, $value, $organization);
+      $organization->set($field_name, $value);
 
       // Set username identical to provided mail.
       if ($field_name == 'mail') {
         $organization->setUsername($value);
       }
     }
-
-    return $organization;
   }
 
   /**
@@ -287,27 +282,6 @@ class OrganizationCreateResource extends ResourceBase {
    */
   protected function accountExistsForEmail(string $email) {
     return !empty($this->userStorage->loadByProperties(['mail' => $email]));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function routes() {
-
-    // Gather properties.
-    $collection = new RouteCollection();
-    $definition = $this->getPluginDefinition();
-    $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
-
-    // Add access check and route entity context parameter for each method.
-    foreach ($this->availableMethods() as $method) {
-      $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\organizations\Controller\OrganizationAccessController::accessCreate');
-      $collection->add("$route_name.$method", $route);
-    }
-
-    return $collection;
   }
 
   /**
@@ -332,10 +306,10 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Checks the field access with the help of OrganizationFieldAccess.
    */
-  protected function checkFieldAccess(string $field_name, string $field_key) {
+  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key) {
     $fields_allowed = array_merge(['mail', 'field_referral'],
       OrganizationFieldAccess::EDIT_OWNER_OR_MANAGER);
-    if (!OrganizationFieldAccess::isFieldOfGroup($field_name, $fields_allowed)) {
+    if (!OrganizationFieldAccess::isFieldOfGroup($field_definition, $fields_allowed)) {
       throw new FieldAwareHttpException(403,
         'Access Denied. Not allowed to set ' . $field_key,
         $field_key);
@@ -345,13 +319,33 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Validates the field value with the help of the FieldValidator.
    */
-  protected function validateFieldValue(string $field_name, string $field_key, mixed $value, TypedUser $organization) {
-    $field_definition = $organization->getFieldDefinition($field_name);
+  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value, TypedUser $organization) {
     if (!FieldValidator::validate($field_definition, $value)) {
       throw new FieldAwareHttpException(400,
         'Malformed request body. Unable to validate the organization field ' . $field_key,
         $field_key);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function routes() {
+
+    // Gather properties.
+    $collection = new RouteCollection();
+    $definition = $this->getPluginDefinition();
+    $canonical_path = $definition['uri_paths']['canonical'];
+    $route_name = strtr($this->pluginId, ':', '.');
+
+    // Add access check and route entity context parameter for each method.
+    foreach ($this->availableMethods() as $method) {
+      $route = $this->getBaseRoute($canonical_path, $method);
+      $route->setRequirement('_custom_access', '\Drupal\organizations\Controller\OrganizationAccessController::accessCreate');
+      $collection->add("$route_name.$method", $route);
+    }
+
+    return $collection;
   }
 
 }
