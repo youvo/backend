@@ -27,7 +27,7 @@ use Drupal\mailer\TransactionalEmailInterface;
  *     }
  *   },
  *   config_prefix = "transactional_email",
- *   admin_permission = "administer transactional email",
+ *   admin_permission = "administer transactional emails",
  *   links = {
  *     "collection" = "/admin/structure/transactional-email",
  *     "add-form" = "/admin/structure/transactional-email/add",

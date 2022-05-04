@@ -5,16 +5,19 @@
  * Install, update and uninstall functions for the mailer module.
  */
 
-/**
- * Implements hook_install().
- */
-function mailer_install() {
-  // Do something.
-}
+use Drupal\user\Entity\Role;
 
 /**
- * Implements hook_uninstall().
+ * Implements hook_site_install_finished().
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function mailer_uninstall() {
-  // Do something.
+function projects_site_install_finished() {
+
+  // Edit transactional emails.
+  $role = Role::load('supervisor');
+  $role->grantPermission('edit transactional emails');
+  $role->save();
 }

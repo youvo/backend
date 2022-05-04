@@ -12,7 +12,7 @@ entity.transactional_email.collection:
     _entity_list: 'transactional_email'
     _title: 'Transactional Email configuration'
   requirements:
-    _permission: 'administer transactional_email'
+    _permission: 'edit transactional emails'
 
 entity.transactional_email.add_form:
   path: '/admin/structure/transactional_email/add'
@@ -20,7 +20,7 @@ entity.transactional_email.add_form:
     _entity_form: 'transactional_email.add'
     _title: 'Add a transactional email'
   requirements:
-    _permission: 'administer transactional_email'
+    _permission: 'administer transactional emails'
 
 entity.transactional_email.edit_form:
   path: '/admin/structure/transactional-email/{transactional_email}'
@@ -28,7 +28,7 @@ entity.transactional_email.edit_form:
     _entity_form: 'transactional_email.edit'
     _title: 'Edit a transactional email'
   requirements:
-    _permission: 'administer transactional_email'
+    _permission: 'edit transactional emails'
 
 entity.transactional_email.delete_form:
   path: '/admin/structure/transactional-email/{transactional_email}/delete'
@@ -36,4 +36,4 @@ entity.transactional_email.delete_form:
     _entity_form: 'transactional_email.delete'
     _title: 'Delete a transactional email'
   requirements:
-    _permission: 'administer transactional_email'
+    _permission: 'administer transactional emails'
