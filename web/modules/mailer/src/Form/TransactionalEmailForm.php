@@ -19,6 +19,8 @@ class TransactionalEmailForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
 
     $form = parent::form($form, $form_state);
+    $form['#title'] = $this->t('Edit %label',
+      ['%label' => $this->entity->label()]);
 
     $form['label'] = [
       '#type' => 'textfield',

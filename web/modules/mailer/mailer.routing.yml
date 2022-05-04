@@ -10,7 +10,7 @@ entity.transactional_email.collection:
   path: '/admin/structure/transactional-email'
   defaults:
     _entity_list: 'transactional_email'
-    _title: 'Transactional Email configuration'
+    _title: 'Transactional Emails'
   requirements:
     _permission: 'edit transactional emails'
 
@@ -26,7 +26,7 @@ entity.transactional_email.edit_form:
   path: '/admin/structure/transactional-email/{transactional_email}'
   defaults:
     _entity_form: 'transactional_email.edit'
-    _title: 'Edit a transactional email'
+    _title: 'Edit Transactional Email'
   requirements:
     _permission: 'edit transactional emails'
 

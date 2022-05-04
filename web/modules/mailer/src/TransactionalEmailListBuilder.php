@@ -15,7 +15,6 @@ class TransactionalEmailListBuilder extends ConfigEntityListBuilder {
    */
   public function buildHeader() {
     $header['label'] = $this->t('Label');
-    $header['id'] = $this->t('Machine name');
     return $header + parent::buildHeader();
   }
 
@@ -23,9 +22,7 @@ class TransactionalEmailListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\mailer\TransactionalEmailInterface $entity */
     $row['label'] = $entity->label();
-    $row['id'] = $entity->id();
     return $row + parent::buildRow($entity);
   }
 

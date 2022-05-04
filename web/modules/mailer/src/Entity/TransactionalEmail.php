@@ -3,6 +3,7 @@
 namespace Drupal\mailer\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\mailer\TransactionalEmailInterface;
 
 /**
@@ -105,6 +106,15 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
    */
   public function tokens() {
     return $this->tokens ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
+    $a_id = strstr($a->id(), '_', TRUE);
+    $b_id = strstr($a->id(), '_', TRUE);
+    return strnatcasecmp($a_id, $b_id);
   }
 
 }
