@@ -28,4 +28,3 @@ mailer.transactional_email.*:
         required:
           type: boolean
           label: Required
-
