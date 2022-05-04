@@ -49,10 +49,11 @@ class FieldValidator {
    */
   public static function validateTextWithSummary(FieldDefinitionInterface $field, mixed $value) {
     if (is_array($value)) {
+      $summary_is_valid = !array_key_exists('summary', $value) ||
+        is_null($value['summary']) || is_string($value['summary']);
       return array_key_exists('value', $value) &&
         (is_null($value['value']) || is_string($value['value'])) &&
-        array_key_exists('summary', $value) &&
-        (is_null($value['summary']) || is_string($value['summary']));
+        $summary_is_valid;
     }
     return is_null($value) ||is_string($value);
   }
