@@ -55,9 +55,7 @@ class ProjectCompleteForm extends ProjectActionFormBase {
     // Complete project.
     if ($project->lifecycle()->complete()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectCompleteEvent($this->currentUser(), $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
       $this->messenger()->addMessage($this->t('Project was completed successfully.'));
     }
     else {

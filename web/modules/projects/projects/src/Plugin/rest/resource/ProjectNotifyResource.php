@@ -29,8 +29,7 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    *   The response.
    */
   public function post(Project $project) {
-    $event = new ProjectNotifyEvent($this->currentUser, $project);
-    $this->eventDispatcher->dispatch($event);
+    $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
     return new ModifiedResourceResponse();
   }
 

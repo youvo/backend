@@ -36,9 +36,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
 
     if ($project->lifecycle()->submit()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectSubmitEvent($this->currentUser, $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
       return new ModifiedResourceResponse('Project submitted.');
     }
     else {

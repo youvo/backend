@@ -36,9 +36,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
     if ($project->lifecycle()->complete()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectCompleteEvent($this->currentUser, $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
       return new ModifiedResourceResponse('Project completed.');
     }
     else {

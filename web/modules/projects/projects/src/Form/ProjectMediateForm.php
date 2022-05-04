@@ -73,9 +73,7 @@ class ProjectMediateForm extends ProjectActionFormBase {
         $project->appendParticipant($manager, 'Manager');
       }
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectMediateEvent($this->currentUser(), $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
     else {

@@ -79,8 +79,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
       $project->save();
 
       // Dispatch project apply event.
-      $event = new ProjectApplyEvent($this->currentUser, $project);
-      $this->eventDispatcher->dispatch($event);
+      $this->eventDispatcher->dispatch(new ProjectApplyEvent($project));
 
       return new ModifiedResourceResponse('Added creative to applicants.', 200);
     }
