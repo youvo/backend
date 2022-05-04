@@ -14,7 +14,7 @@ use Drupal\user\Entity\Role;
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function projects_site_install_finished() {
+function mailer_site_install_finished() {
 
   // Edit transactional emails.
   $role = Role::load('supervisor');
