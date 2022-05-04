@@ -4,3 +4,9 @@ services:
     arguments: ['@messenger']
     tags:
       - { name: event_subscriber }
+  mailer.token_replacer:
+    class: Drupal\mailer\MailerTokenReplacer
+    arguments: [ '@logger.channel.mailer' ]
+  logger.channel.mailer:
+    parent: logger.channel_base
+    arguments: [ 'mailer' ]
