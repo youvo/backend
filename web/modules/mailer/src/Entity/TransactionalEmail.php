@@ -86,4 +86,25 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
    */
   protected array $tokens;
 
+  /**
+   * {@inheritdoc}
+   */
+  public function subject() {
+    return $this->subject;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function body() {
+    return $this->body;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tokens() {
+    return $this->tokens;
+  }
+
 }
