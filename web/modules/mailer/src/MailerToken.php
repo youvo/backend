@@ -94,6 +94,12 @@ class MailerToken {
 
   /**
    * Creates Tokens from a tokens array delivered by the config.
+   *
+   * @param array $tokens
+   *   Tokens provided from configuration.
+   *
+   * @return \Drupal\mailer\MailerToken[]
+   *   An array of mailer tokens.
    */
   public static function createMultiple(array $tokens) {
     foreach ($tokens as $token) {

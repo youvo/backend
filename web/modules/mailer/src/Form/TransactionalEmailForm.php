@@ -4,6 +4,7 @@ namespace Drupal\mailer\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\mailer\MailerToken;
 use Drupal\multivalue_form_element\Element\MultiValue;
 
 /**
@@ -88,6 +89,22 @@ class TransactionalEmailForm extends EntityForm {
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Validates whether all required tokens are contained in the body.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $tokens = MailerToken::createMultiple($form_state->getValue('tokens'));
+    $body = $form_state->getValue('body');
+    foreach ($tokens as $token) {
+      if ($token->isRequired() && !$token->isContainedIn($body)) {
+        $form_state->setErrorByName('body', $this->t('The body does not contain all required tokens.'));
+      }
+    }
+    parent::validateForm($form, $form_state);
   }
 
   /**
