@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Access\ProjectFieldAccess;
@@ -51,16 +52,15 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Create new project.
+   * Creates new project.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function createProject(OrganizationCreateEvent $event) {
     $project = Project::create(['type' => 'project']);
     $attributes = $this->validateAndShiftRequest($event->getRequest());
-    $project = $this->populateFields($attributes, $project);
+    $this->populateFields($attributes, $project);
     $project->setOwner($event->getOrganization());
-    $project->get('field_lifecycle')->value = 'draft';
     $project->setPublished();
     $project->save();
   }
@@ -102,26 +102,23 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Create new project node with some validation.
+   * Populates project fields with provided values with some validation.
    *
    * @param array $attributes
    *   Contains project attributes.
    * @param \Drupal\projects\ProjectInterface $project
    *   The project to populate.
    *
-   * @return \Drupal\projects\ProjectInterface
-   *   The project with populated fields.
-   *
    * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
   public function populateFields(array $attributes, ProjectInterface $project) {
     foreach ($attributes as $field_key => $value) {
       $field_name = $this->validateAndRenameField($field_key, $project);
-      $this->checkFieldAccess($field_name, $field_key);
-      $this->validateFieldValue($field_name, $field_key, $value, $project);
-      $project->get($field_name)->value = $value;
+      $field_definition = $project->getFieldDefinition($field_name);
+      $this->checkFieldAccess($field_definition, $field_key);
+      $this->validateFieldValue($field_definition, $field_key, $value);
+      $project->set($field_name, $value);
     }
-    return $project;
   }
 
   /**
@@ -145,8 +142,8 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   /**
    * Checks the field access with the help of ProjectFieldAccess.
    */
-  protected function checkFieldAccess(string $field_name, string $field_key) {
-    if (!ProjectFieldAccess::isFieldOfGroup($field_name,
+  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key) {
+    if (!ProjectFieldAccess::isFieldOfGroup($field_definition,
       ProjectFieldAccess::UNRESTRICTED_FIELDS)) {
       throw new FieldAwareHttpException(403,
         'Access Denied. Not allowed to set ' . $field_key,
@@ -157,8 +154,7 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   /**
    * Validates the field value with the help of the FieldValidator.
    */
-  protected function validateFieldValue(string $field_name, string $field_key, mixed $value, ProjectInterface $project) {
-    $field_definition = $project->getFieldDefinition($field_name);
+  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value) {
     if (!FieldValidator::validate($field_definition, $value)) {
       throw new FieldAwareHttpException(400,
         'Malformed request body. Unable to validate the project field ' . $field_key,
