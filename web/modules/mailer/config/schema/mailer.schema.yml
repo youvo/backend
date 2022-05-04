@@ -19,9 +19,13 @@ mailer.transactional_email.*:
       label: Body
       translatable: true
     tokens:
-      type: sequence
-      label: List of Tokens
-      sequence:
-        type: string
-        label: Token
+      type: mapping
+      label: Tokens
+      mapping:
+        token:
+          type: string
+          label: Token
+        required:
+          type: boolean
+          label: Required
 

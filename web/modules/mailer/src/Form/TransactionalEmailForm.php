@@ -25,8 +25,8 @@ class TransactionalEmailForm extends EntityForm {
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
       '#default_value' => $this->entity->label(),
-      '#description' => $this->t('Label for the transactional email.'),
       '#required' => TRUE,
+      '#access' => $this->currentUser()->hasPermission('administer transactional emails'),
     ];
 
     $form['id'] = [
@@ -35,14 +35,36 @@ class TransactionalEmailForm extends EntityForm {
       '#machine_name' => [
         'exists' => '\Drupal\mailer\Entity\TransactionalEmail::load',
       ],
+      '#access' => $this->currentUser()->hasPermission('administer transactional emails'),
       '#disabled' => !$this->entity->isNew(),
     ];
+
+    $form['subject'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Subject'),
+      '#maxlength' => 255,
+      '#default_value' => $this->entity->subject(),
+      '#required' => TRUE,
+    ];
+
+    // Description for body field describing required and optional tokens.
+    $tokens_description = [];
+    if ($required_tokens = array_filter($this->entity->tokens(), fn($t) => $t['required'])) {
+      $tokens_description[] = $this->t('Required Tokens: @tokens', [
+        '@tokens' => implode(', ', array_column($required_tokens, 'token')),
+      ]);
+    }
+    if ($optional_tokens = array_filter($this->entity->tokens(), fn($t) => !$t['required'])) {
+      $tokens_description[] = $this->t('Optional Tokens: @tokens', [
+        '@tokens' => implode(', ', array_column($optional_tokens, 'token')),
+      ]);
+    }
 
     $form['body'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Body'),
-      '#default_value' => $this->entity->get('body'),
-      '#description' => $this->t('Body of the transactional email.'),
+      '#default_value' => $this->entity->body(),
+      '#description' => implode(' &mdash; ', $tokens_description),
     ];
 
     $form['tokens'] = [
@@ -55,12 +77,25 @@ class TransactionalEmailForm extends EntityForm {
         '#title_display' => 'invisible',
         '#maxlength' => 255,
       ],
-      '#default_value' => $this->entity->get('tokens'),
-      '#access' => $this->entity->isNew(),
-      '#description' => $this->t('Tokens for the transactional email.'),
+      'required' => [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Required'),
+      ],
+      '#default_value' => $this->entity->tokens(),
+      '#access' => $this->currentUser()->hasPermission('administer transactional emails'),
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Remove empty values from tokens.
+    $form_state->setValue('tokens', array_filter($form_state->getValue('tokens'),
+      fn($t) => !empty($t['token'])));
+    parent::submitForm($form, $form_state);
   }
 
   /**

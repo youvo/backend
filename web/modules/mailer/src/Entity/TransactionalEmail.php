@@ -90,21 +90,21 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
    * {@inheritdoc}
    */
   public function subject() {
-    return $this->subject;
+    return $this->subject ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function body() {
-    return $this->body;
+    return $this->body ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function tokens() {
-    return $this->tokens;
+    return $this->tokens ?? [];
   }
 
 }

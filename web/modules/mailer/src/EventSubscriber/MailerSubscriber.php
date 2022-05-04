@@ -54,10 +54,7 @@ class MailerSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    return [
-      KernelEvents::REQUEST => ['onKernelRequest'],
-      KernelEvents::RESPONSE => ['onKernelResponse'],
-    ];
+    return [];
   }
 
 }

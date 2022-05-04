@@ -1,4 +1,4 @@
-name: mailer
+name: Mailer
 type: module
 description: Administration and handling of transactional emails.
 package: youvo
