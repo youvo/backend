@@ -267,7 +267,7 @@ class OrganizationCreateResource extends ResourceBase {
       $field_name = $this->validateAndRenameField($field_key, $organization);
       $field_definition = $organization->getFieldDefinition($field_name);
       $this->checkFieldAccess($field_definition, $field_key);
-      $this->validateFieldValue($field_definition, $field_key, $value, $organization);
+      $this->validateFieldValue($field_definition, $field_key, $value);
       $organization->set($field_name, $value);
 
       // Set username identical to provided mail.
@@ -319,7 +319,7 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Validates the field value with the help of the FieldValidator.
    */
-  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value, TypedUser $organization) {
+  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value) {
     if (!FieldValidator::validate($field_definition, $value)) {
       throw new FieldAwareHttpException(400,
         'Malformed request body. Unable to validate the organization field ' . $field_key,
