@@ -47,7 +47,7 @@ class MailerToken {
    * Checks whether token has a replacement.
    */
   public function hasReplacement() {
-    return !empty($this->getReplacement());
+    return isset($this->replacement) && !empty($this->getReplacement());
   }
 
   /**

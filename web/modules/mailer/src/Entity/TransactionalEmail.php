@@ -4,6 +4,7 @@ namespace Drupal\mailer\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\mailer\MailerToken;
 use Drupal\mailer\TransactionalEmailInterface;
 
 /**
@@ -104,8 +105,11 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
   /**
    * {@inheritdoc}
    */
-  public function tokens() {
-    return $this->tokens ?? [];
+  public function tokens($as_object = FALSE) {
+    if ($as_object) {
+      return MailerToken::createMultiple($this->tokens);
+    }
+    return $this->tokens;
   }
 
   /**

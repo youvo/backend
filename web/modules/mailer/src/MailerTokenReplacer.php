@@ -10,20 +10,27 @@ use Psr\Log\LoggerInterface;
 class MailerTokenReplacer {
 
   /**
-   * Logger channel.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
    * Constructs a MailerTokenReplacer service.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(LoggerInterface $logger) {
-    $this->logger = $logger;
+  public function __construct(protected LoggerInterface $logger) {}
+
+  /**
+   * Populates tokens with replacements.
+   *
+   * @param array $replacements
+   *   The replacements.
+   * @param \Drupal\mailer\MailerToken[] $tokens
+   *   The tokens.
+   */
+  public function populateReplacements(array $replacements, array $tokens): void {
+    foreach ($tokens as $token) {
+      if (array_key_exists($token->getToken(), $replacements)) {
+        $token->setReplacement($replacements[$token->getToken()]);
+      }
+    }
   }
 
   /**
@@ -36,31 +43,20 @@ class MailerTokenReplacer {
    */
   public function replace(string &$text, array $tokens): void {
     foreach ($tokens as $token) {
-      if (!$token instanceof MailerToken) {
-        throw new \InvalidArgumentException('Provided token is not of type MailerToken.');
-      }
       $token->processText($text);
     }
   }
 
   /**
-   * Validates token replacement after processing.
+   * Validates tokens being processed.
    *
-   * @param string $text
-   *   The processed text.
    * @param \Drupal\mailer\MailerToken[] $tokens
    *   The processed tokens.
    */
-  public function validate(string $text, array $tokens): void {
+  public function validate(array $tokens): void {
     foreach ($tokens as $token) {
-      if (!$token instanceof MailerToken) {
-        throw new \InvalidArgumentException('Provided token is not of type MailerToken.');
-      }
       if (!$token->isProcessed()) {
         $this->logger->error('The token %token was not processed.', ['%token' => $token->getToken()]);
-      }
-      if (str_contains($text, $token->getToken())) {
-        $this->logger->error('The token %token was not replaced.', ['%token' => $token->getToken()]);
       }
     }
   }
