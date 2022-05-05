@@ -15,7 +15,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
   /**
    * Sends mail during project notify event.
    */
-  public function mail(Event $event) {
+  public function mail(Event $event): void {
 
     $transactional_email = $this->loadTransactionalEmail(self::TRANSACTIONAL_EMAIL_ID);
     if (!$transactional_email instanceof TransactionalEmail) {
@@ -43,7 +43,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return ['Drupal\projects\Event\ProjectNotifyEvent' => 'mail'];
   }
 

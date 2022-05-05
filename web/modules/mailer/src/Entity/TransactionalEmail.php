@@ -91,21 +91,21 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
   /**
    * {@inheritdoc}
    */
-  public function subject() {
+  public function subject(): string {
     return $this->subject ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function body() {
+  public function body(): string {
     return $this->body ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tokens($as_object = FALSE) {
+  public function tokens(bool $as_object = FALSE): array {
     if ($as_object) {
       return MailerToken::createMultiple($this->tokens);
     }
@@ -115,9 +115,9 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
   /**
    * {@inheritdoc}
    */
-  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
-    $a_id = strstr($a->id(), '_', TRUE);
-    $b_id = strstr($a->id(), '_', TRUE);
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b): int {
+    $a_id = substr((string) $a->id(), 0, strpos((string) $a->id(), '_') ?: NULL);
+    $b_id = substr((string) $b->id(), 0, strpos((string) $b->id(), '_') ?: NULL);
     return strnatcasecmp($a_id, $b_id);
   }
 

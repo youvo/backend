@@ -17,7 +17,7 @@ class TransactionalEmailForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     $form = parent::form($form, $form_state);
     $form['#title'] = $this->t('Edit %label',
@@ -96,8 +96,11 @@ class TransactionalEmailForm extends EntityForm {
    *
    * Validates whether all required tokens are contained in the body.
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $tokens = MailerToken::createMultiple($form_state->getValue('tokens'));
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
+    /** @var array $tokens_value */
+    $tokens_value = $form_state->getValue('tokens');
+    $tokens = MailerToken::createMultiple($tokens_value);
+    /** @var string $body */
     $body = $form_state->getValue('body');
     foreach ($tokens as $token) {
       if ($token->isRequired() && !$token->isContainedIn($body)) {
@@ -110,10 +113,11 @@ class TransactionalEmailForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Remove empty values from tokens.
-    $form_state->setValue('tokens', array_filter($form_state->getValue('tokens'),
-      fn($t) => !empty($t['token'])));
+    /** @var array $token_values */
+    $token_values = $form_state->getValue('tokens');
+    $form_state->setValue('tokens', array_filter($token_values, fn($t) => !empty($t['token'])));
     parent::submitForm($form, $form_state);
   }
 
@@ -122,7 +126,7 @@ class TransactionalEmailForm extends EntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
     $result = parent::save($form, $form_state);
     $message_args = ['%label' => $this->entity->label()];
     $message = $result == SAVED_NEW

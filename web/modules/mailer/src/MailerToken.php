@@ -32,28 +32,28 @@ class MailerToken {
   /**
    * Gets the token.
    */
-  public function getToken() {
+  public function getToken(): string {
     return $this->token;
   }
 
   /**
    * Gets the replacement.
    */
-  public function getReplacement() {
+  public function getReplacement(): string {
     return $this->replacement;
   }
 
   /**
    * Checks whether token has a replacement.
    */
-  public function hasReplacement() {
+  public function hasReplacement(): bool {
     return isset($this->replacement) && !empty($this->getReplacement());
   }
 
   /**
    * Sets the replacement.
    */
-  public function setReplacement(string $replacement) {
+  public function setReplacement(string $replacement): MailerToken {
     $this->replacement = $replacement;
     return $this;
   }
@@ -61,7 +61,7 @@ class MailerToken {
   /**
    * Checks whether the token is required.
    */
-  public function isRequired() {
+  public function isRequired(): bool {
     return $this->required;
   }
 
@@ -88,7 +88,7 @@ class MailerToken {
   /**
    * Checks whether the token was processed.
    */
-  public function isProcessed() {
+  public function isProcessed(): bool {
     return $this->processed;
   }
 
@@ -101,7 +101,7 @@ class MailerToken {
    * @return \Drupal\mailer\MailerToken[]
    *   An array of mailer tokens.
    */
-  public static function createMultiple(array $tokens) {
+  public static function createMultiple(array $tokens): array {
     foreach ($tokens as $token) {
       if (isset($token['token']) && isset($token['required'])) {
         $token_objects[] = new MailerToken(
