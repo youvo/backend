@@ -81,7 +81,11 @@
  cd web/sites/default || exit
  chmod 0444 settings.php
  chmod 0444 default.settings.php
+ echo "Settings permissions updated ..."
  cd ../../..
+
+ # Wait for containers to be accessible.
+ sleep 5
 
  # Enable xdebug.
  ddev xdebug enable
