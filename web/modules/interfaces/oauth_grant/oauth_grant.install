@@ -176,7 +176,7 @@ function oauth_grant_install() {
   }
 
   try {
-    // Grant OAuth2 codes.
+    // Grant OAuth2 codes for creatives.
     $role_object = Role::load('creative');
     $role_object->grantPermission('grant simple_oauth codes');
     $role_object->save();
@@ -185,6 +185,20 @@ function oauth_grant_install() {
     $variables = Error::decodeException($e);
     $variables['%permission'] = 'grant simple_oauth codes';
     $variables['%role'] = 'creative';
+    \Drupal::logger('youvo')
+      ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  try {
+    // Grant OAuth2 codes for organizations.
+    $role_object = Role::load('organization');
+    $role_object->grantPermission('grant simple_oauth codes');
+    $role_object->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    $variables['%permission'] = 'grant simple_oauth codes';
+    $variables['%role'] = 'organization';
     \Drupal::logger('youvo')
       ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
   }
