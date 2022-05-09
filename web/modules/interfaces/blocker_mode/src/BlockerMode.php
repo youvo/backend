@@ -33,7 +33,7 @@ class BlockerMode implements BlockerModeInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies(Request $request, AccountInterface $account) {
+  public function applies(Request $request) {
 
     // Get configuration state.
     if (!$this->state->get('system.blocker_mode')) {
