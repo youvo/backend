@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Provides user permissions to authenticate with certain consumers.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_form_ENTITY_TYPE_form_alter() for consumer form.
+ */
+function consumer_permissions_form_consumer_form_alter(array &$form, FormStateInterface $form_state): void {
+  array_unshift($form['actions']['submit']['#submit'],
+    'consumer_permissions_consumer_form_submit_message');
+}
+
+/**
+ * Adds message to notify about client permissions.
+ */
+function consumer_permissions_consumer_form_submit_message(array &$form, FormStateInterface $form_state): void {
+  $url = Url::fromRoute('user.admin_permissions.module', ['modules' => 'consumer_permissions']);
+  if ($url->access(\Drupal::currentUser())) {
+    /** @var \Drupal\Core\Entity\EntityFormInterface $form_object */
+    $form_object = $form_state->getFormObject();
+    $client = $form_object->getEntity();
+    if ($client->isNew()) {
+      \Drupal::messenger()->addMessage(
+        t('Configure <a href=":link">related permissions</a> for consumer %client.', [
+          ':link' => $url->toString(),
+          '%client' => $form_state->getValue('label')[0]['value'],
+        ])
+      );
+    }
+  }
+}

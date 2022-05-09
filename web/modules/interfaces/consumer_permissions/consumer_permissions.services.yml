@@ -1,0 +1,12 @@
+services:
+  consumer_permissions.auth:
+    class: Drupal\consumer_permissions\ConsumerPermissionsAuthDecorator
+    decorates: user.auth
+    # Should run after modules such as mail_login.
+    decoration_priority: -100
+    public: false
+    arguments: ['@entity_type.manager', '@request_stack', '@consumer_permissions.auth.inner']
+  consumer_permissions.route_subscriber:
+    class: Drupal\consumer_permissions\Routing\ConsumerPermissionsRouteSubscriber
+    tags:
+      - { name: event_subscriber }
