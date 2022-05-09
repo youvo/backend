@@ -128,7 +128,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
     $prefix = $this->config->get('api_prefix');
-    if ((str_contains($path, $prefix . '/api') || str_contains($path, '/oauth/')) &&
+    if ((str_contains($path, $prefix . '/api') || str_contains($path, '/oauth/token')) &&
       $exception instanceof HttpException) {
       $response = new Response(
         $exception->getMessage(),
