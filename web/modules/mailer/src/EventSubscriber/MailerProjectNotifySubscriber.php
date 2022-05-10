@@ -3,6 +3,7 @@
 namespace Drupal\mailer\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\mailer\Entity\TransactionalEmail;
 
 /**
@@ -10,32 +11,40 @@ use Drupal\mailer\Entity\TransactionalEmail;
  */
 class MailerProjectNotifySubscriber extends MailerSubscriberBase {
 
-  const TRANSACTIONAL_EMAIL_ID = 'project_notify';
+  use StringTranslationTrait;
+
+  const EMAIL_ID = 'project_notify';
 
   /**
    * Sends mail during project notify event.
    */
   public function mail(Event $event): void {
 
-    $transactional_email = $this->loadTransactionalEmail(self::TRANSACTIONAL_EMAIL_ID);
-    if (!$transactional_email instanceof TransactionalEmail) {
+    $email = $this->loadTransactionalEmail(self::EMAIL_ID);
+    if (!$email instanceof TransactionalEmail) {
       return;
     }
 
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $event->getProject()->getOwner();
+    /** @var \Drupal\creatives\Entity\Creative|null $manager */
+    $manager = $organization->getManager();
     $replacements = [
-      '%ProjectTitle' => $event->getProject()->getTitle(),
+      '%Contact' => $organization->getContact(),
+      '%InvitationLink' => $event->getInvitationLink(),
+      '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
     ];
 
     $body = $this->handleTokens(
-      $transactional_email->body(),
+      $email->body(),
       $replacements,
-      $transactional_email->tokens(TRUE)
+      $email->tokens(TRUE)
     );
 
     $this->logger->info('Send %subject to %receiver: %body', [
       '%receiver' => $event->getProject()->getOwner()->getEmail(),
-      '%subject' => $transactional_email->subject(),
+      '%subject' => $email->subject(),
       '%body' => $body,
     ]);
   }
