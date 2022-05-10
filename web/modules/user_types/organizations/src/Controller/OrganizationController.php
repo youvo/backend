@@ -27,7 +27,7 @@ final class OrganizationController extends ControllerBase {
     protected LoggerInterface $logger,
     protected Session $session,
     protected TimeInterface $time,
-    protected UserStorageInterface $user_storage
+    protected UserStorageInterface $userStorage
   ) {}
 
   /**
