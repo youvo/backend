@@ -5,23 +5,19 @@ namespace Drupal\organizations\EventSubscriber;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Organization project notify event subscriber.
  */
-class ProjectNotifySubscriber implements EventSubscriberInterface {
+class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
 
   /**
    * Constructs a MailerSubscriberBase object.
    */
   public function __construct(
-    protected AccountInterface $currentUser,
     protected LanguageManagerInterface $languageManager,
-    protected LoggerInterface $logger,
     protected TimeInterface $time
   ) {}
 
@@ -34,7 +30,7 @@ class ProjectNotifySubscriber implements EventSubscriberInterface {
     $organization = $event->getProject()->getOwner();
     $timestamp = $this->time->getCurrentTime();
     $langcode = $options['langcode'] ?? $organization->getPreferredLangcode();
-    $invitation_link = Url::fromRoute('organization.invite',
+    $invitation_link = Url::fromRoute('organizations.invite',
       [
         'uid' => $organization->id(),
         'timestamp' => $timestamp,
