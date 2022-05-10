@@ -10,9 +10,10 @@ install:
   # Development
   - admin_toolbar
   - devel
+  - devel_mail_logger
   - druqs
   - field_ui
-  - maillog
+  - mailsystem
   - menu_ui
   - restui
   # OpenAPI for documentation
