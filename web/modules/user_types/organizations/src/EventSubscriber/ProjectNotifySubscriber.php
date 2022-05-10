@@ -4,11 +4,9 @@ namespace Drupal\organizations\EventSubscriber;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\mailer\MailerTokenReplacer;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -19,7 +17,6 @@ class ProjectNotifySubscriber implements EventSubscriberInterface {
 
   /**
    * Constructs a MailerSubscriberBase object.
-   *
    */
   public function __construct(
     protected AccountInterface $currentUser,
