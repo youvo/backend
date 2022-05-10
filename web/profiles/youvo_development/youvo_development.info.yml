@@ -12,6 +12,7 @@ install:
   - devel
   - druqs
   - field_ui
+  - maillog
   - menu_ui
   - restui
   # OpenAPI for documentation
