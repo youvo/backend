@@ -107,9 +107,9 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
    */
   public function tokens(bool $as_object = FALSE): array {
     if ($as_object) {
-      return MailerToken::createMultiple($this->tokens);
+      return MailerToken::createMultiple($this->tokens ?? []);
     }
-    return $this->tokens;
+    return $this->tokens ?? [];
   }
 
   /**
