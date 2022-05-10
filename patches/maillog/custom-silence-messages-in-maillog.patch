@@ -1,0 +1,19 @@
+diff --git a/modules/contrib/maillog/src/Plugin/Mail/Maillog.php b/modules/contrib/maillog/src/Plugin/Mail/Maillog.php
+index 0a9a3e8..1f55879 100755
+--- a/modules/contrib/maillog/src/Plugin/Mail/Maillog.php
++++ b/modules/contrib/maillog/src/Plugin/Mail/Maillog.php
+@@ -90,14 +90,6 @@ public function mail(array $message) {
+       $default = new PhpMail();
+       $result = $default->mail($message);
+     }
+-    elseif (\Drupal::currentUser()->hasPermission('administer maillog')) {
+-      $message = $this->t('Sending of e-mail messages is disabled by Maillog module. Go @here to enable.', ['@here' => \Drupal::service('link_generator')->generate('here', Url::fromRoute('maillog.settings'))]);
+-
+-      \Drupal::messenger()->addWarning($message, TRUE);
+-    }
+-    else {
+-      \Drupal::logger('maillog')->notice('Attempted to send an email, but sending emails is disabled.');
+-    }
+     return isset($result) ? $result : TRUE;
+   }
+
