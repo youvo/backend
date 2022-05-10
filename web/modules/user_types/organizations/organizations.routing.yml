@@ -1,0 +1,10 @@
+organizations.invite:
+  path: '/invite/{uid}/{timestamp}/{hash}'
+  defaults:
+    _controller: '\Drupal\organizations\Controller\OrganizationController::invite'
+    _title: 'Organization Invite'
+  requirements:
+    _access: 'TRUE'
+  options:
+    _maintenance_access: TRUE
+    no_cache: TRUE
