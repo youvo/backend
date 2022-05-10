@@ -16,13 +16,11 @@ interface BlockerModeInterface {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The logged-in user.
    *
    * @return bool
    *   TRUE if the site is in blocker mode.
    */
-  public function applies(Request $request, AccountInterface $account);
+  public function applies(Request $request);
 
   /**
    * Determines whether a user has access to the site in blocker mode.

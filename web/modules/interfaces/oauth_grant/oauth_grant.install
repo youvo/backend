@@ -69,20 +69,18 @@ function oauth_grant_install() {
       }
     }
 
-    // Add new consumer for local.
-    if (
-      isset($consumer_uuids['UUID_LOCAL']) &&
-      isset($consumer_redirects['REDIRECT_LOCAL']) &&
-      isset($consumer_secrets['SECRET_LOCAL'])
-    ) {
+    // Add new consumer for creatives (local).
+    if (isset($consumer_uuids['UUID_CREATIVE_LOCAL']) &&
+      isset($consumer_redirects['REDIRECT_CREATIVE_LOCAL']) &&
+      isset($consumer_secrets['SECRET_CREATIVE_LOCAL'])) {
       $consumer = Consumer::create([
-        'uuid' => $consumer_uuids['UUID_LOCAL'],
-        'label' => 'Local',
+        'uuid' => $consumer_uuids['UUID_CREATIVE_LOCAL'],
+        'label' => 'Creatives (local)',
         'third_party' => FALSE,
         'is_default' => FALSE,
         'owner_id' => 1,
         'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_LOCAL'],
+        'secret' => $consumer_secrets['SECRET_CREATIVE_LOCAL'],
         'roles' => [
           ['target_id' => 'creative'],
         ],
@@ -91,25 +89,23 @@ function oauth_grant_install() {
           ['target_id' => 'content'],
           ['target_id' => 'teaser'],
         ],
-        'redirect' => $consumer_redirects['REDIRECT_LOCAL'],
+        'redirect' => $consumer_redirects['REDIRECT_CREATIVE_LOCAL'],
       ]);
       $consumer->save();
     }
 
-    // Add new consumer for development.
-    if (
-      isset($consumer_uuids['UUID_DEVELOPMENT']) &&
-      isset($consumer_redirects['REDIRECT_DEVELOPMENT']) &&
-      isset($consumer_secrets['SECRET_DEVELOPMENT'])
-    ) {
+    // Add new consumer for creatives.
+    if (isset($consumer_uuids['UUID_CREATIVE']) &&
+      isset($consumer_redirects['REDIRECT_CREATIVE']) &&
+      isset($consumer_secrets['SECRET_CREATIVE'])) {
       $consumer = Consumer::create([
-        'uuid' => $consumer_uuids['UUID_DEVELOPMENT'],
-        'label' => 'Development',
+        'uuid' => $consumer_uuids['UUID_CREATIVE'],
+        'label' => 'Creatives',
         'third_party' => FALSE,
         'is_default' => TRUE,
         'owner_id' => 1,
         'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_DEVELOPMENT'],
+        'secret' => $consumer_secrets['SECRET_CREATIVE'],
         'roles' => [
           ['target_id' => 'creative'],
         ],
@@ -118,7 +114,57 @@ function oauth_grant_install() {
           ['target_id' => 'content'],
           ['target_id' => 'teaser'],
         ],
-        'redirect' => $consumer_redirects['REDIRECT_DEVELOPMENT'],
+        'redirect' => $consumer_redirects['REDIRECT_CREATIVE'],
+      ]);
+      $consumer->save();
+    }
+
+    // Add new consumer for organizations (local).
+    if (isset($consumer_uuids['UUID_ORGANIZATION_LOCAL']) &&
+      isset($consumer_redirects['REDIRECT_ORGANIZATION_LOCAL']) &&
+      isset($consumer_secrets['SECRET_ORGANIZATION_LOCAL'])) {
+      $consumer = Consumer::create([
+        'uuid' => $consumer_uuids['UUID_ORGANIZATION_LOCAL'],
+        'label' => 'Organizations (local)',
+        'third_party' => FALSE,
+        'is_default' => TRUE,
+        'owner_id' => 1,
+        'confidential' => TRUE,
+        'secret' => $consumer_secrets['SECRET_ORGANIZATION_LOCAL'],
+        'roles' => [
+          ['target_id' => 'organization'],
+        ],
+        'image_styles' => [
+          ['target_id' => 'avatar'],
+          ['target_id' => 'content'],
+          ['target_id' => 'teaser'],
+        ],
+        'redirect' => $consumer_redirects['REDIRECT_ORGANIZATION_LOCAL'],
+      ]);
+      $consumer->save();
+    }
+
+    // Add new consumer for organizations.
+    if (isset($consumer_uuids['UUID_ORGANIZATION']) &&
+      isset($consumer_redirects['REDIRECT_ORGANIZATION']) &&
+      isset($consumer_secrets['SECRET_ORGANIZATION'])) {
+      $consumer = Consumer::create([
+        'uuid' => $consumer_uuids['UUID_ORGANIZATION'],
+        'label' => 'Organizations',
+        'third_party' => FALSE,
+        'is_default' => TRUE,
+        'owner_id' => 1,
+        'confidential' => TRUE,
+        'secret' => $consumer_secrets['SECRET_ORGANIZATION'],
+        'roles' => [
+          ['target_id' => 'organization'],
+        ],
+        'image_styles' => [
+          ['target_id' => 'avatar'],
+          ['target_id' => 'content'],
+          ['target_id' => 'teaser'],
+        ],
+        'redirect' => $consumer_redirects['REDIRECT_ORGANIZATION'],
       ]);
       $consumer->save();
     }
@@ -126,11 +172,11 @@ function oauth_grant_install() {
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException | RuntimeException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
-      ->info('Skipped development consumer settings. %type: @message in %function (line %line of %file).', $variables);
+      ->info('Skipped consumer settings. %type: @message in %function (line %line of %file).', $variables);
   }
 
   try {
-    // Grant OAuth2 codes.
+    // Grant OAuth2 codes for creatives.
     $role_object = Role::load('creative');
     $role_object->grantPermission('grant simple_oauth codes');
     $role_object->save();
@@ -139,6 +185,20 @@ function oauth_grant_install() {
     $variables = Error::decodeException($e);
     $variables['%permission'] = 'grant simple_oauth codes';
     $variables['%role'] = 'creative';
+    \Drupal::logger('youvo')
+      ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
+  }
+
+  try {
+    // Grant OAuth2 codes for organizations.
+    $role_object = Role::load('organization');
+    $role_object->grantPermission('grant simple_oauth codes');
+    $role_object->save();
+  }
+  catch (EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    $variables['%permission'] = 'grant simple_oauth codes';
+    $variables['%role'] = 'organization';
     \Drupal::logger('youvo')
       ->error('Unable to grant permission %permission to role %role. %type: @message in %function (line %line of %file).', $variables);
   }

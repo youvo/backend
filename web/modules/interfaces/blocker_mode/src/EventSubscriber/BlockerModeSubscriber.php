@@ -99,7 +99,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     $request = $event->getRequest();
     $route_match = RouteMatch::createFromRequest($request);
 
-    if ($this->blockerMode->applies($request, $this->account)) {
+    if ($this->blockerMode->applies($request)) {
       if (!$this->blockerMode->exempt($route_match, $this->account)) {
 
         // One last effort to redirect the user. Can happen if logged-in user
@@ -128,13 +128,23 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
     $prefix = $this->config->get('api_prefix');
-    if ((str_contains($path, $prefix . '/api') || str_contains($path, '/oauth/')) &&
-      $exception instanceof HttpException) {
-      $response = new Response(
-        $exception->getMessage(),
-        $exception->getStatusCode(),
-        $exception->getHeaders()
-      );
+    if (
+      str_contains($path, $prefix . '/api') ||
+      str_contains($path, '/oauth/token')
+    ) {
+      if ($exception instanceof HttpException) {
+        $response = new Response(
+          $exception->getMessage(),
+          $exception->getStatusCode(),
+          $exception->getHeaders()
+        );
+      }
+      else {
+        $response = new Response(
+          $exception->getMessage(),
+          $exception->getCode()
+        );
+      }
       $event->setResponse($response);
     }
     else {

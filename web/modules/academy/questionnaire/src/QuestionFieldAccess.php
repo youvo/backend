@@ -39,12 +39,17 @@ class QuestionFieldAccess extends FieldAccess {
       return AccessResult::neutral()->cachePerPermissions();
     }
 
+    // @todo The access check for answer fields is deactivated at the moment.
+    //   We need to figure out how to pass the context in which a question is
+    //   loaded. Currently, the parent entity is attached to the entity as the
+    //   paragraph. And the computed field for the evaluation only accumulates
+    //   the questions within a course as references. Maybe we can use the view
+    //   mode.
     // Restrict accessing the question answer fields when viewing questionnaire.
-    if ($entity->getParentEntity()->bundle() == 'questionnaire' &&
-      self::isFieldOfGroup($field, self::ANSWER_FIELDS)) {
-      return AccessResult::forbidden();
-    }
-
+    // if ($entity->getParentEntity()->bundle() == 'questionnaire' &&
+    // self::isFieldOfGroup($field, self::ANSWER_FIELDS)) {
+    // return AccessResult::forbidden();
+    // }
     return AccessResult::neutral();
   }
 

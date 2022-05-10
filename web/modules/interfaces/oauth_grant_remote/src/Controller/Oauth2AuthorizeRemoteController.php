@@ -170,6 +170,22 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       return parent::authorize($request);
     }
 
+    // Allow organizations to login on development environment.
+    if ($this->config('oauth_grant_remote.settings')->get('development')) {
+      $client_uuid = $request->get('client_id');
+      $consumer_storage = $this->entityTypeManager()->getStorage('consumer');
+      $consumers = $consumer_storage->loadByProperties(['uuid' => $client_uuid]);
+      if (empty($consumers)) {
+        return OAuthServerException::serverError('Invalid Client.')
+          ->generateHttpResponse(new Response());
+      }
+      /** @var \Drupal\consumers\Entity\Consumer $consumer */
+      $consumer = reset($consumers);
+      if (in_array('organization', array_column($consumer->get('roles')->getValue(), 'target_id'))) {
+        return parent::authorize($request);
+      }
+    }
+
     // Check configuration.
     if (empty($this->config('oauth_grant_remote.settings')->get('jwt_expiration')) ||
       empty($this->config('oauth_grant_remote.settings')->get('jwt_key_path')) ||
