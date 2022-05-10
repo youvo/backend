@@ -59,7 +59,7 @@ class TransactionalEmailForm extends EntityForm {
         '@tokens' => implode(', ', array_column($required_tokens, 'token')),
       ]);
     }
-    if ($optional_tokens = array_filter($tokens, fn($t) => !$t['required'] ?? TRUE)) {
+    if ($optional_tokens = array_filter($tokens, fn($t) => !isset($t['required']) || !$t['required'])) {
       $tokens_description[] = $this->t('Optional Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($optional_tokens, 'token')),
       ]);
