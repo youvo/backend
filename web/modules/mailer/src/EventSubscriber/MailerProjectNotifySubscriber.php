@@ -42,11 +42,12 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
       $email->tokens(TRUE)
     );
 
-    $this->logger->info('Send %subject to %receiver: %body', [
-      '%receiver' => $event->getProject()->getOwner()->getEmail(),
-      '%subject' => $email->subject(),
-      '%body' => $body,
-    ]);
+    $this->sendMail(
+      $event->getProject()->getOwner()->getEmail(),
+      $email->subject(),
+      $body,
+      $manager?->getEmail()
+    );
   }
 
   /**

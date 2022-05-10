@@ -4,7 +4,9 @@ namespace Drupal\mailer\EventSubscriber;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\mailer\Entity\TransactionalEmail;
 use Drupal\mailer\MailerTokenReplacer;
@@ -21,17 +23,23 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
    *
    * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   The mailer logger channel.
+   * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
+   *   The mail manager service.
    * @param \Drupal\mailer\MailerTokenReplacer $mailerTokenReplacer
    *   The mailer token replacer service.
    */
   public function __construct(
     protected AccountInterface $currentUser,
+    protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
+    protected MailManagerInterface $mailManager,
     protected MailerTokenReplacer $mailerTokenReplacer
   ) {}
 
@@ -71,6 +79,31 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
     $this->mailerTokenReplacer->replace($text, $tokens);
     $this->mailerTokenReplacer->validate($tokens);
     return $text;
+  }
+
+  /**
+   * Sends email with the mail manager.
+   */
+  protected function sendMail(string $to, string $subject, string $body, string $reply = NULL, string $langcode = 'de'): void {
+    $this->mailManager->mail(
+      'mailer',
+      static::EMAIL_ID ?? 'generic',
+      $to,
+      $langcode,
+      [
+        '_subject' => $subject,
+        '_body' => $body,
+        '_error_message' => FALSE,
+      ],
+      $reply ?? $this->getSiteMail()
+    );
+  }
+
+  /**
+   * Gets the site email.
+   */
+  protected function getSiteMail() {
+    return $this->configFactory->get('system.site')->get('mail');
   }
 
 }
