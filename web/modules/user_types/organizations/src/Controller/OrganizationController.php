@@ -2,16 +2,12 @@
 
 namespace Drupal\organizations\Controller;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\user\UserInterface;
+use Drupal\Core\Url;
+use Drupal\organizations\Entity\Organization;
 use Drupal\user\UserStorageInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -23,10 +19,6 @@ final class OrganizationController extends ControllerBase {
    * Constructs a OrganizationController object.
    */
   public function __construct(
-    protected AccountProxyInterface $account,
-    protected LoggerInterface $logger,
-    protected Session $session,
-    protected TimeInterface $time,
     protected UserStorageInterface $userStorage
   ) {}
 
@@ -35,10 +27,6 @@ final class OrganizationController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new self(
-      $container->get('current_user'),
-      $container->get('logger.factory')->get('user'),
-      $container->get('session'),
-      $container->get('datetime.time'),
       $container->get('entity_type.manager')->getStorage('user')
     );
   }
@@ -59,50 +47,56 @@ final class OrganizationController extends ControllerBase {
    *   Returns a redirect to the frontend.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function invite(int $uid, int $timestamp, string $hash, Request $request) {
 
     // The invitation link should only be used for non-authenticated users.
     if ($this->currentUser()->isAuthenticated()) {
-      throw new AccessDeniedHttpException();
+      // The current user is already logged in.
+      if ($this->currentUser()->id() == $uid) {
+        throw new AccessDeniedHttpException();
+      }
+      // A different user is already logged in on the computer.
+      else {
+        /** @var \Drupal\user\UserInterface|null $reset_link_user */
+        $reset_link_user = $this->userStorage->load($uid);
+        if ($reset_link_user) {
+          $this->messenger()
+            ->addWarning($this->t('Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. Please <a href=":logout">log out</a> and try using the link again.',
+              [
+                '%other_user' => $this->currentUser()->getAccountName(),
+                '%resetting_user' => $reset_link_user->getAccountName(),
+                ':logout' => Url::fromRoute('user.logout')->toString(),
+              ]));
+        }
+        else {
+          // Invalid one-time link specifies an unknown user.
+          $this->messenger()
+            ->addError($this->t('The one-time login link you clicked is invalid.'));
+        }
+      }
     }
 
     // Load the organization.
     /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $this->userStorage->load($uid);
 
-    // Verify that the organization exists, is active and a prospect.
-    if ($organization === NULL || !$organization->isActive() || !$organization->hasRoleProspect()) {
+    // Verify that the organization is active and a prospect.
+    if (
+      !$organization instanceof Organization ||
+      !$organization->isActive() ||
+      !$organization->hasRoleProspect()
+    ) {
       throw new AccessDeniedHttpException();
     }
 
-    // @todo Expiry.
-    if (hash_equals($hash, user_pass_rehash($organization, $timestamp))) {
-      $organization->promoteProspect();
-      $organization->save();
-      $this->loginUser($organization);
-    }
-
-    // @todo Correct redirects.
-    return new RedirectResponse('dashboard');
-  }
-
-  /**
-   * Programmatically login a user.
-   */
-  protected function loginUser(UserInterface $account): void {
-    $this->account->setAccount($account);
-    $this->logger->notice('Session opened for %name.',
-      ['%name' => $account->getAccountName()]);
-    $account->setLastLoginTime($this->time->getRequestTime());
-    $this->userStorage->updateLastLoginTimestamp($account);
-    $this->session->migrate();
-    $this->session->set('uid', $account->id());
-    $this->session->set('check_logged_in', TRUE);
-
-    // Call all login hooks for newly logged-in user.
-    $this->moduleHandler()->invokeAll('user_login', [$account]);
+    $session = $request->getSession();
+    $session->set('organization_invite_hash', $hash);
+    $session->set('organization_invite_timeout', $timestamp);
+    return $this->redirect(
+      'organizations.invite.form',
+      ['organization' => $uid]
+    );
   }
 
 }

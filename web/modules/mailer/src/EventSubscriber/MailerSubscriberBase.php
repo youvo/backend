@@ -18,6 +18,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 abstract class MailerSubscriberBase implements EventSubscriberInterface {
 
+  const EMAIL_ID = NULL;
+
   /**
    * Constructs a MailerSubscriberBase object.
    *

@@ -17,7 +17,7 @@ class Organization extends TypedUser implements ManagerInterface {
   const ROLE_ARCHIVAL = 'archival';
 
   /**
-   * {@inheritdoc}
+   * Gets the contact.
    */
   public function getContact() {
     return $this->get('field_contact')->value;

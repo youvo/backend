@@ -29,7 +29,9 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
     $organization = $event->getProject()->getOwner();
     $timestamp = $this->time->getCurrentTime();
-    $langcode = $options['langcode'] ?? $organization->getPreferredLangcode();
+    // @todo Adjust langcode.
+    // $organization->getPreferredLangcode();
+    $langcode = 'de';
     $invitation_link = Url::fromRoute('organizations.invite',
       [
         'uid' => $organization->id(),
