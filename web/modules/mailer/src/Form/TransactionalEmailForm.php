@@ -52,12 +52,14 @@ class TransactionalEmailForm extends EntityForm {
 
     // Description for body field describing required and optional tokens.
     $tokens_description = [];
-    if ($required_tokens = array_filter($this->entity->tokens(), fn($t) => $t['required'])) {
+    // Ajax callback adds the adds_more button to tokens. Filter it out here.
+    $tokens = array_filter($this->entity->tokens(), fn($t) => is_array($t));
+    if ($required_tokens = array_filter($tokens, fn($t) => $t['required'] ?? FALSE)) {
       $tokens_description[] = $this->t('Required Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($required_tokens, 'token')),
       ]);
     }
-    if ($optional_tokens = array_filter($this->entity->tokens(), fn($t) => !$t['required'])) {
+    if ($optional_tokens = array_filter($tokens, fn($t) => !$t['required'] ?? TRUE)) {
       $tokens_description[] = $this->t('Optional Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($optional_tokens, 'token')),
       ]);
