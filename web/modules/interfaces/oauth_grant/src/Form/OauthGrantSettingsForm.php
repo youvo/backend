@@ -33,6 +33,7 @@ class OauthGrantSettingsForm extends ConfigFormBase {
     $settings = $this->config('oauth_grant.settings');
     $settings->set('auth_success_redirect', $form_state->getValue('auth_success_redirect'));
     $settings->set('auth_failure_redirect', $form_state->getValue('auth_failure_redirect'));
+    $settings->set('local', $form_state->getValue('local'));
     $settings->save();
     parent::submitForm($form, $form_state);
   }
@@ -58,6 +59,13 @@ class OauthGrantSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Frontend redirect after failed authentication.'),
       '#default_value' => $config->get('auth_failure_redirect'),
       '#required' => TRUE,
+    ];
+
+    $form['local'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Local Redirects?'),
+      '#default_value' => $config->get('local'),
+      '#required' => FALSE,
     ];
 
     $form['actions'] = [
