@@ -14,7 +14,7 @@ class ConsumerPermissions implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
 
-  const PREFIX = 'authorize_with_client_';
+  const PREFIX = 'authorize with client ';
 
   /**
    * Constructs a ConsumerPermissions instance.
