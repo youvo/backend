@@ -6,9 +6,11 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Url;
 use Drupal\organizations\Entity\Organization;
 use Drupal\user\UserInterface;
 use Drupal\user\UserStorageInterface;
@@ -124,6 +126,7 @@ final class OrganizationInviteForm extends FormBase {
 
     // Compare current time with timeout in one week.
     $current = $this->time->getCurrentTime();
+    // @todo Add configuration.
     $timeout = 2592000;
 
     // Redirect to front with message if timed out.
@@ -195,12 +198,22 @@ final class OrganizationInviteForm extends FormBase {
       $this->loginUser($organization);
       $this->flood->clear('user.password_request_user', $organization->id());
 
-      return $this->redirect('<front>');
+      // Resolve redirect.
+      // @todo Clean up after development.
+      $path = $this->config('oauth_grant.settings')
+        ->get('auth_success_redirect');
+      if ($this->config('oauth_grant.settings')->get('local')) {
+        $redirect_url = Url::fromUri('http://localhost:3000' . $path)->toString();
+      }
+      else {
+        $redirect_url = Url::fromUri('https://hub.dev.youvo.org' . $path)->toString();
+      }
+      $response = new TrustedRedirectResponse($redirect_url);
+      $form_state->setResponse($response);
     }
 
-    $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
+    $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please contact your manager.'));
     return $this->redirect('user.pass');
-
   }
 
   /**
