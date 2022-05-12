@@ -15,11 +15,11 @@ use Drupal\user\Entity\Role;
 function consumer_permissions_site_install_finished() {
 
   $role_object = Role::load('creative');
-  $role_object->grantPermission('authorize_with_client_2');
-  $role_object->grantPermission('authorize_with_client_3');
+  $role_object->grantPermission('authorize with client 2');
+  $role_object->grantPermission('authorize with client 3');
   $role_object->save();
   $role_object = Role::load('organization');
-  $role_object->grantPermission('authorize_with_client_4');
-  $role_object->grantPermission('authorize_with_client_5');
+  $role_object->grantPermission('authorize with client 4');
+  $role_object->grantPermission('authorize with client 5');
   $role_object->save();
 }
