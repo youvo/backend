@@ -74,7 +74,7 @@ final class OrganizationInviteForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'organization_invite_password';
+    return 'organization_invite_password_form';
   }
 
   /**
@@ -164,6 +164,8 @@ final class OrganizationInviteForm extends FormBase {
         '#value' => $this->t('Set password'),
       ],
     ];
+
+    $form['#theme'] = 'organization_invite_password_form';
 
     return $form;
   }
