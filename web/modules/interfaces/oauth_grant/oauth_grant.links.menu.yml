@@ -1,0 +1,5 @@
+oauth_grant.admin.config.services:
+  title: OAuth Grant
+  description: 'OAuth Grant Settings.'
+  route_name: oauth_grant.settings
+  parent: system.admin_config_services

@@ -41,7 +41,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The container.
    *
-   * @return \Drupal\oauth_grant_remote\Form\OauthGrantRemoteSettingsForm
+   * @return \Drupal\oauth_grant_remote\Form\OauthGrantSettingsForm
    *   The form.
    */
   public static function create(ContainerInterface $container) {
