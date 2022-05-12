@@ -109,7 +109,6 @@ class OrganizationManageResource extends ResourceBase {
     }
 
     $organization->setManager($this->currentUser);
-    $organization->promoteProspect();
     $organization->save();
 
     return new ModifiedResourceResponse();
