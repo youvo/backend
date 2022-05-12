@@ -36,9 +36,7 @@ class ProjectPublishResource extends ProjectTransitionResourceBase {
 
     if ($project->lifecycle()->publish()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectPublishEvent($this->currentUser, $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
       return new ModifiedResourceResponse('Project published.');
     }
     else {

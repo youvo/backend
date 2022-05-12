@@ -116,7 +116,8 @@
             "drupal/jsonapi_boost": "-p4",
             "drupal/warmer": "-p4",
             "drupal/filefield_paths": "-p4",
-            "drupal/multivalue_form_element": "-p4"
+            "drupal/multivalue_form_element": "-p4",
+            "drupal/maillog": "-p4"
 		}
     },
     "require-dev": {
@@ -125,7 +126,9 @@
         "drupal/coder": "^8.3",
         "drupal/core-dev": "9.3.*",
         "drupal/devel": "^4.1",
+        "drupal/devel_mail_logger": "^1.0@beta",
         "drupal/druqs": "2.0.x-dev@dev",
+        "drupal/mailsystem": "^4.3",
         "drupal/openapi": "^2.0",
         "drupal/openapi_jsonapi": "^3.0",
         "drupal/openapi_ui": "^1.0@RC",

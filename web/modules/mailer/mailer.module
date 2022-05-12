@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for mailer module.
+ */
+
+/**
+ * Implements hook_mail().
+ */
+function mailer_mail($key, &$message, $params) {
+  $message['subject'] = $params['_subject'];
+  $message['body'][] = $params['_body'];
+}

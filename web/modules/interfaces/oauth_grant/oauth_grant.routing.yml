@@ -1,0 +1,9 @@
+oauth_grant.settings:
+  path: '/admin/config/services/oauth_grant'
+  defaults:
+   _form: '\Drupal\oauth_grant\Form\OauthGrantSettingsForm'
+   _title: 'OAuth Grant Settings'
+  requirements:
+    _role: 'administrator'
+  options:
+    _admin_route: TRUE

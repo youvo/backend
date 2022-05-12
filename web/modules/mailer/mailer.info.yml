@@ -1,0 +1,8 @@
+name: Mailer
+type: module
+description: Administration and handling of transactional emails.
+package: youvo
+core_version_requirement: ^8 || ^9
+dependencies:
+  - youvo:youvo
+configure: entity.transactional_email.collection

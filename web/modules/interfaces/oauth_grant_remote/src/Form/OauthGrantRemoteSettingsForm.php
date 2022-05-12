@@ -36,13 +36,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Creates the form.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container.
-   *
-   * @return \Drupal\oauth_grant_remote\Form\OauthGrantRemoteSettingsForm
-   *   The form.
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -52,10 +46,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Returns a unique string identifying the form.
-   *
-   * @return string
-   *   The unique string identifying the form.
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'oauth_grant_remote_settings';
@@ -69,12 +60,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Form submission handler.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $settings = $this->config('oauth_grant_remote.settings');
@@ -87,15 +73,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Defines the settings form for Access Token entities.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return array
-   *   Form definition array.
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('oauth_grant_remote.settings');

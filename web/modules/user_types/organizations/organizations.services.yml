@@ -1,0 +1,7 @@
+services:
+  organizations.project_notify.event_subscriber:
+    class: Drupal\organizations\EventSubscriber\OrganizationsProjectNotifySubscriber
+    arguments:
+      [ '@language_manager', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }

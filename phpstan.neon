@@ -1,5 +1,7 @@
 parameters:
   level: 5
+  checkGenericClassInNonGenericObjectType: false
+  checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
   excludePaths:
     - web/modules/contrib/*

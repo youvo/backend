@@ -55,9 +55,7 @@ class ProjectResetForm extends ProjectActionFormBase {
     // Reset project.
     if ($project->lifecycle()->reset()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectResetEvent($this->currentUser(), $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
       $this->messenger()->addMessage($this->t('Project was reset successfully.'));
     }
     else {

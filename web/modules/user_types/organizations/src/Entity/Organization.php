@@ -17,6 +17,13 @@ class Organization extends TypedUser implements ManagerInterface {
   const ROLE_ARCHIVAL = 'archival';
 
   /**
+   * Gets the contact.
+   */
+  public function getContact() {
+    return $this->get('field_contact')->value;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function hasManager() {
@@ -29,8 +36,9 @@ class Organization extends TypedUser implements ManagerInterface {
   public function getManager() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
     $manager_field = $this->get('field_manager');
+    $manager_references = $manager_field->referencedEntities();
     /** @var \Drupal\user\UserInterface|null $manager */
-    $manager = $manager_field->referencedEntities()[0];
+    $manager = $manager_references[0] ?? NULL;
     return !empty($manager) ? $manager : NULL;
   }
 

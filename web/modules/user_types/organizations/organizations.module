@@ -31,3 +31,14 @@ function organizations_entity_field_access($operation, FieldDefinitionInterface 
   }
   return AccessResult::neutral();
 }
+
+/**
+ * Implements hook_theme().
+ */
+function organizations_theme($existing, $type, $theme, $path) {
+  return [
+    'organization_invite_password_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}

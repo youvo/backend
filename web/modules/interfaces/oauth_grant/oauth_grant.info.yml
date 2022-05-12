@@ -1,6 +1,7 @@
 name: 'OAuth Grant'
 description: 'Governs behavior for OAuth2 Authorization Code Grant.'
 package: Interfaces
+configure: oauth_grant.settings
 
 type: module
 core_version_requirement: '^9.3 || ^10'

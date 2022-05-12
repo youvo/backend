@@ -1,0 +1,3 @@
+auth_success_redirect: /auth/login
+auth_failure_redirect: /auth/callback
+local: 1

@@ -1,0 +1,12 @@
+oauth_grant.settings:
+  type: config_object
+  label: 'OAuth Grant Settings'
+  mapping:
+    auth_success_redirect:
+      type: string
+      label: 'Auth Success Redirect'
+      description: 'Frontend redirect after successful authentication.'
+    auth_failure_redirect:
+      type: string
+      label: 'Auth Failure Redirect'
+      description: 'Frontend redirect after failed authentication.'

@@ -1,0 +1,30 @@
+mailer.transactional_email.*:
+  type: config_entity
+  label: Transactional Email
+  mapping:
+    uuid:
+      type: string
+    id:
+      type: string
+      label: Machine Name
+    label:
+      type: label
+      label: Label
+    subject:
+      type: string
+      label: Subject
+      translatable: true
+    body:
+      type: string
+      label: Body
+      translatable: true
+    tokens:
+      type: mapping
+      label: Tokens
+      mapping:
+        token:
+          type: string
+          label: Token
+        required:
+          type: boolean
+          label: Required

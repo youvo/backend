@@ -40,8 +40,10 @@ install:
   - user_bundle
   # Base
   - youvo
+  - mailer
   # User types
   - user_types
+  - creatives
   - organizations
   # Authentication
   - oauth_grant

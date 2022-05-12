@@ -55,9 +55,7 @@ class ProjectPublishForm extends ProjectActionFormBase {
     // Mediate project.
     if ($project->lifecycle()->publish()) {
       $project->save();
-      $this->eventDispatcher->dispatch(
-        new ProjectPublishEvent($this->currentUser(), $project)
-      );
+      $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
       $this->messenger()->addMessage($this->t('Project was published successfully.'));
     }
     else {

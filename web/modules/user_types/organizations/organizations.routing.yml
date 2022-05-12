@@ -1,0 +1,24 @@
+organizations.invite:
+  path: '/invite/{uid}/{timestamp}/{hash}'
+  defaults:
+    _controller: '\Drupal\organizations\Controller\OrganizationController::invite'
+    _title: 'Organization Invite'
+  requirements:
+    # Invite link flow verifies timestamp and hash.
+    _access: 'TRUE'
+  options:
+    _maintenance_access: TRUE
+    no_cache: TRUE
+organizations.invite.form:
+  path: '/invite/password/{organization}'
+  defaults:
+    _form: '\Drupal\organizations\Form\OrganizationInviteForm'
+    _title: 'Set password'
+  requirements:
+    _user_is_logged_in: 'FALSE'
+  options:
+    _maintenance_access: TRUE
+    no_cache: TRUE
+    parameters:
+      organization:
+        type: entity:user
