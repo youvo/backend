@@ -7,13 +7,3 @@ youvo.dashboard:
     _role: 'editor+administrator'
   options:
     no_cache: 'TRUE'
-
-youvo.settings:
-  path: '/admin/config/system/youvo'
-  defaults:
-    _form: '\Drupal\youvo\Form\YouvoSettingsForm'
-    _title: 'Youvo Settings'
-  requirements:
-    _role: 'administrator'
-  options:
-    _admin_route: TRUE

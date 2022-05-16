@@ -1,7 +1,6 @@
 name: 'Youvo Base'
 description: 'Custom module which provides base framework for platform.'
 package: 'youvo'
-configure: youvo.settings
 type: module
 core_version_requirement: '^9.3 || ^10'
 

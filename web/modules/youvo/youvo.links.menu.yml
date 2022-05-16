@@ -1,5 +1,0 @@
-youvo.admin.config.system.settings:
-  title: youvo Settings
-  description: 'Configure the youvo settings.'
-  route_name: youvo.settings
-  parent: system.admin_config_system

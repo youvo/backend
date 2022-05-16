@@ -3,8 +3,6 @@
 namespace Drupal\blocker_mode\EventSubscriber;
 
 use Drupal\blocker_mode\BlockerModeInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Render\BareHtmlPageRendererInterface;
 use Drupal\Core\Routing\RouteMatch;
@@ -54,13 +52,6 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   protected KillSwitch $pageCacheKillSwitch;
 
   /**
-   * The youvo settings.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $config;
-
-  /**
    * Constructs a new MaintenanceModeSubscriber.
    *
    * @param \Drupal\blocker_mode\BlockerModeInterface $blocker_mode
@@ -71,21 +62,17 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
    *   The bare HTML page renderer.
    * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $page_cache_kill_switch
    *   The page cache kill switch.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    */
   public function __construct(
     BlockerModeInterface $blocker_mode,
     AccountInterface $account,
     BareHtmlPageRendererInterface $bare_html_page_renderer,
-    KillSwitch $page_cache_kill_switch,
-    ConfigFactoryInterface $config_factory
+    KillSwitch $page_cache_kill_switch
   ) {
     $this->blockerMode = $blocker_mode;
     $this->account = $account;
     $this->bareHtmlPageRenderer = $bare_html_page_renderer;
     $this->pageCacheKillSwitch = $page_cache_kill_switch;
-    $this->config = $config_factory->get('youvo.settings');
   }
 
   /**
@@ -127,9 +114,8 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
-    $prefix = $this->config->get('api_prefix');
     if (
-      str_contains($path, $prefix . '/api') ||
+      str_contains($path, '/api') ||
       str_contains($path, '/oauth/token')
     ) {
       if ($exception instanceof HttpException) {
