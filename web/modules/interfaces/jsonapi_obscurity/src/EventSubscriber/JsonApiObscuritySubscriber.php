@@ -58,8 +58,10 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
     if ($path_prefix != $this->obscurityPrefix) {
       // Check with potential langcode.
       $langcode = substr($path_prefix, strrpos($path_prefix, '/') + 1);
-      if (!array_key_exists($langcode, LanguageManager::getStandardLanguageList()) ||
-        $path_prefix != $this->obscurityPrefix . '/' . $langcode) {
+      if (
+        !array_key_exists($langcode, LanguageManager::getStandardLanguageList()) ||
+        $path_prefix != $this->obscurityPrefix . '/' . $langcode
+      ) {
         throw new NotFoundHttpException();
       }
     }
@@ -94,9 +96,13 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
    */
   protected function getPlainPath(Request $request): string {
     $plain_path = $this->getBarePath($request);
-    [$langcode, $residual_path] = explode('/', ltrim($plain_path, '/'), 2);
-    if (array_key_exists($langcode, LanguageManager::getStandardLanguageList())) {
-      $plain_path = '/' . $residual_path;
+    $exploded_path = explode('/', ltrim($plain_path, '/'), 2);
+    if (
+      isset($exploded_path[0]) &&
+      isset($exploded_path[1]) &&
+      array_key_exists($exploded_path[0], LanguageManager::getStandardLanguageList())
+    ) {
+      $plain_path = '/' . $exploded_path[1];
     }
     return $plain_path;
   }
