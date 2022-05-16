@@ -2,6 +2,7 @@
 
 namespace Drupal\jsonapi_obscurity\EventSubscriber;
 
+use Drupal\Core\Language\LanguageManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -33,7 +34,7 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
     $request = $event->getRequest();
     if ($this->applies($request)) {
       $this->validatePrefix($request);
-      $this->cutPrefixFromPath($request);
+      $this->reinitializeRequestWithoutPrefix($request);
     }
   }
 
@@ -45,7 +46,7 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
    */
   protected function applies(Request $request): bool {
     return !empty($this->obscurityPrefix) &&
-      str_starts_with($this->getBarePath($request), $this->jsonApiBasePath . '/');
+      str_starts_with($this->getPlainPath($request), $this->jsonApiBasePath . '/');
   }
 
   /**
@@ -55,14 +56,19 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
     $this->obscurityPrefix = '/' . ltrim($this->obscurityPrefix, '/');
     $path_prefix = strstr($request->getPathInfo(), $this->jsonApiBasePath, TRUE);
     if ($path_prefix != $this->obscurityPrefix) {
-      throw new NotFoundHttpException();
+      // Check with potential langcode.
+      $langcode = substr($path_prefix, strrpos($path_prefix, '/') + 1);
+      if (!array_key_exists($langcode, LanguageManager::getStandardLanguageList()) ||
+        $path_prefix != $this->obscurityPrefix . '/' . $langcode) {
+        throw new NotFoundHttpException();
+      }
     }
   }
 
   /**
    * Cuts the obscurity prefix from the path in the request.
    */
-  protected function cutPrefixFromPath(Request $request): void {
+  protected function reinitializeRequestWithoutPrefix(Request $request): void {
     $request->server->set('REQUEST_URI', $this->getBarePath($request));
     // The request has to be reinitialized to set the correct path info.
     $request->initialize(
@@ -81,6 +87,18 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
    */
   protected function getBarePath(Request $request): string {
     return preg_replace('/^' . preg_quote($this->obscurityPrefix, '/') . '/', '', $request->getPathInfo()) ?? '';
+  }
+
+  /**
+   * Returns the path without the obscurity prefix and langcode.
+   */
+  protected function getPlainPath(Request $request): string {
+    $plain_path = $this->getBarePath($request);
+    [$langcode, $residual_path] = explode('/', ltrim($plain_path, '/'), 2);
+    if (array_key_exists($langcode, LanguageManager::getStandardLanguageList())) {
+      $plain_path = '/' . $residual_path;
+    }
+    return $plain_path;
   }
 
   /**
