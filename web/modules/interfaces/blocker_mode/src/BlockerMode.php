@@ -14,21 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 class BlockerMode implements BlockerModeInterface {
 
   /**
-   * The state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected StateInterface $state;
-
-  /**
    * Constructs a new blocker mode service.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state.
    */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
-  }
+  public function __construct(protected StateInterface $state) {}
 
   /**
    * {@inheritdoc}

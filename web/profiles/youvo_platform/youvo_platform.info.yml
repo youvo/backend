@@ -45,10 +45,11 @@ install:
   - user_types
   - creatives
   - organizations
-  # Authentication
+  # Authentication & interfaces
   - oauth_grant
   - oauth_grant_remote
   - blocker_mode
+  - jsonapi_obscurity
   - consumer_permissions
   # Cache warming
   - warmer
