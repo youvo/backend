@@ -17,69 +17,39 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Maintenance mode subscriber for controller requests.
+ * Blocker mode subscriber for controller requests.
  */
 class BlockerModeSubscriber implements EventSubscriberInterface {
 
   use StringTranslationTrait;
 
   /**
-   * The maintenance mode.
+   * Constructs a BlockerModeSubscriber object.
    *
-   * @var \Drupal\blocker_mode\BlockerModeInterface
-   */
-  protected BlockerModeInterface $blockerMode;
-
-  /**
-   * The current account.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected AccountInterface $account;
-
-  /**
-   * The bare HTML page renderer.
-   *
-   * @var \Drupal\Core\Render\BareHtmlPageRendererInterface
-   */
-  protected BareHtmlPageRendererInterface $bareHtmlPageRenderer;
-
-  /**
-   * The page cache kill switch.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
-   */
-  protected KillSwitch $pageCacheKillSwitch;
-
-  /**
-   * Constructs a new MaintenanceModeSubscriber.
-   *
-   * @param \Drupal\blocker_mode\BlockerModeInterface $blocker_mode
-   *   The blocker mode.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
-   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bare_html_page_renderer
+   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer
    *   The bare HTML page renderer.
-   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $page_cache_kill_switch
+   * @param \Drupal\blocker_mode\BlockerModeInterface $blockerMode
+   *   The blocker mode.
+   * @param string $jsonApiBasePath
+   *   The JSON:API base path.
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $pageCacheKillSwitch
    *   The page cache kill switch.
    */
   public function __construct(
-    BlockerModeInterface $blocker_mode,
-    AccountInterface $account,
-    BareHtmlPageRendererInterface $bare_html_page_renderer,
-    KillSwitch $page_cache_kill_switch
-  ) {
-    $this->blockerMode = $blocker_mode;
-    $this->account = $account;
-    $this->bareHtmlPageRenderer = $bare_html_page_renderer;
-    $this->pageCacheKillSwitch = $page_cache_kill_switch;
-  }
+    protected AccountInterface $account,
+    protected BareHtmlPageRendererInterface $bareHtmlPageRenderer,
+    protected BlockerModeInterface $blockerMode,
+    protected string $jsonApiBasePath,
+    protected KillSwitch $pageCacheKillSwitch
+  ) {}
 
   /**
-   * Returns the site blocker page.
+   * Handles the kernel request.
    *
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The event to process.
+   *   The request event to process.
    */
   public function onKernelRequestBlocker(RequestEvent $event) {
 
@@ -105,17 +75,17 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Returns the site blocker page for exceptions.
+   * Handles the kernel exception.
    *
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The event to process.
+   *   The request event to process.
    */
   public function onKernelExceptionBlocker(RequestEvent $event) {
     /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
     if (
-      str_contains($path, '/api') ||
+      str_contains($path, $this->jsonApiBasePath . '/') ||
       str_contains($path, '/oauth/token')
     ) {
       if ($exception instanceof HttpException) {
@@ -139,15 +109,6 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents() {
-    $events[KernelEvents::REQUEST][] = ['onKernelRequestBlocker', 31];
-    $events[KernelEvents::EXCEPTION][] = ['onKernelExceptionBlocker', 1];
-    return $events;
-  }
-
-  /**
    * Delivers the forbidden response.
    *
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
@@ -165,6 +126,15 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     $response = $this->bareHtmlPageRenderer->renderBarePage(['#markup' => $this->t('Forbidden')], $this->t('Data Provider'), 'maintenance_page');
     $response->setStatusCode(403);
     $event->setResponse($response);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getSubscribedEvents() {
+    $events[KernelEvents::REQUEST][] = ['onKernelRequestBlocker', 31];
+    $events[KernelEvents::EXCEPTION][] = ['onKernelExceptionBlocker', 1];
+    return $events;
   }
 
 }
