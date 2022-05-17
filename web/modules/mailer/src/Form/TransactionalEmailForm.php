@@ -53,7 +53,7 @@ class TransactionalEmailForm extends EntityForm {
     // Description for body field describing required and optional tokens.
     $tokens_description = [];
     // Ajax callback adds the adds_more button to tokens. Filter it out here.
-    $tokens = array_filter($this->entity->tokens(), fn($t) => is_array($t));
+    $tokens = array_filter($this->entity->tokens(TRUE), fn($t) => is_array($t));
     if ($required_tokens = array_filter($tokens, fn($t) => $t['required'] ?? FALSE)) {
       $tokens_description[] = $this->t('Required Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($required_tokens, 'token')),
@@ -86,7 +86,7 @@ class TransactionalEmailForm extends EntityForm {
         '#type' => 'checkbox',
         '#title' => $this->t('Required'),
       ],
-      '#default_value' => $this->entity->tokens(),
+      '#default_value' => $this->entity->tokens(TRUE),
       '#access' => $this->currentUser()->hasPermission('administer transactional emails'),
     ];
 

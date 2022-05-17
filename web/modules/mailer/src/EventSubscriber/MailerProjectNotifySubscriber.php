@@ -42,16 +42,10 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
       '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
     ];
 
-    $body = $this->handleTokens(
-      $email->body(),
-      $replacements,
-      $email->tokens(TRUE)
-    );
-
     $this->sendMail(
       $event->getProject()->getOwner()->getEmail(),
       $email->subject(),
-      $body,
+      $this->handleTokens($email->body(), $replacements, $email->tokens()),
       $manager?->getEmail()
     );
   }
