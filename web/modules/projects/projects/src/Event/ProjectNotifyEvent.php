@@ -8,24 +8,24 @@ namespace Drupal\projects\Event;
 class ProjectNotifyEvent extends ProjectEventBase {
 
   /**
-   * An invitation link.
+   * A follow-up link.
    *
    * @var string
    */
-  protected string $invitationLink;
+  protected string $link;
 
   /**
-   * Gets the invitation link.
+   * Gets the follow-up link.
    */
-  public function getInvitationLink(): string {
-    return $this->invitationLink ?? '';
+  public function getLink(): string {
+    return $this->link ?? '';
   }
 
   /**
-   * Sets the invitation link.
+   * Sets the follow-up link.
    */
-  public function setInvitationLink(string $invitation_link): ProjectNotifyEvent {
-    $this->invitationLink = $invitation_link;
+  public function setLink(string $link): ProjectNotifyEvent {
+    $this->link = $link;
     return $this;
   }
 
