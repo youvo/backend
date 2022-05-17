@@ -44,8 +44,8 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
 
     $this->sendMail(
       $event->getProject()->getOwner()->getEmail(),
-      $email->subject(),
-      $this->handleTokens($email->body(), $replacements, $email->tokens()),
+      $this->handleTokensSubject($email, $replacements),
+      $this->handleTokensBody($email, $replacements),
       $manager?->getEmail()
     );
   }

@@ -88,6 +88,36 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
   }
 
   /**
+   * Handles tokens for subject.
+   *
+   * @param \Drupal\mailer\Entity\TransactionalEmail $email
+   *   The transactional email.
+   * @param array $replacements
+   *   An array containing the replacements for the tokens.
+   *
+   * @return string
+   *   The subject with replaced tokens.
+   */
+  protected function handleTokensSubject(TransactionalEmail $email, array $replacements): string {
+    return $this->handleTokens($email->subject(), $replacements, $email->tokens(), FALSE);
+  }
+
+  /**
+   * Handles tokens for body.
+   *
+   * @param \Drupal\mailer\Entity\TransactionalEmail $email
+   *   The transactional email.
+   * @param array $replacements
+   *   An array containing the replacements for the tokens.
+   *
+   * @return string
+   *   The body with replaced tokens.
+   */
+  protected function handleTokensBody(TransactionalEmail $email, array $replacements): string {
+    return $this->handleTokens($email->body(), $replacements, $email->tokens());
+  }
+
+  /**
    * Sends email with the mail manager.
    */
   protected function sendMail(string $to, string $subject, string $body, string $reply = NULL, string $langcode = 'de'): void {

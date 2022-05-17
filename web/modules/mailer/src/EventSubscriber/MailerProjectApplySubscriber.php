@@ -47,8 +47,8 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
 
       $this->sendMail(
         $event->getProject()->getOwner()->getEmail(),
-        $this->handleTokens($email->subject(), $replacements, $email->tokens(), FALSE),
-        $this->handleTokens($email->body(), $replacements, $email->tokens()),
+        $this->handleTokensSubject($email, $replacements),
+        $this->handleTokensBody($email, $replacements),
         $manager?->getEmail()
       );
     }
@@ -71,8 +71,8 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
 
       $this->sendMail(
         $creative->getEmail(),
-        $this->handleTokens($email->subject(), $replacements, $email->tokens(), FALSE),
-        $this->handleTokens($email->body(), $replacements, $email->tokens()),
+        $this->handleTokensSubject($email, $replacements),
+        $this->handleTokensBody($email, $replacements),
         $manager?->getEmail()
       );
     }
