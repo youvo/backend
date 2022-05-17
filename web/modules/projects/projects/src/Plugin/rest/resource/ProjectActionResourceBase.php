@@ -2,10 +2,12 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Component\Serialization\SerializationInterface;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Access\ProjectActionAccess;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\user\UserStorageInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -15,20 +17,6 @@ use Symfony\Component\Routing\RouteCollection;
  * Provides base class for project action resources.
  */
 class ProjectActionResourceBase extends ResourceBase {
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected AccountInterface $currentUser;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $eventDispatcher;
 
   /**
    * Constructs a ProjectActionResourceBase object.
@@ -43,10 +31,14 @@ class ProjectActionResourceBase extends ResourceBase {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
+   * @param \Drupal\Component\Serialization\SerializationInterface $serializationJson
+   *   Serialization with Json.
+   * @param \Drupal\user\UserStorageInterface $userStorage
+   *   The user storage.
    */
   public function __construct(
     array $configuration,
@@ -54,12 +46,12 @@ class ProjectActionResourceBase extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    AccountInterface $current_user,
-    EventDispatcherInterface $event_dispatcher
+    protected AccountInterface $currentUser,
+    protected EventDispatcherInterface $eventDispatcher,
+    protected SerializationInterface $serializationJson,
+    protected UserStorageInterface $userStorage
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->currentUser = $current_user;
-    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -78,7 +70,9 @@ class ProjectActionResourceBase extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('projects'),
       $container->get('current_user'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('serialization.json'),
+      $container->get('entity_type.manager')->getStorage('user')
     );
   }
 

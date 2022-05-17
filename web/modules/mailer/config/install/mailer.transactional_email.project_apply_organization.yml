@@ -1,0 +1,29 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_apply_organization
+label: 'Project Apply Organization'
+subject: '%NameCreative hat Interesse an Eurem Projekt %TitleProject'
+body: "%Message\r\n\r\n========\r\n\r\nBitte schaut Euch das Portfolio von %NameCreative an (%LinkCreative) und antwortet auf die Anfrage. Bedenkt, dass Kommunikation während einer Zusammenarbeit besonders wichtig ist. Hier die Kontaktdaten der Interessierten/des Interessierten:  %EmailCreative %PhoneCreative\r\nWenn Ihr Euch nicht persönlich verabreden könnt, tauscht Telefonnummern oder Skypedaten aus, um Euch kennenzulernen. \r\n\r\nTIPP: Wenn Ihr über Mail kommuniziert, denkt bitte daran auch in Eurem Spam-Ordner zu schauen, damit keine Nachrichten verloren gehen.\r\n\r\nWenn Ihr Euch einig seid und beginnt, das Projekt gemeinsam umzusetzen, stellt bitte den Status des Projektes unter youvo.org auf „vermittelt“, damit die anderen Kreativen Bescheid wissen.\r\nEs ist auch möglich, mehrere Kreative für ein Projekt zu gewinnen, bitte sprecht das miteinander ab.\r\n\r\nWir sind während des Projektes immer für Euch da – meldet Euch bitte, wenn Probleme oder Fragen auftauchen.\r\n \r\nWenn Ihr (zu viele) Anfragen von Kreativen bekommt, mit denen Ihr nicht zusammenarbeiten wollt oder könnt, sagt ihnen bitte Bescheid. Bitte denkt daran, dass Ihr Eure Absage freundlich begründet.\r\nWir wünschen Euch viel Erfolg bei der Umsetzung und sind gespannt auf die Ergebnisse. \r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%Message'
+    required: '1'
+  -
+    token: '%NameCreative'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%LinkCreative'
+    required: 0
+  -
+    token: '%EmailCreative'
+    required: 0
+  -
+    token: '%PhoneCreative'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0

@@ -72,14 +72,18 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
    *   An array containing the replacements for the tokens.
    * @param \Drupal\mailer\MailerToken[] $tokens
    *   The tokens.
+   * @param bool $validate
+   *   Whether the tokens should be validated. Defaults to TRUE.
    *
    * @return string
    *   The text with replaced tokens.
    */
-  protected function handleTokens(string $text, array $replacements, array $tokens): string {
+  protected function handleTokens(string $text, array $replacements, array $tokens, bool $validate = TRUE): string {
     $this->mailerTokenReplacer->populateReplacements($replacements, $tokens);
     $this->mailerTokenReplacer->replace($text, $tokens);
-    $this->mailerTokenReplacer->validate($tokens);
+    if ($validate) {
+      $this->mailerTokenReplacer->validate($tokens);
+    }
     return $text;
   }
 

@@ -19,8 +19,33 @@ class Organization extends TypedUser implements ManagerInterface {
   /**
    * Gets the contact.
    */
-  public function getContact() {
+  public function getContact(): string {
     return $this->get('field_contact')->value;
+  }
+
+  /**
+   * Gets the name.
+   */
+  public function getName(): string {
+    return $this->get('field_name')->value;
+  }
+
+  /**
+   * Gets the phone number.
+   */
+  public function getPhoneNumber(): string {
+    return $this->get('field_phone')->value;
+  }
+
+  /**
+   * Gets the address.
+   */
+  public function getAddress(): string {
+    $country = !empty($this->get('field_country')->value) ?
+      ', ' . !empty($this->get('field_country')->value) : '';
+    return $this->get('field_street')->value . ', ' .
+      $this->get('field_zip')->value . ' ' . $this->get('field_city')->value .
+      $country;
   }
 
   /**

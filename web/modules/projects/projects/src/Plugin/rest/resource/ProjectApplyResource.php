@@ -2,10 +2,10 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides Project Apply Resource.
@@ -50,8 +50,10 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   /**
    * Responds to POST requests.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The response.
@@ -59,7 +61,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   Thrown if project can not be saved.
    */
-  public function post(Project $project) {
+  public function post(ProjectInterface $project, Request $request) {
 
     // Is the project open?
     if (!$project->lifecycle()->isOpen()) {
@@ -74,12 +76,27 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     // Otherwise, project is open to apply for creative.
     else {
 
+      /** @var \Drupal\creatives\Entity\Creative $applicant */
+      $applicant = $this->userStorage->load($this->currentUser->id());
+
+      // Decode content of the request.
+      $content = $this->serializationJson->decode($request->getContent());
+
+      // Add phone number to creative.
+      if (!empty($content['phone'])) {
+        $applicant->setPhoneNumber($content['phone']);
+        $applicant->save();
+      }
+
       // Append applicant to project.
-      $project->appendApplicant($this->currentUser);
+      $project->appendApplicant($applicant);
       $project->save();
 
       // Dispatch project apply event.
-      $this->eventDispatcher->dispatch(new ProjectApplyEvent($project));
+      $event = new ProjectApplyEvent($project);
+      $event->setMessage($content['message'] ?? '');
+      $event->setApplicant($applicant);
+      $this->eventDispatcher->dispatch($event);
 
       return new ModifiedResourceResponse('Added creative to applicants.', 200);
     }

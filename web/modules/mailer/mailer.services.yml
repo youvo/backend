@@ -1,4 +1,10 @@
 services:
+  mailer.project_apply.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectApplySubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@mailer.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
   mailer.project_notify.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectNotifySubscriber
     arguments:
