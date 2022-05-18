@@ -13,7 +13,7 @@ class Creative extends TypedUser {
    * Gets the name.
    */
   public function getName(): string {
-    return $this->get('field_name')->value;
+    return $this->get('field_name')->value ?? '';
   }
 
   /**
@@ -28,7 +28,7 @@ class Creative extends TypedUser {
    * Gets the phone number.
    */
   public function getPhoneNumber(): string {
-    return $this->get('field_phone')->value;
+    return $this->get('field_phone')->value ?? '';
   }
 
   /**

@@ -20,21 +20,21 @@ class Organization extends TypedUser implements ManagerInterface {
    * Gets the contact.
    */
   public function getContact(): string {
-    return $this->get('field_contact')->value;
+    return $this->get('field_contact')->value ?? '';
   }
 
   /**
    * Gets the name.
    */
   public function getName(): string {
-    return $this->get('field_name')->value;
+    return $this->get('field_name')->value ?? '';
   }
 
   /**
    * Gets the phone number.
    */
   public function getPhoneNumber(): string {
-    return $this->get('field_phone')->value;
+    return $this->get('field_phone')->value ?? '';
   }
 
   /**
