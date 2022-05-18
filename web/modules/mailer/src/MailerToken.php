@@ -45,9 +45,13 @@ class MailerToken {
 
   /**
    * Checks whether token has a replacement.
+   *
+   * The replacement for a required token needs to be non-empty. A non-required
+   * token can have an empty replacement.
    */
   public function hasReplacement(): bool {
-    return isset($this->replacement) && !empty($this->getReplacement());
+    return isset($this->replacement) &&
+      (!$this->isRequired() || !empty($this->getReplacement()));
   }
 
   /**
