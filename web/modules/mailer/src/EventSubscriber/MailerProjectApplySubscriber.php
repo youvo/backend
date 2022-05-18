@@ -41,7 +41,7 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
         '%NameCreative' => $creative->getName(),
         '%LinkCreative' => 'https://hub.youvo.org/users/' . $creative->uuid(),
         '%EmailCreative' => $creative->getEmail(),
-        '%PhoneCreative' => $creative->getPhoneNumber(),
+        '%PhoneCreative' => $event->getPhoneNumber(),
         '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
       ];
 

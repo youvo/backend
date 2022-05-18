@@ -95,6 +95,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
       // Dispatch project apply event.
       $event = new ProjectApplyEvent($project);
       $event->setMessage($content['message'] ?? '');
+      $event->setPhoneNumber($content['phone'] ?? '');
       $event->setApplicant($applicant);
       $this->eventDispatcher->dispatch($event);
 

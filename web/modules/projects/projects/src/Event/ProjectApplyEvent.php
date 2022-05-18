@@ -24,6 +24,13 @@ class ProjectApplyEvent extends ProjectEventBase {
   protected string $message;
 
   /**
+   * The phone number.
+   *
+   * @var string
+   */
+  protected string $phoneNumber;
+
+  /**
    * Gets the message.
    */
   public function getMessage(): string {
@@ -35,6 +42,21 @@ class ProjectApplyEvent extends ProjectEventBase {
    */
   public function setMessage(string $message): ProjectApplyEvent {
     $this->message = $message;
+    return $this;
+  }
+
+  /**
+   * Gets the phone number.
+   */
+  public function getPhoneNumber(): string {
+    return $this->phoneNumber ?? '';
+  }
+
+  /**
+   * Sets the phone number.
+   */
+  public function setPhoneNumber(string $phone_number): ProjectApplyEvent {
+    $this->phoneNumber = $phone_number;
     return $this;
   }
 
