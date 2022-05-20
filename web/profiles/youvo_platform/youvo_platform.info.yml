@@ -9,6 +9,7 @@ install:
   # Core
   - block
   - config
+  - config_translation
   - content_translation
   - datetime
   - dblog
@@ -17,8 +18,7 @@ install:
   - file
   - image
   - jsonapi
-  - jsonapi_extras
-  - jsonapi_include
+  - locale
   - menu_link_content
   - node
   - options
@@ -31,6 +31,8 @@ install:
   - workflows
   # Contrib
   - filefield_paths
+  - jsonapi_extras
+  - jsonapi_include
   - mail_login
   - multivalue_form_element
   - consumers
