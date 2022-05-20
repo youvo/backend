@@ -1,2 +1,10 @@
 administer log pattern:
   title: 'Administer log pattern'
+  description: 'Maintain the types of log event entity.'
+  restrict access: true
+
+edit log pattern:
+  title: 'Edit log pattern'
+
+access log event overview:
+  title: 'Access log event overview page'

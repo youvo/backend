@@ -2,7 +2,8 @@
 
 namespace Drupal\logbook\Form;
 
-use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\BundleEntityFormBase;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 
@@ -11,7 +12,7 @@ use Drupal\multivalue_form_element\Element\MultiValue;
  *
  * @property \Drupal\logbook\LogPatternInterface $entity
  */
-class LogPatternForm extends EntityForm {
+class LogPatternForm extends BundleEntityFormBase {
 
   /**
    * {@inheritdoc}
@@ -19,6 +20,16 @@ class LogPatternForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
 
     $form = parent::form($form, $form_state);
+
+    if ($this->operation == 'add') {
+      $form['#title'] = $this->t('Add log pattern');
+    }
+    else {
+      $form['#title'] = $this->t(
+        'Edit %label log pattern',
+        ['%label' => $this->entity->label()]
+      );
+    }
 
     $form['label'] = [
       '#type' => 'textfield',
@@ -32,9 +43,12 @@ class LogPatternForm extends EntityForm {
     $form['id'] = [
       '#type' => 'machine_name',
       '#default_value' => $this->entity->id(),
+      '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
         'exists' => '\Drupal\logbook\Entity\LogPattern::load',
+        'source' => 'label',
       ],
+      '#description' => $this->t('A unique machine-readable name for this log pattern. It must only contain lowercase letters, numbers, and underscores.'),
       '#disabled' => !$this->entity->isNew(),
     ];
 
@@ -45,10 +59,15 @@ class LogPatternForm extends EntityForm {
       '#description' => implode(' &mdash; ', []),
     ];
 
-    $form['public_text'] = [
+    $form['advanced'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Public text'),
+    ];
+
+    $form['advanced']['public_text'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Public text'),
-      // '#title_display' => 'invisible',
+      '#title_display' => 'invisible',
       '#default_value' => $this->entity->publicText(),
       '#description' => implode(' &mdash; ', []),
     ];
@@ -89,7 +108,17 @@ class LogPatternForm extends EntityForm {
       '#access' => $this->currentUser()->hasPermission('administer log patterns'),
     ];
 
-    return $form;
+    return $this->protectBundleIdElement($form);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions['submit']['#value'] = $this->t('Save log pattern');
+    $actions['delete']['#value'] = $this->t('Delete log pattern');
+    return $actions;
   }
 
   /**

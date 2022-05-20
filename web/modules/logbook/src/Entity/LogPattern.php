@@ -2,7 +2,7 @@
 
 namespace Drupal\logbook\Entity;
 
-use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\youvo\SimpleToken;
 
@@ -29,6 +29,7 @@ use Drupal\youvo\SimpleToken;
  *   },
  *   config_prefix = "log_pattern",
  *   admin_permission = "administer log pattern",
+ *   bundle_of = "log_event",
  *   links = {
  *     "collection" = "/admin/structure/log-pattern",
  *     "add-form" = "/admin/structure/log-pattern/add",
@@ -52,7 +53,7 @@ use Drupal\youvo\SimpleToken;
  *   }
  * )
  */
-class LogPattern extends ConfigEntityBase implements LogPatternInterface {
+class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
 
   /**
    * The log pattern machine name.
