@@ -1,0 +1,5 @@
+entity.log_pattern.add_form:
+  route_name: 'entity.log_pattern.add_form'
+  title: 'Add log pattern'
+  appears_on:
+    - entity.log_pattern.collection

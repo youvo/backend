@@ -1,0 +1,5 @@
+entity.log_pattern.overview:
+  title: Log Patterns
+  parent: system.admin_structure
+  description: 'List of log patterns to extend site functionality.'
+  route_name: entity.log_pattern.collection

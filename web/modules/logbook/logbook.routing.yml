@@ -1,0 +1,31 @@
+entity.log_pattern.collection:
+  path: '/admin/structure/log-pattern'
+  defaults:
+    _entity_list: 'log_pattern'
+    _title: 'Log pattern configuration'
+  requirements:
+    _permission: 'administer log pattern'
+
+entity.log_pattern.add_form:
+  path: '/admin/structure/log_pattern/add'
+  defaults:
+    _entity_form: 'log_pattern.add'
+    _title: 'Add a log pattern'
+  requirements:
+    _permission: 'administer log pattern'
+
+entity.log_pattern.edit_form:
+  path: '/admin/structure/log-pattern/{log_pattern}'
+  defaults:
+    _entity_form: 'log_pattern.edit'
+    _title: 'Edit a log pattern'
+  requirements:
+    _permission: 'administer log pattern'
+
+entity.log_pattern.delete_form:
+  path: '/admin/structure/log-pattern/{log_pattern}/delete'
+  defaults:
+    _entity_form: 'log_pattern.delete'
+    _title: 'Delete a log pattern'
+  requirements:
+    _permission: 'administer log pattern'
