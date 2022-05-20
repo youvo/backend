@@ -5,6 +5,9 @@ services:
       - { name: paramconverter }
     arguments:
       [ '@entity_type.manager', '@entity.repository' ]
+  youvo.token_replacer:
+    class: Drupal\youvo\SimpleTokenReplacer
+    arguments: [ '@logger.channel.youvo' ]
   logger.channel.youvo:
     parent: logger.channel_base
     arguments: [ 'youvo' ]

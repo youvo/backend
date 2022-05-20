@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\mailer\Entity\TransactionalEmail;
-use Drupal\mailer\MailerTokenReplacer;
+use Drupal\youvo\SimpleTokenReplacer;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -33,7 +33,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
    *   The mailer logger channel.
    * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
    *   The mail manager service.
-   * @param \Drupal\mailer\MailerTokenReplacer $mailerTokenReplacer
+   * @param \Drupal\youvo\SimpleTokenReplacer $simpleTokenReplacer
    *   The mailer token replacer service.
    */
   public function __construct(
@@ -42,7 +42,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
     protected MailManagerInterface $mailManager,
-    protected MailerTokenReplacer $mailerTokenReplacer
+    protected SimpleTokenReplacer $simpleTokenReplacer
   ) {}
 
   /**
@@ -70,7 +70,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
    *   A text with tokens to replace.
    * @param array $replacements
    *   An array containing the replacements for the tokens.
-   * @param \Drupal\mailer\MailerToken[] $tokens
+   * @param \Drupal\youvo\SimpleToken[] $tokens
    *   The tokens.
    * @param bool $validate
    *   Whether the tokens should be validated. Defaults to TRUE.
@@ -79,10 +79,10 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
    *   The text with replaced tokens.
    */
   protected function handleTokens(string $text, array $replacements, array $tokens, bool $validate = TRUE): string {
-    $this->mailerTokenReplacer->populateReplacements($replacements, $tokens);
-    $this->mailerTokenReplacer->replace($text, $tokens);
+    $this->simpleTokenReplacer->populateReplacements($replacements, $tokens);
+    $this->simpleTokenReplacer->replace($text, $tokens);
     if ($validate) {
-      $this->mailerTokenReplacer->validate($tokens);
+      $this->simpleTokenReplacer->validate($tokens);
     }
     return $text;
   }

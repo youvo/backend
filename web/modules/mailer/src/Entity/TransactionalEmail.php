@@ -4,7 +4,7 @@ namespace Drupal\mailer\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\mailer\MailerToken;
+use Drupal\youvo\SimpleToken;
 use Drupal\mailer\TransactionalEmailInterface;
 
 /**
@@ -109,7 +109,7 @@ class TransactionalEmail extends ConfigEntityBase implements TransactionalEmailI
     if ($as_array) {
       return $this->tokens ?? [];
     }
-    return MailerToken::createMultiple($this->tokens ?? []);
+    return SimpleToken::createMultiple($this->tokens ?? []);
   }
 
   /**

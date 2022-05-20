@@ -4,7 +4,7 @@ namespace Drupal\logbook\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\logbook\LogPatternInterface;
-use Drupal\mailer\MailerToken;
+use Drupal\youvo\SimpleToken;
 
 /**
  * Defines the Log Pattern entity type.
@@ -138,7 +138,7 @@ class LogPattern extends ConfigEntityBase implements LogPatternInterface {
     if ($as_array) {
       return $this->tokens ?? [];
     }
-    return MailerToken::createMultiple($this->tokens ?? []);
+    return SimpleToken::createMultiple($this->tokens ?? []);
   }
 
 }
