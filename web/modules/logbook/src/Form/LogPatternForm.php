@@ -4,6 +4,7 @@ namespace Drupal\logbook\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\multivalue_form_element\Element\MultiValue;
 
 /**
  * Log pattern form.
@@ -37,10 +38,55 @@ class LogPatternForm extends EntityForm {
       '#disabled' => !$this->entity->isNew(),
     ];
 
+    $form['text'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Text'),
+      '#default_value' => $this->entity->text(),
+      '#description' => implode(' &mdash; ', []),
+    ];
+
+    $form['public_text'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Public text'),
+      // '#title_display' => 'invisible',
+      '#default_value' => $this->entity->publicText(),
+      '#description' => implode(' &mdash; ', []),
+    ];
+
     $form['status'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enabled'),
       '#default_value' => $this->entity->status(),
+    ];
+
+    $form['promote'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Promoted'),
+      '#default_value' => $this->entity->promoted(),
+    ];
+
+    $form['hidden'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Hidden'),
+      '#default_value' => $this->entity->hidden(),
+    ];
+
+    $form['tokens'] = [
+      '#type' => 'multivalue',
+      '#cardinality' => Multivalue::CARDINALITY_UNLIMITED,
+      '#title' => $this->t('Tokens'),
+      'token' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Token'),
+        '#title_display' => 'invisible',
+        '#maxlength' => 255,
+      ],
+      'required' => [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Required'),
+      ],
+      '#default_value' => $this->entity->tokens(TRUE),
+      '#access' => $this->currentUser()->hasPermission('administer log patterns'),
     ];
 
     return $form;

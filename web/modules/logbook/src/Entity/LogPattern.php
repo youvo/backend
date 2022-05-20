@@ -4,6 +4,7 @@ namespace Drupal\logbook\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\logbook\LogPatternInterface;
+use Drupal\mailer\MailerToken;
 
 /**
  * Defines the Log Pattern entity type.
@@ -37,13 +38,14 @@ use Drupal\logbook\LogPatternInterface;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
- *     "uuid" = "uuid"
+ *     "uuid" = "uuid",
+ *     "status" = "status"
  *   },
  *   config_export = {
  *     "id",
  *     "label",
  *     "text",
- *     "text_public",
+ *     "public_text",
  *     "tokens",
  *     "promote",
  *     "hidden"
@@ -100,5 +102,43 @@ class LogPattern extends ConfigEntityBase implements LogPatternInterface {
    * @var bool
    */
   protected bool $hidden;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function text(): string {
+    return $this->text ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function publicText(): string {
+    return $this->public_text ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function promoted() {
+    return !empty($this->promote);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hidden() {
+    return !empty($this->hidden);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tokens(bool $as_array = FALSE): array {
+    if ($as_array) {
+      return $this->tokens ?? [];
+    }
+    return MailerToken::createMultiple($this->tokens ?? []);
+  }
 
 }
