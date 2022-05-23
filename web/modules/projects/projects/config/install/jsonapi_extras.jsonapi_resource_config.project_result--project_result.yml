@@ -1,0 +1,58 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+id: project_result--project_result
+disabled: true
+path: project_result/project_result
+resourceType: project_result--project_result
+resourceFields:
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  published:
+    disabled: false
+    fieldName: published
+    publicName: published
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: false
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  weight:
+    disabled: false
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''

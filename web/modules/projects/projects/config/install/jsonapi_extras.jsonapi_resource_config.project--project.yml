@@ -1,0 +1,202 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+id: project--project
+disabled: false
+path: projects
+resourceType: project
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  uid:
+    disabled: false
+    fieldName: uid
+    publicName: organization
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  title:
+    disabled: false
+    fieldName: title
+    publicName: title
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  promote:
+    disabled: false
+    fieldName: promote
+    publicName: promote
+    enhancer:
+      id: ''
+  project_result:
+    disabled: false
+    fieldName: project_result
+    publicName: results
+    enhancer:
+      id: ''
+  user_is_applicant:
+    disabled: false
+    fieldName: user_is_applicant
+    publicName: user_is_applicant
+    enhancer:
+      id: ''
+  user_is_participant:
+    disabled: false
+    fieldName: user_is_participant
+    publicName: user_is_participant
+    enhancer:
+      id: ''
+  user_is_manager:
+    disabled: false
+    fieldName: user_is_manager
+    publicName: user_is_manager
+    enhancer:
+      id: ''
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  body:
+    disabled: false
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+  field_allowance:
+    disabled: false
+    fieldName: field_allowance
+    publicName: allowance
+    enhancer:
+      id: ''
+  field_applicants:
+    disabled: false
+    fieldName: field_applicants
+    publicName: applicants
+    enhancer:
+      id: ''
+  field_appreciation:
+    disabled: false
+    fieldName: field_appreciation
+    publicName: appreciation
+    enhancer:
+      id: ''
+  field_city:
+    disabled: false
+    fieldName: field_city
+    publicName: city
+    enhancer:
+      id: ''
+  field_contact:
+    disabled: false
+    fieldName: field_contact
+    publicName: contact
+    enhancer:
+      id: ''
+  field_deadline:
+    disabled: false
+    fieldName: field_deadline
+    publicName: deadline
+    enhancer:
+      id: ''
+  field_image:
+    disabled: false
+    fieldName: field_image
+    publicName: image
+    enhancer:
+      id: ''
+  field_image_copyright:
+    disabled: false
+    fieldName: field_image_copyright
+    publicName: image_copyright
+    enhancer:
+      id: ''
+  field_lifecycle:
+    disabled: false
+    fieldName: field_lifecycle
+    publicName: lifecycle
+    enhancer:
+      id: ''
+  field_local:
+    disabled: false
+    fieldName: field_local
+    publicName: local
+    enhancer:
+      id: ''
+  field_material:
+    disabled: false
+    fieldName: field_material
+    publicName: material
+    enhancer:
+      id: ''
+  field_participants:
+    disabled: false
+    fieldName: field_participants
+    publicName: participants
+    enhancer:
+      id: ''
+  field_participants_tasks:
+    disabled: false
+    fieldName: field_participants_tasks
+    publicName: participants_tasks
+    enhancer:
+      id: ''
+  field_result_files:
+    disabled: false
+    fieldName: field_result_files
+    publicName: result_files
+    enhancer:
+      id: ''
+  field_result_text:
+    disabled: false
+    fieldName: field_result_text
+    publicName: result_text
+    enhancer:
+      id: ''
+  field_skills:
+    disabled: false
+    fieldName: field_skills
+    publicName: skills
+    enhancer:
+      id: ''
+  field_workload:
+    disabled: false
+    fieldName: field_workload
+    publicName: workload
+    enhancer:
+      id: ''
