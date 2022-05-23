@@ -33,10 +33,9 @@ use Drupal\projects\ProjectResultInterface;
  *     "id" = "id",
  *     "label" = "id",
  *     "uuid" = "uuid",
- *     "published" = "published",
+ *     "published" = "status",
  *     "parent" = "project",
- *     "weight" = "weight",
- *     "langcode" = "langcode"
+ *     "weight" = "weight"
  *   },
  *   links = {
  *     "edit-form" = "/projects/{project}/result/{project_result}/edit",
@@ -73,7 +72,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['published'] = BaseFieldDefinition::create('boolean')
+    $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Published'))
       ->setDescription(t('A boolean indicating whether the project result is published.'))
       ->setDefaultValue(TRUE)

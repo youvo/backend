@@ -58,7 +58,7 @@ use Drupal\user_types\Utility\Profile;
  *     "status" = "status",
  *     "published" = "status",
  *     "uid" = "uid",
- *     "owner" = "uid",
+ *     "owner" = "uid"
  *   },
  *   links = {
  *     "canonical" = "/projects/{project}",

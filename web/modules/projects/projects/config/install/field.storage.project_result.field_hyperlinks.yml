@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - projects
-id: project_result.field_links
-field_name: field_links
+id: project_result.field_hyperlinks
+field_name: field_hyperlinks
 entity_type: project_result
 type: string
 settings:

@@ -4,12 +4,12 @@ dependencies:
   module:
     - projects
 id: project_result--project_result
-disabled: true
-path: project_result/project_result
-resourceType: project_result--project_result
+disabled: false
+path: results
+resourceType: result
 resourceFields:
   id:
-    disabled: false
+    disabled: true
     fieldName: id
     publicName: id
     enhancer:
@@ -20,20 +20,14 @@ resourceFields:
     publicName: uuid
     enhancer:
       id: ''
-  langcode:
+  status:
     disabled: false
-    fieldName: langcode
-    publicName: langcode
-    enhancer:
-      id: ''
-  published:
-    disabled: false
-    fieldName: published
-    publicName: published
+    fieldName: status
+    publicName: status
     enhancer:
       id: ''
   created:
-    disabled: false
+    disabled: true
     fieldName: created
     publicName: created
     enhancer:
@@ -51,8 +45,20 @@ resourceFields:
     enhancer:
       id: ''
   weight:
-    disabled: false
+    disabled: true
     fieldName: weight
     publicName: weight
+    enhancer:
+      id: ''
+  field_files:
+    disabled: false
+    fieldName: field_files
+    publicName: files
+    enhancer:
+      id: ''
+  field_hyperlinks:
+    disabled: false
+    fieldName: field_hyperlinks
+    publicName: hyperlinks
     enhancer:
       id: ''
