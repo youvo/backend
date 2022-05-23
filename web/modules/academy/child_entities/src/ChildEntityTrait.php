@@ -43,7 +43,7 @@ trait ChildEntityTrait {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type) {
-    ChildEntityEnsureTrait::entityImplementsChildEntityInterface($entity_type);
+    self::entityImplementsChildEntityInterface($entity_type);
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
         ->setLabel(t('Parent ID'))
