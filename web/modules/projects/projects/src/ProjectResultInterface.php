@@ -3,13 +3,12 @@
 namespace Drupal\projects;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\user\EntityOwnerInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 
 /**
  * Provides an interface defining a project result entity type.
  */
-interface ProjectResultInterface extends ContentEntityInterface, EntityOwnerInterface, EntityChangedInterface {
+interface ProjectResultInterface extends ContentEntityInterface, EntityChangedInterface {
 
   /**
    * Gets the project result creation timestamp.

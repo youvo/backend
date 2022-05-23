@@ -125,6 +125,29 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+
+    // Create project result reference on project creation.
+    if (!$update) {
+      // Add new project result and reference accordingly.
+      // @todo Adjust langcode.
+      $project_result = ProjectResult::create([
+        'project' => ['target_id' => $this->id()],
+        'langcode' => 'en',
+      ]);
+      $project_result->save();
+      $this->set('project_result', ['target_id' => $project_result->id()]);
+      $this->save();
+    }
+
+    parent::postSave($storage, $update);
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     // This override exists to set the operation to the default value "view".
@@ -405,6 +428,11 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
         'weight' => 15,
       ])
       ->setDisplayConfigurable('form', TRUE);
+
+    $fields['project_result'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Project Result'))
+      ->setSetting('target_type', 'project_result')
+      ->setTranslatable(FALSE);
 
     $fields['user_is_applicant'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('User Status'))
