@@ -3,18 +3,79 @@
 namespace Drupal\projects\Entity;
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\node\Entity\Node;
 use Drupal\organizations\ManagerInterface;
+use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
+use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
+use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectLifecycle;
+use Drupal\user\EntityOwnerInterface;
+use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
 /**
- * Implements bundle class for Project entities.
+ * Defines the project entity class.
+ *
+ * @ContentEntityType(
+ *   id = "project",
+ *   label = @Translation("Project"),
+ *   label_collection = @Translation("Projects"),
+ *   label_singular = @Translation("project"),
+ *   label_plural = @Translation("projects"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count project",
+ *     plural = "@count projects"
+ *   ),
+ *   handlers = {
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "access" = "Drupal\projects\Access\ProjectEntityAccess",
+ *     "list_builder" = "Drupal\Core\Entity\EntityListBuilder",
+ *     "form" = {
+ *       "add" = "Drupal\projects\Form\ProjectAddForm",
+ *       "edit" = "Drupal\projects\Form\ProjectForm",
+ *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
+ *     },
+ *     "route_provider" = {
+ *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *     }
+ *   },
+ *   base_table = "projects",
+ *   data_table = "projects_field_data",
+ *   translatable = TRUE,
+ *   fieldable = TRUE,
+ *   admin_permission = "administer projects",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "label" = "title",
+ *     "langcode" = "langcode",
+ *     "uuid" = "uuid",
+ *     "status" = "status",
+ *     "published" = "status",
+ *     "uid" = "uid",
+ *     "owner" = "uid",
+ *   },
+ *   links = {
+ *     "canonical" = "/projects/{project}",
+ *     "add-form" = "/projects/add",
+ *     "edit-form" = "/projects/{project}/edit",
+ *     "delete-form" = "/projects/{project}/delete",
+ *     "collection" = "/projects"
+ *   }
+ * )
  */
-class Project extends Node implements ProjectInterface {
+class Project extends ContentEntityBase implements ProjectInterface, EntityOwnerInterface, EntityPublishedInterface {
+
+  use EntityOwnerTrait;
+  use EntityChangedTrait;
+  use EntityPublishedTrait;
 
   /**
    * The project lifecycle.
@@ -60,6 +121,15 @@ class Project extends Node implements ProjectInterface {
     Cache::invalidateTags($organization->getCacheTagsToInvalidate());
 
     parent::postCreate($storage);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    // This override exists to set the operation to the default value "view".
+    $operation = $operation ?? 'view';
+    return parent::access($operation, $account, $return_as_object);
   }
 
   /**
@@ -194,6 +264,170 @@ class Project extends Node implements ProjectInterface {
   public function getManager() {
     $owner = $this->getOwner();
     return $owner instanceof ManagerInterface ? $owner->getManager() : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitle(): string {
+    return $this->get('title')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTitle(string $title): ProjectInterface {
+    $this->set('title', $title);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCreatedTime(int $timestamp): ProjectInterface {
+    $this->set('created', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isPromoted(): bool {
+    return (bool) $this->get('promote')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPromoted(bool $promoted): ProjectInterface {
+    $this->set('promote', $promoted ? ProjectInterface::PROMOTED : ProjectInterface::NOT_PROMOTED);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
+   */
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+
+    $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
+    $fields += static::publishedBaseFieldDefinitions($entity_type);
+
+    $fields['title'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Project Title'))
+      ->setRequired(TRUE)
+      ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE)
+      ->setSetting('max_length', 255)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'string',
+        'weight' => -5,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -5,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['uid']
+      ->setLabel(t('Author'))
+      ->setDescription(t('The UID of the project author.'))
+      ->setRevisionable(TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'author',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'weight' => 5,
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => '60',
+          'placeholder' => '',
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['status']
+      ->setDefaultValue(FALSE)
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+        'weight' => 120,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Created'))
+      ->setDescription(t('The time that the project was created.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The time that the project was last edited.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE);
+
+    $fields['promote'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Promoted to front page.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setDefaultValue(FALSE)
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+        'weight' => 15,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['user_is_applicant'] = BaseFieldDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the applicant status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserIsApplicantFieldItemList::class);
+
+    $fields['user_is_participant'] = BaseFieldDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the participant status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserIsParticipantFieldItemList::class);
+
+    $fields['user_is_manager'] = BaseFieldDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status'))
+      ->setDescription(t('Computes the manager status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserIsManagerFieldItemList::class);
+
+    return $fields;
   }
 
 }

@@ -8,7 +8,27 @@ use Drupal\node\NodeInterface;
 /**
  * Interface that provides methods for a project node entity.
  */
-interface ProjectInterface extends NodeInterface {
+interface ProjectInterface {
+
+  /**
+   * Denotes that the project is not published.
+   */
+  const NOT_PUBLISHED = 0;
+
+  /**
+   * Denotes that the project is published.
+   */
+  const PUBLISHED = 1;
+
+  /**
+   * Denotes that the project is not promoted to the front page.
+   */
+  const NOT_PROMOTED = 0;
+
+  /**
+   * Denotes that the project is promoted to the front page.
+   */
+  const PROMOTED = 1;
 
   /**
    * Calls project workflow manager which holds/manipulates the state.
@@ -160,5 +180,62 @@ interface ProjectInterface extends NodeInterface {
    *   The manager.
    */
   public function getManager();
+
+  /**
+   * Gets the project title.
+   *
+   * @return string
+   *   Title of the project.
+   */
+  public function getTitle(): string;
+
+  /**
+   * Sets the project title.
+   *
+   * @param string $title
+   *   The project title.
+   *
+   * @return $this
+   *   The called project entity.
+   */
+  public function setTitle(string $title): ProjectInterface;
+
+  /**
+   * Gets the project creation timestamp.
+   *
+   * @return int
+   *   Creation timestamp of the project.
+   */
+  public function getCreatedTime(): int;
+
+  /**
+   * Sets the project creation timestamp.
+   *
+   * @param int $timestamp
+   *   The project creation timestamp.
+   *
+   * @return $this
+   *   The called project entity.
+   */
+  public function setCreatedTime(int $timestamp): ProjectInterface;
+
+  /**
+   * Returns the project promotion status.
+   *
+   * @return bool
+   *   TRUE if the project is promoted.
+   */
+  public function isPromoted(): bool;
+
+  /**
+   * Sets the project promoted status.
+   *
+   * @param bool $promoted
+   *   TRUE to set this project to promoted, FALSE to set it to not promoted.
+   *
+   * @return $this
+   *   The called project.
+   */
+  public function setPromoted(bool $promoted): ProjectInterface;
 
 }

@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - file
+    - projects
+id: project.field_result_files
+field_name: field_result_files
+entity_type: project
+type: file
+settings:
+  display_field: false
+  display_default: false
+  uri_scheme: public
+  target_type: file
+module: file
+locked: false
+cardinality: 3
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Entity;
 
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -38,7 +39,8 @@ use Drupal\user\EntityOwnerTrait;
  *     "uuid" = "uuid",
  *     "owner" = "uid",
  *     "published" = "published",
- *     "parent" = "project",
+ *     "parent" = "node",
+ *     "weight" = "weight"
  *   },
  *   links = {
  *     "add-form" = "/projects/{project}/result/add",
@@ -49,7 +51,7 @@ use Drupal\user\EntityOwnerTrait;
  *   field_ui_base_route = "entity.project_result.settings"
  * )
  */
-class ProjectResult extends ContentEntityBase implements ProjectResultInterface {
+class ProjectResult extends ContentEntityBase implements ProjectResultInterface, ChildEntityInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;
