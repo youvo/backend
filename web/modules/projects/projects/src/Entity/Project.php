@@ -5,7 +5,6 @@ namespace Drupal\projects\Entity;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -17,7 +16,6 @@ use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectLifecycle;
-use Drupal\user\EntityOwnerInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
@@ -71,7 +69,7 @@ use Drupal\user_types\Utility\Profile;
  *   }
  * )
  */
-class Project extends ContentEntityBase implements ProjectInterface, EntityOwnerInterface, EntityPublishedInterface {
+class Project extends ContentEntityBase implements ProjectInterface {
 
   use EntityOwnerTrait;
   use EntityChangedTrait;
@@ -151,7 +149,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     // This override exists to set the operation to the default value "view".
-    $operation = $operation ?? 'view';
+    $operation = !empty($operation) ? $operation : 'view';
     return parent::access($operation, $account, $return_as_object);
   }
 
@@ -342,7 +340,6 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
     $fields = parent::baseFieldDefinitions($entity_type);
-    $fields += static::ownerBaseFieldDefinitions($entity_type);
     $fields += static::publishedBaseFieldDefinitions($entity_type);
 
     $fields['title'] = BaseFieldDefinition::create('string')
@@ -358,13 +355,14 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
         'weight' => -5,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ]);
 
-    $fields['uid']
+    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
       ->setDescription(t('The UID of the project author.'))
+      ->setSetting('target_type', 'user')
       ->setTranslatable(FALSE)
+      ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner')
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'author',
@@ -378,10 +376,11 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
           'size' => '60',
           'placeholder' => '',
         ],
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ]);
 
-    $fields['status']
+    $fields['status'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Published'))
+      ->setTranslatable(FALSE)
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
@@ -389,8 +388,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
           'display_label' => TRUE,
         ],
         'weight' => 120,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ]);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
@@ -404,8 +402,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
       ->setDisplayOptions('form', [
         'type' => 'datetime_timestamp',
         'weight' => 10,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ]);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
@@ -422,8 +419,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
           'display_label' => TRUE,
         ],
         'weight' => 15,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ]);
 
     $fields['project_result'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Project Result'))

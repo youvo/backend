@@ -28,7 +28,9 @@ class ProjectForm extends ContentEntityForm {
     // Load default values for participants.
     $participants_default = [];
     foreach ($project->getParticipants() as $participant) {
-      $task_id = match ($participant->task) {
+      /** @var string $task */
+      $task = $participant->task;
+      $task_id = match ($task) {
         'Manager' => 7,
         default => 3,
       };

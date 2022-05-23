@@ -45,7 +45,7 @@ class ProjectAddForm extends ContentEntityForm {
     // Shape values to be consumed by content entity form.
     $form_state->setValue('uid', [0 => ['target_id' => $form_state->getValue('uid')]]);
     $form_state->setValue('title', [0 => ['value' => $form_state->getValue('title')]]);
-    parent::validateForm($form, $form_state);
+    return parent::validateForm($form, $form_state);
   }
 
 }

@@ -2,12 +2,15 @@
 
 namespace Drupal\projects;
 
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\EntityOwnerInterface;
 
 /**
  * Interface that provides methods for a project node entity.
  */
-interface ProjectInterface {
+interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface {
 
   /**
    * Denotes that the project is not published.

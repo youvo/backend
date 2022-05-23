@@ -2,7 +2,6 @@
 
 namespace Drupal\projects\Entity;
 
-use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -44,7 +43,7 @@ use Drupal\projects\ProjectResultInterface;
  *   }
  * )
  */
-class ProjectResult extends ContentEntityBase implements ProjectResultInterface, ChildEntityInterface {
+class ProjectResult extends ContentEntityBase implements ProjectResultInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;
@@ -53,14 +52,14 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface,
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int|string $timestamp) {
+  public function setCreatedTime(int $timestamp): ProjectResultInterface {
     $this->set('created', $timestamp);
     return $this;
   }
