@@ -1,0 +1,3 @@
+administer project result:
+  title: 'Administer project results'
+  restrict access: true
