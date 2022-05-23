@@ -349,7 +349,6 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
       ->setLabel(t('Project Title'))
       ->setRequired(TRUE)
       ->setTranslatable(TRUE)
-      ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -365,7 +364,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
     $fields['uid']
       ->setLabel(t('Author'))
       ->setDescription(t('The UID of the project author.'))
-      ->setRevisionable(TRUE)
+      ->setTranslatable(FALSE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'author',
@@ -396,8 +395,7 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the project was created.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
+      ->setTranslatable(FALSE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',
@@ -412,13 +410,11 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the project was last edited.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE);
+      ->setTranslatable(FALSE);
 
     $fields['promote'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Promoted to front page.'))
-      ->setRevisionable(TRUE)
-      ->setTranslatable(TRUE)
+      ->setTranslatable(FALSE)
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
@@ -435,21 +431,21 @@ class Project extends ContentEntityBase implements ProjectInterface, EntityOwner
       ->setTranslatable(FALSE);
 
     $fields['user_is_applicant'] = BaseFieldDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
+      ->setLabel(t('User Status Applicant'))
       ->setDescription(t('Computes the applicant status for user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
       ->setClass(UserIsApplicantFieldItemList::class);
 
     $fields['user_is_participant'] = BaseFieldDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
+      ->setLabel(t('User Status Participant'))
       ->setDescription(t('Computes the participant status for user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
       ->setClass(UserIsParticipantFieldItemList::class);
 
     $fields['user_is_manager'] = BaseFieldDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
+      ->setLabel(t('User Status Manager'))
       ->setDescription(t('Computes the manager status for user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
