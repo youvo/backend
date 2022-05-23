@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Language\LanguageManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,6 +23,13 @@ class ProjectListBuilder extends EntityListBuilder {
   protected DateFormatterInterface $dateFormatter;
 
   /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManager
+   */
+  protected LanguageManager $languageManager;
+
+  /**
    * Constructs a new NodeListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -30,10 +38,18 @@ class ProjectListBuilder extends EntityListBuilder {
    *   The entity storage class.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
+   * @param \Drupal\Core\Language\LanguageManager $language_manager
+   *   The language manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityStorageInterface $storage,
+    DateFormatterInterface $date_formatter,
+    LanguageManager $language_manager
+  ) {
     parent::__construct($entity_type, $storage);
     $this->dateFormatter = $date_formatter;
+    $this->languageManager = $language_manager;
   }
 
   /**
@@ -43,7 +59,8 @@ class ProjectListBuilder extends EntityListBuilder {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter')
+      $container->get('date.formatter'),
+      $container->get('language_manager')
     );
   }
 
@@ -64,7 +81,7 @@ class ProjectListBuilder extends EntityListBuilder {
         'class' => [RESPONSIVE_PRIORITY_LOW],
       ],
     ];
-    if (\Drupal::languageManager()->isMultilingual()) {
+    if ($this->languageManager->isMultilingual()) {
       $header['language_name'] = [
         'data' => $this->t('Language'),
         'class' => [RESPONSIVE_PRIORITY_LOW],
@@ -91,9 +108,8 @@ class ProjectListBuilder extends EntityListBuilder {
     ];
     $row['status'] = $entity->isPublished() ? $this->t('Published') : $this->t('Unpublished');
     $row['changed'] = $this->dateFormatter->format($entity->getChangedTime(), 'short');
-    $language_manager = \Drupal::languageManager();
-    if ($language_manager->isMultilingual()) {
-      $row['language_name'] = $language_manager->getLanguageName($entity->language()->getId());
+    if ($this->languageManager->isMultilingual()) {
+      $row['language_name'] = $this->languageManager->getLanguageName($entity->language()->getId());
     }
     $row['operations']['data'] = $this->buildOperations($entity);
     return $row + parent::buildRow($entity);
