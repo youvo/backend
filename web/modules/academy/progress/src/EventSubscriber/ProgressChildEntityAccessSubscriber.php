@@ -2,6 +2,7 @@
 
 namespace Drupal\progress\EventSubscriber;
 
+use Drupal\academy\AcademicFormatInterface;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Access\AccessResult;
 use Drupal\progress\ProgressManager;
@@ -27,8 +28,14 @@ class ProgressChildEntityAccessSubscriber implements EventSubscriberInterface {
    */
   public function checkAccess(Event $event) {
 
-    // Skip, if this is an editor.
+    // Skip, if this is not an academy entity.
     /** @var \Drupal\child_entities\Event\ChildEntityAccessEvent $event */
+    $origin = $event->getEntity()->getOriginEntity();
+    if (!$origin instanceof AcademicFormatInterface) {
+      return;
+    }
+
+    // Skip, if this is an editor.
     if ($event->getAccount()->hasPermission('manage courses')) {
       return;
     }
@@ -38,10 +45,7 @@ class ProgressChildEntityAccessSubscriber implements EventSubscriberInterface {
     if ($event->getAccessResult()->isAllowed()) {
       $event->setAccessResult(
         AccessResult::allowedIf(
-          $this->progressManager->isUnlocked(
-            $event->getEntity()->getOriginEntity(),
-            $event->getAccount()
-          )
+          $this->progressManager->isUnlocked($origin, $event->getAccount())
         )
       );
     }
