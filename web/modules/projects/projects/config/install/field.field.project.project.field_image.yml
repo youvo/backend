@@ -10,7 +10,7 @@ third_party_settings:
   filefield_paths:
     enabled: true
     file_path:
-      value: 'projects/[project:project_id]'
+      value: 'projects/[project_result:project_id]'
       options:
         slashes: true
         pathauto: false
@@ -21,9 +21,9 @@ third_party_settings:
     file_name:
       value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
       options:
-        slashes: true
+        slashes: false
         pathauto: false
-        transliterate: true
+        transliterate: false
 id: project.project.field_image
 field_name: field_image
 entity_type: project

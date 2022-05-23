@@ -4,9 +4,9 @@ dependencies:
   module:
     - file
     - projects
-id: project.field_result_files
-field_name: field_result_files
-entity_type: project
+id: project_result.field_files
+field_name: field_files
+entity_type: project_result
 type: file
 settings:
   display_field: false
@@ -16,7 +16,7 @@ settings:
 module: file
 locked: false
 cardinality: 3
-translatable: true
+translatable: false
 indexes: {  }
 persist_with_no_fields: false
 custom_storage: false

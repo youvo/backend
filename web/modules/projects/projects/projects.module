@@ -66,5 +66,18 @@ function projects_tokens($type, $tokens, array $data, array $options, Bubbleable
     }
   }
 
+  if ($type == 'project_result' && !empty($data['project_result'])) {
+    /** @var \Drupal\child_entities\ChildEntityInterface $project_result */
+    $project_result = $data['project_result'];
+    $project = $project_result->getParentEntity();
+
+    foreach ($tokens as $name => $original) {
+      $replacements[$original] = match ($name) {
+        'project_id' => $project->id(),
+        default => $name,
+      };
+    }
+  }
+
   return $replacements ?? [];
 }

@@ -176,18 +176,6 @@ resourceFields:
     publicName: participants_tasks
     enhancer:
       id: ''
-  field_result_files:
-    disabled: false
-    fieldName: field_result_files
-    publicName: result_files
-    enhancer:
-      id: ''
-  field_result_text:
-    disabled: false
-    fieldName: field_result_text
-    publicName: result_text
-    enhancer:
-      id: ''
   field_skills:
     disabled: false
     fieldName: field_skills

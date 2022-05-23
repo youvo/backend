@@ -3,7 +3,6 @@
 namespace Drupal\projects;
 
 use Drupal\Core\Session\AccountInterface;
-use Drupal\node\NodeInterface;
 
 /**
  * Interface that provides methods for a project node entity.

@@ -14,8 +14,6 @@ dependencies:
     - field.field.project.project.field_material
     - field.field.project.project.field_participants
     - field.field.project.project.field_participants_tasks
-    - field.field.project.project.field_result_files
-    - field.field.project.project.field_result_text
     - field.field.project.project.field_skills
     - field.field.project.project.field_workload
   module:
@@ -117,21 +115,6 @@ content:
       link: true
     third_party_settings: {  }
     weight: 11
-    region: content
-  field_result_files:
-    type: file_default
-    label: above
-    settings:
-      use_description_as_link_text: true
-    third_party_settings: {  }
-    weight: 13
-    region: content
-  field_result_text:
-    type: basic_string
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 16
     region: content
   field_skills:
     type: entity_reference_label

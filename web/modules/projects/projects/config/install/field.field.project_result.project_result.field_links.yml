@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project_result.field_links
+id: project_result.project_result.field_links
+field_name: field_links
+entity_type: project_result
+bundle: project_result
+label: Links
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

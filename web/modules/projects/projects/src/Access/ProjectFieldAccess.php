@@ -15,6 +15,7 @@ use Drupal\youvo\Utility\FieldAccess;
  *
  * @todo Maybe introduce permissions and cache per permissions when dust has
  *   settled.
+ * @todo Decide how to handle project results access.
  */
 class ProjectFieldAccess extends FieldAccess {
 
@@ -31,6 +32,7 @@ class ProjectFieldAccess extends FieldAccess {
     'field_skills',
     'field_workload',
     'title',
+    'project_result',
   ];
 
   const PUBLIC_FIELDS = [
@@ -47,8 +49,6 @@ class ProjectFieldAccess extends FieldAccess {
   const RESULT_FIELDS = [
     'field_participants',
     'field_participants_tasks',
-    'field_result_files',
-    'field_result_text',
   ];
 
   const USER_STATUS_FIELDS = [
