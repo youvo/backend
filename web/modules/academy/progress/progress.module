@@ -95,27 +95,6 @@ function progress_entity_field_access($operation, FieldDefinitionInterface $fiel
 }
 
 /**
- * Implements hook_child_entities_check_access().
- *
- * @see \Drupal\child_entities\ChildEntityAccessControlHandler
- */
-function progress_child_entities_check_access(AccessResultInterface &$access, ContentEntityInterface $origin, AccountInterface $account) {
-
-  // Skip, if this is an editor.
-  if ($account->hasPermission('manage courses')) {
-    return;
-  }
-
-  // Check enrollment status. Therefore, from an access point of view, all
-  // contents of the course are revealed once a user enrolls into a course.
-  if ($access->isAllowed()) {
-    /** @var \Drupal\courses\Entity\Course $origin */
-    $access = AccessResult::allowedIf(\Drupal::service('progress.manager')
-      ->isUnlocked($origin, $account));
-  }
-}
-
-/**
  * Implements hook_ENTITY_TYPE_delete().
  *
  * Delete all relevant progress entries when lecture is deleted.

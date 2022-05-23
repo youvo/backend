@@ -10,3 +10,6 @@ services:
     arguments: [ '@content_translation.manager' , '@entity_type.manager' ]
     tags:
       - { name: event_subscriber }
+  logger.channel.child_entities:
+    parent: logger.channel_base
+    arguments: [ 'child_entities' ]

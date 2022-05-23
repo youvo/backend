@@ -2,6 +2,7 @@
 
 namespace Drupal\child_entities;
 
+use Drupal\child_entities\Event\ChildEntityAccessEvent;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
@@ -14,6 +15,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Access controller for child entities.
@@ -23,33 +25,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ChildEntityAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
    * Constructs a ChildEntityAccessControlHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected EventDispatcherInterface $eventDispatcher,
+    protected LoggerInterface $logger
+  ) {
     parent::__construct($entity_type);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->logger = $logger;
   }
 
   /**
@@ -59,7 +52,8 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('logger.factory')->get('academy')
+      $container->get('event_dispatcher'),
+      $container->get('logger.factory')->get('child_entities')
     );
   }
 
@@ -90,18 +84,16 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      $this->logger
-        ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
+      $this->logger->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }
 
-    // Let other modules hook into access decision.
-    // @see progress.module
-    $this->moduleHandler()
-      ->invokeAll('child_entities_check_access', [&$access, $origin, $account]);
+    // Dispatch child entity access event.
+    $event = new ChildEntityAccessEvent($access, $account, $entity);
+    $this->eventDispatcher->dispatch($event);
 
     // If all conditions are met allow access.
-    if ($access->isAllowed()) {
+    if ($event->getAccessResult()->isAllowed()) {
       return AccessResult::allowed()->cachePerUser();
     }
 
