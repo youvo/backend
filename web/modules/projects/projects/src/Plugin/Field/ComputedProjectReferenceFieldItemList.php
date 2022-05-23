@@ -48,9 +48,8 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
 
     // Query projects referencing user.
     $query = $this->entityTypeManager()
-      ->getStorage('node')->getQuery()
+      ->getStorage('project')->getQuery()
       ->accessCheck(TRUE)
-      ->condition('type', 'project')
       ->condition($field, $account->id());
 
     // Attach the query result to the list.
