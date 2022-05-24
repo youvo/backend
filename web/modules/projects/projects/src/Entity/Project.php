@@ -349,7 +349,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $result_field */
     $result_field = $this->get('project_result');
     $result_references = $result_field->referencedEntities();
-    /** @var \Drupal\projects\ProjectResultInterface $result */
+    /** @var \Drupal\projects\ProjectResultInterface|null $result */
     $result = reset($result_references);
     if (empty($result)) {
       throw new EntityStorageException('Unable to load result of project.');

@@ -4,7 +4,6 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Component\Serialization\SerializationInterface;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileStorageInterface;

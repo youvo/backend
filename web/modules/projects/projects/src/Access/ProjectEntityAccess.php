@@ -47,7 +47,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     // Unpublished projects are not accessible.
     // @todo Negotiate access handling in relation to hidden field.
     if (!$entity->isPublished()) {
-      return AccessResult::forbidden()->addCacheContexts($entity);
+      return AccessResult::forbidden()->addCacheableDependency($entity);
     }
 
     // @todo Respect permissions when dust has settled.
