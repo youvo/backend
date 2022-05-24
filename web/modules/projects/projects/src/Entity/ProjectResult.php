@@ -65,6 +65,23 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
   /**
    * {@inheritdoc}
+   */
+  public function setFiles(array $files): ProjectResultInterface {
+    $file_targets = array_map(fn($f) => ['target_id' => $f->id()], $files);
+    $this->set('field_files', $file_targets);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setHyperlinks(array $hyperlinks): ProjectResultInterface {
+    $this->set('field_hyperlinks', $hyperlinks);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */

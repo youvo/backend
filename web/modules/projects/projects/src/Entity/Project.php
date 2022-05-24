@@ -6,6 +6,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -16,6 +17,7 @@ use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectLifecycle;
+use Drupal\projects\ProjectResultInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
@@ -338,6 +340,21 @@ class Project extends ContentEntityBase implements ProjectInterface {
   public function setPromoted(bool $promoted): ProjectInterface {
     $this->set('promote', $promoted ? ProjectInterface::PROMOTED : ProjectInterface::NOT_PROMOTED);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getResult(): ProjectResultInterface {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $result_field */
+    $result_field = $this->get('project_result');
+    $result_references = $result_field->referencedEntities();
+    /** @var \Drupal\projects\ProjectResultInterface $result */
+    $result = reset($result_references);
+    if (empty($result)) {
+      throw new EntityStorageException('Unable to load result of project.');
+    }
+    return $result;
   }
 
   /**

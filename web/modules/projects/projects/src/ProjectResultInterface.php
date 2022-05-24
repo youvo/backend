@@ -30,4 +30,26 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    */
   public function setCreatedTime(int $timestamp): ProjectResultInterface;
 
+  /**
+   * Sets the files by file IDs.
+   *
+   * @param \Drupal\file\FileInterface[] $files
+   *   An array of file IDs.
+   *
+   * @return \Drupal\projects\ProjectResultInterface
+   *   The called project result entity.
+   */
+  public function setFiles(array $files): ProjectResultInterface;
+
+  /**
+   * Sets the hyperlinks field.
+   *
+   * @param array $hyperlinks
+   *   An array of hyperlinks.
+   *
+   * @return \Drupal\projects\ProjectResultInterface
+   *   The called project result entity.
+   */
+  public function setHyperlinks(array $hyperlinks): ProjectResultInterface;
+
 }

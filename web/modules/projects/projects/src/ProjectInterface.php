@@ -248,4 +248,14 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
    */
   public function setPromoted(bool $promoted): ProjectInterface;
 
+  /**
+   * Gets the project result.
+   *
+   * @return \Drupal\projects\ProjectResultInterface
+   *   The project results.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function getResult(): ProjectResultInterface;
+
 }
