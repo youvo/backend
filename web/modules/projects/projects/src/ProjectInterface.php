@@ -165,6 +165,14 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   public function isAuthorOrManager(AccountInterface|int $account);
 
   /**
+   * Determines whether the organization has a manager.
+   *
+   * @return bool
+   *   Organization has manager?
+   */
+  public function hasManager();
+
+  /**
    * Determines whether the account is the manager of the organization.
    *
    * @param \Drupal\Core\Session\AccountInterface|int $account

@@ -274,6 +274,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
+  public function hasManager() {
+    $owner = $this->getOwner();
+    return $owner instanceof ManagerInterface && $owner->hasManager();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isManager(AccountInterface|int $account) {
     $owner = $this->getOwner();
     return $owner instanceof ManagerInterface && $owner->isManager($account);
