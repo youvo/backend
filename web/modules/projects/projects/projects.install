@@ -30,7 +30,6 @@ function projects_site_install_finished() {
     $role_object = Role::load($role);
     $role_object->grantPermission('edit any project content');
     $role_object->grantPermission('delete any project content');
-    $role_object->grantPermission('delete project revisions');
     $role_object->save();
   }
 
@@ -38,7 +37,6 @@ function projects_site_install_finished() {
   $role_object = Role::load('organization');
   $role_object->grantPermission('edit own project content');
   $role_object->grantPermission('delete own project content');
-  $role_object->grantPermission('delete project revisions');
   $role_object->save();
 
   // Use REST project action: Notify.
