@@ -17,7 +17,7 @@ project.submit:
     _admin_route: TRUE
     parameters:
       project:
-        type: entity:node
+        type: entity:project
         converter: paramconverter.uuid
 
 project.publish:
@@ -33,7 +33,7 @@ project.publish:
     _admin_route: TRUE
     parameters:
       project:
-        type: entity:node
+        type: entity:project
         converter: paramconverter.uuid
 
 project.mediate:
@@ -49,7 +49,7 @@ project.mediate:
     _admin_route: TRUE
     parameters:
       project:
-        type: entity:node
+        type: entity:project
         converter: paramconverter.uuid
 
 project.complete:
@@ -65,7 +65,7 @@ project.complete:
     _admin_route: TRUE
     parameters:
       project:
-        type: entity:node
+        type: entity:project
         converter: paramconverter.uuid
 
 project.reset:
@@ -81,5 +81,5 @@ project.reset:
     _admin_route: TRUE
     parameters:
       project:
-        type: entity:node
+        type: entity:project
         converter: paramconverter.uuid
