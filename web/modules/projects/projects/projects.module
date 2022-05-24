@@ -81,3 +81,14 @@ function projects_tokens($type, $tokens, array $data, array $options, Bubbleable
 
   return $replacements ?? [];
 }
+
+/**
+ * Implements hook_jsonapi_ENTITY_TYPE_filter_access().
+ */
+function projects_jsonapi_project_filter_access(EntityTypeInterface $entity_type, AccountInterface $account) {
+  return ([
+    JSONAPI_FILTER_AMONG_ALL => AccessResult::allowed(),
+    JSONAPI_FILTER_AMONG_PUBLISHED => AccessResult::allowed(),
+    JSONAPI_FILTER_AMONG_OWN => AccessResult::allowed(),
+  ]);
+}
