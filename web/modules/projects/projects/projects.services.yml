@@ -11,6 +11,10 @@ services:
     class: Drupal\projects\Routing\ProjectRouteSubscriber
     tags:
       - { name: event_subscriber }
+  project.parse_jsonapi.relationships:
+    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiRelationshipsSubscriber
+    tags:
+      - { name: event_subscriber }
   project.organization.create:
     class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
     tags:
