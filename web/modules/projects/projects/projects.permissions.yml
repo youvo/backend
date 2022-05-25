@@ -4,15 +4,3 @@ administer projects:
 administer project result:
   title: 'Administer project results'
   restrict access: true
-
-# Mock node permissions
-create project content:
-  title: 'Create project'
-edit any project content:
-  title: 'Edit any project'
-delete any project content:
-  title: 'Delete any project'
-edit own project content:
-  title: 'Edit own project'
-delete own project content:
-  title: 'Delete own project'

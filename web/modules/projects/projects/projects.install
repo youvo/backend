@@ -16,11 +16,16 @@ use Drupal\user\Entity\Role;
  */
 function projects_site_install_finished() {
 
+  // View project.
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('view project');
+  $role_object->save();
+
   // Create projects.
   $roles = ['organization', 'manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('create project content');
+    $role_object->grantPermission('create project');
     $role_object->save();
   }
 
@@ -28,15 +33,15 @@ function projects_site_install_finished() {
   $roles = ['manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('edit any project content');
-    $role_object->grantPermission('delete any project content');
+    $role_object->grantPermission('update any project');
+    $role_object->grantPermission('delete any project');
     $role_object->save();
   }
 
   // Edit and delete own project.
   $role_object = Role::load('organization');
-  $role_object->grantPermission('edit own project content');
-  $role_object->grantPermission('delete own project content');
+  $role_object->grantPermission('update own project');
+  $role_object->grantPermission('delete own project');
   $role_object->save();
 
   // Use REST project action: Notify.
