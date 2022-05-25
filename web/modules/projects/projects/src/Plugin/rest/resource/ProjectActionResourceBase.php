@@ -16,7 +16,7 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Provides base class for project action resources.
  */
-class ProjectActionResourceBase extends ResourceBase {
+abstract class ProjectActionResourceBase extends ResourceBase {
 
   /**
    * Constructs a ProjectActionResourceBase object.
