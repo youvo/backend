@@ -37,6 +37,7 @@ use Drupal\user_types\Utility\Profile;
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "access" = "Drupal\projects\Access\ProjectEntityAccess",
+ *     "query_access" = "\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler",
  *     "permission_provider" = "\Drupal\entity\EntityPermissionProvider",
  *     "list_builder" = "Drupal\projects\ProjectListBuilder",
  *     "form" = {

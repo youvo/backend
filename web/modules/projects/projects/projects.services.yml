@@ -1,4 +1,8 @@
 services:
+  project.query_access_subscriber:
+    class: Drupal\projects\EventSubscriber\ProjectQueryAccessSubscriber
+    tags:
+      - { name: event_subscriber }
   project.lifecycle:
     class: Drupal\projects\ProjectLifecycle
     arguments:

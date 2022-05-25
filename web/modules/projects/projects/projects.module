@@ -37,7 +37,7 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add projects base field to entity User.
   if ($entity_type->id() == 'user') {
-    $fields['projects'] = BaseFieldDefinition::create('entity_reference')
+    $fields['projects'] = BaseFieldDefinition::create('cacheable_entity_reference')
       ->setLabel(t('Computed Projects'))
       ->setSetting('target_type', 'project')
       ->setDescription(t('Computes the projects referencing this user.'))

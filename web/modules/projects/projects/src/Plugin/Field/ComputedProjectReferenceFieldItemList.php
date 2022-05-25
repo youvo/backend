@@ -36,9 +36,9 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
   /**
    * Computes the field value.
    *
-   * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function computeValue() {
 
@@ -51,11 +51,26 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
       ->getStorage('project')->getQuery()
       ->accessCheck(TRUE)
       ->condition($field, $account->id());
+    $project_ids = $query->execute();
 
-    // Attach the query result to the list.
-    $this->setValue(
-      array_map(fn ($id) => ['target_id' => $id], $query->execute())
-    );
+    // This kind of programming is sinful.
+    // @todo Work out query access for project entities.
+    $projects = $this->entityTypeManager()
+      ->getStorage('project')
+      ->loadMultiple($project_ids);
+    $accessible_projects = [];
+    foreach ($projects as $project) {
+      if ($project->access('view')) {
+        $accessible_projects[] = $project;
+      }
+    }
+
+    foreach ($accessible_projects as $project_id) {
+      /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableEntityReferenceItem $item */
+      $item = $this->createItem(0, ['target_id' => $project_id]);
+      $item->getTargetIdProperty()->mergeCacheMaxAge(0);
+      $this->list[] = $item;
+    }
   }
 
 }
