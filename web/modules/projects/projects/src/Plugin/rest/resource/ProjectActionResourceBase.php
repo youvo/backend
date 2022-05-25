@@ -101,7 +101,7 @@ abstract class ProjectActionResourceBase extends ResourceBase {
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'project' => [
-          'type' => 'entity:node',
+          'type' => 'entity:project',
           'converter' => 'paramconverter.uuid',
         ],
       ]);
