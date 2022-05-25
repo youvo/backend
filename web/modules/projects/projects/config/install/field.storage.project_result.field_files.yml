@@ -7,7 +7,7 @@ dependencies:
 id: project_result.field_files
 field_name: field_files
 entity_type: project_result
-type: file
+type: weighted_file
 settings:
   display_field: false
   display_default: false
