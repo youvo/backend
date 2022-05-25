@@ -6,6 +6,7 @@ use Drupal\Component\Serialization\SerializationInterface;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\file\FileInterface;
 use Drupal\file\FileStorageInterface;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\rest\ModifiedResourceResponse;
@@ -125,32 +126,15 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
   public function post(ProjectInterface $project, Request $request) {
 
     // Decode content of the request.
-    $content = $this->serializationJson->decode($request->getContent());
-
-    // Get the result entity.
-    $result = $project->getResult();
-
-    // Populate the result files field.
-    if (!empty($content['files'])) {
-      $file_uuids = $content['files'];
-      if (count(array_filter($file_uuids, [Uuid::class, 'isValid'])) != count($file_uuids)) {
-        throw new BadRequestHttpException('The entries of the files array are not valid UUIDs.');
-      }
-      $files = $this->fileStorage
-        ->loadByProperties(['uuid' => array_unique($file_uuids)]);
-      $result->setFiles($files);
-    }
-
-    // Populate the result files field.
-    if (!empty($content['hyperlinks'])) {
-      $hyperlinks = $content['hyperlinks'];
-      if (count(array_filter($hyperlinks, 'is_string')) != count($hyperlinks)) {
-        throw new BadRequestHttpException('The entries of the hyperlinks array are not valid strings.');
-      }
-      $result->setHyperlinks($hyperlinks);
-    }
+    $results = $this->serializationJson->decode($request->getContent());
+    $this->validateRequestBody($results);
+    $this->preloadFiles($results);
+    [$result_files, $result_links] = $this->shapeResults($results);
 
     if ($project->lifecycle()->complete()) {
+      $result = $project->getResult();
+      $result->setFiles($result_files);
+      $result->setLinks($result_links);
       $result->save();
       $project->save();
       $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
@@ -160,6 +144,75 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       throw new ConflictHttpException('Project can not be completed.');
     }
 
+  }
+
+  /**
+   * Validates results entries.
+   */
+  protected function validateRequestBody(array $results): void {
+    foreach ($results as $result) {
+      if (!array_key_exists('type', $result) ||
+        !array_key_exists('value', $result) ||
+        !array_key_exists('description', $result)) {
+        throw new BadRequestHttpException('Malformed request body. A result does not define type, value or description.');
+      }
+      if ($result['type'] == 'file' &&
+        !Uuid::isValid($result['value'])) {
+        throw new BadRequestHttpException('Malformed request body. A file result has an invalid UUID.');
+      }
+      if ($result['type'] == 'link' &&
+        !is_string($result['description'])) {
+        throw new BadRequestHttpException('Malformed request body. A result link is not a string.');
+      }
+      if (!is_string($result['description'])) {
+        throw new BadRequestHttpException('Malformed request body. A result description is not a string.');
+      }
+    }
+  }
+
+  /**
+   * Preloads files in results array.
+   */
+  protected function preloadFiles(array &$results): void {
+    $file_uuids = array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value');
+    $files = $this->fileStorage
+      ->loadByProperties(['uuid' => array_unique($file_uuids)]);
+
+    // Populate results with files.
+    foreach ($results as $delta => $result) {
+      if ($result['type'] == 'file') {
+        $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
+        $results[$delta]['value'] = reset($matching_file);
+      }
+    }
+  }
+
+  /**
+   * Shapes the results as required by the fields.
+   */
+  protected function shapeResults(array $results): array {
+    foreach (array_values($results) as $delta => $result) {
+      if ($result['type'] == 'file') {
+        // Maybe file was not loaded correctly.
+        if (!$result['value'] instanceof FileInterface) {
+          continue;
+        }
+        $result_files[] = [
+          'target_id' => $result['value']->id(),
+          'weight' => $delta,
+          'description' => $result['description'],
+        ];
+      }
+
+      if ($result['type'] == 'link') {
+        $result_links[] = [
+          'value' => $result['value'],
+          'weight' => $delta,
+          'description' => $result['description'],
+        ];
+      }
+    }
+    return [$result_files ?? [], $result_links ?? []];
   }
 
 }

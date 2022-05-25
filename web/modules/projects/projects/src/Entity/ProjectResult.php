@@ -66,17 +66,22 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function setFiles(array $files): ProjectResultInterface {
-    $file_targets = array_map(fn($f) => ['target_id' => $f->id()], $files);
-    $this->set('field_files', $file_targets);
+  public function setFiles(array $file_targets): ProjectResultInterface {
+    $this->set('field_files', NULL);
+    foreach ($file_targets as $file_target) {
+      $this->get('field_files')->appendItem($file_target);
+    }
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setHyperlinks(array $hyperlinks): ProjectResultInterface {
-    $this->set('field_hyperlinks', $hyperlinks);
+  public function setLinks(array $links): ProjectResultInterface {
+    $this->set('field_hyperlinks', NULL);
+    foreach ($links as $link) {
+      $this->get('field_hyperlinks')->appendItem($link);
+    }
     return $this;
   }
 

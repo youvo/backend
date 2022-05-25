@@ -33,23 +33,25 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
   /**
    * Sets the files by file IDs.
    *
-   * @param \Drupal\file\FileInterface[] $files
-   *   An array of file IDs.
+   * @param array $file_targets
+   *   An array of file targets. Each entry has the form:
+   *   ['target_id' => int, 'weight' => int, 'description' => ?string].
    *
    * @return \Drupal\projects\ProjectResultInterface
    *   The called project result entity.
    */
-  public function setFiles(array $files): ProjectResultInterface;
+  public function setFiles(array $file_targets): ProjectResultInterface;
 
   /**
    * Sets the hyperlinks field.
    *
-   * @param array $hyperlinks
-   *   An array of hyperlinks.
+   * @param array $links
+   *   An array of hyperlinks. Each entry has the form:
+   *   ['value' => string, 'weight' => int, 'description' => ?string].
    *
    * @return \Drupal\projects\ProjectResultInterface
    *   The called project result entity.
    */
-  public function setHyperlinks(array $hyperlinks): ProjectResultInterface;
+  public function setLinks(array $links): ProjectResultInterface;
 
 }
