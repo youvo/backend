@@ -3,6 +3,7 @@
 namespace Drupal\youvo;
 
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\jsonapi_include\JsonapiParse;
 use Drupal\youvo\Event\ParseJsonapiAttributesEvent;
 use Drupal\youvo\Event\ParseJsonapiRelationshipsEvent;
@@ -16,21 +17,17 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class AlterJsonapiParse extends JsonapiParse {
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $eventDispatcher;
-
-  /**
    * Constructs a AlterJsonapiParse object.
    *
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
+   *   The file url generator.
    */
-  public function __construct(EventDispatcherInterface $event_dispatcher) {
-    $this->eventDispatcher = $event_dispatcher;
-  }
+  public function __construct(
+    protected EventDispatcherInterface $eventDispatcher,
+    protected FileUrlGeneratorInterface $fileUrlGenerator
+  ) {}
 
   /**
    * {@inheritdoc}
@@ -86,6 +83,16 @@ class AlterJsonapiParse extends JsonapiParse {
     unset($item['links']['self']);
     if (empty($item['links'])) {
       unset($item['links']);
+    }
+
+    // Unset rel from file links.
+    if ($item['type'] == 'file') {
+      foreach ($item['links'] as &$link) {
+        unset($link['meta']['rel']);
+      }
+      $item['href'] = $this->fileUrlGenerator
+        ->generateAbsoluteString($item['attributes']['uri']['value']);
+      unset($item['attributes']['uri']);
     }
 
     // Unset the display name here, because in some cases we don't want to leak

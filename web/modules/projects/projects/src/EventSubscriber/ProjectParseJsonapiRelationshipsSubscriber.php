@@ -35,6 +35,7 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
       foreach ($results as &$result) {
         unset($result['weight']);
         unset($result['meta']['weight']);
+        unset($result['meta']['display']);
       }
       $resource['items'] = $results;
       unset($resource['hyperlinks']);
