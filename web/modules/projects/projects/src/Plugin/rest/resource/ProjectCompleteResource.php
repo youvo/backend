@@ -139,12 +139,14 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
     if ($project->lifecycle()->complete()) {
       $result = $project->getResult();
-      $comment = ProjectComment::create([
-        'value' => $comment,
-        'project_result' => $result->id(),
-      ]);
-      $comment->save();
-      $result->appendComment($comment);
+      if (!empty($comment)) {
+        $comment_object = ProjectComment::create([
+          'value' => $comment,
+          'project_result' => $result->id(),
+        ]);
+        $comment_object->save();
+        $result->appendComment($comment_object);
+      }
       $result->setFiles($result_files);
       $result->setLinks($result_links);
       $result->save();
