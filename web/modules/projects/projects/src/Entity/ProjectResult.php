@@ -97,6 +97,15 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
   /**
    * {@inheritdoc}
+   */
+  public function getComments(): array {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $comments_field */
+    $comments_field = $this->get('project_comments');
+    return $comments_field->referencedEntities();
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */

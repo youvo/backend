@@ -57,7 +57,7 @@ resourceFields:
     enhancer:
       id: ''
   weight:
-    disabled: false
+    disabled: true
     fieldName: weight
     publicName: weight
     enhancer:
