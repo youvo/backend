@@ -125,7 +125,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    *   Thrown if unable to save project.
    */
   public function post(ProjectInterface $project, Request $request) {
-    $wurst = $result = $project->getResult();
+
     // Decode content of the request.
     $request_body = $this->serializationJson->decode($request->getContent());
     $comment = $request_body['comment'] ?? '';
@@ -137,8 +137,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     $this->preloadFiles($results);
     [$result_files, $result_links] = $this->shapeResults($results);
 
-    // if ($project->lifecycle()->complete()) {
-    if (TRUE) {
+    if ($project->lifecycle()->complete()) {
       $result = $project->getResult();
       $comment = ProjectComment::create([
         'value' => $comment,
