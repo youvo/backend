@@ -10,7 +10,7 @@ third_party_settings:
   filefield_paths:
     enabled: true
     file_path:
-      value: 'projects/[project_result:project_id]'
+      value: 'projects/[project:project_id]'
       options:
         slashes: true
         pathauto: false

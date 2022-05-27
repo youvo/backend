@@ -16,6 +16,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
+use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectResultInterface;
 
 /**
  * Implements hook_entity_field_access().
@@ -51,31 +53,25 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
 
 /**
  * Implements hook_tokens().
+ *
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function projects_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
 
-  if ($type == 'project' && !empty($data['project'])) {
-    /** @var \Drupal\projects\ProjectInterface $project */
-    $project = $data['project'];
-
-    foreach ($tokens as $name => $original) {
-      $replacements[$original] = match ($name) {
-        'project_id' => $project->id(),
-        default => $name,
-      };
+  if ($type == 'project' && (!empty($data['project']) || !empty($data['project_result']))) {
+    if ($data['project'] instanceof ProjectInterface) {
+      $project = $data['project'];
     }
-  }
-
-  if ($type == 'project_result' && !empty($data['project_result'])) {
-    /** @var \Drupal\child_entities\ChildEntityInterface $project_result */
-    $project_result = $data['project_result'];
-    $project = $project_result->getParentEntity();
-
-    foreach ($tokens as $name => $original) {
-      $replacements[$original] = match ($name) {
-        'project_id' => $project->id(),
-        default => $name,
-      };
+    elseif ($data['project_result'] instanceof ProjectResultInterface) {
+      $project = $data['project_result']->getOriginEntity();
+    }
+    if (isset($project)) {
+      foreach ($tokens as $name => $original) {
+        $replacements[$original] = match ($name) {
+          'project_id' => $project->id(),
+          default => $name,
+        };
+      }
     }
   }
 
