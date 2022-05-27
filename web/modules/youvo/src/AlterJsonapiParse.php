@@ -87,8 +87,10 @@ class AlterJsonapiParse extends JsonapiParse {
 
     // Unset rel from file links.
     if ($item['type'] == 'file') {
-      foreach ($item['links'] as &$link) {
-        unset($link['meta']['rel']);
+      if (!empty($item['link'])) {
+        foreach ($item['links'] as &$link) {
+          unset($link['meta']['rel']);
+        }
       }
       $item['href'] = $this->fileUrlGenerator
         ->generateAbsoluteString($item['attributes']['uri']['value']);
