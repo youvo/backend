@@ -8,45 +8,43 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\projects\ProjectResultInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\projects\ProjectCommentInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
- * Defines the project result entity class.
+ * Defines the project comment entity class.
  *
  * @ContentEntityType(
- *   id = "project_result",
- *   label = @Translation("Project Result"),
- *   label_collection = @Translation("Project Results"),
+ *   id = "project_comment",
+ *   label = @Translation("Project Comment"),
+ *   label_collection = @Translation("Project Comments"),
  *   handlers = {
  *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "form" = {
- *       "edit" = "Drupal\projects\Form\ProjectResultForm",
- *     },
  *     "route_provider" = {
  *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "project_result",
+ *   base_table = "project_comment",
  *   fieldable = TRUE,
  *   admin_permission = "administer project result",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "id",
+ *     "owner" = "uid",
  *     "uuid" = "uuid",
  *     "published" = "status",
- *     "parent" = "project",
+ *     "parent" = "project_result",
  *     "weight" = "weight"
- *   },
- *   links = {
- *     "edit-form" = "/projects/{project}/result/{project_result}/edit",
  *   }
  * )
  */
-class ProjectResult extends ContentEntityBase implements ProjectResultInterface {
+class ProjectComment extends ContentEntityBase implements ProjectCommentInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;
   use EntityPublishedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -58,30 +56,8 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): ProjectResultInterface {
+  public function setCreatedTime(int $timestamp): ProjectCommentInterface {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFiles(array $file_targets): ProjectResultInterface {
-    $this->set('field_files', NULL);
-    foreach ($file_targets as $file_target) {
-      $this->get('field_files')->appendItem($file_target);
-    }
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setLinks(array $links): ProjectResultInterface {
-    $this->set('field_hyperlinks', NULL);
-    foreach ($links as $link) {
-      $this->get('field_hyperlinks')->appendItem($link);
-    }
     return $this;
   }
 
@@ -94,27 +70,34 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
+    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Author'))
+      ->setDescription(t('The UID of the project comment author.'))
+      ->setSetting('target_type', 'user')
+      ->setTranslatable(FALSE)
+      ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner');
+
     $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Published'))
-      ->setDescription(t('A boolean indicating whether the project result is published.'))
+      ->setLabel(new TranslatableMarkup('Published'))
+      ->setDescription(new TranslatableMarkup('A boolean indicating whether the project comment is published.'))
       ->setDefaultValue(TRUE)
       ->setDisplayConfigurable('form', FALSE)
       ->setDisplayConfigurable('view', FALSE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the project result was created.'))
+      ->setLabel(new TranslatableMarkup('Authored on'))
+      ->setDescription(new TranslatableMarkup('The time that the project comment was created.'))
       ->setDisplayConfigurable('form', FALSE)
       ->setDisplayConfigurable('view', FALSE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the project result was last edited.'));
+      ->setLabel(new TranslatableMarkup('Changed'))
+      ->setDescription(new TranslatableMarkup('The time that the project comment was last edited.'));
 
-    $fields['project_comments'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Project Comments'))
-      ->setSetting('target_type', 'project_comment')
-      ->setTranslatable(FALSE);
+    $fields['value'] = BaseFieldDefinition::create('string_long')
+      ->setTranslatable(TRUE)
+      ->setLabel(new TranslatableMarkup('Comment'))
+      ->setDescription(new TranslatableMarkup('The comment.'));
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
