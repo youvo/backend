@@ -65,9 +65,9 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
       }
     }
 
-    foreach ($accessible_projects as $project_id) {
+    foreach ($accessible_projects as $project) {
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableEntityReferenceItem $item */
-      $item = $this->createItem(0, ['target_id' => $project_id]);
+      $item = $this->createItem(0, ['target_id' => $project->id()]);
       $item->getTargetIdProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }
