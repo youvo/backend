@@ -5,6 +5,7 @@ namespace Drupal\projects;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Provides an interface defining a project result entity type.
@@ -72,5 +73,16 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    *   The comments.
    */
   public function getComments(): array;
+
+  /**
+   * Gets the comment by the account.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account.
+   *
+   * @return string|null
+   *   The comment, if found.
+   */
+  public function getCommentByUser(AccountInterface $account): ?string;
 
 }

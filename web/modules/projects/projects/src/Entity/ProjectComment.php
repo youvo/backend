@@ -49,6 +49,13 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
   /**
    * {@inheritdoc}
    */
+  public function getComment(): string {
+    return (string) $this->get('value')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCreatedTime(): int {
     return (int) $this->get('created')->value;
   }

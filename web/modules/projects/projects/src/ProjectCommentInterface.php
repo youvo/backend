@@ -13,6 +13,14 @@ use Drupal\user\EntityOwnerInterface;
 interface ProjectCommentInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface, ChildEntityInterface {
 
   /**
+   * Gets the project comment value.
+   *
+   * @return string
+   *   The comment.
+   */
+  public function getComment(): string;
+
+  /**
    * Gets the project comment creation timestamp.
    *
    * @return int

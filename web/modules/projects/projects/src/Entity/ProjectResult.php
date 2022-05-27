@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\projects\Plugin\Field\UserHasCommentedFieldItemList;
 use Drupal\projects\ProjectCommentInterface;
 use Drupal\projects\ProjectResultInterface;
 
@@ -106,6 +108,19 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
   /**
    * {@inheritdoc}
+   */
+  public function getCommentByUser(AccountInterface $account): ?string {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $comments_field */
+    $comments_field = $this->get('project_comments');
+    /** @var \Drupal\projects\ProjectCommentInterface[] $comments */
+    $comments = $comments_field->referencedEntities();
+    $comments_filtered = array_filter($comments, fn($c) => $c->getOwnerId() == $account->id());
+    $comment = reset($comments_filtered);
+    return $comment !== FALSE ? $comment->getComment() : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
@@ -135,6 +150,13 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'project_comment')
       ->setTranslatable(FALSE);
+
+    $fields['user_has_commented'] = BaseFieldDefinition::create('cacheable_boolean')
+      ->setLabel(t('User Status Has Commented'))
+      ->setDescription(t('Computes the has commented status for user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(UserHasCommentedFieldItemList::class);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
