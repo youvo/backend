@@ -49,8 +49,8 @@ use Drupal\user_types\Utility\Profile;
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "projects",
- *   data_table = "projects_field_data",
+ *   base_table = "project",
+ *   data_table = "project_field_data",
  *   translatable = TRUE,
  *   fieldable = TRUE,
  *   admin_permission = "administer projects",
