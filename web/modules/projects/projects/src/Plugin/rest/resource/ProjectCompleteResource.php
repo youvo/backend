@@ -185,7 +185,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       if ($result['type'] == 'link' && !is_string($result['value'])) {
         throw new BadRequestHttpException('Malformed request body. A result link is not a string.');
       }
-      if (!is_string($result['description'])) {
+      if (!is_string($result['description'] ?? '')) {
         throw new BadRequestHttpException('Malformed request body. A result description is not a string.');
       }
     }
