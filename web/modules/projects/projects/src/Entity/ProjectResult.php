@@ -20,7 +20,7 @@ use Drupal\projects\ProjectResultInterface;
  *   label = @Translation("Project Result"),
  *   label_collection = @Translation("Project Results"),
  *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
+ *     "access" = "Drupal\projects\Access\ProjectResultUploadAccess",
  *     "form" = {
  *       "edit" = "Drupal\projects\Form\ProjectResultForm",
  *     },
