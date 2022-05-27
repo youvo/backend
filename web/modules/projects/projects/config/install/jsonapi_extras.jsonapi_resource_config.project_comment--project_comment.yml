@@ -1,12 +1,12 @@
-langcode: en
+langcode: de
 status: true
 dependencies:
   module:
     - projects
-id: project_result--project_result
+id: project_comment--project_comment
 disabled: false
-path: results
-resourceType: result
+path: comments
+resourceType: comment
 resourceFields:
   id:
     disabled: true
@@ -20,51 +20,45 @@ resourceFields:
     publicName: uuid
     enhancer:
       id: ''
-  status:
+  author:
     disabled: false
+    fieldName: author
+    publicName: author
+    enhancer:
+      id: ''
+  status:
+    disabled: true
     fieldName: status
     publicName: status
     enhancer:
       id: ''
   created:
-    disabled: true
+    disabled: false
     fieldName: created
     publicName: created
     enhancer:
       id: ''
   changed:
-    disabled: false
+    disabled: true
     fieldName: changed
     publicName: changed
     enhancer:
       id: ''
-  project_comments:
+  value:
     disabled: false
-    fieldName: project_comments
-    publicName: comments
+    fieldName: value
+    publicName: value
     enhancer:
       id: ''
-  project:
-    disabled: false
-    fieldName: project
-    publicName: project
+  project_result:
+    disabled: true
+    fieldName: project_result
+    publicName: project_result
     enhancer:
       id: ''
   weight:
-    disabled: true
+    disabled: false
     fieldName: weight
     publicName: weight
-    enhancer:
-      id: ''
-  field_files:
-    disabled: false
-    fieldName: field_files
-    publicName: files
-    enhancer:
-      id: ''
-  field_hyperlinks:
-    disabled: false
-    fieldName: field_hyperlinks
-    publicName: hyperlinks
     enhancer:
       id: ''
