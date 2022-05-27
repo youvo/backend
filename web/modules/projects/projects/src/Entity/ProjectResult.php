@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\projects\ProjectCommentInterface;
 use Drupal\projects\ProjectResultInterface;
 
@@ -122,6 +123,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
     $fields['project_comments'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Project Comments'))
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'project_comment')
       ->setTranslatable(FALSE);
 
