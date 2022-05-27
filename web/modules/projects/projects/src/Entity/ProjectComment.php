@@ -31,7 +31,7 @@ use Drupal\user\EntityOwnerTrait;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "id",
- *     "owner" = "uid",
+ *     "owner" = "author",
  *     "uuid" = "uuid",
  *     "published" = "status",
  *     "parent" = "project_result",
@@ -70,7 +70,7 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+    $fields['author'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
       ->setDescription(t('The UID of the project comment author.'))
       ->setSetting('target_type', 'user')

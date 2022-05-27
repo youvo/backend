@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\projects\ProjectCommentInterface;
 use Drupal\projects\ProjectResultInterface;
 
 /**
@@ -82,6 +83,14 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
     foreach ($links as $link) {
       $this->get('field_hyperlinks')->appendItem($link);
     }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function appendComment(ProjectCommentInterface $comment): ProjectResultInterface {
+    $this->get('project_comments')->appendItem(['target_id' => $comment->id()]);
     return $this;
   }
 

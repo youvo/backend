@@ -54,4 +54,15 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    */
   public function setLinks(array $links): ProjectResultInterface;
 
+  /**
+   * Appends a project comment.
+   *
+   * @param \Drupal\projects\ProjectCommentInterface $comment
+   *   The project comment entity.
+   *
+   * @return \Drupal\projects\ProjectResultInterface
+   *   The called project result entity.
+   */
+  public function appendComment(ProjectCommentInterface $comment): ProjectResultInterface;
+
 }

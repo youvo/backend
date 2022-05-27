@@ -8,6 +8,7 @@ use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\FileStorageInterface;
+use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\projects\ProjectInterface;
@@ -124,15 +125,27 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    *   Thrown if unable to save project.
    */
   public function post(ProjectInterface $project, Request $request) {
-
+    $wurst = $result = $project->getResult();
     // Decode content of the request.
-    $results = $this->serializationJson->decode($request->getContent());
-    $this->validateRequestBody($results);
+    $request_body = $this->serializationJson->decode($request->getContent());
+    $comment = $request_body['comment'] ?? '';
+    $results = $request_body['results'] ?? [];
+
+    // Prepare data.
+    $this->validateComment($comment);
+    $this->validateResults($results);
     $this->preloadFiles($results);
     [$result_files, $result_links] = $this->shapeResults($results);
 
-    if ($project->lifecycle()->complete()) {
+    // if ($project->lifecycle()->complete()) {
+    if (TRUE) {
       $result = $project->getResult();
+      $comment = ProjectComment::create([
+        'value' => $comment,
+        'project_result' => $result->id(),
+      ]);
+      $comment->save();
+      $result->appendComment($comment);
       $result->setFiles($result_files);
       $result->setLinks($result_links);
       $result->save();
@@ -149,7 +162,16 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
   /**
    * Validates results entries.
    */
-  protected function validateRequestBody(array $results): void {
+  protected function validateComment(mixed $comment): void {
+    if (!is_string($comment)) {
+      throw new BadRequestHttpException('Malformed request body. The comment is not a string.');
+    }
+  }
+
+  /**
+   * Validates results entries.
+   */
+  protected function validateResults(array $results): void {
     foreach ($results as $result) {
       if (!array_key_exists('type', $result) ||
         !array_key_exists('value', $result) ||
