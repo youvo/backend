@@ -179,12 +179,10 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
         !array_key_exists('description', $result)) {
         throw new BadRequestHttpException('Malformed request body. A result does not define type, value or description.');
       }
-      if ($result['type'] == 'file' &&
-        !Uuid::isValid($result['value'])) {
+      if ($result['type'] == 'file' && !Uuid::isValid($result['value'])) {
         throw new BadRequestHttpException('Malformed request body. A file result has an invalid UUID.');
       }
-      if ($result['type'] == 'link' &&
-        !is_string($result['description'])) {
+      if ($result['type'] == 'link' && !is_string($result['value'])) {
         throw new BadRequestHttpException('Malformed request body. A result link is not a string.');
       }
       if (!is_string($result['description'])) {
