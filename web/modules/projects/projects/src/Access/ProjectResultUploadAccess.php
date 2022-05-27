@@ -5,7 +5,6 @@ namespace Drupal\projects\Access;
 use Drupal\child_entities\ChildEntityAccessControlHandler;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\ProjectResultInterface;
 
 /**
  * Extends child entity access for file upload.

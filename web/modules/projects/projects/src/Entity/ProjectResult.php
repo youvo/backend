@@ -5,7 +5,6 @@ namespace Drupal\projects\Entity;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -101,7 +100,9 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   public function getComments(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $comments_field */
     $comments_field = $this->get('project_comments');
-    return $comments_field->referencedEntities();
+    /** @var \Drupal\projects\ProjectCommentInterface[] $comments */
+    $comments = $comments_field->referencedEntities();
+    return $comments;
   }
 
   /**
