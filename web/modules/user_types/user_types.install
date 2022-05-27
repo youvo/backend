@@ -29,7 +29,9 @@ function user_types_site_install_finished() {
   // General permission for caching uses.
   $role_object = Role::load('creative');
   $role_object->grantPermission('general creative access');
+  $role_object->save();
   $role_object = Role::load('organization');
   $role_object->grantPermission('general organization access');
+  $role_object->save();
 
 }
