@@ -16,10 +16,52 @@ class ProjectTransitionAccess {
    * Checks access for project transition.
    */
   public function accessTransition(AccountInterface $account, ProjectInterface $project, string $transition): AccessResult {
-    return AccessResult::allowedIf(
-      $project->isPublished() &&
-      Permissions::useTransition($account, 'project_lifecycle', $transition) &&
-      $project->lifecycle()->canTransition($transition)
+
+    // Bypass access control.
+    if ($account->hasPermission('bypass project_lifecycle transition access')) {
+      return AccessResult::allowed();
+    }
+
+    // Add access logic for different parties.
+    $party_access = AccessResult::allowed();
+
+    // Parties for transition submit.
+    if ($transition == 'submit') {
+      if (!$project->isAuthor($account)) {
+        $party_access = AccessResult::forbidden();
+      }
+    }
+
+    // Parties for transition publish.
+    if ($transition == 'publish') {
+      if (!$project->isManager($account)) {
+        $party_access = AccessResult::forbidden();
+      }
+    }
+
+    // Parties for transition mediate.
+    if ($transition == 'mediate') {
+      if (!$project->isAuthorOrManager($account)) {
+        $party_access = AccessResult::forbidden();
+      }
+    }
+
+    // Parties for transition complete.
+    if ($transition == 'complete') {
+      if (
+        !$project->isAuthorOrManager($account) &&
+        !$project->isParticipant($account)
+      ) {
+        $party_access = AccessResult::forbidden();
+      }
+    }
+
+    return $party_access->andIf(
+      AccessResult::allowedIf(
+        $project->isPublished() &&
+        Permissions::useTransition($account, 'project_lifecycle', $transition) &&
+        $project->lifecycle()->canTransition($transition)
+      )
     );
   }
 

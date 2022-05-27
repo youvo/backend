@@ -108,6 +108,18 @@ function projects_site_install_finished() {
     $role_object->save();
   }
 
+  // Bypass project transitions access for supervisor:
+  // Submit - Publish - Mediate - Complete - Reset.
+  $role_object = Role::load('supervisor');
+  $role_object->grantPermission('bypass project_lifecycle transition access');
+  $role_object->save();
+
+  // Use project transitions for organization:
+  // Complete.
+  $role_object = Role::load('creative');
+  $role_object->grantPermission('use project_lifecycle transition complete');
+  $role_object->save();
+
   // Use project transitions for organization:
   // Submit - Mediate - Complete.
   $role_object = Role::load('organization');
@@ -124,18 +136,8 @@ function projects_site_install_finished() {
   $role_object->grantPermission('use project_lifecycle transition complete');
   $role_object->save();
 
-  // Use project transitions for supervisor:
-  // Submit - Publish - Mediate - Complete - Reset.
-  $role_object = Role::load('supervisor');
-  $role_object->grantPermission('use project_lifecycle transition submit');
-  $role_object->grantPermission('use project_lifecycle transition publish');
-  $role_object->grantPermission('use project_lifecycle transition mediate');
-  $role_object->grantPermission('use project_lifecycle transition complete');
-  $role_object->grantPermission('use project_lifecycle transition reset');
-  $role_object->save();
-
   // Project transitions to remain in states.
-  $roles = ['organization', 'manager', 'supervisor'];
+  $roles = ['organization', 'manager'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('use project_lifecycle transition remain_draft');
