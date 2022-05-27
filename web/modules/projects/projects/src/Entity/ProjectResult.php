@@ -32,12 +32,11 @@ use Drupal\projects\ProjectResultInterface;
  *   },
  *   base_table = "project_result",
  *   fieldable = TRUE,
- *   admin_permission = "administer project result",
+ *   admin_permission = "administer projects",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "id",
  *     "uuid" = "uuid",
- *     "published" = "status",
  *     "parent" = "project",
  *     "weight" = "weight"
  *   },
@@ -50,7 +49,6 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
 
   use ChildEntityTrait;
   use EntityChangedTrait;
-  use EntityPublishedTrait;
 
   /**
    * {@inheritdoc}
@@ -127,13 +125,6 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Published'))
-      ->setDescription(t('A boolean indicating whether the project result is published.'))
-      ->setDefaultValue(TRUE)
-      ->setDisplayConfigurable('form', FALSE)
-      ->setDisplayConfigurable('view', FALSE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))

@@ -221,7 +221,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
         $result_files[] = [
           'target_id' => $result['value']->id(),
           'weight' => $delta,
-          'description' => $result['description'],
+          'description' => $result['description'] ?? '',
         ];
       }
 
@@ -229,7 +229,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
         $result_links[] = [
           'value' => $result['value'],
           'weight' => $delta,
-          'description' => $result['description'],
+          'description' => $result['description'] ?? '',
         ];
       }
     }

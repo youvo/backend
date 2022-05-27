@@ -27,7 +27,7 @@ use Drupal\user\EntityOwnerTrait;
  *   },
  *   base_table = "project_comment",
  *   fieldable = TRUE,
- *   admin_permission = "administer project result",
+ *   admin_permission = "administer projects",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "id",
