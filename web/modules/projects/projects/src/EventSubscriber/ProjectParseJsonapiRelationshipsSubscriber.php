@@ -18,7 +18,7 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
   public function resolveRelationships(Event $event) {
 
     /** @var \Drupal\youvo\Event\ParseJsonapiRelationshipsEvent $event */
-    if ($event->getParentKey() == 'results') {
+    if ($event->getParentKey() == 'result') {
       $resource = $event->getResource();
       $results = [];
       if (isset($resource['hyperlinks'])) {
@@ -36,7 +36,7 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
         unset($result['weight']);
         unset($result['meta']['weight']);
       }
-      $resource['value'] = $results;
+      $resource['items'] = $results;
       unset($resource['hyperlinks']);
       unset($resource['files']);
       $event->setResource($resource);

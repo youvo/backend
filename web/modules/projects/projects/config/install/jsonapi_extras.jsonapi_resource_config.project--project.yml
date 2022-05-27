@@ -65,7 +65,7 @@ resourceFields:
   project_result:
     disabled: false
     fieldName: project_result
-    publicName: results
+    publicName: result
     enhancer:
       id: ''
   user_is_applicant:
