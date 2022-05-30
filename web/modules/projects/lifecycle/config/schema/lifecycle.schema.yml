@@ -22,6 +22,14 @@ field.storage_settings.lifecycle_item:
       type: string
       label: 'Workflow'
 
+field.value.lifecycle_item:
+  type: mapping
+  label: 'Default value'
+  mapping:
+    value:
+      type: label
+      label: 'Value'
+
 field.formatter.settings.lifecycle_state_list:
   type: mapping
   label: 'State list settings'
