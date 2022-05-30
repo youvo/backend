@@ -10,6 +10,7 @@ dependencies:
   - drupal:field (>= 8.8.0)
   - drupal:user (>= 8.8.0)
   - drupal:workflows (>= 8.8.0)
+  - entity:entity
   - filefield_paths:filefield_paths
   - lifecycle:lifecycle
   - youvo:youvo
