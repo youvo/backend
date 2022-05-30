@@ -1,0 +1,38 @@
+# Schema for the configuration of the Weighted String field type.
+field.storage_settings.weighted_string:
+  type: mapping
+  label: 'Weighted string settings'
+  mapping:
+    max_length:
+      type: integer
+      label: 'Maximum length'
+    case_sensitive:
+      type: boolean
+      label: 'Case sensitive'
+    is_ascii:
+      type: boolean
+      label: 'Contains US ASCII characters only'
+
+# Schema for the configuration of the Weighted File field type.
+
+field.field_settings.weighted_file:
+  type: base_file_field_field_settings
+  label: 'Weighted file settings'
+  mapping:
+    description_field:
+      type: boolean
+      label: 'Enable Description field'
+
+field.storage_settings.weighted_file:
+  type: base_entity_reference_field_settings
+  label: 'Weighted file settings'
+  mapping:
+    display_field:
+      type: boolean
+      label: 'Enable Display field'
+    display_default:
+      type: boolean
+      label: 'Files displayed by default'
+    uri_scheme:
+      type: string
+      label: 'Upload destination'
