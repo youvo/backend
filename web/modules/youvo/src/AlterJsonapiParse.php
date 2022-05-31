@@ -43,6 +43,16 @@ class AlterJsonapiParse extends JsonapiParse {
     $keys = array_keys($resource['relationships']);
     $resource = parent::resolveRelationships($resource, $parent_key);
 
+    // Rewrite alt to description for image files.
+    if ($resource['type'] == 'file') {
+      if (!empty($resource['meta'])) {
+        if (isset($resource['meta']['alt'])) {
+          $resource['meta']['description'] = $resource['meta']['alt'];
+          unset($resource['meta']['alt']);
+        }
+      }
+    }
+
     // Allow other modules to alter the response.
     $event = new ParseJsonapiRelationshipsEvent($resource, $keys, $parent_key);
     $event = $this->eventDispatcher->dispatch($event);
