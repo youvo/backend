@@ -85,9 +85,9 @@ class AlterJsonapiParse extends JsonapiParse {
       unset($item['links']);
     }
 
-    // Unset rel from file links.
+    // Unset rel from file links and resolve href.
     if ($item['type'] == 'file') {
-      if (!empty($item['link'])) {
+      if (!empty($item['links'])) {
         foreach ($item['links'] as &$link) {
           unset($link['meta']['rel']);
         }
