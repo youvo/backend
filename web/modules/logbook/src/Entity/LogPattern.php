@@ -2,6 +2,8 @@
 
 namespace Drupal\logbook\Entity;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\youvo\SimpleToken;
@@ -45,8 +47,6 @@ use Drupal\youvo\SimpleToken;
  *   config_export = {
  *     "id",
  *     "label",
- *     "text",
- *     "public_text",
  *     "tokens",
  *     "promote",
  *     "hidden"
@@ -70,20 +70,6 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   protected string $label;
 
   /**
-   * The log pattern text.
-   *
-   * @var string
-   */
-  protected string $text;
-
-  /**
-   * The log pattern public text.
-   *
-   * @var string
-   */
-  protected string $public_text;
-
-  /**
    * The log pattern tokens.
    *
    * @var array
@@ -105,17 +91,36 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   protected bool $hidden;
 
   /**
+   * The log text entity.
+   *
+   * @var \Drupal\logbook\Entity\LogText
+   */
+  protected LogText $log_text;
+
+  /**
    * {@inheritdoc}
    */
   public function text(): string {
-    return $this->text ?? '';
+    if ($this->isNew()) {
+      return '';
+    }
+    if ($log_text = $this->getLogTextEntity()) {
+      return $log_text->getText();
+    }
+    return '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function publicText(): string {
-    return $this->public_text ?? '';
+    if ($this->isNew()) {
+      return '';
+    }
+    if ($log_text = $this->getLogTextEntity()) {
+      return $log_text->getPublicText();
+    }
+    return '';
   }
 
   /**
@@ -140,6 +145,28 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
       return $this->tokens ?? [];
     }
     return SimpleToken::createMultiple($this->tokens ?? []);
+  }
+
+  /**
+   * Gets log text entity.
+   */
+  protected function getLogTextEntity(): ?LogText {
+    if (isset($this->log_text)) {
+      return $this->log_text;
+    }
+    try {
+      $log_text = $this->entityTypeManager()->getStorage('log_text')
+        ->loadByProperties(['log_pattern' => $this->id()]);
+      $log_text = reset($log_text);
+      /** @var \Drupal\logbook\Entity\LogText|false $log_text */
+      if ($log_text instanceof LogText) {
+        $this->log_text = $log_text;
+        return $log_text;
+      }
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+    }
+    return NULL;
   }
 
 }
