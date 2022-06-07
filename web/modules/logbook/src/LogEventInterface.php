@@ -16,7 +16,7 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @return int
    *   Creation timestamp of the log event.
    */
-  public function getCreatedTime();
+  public function getCreatedTime(): int;
 
   /**
    * Sets the log event creation timestamp.
@@ -27,6 +27,6 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @return \Drupal\logbook\LogEventInterface
    *   The called log event entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime(int $timestamp): LogEventInterface;
 
 }

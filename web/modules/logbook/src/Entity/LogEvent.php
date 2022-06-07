@@ -3,9 +3,10 @@
 namespace Drupal\logbook\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\logbook\LogEventInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -31,10 +32,13 @@ use Drupal\user\EntityOwnerTrait;
  *     }
  *   },
  *   base_table = "log_event",
+ *   data_table = "log_event_field_data",
+ *   translatable = FALSE,
+ *   revisionable = FALSE,
  *   admin_permission = "administer log pattern",
  *   entity_keys = {
  *     "id" = "id",
- *     "bundle" = "bundle",
+ *     "bundle" = "type",
  *     "label" = "id",
  *     "uuid" = "uuid",
  *     "owner" = "uid"
@@ -57,57 +61,31 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
-    parent::preCreate($storage, $values);
-    $values += ['uid' => \Drupal::currentUser()->id()];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCreatedTime() {
+  public function getCreatedTime(): int {
     return (int) $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp): LogEventInterface {
     $this->set('created', $timestamp);
     return $this;
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
 
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Author'))
-      ->setDescription(t('The user ID of the log event author.'))
-      ->setSetting('target_type', 'user')
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => 60,
-          'placeholder' => '',
-        ],
-        'weight' => 15,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'author',
-        'weight' => 15,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the log event was created.'))
+      ->setLabel(new TranslatableMarkup('Triggered on'))
+      ->setDescription(new TranslatableMarkup('The time that the log event was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -119,6 +97,38 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
         'weight' => 20,
       ])
       ->setDisplayConfigurable('view', TRUE);
+
+    $fields['creatives'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Creatives'))
+      ->setDescription(new TranslatableMarkup('The UIDs of referenced creatives.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('selection_settings', [
+        'include_anonymous' => FALSE,
+        'target_bundles' => ['user'],
+      ])
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setTranslatable(FALSE);
+
+    $fields['organizations'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Organizations'))
+      ->setDescription(new TranslatableMarkup('The UIDs of referenced organizations.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('selection_settings', [
+        'include_anonymous' => FALSE,
+        'target_bundles' => ['organization'],
+      ])
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setTranslatable(FALSE);
+
+    $fields['subject'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Subject'))
+      ->setDescription(new TranslatableMarkup('The subject referenced by this event.'))
+      ->setTranslatable(FALSE);
+
+    $fields['message'] = BaseFieldDefinition::create('string_long')
+      ->setTranslatable(FALSE)
+      ->setLabel(new TranslatableMarkup('Message'))
+      ->setDescription(new TranslatableMarkup('The message.'));
 
     return $fields;
   }
