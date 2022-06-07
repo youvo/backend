@@ -46,7 +46,7 @@ class LogPatternForm extends BundleEntityFormBase {
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
         'exists' => '\Drupal\logbook\Entity\LogPattern::load',
-        'source' => 'label',
+        'source' => ['label'],
       ],
       '#description' => $this->t('A unique machine-readable name for this log pattern. It must only contain lowercase letters, numbers, and underscores.'),
       '#disabled' => !$this->entity->isNew(),
