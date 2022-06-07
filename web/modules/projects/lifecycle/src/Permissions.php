@@ -36,6 +36,11 @@ class Permissions {
           ]),
         ];
       }
+      $permissions['bypass ' . $workflow->id() . ' transition access'] = [
+        'title' => $this->t('%workflow workflow: Bypass transition access.', [
+          '%workflow' => $workflow->label(),
+        ]),
+      ];
     }
     return $permissions;
   }

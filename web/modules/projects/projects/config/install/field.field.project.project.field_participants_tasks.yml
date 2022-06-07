@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_participants_tasks
+  module:
+    - options
+id: project.project.field_participants_tasks
+field_name: field_participants_tasks
+entity_type: project
+bundle: project
+label: 'Participants Tasks'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

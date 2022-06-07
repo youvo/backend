@@ -7,14 +7,10 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\ProjectInterface;
-use Drupal\user_types\Utility\Profile;
 use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the project bundle.
- *
- * @todo Maybe introduce permissions and cache per permissions when dust has
- *   settled.
  */
 class ProjectFieldAccess extends FieldAccess {
 
@@ -31,6 +27,7 @@ class ProjectFieldAccess extends FieldAccess {
     'field_skills',
     'field_workload',
     'title',
+    'project_result',
   ];
 
   const PUBLIC_FIELDS = [
@@ -45,10 +42,9 @@ class ProjectFieldAccess extends FieldAccess {
   ];
 
   const RESULT_FIELDS = [
+    'project_result',
     'field_participants',
     'field_participants_tasks',
-    'field_result_files',
-    'field_result_text',
   ];
 
   const USER_STATUS_FIELDS = [
@@ -59,6 +55,7 @@ class ProjectFieldAccess extends FieldAccess {
 
   const APPLICANTS_FIELD = 'field_applicants';
   const PARTICIPANTS_FIELD = 'field_participants';
+  const OWNER_FIELD = 'uid';
 
   /**
    * {@inheritdoc}
@@ -76,15 +73,14 @@ class ProjectFieldAccess extends FieldAccess {
     }
 
     // Administrators pass through.
-    if (in_array('administrator', $account->getRoles())) {
-      return AccessResult::neutral()->cachePerUser();
+    if ($account->hasPermission('administer projects')) {
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Viewing public fields is handled downstream.
     if ($operation == 'view' &&
       self::isFieldOfGroup($field,
-        array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
-    ) {
+        array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))) {
       return AccessResult::neutral();
     }
 
@@ -96,24 +92,25 @@ class ProjectFieldAccess extends FieldAccess {
 
     // A manager can determine the organization when creating a project.
     if ($operation == 'edit' &&
+      $entity->isNew() &&
       $entity->isManager($account) &&
-      $field->getName() == 'uid' &&
-      $entity->isNew()) {
-      return AccessResult::allowed()->cachePerUser();
+      $field->getName() == self::OWNER_FIELD) {
+      return AccessResult::allowed()
+        ->cachePerUser();
     }
 
-    // Creatives may view the computed applied field for open projects.
+    // Creatives may view the computed status fields.
     if ($operation == 'view' &&
-      Profile::isCreative($account) &&
+      $account->hasPermission('general creative access') &&
       self::isFieldOfGroup($field, self::USER_STATUS_FIELDS)) {
-      return AccessResult::neutral()->cachePerUser();
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Result fields for completed projects are handled downstream.
     if ($operation == 'view' &&
       $entity->lifecycle()->isCompleted() &&
       self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->addCacheableDependency($entity);
     }
 
     // Authors and managers may view applicants for open projects.
@@ -121,7 +118,10 @@ class ProjectFieldAccess extends FieldAccess {
       $entity->lifecycle()->isOpen() &&
       $field->getName() == self::APPLICANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral()->cachePerUser();
+      return AccessResult::neutral()
+        ->addCacheableDependency($entity)
+        ->addCacheableDependency($entity->getOwner())
+        ->cachePerUser();
     }
 
     // Authors and managers may view participants for ongoing projects. Note
@@ -130,7 +130,10 @@ class ProjectFieldAccess extends FieldAccess {
       $entity->lifecycle()->isOngoing() &&
       $field->getName() == self::PARTICIPANTS_FIELD &&
       $entity->isAuthorOrManager($account)) {
-      return AccessResult::neutral()->cachePerUser();
+      return AccessResult::neutral()
+        ->addCacheableDependency($entity)
+        ->addCacheableDependency($entity->getOwner())
+        ->cachePerUser();
     }
 
     return AccessResult::forbidden()

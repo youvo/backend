@@ -37,6 +37,7 @@ install:
   - multivalue_form_element
   - consumers
   - consumer_image_styles
+  - entity
   - simple_oauth
   - subrequests
   - user_bundle

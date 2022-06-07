@@ -20,7 +20,8 @@ class YouvoServiceProvider extends ServiceProviderBase {
     if ($container->hasDefinition('jsonapi_include.parse')) {
       $definition = $container->getDefinition('jsonapi_include.parse');
       $definition->setClass('Drupal\youvo\AlterJsonapiParse')
-        ->addArgument(new Reference('event_dispatcher'));
+        ->addArgument(new Reference('event_dispatcher'))
+        ->addArgument(new Reference('file_url_generator'));
     }
   }
 

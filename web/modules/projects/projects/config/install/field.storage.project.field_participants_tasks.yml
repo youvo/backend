@@ -1,0 +1,26 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+    - options
+id: project.field_participants_tasks
+field_name: field_participants_tasks
+entity_type: project
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: Creative
+      label: Creative
+    -
+      value: Manager
+      label: Manager
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

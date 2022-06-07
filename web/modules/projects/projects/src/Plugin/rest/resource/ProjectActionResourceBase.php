@@ -16,7 +16,7 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Provides base class for project action resources.
  */
-class ProjectActionResourceBase extends ResourceBase {
+abstract class ProjectActionResourceBase extends ResourceBase {
 
   /**
    * Constructs a ProjectActionResourceBase object.
@@ -101,7 +101,7 @@ class ProjectActionResourceBase extends ResourceBase {
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'project' => [
-          'type' => 'entity:node',
+          'type' => 'entity:project',
           'converter' => 'paramconverter.uuid',
         ],
       ]);

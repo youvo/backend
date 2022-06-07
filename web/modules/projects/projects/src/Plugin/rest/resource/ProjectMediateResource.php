@@ -139,7 +139,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     $response = new ResourceResponse([
       'resource' => strtr($this->pluginId, ':', '.'),
       'data' => [
-        'type' => $project->getType(),
+        'type' => 'project',
         'id' => $project->uuid(),
         'title' => $project->getTitle(),
         'applicants' => $applicants,

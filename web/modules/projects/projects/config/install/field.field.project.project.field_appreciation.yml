@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_appreciation
+id: project.project.field_appreciation
+field_name: field_appreciation
+entity_type: project
+bundle: project
+label: Appreciation
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

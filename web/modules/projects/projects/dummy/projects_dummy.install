@@ -159,11 +159,7 @@ function projects_dummy_site_install_finished() {
 
     // Set result text.
     if ($state == 'completed') {
-      $project->get('field_result_text')->value = $faker->text(300);
-      $project->get('field_result_files')->appendItem([
-        'target_id' => $image_file->id(),
-        'alt' => $faker->text(20),
-      ]);
+      // @todo Add project results.
     }
 
     try {
