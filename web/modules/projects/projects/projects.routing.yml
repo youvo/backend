@@ -1,3 +1,11 @@
+entity.project.settings:
+  path: 'admin/structure/project'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectSettingsForm'
+    _title: 'Project Settings'
+  requirements:
+    _permission: 'administer projects'
+
 # Project Apply REST route is defined in ProjectApplyResource::routes.
 # Transition REST routes are defined in ProjectTransitionRestResourceRoutesTrait::routes.
 # REST routes inherit the transition default, _custom_access requirement

@@ -70,7 +70,8 @@ use Drupal\user_types\Utility\Profile;
  *     "edit-form" = "/projects/{project}/edit",
  *     "delete-form" = "/projects/{project}/delete",
  *     "collection" = "/projects"
- *   }
+ *   },
+ *   field_ui_base_route = "entity.project.settings"
  * )
  */
 class Project extends ContentEntityBase implements ProjectInterface {

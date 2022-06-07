@@ -1,0 +1,10 @@
+entity.project.field_ui_fields:
+  title: Projects
+  description: Configure project entity type
+  route_name:  entity.project.field_ui_fields
+  parent: system.admin_structure
+entity.project.collection:
+  title: Projects
+  description: List of projects
+  route_name: entity.project.collection
+  parent: system.admin_content
