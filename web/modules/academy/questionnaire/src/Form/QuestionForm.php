@@ -2,7 +2,7 @@
 
 namespace Drupal\questionnaire\Form;
 
-use Drupal\academy\TranslationFormButtonsTrait;
+use Drupal\youvo\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
