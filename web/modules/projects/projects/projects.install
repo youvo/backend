@@ -16,11 +16,16 @@ use Drupal\user\Entity\Role;
  */
 function projects_site_install_finished() {
 
+  // View project.
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('view project');
+  $role_object->save();
+
   // Create projects.
   $roles = ['organization', 'manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('create project content');
+    $role_object->grantPermission('create project');
     $role_object->save();
   }
 
@@ -28,17 +33,15 @@ function projects_site_install_finished() {
   $roles = ['manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('edit any project content');
-    $role_object->grantPermission('delete any project content');
-    $role_object->grantPermission('delete project revisions');
+    $role_object->grantPermission('update any project');
+    $role_object->grantPermission('delete any project');
     $role_object->save();
   }
 
   // Edit and delete own project.
   $role_object = Role::load('organization');
-  $role_object->grantPermission('edit own project content');
-  $role_object->grantPermission('delete own project content');
-  $role_object->grantPermission('delete project revisions');
+  $role_object->grantPermission('update own project');
+  $role_object->grantPermission('delete own project');
   $role_object->save();
 
   // Use REST project action: Notify.
@@ -54,6 +57,15 @@ function projects_site_install_finished() {
   $role_object->grantPermission('restful get project:apply');
   $role_object->grantPermission('restful post project:apply');
   $role_object->save();
+
+  // Use REST project action: Comment.
+  $roles = ['creative', 'organization', 'manager', 'supervisor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('restful get project:comment');
+    $role_object->grantPermission('restful post project:comment');
+    $role_object->save();
+  }
 
   // Use REST project transition: Submit.
   $roles = ['organization', 'supervisor'];
@@ -81,7 +93,7 @@ function projects_site_install_finished() {
   }
 
   // Use REST project transition: Complete.
-  $roles = ['organization', 'manager', 'supervisor'];
+  $roles = ['creative', 'organization', 'manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('restful post project:complete');
@@ -95,6 +107,18 @@ function projects_site_install_finished() {
     $role_object->grantPermission('restful post project:reset');
     $role_object->save();
   }
+
+  // Bypass project transitions access for supervisor:
+  // Submit - Publish - Mediate - Complete - Reset.
+  $role_object = Role::load('supervisor');
+  $role_object->grantPermission('bypass project_lifecycle transition access');
+  $role_object->save();
+
+  // Use project transitions for organization:
+  // Complete.
+  $role_object = Role::load('creative');
+  $role_object->grantPermission('use project_lifecycle transition complete');
+  $role_object->save();
 
   // Use project transitions for organization:
   // Submit - Mediate - Complete.
@@ -112,18 +136,8 @@ function projects_site_install_finished() {
   $role_object->grantPermission('use project_lifecycle transition complete');
   $role_object->save();
 
-  // Use project transitions for supervisor:
-  // Submit - Publish - Mediate - Complete - Reset.
-  $role_object = Role::load('supervisor');
-  $role_object->grantPermission('use project_lifecycle transition submit');
-  $role_object->grantPermission('use project_lifecycle transition publish');
-  $role_object->grantPermission('use project_lifecycle transition mediate');
-  $role_object->grantPermission('use project_lifecycle transition complete');
-  $role_object->grantPermission('use project_lifecycle transition reset');
-  $role_object->save();
-
   // Project transitions to remain in states.
-  $roles = ['organization', 'manager', 'supervisor'];
+  $roles = ['organization', 'manager'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('use project_lifecycle transition remain_draft');

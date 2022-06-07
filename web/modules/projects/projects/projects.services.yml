@@ -1,4 +1,8 @@
 services:
+  project.query_access_subscriber:
+    class: Drupal\projects\EventSubscriber\ProjectQueryAccessSubscriber
+    tags:
+      - { name: event_subscriber }
   project.lifecycle:
     class: Drupal\projects\ProjectLifecycle
     arguments:
@@ -7,8 +11,8 @@ services:
     class: Drupal\projects\Routing\ProjectRouteSubscriber
     tags:
       - { name: event_subscriber }
-  project.parse_jsonapi.attributes:
-    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiAttributesSubscriber
+  project.parse_jsonapi.relationships:
+    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiRelationshipsSubscriber
     tags:
       - { name: event_subscriber }
   project.organization.create:

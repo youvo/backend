@@ -34,4 +34,16 @@ class ProjectActionAccess {
     );
   }
 
+  /**
+   * Checks access for comment action.
+   */
+  public function accessComment(AccountInterface $account, ProjectInterface $project): AccessResult {
+    return AccessResult::allowedIf(
+      $project->isPublished() &&
+      $project->lifecycle()->isCompleted() &&
+      ($project->isParticipant($account) ||
+      $project->isAuthorOrManager($account))
+    );
+  }
+
 }

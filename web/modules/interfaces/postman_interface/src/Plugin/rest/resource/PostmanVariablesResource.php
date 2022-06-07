@@ -198,14 +198,13 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is a draft.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'draft')
         ->range(0, 1)
         ->execute();
       $project_draft = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_draft = NULL;
@@ -213,14 +212,13 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is pending.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'pending')
         ->range(0, 1)
         ->execute();
       $project_pending = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_pending = NULL;
@@ -228,14 +226,13 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is open.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'open')
         ->range(0, 1)
         ->execute();
       $project_open = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_open = NULL;
@@ -243,15 +240,14 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that can mediate.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'open')
         ->condition('field_applicants.%delta', 1, '>=')
         ->range(0, 1)
         ->execute();
       $project_can_mediate = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_can_mediate = NULL;
@@ -259,14 +255,13 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is ongoing.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'ongoing')
         ->range(0, 1)
         ->execute();
       $project_ongoing = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_ongoing = NULL;
@@ -274,14 +269,13 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Get a project that is completed.
     try {
-      $project_ids = $this->entityQuery('node')
-        ->condition('type', 'project')
+      $project_ids = $this->entityQuery('project')
         ->condition('status', 1)
         ->condition('field_lifecycle', 'completed')
         ->range(0, 1)
         ->execute();
       $project_completed = !empty($project_ids) ?
-        $this->entityLoad('node', reset($project_ids)) : NULL;
+        $this->entityLoad('project', reset($project_ids)) : NULL;
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $project_completed = NULL;
@@ -335,8 +329,8 @@ class PostmanVariablesResource extends ResourceBase {
    * Returns the entity query object for this entity type.
    *
    * @param string $entity_type
-   *   The entity type (for example, node) for which the query object should be
-   *   returned.
+   *   The entity type (for example, project) for which the query object should
+   *   be returned.
    *
    * @return \Drupal\Core\Entity\Query\QueryInterface
    *   The query instances.

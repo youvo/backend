@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_material
+id: project.project.field_material
+field_name: field_material
+entity_type: project
+bundle: project
+label: Material
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

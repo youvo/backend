@@ -5,42 +5,19 @@
  * Custom module which handles business logic for project entities.
  */
 
-use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
-use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
-use Drupal\projects\Access\ProjectEntityAccess;
-use Drupal\youvo\ComputedFieldStorageDefinition;
+use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Access\ProjectFieldAccess;
-use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
-
-/**
- * Implements hook_entity_bundle_info_alter().
- */
-function projects_entity_bundle_info_alter(&$bundles) {
-  if (isset($bundles['node']['project'])) {
-    $bundles['node']['project']['class'] = Project::class;
-  }
-}
-
-/**
- * Implements hook_entity_type_build().
- */
-function projects_entity_type_build(array &$entity_types) {
-
-  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
-  $entity_types['node']
-    ->setHandlerClass('access', ProjectEntityAccess::class);
-}
+use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectResultInterface;
 
 /**
  * Implements hook_entity_field_access().
@@ -54,95 +31,6 @@ function projects_entity_field_access($operation, FieldDefinitionInterface $fiel
 }
 
 /**
- * Implements hook_menu_local_tasks_alter().
- */
-function projects_menu_local_tasks_alter(&$data, $route_name) {
-  // @todo Change when other content types land.
-  if (isset($data['tabs'][0]['system.admin_content'])) {
-    $data['tabs'][0]['system.admin_content']['#link']['title'] = 'Projects';
-  }
-}
-
-/**
- * Implements hook_form_node_form_alter().
- */
-function projects_form_node_form_alter(&$form, &$form_state) {
-
-  // Alter projects form.
-  $project = $form_state->getFormObject()->getEntity();
-  if ($project->bundle() == 'project') {
-
-    // Disallow access to form widget provided by fields.
-    $form['field_participants']['#access'] = FALSE;
-    $form['field_participants_tasks']['#access'] = FALSE;
-
-    // Load default values for participants.
-    $participants_default = [];
-    foreach ($project->getParticipants() as $participant) {
-      $task_id = match ($participant->task) {
-        'Manager' => 7,
-        default => 3,
-      };
-      $participants_default[] = [
-        'participant' => $participant,
-        'task' => $task_id,
-      ];
-    }
-
-    // Compile participants and respective roles in a single multi-value field.
-    $form['multi_participants'] = [
-      '#title' => t('Participants'),
-      '#type' => 'multivalue',
-      '#cardinality' => MultiValue::CARDINALITY_UNLIMITED,
-      '#add_more_label' => t('Add participant'),
-      '#default_value' => $participants_default,
-      'participant' => [
-        '#type' => 'entity_autocomplete',
-        '#title' => t('Participant'),
-        '#target_type' => 'user',
-        '#selection_settings' => [
-          'include_anonymous' => FALSE,
-        ],
-        '#maxlength' => UserInterface::USERNAME_MAX_LENGTH,
-      ],
-      'task' => [
-        '#type' => 'select',
-        '#options' => [
-          '3' => 'Creative',
-          '7' => 'Manager',
-        ],
-        '#title' => t('Task'),
-      ],
-      '#weight' => -2,
-    ];
-
-    // Add submit handler for multi-value field.
-    $form['actions']['submit']['#submit'][] = 'projects_form_submit_participants';
-  }
-}
-
-/**
- * Saves participants to fields from multi-value field.
- */
-function projects_form_submit_participants($form, &$form_state) {
-  $project = $form_state->getFormObject()->getEntity();
-  $multi_participants = $form_state->getValues()['multi_participants'];
-  $project->set('field_participants', NULL);
-  $project->set('field_participants_tasks', NULL);
-  foreach ($multi_participants as $multi_participant) {
-    if (!empty($multi_participant['participant'])) {
-      $project->get('field_participants')->appendItem(['target_id' => $multi_participant['participant']]);
-      $task = match ($multi_participant['task']) {
-        '7' => 'Manager',
-        default => 'Creative',
-      };
-      $project->get('field_participants_tasks')->appendItem($task);
-    }
-  }
-  $project->save();
-}
-
-/**
  * Implements hook_entity_base_field_info().
  */
 function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
@@ -151,10 +39,9 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add projects base field to entity User.
   if ($entity_type->id() == 'user') {
-    $fields['projects'] = BaseFieldDefinition::create('entity_reference')
+    $fields['projects'] = BaseFieldDefinition::create('cacheable_entity_reference')
       ->setLabel(t('Computed Projects'))
-      ->setSetting('target_type', 'node')
-      ->setSetting('handler_settings', ['target_bundles' => ['project']])
+      ->setSetting('target_type', 'project')
       ->setDescription(t('Computes the projects referencing this user.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setComputed(TRUE)
@@ -165,43 +52,39 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
- * Implements hook_entity_bundle_field_info().
+ * Implements hook_tokens().
+ *
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
-function projects_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+function projects_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
 
-  $fields = [];
-
-  // Add computed applied field to projects.
-  if ($entity_type->id() == 'node' && $bundle == 'project') {
-    // It is not a base-field, so we need a custom field storage definition see
-    // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
-    $fields['user_is_applicant'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
-      ->setDescription(t('Computes the applicant status for user.'))
-      ->setComputed(TRUE)
-      ->setTranslatable(FALSE)
-      ->setClass(UserIsApplicantFieldItemList::class)
-      ->setTargetEntityTypeId($entity_type->id())
-      ->setTargetBundle($bundle);
-
-    $fields['user_is_participant'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
-      ->setDescription(t('Computes the participant status for user.'))
-      ->setComputed(TRUE)
-      ->setTranslatable(FALSE)
-      ->setClass(UserIsParticipantFieldItemList::class)
-      ->setTargetEntityTypeId($entity_type->id())
-      ->setTargetBundle($bundle);
-
-    $fields['user_is_manager'] = ComputedFieldStorageDefinition::create('cacheable_boolean')
-      ->setLabel(t('User Status'))
-      ->setDescription(t('Computes the manager status for user.'))
-      ->setComputed(TRUE)
-      ->setTranslatable(FALSE)
-      ->setClass(UserIsManagerFieldItemList::class)
-      ->setTargetEntityTypeId($entity_type->id())
-      ->setTargetBundle($bundle);
+  if ($type == 'project' && (!empty($data['project']) || !empty($data['project_result']))) {
+    if ($data['project'] instanceof ProjectInterface) {
+      $project = $data['project'];
+    }
+    elseif ($data['project_result'] instanceof ProjectResultInterface) {
+      $project = $data['project_result']->getOriginEntity();
+    }
+    if (isset($project)) {
+      foreach ($tokens as $name => $original) {
+        $replacements[$original] = match ($name) {
+          'project_id' => $project->id(),
+          default => $name,
+        };
+      }
+    }
   }
 
-  return $fields;
+  return $replacements ?? [];
+}
+
+/**
+ * Implements hook_jsonapi_ENTITY_TYPE_filter_access().
+ */
+function projects_jsonapi_project_filter_access(EntityTypeInterface $entity_type, AccountInterface $account) {
+  return ([
+    JSONAPI_FILTER_AMONG_ALL => AccessResult::allowed(),
+    JSONAPI_FILTER_AMONG_PUBLISHED => AccessResult::allowed(),
+    JSONAPI_FILTER_AMONG_OWN => AccessResult::allowed(),
+  ]);
 }

@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_image_copyright
+id: project.project.field_image_copyright
+field_name: field_image_copyright
+entity_type: project
+bundle: project
+label: 'Image Copyright'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

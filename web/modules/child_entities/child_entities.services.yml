@@ -1,0 +1,15 @@
+services:
+  academy.child_entity_route_context:
+    class: 'Drupal\child_entities\Context\ChildEntityRouteContext'
+    arguments: ['@current_route_match', '@entity_type.manager', '@string_translation']
+    tags:
+      - { name: 'context_provider' }
+
+  child_entities.subscriber:
+    class: Drupal\child_entities\Routing\ChildContentTranslationRouteSubscriber
+    arguments: [ '@content_translation.manager' , '@entity_type.manager' ]
+    tags:
+      - { name: event_subscriber }
+  logger.channel.child_entities:
+    parent: logger.channel_base
+    arguments: [ 'child_entities' ]

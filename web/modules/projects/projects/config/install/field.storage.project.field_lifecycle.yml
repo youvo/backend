@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - workflows.workflow.project_lifecycle
+  module:
+    - projects
+    - lifecycle
+id: project.field_lifecycle
+field_name: field_lifecycle
+entity_type: project
+type: lifecycle_item
+settings:
+  workflow: project_lifecycle
+module: lifecycle
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

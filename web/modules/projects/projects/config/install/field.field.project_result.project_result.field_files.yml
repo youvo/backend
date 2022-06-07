@@ -1,0 +1,44 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project_result.field_files
+  module:
+    - file
+    - filefield_paths
+third_party_settings:
+  filefield_paths:
+    enabled: true
+    file_path:
+      value: 'projects/[project:project_id]/results'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    redirect: false
+    retroactive_update: false
+    active_updating: false
+    file_name:
+      value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
+      options:
+        slashes: false
+        pathauto: false
+        transliterate: false
+id: project_result.project_result.field_files
+field_name: field_files
+entity_type: project_result
+bundle: project_result
+label: 'Result Files'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  file_directory: 'projects/[project_result:project_id]/results'
+  file_extensions: 'jpg jpeg gif png pdf'
+  max_filesize: '10 MB'
+  description_field: false
+  handler: 'default:file'
+  handler_settings: {  }
+field_type: weighted_file

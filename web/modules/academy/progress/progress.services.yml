@@ -2,3 +2,9 @@ services:
   progress.manager:
     class: Drupal\progress\ProgressManager
     arguments: ['@current_user', '@entity_type.manager', '@datetime.time', '@logger.channel.academy', '@database', '@submission.manager' ]
+  progress.child_entity_access.event_subscriber:
+    class: Drupal\progress\EventSubscriber\ProgressChildEntityAccessSubscriber
+    arguments:
+      [ '@progress.manager' ]
+    tags:
+      - { name: event_subscriber }
