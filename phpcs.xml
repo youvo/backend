@@ -4,6 +4,7 @@
   <file>web/modules/academy</file>
   <file>web/modules/interfaces</file>
   <file>web/modules/mailer</file>
+  <file>web/modules/logbook</file>
   <file>web/modules/projects</file>
   <file>web/modules/user_types</file>
   <file>web/modules/youvo</file>
