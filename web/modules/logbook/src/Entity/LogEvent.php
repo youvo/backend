@@ -3,6 +3,7 @@
 namespace Drupal\logbook\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -70,6 +71,25 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
    */
   public function setCreatedTime(int $timestamp): LogEventInterface {
     $this->set('created', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSubject(): ?ContentEntityInterface {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $subject_field */
+    $subject_field = $this->get('subject');
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $subject_references */
+    $subject_references = $subject_field->referencedEntities();
+    return !empty($subject_references) ? reset($subject_references) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setSubject(ContentEntityInterface $subject): LogEventInterface {
+    $this->set('subject', $subject->id());
     return $this;
   }
 

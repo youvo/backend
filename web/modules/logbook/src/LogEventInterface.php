@@ -29,4 +29,23 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    */
   public function setCreatedTime(int $timestamp): LogEventInterface;
 
+  /**
+   * Gets the subject.
+   *
+   * @return \Drupal\Core\Entity\ContentEntityInterface|null
+   *   The subject.
+   */
+  public function getSubject(): ?ContentEntityInterface;
+
+  /**
+   * Sets the subject.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $subject
+   *   The subject.
+   *
+   * @return \Drupal\logbook\LogEventInterface
+   *   The current log event.
+   */
+  public function setSubject(ContentEntityInterface $subject): LogEventInterface;
+
 }
