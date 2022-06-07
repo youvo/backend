@@ -9,7 +9,6 @@ install:
   # Core
   - block
   - config
-  - config_translation
   - content_translation
   - datetime
   - dblog
@@ -18,7 +17,6 @@ install:
   - file
   - image
   - jsonapi
-  - locale
   - menu_link_content
   - node
   - options
