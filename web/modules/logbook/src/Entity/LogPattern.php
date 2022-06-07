@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\logbook\LogPatternInterface;
+use Drupal\logbook\LogTextInterface;
 use Drupal\youvo\SimpleToken;
 
 /**
@@ -148,9 +149,9 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   }
 
   /**
-   * Gets log text entity.
+   * {@inheritdoc}
    */
-  protected function getLogTextEntity(): ?LogText {
+  public function getLogTextEntity(): ?LogTextInterface {
     if (isset($this->log_text)) {
       return $this->log_text;
     }

@@ -52,4 +52,12 @@ interface LogPatternInterface extends ConfigEntityInterface {
    */
   public function hidden();
 
+  /**
+   * Gets the associated log text entity.
+   *
+   * @returns \Drupal\logbook\LogTextInterface
+   *   The log text entity.
+   */
+  public function getLogTextEntity(): ?LogTextInterface;
+
 }

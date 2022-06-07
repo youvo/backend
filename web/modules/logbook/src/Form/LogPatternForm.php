@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\Form;
 
+use Drupal\academy\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -16,8 +17,12 @@ use Drupal\youvo\SimpleToken;
  */
 class LogPatternForm extends BundleEntityFormBase {
 
+  use TranslationFormButtonsTrait;
+
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function form(array $form, FormStateInterface $form_state) {
 
@@ -31,6 +36,13 @@ class LogPatternForm extends BundleEntityFormBase {
         'Edit %label log pattern',
         ['%label' => $this->entity->label()]
       );
+
+      /** @var \Drupal\logbook\Entity\LogText $log_text */
+      $log_text = $this->entity->getLogTextEntity();
+
+      if ($log_text->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+        static::addTranslationButtons($form, $log_text);
+      }
     }
 
     $form['label'] = [
