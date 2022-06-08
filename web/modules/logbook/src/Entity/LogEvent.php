@@ -123,7 +123,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
    */
   public function getOrganization(): ?Organization {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $organization_field */
-    $organization_field = $this->get('manager');
+    $organization_field = $this->get('organization');
     /** @var \Drupal\organizations\Entity\Organization[] $organization_references */
     $organization_references = $organization_field->referencedEntities();
     return !empty($organization_references) ? reset($organization_references) : NULL;
