@@ -7,9 +7,13 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\LogEventInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\user\EntityOwnerTrait;
+use Drupal\user_types\Utility\Profile;
 
 /**
  * Defines the log event entity class.
@@ -90,6 +94,88 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
    */
   public function setSubject(ContentEntityInterface $subject): LogEventInterface {
     $this->set('subject', $subject->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getObject(): ?ContentEntityInterface {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $object_field */
+    $object_field = $this->get('object');
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $object_references */
+    $object_references = $object_field->referencedEntities();
+    return !empty($object_references) ? reset($object_references) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setObject(ContentEntityInterface $object): LogEventInterface {
+    $this->set('object', $object->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getManager(): ?Creative {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
+    $manager_field = $this->get('manager');
+    /** @var \Drupal\creatives\Entity\Creative[] $manager_references */
+    $manager_references = $manager_field->referencedEntities();
+    return !empty($manager_references) ? reset($manager_references) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setManager(AccountInterface $manager): LogEventInterface {
+    $this->set('manager', $manager->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrganization(): ?Organization {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $organization_field */
+    $organization_field = $this->get('manager');
+    /** @var \Drupal\organizations\Entity\Organization[] $organization_references */
+    $organization_references = $organization_field->referencedEntities();
+    return !empty($organization_references) ? reset($organization_references) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOrganization(Organization $organization): LogEventInterface {
+    $this->set('organization', $organization->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatives(): array {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $creatives_field */
+    $creatives_field = $this->get('creatives');
+    /** @var \Drupal\creatives\Entity\Creative $creative */
+    foreach ($creatives_field->referencedEntities() as $creative) {
+      $creatives[intval($creative->id())] = $creative;
+    }
+    return $creatives ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCreatives(array $creatives): LogEventInterface {
+    $this->set('creatives', NULL);
+    foreach ($creatives as $creative) {
+      $this->get('creatives')
+        ->appendItem(['target_id' => Profile::id($creative)]);
+    }
     return $this;
   }
 
