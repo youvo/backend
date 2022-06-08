@@ -62,7 +62,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     }
 
     // Check access for edit action.
-    if ($operation == 'update') {
+    if ($operation == 'edit' || $operation == 'update') {
       $access_result = $this->checkEditAccess($entity, $account);
     }
 
