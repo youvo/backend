@@ -11,7 +11,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\LogEventInterface;
+use Drupal\logbook\Plugin\Field\TextProcessedFieldItemList;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
@@ -81,38 +83,19 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSubject(): ?ContentEntityInterface {
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $subject_field */
-    $subject_field = $this->get('subject');
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $subject_references */
-    $subject_references = $subject_field->referencedEntities();
-    return !empty($subject_references) ? reset($subject_references) : NULL;
+  public function getProject(): ?ProjectInterface {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $project_field */
+    $project_field = $this->get('project');
+    /** @var \Drupal\projects\ProjectInterface[] $project_references */
+    $project_references = $project_field->referencedEntities();
+    return !empty($project_references) ? reset($project_references) : NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSubject(ContentEntityInterface $subject): LogEventInterface {
-    $this->set('subject', $subject->id());
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getObject(): ?ContentEntityInterface {
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $object_field */
-    $object_field = $this->get('object');
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $object_references */
-    $object_references = $object_field->referencedEntities();
-    return !empty($object_references) ? reset($object_references) : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setObject(ContentEntityInterface $object): LogEventInterface {
-    $this->set('object', $object->id());
+  public function setProject(ProjectInterface $project): LogEventInterface {
+    $this->set('project', $project->id());
     return $this;
   }
 
@@ -235,20 +218,29 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ])
       ->setTranslatable(FALSE);
 
-    $fields['subject'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(new TranslatableMarkup('Subject'))
-      ->setDescription(new TranslatableMarkup('The subject referenced by this event.'))
-      ->setTranslatable(FALSE);
-
-    $fields['object'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(new TranslatableMarkup('Object'))
-      ->setDescription(new TranslatableMarkup('The object referenced by this event.'))
+    $fields['project'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Project'))
+      ->setSetting('target_type', 'project')
+      ->setDescription(new TranslatableMarkup('The project referenced by this event.'))
       ->setTranslatable(FALSE);
 
     $fields['message'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(FALSE)
       ->setLabel(new TranslatableMarkup('Message'))
       ->setDescription(new TranslatableMarkup('The message.'));
+
+    $fields['misc'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Miscellaneous'))
+      ->setDescription(new TranslatableMarkup('Stores extra information about this event.'))
+      ->setTranslatable(FALSE);
+
+    $fields['processed'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(t('Processed Text'))
+      ->setDescription(t('Computes the processed text.'))
+      ->setComputed(TRUE)
+      // @todo Change if not using manual translation anymore.
+      ->setTranslatable(FALSE)
+      ->setClass(TextProcessedFieldItemList::class);
 
     return $fields;
   }

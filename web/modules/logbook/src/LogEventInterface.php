@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -33,42 +34,23 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
   public function setCreatedTime(int $timestamp): LogEventInterface;
 
   /**
-   * Gets the subject.
+   * Gets the project.
    *
-   * @return \Drupal\Core\Entity\ContentEntityInterface|null
-   *   The subject.
+   * @return \Drupal\projects\ProjectInterface|null
+   *   The project.
    */
-  public function getSubject(): ?ContentEntityInterface;
+  public function getProject(): ?ProjectInterface;
 
   /**
-   * Sets the subject.
+   * Sets the project.
    *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $subject
-   *   The subject.
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The project.
    *
    * @return \Drupal\logbook\LogEventInterface
    *   The current log event.
    */
-  public function setSubject(ContentEntityInterface $subject): LogEventInterface;
-
-  /**
-   * Gets the object.
-   *
-   * @return \Drupal\Core\Entity\ContentEntityInterface|null
-   *   The object.
-   */
-  public function getObject(): ?ContentEntityInterface;
-
-  /**
-   * Sets the object.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $object
-   *   The object.
-   *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
-   */
-  public function setObject(ContentEntityInterface $object): LogEventInterface;
+  public function setProject(ProjectInterface $project): LogEventInterface;
 
   /**
    * Gets the creatives array keyed by UID.
