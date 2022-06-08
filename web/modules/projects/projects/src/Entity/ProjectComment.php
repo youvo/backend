@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\projects\Plugin\Field\ProjectCommentTaskFieldItemList;
 use Drupal\projects\ProjectCommentInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -105,6 +106,13 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Comment'))
       ->setDescription(new TranslatableMarkup('The comment.'));
+
+    $fields['task'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(t('Task'))
+      ->setDescription(t('Computes the task of the user.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(ProjectCommentTaskFieldItemList::class);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 
