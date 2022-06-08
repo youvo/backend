@@ -18,6 +18,9 @@
         "drupal/jsonapi_boost": {
         	"Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
         },
+        "drupal/jsonapi_cross_bundles": {
+          "Issue #3070430: Incompatible with JSON:API Extras": "patches/jsonapi_cross_bundles/3070430-incompatible-with-jsonapi-extras.patch"
+        },
         "drupal/warmer": {
         	"Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
         },
@@ -33,6 +36,7 @@
           "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/SO52-3082984-12.patch"
         },
         "drupal/jsonapi_extras": {
+          "Issue #3229890: Better compatibility with other decorations of resource type repository (Soon to be released)": "patches/jsonapi_extras/3229890-better-compatibility-with-other-decorations-of-resource-type-repository.patch",
           "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch"
         }
     }
