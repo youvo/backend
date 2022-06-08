@@ -19,7 +19,8 @@
         	"Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
         },
         "drupal/jsonapi_cross_bundles": {
-          "Issue #3070430: Incompatible with JSON:API Extras": "patches/jsonapi_cross_bundles/3070430-incompatible-with-jsonapi-extras.patch"
+          "Issue #3070430: Incompatible with JSON:API Extras": "patches/jsonapi_cross_bundles/3070430-incompatible-with-jsonapi-extras.patch",
+          "Custom: Exclude users from cross bundles resources": "patches/jsonapi_cross_bundles/custom-exclude-users-from-cross-bundle-resources.patch"
         },
         "drupal/warmer": {
         	"Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
