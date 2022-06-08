@@ -45,7 +45,7 @@ use Drupal\user\EntityOwnerTrait;
  *     "owner" = "uid"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/log-event/add/{log_event_type}",
+ *     "add-form" = "/admin/content/log-event/add/{log_pattern}",
  *     "add-page" = "/admin/content/log-event/add",
  *     "canonical" = "/log_event/{log_event}",
  *     "edit-form" = "/admin/content/log-event/{log_event}/edit",
