@@ -186,8 +186,13 @@ class LogPatternForm extends BundleEntityFormBase {
         'text' => $form_state->getValue('text'),
         'public_text' => $form_state->getValue('public_text'),
       ]);
-      $log_text->save();
     }
+    else {
+      $log_text = $this->entity->getLogTextEntity();
+      $log_text->setText($form_state->getValue('text'));
+      $log_text->setPublicText($form_state->getValue('public_text'));
+    }
+    $log_text->save();
 
     $message_args = ['%label' => $this->entity->label()];
     $message = $result == SAVED_NEW
