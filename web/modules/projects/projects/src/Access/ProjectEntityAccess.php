@@ -85,7 +85,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       $project->lifecycle()->isDraft() &&
       !$project->hasManager()
     ) {
-      AccessResult::allowed()
+      return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())
         ->addCacheableDependency($project)
         ->cachePerUser();
