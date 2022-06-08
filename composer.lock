@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b5d28eba69543bd14ed1c27bf74a5f21",
+    "content-hash": "32057462bc8eb42ca8c9fc03f99e0f52",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2087,6 +2087,62 @@
             "homepage": "https://www.drupal.org/project/jsonapi_boost",
             "support": {
                 "source": "https://git.drupalcode.org/project/jsonapi_boost"
+            }
+        },
+        {
+            "name": "drupal/jsonapi_cross_bundles",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/jsonapi_cross_bundles.git",
+                "reference": "8.x-1.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/jsonapi_cross_bundles-8.x-1.0.zip",
+                "reference": "8.x-1.0",
+                "shasum": "a45bf09ffb39fd4abeb67caa7c57ad92f5ebdbc9"
+            },
+            "require": {
+                "drupal/core": "^8.7.7 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.0",
+                    "datestamp": "1629336093",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "API-First Initiative",
+                    "homepage": "https://www.drupal.org/user/3616626"
+                },
+                {
+                    "name": "gabesullice",
+                    "homepage": "https://www.drupal.org/user/2287430"
+                },
+                {
+                    "name": "mglaman",
+                    "homepage": "https://www.drupal.org/user/2416470"
+                }
+            ],
+            "description": "Experimental code for adding cross-bundle resource collections for Drupal's JSON API module",
+            "homepage": "https://www.drupal.org/project/jsonapi_cross_bundles",
+            "keywords": [
+                "Drupal",
+                "JSON API"
+            ],
+            "support": {
+                "source": "https://git.drupalcode.org/project/jsonapi_cross_bundles"
             }
         },
         {
@@ -5418,6 +5474,7 @@
                     "type": "tidelift"
                 }
             ],
+            "abandoned": "symfony/error-handler",
             "time": "2021-09-24T13:30:14+00:00"
         },
         {
@@ -10512,16 +10569,16 @@
         },
         {
             "name": "mglaman/phpstan-drupal",
-            "version": "1.1.19",
+            "version": "1.1.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mglaman/phpstan-drupal.git",
-                "reference": "b3dac214fa90d8b5e79a426693cf78313d154f5e"
+                "reference": "f9d8493835cc50ab9e3592486d129c2b355db335"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mglaman/phpstan-drupal/zipball/b3dac214fa90d8b5e79a426693cf78313d154f5e",
-                "reference": "b3dac214fa90d8b5e79a426693cf78313d154f5e",
+                "url": "https://api.github.com/repos/mglaman/phpstan-drupal/zipball/f9d8493835cc50ab9e3592486d129c2b355db335",
+                "reference": "f9d8493835cc50ab9e3592486d129c2b355db335",
                 "shasum": ""
             },
             "require": {
@@ -10596,7 +10653,7 @@
             "description": "Drupal extension and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/mglaman/phpstan-drupal/issues",
-                "source": "https://github.com/mglaman/phpstan-drupal/tree/1.1.19"
+                "source": "https://github.com/mglaman/phpstan-drupal/tree/1.1.20"
             },
             "funding": [
                 {
@@ -10612,7 +10669,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-06-04T20:22:12+00:00"
+            "time": "2022-06-07T14:32:27+00:00"
         },
         {
             "name": "mikey179/vfsstream",
@@ -11267,16 +11324,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.7.10",
+            "version": "1.7.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "25e069474cf00215b0f64c60a26230908ef3eefa"
+                "reference": "62fcadcde81b4037e42ad2489119d31c46f00191"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/25e069474cf00215b0f64c60a26230908ef3eefa",
-                "reference": "25e069474cf00215b0f64c60a26230908ef3eefa",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/62fcadcde81b4037e42ad2489119d31c46f00191",
+                "reference": "62fcadcde81b4037e42ad2489119d31c46f00191",
                 "shasum": ""
             },
             "require": {
@@ -11302,7 +11359,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.7.10"
+                "source": "https://github.com/phpstan/phpstan/tree/1.7.11"
             },
             "funding": [
                 {
@@ -11322,7 +11379,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-06-03T14:12:23+00:00"
+            "time": "2022-06-07T08:47:03+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
