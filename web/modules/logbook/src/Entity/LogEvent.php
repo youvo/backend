@@ -154,6 +154,11 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setDescription(new TranslatableMarkup('The subject referenced by this event.'))
       ->setTranslatable(FALSE);
 
+    $fields['object'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Object'))
+      ->setDescription(new TranslatableMarkup('The object referenced by this event.'))
+      ->setTranslatable(FALSE);
+
     $fields['message'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(FALSE)
       ->setLabel(new TranslatableMarkup('Message'))
