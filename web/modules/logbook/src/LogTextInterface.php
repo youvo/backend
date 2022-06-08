@@ -34,7 +34,7 @@ interface LogTextInterface extends ChildEntityInterface {
    * @return string
    *   The public text.
    */
-  public function getPublicText();
+  public function getPublicText(bool $fallback = FALSE);
 
   /**
    * Sets the public text.

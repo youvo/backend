@@ -34,6 +34,6 @@ interface TransactionalEmailInterface extends ConfigEntityInterface {
    * @return array
    *   The tokens.
    */
-  public function tokens(bool $as_array);
+  public function tokens(bool $as_array = FALSE);
 
 }

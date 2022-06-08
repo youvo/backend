@@ -23,7 +23,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return string
    *   The public text.
    */
-  public function publicText();
+  public function publicText(bool $fallback = FALSE);
 
   /**
    * Gets the tokens.
@@ -34,7 +34,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return array
    *   The tokens.
    */
-  public function tokens(bool $as_array);
+  public function tokens(bool $as_array = FALSE);
 
   /**
    * Returns whether the log pattern is promoted.
