@@ -51,6 +51,19 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
       $this->logger->error('Log event subscriber does not define event type.');
       return NULL;
     }
+    try {
+      $log_patterns = $this->entityTypeManager
+        ->getStorage('log_pattern')
+        ->loadMultiple();
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $this->logger->error('Unable to verify log patterns for event type.');
+      return NULL;
+    }
+    if (!in_array(static::EVENT_TYPE, array_map(fn($p) => $p->id(), $log_patterns))) {
+      $this->logger->error('Log pattern does not exist for requested event type.');
+      return NULL;
+    }
     return LogEvent::create([
       'type' => static::EVENT_TYPE,
     ]);
