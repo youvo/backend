@@ -61,7 +61,11 @@ class LogText extends ContentEntityBase implements LogTextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPublicText() {
+  public function getPublicText(bool $fallback = FALSE) {
+    if ($fallback) {
+      $public_text = $this->get('public_text')->value;
+      return !empty($public_text) ? $public_text : $this->getText();
+    }
     return $this->get('public_text')->value ?? '';
   }
 

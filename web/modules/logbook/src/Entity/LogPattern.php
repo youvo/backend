@@ -114,12 +114,12 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   /**
    * {@inheritdoc}
    */
-  public function publicText(): string {
+  public function publicText(bool $fallback = FALSE): string {
     if ($this->isNew()) {
       return '';
     }
     if ($log_text = $this->getLogTextEntity()) {
-      return $log_text->getPublicText();
+      return $log_text->getPublicText($fallback);
     }
     return '';
   }
