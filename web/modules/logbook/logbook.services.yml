@@ -2,6 +2,9 @@ services:
   logbook.project_notify.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectNotifySubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@youvo.token_replacer' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@youvo.token_replacer' ]
     tags:
       - { name: event_subscriber }
+  logger.channel.logbook:
+    parent: logger.channel_base
+    arguments: [ 'logbook' ]
