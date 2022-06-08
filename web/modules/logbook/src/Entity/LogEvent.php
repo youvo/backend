@@ -120,7 +120,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
 
     $fields['creatives'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Creatives'))
-      ->setDescription(new TranslatableMarkup('The UIDs of referenced creatives.'))
+      ->setDescription(new TranslatableMarkup('The UIDs of the referenced creatives.'))
       ->setSetting('target_type', 'user')
       ->setSetting('selection_settings', [
         'include_anonymous' => FALSE,
@@ -129,15 +129,24 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setTranslatable(FALSE);
 
-    $fields['organizations'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(new TranslatableMarkup('Organizations'))
-      ->setDescription(new TranslatableMarkup('The UIDs of referenced organizations.'))
+    $fields['organization'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Organization'))
+      ->setDescription(new TranslatableMarkup('The UIDs of the referenced organization.'))
       ->setSetting('target_type', 'user')
       ->setSetting('selection_settings', [
         'include_anonymous' => FALSE,
         'target_bundles' => ['organization'],
       ])
-      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setTranslatable(FALSE);
+
+    $fields['manager'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Manager'))
+      ->setDescription(new TranslatableMarkup('The UIDs of the referenced manager.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('selection_settings', [
+        'include_anonymous' => FALSE,
+        'target_bundles' => ['user'],
+      ])
       ->setTranslatable(FALSE);
 
     $fields['subject'] = BaseFieldDefinition::create('entity_reference')
