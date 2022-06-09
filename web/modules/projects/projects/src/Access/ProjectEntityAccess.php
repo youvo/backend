@@ -62,7 +62,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     }
 
     // Check access for edit action.
-    if ($operation == 'edit') {
+    if ($operation == 'edit' || $operation == 'update') {
       $access_result = $this->checkEditAccess($entity, $account);
     }
 
@@ -85,7 +85,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       $project->lifecycle()->isDraft() &&
       !$project->hasManager()
     ) {
-      AccessResult::allowed()
+      return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())
         ->addCacheableDependency($project)
         ->cachePerUser();
