@@ -11,6 +11,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\LogEventInterface;
+use Drupal\logbook\Plugin\Field\TextMarkupFieldItemList;
 use Drupal\logbook\Plugin\Field\TextProcessedFieldItemList;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -180,7 +181,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
    * {@inheritdoc}
    */
   public function getMisc(): array {
-    return Json::decode($this->get('misc')->value ?? '');
+    return Json::decode($this->get('misc')->value ?? '') ?? [];
   }
 
   /**
@@ -200,6 +201,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
 
   /**
    * {@inheritdoc}
+   */
+  public function getMarkup(): string {
+    return $this->get('markup')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
@@ -212,7 +220,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setLabel(new TranslatableMarkup('Triggered on'))
       ->setDescription(new TranslatableMarkup('The time that the log event was created.'))
       ->setDisplayOptions('view', [
-        'label' => 'above',
+        'label' => 'hidden',
         'type' => 'timestamp',
         'weight' => 20,
       ])
@@ -271,12 +279,20 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setTranslatable(FALSE);
 
     $fields['processed'] = BaseFieldDefinition::create('cacheable_string')
-      ->setLabel(t('Processed Text'))
-      ->setDescription(t('Computes the processed text.'))
+      ->setLabel(new TranslatableMarkup('Processed Text'))
+      ->setDescription(new TranslatableMarkup('Computes the processed text.'))
       ->setComputed(TRUE)
       // @todo Change if not using manual translation anymore.
       ->setTranslatable(FALSE)
       ->setClass(TextProcessedFieldItemList::class);
+
+    // @todo Move to theming.
+    $fields['markup'] = BaseFieldDefinition::create('cacheable_string')
+      ->setLabel(new TranslatableMarkup('Markup Text'))
+      ->setDescription(new TranslatableMarkup('Computes the markup text.'))
+      ->setComputed(TRUE)
+      ->setTranslatable(FALSE)
+      ->setClass(TextMarkupFieldItemList::class);
 
     return $fields;
   }

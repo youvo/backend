@@ -147,4 +147,12 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    */
   public function setMisc(array $misc): LogEventInterface;
 
+  /**
+   * Gets the computed markup text.
+   *
+   * @return string
+   *   The markup.
+   */
+  public function getMarkup(): string;
+
 }
