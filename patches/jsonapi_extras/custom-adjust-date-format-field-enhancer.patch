@@ -1,0 +1,13 @@
+diff --git a/modules/contrib/jsonapi_extras/src/Plugin/jsonapi/FieldEnhancer/DateTimeFromStringEnhancer.php b/modules/contrib/jsonapi_extras/src/Plugin/jsonapi/FieldEnhancer/DateTimeFromStringEnhancer.php
+index 4c4f3b4..2f8253d 100644
+--- a/modules/contrib/jsonapi_extras/src/Plugin/jsonapi/FieldEnhancer/DateTimeFromStringEnhancer.php
++++ b/modules/contrib/jsonapi_extras/src/Plugin/jsonapi/FieldEnhancer/DateTimeFromStringEnhancer.php
+@@ -50,7 +50,7 @@ protected function doTransform($data, Context $context) {
+       // Adjust the date for storage.
+       $storage_timezone = new \DateTimezone(DateTimeItemInterface::STORAGE_TIMEZONE);
+       $date->setTimezone($storage_timezone);
+-      $output = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
++      $output = $date->format('Y-m-d\TH:i:sO');
+
+       return $output;
+     };

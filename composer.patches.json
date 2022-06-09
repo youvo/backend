@@ -33,7 +33,8 @@
           "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/SO52-3082984-12.patch"
         },
         "drupal/jsonapi_extras": {
-          "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch"
+          "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch",
+          "Custom: Adjust date format in field enhancer": "patches/jsonapi_extras/custom-adjust-date-format-field-enhancer.patch"
         }
     }
 }
