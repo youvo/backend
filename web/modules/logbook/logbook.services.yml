@@ -1,16 +1,22 @@
 services:
+
+  # Project log events.
   logbook.project_notify.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectNotifySubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@youvo.token_replacer' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
     tags:
       - { name: event_subscriber }
-  logger.channel.logbook:
-    parent: logger.channel_base
-    arguments: [ 'logbook' ]
+
+  # Routing.
   logbook.route_subscriber:
     class: Drupal\logbook\Routing\RouteSubscriber
     arguments:
       [ '@config.factory' ]
     tags:
       - { name: event_subscriber }
+
+  # Database logger channel.
+  logger.channel.logbook:
+    parent: logger.channel_base
+    arguments: [ 'logbook' ]

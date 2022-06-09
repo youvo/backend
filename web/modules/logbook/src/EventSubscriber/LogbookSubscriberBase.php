@@ -10,7 +10,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\Entity\LogEvent;
 use Drupal\logbook\LogEventInterface;
 use Drupal\logbook\LogPatternInterface;
-use Drupal\youvo\SimpleTokenReplacer;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -32,15 +31,12 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
    *   The entity type manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   The mailer logger channel.
-   * @param \Drupal\youvo\SimpleTokenReplacer $simpleTokenReplacer
-   *   The simple token replacer service.
    */
   public function __construct(
     protected AccountInterface $currentUser,
     protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected LoggerInterface $logger,
-    protected SimpleTokenReplacer $simpleTokenReplacer
+    protected LoggerInterface $logger
   ) {}
 
   /**
