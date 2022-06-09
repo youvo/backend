@@ -11,8 +11,8 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\LogEventInterface;
-use Drupal\logbook\Plugin\Field\TextMarkupFieldItemList;
-use Drupal\logbook\Plugin\Field\TextProcessedFieldItemList;
+use Drupal\logbook\Plugin\Field\ComputedTextMarkupFieldItemList;
+use Drupal\logbook\Plugin\Field\ComputedTextProcessedFieldItemList;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
@@ -284,7 +284,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setComputed(TRUE)
       // @todo Change if not using manual translation anymore.
       ->setTranslatable(FALSE)
-      ->setClass(TextProcessedFieldItemList::class);
+      ->setClass(ComputedTextProcessedFieldItemList::class);
 
     // @todo Move to theming.
     $fields['markup'] = BaseFieldDefinition::create('cacheable_string')
@@ -292,7 +292,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
       ->setDescription(new TranslatableMarkup('Computes the markup text.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
-      ->setClass(TextMarkupFieldItemList::class);
+      ->setClass(ComputedTextMarkupFieldItemList::class);
 
     return $fields;
   }
