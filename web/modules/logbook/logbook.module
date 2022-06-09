@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Provides a logbook.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function logbook_theme() {
+  return [
+    'log_event' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for log_event templates.
+ */
+function template_preprocess_log_event(array &$variables) {
+  /** @var \Drupal\logbook\LogEventInterface $event */
+  $event = $variables['elements']['#log_event'];
+  $variables['event'] = $event;
+  $variables['author'] = $event->getOwner();
+  $variables['organization'] = $event->getOrganization();
+  $variables['manager'] = $event->getManager();
+  $variables['creatives'] = $event->getCreatives();
+  $variables['project'] = $event->getProject();
+  $variables['message'] = $event->getMessage();
+  $variables['text']['#markup'] = $event->getMarkup();
+}
