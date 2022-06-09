@@ -169,9 +169,7 @@ resourceFields:
     fieldName: field_deadline
     publicName: deadline
     enhancer:
-      id: date_time_from_string
-      settings:
-        dateTimeFormat: 'Y-m-d\TH:i:sO'
+      id: ''
   field_image:
     disabled: false
     fieldName: field_image
