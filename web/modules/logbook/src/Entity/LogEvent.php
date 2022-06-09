@@ -26,9 +26,8 @@ use Drupal\user_types\Utility\Profile;
  *   label_collection = @Translation("Log Events"),
  *   bundle_label = @Translation("Log Pattern"),
  *   handlers = {
- *     "view_builder" = "Drupal\logbook\LogEventViewBuilder",
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\logbook\LogEventListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\logbook\Form\LogEventForm",
  *       "edit" = "Drupal\logbook\Form\LogEventForm",
@@ -56,7 +55,7 @@ use Drupal\user_types\Utility\Profile;
  *     "canonical" = "/log_event/{log_event}",
  *     "edit-form" = "/admin/content/log-event/{log_event}/edit",
  *     "delete-form" = "/admin/content/log-event/{log_event}/delete",
- *     "collection" = "/admin/content/log-event"
+ *     "collection" = "/logbook"
  *   },
  *   bundle_entity_type = "log_pattern"
  * )
