@@ -1,0 +1,17 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_notify
+label: 'Project Notify'
+tokens:
+  -
+    token: '%Organization'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+  -
+    token: '%Project'
+    required: 0
+promote: false
+hidden: false

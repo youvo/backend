@@ -3,15 +3,12 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\logbook\LogEventInterface;
 
 /**
  * Logbook project notify event subscriber.
  */
 class LogbookProjectNotifySubscriber extends LogbookSubscriberBase {
-
-  use StringTranslationTrait;
 
   const EVENT_TYPE = 'project_notify';
 
@@ -27,6 +24,8 @@ class LogbookProjectNotifySubscriber extends LogbookSubscriberBase {
     }
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
     $log->setProject($event->getProject());
+    $log->setOrganization($event->getProject()->getOwner());
+    $log->setManager($this->currentUser);
     $log->save();
   }
 
