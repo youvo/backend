@@ -26,7 +26,7 @@ class LogbookProjectNotifySubscriber extends LogbookSubscriberBase {
       return;
     }
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
-    $log->setSubject($event->getProject());
+    $log->setProject($event->getProject());
     $log->save();
   }
 
