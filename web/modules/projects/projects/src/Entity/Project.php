@@ -409,7 +409,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Published'))
       ->setTranslatable(FALSE)
-      ->setDefaultValue(FALSE)
+      ->setDefaultValue(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
         'settings' => [
