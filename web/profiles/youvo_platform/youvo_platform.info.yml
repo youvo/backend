@@ -29,6 +29,7 @@ install:
   - workflows
   # Contrib
   - filefield_paths
+  - jsonapi_cross_bundles
   - jsonapi_extras
   - jsonapi_include
   - mail_login
