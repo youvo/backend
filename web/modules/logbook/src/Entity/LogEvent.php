@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\Entity;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -157,6 +158,43 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
     foreach ($creatives as $creative) {
       $this->get('creatives')
         ->appendItem(['target_id' => Profile::id($creative)]);
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMessage(): string {
+    return $this->get('message')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMessage(string $message): LogEventInterface {
+    $this->set('message', $message);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMisc(): array {
+    return Json::decode($this->get('misc')->value ?? '');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMisc(array $misc): LogEventInterface {
+    if ($encoded = Json::encode($misc)) {
+      $this->set('misc', $encoded);
+    }
+    else {
+      \Drupal::logger('logbook')
+        ->warning('Unable to encode string for logbook event %type.',
+          ['%type' => $this->bundle()]);
     }
     return $this;
   }

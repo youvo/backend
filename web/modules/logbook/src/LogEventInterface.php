@@ -109,4 +109,42 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    */
   public function setOrganization(Organization $organization): LogEventInterface;
 
+  /**
+   * Gets the message.
+   *
+   * @return string
+   *   The message.
+   */
+  public function getMessage(): string;
+
+  /**
+   * Sets the message.
+   *
+   * @param string $message
+   *   The message.
+   *
+   * @return \Drupal\logbook\LogEventInterface
+   *   The current log event.
+   */
+  public function setMessage(string $message): LogEventInterface;
+
+  /**
+   * Gets the decoded miscellaneous information.
+   *
+   * @return array
+   *   The miscellaneous information.
+   */
+  public function getMisc(): array;
+
+  /**
+   * Sets the miscellaneous information as JSON encoded string.
+   *
+   * @param array $misc
+   *   The miscellaneous information.
+   *
+   * @return \Drupal\logbook\LogEventInterface
+   *   The current log event.
+   */
+  public function setMisc(array $misc): LogEventInterface;
+
 }
