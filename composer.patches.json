@@ -38,7 +38,8 @@
         },
         "drupal/jsonapi_extras": {
           "Issue #3229890: Better compatibility with other decorations of resource type repository (Soon to be released)": "patches/jsonapi_extras/3229890-better-compatibility-with-other-decorations-of-resource-type-repository.patch",
-          "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch"
+          "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch",
+          "Custom: Adjust date format in field enhancer": "patches/jsonapi_extras/custom-adjust-date-format-field-enhancer.patch"
         }
     }
 }
