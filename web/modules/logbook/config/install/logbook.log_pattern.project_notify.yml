@@ -13,5 +13,8 @@ tokens:
   -
     token: '%Project'
     required: 0
+detectable: true
+observable: true
+public: false
 promote: false
 hidden: false
