@@ -49,6 +49,10 @@ use Drupal\youvo\SimpleToken;
  *     "id",
  *     "label",
  *     "tokens",
+ *     "status",
+ *     "detectable",
+ *     "observable",
+ *     "public",
  *     "promote",
  *     "hidden"
  *   }
@@ -78,6 +82,27 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   protected array $tokens;
 
   /**
+   * The log pattern detectable status.
+   *
+   * @var bool
+   */
+  protected bool $detectable;
+
+  /**
+   * The log pattern observable status.
+   *
+   * @var bool
+   */
+  protected bool $observable;
+
+  /**
+   * The log pattern public status.
+   *
+   * @var bool
+   */
+  protected bool $public;
+
+  /**
    * The log pattern promoted status.
    *
    * @var bool
@@ -101,7 +126,7 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   /**
    * {@inheritdoc}
    */
-  public function text(): string {
+  public function getText(): string {
     if ($this->isNew()) {
       return '';
     }
@@ -114,7 +139,7 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   /**
    * {@inheritdoc}
    */
-  public function publicText(bool $fallback = FALSE): string {
+  public function getPublicText(bool $fallback = FALSE): string {
     if ($this->isNew()) {
       return '';
     }
@@ -127,21 +152,49 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   /**
    * {@inheritdoc}
    */
-  public function promoted() {
+  public function isEnabled() {
+    return $this->status();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDetectable() {
+    return !empty($this->detectable);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isObservable() {
+    return !empty($this->observable);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isPublic() {
+    return !empty($this->public);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isPromoted() {
     return !empty($this->promote);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hidden() {
+  public function isHidden() {
     return !empty($this->hidden);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tokens(bool $as_array = FALSE): array {
+  public function getTokens(bool $as_array = FALSE): array {
     if ($as_array) {
       return $this->tokens ?? [];
     }

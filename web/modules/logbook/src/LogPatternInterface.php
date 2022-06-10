@@ -15,7 +15,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return string
    *   The text.
    */
-  public function text();
+  public function getText();
 
   /**
    * Gets the public text.
@@ -23,7 +23,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return string
    *   The public text.
    */
-  public function publicText(bool $fallback = FALSE);
+  public function getPublicText(bool $fallback = FALSE);
 
   /**
    * Gets the tokens.
@@ -34,7 +34,39 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return array
    *   The tokens.
    */
-  public function tokens(bool $as_array = FALSE);
+  public function getTokens(bool $as_array = FALSE);
+
+  /**
+   * Returns whether the log pattern is enabled.
+   *
+   * @returns bool
+   *   The enabled status.
+   */
+  public function isEnabled();
+
+  /**
+   * Returns whether the log pattern is detectable.
+   *
+   * @returns bool
+   *   The detectable status.
+   */
+  public function isDetectable();
+
+  /**
+   * Returns whether the log pattern is observable.
+   *
+   * @returns bool
+   *   The observable status.
+   */
+  public function isObservable();
+
+  /**
+   * Returns whether the log pattern is public.
+   *
+   * @returns bool
+   *   The public status.
+   */
+  public function isPublic();
 
   /**
    * Returns whether the log pattern is promoted.
@@ -42,7 +74,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @returns bool
    *   The promoted status.
    */
-  public function promoted();
+  public function isPromoted();
 
   /**
    * Returns whether the log pattern is hidden.
@@ -50,7 +82,7 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @returns bool
    *   The hidden status.
    */
-  public function hidden();
+  public function isHidden();
 
   /**
    * Gets the associated log text entity.

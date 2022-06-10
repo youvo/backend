@@ -55,8 +55,8 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       $pattern = $this->getPattern();
 
       // Replace and validate tokens in text.
-      $text = $pattern->publicText(TRUE);
-      $tokens = $pattern->tokens();
+      $text = $pattern->getPublicText(TRUE);
+      $tokens = $pattern->getTokens();
       $this->simpleTokenReplacer()->populateReplacements($this->getReplacements(), $tokens);
       $this->simpleTokenReplacer()->replace($text, $tokens);
       $this->simpleTokenReplacer()->validate($tokens);

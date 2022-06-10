@@ -69,7 +69,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['text'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Text'),
-      '#default_value' => $this->entity->text(),
+      '#default_value' => $this->entity->getText(),
       '#description' => implode(' &mdash; ', []),
     ];
 
@@ -82,7 +82,7 @@ class LogPatternForm extends BundleEntityFormBase {
       '#type' => 'textarea',
       '#title' => $this->t('Public text'),
       '#title_display' => 'invisible',
-      '#default_value' => $this->entity->publicText(),
+      '#default_value' => $this->entity->getPublicText(),
       '#description' => implode(' &mdash; ', []),
     ];
 
@@ -95,13 +95,13 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['promote'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Promoted'),
-      '#default_value' => $this->entity->promoted(),
+      '#default_value' => $this->entity->isPromoted(),
     ];
 
     $form['hidden'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Hidden'),
-      '#default_value' => $this->entity->hidden(),
+      '#default_value' => $this->entity->isHidden(),
     ];
 
     $form['tokens'] = [
@@ -118,7 +118,7 @@ class LogPatternForm extends BundleEntityFormBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Required'),
       ],
-      '#default_value' => $this->entity->tokens(TRUE),
+      '#default_value' => $this->entity->getTokens(TRUE),
       '#access' => $this->currentUser()->hasPermission('administer log patterns'),
     ];
 

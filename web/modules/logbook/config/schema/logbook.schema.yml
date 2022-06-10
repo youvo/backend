@@ -22,6 +22,18 @@ logbook.log_pattern.*:
         required:
           type: boolean
           label: 'Required'
+    status:
+      type: boolean
+      label: 'Enabled'
+    detectable:
+      type: boolean
+      label: 'Detectable'
+    observable:
+      type: boolean
+      label: 'Observable'
+    public:
+      type: boolean
+      label: 'Public'
     promote:
       type: boolean
       label: 'Promote'
