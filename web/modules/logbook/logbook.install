@@ -33,7 +33,7 @@ function logbook_site_install_finished() {
     ->loadMultiple();
   $available_event_types = array_map(fn($e) => $e->id(), $available_event_types);
 
-  $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/install/';
+  $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/import/';
   $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
 
   foreach ($files as $file) {
