@@ -58,13 +58,22 @@ final class LogEventListBuilder extends EntityListBuilder {
    */
   public function render() {
 
-    $build['table']['#prefix'] = '<div class="system-status-general-info__items clearfix">';
+    $build['table'] = [
+      '#prefix' => '<div class="system-status-general-info__items clearfix">',
+      '#cache' => [
+        'contexts' => $this->entityType->getListCacheContexts(),
+        'tags' => $this->entityType->getListCacheTags(),
+      ],
+    ];
+
     foreach ($this->load() as $entity) {
       if ($row = $this->logEventViewBuilder->view($entity)) {
         $build['table'][] = $row;
       }
     }
+
     $build['table']['#suffix'] = '</div>';
+
     return $build;
   }
 
