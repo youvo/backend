@@ -1,3 +1,4 @@
+id: project_notify
 langcode: 'de'
 text: 'Die Organisation %Organization wurde von %Manager auf das Projekt %Project aufmerksam gemacht!'
 public_text: ''

@@ -26,12 +26,10 @@ function logbook_site_install_finished() {
   $role_object->grantPermission('view public log event');
   $role_object->save();
 
-
   // Edit log pattern.
   $role_object = Role::load('configurator');
   $role_object->grantPermission('edit log pattern');
   $role_object->save();
-
 
   // View detectable events.
   $roles = ['configurator', 'observer', 'supervisor', 'editor'];
@@ -52,7 +50,7 @@ function logbook_site_install_finished() {
   // Add the log pattern text as a content entity. We choose this way to avoid
   // using Config Translation including Interface Translation at the moment.
   //
-  // The files in the install folder follow the pattern logbook.log_text.*!
+  // The files in the import folder follow the pattern logbook.log_text.*!
   //
   // Technically, these are not true configuration files because they will not
   // be imported into the configuration of the platform.
@@ -67,15 +65,15 @@ function logbook_site_install_finished() {
   $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
 
   foreach ($files as $file) {
-    $event_type = explode('.', $file)[2] ?? '';
+    $import = Yaml::decode(file_get_contents($path . $file));
+    $event_type = $import['id'] ?? '';
     if (!in_array($event_type, $available_event_types)) {
       continue;
     }
-    $config = Yaml::decode(file_get_contents($path . $file));
     $log_text = LogText::create([
       'log_pattern' => $event_type,
-      'text' => $config['text'] ?? '',
-      'public_text' => $config['public_text'] ?? '',
+      'text' => $import['text'] ?? '',
+      'public_text' => $import['public_text'] ?? '',
     ]);
     $log_text->save();
   }
