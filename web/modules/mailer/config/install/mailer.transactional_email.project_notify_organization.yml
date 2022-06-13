@@ -1,8 +1,8 @@
 langcode: de
 status: true
 dependencies: {  }
-id: project_notify
-label: 'Project Notify'
+id: project_notify_organization
+label: 'Project Notify Organization'
 subject: 'Dein Projekt auf youvo.org'
 body: "Hallo %Contact,\r\n\r\nes wurde ein neues Projekt für Deine Organisation erstellt! Du kannst über folgenden Link Dein Projekt vervollständigen:\r\n\r\n%Link\r\n\r\nWenn Du Fragen hast, melde Dich gern.\r\n\r\nLiebe Grüße\r\n%Manager"
 tokens:

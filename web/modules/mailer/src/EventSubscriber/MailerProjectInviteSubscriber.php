@@ -11,7 +11,7 @@ class MailerProjectInviteSubscriber extends MailerProjectNotifySubscriber {
 
   use StringTranslationTrait;
 
-  const EMAIL_ID = 'project_invite';
+  const EMAIL_ID = 'project_invite_organization';
 
   /**
    * {@inheritdoc}

@@ -13,7 +13,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
 
   use StringTranslationTrait;
 
-  const EMAIL_ID = 'project_notify';
+  const EMAIL_ID = 'project_notify_organization';
 
   /**
    * Sends mail during project notify event.
