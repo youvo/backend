@@ -11,6 +11,12 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
     tags:
       - { name: event_subscriber }
+  mailer.project_invite.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectInviteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]

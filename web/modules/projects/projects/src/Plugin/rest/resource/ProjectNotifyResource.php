@@ -3,6 +3,7 @@
 namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\projects\Entity\Project;
+use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\rest\ModifiedResourceResponse;
 
@@ -29,7 +30,14 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    *   The response.
    */
   public function post(Project $project) {
-    $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $project->getOwner();
+    if ($organization->hasRoleProspect()) {
+      $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
+    }
+    else {
+      $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
+    }
     return new ModifiedResourceResponse();
   }
 

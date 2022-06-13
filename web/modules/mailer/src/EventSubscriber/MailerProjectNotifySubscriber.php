@@ -13,8 +13,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
 
   use StringTranslationTrait;
 
-  const EMAIL_ID_PROSPECT = 'project_notify_prospect';
-  const EMAIL_ID_ORGANIZATION = 'project_notify_organization';
+  const EMAIL_ID = 'project_notify';
 
   /**
    * Sends mail during project notify event.
@@ -25,11 +24,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
     /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $event->getProject()->getOwner();
 
-    $email = $this->loadTransactionalEmail(
-      $organization->hasRoleProspect() ?
-        self::EMAIL_ID_PROSPECT :
-        self::EMAIL_ID_ORGANIZATION
-    );
+    $email = $this->loadTransactionalEmail(self::EMAIL_ID);
     if (!$email instanceof TransactionalEmail) {
       return;
     }
