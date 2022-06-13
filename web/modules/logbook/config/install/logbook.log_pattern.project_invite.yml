@@ -1,0 +1,20 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_invite
+label: 'Project Invite'
+tokens:
+  -
+    token: '%Organization'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+  -
+    token: '%Project'
+    required: 0
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false

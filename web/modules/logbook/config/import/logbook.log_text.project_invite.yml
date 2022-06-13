@@ -1,0 +1,4 @@
+id: project_invite
+langcode: 'de'
+text: 'Die Organisation %Organization mit dem Projekt %Project wurde von %Manager eingeladen!'
+public_text: ''
