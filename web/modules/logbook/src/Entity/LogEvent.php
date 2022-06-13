@@ -27,6 +27,7 @@ use Drupal\user_types\Utility\Profile;
  *   label_collection = @Translation("Log Events"),
  *   bundle_label = @Translation("Log Pattern"),
  *   handlers = {
+ *     "access" = "Drupal\logbook\LogEventAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\logbook\LogEventListBuilder",
  *     "form" = {
@@ -83,6 +84,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
+  public function hasProject(): bool {
+    return !$this->get('project')->isEmpty();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getProject(): ?ProjectInterface {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $project_field */
     $project_field = $this->get('project');
@@ -97,6 +105,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   public function setProject(ProjectInterface $project): LogEventInterface {
     $this->set('project', $project->id());
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasManager(): bool {
+    return !$this->get('manager')->isEmpty();
   }
 
   /**
@@ -121,6 +136,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
+  public function hasOrganization(): bool {
+    return !$this->get('organization')->isEmpty();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOrganization(): ?Organization {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $organization_field */
     $organization_field = $this->get('organization');
@@ -135,6 +157,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   public function setOrganization(Organization $organization): LogEventInterface {
     $this->set('organization', $organization->id());
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasCreatives(): bool {
+    return !$this->get('creatives')->isEmpty();
   }
 
   /**

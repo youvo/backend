@@ -34,6 +34,14 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
   public function setCreatedTime(int $timestamp): LogEventInterface;
 
   /**
+   * Checks whether the log event has a project.
+   *
+   * @return bool
+   *   Has project?
+   */
+  public function hasProject(): bool;
+
+  /**
    * Gets the project.
    *
    * @return \Drupal\projects\ProjectInterface|null
@@ -51,6 +59,14 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    *   The current log event.
    */
   public function setProject(ProjectInterface $project): LogEventInterface;
+
+  /**
+   * Checks whether the log event has a creative.
+   *
+   * @return bool
+   *   Has creatives?
+   */
+  public function hasCreatives(): bool;
 
   /**
    * Gets the creatives array keyed by UID.
@@ -72,6 +88,14 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
   public function setCreatives(array $creatives): LogEventInterface;
 
   /**
+   * Checks whether the log event has a manager.
+   *
+   * @return bool
+   *   Has manager?
+   */
+  public function hasManager(): bool;
+
+  /**
    * Gets the subject.
    *
    * @return \Drupal\creatives\Entity\Creative|null
@@ -89,6 +113,14 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    *   The current log event.
    */
   public function setManager(AccountInterface $manager): LogEventInterface;
+
+  /**
+   * Checks whether the log event has an organization.
+   *
+   * @return bool
+   *   Has organization?
+   */
+  public function hasOrganization(): bool;
 
   /**
    * Gets the organization.
