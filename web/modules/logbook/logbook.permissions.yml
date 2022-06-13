@@ -4,7 +4,21 @@ administer log pattern:
   restrict access: true
 
 edit log pattern:
+  description: 'Edit log patterns.'
   title: 'Edit log pattern'
 
-access log event overview:
-  title: 'Access log event overview page'
+view detectable log event:
+  description: 'Event accessable in the administration logbook.'
+  title: 'View detectable log event'
+
+view observable log event:
+  description: 'Event accessable for managers with respect to their organizations.'
+  title: 'View observable log event'
+
+view public log event:
+  description: 'Event accessable for authenticated users.'
+  title: 'View public log event'
+
+access logbook:
+  description: 'Access to log events list.'
+  title: 'Access logbook'

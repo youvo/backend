@@ -7,6 +7,7 @@
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\logbook\Entity\LogText;
+use Drupal\user\Entity\Role;
 
 /**
  * Implements hook_site_install_finished().
@@ -18,6 +19,35 @@ use Drupal\logbook\Entity\LogText;
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function logbook_site_install_finished() {
+
+  // Access logbook and view public events.
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('access logbook');
+  $role_object->grantPermission('view public log event');
+  $role_object->save();
+
+
+  // Edit log pattern.
+  $role_object = Role::load('configurator');
+  $role_object->grantPermission('edit log pattern');
+  $role_object->save();
+
+
+  // View detectable events.
+  $roles = ['configurator', 'observer', 'supervisor', 'editor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('view detectable log event');
+    $role_object->save();
+  }
+
+  // View observable events.
+  $roles = ['manager', 'configurator', 'observer', 'supervisor', 'editor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('view observable log event');
+    $role_object->save();
+  }
 
   // Add the log pattern text as a content entity. We choose this way to avoid
   // using Config Translation including Interface Translation at the moment.
