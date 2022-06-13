@@ -22,7 +22,7 @@ function logbook_site_install_finished() {
 
   // Access logbook and view public events.
   $role_object = Role::load('authenticated');
-  $role_object->grantPermission('access logbook');
+  $role_object->grantPermission('access log event overview');
   $role_object->grantPermission('view public log event');
   $role_object->save();
 

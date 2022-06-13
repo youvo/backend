@@ -19,6 +19,6 @@ view public log event:
   description: 'Event accessable for authenticated users.'
   title: 'View public log event'
 
-access logbook:
+access log event overview:
   description: 'Access to log events list.'
   title: 'Access logbook'
