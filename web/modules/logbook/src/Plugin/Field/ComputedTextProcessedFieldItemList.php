@@ -28,7 +28,6 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
 
     // Replacement for creatives.
     if ($creatives = $log->getCreatives()) {
-
       // Get creative names. Append the delta to the tag. This way the
       // frontend can use format() on multiple creatives.
       $names = [];
@@ -36,6 +35,7 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
         $names[] = '<creative' . ($delta + 1) . '>' . $creative->getName() . '</creative' . ($delta + 1) . '>';
       }
       $replacements['%Creatives'] = $this->concatCreativeNames($names);
+      $replacements['%Creative'] = $names[0] ?? 'Anonymous';
     }
 
     return $replacements ?? [];

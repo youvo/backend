@@ -43,6 +43,7 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
         $names[] = $this->generateLink($creative->getName(), $creative);
       }
       $replacements['%Creatives'] = $this->concatCreativeNames($names);
+      $replacements['%Creative'] = $names[0] ?? 'Anonymous';
     }
 
     return $replacements;
