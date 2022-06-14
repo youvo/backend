@@ -14,7 +14,6 @@ use Drupal\logbook\LogInterface;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\logbook\Plugin\Field\ComputedTextMarkupFieldItemList;
 use Drupal\logbook\Plugin\Field\ComputedTextProcessedFieldItemList;
-use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
