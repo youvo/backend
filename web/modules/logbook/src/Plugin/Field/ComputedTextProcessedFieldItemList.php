@@ -2,8 +2,6 @@
 
 namespace Drupal\logbook\Plugin\Field;
 
-use Drupal\projects\ProjectInterface;
-
 /**
  * Computes processed texts of logs with tags for frontend.
  */
@@ -17,25 +15,15 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
-    // Replacement for author.
-    $author = $log->getOwner();
-    $replacements['%Author'] = '<organization>' . $author->getName() . '</organization>';
-
-    // Replacement for organization.
-    if ($organization = $log->getOrganization()) {
-      $replacements['%Organization'] = '<organization>' . $organization->getName() . '</organization>';
-    }
-
     // Replacement for manager.
     if ($manager = $log->getManager()) {
       $replacements['%Manager'] = '<manager>' . $manager->getName() . '</manager>';
     }
 
-    // Replacement for project.
+    // Replacement for project and organization.
     if ($project = $log->getProject()) {
-      if ($project instanceof ProjectInterface) {
-        $replacements['%Project'] = '<project>' . $project->getTitle() . '</project>';
-      }
+      $replacements['%Project'] = '<project>' . $project->getTitle() . '</project>';
+      $replacements['%Organization'] = '<organization>' . $project->getOwner()->getName() . '</organization>';
     }
 
     // Replacement for creatives.
@@ -50,7 +38,7 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
       $replacements['%Creatives'] = $this->concatCreativeNames($names);
     }
 
-    return $replacements;
+    return $replacements ?? [];
   }
 
 }

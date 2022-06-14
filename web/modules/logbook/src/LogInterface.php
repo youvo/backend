@@ -115,33 +115,6 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface {
   public function setManager(AccountInterface $manager): LogInterface;
 
   /**
-   * Checks whether the log has an organization.
-   *
-   * @return bool
-   *   Has organization?
-   */
-  public function hasOrganization(): bool;
-
-  /**
-   * Gets the organization.
-   *
-   * @return \Drupal\organizations\Entity\Organization|null
-   *   The organization.
-   */
-  public function getOrganization(): ?Organization;
-
-  /**
-   * Sets the organization.
-   *
-   * @param \Drupal\organizations\Entity\Organization $organization
-   *   The organization.
-   *
-   * @return \Drupal\logbook\LogInterface
-   *   The current log.
-   */
-  public function setOrganization(Organization $organization): LogInterface;
-
-  /**
    * Gets the message.
    *
    * @return string

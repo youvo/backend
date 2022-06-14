@@ -24,7 +24,6 @@ function template_preprocess_log(array &$variables) {
   $log = $variables['elements']['#log'];
   $variables['log'] = $log;
   $variables['author'] = $log->getOwner();
-  $variables['organization'] = $log->getOrganization();
   $variables['manager'] = $log->getManager();
   $variables['creatives'] = $log->getCreatives();
   $variables['project'] = $log->getProject();

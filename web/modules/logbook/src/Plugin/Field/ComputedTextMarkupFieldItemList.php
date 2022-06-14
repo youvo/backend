@@ -24,20 +24,16 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     $author = $log->getOwner();
     $replacements['%Author'] = Link::fromTextAndUrl($author->getName(), $author->toUrl())->toString();
 
-    // Replacement for organization.
-    if ($organization = $log->getOrganization()) {
-      $replacements['%Organization'] = Link::fromTextAndUrl($organization->getName(), $organization->toUrl())->toString();
-    }
-
     // Replacement for manager.
     if ($manager = $log->getManager()) {
       $replacements['%Manager'] = Link::fromTextAndUrl($manager->getName(), $manager->toUrl())->toString();
     }
 
-    // Replacement for project.
+    // Replacement for project and organization.
     if ($project = $log->getProject()) {
       if ($project instanceof ProjectInterface) {
         $replacements['%Project'] = Link::fromTextAndUrl($project->getTitle(), $project->toUrl())->toString();
+        $replacements['%Organization'] = Link::fromTextAndUrl($project->getOwner()->getName(), $project->getOwner()->toUrl())->toString();
       }
     }
 

@@ -73,7 +73,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       if ($manager = $log->getManager()) {
         $item->getValueProperty()->addCacheableDependency($manager);
       }
-      if ($organization = $log->getOrganization()) {
+      if ($organization = $log->getProject()->getOwner()) {
         $item->getValueProperty()->addCacheableDependency($organization);
       }
       if ($project = $log->getProject()) {

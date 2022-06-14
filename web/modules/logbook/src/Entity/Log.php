@@ -137,32 +137,6 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasOrganization(): bool {
-    return !$this->get('organization')->isEmpty();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrganization(): ?Organization {
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $organization_field */
-    $organization_field = $this->get('organization');
-    /** @var \Drupal\organizations\Entity\Organization[] $organization_references */
-    $organization_references = $organization_field->referencedEntities();
-    return !empty($organization_references) ? reset($organization_references) : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOrganization(Organization $organization): LogInterface {
-    $this->set('organization', $organization->id());
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function hasCreatives(): bool {
     return !$this->get('creatives')->isEmpty();
   }
@@ -291,16 +265,6 @@ class Log extends ContentEntityBase implements LogInterface {
         'target_bundles' => ['user'],
       ])
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      ->setTranslatable(FALSE);
-
-    $fields['organization'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(new TranslatableMarkup('Organization'))
-      ->setDescription(new TranslatableMarkup('The UIDs of the referenced organization.'))
-      ->setSetting('target_type', 'user')
-      ->setSetting('selection_settings', [
-        'include_anonymous' => FALSE,
-        'target_bundles' => ['organization'],
-      ])
       ->setTranslatable(FALSE);
 
     $fields['manager'] = BaseFieldDefinition::create('entity_reference')
