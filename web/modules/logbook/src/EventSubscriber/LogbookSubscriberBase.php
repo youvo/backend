@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\EventSubscriber;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -9,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\Entity\LogEvent;
 use Drupal\logbook\LogEventInterface;
-use Drupal\logbook\LogPatternInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -18,7 +18,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 abstract class LogbookSubscriberBase implements EventSubscriberInterface {
 
-  const EVENT_TYPE = NULL;
+  const EVENT_CLASS = NULL;
+  const LOG_PATTERN = NULL;
 
   /**
    * Constructs a LogbookSubscriberBase object.
@@ -42,9 +43,9 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
   /**
    * Creates log event with event type.
    */
-  public function createLogEvent(): ?LogEventInterface {
-    if (static::EVENT_TYPE === NULL) {
-      $this->logger->error('Log event subscriber does not define event type.');
+  public function createLog(): ?LogEventInterface {
+    if (static::LOG_PATTERN === NULL) {
+      $this->logger->error('Log event subscriber does not define log pattern.');
       return NULL;
     }
     try {
@@ -53,39 +54,35 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
         ->loadMultiple();
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $this->logger->error('Unable to verify log patterns for event type.');
+      $this->logger->error('Unable to load log patterns.');
       return NULL;
     }
-    if (!in_array(static::EVENT_TYPE, array_map(fn($p) => $p->id(), $log_patterns))) {
-      $this->logger->error('Log pattern does not exist for requested event type.');
+    if (!in_array(static::LOG_PATTERN, array_map(fn($p) => $p->id(), $log_patterns))) {
+      $this->logger->error('Log pattern does not exist (%id).', ['%id' => static::LOG_PATTERN]);
       return NULL;
     }
     return LogEvent::create([
-      'type' => static::EVENT_TYPE,
+      'type' => static::LOG_PATTERN,
     ]);
   }
 
   /**
-   * Gets the log pattern configuration entity.
+   * Writes log during event.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function loadLogPattern(string $event_type): ?LogPatternInterface {
-    try {
-      /** @var \Drupal\logbook\LogPatternInterface|null $log_pattern */
-      $log_pattern = $this->entityTypeManager
-        ->getStorage('log_pattern')->load($event_type);
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $log_pattern = NULL;
-    }
-    if (empty($log_pattern)) {
-      $this->logger->error('Unable to load log pattern entity (%id).', ['%id' => $event_type]);
-    }
-    return $log_pattern;
-  }
+  abstract public function log(Event $event): void;
 
   /**
    * {@inheritdoc}
    */
-  abstract public static function getSubscribedEvents(): array;
+  public static function getSubscribedEvents(): array {
+    if (static::EVENT_CLASS === NULL) {
+      \Drupal::logger('logbook')
+        ->error('Log event subscriber does not define event class.');
+      return [];
+    }
+    return [static::EVENT_CLASS => 'log'];
+  }
 
 }

@@ -7,13 +7,7 @@ namespace Drupal\logbook\EventSubscriber;
  */
 class LogbookProjectInviteSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_TYPE = 'project_invite';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents(): array {
-    return ['Drupal\projects\Event\ProjectInviteEvent' => 'log'];
-  }
+  const EVENT_CLASS = 'Drupal\projects\Event\ProjectInviteEvent';
+  const LOG_PATTERN = 'project_invite';
 
 }
