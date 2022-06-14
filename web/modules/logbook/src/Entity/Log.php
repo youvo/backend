@@ -240,7 +240,9 @@ class Log extends ContentEntityBase implements LogInterface {
    * {@inheritdoc}
    */
   public function getPattern(): LogPatternInterface {
-    return $this->get('type')->entity;
+    /** @var \Drupal\logbook\LogPatternInterface $log_pattern */
+    $log_pattern = $this->get('type')->entity;
+    return $log_pattern;
   }
 
   /**
