@@ -23,6 +23,7 @@ use Drupal\youvo\SimpleToken;
  *     plural = "@count log patterns",
  *   ),
  *   handlers = {
+ *     "access" = "Drupal\logbook\LogPatternAccessControlHandler",
  *     "list_builder" = "Drupal\logbook\LogPatternListBuilder",
  *     "form" = {
  *       "add" = "Drupal\logbook\Form\LogPatternForm",

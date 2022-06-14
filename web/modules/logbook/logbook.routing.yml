@@ -4,7 +4,7 @@ entity.log_pattern.collection:
     _entity_list: 'log_pattern'
     _title: 'Log pattern configuration'
   requirements:
-    _permission: 'administer log pattern'
+    _permission: 'edit log pattern'
 
 entity.log_pattern.add_form:
   path: '/admin/structure/log_pattern/add'
@@ -20,7 +20,7 @@ entity.log_pattern.edit_form:
     _entity_form: 'log_pattern.edit'
     _title: 'Edit a log pattern'
   requirements:
-    _permission: 'administer log pattern'
+    _permission: 'edit log pattern'
 
 entity.log_pattern.delete_form:
   path: '/admin/structure/log-pattern/{log_pattern}/delete'
