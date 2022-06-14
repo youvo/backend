@@ -96,4 +96,9 @@ function youvo_platform_install() {
   $first_user->addRole('creative');
   $first_user->set('field_name', 'Admira Mineur');
   $first_user->save();
+
+  // Load anonymous user and add name.
+  $first_user = User::load(0);
+  $first_user->set('field_name', 'Anonymous');
+  $first_user->save();
 }
