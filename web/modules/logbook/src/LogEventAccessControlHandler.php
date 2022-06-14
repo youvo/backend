@@ -31,7 +31,8 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
 
     // Disabled log events are not accessible.
     if (!$entity->getPattern()->isEnabled()) {
-      return AccessResult::forbidden()->addCacheableDependency($entity);
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity->getPattern());
     }
 
     // Check access for public event.
@@ -69,7 +70,7 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
         $organization = $entity->getOrganization();
         return AccessResult::allowedIf($organization->isManager($account))
           ->addCacheableDependency($organization)
-          ->addCacheableDependency($entity)
+          ->addCacheableDependency($entity->getPattern())
           ->cachePerUser();
       }
       elseif ($entity->hasProject()) {
@@ -77,7 +78,7 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
         $organization = $entity->getProject()->getOwner();
         return AccessResult::allowedIf($organization->isManager($account))
           ->addCacheableDependency($organization)
-          ->addCacheableDependency($entity)
+          ->addCacheableDependency($entity->getPattern())
           ->cachePerUser();
       }
       else {
