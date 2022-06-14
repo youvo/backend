@@ -29,7 +29,6 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
   public function process(Event $event): void {
 
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
-    /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $event->getProject()->getOwner();
     $timestamp = $this->time->getCurrentTime();
 

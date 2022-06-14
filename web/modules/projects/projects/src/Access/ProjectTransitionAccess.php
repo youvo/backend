@@ -34,14 +34,17 @@ class ProjectTransitionAccess {
 
     // Parties for transition publish.
     if ($transition == 'publish') {
-      if (!$project->isManager($account)) {
+      if (!$project->getOwner()->isManager($account)) {
         $party_access = AccessResult::forbidden();
       }
     }
 
     // Parties for transition mediate.
     if ($transition == 'mediate') {
-      if (!$project->isAuthorOrManager($account)) {
+      if (
+        !$project->isAuthor($account) &&
+        !$project->getOwner()->isManager($account)
+      ) {
         $party_access = AccessResult::forbidden();
       }
     }
@@ -49,7 +52,8 @@ class ProjectTransitionAccess {
     // Parties for transition complete.
     if ($transition == 'complete') {
       if (
-        !$project->isAuthorOrManager($account) &&
+        !$project->isAuthor($account) &&
+        !$project->getOwner()->isManager($account) &&
         !$project->isParticipant($account)
       ) {
         $party_access = AccessResult::forbidden();

@@ -30,9 +30,7 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    *   The response.
    */
   public function post(Project $project) {
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $project->getOwner();
-    if ($organization->hasRoleProspect()) {
+    if ($project->getOwner()->hasRoleProspect()) {
       $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
     }
     else {

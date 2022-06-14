@@ -93,7 +93,7 @@ class ProjectFieldAccess extends FieldAccess {
     // A manager can determine the organization when creating a project.
     if ($operation == 'edit' &&
       $entity->isNew() &&
-      $entity->isManager($account) &&
+      $entity->getOwner()->isManager($account) &&
       $field->getName() == self::OWNER_FIELD) {
       return AccessResult::allowed()
         ->cachePerUser();
@@ -117,7 +117,7 @@ class ProjectFieldAccess extends FieldAccess {
     if ($operation == 'view' &&
       $entity->lifecycle()->isOpen() &&
       $field->getName() == self::APPLICANTS_FIELD &&
-      $entity->isAuthorOrManager($account)) {
+      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))) {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())
@@ -129,7 +129,7 @@ class ProjectFieldAccess extends FieldAccess {
     if ($operation == 'view' &&
       $entity->lifecycle()->isOngoing() &&
       $field->getName() == self::PARTICIPANTS_FIELD &&
-      $entity->isAuthorOrManager($account)) {
+      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))) {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())

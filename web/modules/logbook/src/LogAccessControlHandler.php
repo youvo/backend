@@ -66,18 +66,14 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
       $account->hasPermission('view observable log')
     ) {
       if ($entity->hasOrganization()) {
-        /** @var \Drupal\organizations\Entity\Organization $organization */
-        $organization = $entity->getOrganization();
-        return AccessResult::allowedIf($organization->isManager($account))
-          ->addCacheableDependency($organization)
+        return AccessResult::allowedIf($entity->getOrganization()->isManager($account))
+          ->addCacheableDependency($entity->getOrganization())
           ->addCacheableDependency($entity->getPattern())
           ->cachePerUser();
       }
       elseif ($entity->hasProject()) {
-        /** @var \Drupal\organizations\Entity\Organization $organization */
-        $organization = $entity->getProject()->getOwner();
-        return AccessResult::allowedIf($organization->isManager($account))
-          ->addCacheableDependency($organization)
+        return AccessResult::allowedIf($entity->getProject()->getOwner()->isManager($account))
+          ->addCacheableDependency($entity->getProject()->getOwner())
           ->addCacheableDependency($entity->getPattern())
           ->cachePerUser();
       }

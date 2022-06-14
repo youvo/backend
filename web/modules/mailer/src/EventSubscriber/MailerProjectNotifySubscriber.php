@@ -20,16 +20,13 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
    */
   public function mail(Event $event): void {
 
-    /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $event->getProject()->getOwner();
-
     $email = $this->loadTransactionalEmail(self::EMAIL_ID);
     if (!$email instanceof TransactionalEmail) {
       return;
     }
 
-    /** @var \Drupal\creatives\Entity\Creative|null $manager */
+    /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
+    $organization = $event->getProject()->getOwner();
     $manager = $organization->getManager();
     $replacements = [
       '%Contact' => $organization->getContact(),
@@ -38,7 +35,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
     ];
 
     $this->sendMail(
-      $event->getProject()->getOwner()->getEmail(),
+      $organization->getEmail(),
       $this->handleTokensSubject($email, $replacements),
       $this->handleTokensBody($email, $replacements),
       $manager?->getEmail()

@@ -123,8 +123,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
 
     // Fetch applicants in desired structure.
     $applicants = [];
-    $manager = $project->getManager();
-    /** @var \Drupal\creatives\Entity\Creative $applicant */
+    $manager = $project->getOwner()->getManager();
     foreach ($project->getApplicants() as $applicant) {
       if ($applicant->id() != $manager?->id()) {
         $applicants[] = [
@@ -223,7 +222,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     if (!empty($selected_creatives_ids) && $project->lifecycle()->mediate()) {
 
       $project->setParticipants($selected_creatives_ids);
-      if ($manager = $project->getManager()) {
+      if ($manager = $project->getOwner()->getManager()) {
         $project->appendParticipant($manager, 'Manager');
       }
       $project->save();

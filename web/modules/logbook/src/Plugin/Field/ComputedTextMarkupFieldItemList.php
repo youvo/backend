@@ -21,7 +21,6 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     $log = $this->getEntity();
 
     // Replacement for author.
-    /** @var \Drupal\creatives\Entity\Creative|\Drupal\organizations\Entity\Organization $author */
     $author = $log->getOwner();
     $replacements['%Author'] = Link::fromTextAndUrl($author->getName(), $author->toUrl())->toString();
 

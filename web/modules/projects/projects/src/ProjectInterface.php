@@ -62,7 +62,7 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   /**
    * Gets the applicants array keyed by UID.
    *
-   * @return \Drupal\user\UserInterface[]
+   * @return \Drupal\creatives\Entity\Creative[]
    *   The applicants.
    */
   public function getApplicants();
@@ -154,44 +154,6 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   public function isAuthor(AccountInterface|int $account);
 
   /**
-   * Determines whether the account is the author (organization) or the manager.
-   *
-   * @param \Drupal\Core\Session\AccountInterface|int $account
-   *   The account.
-   *
-   * @return bool
-   *   Is author or manager?
-   */
-  public function isAuthorOrManager(AccountInterface|int $account);
-
-  /**
-   * Determines whether the organization has a manager.
-   *
-   * @return bool
-   *   Organization has manager?
-   */
-  public function hasManager();
-
-  /**
-   * Determines whether the account is the manager of the organization.
-   *
-   * @param \Drupal\Core\Session\AccountInterface|int $account
-   *   The account.
-   *
-   * @return bool
-   *   Is manager?
-   */
-  public function isManager(AccountInterface|int $account);
-
-  /**
-   * Gets the manager.
-   *
-   * @return \Drupal\user\UserInterface|null
-   *   The manager.
-   */
-  public function getManager();
-
-  /**
    * Gets the project title.
    *
    * @return string
@@ -257,5 +219,15 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function getResult(): ProjectResultInterface;
+
+  /**
+   * Returns the entity owner's user entity.
+   *
+   * Overwrite method for type hinting.
+   *
+   * @return \Drupal\organizations\Entity\Organization
+   *   The organization user entity.
+   */
+  public function getOwner();
 
 }

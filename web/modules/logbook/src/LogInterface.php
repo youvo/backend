@@ -195,4 +195,14 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface {
    */
   public function getPattern(): LogPatternInterface;
 
+  /**
+   * Returns the entity owner's user entity.
+   *
+   * Overwrite method for type hinting.
+   *
+   * @return \Drupal\creatives\Entity\Creative|\Drupal\organizations\Entity\Organization
+   *   The organization or creative user entity.
+   */
+  public function getOwner();
+
 }

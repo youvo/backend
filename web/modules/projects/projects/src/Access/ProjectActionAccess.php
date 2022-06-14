@@ -41,7 +41,8 @@ class ProjectActionAccess {
       $project->isPublished() &&
       $project->lifecycle()->isCompleted() &&
       ($project->isParticipant($account) ||
-      $project->isAuthorOrManager($account))
+      $project->isAuthor($account) ||
+      $project->getOwner()->isManager($account))
     );
   }
 

@@ -21,9 +21,7 @@ class LogbookProjectNotifySubscriber extends LogbookSubscriberBase {
     }
     /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
     $log->setProject($event->getProject());
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $event->getProject()->getOwner();
-    $log->setOrganization($organization);
+    $log->setOrganization($event->getProject()->getOwner());
     $log->setManager($this->currentUser);
     $log->save();
   }

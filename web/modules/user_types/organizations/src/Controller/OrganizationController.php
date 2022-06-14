@@ -78,7 +78,6 @@ final class OrganizationController extends ControllerBase {
     }
 
     // Load the organization.
-    /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $this->userStorage->load($uid);
 
     // Verify that the organization is active and a prospect.

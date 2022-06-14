@@ -248,6 +248,18 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    *
+   * Overwritten method for type hinting.
+   */
+  public function getOwner() {
+    $key = $this->getEntityType()->getKey('owner');
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $this->get($key)->entity;
+    return $organization;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
