@@ -32,7 +32,7 @@ function logbook_site_install_finished() {
   $role_object->save();
 
   // View detectable events.
-  $roles = ['configurator', 'observer', 'supervisor', 'editor'];
+  $roles = ['observer', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('view detectable log event');
@@ -40,7 +40,7 @@ function logbook_site_install_finished() {
   }
 
   // View observable events.
-  $roles = ['manager', 'configurator', 'observer', 'supervisor', 'editor'];
+  $roles = ['manager', 'observer', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
     $role_object->grantPermission('view observable log event');
