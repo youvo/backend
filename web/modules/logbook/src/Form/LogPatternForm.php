@@ -66,13 +66,27 @@ class LogPatternForm extends BundleEntityFormBase {
       '#disabled' => !$this->entity->isNew(),
     ];
 
-    // Description for body field describing required and optional tokens.
+    // Description for text field describing required and optional tokens.
     $tokens_description = [];
     // Ajax callback adds the adds_more button to tokens. Filter it out here.
     $tokens = array_filter($this->entity->getTokens(TRUE), fn($t) => is_array($t));
+    $allowed_public_tokens = [
+      '%Project',
+      '%Organization',
+      '%Manager',
+      '%Creatives',
+      '%Creative',
+    ];
+    $public_tokens = array_filter($tokens, fn($t) => in_array($t['token'], $allowed_public_tokens));
     if ($required_tokens = array_filter($tokens, fn($t) => $t['required'] ?? FALSE)) {
       $tokens_description[] = $this->t('Required Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($required_tokens, 'token')),
+      ]);
+
+    }
+    if ($required_public_tokens = array_filter($public_tokens, fn($t) => $t['required'] ?? FALSE)) {
+      $public_tokens_description[] = $this->t('Required Tokens: @tokens', [
+        '@tokens' => implode(', ', array_column($required_public_tokens, 'token')),
       ]);
     }
     if ($optional_tokens = array_filter($tokens, fn($t) => !isset($t['required']) || !$t['required'])) {
@@ -80,6 +94,12 @@ class LogPatternForm extends BundleEntityFormBase {
         '@tokens' => implode(', ', array_column($optional_tokens, 'token')),
       ]);
     }
+    if ($optional_public_tokens = array_filter($public_tokens, fn($t) => !isset($t['required']) || !$t['required'])) {
+      $public_tokens_description[] = $this->t('Optional Tokens: @tokens', [
+        '@tokens' => implode(', ', array_column($optional_public_tokens, 'token')),
+      ]);
+    }
+    $public_tokens_description[] = $this->t('Optionally determines the text in the site-wide logbook. Uses text as defined above as fallback.');
 
     $form['text'] = [
       '#type' => 'textarea',
@@ -89,20 +109,25 @@ class LogPatternForm extends BundleEntityFormBase {
       '#description' => implode(' &mdash; ', $tokens_description),
     ];
 
-    $form['advanced'] = [
+    $form['details_public_text'] = [
       '#type' => 'details',
       '#title' => $this->t('Public text'),
     ];
 
-    $form['advanced']['public_text'] = [
+    $form['details_public_text']['public_text'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Public text'),
       '#title_display' => 'invisible',
       '#default_value' => $this->entity->getPublicText(),
-      '#description' => $this->t('Same tokens available as above. Optionally determines the text in the site-wide logbook. Uses text as defined above as fallback.'),
+      '#description' => implode(' &mdash; ', $public_tokens_description),
     ];
 
-    $form['status'] = [
+    $form['settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Settings'),
+    ];
+
+    $form['settings']['status'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enabled'),
       '#description' => $this->t('Indicates whether this type of log should be tracking.'),
@@ -111,21 +136,21 @@ class LogPatternForm extends BundleEntityFormBase {
       '#suffix' => '<hr>',
     ];
 
-    $form['detectable'] = [
+    $form['settings']['detectable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Detectable'),
       '#description' => $this->t('This log is accessable in the administration logbook.'),
       '#default_value' => $this->entity->isDetectable(),
     ];
 
-    $form['observable'] = [
+    $form['settings']['observable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Observable'),
       '#description' => $this->t('This log is accessable for managers with respect to their organizations.'),
       '#default_value' => $this->entity->isObservable(),
     ];
 
-    $form['public'] = [
+    $form['settings']['public'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Public'),
       '#description' => $this->t('This log is accessable for authenticated users.'),
@@ -133,24 +158,31 @@ class LogPatternForm extends BundleEntityFormBase {
       '#suffix' => '<hr>',
     ];
 
-    $form['promote'] = [
+    $form['settings']['promote'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Promoted'),
       '#description' => $this->t('This log is promoted in the site-wide logbook.'),
       '#default_value' => $this->entity->isPromoted(),
     ];
 
-    $form['hidden'] = [
+    $form['settings']['hidden'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Hidden'),
       '#description' => $this->t('This log is still accessable as above, but will be obscured.'),
       '#default_value' => $this->entity->isHidden(),
     ];
 
-    $form['tokens'] = [
+    $form['details_tokens'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Tokens'),
+      '#access' => $this->currentUser()->hasPermission('administer log pattern'),
+    ];
+
+    $form['details_tokens']['tokens'] = [
       '#type' => 'multivalue',
       '#cardinality' => Multivalue::CARDINALITY_UNLIMITED,
       '#title' => $this->t('Tokens'),
+      '#title_display' => 'invisible',
       'token' => [
         '#type' => 'textfield',
         '#title' => $this->t('Token'),
@@ -174,7 +206,6 @@ class LogPatternForm extends BundleEntityFormBase {
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save log pattern');
-    $actions['delete']['#value'] = $this->t('Delete log pattern');
     return $actions;
   }
 
