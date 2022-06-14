@@ -4,8 +4,8 @@ entity.log_pattern.add_form:
   appears_on:
     - entity.log_pattern.collection
 
-log_event.add_page:
-  route_name: entity.log_event.add_page
-  title: 'Add log event'
+log.add_page:
+  route_name: entity.log.add_page
+  title: 'Add log'
   appears_on:
-    - entity.log_event.collection
+    - entity.log.collection

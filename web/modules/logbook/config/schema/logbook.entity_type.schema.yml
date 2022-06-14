@@ -1,6 +1,6 @@
-logbook.log_event_type.*:
+logbook.log_type.*:
   type: config_entity
-  label: 'Log Event type config'
+  label: 'Log type config'
   mapping:
     id:
       type: string

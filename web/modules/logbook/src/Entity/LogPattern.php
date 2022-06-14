@@ -32,7 +32,7 @@ use Drupal\youvo\SimpleToken;
  *   },
  *   config_prefix = "log_pattern",
  *   admin_permission = "administer log pattern",
- *   bundle_of = "log_event",
+ *   bundle_of = "log",
  *   links = {
  *     "collection" = "/admin/structure/log-pattern",
  *     "add-form" = "/admin/structure/log-pattern/add",

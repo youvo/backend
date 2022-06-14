@@ -6,9 +6,9 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Form controller for the log event entity edit forms.
+ * Form controller for the log entity edit forms.
  */
-class LogEventForm extends ContentEntityForm {
+class LogForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
@@ -23,13 +23,13 @@ class LogEventForm extends ContentEntityForm {
     $message_arguments = ['%label' => $this->entity->label()];
 
     if ($result == SAVED_NEW) {
-      $this->messenger()->addStatus($this->t('New log event %label has been created.', $message_arguments));
+      $this->messenger()->addStatus($this->t('New log %label has been created.', $message_arguments));
     }
     else {
-      $this->messenger()->addStatus($this->t('The log event %label has been updated.', $message_arguments));
+      $this->messenger()->addStatus($this->t('The log %label has been updated.', $message_arguments));
     }
 
-    $form_state->setRedirect('entity.log_event.canonical', ['log_event' => $entity->id()]);
+    $form_state->setRedirect('entity.log.canonical', ['log' => $entity->id()]);
 
     return $result;
   }

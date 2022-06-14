@@ -20,10 +20,10 @@ use Drupal\user\Entity\Role;
  */
 function logbook_site_install_finished() {
 
-  // Access logbook and view public events.
+  // Access logbook and view public logs.
   $role_object = Role::load('authenticated');
-  $role_object->grantPermission('access log event overview');
-  $role_object->grantPermission('view public log event');
+  $role_object->grantPermission('access log overview');
+  $role_object->grantPermission('view public log');
   $role_object->save();
 
   // Edit log pattern.
@@ -31,19 +31,19 @@ function logbook_site_install_finished() {
   $role_object->grantPermission('edit log pattern');
   $role_object->save();
 
-  // View detectable events.
+  // View detectable logs.
   $roles = ['observer', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('view detectable log event');
+    $role_object->grantPermission('view detectable log');
     $role_object->save();
   }
 
-  // View observable events.
+  // View observable logs.
   $roles = ['manager', 'observer', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('view observable log event');
+    $role_object->grantPermission('view observable log');
     $role_object->save();
   }
 
@@ -56,22 +56,22 @@ function logbook_site_install_finished() {
   // be imported into the configuration of the platform.
   //
   // @todo Handle different languages.
-  $available_event_types = \Drupal::entityTypeManager()
+  $available_log_patterns = \Drupal::entityTypeManager()
     ->getStorage('log_pattern')
     ->loadMultiple();
-  $available_event_types = array_map(fn($e) => $e->id(), $available_event_types);
+  $available_log_patterns = array_map(fn($e) => $e->id(), $available_log_patterns);
 
   $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/import/';
   $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
 
   foreach ($files as $file) {
     $import = Yaml::decode(file_get_contents($path . $file));
-    $event_type = $import['id'] ?? '';
-    if (!in_array($event_type, $available_event_types)) {
+    $log_pattern = $import['id'] ?? '';
+    if (!in_array($log_pattern, $available_log_patterns)) {
       continue;
     }
     $log_text = LogText::create([
-      'log_pattern' => $event_type,
+      'log_pattern' => $log_pattern,
       'text' => $import['text'] ?? '',
       'public_text' => $import['public_text'] ?? '',
     ]);

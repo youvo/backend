@@ -10,31 +10,31 @@ use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
- * Provides an interface defining a log event entity type.
+ * Provides an interface defining a log entity type.
  */
-interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface {
+interface LogInterface extends ContentEntityInterface, EntityOwnerInterface {
 
   /**
-   * Gets the log event creation timestamp.
+   * Gets the log creation timestamp.
    *
    * @return int
-   *   Creation timestamp of the log event.
+   *   Creation timestamp of the log.
    */
   public function getCreatedTime(): int;
 
   /**
-   * Sets the log event creation timestamp.
+   * Sets the log creation timestamp.
    *
    * @param int $timestamp
-   *   The log event creation timestamp.
+   *   The log creation timestamp.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The called log event entity.
+   * @return \Drupal\logbook\LogInterface
+   *   The called log entity.
    */
-  public function setCreatedTime(int $timestamp): LogEventInterface;
+  public function setCreatedTime(int $timestamp): LogInterface;
 
   /**
-   * Checks whether the log event has a project.
+   * Checks whether the log has a project.
    *
    * @return bool
    *   Has project?
@@ -55,13 +55,13 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setProject(ProjectInterface $project): LogEventInterface;
+  public function setProject(ProjectInterface $project): LogInterface;
 
   /**
-   * Checks whether the log event has a creative.
+   * Checks whether the log has a creative.
    *
    * @return bool
    *   Has creatives?
@@ -82,13 +82,13 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param \Drupal\Core\Session\AccountInterface[]|int[] $creatives
    *   The creatives or the creatives IDs.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setCreatives(array $creatives): LogEventInterface;
+  public function setCreatives(array $creatives): LogInterface;
 
   /**
-   * Checks whether the log event has a manager.
+   * Checks whether the log has a manager.
    *
    * @return bool
    *   Has manager?
@@ -109,13 +109,13 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param \Drupal\Core\Session\AccountInterface $manager
    *   The manager.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setManager(AccountInterface $manager): LogEventInterface;
+  public function setManager(AccountInterface $manager): LogInterface;
 
   /**
-   * Checks whether the log event has an organization.
+   * Checks whether the log has an organization.
    *
    * @return bool
    *   Has organization?
@@ -136,10 +136,10 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param \Drupal\organizations\Entity\Organization $organization
    *   The organization.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setOrganization(Organization $organization): LogEventInterface;
+  public function setOrganization(Organization $organization): LogInterface;
 
   /**
    * Gets the message.
@@ -155,10 +155,10 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param string $message
    *   The message.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setMessage(string $message): LogEventInterface;
+  public function setMessage(string $message): LogInterface;
 
   /**
    * Gets the decoded miscellaneous information.
@@ -174,10 +174,10 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    * @param array $misc
    *   The miscellaneous information.
    *
-   * @return \Drupal\logbook\LogEventInterface
-   *   The current log event.
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
    */
-  public function setMisc(array $misc): LogEventInterface;
+  public function setMisc(array $misc): LogInterface;
 
   /**
    * Gets the computed markup text.

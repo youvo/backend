@@ -6,7 +6,7 @@ use Drupal\Core\Link;
 use Drupal\projects\ProjectInterface;
 
 /**
- * Computes processed texts of log events with markup for backend.
+ * Computes processed texts of logs with markup for backend.
  */
 class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
 
@@ -17,7 +17,7 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
    */
   protected function getReplacements(): array {
 
-    /** @var \Drupal\logbook\LogEventInterface $log */
+    /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
     // Replacement for author.

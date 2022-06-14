@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
-use Drupal\logbook\LogEventInterface;
+use Drupal\logbook\LogInterface;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\logbook\Plugin\Field\ComputedTextMarkupFieldItemList;
 use Drupal\logbook\Plugin\Field\ComputedTextProcessedFieldItemList;
@@ -20,28 +20,28 @@ use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
 /**
- * Defines the log event entity class.
+ * Defines the log entity class.
  *
  * @ContentEntityType(
- *   id = "log_event",
- *   label = @Translation("Log Event"),
- *   label_collection = @Translation("Log Events"),
+ *   id = "log",
+ *   label = @Translation("Log"),
+ *   label_collection = @Translation("Logs"),
  *   bundle_label = @Translation("Log Pattern"),
  *   handlers = {
- *     "access" = "Drupal\logbook\LogEventAccessControlHandler",
+ *     "access" = "Drupal\logbook\LogAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\logbook\LogEventListBuilder",
+ *     "list_builder" = "Drupal\logbook\LogListBuilder",
  *     "form" = {
- *       "add" = "Drupal\logbook\Form\LogEventForm",
- *       "edit" = "Drupal\logbook\Form\LogEventForm",
+ *       "add" = "Drupal\logbook\Form\LogForm",
+ *       "edit" = "Drupal\logbook\Form\LogForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
  *   },
- *   base_table = "log_event",
- *   data_table = "log_event_field_data",
+ *   base_table = "log",
+ *   data_table = "log_field_data",
  *   translatable = FALSE,
  *   revisionable = FALSE,
  *   admin_permission = "administer log pattern",
@@ -53,17 +53,17 @@ use Drupal\user_types\Utility\Profile;
  *     "owner" = "uid"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/log-event/add/{log_pattern}",
- *     "add-page" = "/admin/content/log-event/add",
- *     "canonical" = "/log_event/{log_event}",
- *     "edit-form" = "/admin/content/log-event/{log_event}/edit",
- *     "delete-form" = "/admin/content/log-event/{log_event}/delete",
+ *     "add-form" = "/admin/content/log/add/{log_pattern}",
+ *     "add-page" = "/admin/content/log/add",
+ *     "canonical" = "/log/{log}",
+ *     "edit-form" = "/admin/content/logt/{log}/edit",
+ *     "delete-form" = "/admin/content/log/{log}/delete",
  *     "collection" = "/logbook"
  *   },
  *   bundle_entity_type = "log_pattern"
  * )
  */
-class LogEvent extends ContentEntityBase implements LogEventInterface {
+class Log extends ContentEntityBase implements LogInterface {
 
   use EntityOwnerTrait;
 
@@ -77,7 +77,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): LogEventInterface {
+  public function setCreatedTime(int $timestamp): LogInterface {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -103,7 +103,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProject(ProjectInterface $project): LogEventInterface {
+  public function setProject(ProjectInterface $project): LogInterface {
     $this->set('project', $project->id());
     return $this;
   }
@@ -129,7 +129,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setManager(AccountInterface $manager): LogEventInterface {
+  public function setManager(AccountInterface $manager): LogInterface {
     $this->set('manager', $manager->id());
     return $this;
   }
@@ -155,7 +155,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOrganization(Organization $organization): LogEventInterface {
+  public function setOrganization(Organization $organization): LogInterface {
     $this->set('organization', $organization->id());
     return $this;
   }
@@ -183,7 +183,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatives(array $creatives): LogEventInterface {
+  public function setCreatives(array $creatives): LogInterface {
     $this->set('creatives', NULL);
     foreach ($creatives as $creative) {
       $this->get('creatives')
@@ -202,7 +202,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMessage(string $message): LogEventInterface {
+  public function setMessage(string $message): LogInterface {
     $this->set('message', $message);
     return $this;
   }
@@ -217,13 +217,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMisc(array $misc): LogEventInterface {
+  public function setMisc(array $misc): LogInterface {
     if ($encoded = Json::encode($misc)) {
       $this->set('misc', $encoded);
     }
     else {
       \Drupal::logger('logbook')
-        ->warning('Unable to encode string for logbook event %type.',
+        ->warning('Unable to encode string for log %type.',
           ['%type' => $this->bundle()]);
     }
     return $this;
@@ -255,7 +255,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Triggered on'))
-      ->setDescription(new TranslatableMarkup('The time that the log event was created.'))
+      ->setDescription(new TranslatableMarkup('The time that the log was created.'))
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',
@@ -302,7 +302,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
     $fields['project'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Project'))
       ->setSetting('target_type', 'project')
-      ->setDescription(new TranslatableMarkup('The project referenced by this event.'))
+      ->setDescription(new TranslatableMarkup('The project referenced by this log.'))
       ->setTranslatable(FALSE);
 
     $fields['message'] = BaseFieldDefinition::create('string_long')
@@ -312,7 +312,7 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
 
     $fields['misc'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Miscellaneous'))
-      ->setDescription(new TranslatableMarkup('Stores extra information about this event.'))
+      ->setDescription(new TranslatableMarkup('Stores extra information about this log.'))
       ->setTranslatable(FALSE);
 
     $fields['processed'] = BaseFieldDefinition::create('cacheable_string')

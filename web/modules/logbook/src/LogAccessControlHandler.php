@@ -10,9 +10,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Access handler for log event entities.
+ * Access handler for log entities.
  */
-class LogEventAccessControlHandler extends EntityAccessControlHandler {
+class LogAccessControlHandler extends EntityAccessControlHandler {
 
   /**
    * {@inheritdoc}
@@ -20,8 +20,8 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
   public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
 
     // Only projects should be handled by this access controller.
-    if (!$entity instanceof LogEventInterface) {
-      throw new AccessException('The LogEventAccessControlHandler was called by an entity that is not a LogEvent.');
+    if (!$entity instanceof LogInterface) {
+      throw new AccessException('The LogAccessControlHandler was called by an entity that is not a Log.');
     }
 
     // Administrators and supervisors skip access checks.
@@ -29,41 +29,41 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
-    // Disabled log events are not accessible.
+    // Disabled logs are not accessible.
     if (!$entity->getPattern()->isEnabled()) {
       return AccessResult::forbidden()
         ->addCacheableDependency($entity->getPattern());
     }
 
-    // Check access for public event.
+    // Check access for public log.
     if (
       $operation == 'view' &&
       $entity->getPattern()->isPublic() &&
-      $account->hasPermission('view public log event')
+      $account->hasPermission('view public log')
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
         ->addCacheableDependency($entity->getPattern());
     }
 
-    // Check access for detectable event.
+    // Check access for detectable log.
     if (
       $operation == 'view' &&
       $entity->getPattern()->isDetectable() &&
-      $account->hasPermission('view detectable log event')
+      $account->hasPermission('view detectable log')
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
         ->addCacheableDependency($entity->getPattern());
     }
 
-    // Check access for observable event.
+    // Check access for observable log.
     // Respect the relationship between manager and organization. A manager can
-    // view the events for their organizations.
+    // view the logs for their organizations.
     if (
       $operation == 'view' &&
       $entity->getPattern()->isObservable() &&
-      $account->hasPermission('view observable log event')
+      $account->hasPermission('view observable log')
     ) {
       if ($entity->hasOrganization()) {
         /** @var \Drupal\organizations\Entity\Organization $organization */

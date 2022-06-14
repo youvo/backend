@@ -1,6 +1,6 @@
 services:
 
-  # Project log events.
+  # Project logs.
   logbook.project_invite.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectInviteSubscriber
     arguments:

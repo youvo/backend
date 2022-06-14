@@ -8,8 +8,8 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\logbook\Entity\LogEvent;
-use Drupal\logbook\LogEventInterface;
+use Drupal\logbook\Entity\Log;
+use Drupal\logbook\LogInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -41,11 +41,11 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
   ) {}
 
   /**
-   * Creates log event with event type.
+   * Creates log with log pattern.
    */
-  public function createLog(): ?LogEventInterface {
+  public function createLog(): ?LogInterface {
     if (static::LOG_PATTERN === NULL) {
-      $this->logger->error('Log event subscriber does not define log pattern.');
+      $this->logger->error('Logbook event subscriber does not define log pattern.');
       return NULL;
     }
     try {
@@ -61,7 +61,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
       $this->logger->error('Log pattern does not exist (%id).', ['%id' => static::LOG_PATTERN]);
       return NULL;
     }
-    return LogEvent::create([
+    return Log::create([
       'type' => static::LOG_PATTERN,
     ]);
   }
@@ -79,7 +79,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
   public static function getSubscribedEvents(): array {
     if (static::EVENT_CLASS === NULL) {
       \Drupal::logger('logbook')
-        ->error('Log event subscriber does not define event class.');
+        ->error('Logbook event subscriber does not define event class.');
       return [];
     }
     return [static::EVENT_CLASS => 'log'];

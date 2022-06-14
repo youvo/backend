@@ -7,7 +7,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Form controller for the log event entity edit forms.
+ * Form controller for the log entity edit forms.
  *
  * @property \Drupal\logbook\LogTextInterface $entity
  */

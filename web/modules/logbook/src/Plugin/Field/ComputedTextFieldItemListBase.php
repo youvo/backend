@@ -9,7 +9,7 @@ use Drupal\logbook\LogPatternInterface;
 use Drupal\youvo\SimpleTokenReplacer;
 
 /**
- * Provides a base for computed text fields for log events.
+ * Provides a base for computed text fields for logs.
  */
 abstract class ComputedTextFieldItemListBase extends FieldItemList implements FieldItemListInterface {
 
@@ -50,7 +50,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
 
     if (!isset($this->list[0])) {
 
-      /** @var \Drupal\logbook\LogEventInterface $log */
+      /** @var \Drupal\logbook\LogInterface $log */
       $log = $this->getEntity();
       $pattern = $this->getPattern();
 
@@ -93,7 +93,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
   abstract protected function getReplacements(): array;
 
   /**
-   * Gets the pattern related to the event.
+   * Gets the pattern related to the log.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

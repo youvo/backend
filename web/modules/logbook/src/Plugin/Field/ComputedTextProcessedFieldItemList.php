@@ -5,7 +5,7 @@ namespace Drupal\logbook\Plugin\Field;
 use Drupal\projects\ProjectInterface;
 
 /**
- * Computes processed texts of log events with tags for frontend.
+ * Computes processed texts of logs with tags for frontend.
  */
 class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
 
@@ -14,7 +14,7 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
    */
   protected function getReplacements(): array {
 
-    /** @var \Drupal\logbook\LogEventInterface $log */
+    /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
     // Replacement for author.

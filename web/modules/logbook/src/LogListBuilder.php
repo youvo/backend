@@ -9,16 +9,16 @@ use Drupal\Core\Entity\EntityViewBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a list controller for the log event entity type.
+ * Provides a list controller for the log entity type.
  */
-final class LogEventListBuilder extends EntityListBuilder {
+final class LogListBuilder extends EntityListBuilder {
 
   /**
-   * The log event view builder.
+   * The view builder.
    *
    * @var \Drupal\Core\Entity\EntityViewBuilderInterface
    */
-  protected EntityViewBuilderInterface $logEventViewBuilder;
+  protected EntityViewBuilderInterface $viewBuilder;
 
   /**
    * Constructs a new LectureListBuilder object.
@@ -27,16 +27,16 @@ final class LogEventListBuilder extends EntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $log_event_view_builder
-   *   The log event view builder.
+   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $view_builder
+   *   The view builder.
    */
   public function __construct(
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
-    EntityViewBuilderInterface $log_event_view_builder
+    EntityViewBuilderInterface $view_builder
   ) {
     parent::__construct($entity_type, $storage);
-    $this->logEventViewBuilder = $log_event_view_builder;
+    $this->viewBuilder = $view_builder;
   }
 
   /**
@@ -49,7 +49,7 @@ final class LogEventListBuilder extends EntityListBuilder {
     return new self(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('entity_type.manager')->getViewBuilder('log_event'),
+      $container->get('entity_type.manager')->getViewBuilder('log'),
     );
   }
 
@@ -67,7 +67,7 @@ final class LogEventListBuilder extends EntityListBuilder {
     ];
 
     foreach ($this->load() as $entity) {
-      if ($row = $this->logEventViewBuilder->view($entity)) {
+      if ($row = $this->viewBuilder->view($entity)) {
         $build['table'][] = $row;
       }
     }

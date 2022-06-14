@@ -7,7 +7,7 @@ use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Subscribe to the Route to change JSON:API routes for log_event collection.
+ * Subscribe to the Route to change JSON:API routes for log collection.
  */
 class RouteSubscriber extends RouteSubscriberBase {
 
@@ -20,11 +20,11 @@ class RouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    if ($route = $collection->get('jsonapi.log_event.collection')) {
+    if ($route = $collection->get('jsonapi.log.collection')) {
       $prefix = $this->config
         ->get('jsonapi_extras.settings')
         ->get('path_prefix');
-      $route->setPath($prefix . '/events');
+      $route->setPath($prefix . '/logs');
     }
   }
 

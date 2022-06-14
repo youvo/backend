@@ -105,7 +105,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['status'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enabled'),
-      '#description' => $this->t('Decides whether this event should be tracking.'),
+      '#description' => $this->t('Indicates whether this type of log should be tracking.'),
       '#disabled' => !$this->currentUser()->hasPermission('administer log pattern'),
       '#default_value' => $this->entity->isEnabled(),
       '#suffix' => '<hr>',
@@ -114,21 +114,21 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['detectable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Detectable'),
-      '#description' => $this->t('This event is accessable in the administration logbook.'),
+      '#description' => $this->t('This log is accessable in the administration logbook.'),
       '#default_value' => $this->entity->isDetectable(),
     ];
 
     $form['observable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Observable'),
-      '#description' => $this->t('This event is accessable for managers with respect to their organizations.'),
+      '#description' => $this->t('This log is accessable for managers with respect to their organizations.'),
       '#default_value' => $this->entity->isObservable(),
     ];
 
     $form['public'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Public'),
-      '#description' => $this->t('This event is accessable for authenticated users.'),
+      '#description' => $this->t('This log is accessable for authenticated users.'),
       '#default_value' => $this->entity->isPublic(),
       '#suffix' => '<hr>',
     ];
@@ -136,14 +136,14 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['promote'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Promoted'),
-      '#description' => $this->t('This event is promoted in the site-wide logbook.'),
+      '#description' => $this->t('This log is promoted in the site-wide logbook.'),
       '#default_value' => $this->entity->isPromoted(),
     ];
 
     $form['hidden'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Hidden'),
-      '#description' => $this->t('This event is still accessable as above, but will be obscured.'),
+      '#description' => $this->t('This log is still accessable as above, but will be obscured.'),
       '#default_value' => $this->entity->isHidden(),
     ];
 
