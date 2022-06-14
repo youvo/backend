@@ -2,8 +2,9 @@
 
 namespace Drupal\logbook\Plugin\Field;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Link;
-use Drupal\projects\ProjectInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Computes processed texts of logs with markup for backend.
@@ -22,31 +23,43 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
 
     // Replacement for author.
     $author = $log->getOwner();
-    $replacements['%Author'] = Link::fromTextAndUrl($author->getName(), $author->toUrl())->toString();
+    $replacements['%Author'] = $this->generateLink($author->getName(), $author);
 
     // Replacement for manager.
     if ($manager = $log->getManager()) {
-      $replacements['%Manager'] = Link::fromTextAndUrl($manager->getName(), $manager->toUrl())->toString();
+      $replacements['%Manager'] = $this->generateLink($manager->getName(), $manager);
     }
 
     // Replacement for project and organization.
     if ($project = $log->getProject()) {
-      if ($project instanceof ProjectInterface) {
-        $replacements['%Project'] = Link::fromTextAndUrl($project->getTitle(), $project->toUrl())->toString();
-        $replacements['%Organization'] = Link::fromTextAndUrl($project->getOwner()->getName(), $project->getOwner()->toUrl())->toString();
-      }
+      $replacements['%Project'] = $this->generateLink($project->getTitle(), $project);
+      $replacements['%Organization'] = $this->generateLink($project->getOwner()->getName(), $project->getOwner());
     }
 
     // Replacement for creatives.
     if ($creatives = $log->getCreatives()) {
       $names = [];
       foreach ($creatives as $creative) {
-        $names[] = Link::fromTextAndUrl($creative->getName(), $creative->toUrl())->toString();
+        $names[] = $this->generateLink($creative->getName(), $creative);
       }
       $replacements['%Creatives'] = $this->concatCreativeNames($names);
     }
 
     return $replacements;
+  }
+
+  /**
+   * Generates link for entity with given text and respects anonymous users.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   */
+  protected function generateLink(string $text, ContentEntityInterface $entity): string {
+    if ($entity instanceof UserInterface && $entity->isAnonymous()) {
+      return $text;
+    }
+    return Link::fromTextAndUrl($text, $entity->toUrl('canonical', [
+      'language' => \Drupal::languageManager()->getCurrentLanguage(),
+    ]))->toString();
   }
 
 }
