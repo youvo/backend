@@ -5,7 +5,6 @@ namespace Drupal\logbook\Plugin\Field;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
-use Drupal\logbook\LogPatternInterface;
 use Drupal\youvo\SimpleTokenReplacer;
 
 /**
@@ -43,8 +42,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function computeValue() {
 
@@ -52,7 +49,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
 
       /** @var \Drupal\logbook\LogInterface $log */
       $log = $this->getEntity();
-      $pattern = $this->getPattern();
+      $pattern = $log->getPattern();
 
       // Replace and validate tokens in text.
       $text = $pattern->getPublicText(TRUE);
@@ -91,21 +88,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
    * Gets replacements for tokens.
    */
   abstract protected function getReplacements(): array;
-
-  /**
-   * Gets the pattern related to the log.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getPattern(): LogPatternInterface {
-    $log = $this->getEntity();
-    /** @var \Drupal\logbook\LogPatternInterface $pattern */
-    $pattern = \Drupal::entityTypeManager()
-      ->getStorage($log->getEntityType()->getBundleEntityType())
-      ->load($log->bundle());
-    return $pattern;
-  }
 
   /**
    * Concatinates creative names.
