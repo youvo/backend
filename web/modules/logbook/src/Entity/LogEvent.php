@@ -11,6 +11,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\LogEventInterface;
+use Drupal\logbook\LogPatternInterface;
 use Drupal\logbook\Plugin\Field\ComputedTextMarkupFieldItemList;
 use Drupal\logbook\Plugin\Field\ComputedTextProcessedFieldItemList;
 use Drupal\organizations\Entity\Organization;
@@ -233,6 +234,13 @@ class LogEvent extends ContentEntityBase implements LogEventInterface {
    */
   public function getMarkup(): string {
     return $this->get('markup')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPattern(): LogPatternInterface {
+    return $this->get('type')->entity;
   }
 
   /**

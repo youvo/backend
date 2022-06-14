@@ -29,34 +29,31 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerUser();
     }
 
-    /** @var \Drupal\logbook\LogPatternInterface $pattern */
-    $pattern = $this->entityType;
-
     // Disabled log events are not accessible.
-    if (!$pattern->isEnabled()) {
+    if (!$entity->getPattern()->isEnabled()) {
       return AccessResult::forbidden()->addCacheableDependency($entity);
     }
 
     // Check access for public event.
     if (
       $operation == 'view' &&
-      $pattern->isPublic() &&
+      $entity->getPattern()->isPublic() &&
       $account->hasPermission('view public log event')
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
-        ->addCacheableDependency($pattern);
+        ->addCacheableDependency($entity->getPattern());
     }
 
     // Check access for detectable event.
     if (
       $operation == 'view' &&
-      $pattern->isDetectable() &&
+      $entity->getPattern()->isDetectable() &&
       $account->hasPermission('view detectable log event')
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
-        ->addCacheableDependency($pattern);
+        ->addCacheableDependency($entity->getPattern());
     }
 
     // Check access for observable event.
@@ -64,7 +61,7 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
     // view the events for their organizations.
     if (
       $operation == 'view' &&
-      $pattern->isObservable() &&
+      $entity->getPattern()->isObservable() &&
       $account->hasPermission('view observable log event')
     ) {
       if ($entity->hasOrganization()) {
@@ -86,7 +83,7 @@ class LogEventAccessControlHandler extends EntityAccessControlHandler {
       else {
         return AccessResult::allowed()
           ->cachePerPermissions()
-          ->addCacheableDependency($pattern);
+          ->addCacheableDependency($entity->getPattern());
       }
     }
 

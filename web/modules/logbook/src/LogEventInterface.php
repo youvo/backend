@@ -187,4 +187,12 @@ interface LogEventInterface extends ContentEntityInterface, EntityOwnerInterface
    */
   public function getMarkup(): string;
 
+  /**
+   * Gets the log pattern entity.
+   *
+   * @return LogPatternInterface
+   *   The log pattern.
+   */
+  public function getPattern(): LogPatternInterface;
+
 }
