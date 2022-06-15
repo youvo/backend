@@ -226,7 +226,7 @@ class LogPatternForm extends BundleEntityFormBase {
       if ($token->isRequired() && !$token->isContainedIn($text)) {
         $form_state->setErrorByName('text', $this->t('The text does not contain all required tokens.'));
       }
-      if ($token->isRequired() && !$token->isContainedIn($public_text)) {
+      if (!empty($public_text) && $token->isRequired() && !$token->isContainedIn($public_text)) {
         $form_state->setErrorByName('public_text', $this->t('The public text does not contain all required tokens.'));
       }
     }
