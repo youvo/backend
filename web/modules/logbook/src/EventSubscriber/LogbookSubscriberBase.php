@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
+use Drupal\logbook\LogPatternInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -49,16 +50,19 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
       return NULL;
     }
     try {
-      $log_patterns = $this->entityTypeManager
+      $log_pattern = $this->entityTypeManager
         ->getStorage('log_pattern')
-        ->loadMultiple();
+        ->load(static::LOG_PATTERN);
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $this->logger->error('Unable to load log patterns.');
+      $this->logger->error('Unable to load log pattern (%id).', ['%id' => static::LOG_PATTERN]);
       return NULL;
     }
-    if (!in_array(static::LOG_PATTERN, array_map(fn($p) => $p->id(), $log_patterns))) {
+    if (empty($log_pattern) || !$log_pattern instanceof LogPatternInterface) {
       $this->logger->error('Log pattern does not exist (%id).', ['%id' => static::LOG_PATTERN]);
+      return NULL;
+    }
+    if (!$log_pattern->isEnabled()) {
       return NULL;
     }
     return Log::create([
