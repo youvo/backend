@@ -13,20 +13,15 @@ class LogbookProjectCompleteSubscriber extends LogbookSubscriberBase {
   const LOG_PATTERN = 'project_complete';
 
   /**
-   * Writes log during event.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
+   * {@inheritdoc}
    */
   public function log(Event $event): void {
     if (!$log = $this->createLog()) {
       return;
     }
-    /** @var \Drupal\projects\Event\ProjectApplyEvent $event */
+    /** @var \Drupal\projects\Event\ProjectCompleteEvent $event */
     $log->setProject($event->getProject());
-    // Log creatives on complete, because participants may change manually
-    // while the project is ongoing.
     $log->setCreatives($event->getProject()->getParticipants());
-    $log->setMessage($event->getMessage());
     $log->save();
   }
 
