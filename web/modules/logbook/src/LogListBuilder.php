@@ -66,7 +66,7 @@ final class LogListBuilder extends EntityListBuilder {
       ],
     ];
 
-    foreach ($this->load() as $entity) {
+    foreach (array_reverse($this->load()) as $entity) {
       if ($row = $this->viewBuilder->view($entity)) {
         $build['table'][] = $row;
       }
