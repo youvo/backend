@@ -5,6 +5,13 @@
  * Provides a logbook.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\User;
+use Drupal\user_types\Utility\Profile;
+
 /**
  * Implements hook_theme().
  */
@@ -29,4 +36,98 @@ function template_preprocess_log(array &$variables) {
   $variables['project'] = $log->getProject();
   $variables['message'] = $log->getMessage();
   $variables['text']['#markup'] = $log->getMarkup();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ *
+ * At the moment we only handle creatives. Organizations should be handled from
+ * the perspective of their projects.
+ *
+ * @todo See issue #44.
+ *
+ * Logs for creatives are handled as follows:
+ * - All non-detectable, non-observable and non-public logs initiated by the
+ *   user are deleted.
+ * - All references in other logs are anonymized by replacing the respective
+ *   user ID with 0 (anonymous user).
+ */
+function logbook_user_delete(AccountInterface $account) {
+
+  if (Profile::isOrganization($account)) {
+    return;
+  }
+
+  // @todo The following logic could be moved to a respective storage class.
+  $uid = Profile::id($account);
+  $anonymous = User::getAnonymousUser();
+  try {
+    $log_storage = \Drupal::entityTypeManager()
+      ->getStorage('log');
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+    \Drupal::logger('logbook')
+      ->error('Unable to perform logbook delete/anonymize task for user %id!', ['%id' => $uid]);
+    return;
+  }
+
+  // Delete all non-detectable, non-observable and non-public logs of the
+  // creative.
+  $concealed_patterns = $log_storage->getQuery()
+    ->condition('detectable', FALSE)
+    ->condition('observable', FALSE)
+    ->condition('public', FALSE)
+    ->execute();
+  $log_ids = $log_storage->getQuery()
+    ->condition('uid', $uid)
+    ->condition('type', $concealed_patterns, 'IN')
+    ->execute();
+  if (!empty($log_ids)) {
+    $logs_to_delete = $log_storage->loadMultiple($log_ids);
+    try {
+      $log_storage->delete($logs_to_delete);
+    }
+    catch (EntityStorageException) {
+      \Drupal::logger('logbook')
+        ->error('Unable to delete logs for user %id!', ['%id' => $uid]);
+    }
+  }
+
+  // Load all remaining logs associated with the creative.
+  $or_group = $log_storage->getQuery()
+    ->orConditionGroup()
+    ->condition('uid', $uid)
+    ->condition('manager', $uid)
+    ->condition('creatives', $uid, 'IN');
+  $log_ids = $log_storage->getQuery()
+    ->condition($or_group)
+    ->execute();
+  $logs = $log_storage->loadMultiple($log_ids);
+
+  // Replace user reference with anonymous user reference in the respective
+  // fields.
+  /** @var \Drupal\logbook\LogInterface $log */
+  foreach ($logs as $log) {
+    if ($log->getOwnerId() == $uid) {
+      $log->setOwner($anonymous);
+    }
+    if ($log->getManager()->id() == $uid) {
+      $log->setManager($anonymous);
+    }
+    if ($creatives = $log->getCreatives()) {
+      if (in_array($uid, array_map(fn($c) => $c->id(), $creatives))) {
+        $creatives = array_filter($creatives, fn($c) => $c->id() != $uid);
+        $creatives[] = $anonymous;
+        $log->setCreatives($creatives);
+      }
+    }
+    try {
+      $log->save();
+    }
+    catch (EntityStorageException) {
+      \Drupal::logger('logbook')
+        ->error('Unable to anonymize logs for user %id!', ['%id' => $uid]);
+    }
+  }
+
 }
