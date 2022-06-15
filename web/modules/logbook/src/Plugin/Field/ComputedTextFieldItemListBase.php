@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\logbook\LogPatternInterface;
+use Drupal\user_types\Utility\Profile;
 use Drupal\youvo\SimpleTokenReplacer;
 
 /**
@@ -138,6 +139,33 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
     }
     $extra_count = count($more) == 1 ? $one : count($more);
     return str_replace('%count', $extra_count, $text);
+  }
+
+  /**
+   * Returns the author role with respect to the project in English or German.
+   */
+  protected function fakeTranslateRole(): string {
+    /** @var \Drupal\logbook\LogInterface $log */
+    $log = $this->getEntity();
+    $author = $log->getOwner();
+    if (Profile::isOrganization($author)) {
+      if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+        return 'Organisation';
+      }
+      return 'organization';
+    }
+    if ($project = $log->getProject()) {
+      if ($project->getOwner()->isManager($author)) {
+        if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+          return 'Managerin';
+        }
+        return 'manager';
+      }
+    }
+    if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+      return 'Kreative';
+    }
+    return 'creative';
   }
 
 }
