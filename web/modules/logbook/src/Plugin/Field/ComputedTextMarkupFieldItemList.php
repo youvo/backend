@@ -4,6 +4,7 @@ namespace Drupal\logbook\Plugin\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Link;
+use Drupal\logbook\LogPatternInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -61,6 +62,13 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     return Link::fromTextAndUrl($text, $entity->toUrl('canonical', [
       'language' => \Drupal::languageManager()->getCurrentLanguage(),
     ]))->toString();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getText(LogPatternInterface $pattern): string {
+    return $pattern->getText();
   }
 
 }

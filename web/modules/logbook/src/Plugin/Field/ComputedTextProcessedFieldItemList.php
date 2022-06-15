@@ -2,6 +2,8 @@
 
 namespace Drupal\logbook\Plugin\Field;
 
+use Drupal\logbook\LogPatternInterface;
+
 /**
  * Computes processed texts of logs with tags for frontend.
  */
@@ -39,6 +41,13 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
     }
 
     return $replacements ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getText(LogPatternInterface $pattern): string {
+    return $pattern->getPublicText(TRUE);
   }
 
 }

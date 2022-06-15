@@ -5,6 +5,7 @@ namespace Drupal\logbook\Plugin\Field;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
+use Drupal\logbook\LogPatternInterface;
 use Drupal\youvo\SimpleTokenReplacer;
 
 /**
@@ -52,7 +53,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       $pattern = $log->getPattern();
 
       // Replace and validate tokens in text.
-      $text = $pattern->getPublicText(TRUE);
+      $text = $this->getText($pattern);
       $tokens = $pattern->getTokens();
       $this->simpleTokenReplacer()->populateReplacements($this->getReplacements(), $tokens);
       $this->simpleTokenReplacer()->replace($text, $tokens);
@@ -82,6 +83,11 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       $this->list[0] = $item;
     }
   }
+
+  /**
+   * Gets the log text.
+   */
+  abstract protected function getText(LogPatternInterface $pattern): string;
 
   /**
    * Gets replacements for tokens.
