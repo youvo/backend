@@ -13,6 +13,12 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
     tags:
       - { name: event_subscriber }
+  logbook.project_mediate.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectMediateSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
   logbook.project_notify.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectNotifySubscriber
     arguments:
