@@ -148,21 +148,29 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
     $author = $log->getOwner();
+    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
     if (Profile::isOrganization($author)) {
-      if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+      if ($langcode == 'de') {
         return 'Organisation';
       }
       return 'organization';
     }
     if ($project = $log->getProject()) {
       if ($project->getOwner()->isManager($author)) {
-        if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+        if ($langcode == 'de') {
           return 'Managerin';
         }
         return 'manager';
       }
+      if (in_array('supervisor', $author->getRoles()) &&
+        !$project->isParticipant($author)) {
+        if ($langcode == 'de') {
+          return 'Supervisorin';
+        }
+        return 'supervisor';
+      }
     }
-    if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+    if ($langcode == 'de') {
       return 'Kreative';
     }
     return 'creative';
