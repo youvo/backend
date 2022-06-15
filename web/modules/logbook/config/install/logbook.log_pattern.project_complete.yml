@@ -1,0 +1,17 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_complete
+label: 'Project Complete'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+detectable: true
+observable: true
+public: true
+promote: true
+hidden: false
