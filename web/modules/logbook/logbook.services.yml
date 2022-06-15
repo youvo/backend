@@ -1,6 +1,12 @@
 services:
 
   # Project logs.
+  logbook.project_complete.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectCompleteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
   logbook.project_invite.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectInviteSubscriber
     arguments:
