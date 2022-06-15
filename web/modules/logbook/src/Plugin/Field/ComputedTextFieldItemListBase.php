@@ -56,7 +56,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       $tokens = $pattern->getTokens();
       $this->simpleTokenReplacer()->populateReplacements($this->getReplacements(), $tokens);
       $this->simpleTokenReplacer()->replace($text, $tokens);
-      $this->simpleTokenReplacer()->validate($tokens);
 
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
       $item = $this->createItem(0, $text);
