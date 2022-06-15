@@ -13,9 +13,7 @@ class LogbookProjectApplySubscriber extends LogbookSubscriberBase {
   const LOG_PATTERN = 'project_apply';
 
   /**
-   * Writes log during event.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
+   * {@inheritdoc}
    */
   public function log(Event $event): void {
     if (!$log = $this->createLog()) {
