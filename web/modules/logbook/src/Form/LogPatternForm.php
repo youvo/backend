@@ -112,6 +112,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['details_public_text'] = [
       '#type' => 'details',
       '#title' => $this->t('Public text'),
+      '#open' => $this->entity->isNew(),
     ];
 
     $form['details_public_text']['public_text'] = [
@@ -125,6 +126,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['settings'] = [
       '#type' => 'details',
       '#title' => $this->t('Settings'),
+      '#open' => $this->entity->isNew(),
     ];
 
     $form['settings']['status'] = [
@@ -175,6 +177,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['details_tokens'] = [
       '#type' => 'details',
       '#title' => $this->t('Tokens'),
+      '#open' => $this->entity->isNew(),
       '#access' => $this->currentUser()->hasPermission('administer log pattern'),
     ];
 
