@@ -82,7 +82,7 @@ function logbook_user_delete(AccountInterface $account) {
     ->execute();
   if (!empty($concealed_patterns)) {
     $log_ids = $log_storage->getQuery()
-      ->condition('uid', $uid)
+      ->condition('author', $uid)
       ->condition('type', $concealed_patterns, 'IN')
       ->execute();
   }
@@ -100,7 +100,7 @@ function logbook_user_delete(AccountInterface $account) {
   // Load all remaining logs associated with the creative.
   $or_group = $log_storage->getQuery()
     ->orConditionGroup()
-    ->condition('uid', $uid)
+    ->condition('author', $uid)
     ->condition('manager', $uid)
     ->condition('creatives', $uid, 'IN');
   $log_ids = $log_storage->getQuery()

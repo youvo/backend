@@ -57,7 +57,7 @@ use Drupal\user_types\Utility\Profile;
  *     "published" = "published",
  *     "label" = "id",
  *     "uuid" = "uuid",
- *     "owner" = "uid"
+ *     "owner" = "author"
  *   },
  *   links = {
  *     "add-form" = "/admin/content/log/add/{log_pattern}",
