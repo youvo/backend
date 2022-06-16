@@ -64,6 +64,8 @@ function logbook_user_delete(AccountInterface $account) {
   try {
     $log_storage = \Drupal::entityTypeManager()
       ->getStorage('log');
+    $log_pattern_storage = \Drupal::entityTypeManager()
+      ->getStorage('log_pattern');
   }
   catch (InvalidPluginDefinitionException | PluginNotFoundException) {
     \Drupal::logger('logbook')
@@ -73,15 +75,17 @@ function logbook_user_delete(AccountInterface $account) {
 
   // Delete all non-detectable, non-observable and non-public logs of the
   // creative.
-  $concealed_patterns = $log_storage->getQuery()
+  $concealed_patterns = $log_pattern_storage->getQuery()
     ->condition('detectable', FALSE)
     ->condition('observable', FALSE)
     ->condition('public', FALSE)
     ->execute();
-  $log_ids = $log_storage->getQuery()
-    ->condition('uid', $uid)
-    ->condition('type', $concealed_patterns, 'IN')
-    ->execute();
+  if (!empty($concealed_patterns)) {
+    $log_ids = $log_storage->getQuery()
+      ->condition('uid', $uid)
+      ->condition('type', $concealed_patterns, 'IN')
+      ->execute();
+  }
   if (!empty($log_ids)) {
     $logs_to_delete = $log_storage->loadMultiple($log_ids);
     try {
