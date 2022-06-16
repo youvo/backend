@@ -1,0 +1,4 @@
+id: project_notify
+langcode: 'de'
+text: 'Das Projekt <b>%Project</b> wurde von der <b>%AuthorWithRole</b> veröffentlicht.'
+public_text: 'Die Organisation %Organization hat das Projekt %Project veröffentlicht.'

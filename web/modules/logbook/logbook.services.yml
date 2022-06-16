@@ -31,6 +31,12 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
     tags:
       - { name: event_subscriber }
+  logbook.project_publish.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectPublishSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
 
   # Routing.
   logbook.route_subscriber:
