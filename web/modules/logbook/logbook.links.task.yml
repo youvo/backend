@@ -11,11 +11,3 @@ entity.log.delete_form:
   route_name: entity.log.delete_form
   base_route: entity.log.canonical
   weight: 10
-entity.log_type.edit_form:
-  title: Edit
-  route_name: entity.log_type.edit_form
-  base_route: entity.log_type.edit_form
-entity.log_type.collection:
-  title: List
-  route_name: entity.log_type.collection
-  base_route: entity.log_type.collection
