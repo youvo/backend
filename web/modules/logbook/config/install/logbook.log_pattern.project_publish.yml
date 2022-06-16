@@ -11,6 +11,12 @@ tokens:
     token: '%AuthorWithRole'
     required: 0
   -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+  -
     token: '%Organization'
     required: 0
 detectable: true

@@ -11,6 +11,9 @@ tokens:
     token: '%AuthorWithRole'
     required: 0
   -
+    token: '%Author'
+    required: 0
+  -
     token: '%Project'
     required: 1
 detectable: true
