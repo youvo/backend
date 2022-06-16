@@ -169,6 +169,13 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
         }
         return 'supervisor';
       }
+      if (in_array('administrator', $author->getRoles()) &&
+        !$project->isParticipant($author)) {
+        if ($langcode == 'de') {
+          return 'Administratorin';
+        }
+        return 'administrator';
+      }
     }
     if ($langcode == 'de') {
       return 'Kreative';
