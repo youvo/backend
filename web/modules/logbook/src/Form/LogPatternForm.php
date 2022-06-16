@@ -38,7 +38,7 @@ class LogPatternForm extends BundleEntityFormBase {
         ['%label' => $this->entity->label()]
       );
 
-      /** @var \Drupal\logbook\Entity\LogText $log_text */
+      /** @var \Drupal\logbook\Entity\LogText|null $log_text */
       $log_text = $this->entity->getLogTextEntity();
 
       if ($log_text?->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {

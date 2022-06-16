@@ -19,9 +19,9 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
    */
   public function log(Event $event): void {
     // Reset logs related to project.
+    /** @var \Drupal\projects\Event\ProjectResetEvent $event */
     try {
       $log_storage = $this->entityTypeManager->getStorage('log');
-      /** @var \Drupal\projects\Event\ProjectApplyEvent $event */
       $log_ids = $log_storage->getQuery()
         ->condition('project', $event->getProject()->id())
         ->execute();
