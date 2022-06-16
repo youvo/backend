@@ -3,6 +3,7 @@
 namespace Drupal\logbook;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\projects\ProjectInterface;
@@ -11,7 +12,7 @@ use Drupal\user\EntityOwnerInterface;
 /**
  * Provides an interface defining a log entity type.
  */
-interface LogInterface extends ContentEntityInterface, EntityOwnerInterface {
+interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface {
 
   /**
    * Gets the log creation timestamp.

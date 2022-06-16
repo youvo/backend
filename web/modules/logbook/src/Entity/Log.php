@@ -4,6 +4,7 @@ namespace Drupal\logbook\Entity;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -65,6 +66,7 @@ use Drupal\user_types\Utility\Profile;
 class Log extends ContentEntityBase implements LogInterface {
 
   use EntityOwnerTrait;
+  use EntityPublishedTrait;
 
   /**
    * {@inheritdoc}
@@ -239,6 +241,7 @@ class Log extends ContentEntityBase implements LogInterface {
 
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::ownerBaseFieldDefinitions($entity_type);
+    $fields += static::publishedBaseFieldDefinitions($entity_type);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Triggered on'))
