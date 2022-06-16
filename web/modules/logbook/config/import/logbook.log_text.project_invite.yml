@@ -1,4 +1,4 @@
 id: project_invite
 langcode: 'de'
-text: 'Die Organisation %Organization mit dem Projekt %Project wurde von %Manager eingeladen!'
+text: 'Die Organisation %Organization mit dem Projekt %Project wurde von der %AuthorWithRole eingeladen!'
 public_text: ''

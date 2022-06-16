@@ -6,13 +6,13 @@ label: 'Project Invite'
 tokens:
   -
     token: '%Organization'
-    required: 0
+    required: 1
   -
-    token: '%Manager'
+    token: '%AuthorWithRole'
     required: 0
   -
     token: '%Project'
-    required: 0
+    required: 1
 detectable: true
 observable: true
 public: false
