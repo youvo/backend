@@ -48,6 +48,7 @@ use Drupal\user_types\Utility\Profile;
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
+ *     "published" = "published",
  *     "label" = "id",
  *     "uuid" = "uuid",
  *     "owner" = "uid"
