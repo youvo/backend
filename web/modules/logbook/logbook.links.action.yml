@@ -3,9 +3,3 @@ entity.log_pattern.add_form:
   title: 'Add log pattern'
   appears_on:
     - entity.log_pattern.collection
-
-log.add_page:
-  route_name: entity.log.add_page
-  title: 'Add log'
-  appears_on:
-    - entity.log.collection

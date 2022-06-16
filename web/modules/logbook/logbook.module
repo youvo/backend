@@ -32,6 +32,7 @@ function template_preprocess_log(array &$variables) {
   $variables['log'] = $log;
   $variables['color'] = $log->getColor();
   $variables['show_hidden'] = \Drupal::request()->query->get('hidden');
+  $variables['label'] = $log->getPattern()->label();
   $variables['hidden'] = $log->getPattern()->isHidden();
   $variables['message'] = $log->getMessage();
   $variables['text']['#markup'] = $log->getMarkup();
