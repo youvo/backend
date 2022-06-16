@@ -21,6 +21,13 @@ final class LogListBuilder extends EntityListBuilder {
   protected EntityViewBuilderInterface $viewBuilder;
 
   /**
+   * The pattern storage class.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected EntityStorageInterface $patternStorage;
+
+  /**
    * Constructs a new LectureListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -29,14 +36,18 @@ final class LogListBuilder extends EntityListBuilder {
    *   The entity storage class.
    * @param \Drupal\Core\Entity\EntityViewBuilderInterface $view_builder
    *   The view builder.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $pattern_storage
+   *   The pattern storage class.
    */
   public function __construct(
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
-    EntityViewBuilderInterface $view_builder
+    EntityViewBuilderInterface $view_builder,
+    EntityStorageInterface $pattern_storage
   ) {
     parent::__construct($entity_type, $storage);
     $this->viewBuilder = $view_builder;
+    $this->patternStorage = $pattern_storage;
   }
 
   /**
@@ -50,6 +61,7 @@ final class LogListBuilder extends EntityListBuilder {
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('entity_type.manager')->getViewBuilder('log'),
+      $container->get('entity_type.manager')->getStorage($entity_type->getBundleEntityType()),
     );
   }
 
@@ -75,6 +87,27 @@ final class LogListBuilder extends EntityListBuilder {
     $build['table']['#suffix'] = '</div>';
 
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityIds() {
+    $detectable_log_patterns = $this->patternStorage
+      ->loadByProperties([
+        'status' => TRUE,
+        'detectable' => TRUE,
+      ]);
+    $query = $this->getStorage()->getQuery()
+      ->condition('type', array_map(fn($p) => $p->id(), $detectable_log_patterns), 'IN')
+      ->accessCheck(TRUE)
+      ->sort($this->entityType->getKey('id'));
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
   }
 
 }
