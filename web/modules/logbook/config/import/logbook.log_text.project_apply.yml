@@ -1,4 +1,4 @@
 id: project_apply
 langcode: 'de'
-text: '<b>%Creative</b> hat für das Projekt <b>%Project</b> mit folgender Nachricht <b>Interesse bekundet</b>!'
+text: '%Creative hat für das Projekt %Project mit folgender Nachricht Interesse bekundet!'
 public_text: ''
