@@ -40,7 +40,7 @@ class LogPatternForm extends BundleEntityFormBase {
       /** @var \Drupal\logbook\Entity\LogText $log_text */
       $log_text = $this->entity->getLogTextEntity();
 
-      if ($log_text->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
+      if ($log_text?->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
         static::addTranslationButtons($form, $log_text);
       }
     }

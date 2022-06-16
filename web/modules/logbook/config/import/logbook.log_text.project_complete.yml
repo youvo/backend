@@ -1,4 +1,4 @@
-id: project_invite
+id: project_complete
 langcode: 'de'
 text: 'Die %AuthorWithRole hat das Projekt %Project abgeschlossen.'
 public_text: 'Das Projekt %Project wurde abgeschlossen.'
