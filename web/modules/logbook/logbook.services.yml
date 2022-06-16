@@ -62,3 +62,9 @@ services:
   logger.channel.logbook:
     parent: logger.channel_base
     arguments: [ 'logbook' ]
+
+  # JSON:API parsing.
+  logbook.parse_jsonapi.attributes:
+    class: Drupal\logbook\EventSubscriber\LogbookParseJsonapiAttributesSubscriber
+    tags:
+      - { name: event_subscriber }
