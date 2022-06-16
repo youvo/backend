@@ -1,14 +1,32 @@
-<h3>Hello, {{ page.field_name }}!</h3>
+<h3>Hello, {{ page.name }}!</h3>
 
-<p class="leader">
-  {% if page.academy %}
-    <a class="button button--primary" href="{{ path('entity.lecture.collection') }}">
-      {{ 'Academy Administration'|t }}
-    </a>
+<div class="leader">
+  {% if page.monitoring %}
+    <div class="claro-details">
+      <div class="claro-details__wrapper">
+        <h4>Monitoring</h4>
+        {{ page.logbook}}
+        {{ page.academy_participants }}
+      </div>
+    </div>
   {% endif %}
-  {% if page.academy_log %}
-    <a class="button button--primary" href="{{ path('academy_log.overview') }}">
-      {{ 'Academy Log'|t }}
-    </a>
+
+  {% if page.moderation %}
+    <div class="claro-details">
+      <div class="claro-details__wrapper">
+        <h4>Content Moderation</h4>
+        {{ page.academy_administration }}
+      </div>
+    </div>
   {% endif %}
-</p>
+
+  {% if page.configuration %}
+    <div class="claro-details">
+      <div class="claro-details__wrapper">
+        <h4>Configuration</h4>
+        {{ page.transactional_emails }}
+        {{ page.log_patterns }}
+      </div>
+    </div>
+  {% endif %}
+</div>
