@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_reset
+label: 'Project Reset'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: false
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''
+

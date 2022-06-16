@@ -37,6 +37,12 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
     tags:
       - { name: event_subscriber }
+  logbook.project_reset.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectResetSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
 
   # Routing.
   logbook.route_subscriber:
