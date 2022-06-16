@@ -214,6 +214,21 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
+  public function getColor(): string {
+    return $this->get('color')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setColor(string $color): LogInterface {
+    $this->set('color', $color);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getPattern(): LogPatternInterface {
     /** @var \Drupal\logbook\LogPatternInterface $log_pattern */
     $log_pattern = $this->get('type')->entity;
@@ -310,6 +325,11 @@ class Log extends ContentEntityBase implements LogInterface {
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
       ->setClass(ComputedTextMarkupFieldItemList::class);
+
+    $fields['color'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Background Color'))
+      ->setDescription(new TranslatableMarkup('Sets the background color for the log display in the administrative log.'))
+      ->setTranslatable(FALSE);
 
     return $fields;
   }

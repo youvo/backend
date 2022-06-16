@@ -178,4 +178,23 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
    */
   public function getOwner();
 
+  /**
+   * Gets the background color.
+   *
+   * @return string
+   *   The background color.
+   */
+  public function getColor(): string;
+
+  /**
+   * Sets the background color.
+   *
+   * @param string $color
+   *   The background color.
+   *
+   * @return \Drupal\logbook\LogInterface
+   *   The called log entity.
+   */
+  public function setColor(string $color): LogInterface;
+
 }
