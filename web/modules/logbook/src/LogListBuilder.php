@@ -47,6 +47,8 @@ final class LogListBuilder extends EntityListBuilder {
    *   The view builder.
    * @param \Drupal\Core\Entity\EntityStorageInterface $pattern_storage
    *   The pattern storage class.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
    */
   public function __construct(
     EntityTypeInterface $entity_type,
