@@ -30,10 +30,7 @@ function template_preprocess_log(array &$variables) {
   /** @var \Drupal\logbook\LogInterface $log */
   $log = $variables['elements']['#log'];
   $variables['log'] = $log;
-  $variables['author'] = $log->getOwner();
-  $variables['manager'] = $log->getManager();
-  $variables['creatives'] = $log->getCreatives();
-  $variables['project'] = $log->getProject();
+  $variables['color'] = $log->getColor();
   $variables['message'] = $log->getMessage();
   $variables['text']['#markup'] = $log->getMarkup();
 }

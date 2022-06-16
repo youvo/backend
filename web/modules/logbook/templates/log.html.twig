@@ -1,9 +1,9 @@
-<article class="system-status-general-info__item card" style="width: 100%; margin-left: 0;">
-    <h3 class="system-status-general-info__item-title">{{ elements.created }}</h3>
-    {{ text }}
-    {% if message %}
-      <div class="system-status-general-info__item-details">
-        {{ message }}
-      </div>
-    {% endif %}
+<article class="system-status-general-info__item card" style="width: 100%; margin-left: 0; {% if color %}{{ 'background-color:' ~ color ~ ';' }}{% endif %}">
+  <h3 class="system-status-general-info__item-title">{{ elements.created }}</h3>
+  {{ text }}
+  {% if message %}
+    <div class="system-status-general-info__item-details">
+      {{ message }}
+    </div>
+  {% endif %}
 </article>
