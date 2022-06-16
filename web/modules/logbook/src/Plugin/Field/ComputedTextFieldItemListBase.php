@@ -148,6 +148,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
     $author = $log->getOwner();
+    $project = $log->getProject();
     $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
     if (Profile::isOrganization($author)) {
       if ($langcode == 'de') {
@@ -155,27 +156,25 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       }
       return 'organization';
     }
-    if ($project = $log->getProject()) {
-      if ($project->getOwner()->isManager($author)) {
-        if ($langcode == 'de') {
-          return 'Managerin';
-        }
-        return 'manager';
+    if ($log->getManager()?->id() == Profile::id($author)) {
+      if ($langcode == 'de') {
+        return 'Managerin';
       }
-      if (in_array('supervisor', $author->getRoles()) &&
-        !$project->isParticipant($author)) {
-        if ($langcode == 'de') {
-          return 'Supervisorin';
-        }
-        return 'supervisor';
+      return 'manager';
+    }
+    if (in_array('supervisor', $author->getRoles()) &&
+      (!$project || !$project->isParticipant($author))) {
+      if ($langcode == 'de') {
+        return 'Supervisorin';
       }
-      if (in_array('administrator', $author->getRoles()) &&
-        !$project->isParticipant($author)) {
-        if ($langcode == 'de') {
-          return 'Administratorin';
-        }
-        return 'administrator';
+      return 'supervisor';
+    }
+    if (in_array('administrator', $author->getRoles()) &&
+      (!$project || !$project->isParticipant($author))) {
+      if ($langcode == 'de') {
+        return 'Administratorin';
       }
+      return 'administrator';
     }
     if ($langcode == 'de') {
       return 'Kreative';
