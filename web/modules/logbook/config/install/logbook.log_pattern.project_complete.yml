@@ -15,3 +15,4 @@ observable: true
 public: true
 promote: true
 hidden: false
+color: ''

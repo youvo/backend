@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\Form;
 
+use Drupal\Component\Utility\Color;
 use Drupal\youvo\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -172,6 +173,16 @@ class LogPatternForm extends BundleEntityFormBase {
       '#title' => $this->t('Hidden'),
       '#description' => $this->t('This log is still accessable as above, but will be obscured.'),
       '#default_value' => $this->entity->isHidden(),
+      '#suffix' => '<hr>',
+    ];
+
+    $form['settings']['color'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Background color hex code'),
+      '#size' => 8,
+      '#attributes' => ['placeholder' => '#FFFFFF'],
+      '#maxlength' => 7,
+      '#default_value' => $this->entity->getColor(),
     ];
 
     $form['details_tokens'] = [
@@ -232,6 +243,10 @@ class LogPatternForm extends BundleEntityFormBase {
       if (!empty($public_text) && $token->isRequired() && !$token->isContainedIn($public_text)) {
         $form_state->setErrorByName('public_text', $this->t('The public text does not contain all required tokens.'));
       }
+    }
+    $color = $form_state->getValue('color');
+    if (!empty($color) && !Color::validateHex($form_state->getValue('color'))) {
+      $form_state->setErrorByName('color', $this->t('Please enter a valid hex color code.'));
     }
     parent::validateForm($form, $form_state);
   }

@@ -55,7 +55,8 @@ use Drupal\youvo\SimpleToken;
  *     "observable",
  *     "public",
  *     "promote",
- *     "hidden"
+ *     "hidden",
+ *     "color"
  *   }
  * )
  */
@@ -118,6 +119,13 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   protected bool $hidden;
 
   /**
+   * The log background color.
+   *
+   * @var string
+   */
+  protected string $color;
+
+  /**
    * The log text entity.
    *
    * @var \Drupal\logbook\Entity\LogText
@@ -148,6 +156,13 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
       return $log_text->getPublicText($fallback);
     }
     return '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getColor(): string {
+    return $this->color ?? '';
   }
 
   /**

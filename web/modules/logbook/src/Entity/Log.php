@@ -222,7 +222,13 @@ class Log extends ContentEntityBase implements LogInterface {
    * {@inheritdoc}
    */
   public function getColor(): string {
-    return $this->get('color')->value ?? '';
+    $color = $this->get('color')->value;
+    // If no custom color, try to get the standard color defined by the log
+    // pattern.
+    if (empty($color)) {
+      $color = $this->getPattern()->getColor();
+    }
+    return $color ?: '';
   }
 
   /**

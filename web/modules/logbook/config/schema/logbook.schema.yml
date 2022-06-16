@@ -40,3 +40,6 @@ logbook.log_pattern.*:
     hidden:
       type: boolean
       label: 'Hidden'
+    color:
+      type: string
+      label: 'Color'

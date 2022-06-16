@@ -37,6 +37,14 @@ interface LogPatternInterface extends ConfigEntityInterface {
   public function getTokens(bool $as_array = FALSE);
 
   /**
+   * Gets the standard background color.
+   *
+   * @return string
+   *   The standard background color.
+   */
+  public function getColor();
+
+  /**
    * Returns whether the log pattern is enabled.
    *
    * @returns bool
