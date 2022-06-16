@@ -4,7 +4,7 @@ namespace Drupal\mailer\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\mailer\MailerToken;
+use Drupal\youvo\SimpleToken;
 use Drupal\multivalue_form_element\Element\MultiValue;
 
 /**
@@ -101,7 +101,7 @@ class TransactionalEmailForm extends EntityForm {
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     /** @var array $tokens_value */
     $tokens_value = $form_state->getValue('tokens');
-    $tokens = MailerToken::createMultiple($tokens_value);
+    $tokens = SimpleToken::createMultiple($tokens_value);
     /** @var string $body */
     $body = $form_state->getValue('body');
     foreach ($tokens as $token) {

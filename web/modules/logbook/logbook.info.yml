@@ -1,0 +1,7 @@
+name: Logbook
+type: module
+description: Logbook that tracks site-wide events.
+package: youvo
+core_version_requirement: ^9.3 || ^10
+dependencies:
+  - youvo:youvo

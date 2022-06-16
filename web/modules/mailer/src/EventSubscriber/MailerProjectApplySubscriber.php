@@ -24,11 +24,8 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
 
     /** @var \Drupal\projects\Event\ProjectApplyEvent $event */
     $project = $event->getProject();
-    /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $project->getOwner();
-    /** @var \Drupal\creatives\Entity\Creative|null $manager */
     $manager = $organization->getManager();
-    /** @var \Drupal\creatives\Entity\Creative|null $creative */
     $creative = $event->getApplicant();
 
     // Send email to organization.
@@ -42,7 +39,7 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
         '%LinkCreative' => 'https://hub.youvo.org/users/' . $creative->uuid(),
         '%EmailCreative' => $creative->getEmail(),
         '%PhoneCreative' => $event->getPhoneNumber(),
-        '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
+        '%Manager' => $manager?->getName() ?? $this->t('Dein youvo-Team'),
       ];
 
       $this->sendMail(
@@ -65,8 +62,8 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
         '%AddressOrganization' => $organization->getAddress(),
         '%EmailOrganization' => $organization->getEmail(),
         '%PhoneOrganization' => $organization->getPhoneNumber(),
-        '%EmailManager' => isset($manager) ? $manager->getEmail() : $this->getSiteMail(),
-        '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
+        '%EmailManager' => $manager?->getEmail() ?? $this->getSiteMail(),
+        '%Manager' => $manager?->getName() ?? $this->t('Dein youvo-Team'),
       ];
 
       $this->sendMail(

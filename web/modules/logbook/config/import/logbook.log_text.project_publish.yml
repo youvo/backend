@@ -1,0 +1,4 @@
+id: project_publish
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole veröffentlicht.'
+public_text: 'Das Projekt %Project der Organisation %Organization wurde veröffentlicht.'

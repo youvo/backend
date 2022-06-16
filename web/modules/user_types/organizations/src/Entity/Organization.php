@@ -62,9 +62,9 @@ class Organization extends TypedUser implements ManagerInterface {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
     $manager_field = $this->get('field_manager');
     $manager_references = $manager_field->referencedEntities();
-    /** @var \Drupal\user\UserInterface|null $manager */
-    $manager = $manager_references[0] ?? NULL;
-    return !empty($manager) ? $manager : NULL;
+    /** @var \Drupal\creatives\Entity\Creative|null $manager */
+    $manager = reset($manager_references);
+    return $manager ?: NULL;
   }
 
   /**

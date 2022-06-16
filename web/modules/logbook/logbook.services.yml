@@ -1,0 +1,70 @@
+services:
+
+  # Project logs.
+  logbook.project_apply.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectApplySubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_complete.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectCompleteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_invite.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectInviteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_mediate.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectMediateSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_notify.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectNotifySubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_publish.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectPublishSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_reset.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectResetSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_submit.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectSubmitSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+
+  # Routing.
+  logbook.route_subscriber:
+    class: Drupal\logbook\Routing\RouteSubscriber
+    arguments:
+      [ '@config.factory' ]
+    tags:
+      - { name: event_subscriber }
+
+  # Database logger channel.
+  logger.channel.logbook:
+    parent: logger.channel_base
+    arguments: [ 'logbook' ]
+
+  # JSON:API parsing.
+  logbook.parse_jsonapi.attributes:
+    class: Drupal\logbook\EventSubscriber\LogbookParseJsonapiAttributesSubscriber
+    tags:
+      - { name: event_subscriber }

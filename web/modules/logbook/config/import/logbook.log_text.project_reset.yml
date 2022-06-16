@@ -1,0 +1,4 @@
+id: project_reset
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole zurückgesetzt.'
+public_text: 'Das Projekt %Project wurde von %Author zurückgesetzt.'

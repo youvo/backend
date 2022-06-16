@@ -79,14 +79,16 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
    */
   private function checkViewAccess(ProjectInterface $project, AccountInterface $account) {
 
+    $organization = $project->getOwner();
+
     // Managers can view draft projects of organizations without managers.
     if (
       in_array('manager', $account->getRoles()) &&
       $project->lifecycle()->isDraft() &&
-      !$project->hasManager()
+      !$organization->hasManager()
     ) {
       return AccessResult::allowed()
-        ->addCacheableDependency($project->getOwner())
+        ->addCacheableDependency($organization)
         ->addCacheableDependency($project)
         ->cachePerUser();
     }
@@ -94,10 +96,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     // Managers of the organization can view the project in any state.
     if (
       in_array('manager', $account->getRoles()) &&
-      $project->isManager($account)
+      $organization->isManager($account)
     ) {
       return AccessResult::allowed()
-        ->addCacheableDependency($project->getOwner())
+        ->addCacheableDependency($organization)
         ->cachePerUser();
     }
 
@@ -126,7 +128,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     // Managers of the organization can edit the project.
     if (
       in_array('manager', $account->getRoles()) &&
-      $project->isManager($account)
+      $project->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())
@@ -156,7 +158,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     // Managers of the organization can delete the project.
     if (
       in_array('manager', $account->getRoles()) &&
-      $project->isManager($account)
+      $project->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())

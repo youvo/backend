@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_submit
+label: 'Project Submit'
+tokens:
+  -
+    token: '%Organization'
+    required: 0
+  -
+    token: '%Project'
+    required: '1'
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

@@ -30,12 +30,10 @@ class UserIsManagerFieldItemList extends FieldItemList implements FieldItemListI
       /** @var \Drupal\projects\ProjectInterface $project */
       $project = $this->getEntity();
       $account = \Drupal::currentUser();
-      /** @var \Drupal\organizations\Entity\Organization $organization */
-      $organization = $project->getOwner();
 
       // Set manager status.
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $organization->isManager($account));
+      $item = $this->createItem(0, $project->getOwner()->isManager($account));
       $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }

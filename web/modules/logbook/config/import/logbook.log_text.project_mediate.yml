@@ -1,0 +1,4 @@
+id: project_mediate
+langcode: 'de'
+text: 'Die %AuthorWithRole hat das Projekt %Project wurde an %Creatives vermittelt.'
+public_text: 'Das Projekt %Project wurde an %Creatives vermittelt.'

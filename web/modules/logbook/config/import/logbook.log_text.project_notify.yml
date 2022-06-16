@@ -1,0 +1,4 @@
+id: project_notify
+langcode: 'de'
+text: 'Die Organisation %Organization wurde von der %AuthorWithRole auf das Projekt %Project aufmerksam gemacht!'
+public_text: 'Die Organisation %Organization wurde von %Author auf das Projekt %Project aufmerksam gemacht!'

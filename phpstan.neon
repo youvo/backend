@@ -13,6 +13,12 @@ parameters:
       project:
         class: Drupal\projects\Entity\Project
         storage: Drupal\node\NodeStorage
+      organization:
+        class: Drupal\organizations\Entity\Organization
+        storage: Drupal\user_bundle\TypedUserStorage
+      creative:
+        class: Drupal\creatives\Entity\Creative
+        storage: Drupal\user_bundle\TypedUserStorage
       taxonomy_term:
         class: Drupal\taxonomy\Entity\Term
         storage: Drupal\taxonomy\TermStorage

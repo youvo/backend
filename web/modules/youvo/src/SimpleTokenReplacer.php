@@ -1,16 +1,16 @@
 <?php
 
-namespace Drupal\mailer;
+namespace Drupal\youvo;
 
 use Psr\Log\LoggerInterface;
 
 /**
  * Provides service methods to replace tokens in a text.
  */
-class MailerTokenReplacer {
+class SimpleTokenReplacer {
 
   /**
-   * Constructs a MailerTokenReplacer service.
+   * Constructs a SimpleTokenReplacer service.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
@@ -22,7 +22,7 @@ class MailerTokenReplacer {
    *
    * @param array $replacements
    *   The replacements.
-   * @param \Drupal\mailer\MailerToken[] $tokens
+   * @param \Drupal\youvo\SimpleToken[] $tokens
    *   The tokens.
    */
   public function populateReplacements(array $replacements, array $tokens): void {
@@ -38,7 +38,7 @@ class MailerTokenReplacer {
    *
    * @param string $text
    *   The text containing unresolved tokens.
-   * @param \Drupal\mailer\MailerToken[] $tokens
+   * @param \Drupal\youvo\SimpleToken[] $tokens
    *   The tokens.
    */
   public function replace(string &$text, array $tokens): void {
@@ -50,7 +50,7 @@ class MailerTokenReplacer {
   /**
    * Validates tokens being processed.
    *
-   * @param \Drupal\mailer\MailerToken[] $tokens
+   * @param \Drupal\youvo\SimpleToken[] $tokens
    *   The processed tokens.
    */
   public function validate(array $tokens): void {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\academy;
+namespace Drupal\youvo;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 

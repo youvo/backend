@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Logbook module.
+ */
+
+use Drupal\Component\Serialization\Yaml;
+use Drupal\logbook\Entity\LogText;
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function logbook_site_install_finished() {
+
+  // Access logbook and view public logs.
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('access log overview');
+  $role_object->grantPermission('view public log');
+  $role_object->save();
+
+  // Edit log pattern.
+  $role_object = Role::load('configurator');
+  $role_object->grantPermission('edit log pattern');
+  $role_object->save();
+
+  // View detectable logs.
+  $roles = ['observer', 'supervisor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('view detectable log');
+    $role_object->save();
+  }
+
+  // View observable logs.
+  $roles = ['manager', 'observer', 'supervisor'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('view observable log');
+    $role_object->save();
+  }
+
+  // Add the log pattern text as a content entity. We choose this way to avoid
+  // using Config Translation including Interface Translation at the moment.
+  //
+  // The files in the import folder follow the pattern logbook.log_text.*!
+  //
+  // Technically, these are not true configuration files because they will not
+  // be imported into the configuration of the platform.
+  //
+  // @todo Handle different languages.
+  $available_log_patterns = \Drupal::entityTypeManager()
+    ->getStorage('log_pattern')
+    ->loadMultiple();
+  $available_log_patterns = array_map(fn($e) => $e->id(), $available_log_patterns);
+
+  $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/import/';
+  $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
+
+  foreach ($files as $file) {
+    $import = Yaml::decode(file_get_contents($path . $file));
+    $log_pattern = $import['id'] ?? '';
+    if (!in_array($log_pattern, $available_log_patterns)) {
+      continue;
+    }
+    $log_text = LogText::create([
+      'log_pattern' => $log_pattern,
+      'text' => $import['text'] ?? '',
+      'public_text' => $import['public_text'] ?? '',
+    ]);
+    $log_text->save();
+  }
+}

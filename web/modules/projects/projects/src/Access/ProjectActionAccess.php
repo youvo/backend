@@ -19,6 +19,7 @@ class ProjectActionAccess {
     return AccessResult::allowedIf(
       $project->isPublished() &&
       Profile::isCreative($account) &&
+      !$project->getOwner()->isManager($account) &&
       $project->lifecycle()->isOpen()
     );
   }
@@ -30,6 +31,7 @@ class ProjectActionAccess {
     return AccessResult::allowedIf(
       $project->isPublished() &&
       $project->lifecycle()->isDraft()
+      // @todo Append: && $project->getOwner()->isManager($account)
     );
   }
 
@@ -41,7 +43,8 @@ class ProjectActionAccess {
       $project->isPublished() &&
       $project->lifecycle()->isCompleted() &&
       ($project->isParticipant($account) ||
-      $project->isAuthorOrManager($account))
+      $project->isAuthor($account) ||
+      $project->getOwner()->isManager($account))
     );
   }
 

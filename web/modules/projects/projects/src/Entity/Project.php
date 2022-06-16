@@ -11,7 +11,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\organizations\ManagerInterface;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
@@ -102,14 +101,10 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * {@inheritdoc}
    */
   public function delete() {
-
-    // Invalidate cache to recalculate the field projects of the organization.
     if (!$this->isNew()) {
-      /** @var \Drupal\organizations\Entity\Organization $organization */
-      $organization = $this->getOwner();
-      Cache::invalidateTags($organization->getCacheTagsToInvalidate());
+      // Invalidate cache to recalculate the field projects of the organization.
+      Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     }
-
     parent::delete();
   }
 
@@ -117,12 +112,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * {@inheritdoc}
    */
   public function postCreate(EntityStorageInterface $storage) {
-
     // Invalidate cache to recalculate the field projects of the organization.
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $this->getOwner();
-    Cache::invalidateTags($organization->getCacheTagsToInvalidate());
-
+    Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     parent::postCreate($storage);
   }
 
@@ -160,11 +151,23 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Overwritten method for type hinting.
+   */
+  public function getOwner() {
+    $key = $this->getEntityType()->getKey('owner');
+    /** @var \Drupal\organizations\Entity\Organization $organization */
+    $organization = $this->get($key)->entity;
+    return $organization;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getApplicants() {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
     $applicants_field = $this->get('field_applicants');
-    /** @var \Drupal\user\UserInterface $applicant */
+    /** @var \Drupal\creatives\Entity\Creative $applicant */
     foreach ($applicants_field->referencedEntities() as $applicant) {
       $applicants[intval($applicant->id())] = $applicant;
     }
@@ -265,39 +268,6 @@ class Project extends ContentEntityBase implements ProjectInterface {
    */
   public function isAuthor(AccountInterface|int $account) {
     return Profile::id($account) == $this->getOwner()->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isAuthorOrManager(AccountInterface|int $account) {
-    $owner = $this->getOwner();
-    return $this->isAuthor($account) ||
-      ($owner instanceof ManagerInterface && $owner->isManager($account));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function hasManager() {
-    $owner = $this->getOwner();
-    return $owner instanceof ManagerInterface && $owner->hasManager();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isManager(AccountInterface|int $account) {
-    $owner = $this->getOwner();
-    return $owner instanceof ManagerInterface && $owner->isManager($account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getManager() {
-    $owner = $this->getOwner();
-    return $owner instanceof ManagerInterface ? $owner->getManager() : NULL;
   }
 
   /**

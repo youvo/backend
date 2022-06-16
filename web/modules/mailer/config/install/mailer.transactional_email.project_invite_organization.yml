@@ -1,8 +1,8 @@
 langcode: de
 status: true
 dependencies: {  }
-id: project_notify_prospect
-label: 'Project Notify Prospect'
+id: project_invite_organization
+label: 'Project Invite Organization'
 subject: 'Dein Projekt auf youvo.org'
 body: "Hallo %Contact,\r\n\r\nschön, dass Ihr dabei seid! Wie bereits angekündigt, kannst Du über folgenden Link Dein Projekt vervollständigen:\r\n\r\n%Link\r\n\r\nDer Link ist 30 Tage lang gültig.\r\n\r\nWenn Du Fragen hast, melde Dich gern.\r\n\r\nLiebe Grüße\r\n%Manager"
 tokens:

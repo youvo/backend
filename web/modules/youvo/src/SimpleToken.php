@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\mailer;
+namespace Drupal\youvo;
 
 /**
- * Provides a mailer token.
+ * Provides a simple token.
  */
-class MailerToken {
+class SimpleToken {
 
   /**
    * Indicates whether the token was processed.
@@ -22,7 +22,7 @@ class MailerToken {
   protected string $replacement;
 
   /**
-   * Constructs a MailerToken object.
+   * Constructs a SimpleToken object.
    */
   public function __construct(
     protected string $token,
@@ -57,7 +57,7 @@ class MailerToken {
   /**
    * Sets the replacement.
    */
-  public function setReplacement(string $replacement): MailerToken {
+  public function setReplacement(string $replacement): SimpleToken {
     $this->replacement = $replacement;
     return $this;
   }
@@ -102,13 +102,13 @@ class MailerToken {
    * @param array $tokens
    *   Tokens provided from configuration.
    *
-   * @return \Drupal\mailer\MailerToken[]
-   *   An array of mailer tokens.
+   * @return \Drupal\youvo\SimpleToken[]
+   *   An array of simple tokens.
    */
   public static function createMultiple(array $tokens): array {
     foreach ($tokens as $token) {
       if (isset($token['token']) && isset($token['required'])) {
-        $token_objects[] = new MailerToken(
+        $token_objects[] = new SimpleToken(
           $token['token'],
           (bool) $token['required']
         );

@@ -1,0 +1,24 @@
+administer log pattern:
+  title: 'Administer log pattern'
+  description: 'Maintain the types of log entity.'
+  restrict access: true
+
+edit log pattern:
+  description: 'Edit log patterns.'
+  title: 'Edit log pattern'
+
+view detectable log:
+  description: 'Log accessable in the administration logbook.'
+  title: 'View detectable log'
+
+view observable log:
+  description: 'Log accessable for managers with respect to their organizations.'
+  title: 'View observable log'
+
+view public log:
+  description: 'Log accessable for authenticated users.'
+  title: 'View public log'
+
+access log overview:
+  description: 'Access to logs list.'
+  title: 'Access logbook'

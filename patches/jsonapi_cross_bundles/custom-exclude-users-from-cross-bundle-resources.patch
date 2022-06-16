@@ -1,0 +1,14 @@
+diff --git a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+index 010b6ff..4b9cc04 100644
+--- a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
++++ b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+@@ -99,6 +99,9 @@ public function all() {
+         if (!$entity_type->getKey('bundle')) {
+           continue;
+         }
++        if ($entity_type->id() == 'user') {
++          continue;
++        }
+         // If none of the bundle-specific resource types is locatable, the
+         // cross-bundle resource type should not be locatable.
+         $at_least_one_is_locatable = array_reduce($resource_types, function ($at_least_one_is_locatable, ResourceType $resource_type) {

@@ -189,7 +189,6 @@ class OrganizationCreateResource extends ResourceBase {
       $organization->save();
 
       // Dispatch organization create event.
-      /** @var \Drupal\organizations\Entity\Organization $organization */
       $event = new OrganizationCreateEvent($organization, $request);
       $this->eventDispatcher->dispatch($event);
 

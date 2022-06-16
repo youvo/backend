@@ -1,0 +1,27 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_publish
+label: 'Project Publish'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+  -
+    token: '%Organization'
+    required: 0
+detectable: true
+observable: true
+public: true
+promote: true
+hidden: false
+color: ''

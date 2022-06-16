@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b5d28eba69543bd14ed1c27bf74a5f21",
+    "content-hash": "32057462bc8eb42ca8c9fc03f99e0f52",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2087,6 +2087,62 @@
             "homepage": "https://www.drupal.org/project/jsonapi_boost",
             "support": {
                 "source": "https://git.drupalcode.org/project/jsonapi_boost"
+            }
+        },
+        {
+            "name": "drupal/jsonapi_cross_bundles",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/jsonapi_cross_bundles.git",
+                "reference": "8.x-1.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/jsonapi_cross_bundles-8.x-1.0.zip",
+                "reference": "8.x-1.0",
+                "shasum": "a45bf09ffb39fd4abeb67caa7c57ad92f5ebdbc9"
+            },
+            "require": {
+                "drupal/core": "^8.7.7 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.0",
+                    "datestamp": "1629336093",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "API-First Initiative",
+                    "homepage": "https://www.drupal.org/user/3616626"
+                },
+                {
+                    "name": "gabesullice",
+                    "homepage": "https://www.drupal.org/user/2287430"
+                },
+                {
+                    "name": "mglaman",
+                    "homepage": "https://www.drupal.org/user/2416470"
+                }
+            ],
+            "description": "Experimental code for adding cross-bundle resource collections for Drupal's JSON API module",
+            "homepage": "https://www.drupal.org/project/jsonapi_cross_bundles",
+            "keywords": [
+                "Drupal",
+                "JSON API"
+            ],
+            "support": {
+                "source": "https://git.drupalcode.org/project/jsonapi_cross_bundles"
             }
         },
         {

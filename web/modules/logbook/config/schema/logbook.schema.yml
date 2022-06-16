@@ -1,0 +1,45 @@
+logbook.log_pattern.*:
+  type: config_entity
+  label: Log Pattern
+  mapping:
+    id:
+      type: string
+      label: 'Machine Name'
+    label:
+      type: label
+    text:
+      type: text
+    public_text:
+      type: text
+      label: 'Public Text'
+    tokens:
+      type: mapping
+      label: 'Tokens'
+      mapping:
+        token:
+          type: string
+          label: 'Token'
+        required:
+          type: boolean
+          label: 'Required'
+    status:
+      type: boolean
+      label: 'Enabled'
+    detectable:
+      type: boolean
+      label: 'Detectable'
+    observable:
+      type: boolean
+      label: 'Observable'
+    public:
+      type: boolean
+      label: 'Public'
+    promote:
+      type: boolean
+      label: 'Promote'
+    hidden:
+      type: boolean
+      label: 'Hidden'
+    color:
+      type: string
+      label: 'Color'

@@ -1,0 +1,13 @@
+entity.log.view:
+  title: View
+  route_name: entity.log.canonical
+  base_route: entity.log.canonical
+entity.log.edit_form:
+  title: Edit
+  route_name: entity.log.edit_form
+  base_route: entity.log.canonical
+entity.log.delete_form:
+  title: Delete
+  route_name: entity.log.delete_form
+  base_route: entity.log.canonical
+  weight: 10

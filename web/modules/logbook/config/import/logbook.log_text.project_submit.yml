@@ -1,0 +1,4 @@
+id: project_submit
+langcode: 'de'
+text: 'Die Organisation %Organization hat das Projekt %Project eingereicht.'
+public_text: ''

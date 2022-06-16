@@ -69,7 +69,7 @@ class ProjectMediateForm extends ProjectActionFormBase {
     // Mediate project.
     if ($project->lifecycle()->mediate()) {
       $project->setParticipants($participants);
-      if ($manager = $project->getManager()) {
+      if ($manager = $project->getOwner()->getManager()) {
         $project->appendParticipant($manager, 'Manager');
       }
       $project->save();
