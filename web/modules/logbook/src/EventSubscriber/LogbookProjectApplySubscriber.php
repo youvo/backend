@@ -21,7 +21,7 @@ class LogbookProjectApplySubscriber extends LogbookSubscriberBase {
     }
     /** @var \Drupal\projects\Event\ProjectApplyEvent $event */
     $log->setProject($event->getProject());
-    $log->setCreatives([$this->currentUser]);
+    $log->setCreatives([$event->getApplicant()]);
     $log->setMessage($event->getMessage());
     $log->save();
   }

@@ -5,7 +5,7 @@
   <h3 class="system-status-general-info__item-title">{{ elements.created.value|date('\\A\\m d.m.Y \\u\\m h:m \\U\\h\\r') }}: {{ label }}</h3>
   {{ text }}
   {% if message %}
-    <div class="system-status-general-info__item-details">
+    <div class="system-status-general-info__item-details leader">
       {{ message }}
     </div>
   {% endif %}

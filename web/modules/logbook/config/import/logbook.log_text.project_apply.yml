@@ -1,0 +1,4 @@
+id: project_apply
+langcode: 'de'
+text: '<b>%Creative</b> hat für das Projekt <b>%Project</b> mit folgender Nachricht <b>Interesse bekundet</b>!'
+public_text: ''
