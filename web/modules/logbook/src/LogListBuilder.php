@@ -78,7 +78,7 @@ final class LogListBuilder extends EntityListBuilder {
       ],
     ];
 
-    foreach (array_reverse($this->load()) as $entity) {
+    foreach ($this->load() as $entity) {
       if ($row = $this->viewBuilder->view($entity)) {
         $build['table'][] = $row;
       }
@@ -101,7 +101,7 @@ final class LogListBuilder extends EntityListBuilder {
     $query = $this->getStorage()->getQuery()
       ->condition('type', array_map(fn($p) => $p->id(), $detectable_log_patterns), 'IN')
       ->accessCheck(TRUE)
-      ->sort($this->entityType->getKey('id'));
+      ->sort($this->entityType->getKey('id'), 'DESC');
 
     // Only add the pager if a limit is specified.
     if ($this->limit) {
