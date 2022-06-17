@@ -17,6 +17,10 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
+    // Replacement for author.
+    $author = $log->getOwner();
+    $replacements['%Author'] = '<author>' . $author->getName() . '</author>';
+
     // Replacement for manager.
     if ($manager = $log->getManager()) {
       $replacements['%Manager'] = '<manager>' . $manager->getName() . '</manager>';
@@ -40,7 +44,7 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
       $replacements['%Creative'] = $names[0] ?? 'Anonymous';
     }
 
-    return $replacements ?? [];
+    return $replacements;
   }
 
   /**
