@@ -6,6 +6,7 @@
  */
 
 use Drupal\taxonomy\Entity\Term;
+use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 
 /**
@@ -98,7 +99,12 @@ function youvo_platform_install() {
   $first_user->save();
 
   // Load anonymous user and add name.
-  $first_user = User::load(0);
-  $first_user->set('field_name', 'Anonymous');
-  $first_user->save();
+  $anonymous_user = User::load(0);
+  $anonymous_user->set('field_name', 'Anonymous');
+  $anonymous_user->save();
+
+  // Grant access content permission to anonymous role.
+  $role_object = Role::load('anonymous');
+  $role_object->grantPermission('access content');
+  $role_object->save();
 }
