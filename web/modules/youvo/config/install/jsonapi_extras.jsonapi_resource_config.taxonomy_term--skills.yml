@@ -57,7 +57,7 @@ resourceFields:
     enhancer:
       id: ''
   status:
-    disabled: false
+    disabled: true
     fieldName: status
     publicName: status
     enhancer:
@@ -75,13 +75,13 @@ resourceFields:
     enhancer:
       id: ''
   weight:
-    disabled: false
+    disabled: true
     fieldName: weight
     publicName: weight
     enhancer:
       id: ''
   parent:
-    disabled: false
+    disabled: true
     fieldName: parent
     publicName: parent
     enhancer:
@@ -93,7 +93,7 @@ resourceFields:
     enhancer:
       id: ''
   default_langcode:
-    disabled: false
+    disabled: true
     fieldName: default_langcode
     publicName: default_langcode
     enhancer:
@@ -111,7 +111,7 @@ resourceFields:
     enhancer:
       id: ''
   path:
-    disabled: false
+    disabled: true
     fieldName: path
     publicName: path
     enhancer:
