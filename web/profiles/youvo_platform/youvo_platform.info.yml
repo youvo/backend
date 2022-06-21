@@ -42,8 +42,10 @@ install:
   - user_bundle
   # Base
   - youvo
-  - logbook
   - mailer
+  # Monitoring
+  - logbook
+  - stats
   # User types
   - user_types
   - creatives
