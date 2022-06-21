@@ -112,8 +112,9 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProject(ProjectInterface $project): LogInterface {
-    $this->set('project', $project->id());
+  public function setProject(ProjectInterface|int $project): LogInterface {
+    $id = $project instanceof ProjectInterface ? $project->id() : $project;
+    $this->set('project', $id);
     return $this;
   }
 
@@ -138,8 +139,8 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOrganization(Organization $organization): LogInterface {
-    $this->set('organization', $organization->id());
+  public function setOrganization(Organization|int $organization): LogInterface {
+    $this->set('organization', Profile::id($organization));
     return $this;
   }
 
@@ -164,8 +165,8 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setManager(AccountInterface $manager): LogInterface {
-    $this->set('manager', $manager->id());
+  public function setManager(AccountInterface|int $manager): LogInterface {
+    $this->set('manager', Profile::id($manager));
     return $this;
   }
 

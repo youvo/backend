@@ -53,13 +53,13 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   /**
    * Sets the project.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
+   * @param \Drupal\projects\ProjectInterface|int $project
+   *   The project or the project ID.
    *
    * @return \Drupal\logbook\LogInterface
    *   The current log.
    */
-  public function setProject(ProjectInterface $project): LogInterface;
+  public function setProject(ProjectInterface|int $project): LogInterface;
 
   /**
    * Checks whether the log has an organization.
@@ -80,13 +80,13 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   /**
    * Sets the organization.
    *
-   * @param \Drupal\organizations\Entity\Organization $organization
-   *   The organization.
+   * @param \Drupal\organizations\Entity\Organization|int $organization
+   *   The organization or the organization ID.
    *
    * @return \Drupal\logbook\LogInterface
    *   The current log.
    */
-  public function setOrganization(Organization $organization): LogInterface;
+  public function setOrganization(Organization|int $organization): LogInterface;
 
   /**
    * Checks whether the log has a creative.
@@ -134,13 +134,13 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   /**
    * Sets the manager.
    *
-   * @param \Drupal\Core\Session\AccountInterface $manager
-   *   The manager.
+   * @param \Drupal\Core\Session\AccountInterface|int $manager
+   *   The manager or the manager ID.
    *
    * @return \Drupal\logbook\LogInterface
    *   The current log.
    */
-  public function setManager(AccountInterface $manager): LogInterface;
+  public function setManager(AccountInterface|int $manager): LogInterface;
 
   /**
    * Gets the message.
