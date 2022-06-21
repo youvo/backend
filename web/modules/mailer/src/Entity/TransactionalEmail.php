@@ -21,6 +21,7 @@ use Drupal\mailer\TransactionalEmailInterface;
  *     plural = "@count transactional emails",
  *   ),
  *   handlers = {
+ *     "access" = "Drupal\mailer\TransactionalEmailAccessControlHandler",
  *     "list_builder" = "Drupal\mailer\TransactionalEmailListBuilder",
  *     "form" = {
  *       "add" = "Drupal\mailer\Form\TransactionalEmailForm",
