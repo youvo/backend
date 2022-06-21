@@ -90,6 +90,14 @@ class DashboardController extends ControllerBase {
           '#attributes' => ['class' => ['button', 'button--primary']],
         ];
       }
+      if ($this->currentUser()->hasPermission('edit terms in skills')) {
+        $page['skills'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Skills'),
+          '#url' => Url::fromRoute('entity.taxonomy_vocabulary.overview_form', ['taxonomy_vocabulary' => 'skills']),
+          '#attributes' => ['class' => ['button', 'button--primary']],
+        ];
+      }
     }
 
     return [
