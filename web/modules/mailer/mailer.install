@@ -22,4 +22,10 @@ function mailer_site_install_finished(): void {
     $role->grantPermission('edit transactional emails');
     $role->save();
   }
+
+  $role = Role::load('configurator');
+  if (isset($role)) {
+    $role->grantPermission('edit transactional emails');
+    $role->save();
+  }
 }
