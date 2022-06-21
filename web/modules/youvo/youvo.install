@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Implements install and uninstall hook for youvo base module.
+ */
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function youvo_site_install_finished() {
+
+  // Taxonomy configuration.
+  $role_object = Role::load('configurator');
+  $role_object->grantPermission('access taxonomy overview');
+  $role_object->grantPermission('edit terms in skills');
+  $role_object->save();
+
+  // Translate as configurator.
+  $role_object = Role::load('configurator');
+  $role_object->grantPermission('create content translations');
+  $role_object->grantPermission('translate skills taxonomy_term');
+  $role_object->grantPermission('translate log_text');
+  $role_object->save();
+
+  // Translate as editor.
+  $role_object = Role::load('editor');
+  $role_object->grantPermission('create content translations');
+  $role_object->grantPermission('translate course');
+  $role_object->grantPermission('translate lecture');
+  $role_object->grantPermission('translate paragraph');
+  $role_object->grantPermission('translate question');
+  $role_object->save();
+}
