@@ -15,6 +15,7 @@ use Drupal\logbook\LogInterface;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\logbook\Plugin\Field\ComputedTextMarkupFieldItemList;
 use Drupal\logbook\Plugin\Field\ComputedTextProcessedFieldItemList;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
@@ -113,6 +114,32 @@ class Log extends ContentEntityBase implements LogInterface {
    */
   public function setProject(ProjectInterface $project): LogInterface {
     $this->set('project', $project->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasOrganization(): bool {
+    return !$this->get('organization')->isEmpty();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrganization(): ?Organization {
+    /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $organization_field */
+    $organization_field = $this->get('organization');
+    /** @var \Drupal\organizations\Entity\Organization[] $organization_references */
+    $organization_references = $organization_field->referencedEntities();
+    return !empty($organization_references) ? reset($organization_references) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOrganization(Organization $organization): LogInterface {
+    $this->set('organization', $organization->id());
     return $this;
   }
 
@@ -295,6 +322,16 @@ class Log extends ContentEntityBase implements LogInterface {
         'target_bundles' => ['user'],
       ])
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setTranslatable(FALSE);
+
+    $fields['organization'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Organization'))
+      ->setDescription(new TranslatableMarkup('The UIDs of the referenced organization.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('selection_settings', [
+        'include_anonymous' => FALSE,
+        'target_bundles' => ['organization'],
+      ])
       ->setTranslatable(FALSE);
 
     $fields['manager'] = BaseFieldDefinition::create('entity_reference')

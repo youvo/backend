@@ -41,6 +41,7 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
       return;
     }
     $log->setProject($event->getProject());
+    $log->setOrganization($event->getProject()->getOwner());
     if ($manager = $event->getProject()->getOwner()->getManager()) {
       $log->setManager($manager);
     }

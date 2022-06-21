@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
 
@@ -59,6 +60,33 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
    *   The current log.
    */
   public function setProject(ProjectInterface $project): LogInterface;
+
+  /**
+   * Checks whether the log has an organization.
+   *
+   * @return bool
+   *   Has organization?
+   */
+  public function hasOrganization(): bool;
+
+  /**
+   * Gets the organization.
+   *
+   * @return \Drupal\organizations\Entity\Organization|null
+   *   The organization.
+   */
+  public function getOrganization(): ?Organization;
+
+  /**
+   * Sets the organization.
+   *
+   * @param \Drupal\organizations\Entity\Organization $organization
+   *   The organization.
+   *
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
+   */
+  public function setOrganization(Organization $organization): LogInterface;
 
   /**
    * Checks whether the log has a creative.

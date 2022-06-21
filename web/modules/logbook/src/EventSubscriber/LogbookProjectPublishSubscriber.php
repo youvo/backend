@@ -21,6 +21,7 @@ class LogbookProjectPublishSubscriber extends LogbookSubscriberBase {
     }
     /** @var \Drupal\projects\Event\ProjectApplyEvent $event */
     $log->setProject($event->getProject());
+    $log->setOrganization($event->getProject()->getOwner());
     if ($manager = $event->getProject()->getOwner()->getManager()) {
       $log->setManager($manager);
     }
