@@ -24,6 +24,57 @@ function youvo_user_login_form_submit($form, FormStateInterface $form_state) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * @throws \Drupal\Core\Entity\EntityMalformedException
+ */
+function youvo_form_taxonomy_term_skills_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\taxonomy\TermForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $term = $form_object->getEntity();
+  $form['translations'] = [
+    '#type' => 'container',
+    '#weight' => -10,
+  ];
+
+  $form['translations']['overview'] = [
+    '#type' => 'link',
+    '#title' => t('Translations'),
+    '#url' => $term->toUrl('drupal:content-translation-overview'),
+    '#attributes' => [
+      'class' => ['button button--small'],
+    ],
+  ];
+  $admin_permission = \Drupal::currentUser()
+    ->hasPermission('administer taxonomy');
+  $form['machine_name']['#access'] = $admin_permission;
+  $form['relations']['#access'] = $admin_permission;
+  $form['status']['#access'] = $admin_permission;
+  $form['description']['widget']['#after_build'][] = 'youvo_formats_remove_help';
+}
+
+/**
+ * Removes text format guidelines and helpers.
+ */
+function youvo_formats_remove_help($form_element, FormStateInterface $form_state) {
+  if (isset($form_element[0]['format'])) {
+    unset($form_element[0]['format']['guidelines']);
+    unset($form_element[0]['format']['help']);
+    unset($form_element[0]['format']['#type']);
+    unset($form_element[0]['format']['#theme_wrappers']);
+    $form_element[0]['format']['format']['#access'] = FALSE;
+  }
+  return $form_element;
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function youvo_entity_type_alter(array &$entity_types) {
+  $entity_types['taxonomy_term']->setHandlerClass('translation', 'Drupal\academy\AcademyTranslationHandler');
+}
+
+/**
  * Implements hook_theme().
  */
 function youvo_theme($existing, $type, $theme, $path) {
