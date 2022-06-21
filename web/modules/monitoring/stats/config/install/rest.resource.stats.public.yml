@@ -1,0 +1,11 @@
+id: stats.public
+plugin_id: 'stats:public'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

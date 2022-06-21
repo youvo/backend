@@ -59,6 +59,14 @@ class DashboardController extends ControllerBase {
           '#attributes' => ['class' => ['button', 'button--primary']],
         ];
       }
+      if ($this->moduleHandler()->moduleExists('stats')) {
+        $page['stats'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Stats'),
+          '#url' => Url::fromRoute('stats.overview'),
+          '#attributes' => ['class' => ['button', 'button--primary']],
+        ];
+      }
     }
 
     // Configuration.

@@ -1,0 +1,4 @@
+services:
+  stats.calculator:
+    class: Drupal\stats\StatsCalculator
+    arguments: [ '@database' ]

@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Stats module.
+ */
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function stats_site_install_finished() {
+  $roles = ['anonymous', 'authenticated'];
+  foreach ($roles as $role) {
+    $role_object = Role::load($role);
+    $role_object->grantPermission('restful get stats:public');
+    $role_object->save();
+  }
+}

@@ -1,0 +1,8 @@
+name: Stats
+type: module
+description: Provides some site-wide stats.
+package: youvo
+core_version_requirement: ^9.3 || ^10
+dependencies:
+  - youvo:youvo
+  - logbook:logbook
