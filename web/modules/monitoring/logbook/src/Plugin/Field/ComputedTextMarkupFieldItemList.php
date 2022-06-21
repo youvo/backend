@@ -25,7 +25,7 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     // Replacement for author.
     $author = $log->getOwner();
     $replacements['%Author'] = $this->generateLink($author->getName(), $author);
-    $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ' . $replacements['%Author'];
+    $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ComputedTextMarkupFieldItemList.php' . $replacements['%Author'];
 
     // Replacement for manager.
     if ($manager = $log->getManager()) {
