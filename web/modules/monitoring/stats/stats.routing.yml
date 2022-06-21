@@ -1,0 +1,9 @@
+stats.overview:
+  path: '/stats'
+  defaults:
+    _controller: '\Drupal\stats\Controller\StatsController::overview'
+    _title: 'Stats'
+  requirements:
+    _role: 'observer+administrator'
+  options:
+    no_cache: 'TRUE'
