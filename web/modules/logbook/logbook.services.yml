@@ -1,5 +1,25 @@
 services:
 
+  # Organization logs.
+  logbook.organization_create.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookOrganizationCreateSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.organization_disband.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookOrganizationDisbandSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.organization_manage.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookOrganizationManageSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+
   # Project logs.
   logbook.project_apply.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectApplySubscriber
@@ -9,6 +29,12 @@ services:
       - { name: event_subscriber }
   logbook.project_complete.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectCompleteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_create.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectCreateSubscriber
     arguments:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
     tags:

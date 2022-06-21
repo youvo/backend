@@ -1,0 +1,4 @@
+id: organization_disband
+langcode: 'de'
+text: 'Die %AuthorWithRole hat das Management der Organisation %Organization aufgelöst.'
+public_text: '%Manager hat das Management der Organisation %Organization aufgelöst.'

@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\projects\Event\ProjectCreateEvent;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
@@ -135,6 +136,12 @@ class Project extends ContentEntityBase implements ProjectInterface {
       $project_result->save();
       $this->set('project_result', ['target_id' => $project_result->id()]);
       $this->save();
+
+      // Dispatch a project create event if this is a proper organization.
+      if ($this->getOwner()->hasRoleOrganization()) {
+        $event = new ProjectCreateEvent($this);
+        \Drupal::service('event_dispatcher')->dispatch($event);
+      }
     }
 
     parent::postSave($storage, $update);

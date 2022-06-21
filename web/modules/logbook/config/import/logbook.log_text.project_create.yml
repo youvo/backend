@@ -1,0 +1,4 @@
+id: project_create
+langcode: 'de'
+text: 'Die %AuthorWithRole hat das Projekt %Project erstellt.'
+public_text: 'Das Projekt %Project wurde erstellt.'

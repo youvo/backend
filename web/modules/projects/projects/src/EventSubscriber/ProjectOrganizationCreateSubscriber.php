@@ -2,9 +2,9 @@
 
 namespace Drupal\projects\EventSubscriber;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\ProjectInterface;
@@ -23,32 +23,18 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
 
   /**
-   * The serialization by Json service.
-   *
-   * @var \Drupal\Component\Serialization\Json
-   */
-  protected Json $serializationJson;
-
-  /**
    * Constructs a ProjectOrganizationCreateSubscriber object.
    *
-   * @param \Drupal\Component\Serialization\Json $serialization_json
+   * @param \Drupal\Component\Serialization\Json $serializationJson
    *   The serialization by Json service.
    */
-  public function __construct(Json $serialization_json) {
-    $this->serializationJson = $serialization_json;
-  }
+  public function __construct(protected Json $serializationJson) {}
 
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    if (class_exists('Drupal\\organizations\\Event\\OrganizationCreateEvent')) {
-      return [
-        OrganizationCreateEvent::class => 'createProject',
-      ];
-    }
-    return [];
+    return ['Drupal\organizations\Event\OrganizationCreateEvent' => 'createProject'];
   }
 
   /**
@@ -56,13 +42,16 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function createProject(OrganizationCreateEvent $event) {
+  public function createProject(Event $event) {
     $project = Project::create(['type' => 'project']);
+    /** @var \Drupal\organizations\Event\OrganizationCreateEvent $event */
     $attributes = $this->validateAndShiftRequest($event->getRequest());
     $this->populateFields($attributes, $project);
     $project->setOwner($event->getOrganization());
     $project->setPublished();
     $project->save();
+    // Append project ID here. It will be used in later subscribers.
+    $event->setProjectId($project->id());
   }
 
   /**

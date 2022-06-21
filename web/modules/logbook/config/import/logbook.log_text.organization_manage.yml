@@ -1,0 +1,4 @@
+id: organization_manage
+langcode: 'de'
+text: 'Die %AuthorWithRole hat das Management der Organisation %Organization bestimmt.'
+public_text: '%Manager hat das Management der Organisation %Organization übernommen.'

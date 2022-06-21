@@ -4,10 +4,13 @@ namespace Drupal\organizations\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\organizations\Entity\Organization;
+use Drupal\organizations\Event\OrganizationDisbandEvent;
+use Drupal\organizations\Event\OrganizationManageEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -24,13 +27,6 @@ use Symfony\Component\Routing\RouteCollection;
 class OrganizationManageResource extends ResourceBase {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected AccountInterface $currentUser;
-
-  /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
    * @param array $configuration
@@ -43,25 +39,40 @@ class OrganizationManageResource extends ResourceBase {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountInterface $current_user) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    protected AccountInterface $currentUser,
+    protected EventDispatcherInterface $eventDispatcher
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('event_dispatcher')
     );
   }
 
@@ -111,6 +122,10 @@ class OrganizationManageResource extends ResourceBase {
     $organization->setManager($this->currentUser);
     $organization->save();
 
+    // Dispatch organization manage event.
+    $event = new OrganizationManageEvent($organization, $organization->getManager());
+    $this->eventDispatcher->dispatch($event);
+
     return new ModifiedResourceResponse();
   }
 
@@ -128,8 +143,11 @@ class OrganizationManageResource extends ResourceBase {
   public function delete(Organization $organization) {
 
     if ($organization->isManager($this->currentUser)) {
+      $manager = $organization->getManager();
       $organization->deleteManager();
       $organization->save();
+      $event = new OrganizationDisbandEvent($organization, $manager);
+      $this->eventDispatcher->dispatch($event);
       return new ModifiedResourceResponse();
     }
 

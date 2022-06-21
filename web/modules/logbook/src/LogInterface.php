@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
 
@@ -52,13 +53,40 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   /**
    * Sets the project.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
+   * @param \Drupal\projects\ProjectInterface|int $project
+   *   The project or the project ID.
    *
    * @return \Drupal\logbook\LogInterface
    *   The current log.
    */
-  public function setProject(ProjectInterface $project): LogInterface;
+  public function setProject(ProjectInterface|int $project): LogInterface;
+
+  /**
+   * Checks whether the log has an organization.
+   *
+   * @return bool
+   *   Has organization?
+   */
+  public function hasOrganization(): bool;
+
+  /**
+   * Gets the organization.
+   *
+   * @return \Drupal\organizations\Entity\Organization|null
+   *   The organization.
+   */
+  public function getOrganization(): ?Organization;
+
+  /**
+   * Sets the organization.
+   *
+   * @param \Drupal\organizations\Entity\Organization|int $organization
+   *   The organization or the organization ID.
+   *
+   * @return \Drupal\logbook\LogInterface
+   *   The current log.
+   */
+  public function setOrganization(Organization|int $organization): LogInterface;
 
   /**
    * Checks whether the log has a creative.
@@ -106,13 +134,13 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   /**
    * Sets the manager.
    *
-   * @param \Drupal\Core\Session\AccountInterface $manager
-   *   The manager.
+   * @param \Drupal\Core\Session\AccountInterface|int $manager
+   *   The manager or the manager ID.
    *
    * @return \Drupal\logbook\LogInterface
    *   The current log.
    */
-  public function setManager(AccountInterface $manager): LogInterface;
+  public function setManager(AccountInterface|int $manager): LogInterface;
 
   /**
    * Gets the message.
