@@ -8,9 +8,14 @@
     width: 50%;
     margin: 1rem auto;
   }
+  article {
+    width: 100% !important;
+    margin-left: 0 !important;
+    text-align: center;
+  }
 </style>
 
-<div class="leader" style="text-align: center;">
+<article class="system-status-general-info__item card">
   Registrierte Kreative: <span>{{ page.creatives }}</span><br />
   Registrierte Organisationen: <span>{{ page.organizations }}</span><br />
   <hr />
@@ -18,4 +23,4 @@
   Aktive Projekte: <span>{{ page.ongoing_projects }}</span><br />
   Abgeschlossene Projekte: <span>{{ page.completed_projects }}</span><br />
   Vermittelte Projekte: <span>{{ page.mediated_projects }}</span><br />
-</div>
+</article>
