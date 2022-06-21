@@ -21,6 +21,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
 
   const EVENT_CLASS = NULL;
   const LOG_PATTERN = NULL;
+  const PRIORITY = 0;
 
   /**
    * Constructs a LogbookSubscriberBase object.
@@ -86,7 +87,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
         ->error('Logbook event subscriber does not define event class.');
       return [];
     }
-    return [static::EVENT_CLASS => 'log'];
+    return [static::EVENT_CLASS => ['log', static::PRIORITY]];
   }
 
 }
