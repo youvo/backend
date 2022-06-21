@@ -19,6 +19,15 @@ class OrganizationCreateEvent extends Event {
   protected Organization $organization;
 
   /**
+   * The created project ID.
+   *
+   * @var int
+   *
+   * @see \Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
+   */
+  protected int $projectId;
+
+  /**
    * The request.
    *
    * @var \Symfony\Component\HttpFoundation\Request
@@ -50,6 +59,21 @@ class OrganizationCreateEvent extends Event {
    */
   public function getRequest() {
     return $this->request;
+  }
+
+  /**
+   * Sets the project ID.
+   */
+  public function setProjectId(int $project_id): OrganizationCreateEvent {
+    $this->projectId = $project_id;
+    return $this;
+  }
+
+  /**
+   * Gets the project ID.
+   */
+  public function getProjectId(): int {
+    return $this->projectId;
   }
 
 }

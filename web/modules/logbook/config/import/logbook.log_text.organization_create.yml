@@ -1,0 +1,4 @@
+id: organization_create
+langcode: 'de'
+text: 'Die Organisation %Organization hat den Projektvorschlag %Project gemacht.'
+public_text: ''

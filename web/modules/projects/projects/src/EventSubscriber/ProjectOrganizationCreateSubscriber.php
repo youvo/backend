@@ -50,6 +50,8 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
     $project->setOwner($event->getOrganization());
     $project->setPublished();
     $project->save();
+    // Append project ID here. It will be used in later subscribers.
+    $event->setProjectId($project->id());
   }
 
   /**
