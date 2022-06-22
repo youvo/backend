@@ -83,7 +83,7 @@ class StatsResource extends ResourceBase {
     $stats['projects_mediated'] = $this->statsCalculator->countMediatedProjects();
     $stats['proposals_unmanaged'] = $this->statsCalculator->countUnmanagedProposals();
 
-    return new ModifiedResourceResponse($stats, 200);
+    return new ModifiedResourceResponse(['data' => $stats], 200);
   }
 
 }
