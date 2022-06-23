@@ -16,6 +16,14 @@ use Drupal\user\Entity\Role;
  */
 function youvo_site_install_finished() {
 
+  // Subrequests.
+  $role_object = Role::load('anonymous');
+  $role_object->grantPermission('issue subrequests');
+  $role_object->save();
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('issue subrequests');
+  $role_object->save();
+
   // Taxonomy configuration.
   $role_object = Role::load('configurator');
   $role_object->grantPermission('access taxonomy overview');
