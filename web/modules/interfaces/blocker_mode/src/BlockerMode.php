@@ -40,6 +40,7 @@ class BlockerMode implements BlockerModeInterface {
       $user_agent = $request->headers->get('user-agent');
       if ($user_agent == 'youvo-frontend' ||
         $user_agent == 'youvo-ip' ||
+        $user_agent == 'youvo-subrequests' ||
         str_starts_with($user_agent, 'Postman')) {
         return FALSE;
       }
