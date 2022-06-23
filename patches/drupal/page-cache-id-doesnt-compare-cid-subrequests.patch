@@ -1,0 +1,40 @@
+diff --git a/core/modules/page_cache/src/StackMiddleware/PageCache.php b/core/modules/page_cache/src/StackMiddleware/PageCache.php
+index ba07414d63..e2af3cd2cd 100644
+--- a/core/modules/page_cache/src/StackMiddleware/PageCache.php
++++ b/core/modules/page_cache/src/StackMiddleware/PageCache.php
+@@ -352,14 +352,29 @@ protected function getCacheId(Request $request) {
+     // the request format might be NULL during cache lookup and then set during
+     // routing, in which case we want to key on NULL during writing, since that
+     // will be the value during lookups for subsequent requests.
+-    if (!isset($this->cid)) {
+-      $cid_parts = [
+-        $request->getSchemeAndHttpHost() . $request->getRequestUri(),
+-        $request->getRequestFormat(NULL),
+-      ];
+-      $this->cid = implode(':', $cid_parts);
++    $cid = $this->getCidParts($request);
++    $subrequest = $request->headers->get('user-agent') === 'youvo-subrequests';
++    if (!isset($this->cid) || ($subrequest && $this->cid !== $cid)) {
++      $this->cid = $cid;
+     }
+     return $this->cid;
+   }
+
++  /**
++   * Prepare cache id for the current request.
++   *
++   * @param \Symfony\Component\HttpFoundation\Request $request
++   *   Request instance.
++   *
++   * @return string
++   *   Cache id value.
++   */
++  private function getCidParts(Request $request) {
++    $cid_parts = [
++      $request->getSchemeAndHttpHost() . $request->getRequestUri(),
++      $request->getRequestFormat(NULL),
++    ];
++    return implode(':', $cid_parts);
++  }
++
+ }
