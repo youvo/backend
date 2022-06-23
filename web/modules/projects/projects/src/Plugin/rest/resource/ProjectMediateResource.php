@@ -221,6 +221,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     // Mediate project with participants.
     if (!empty($selected_creatives_ids) && $project->lifecycle()->mediate()) {
 
+      $project->setPromoted(FALSE);
       $project->setParticipants($selected_creatives_ids);
       if ($manager = $project->getOwner()->getManager()) {
         $project->appendParticipant($manager, 'Manager');

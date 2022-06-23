@@ -35,6 +35,7 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
   public function post(ProjectInterface $project) {
 
     if ($project->lifecycle()->reset()) {
+      $project->setPromoted(FALSE);
       $project->save();
       $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
       return new ModifiedResourceResponse('Project reset.');

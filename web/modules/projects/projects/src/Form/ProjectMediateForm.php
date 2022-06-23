@@ -68,6 +68,7 @@ class ProjectMediateForm extends ProjectActionFormBase {
 
     // Mediate project.
     if ($project->lifecycle()->mediate()) {
+      $project->setPromoted(FALSE);
       $project->setParticipants($participants);
       if ($manager = $project->getOwner()->getManager()) {
         $project->appendParticipant($manager, 'Manager');
