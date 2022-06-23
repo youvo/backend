@@ -112,7 +112,7 @@ function projects_dummy_site_install_finished() {
       'created' => $created,
       'uid' => $oid,
       'status' => 1,
-      'promote' => 0,
+      'promote' => $faker->boolean(25),
       'field_allowance' => $faker->boolean(),
       'field_contact' => $contact,
       'field_workload' => rand(1, 5),
