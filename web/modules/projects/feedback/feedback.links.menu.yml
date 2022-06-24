@@ -1,0 +1,5 @@
+entity.feedback_type.collection:
+  title: 'Feedback types'
+  parent: system.admin_structure
+  description: 'Manage and CRUD actions on Feedback type.'
+  route_name: entity.feedback_type.collection

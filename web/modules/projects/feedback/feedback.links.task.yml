@@ -1,0 +1,26 @@
+entity.feedback.view:
+  title: View
+  route_name: entity.feedback.canonical
+  base_route: entity.feedback.canonical
+entity.feedback.edit_form:
+  title: Edit
+  route_name: entity.feedback.edit_form
+  base_route: entity.feedback.canonical
+entity.feedback.delete_form:
+  title: Delete
+  route_name: entity.feedback.delete_form
+  base_route: entity.feedback.canonical
+  weight: 10
+entity.feedback.collection:
+  title: Feedback
+  route_name: entity.feedback.collection
+  base_route: system.admin_content
+  weight: 10
+entity.feedback_type.edit_form:
+  title: Edit
+  route_name: entity.feedback_type.edit_form
+  base_route: entity.feedback_type.edit_form
+entity.feedback_type.collection:
+  title: List
+  route_name: entity.feedback_type.collection
+  base_route: entity.feedback_type.collection
