@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -82,8 +83,8 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     $fields += static::ownerBaseFieldDefinitions($entity_type);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the feedback was created.'))
+      ->setLabel(new TranslatableMarkup('Authored on'))
+      ->setDescription(new TranslatableMarkup('The time that the feedback was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -97,8 +98,14 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the feedback was last edited.'));
+      ->setLabel(new TranslatableMarkup('Changed'))
+      ->setDescription(new TranslatableMarkup('The time that the feedback was last edited.'));
+
+    $fields['project'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(new TranslatableMarkup('Project'))
+      ->setSetting('target_type', 'project')
+      ->setDescription(new TranslatableMarkup('The project referenced by this feedback.'))
+      ->setTranslatable(FALSE);
 
     return $fields;
   }
