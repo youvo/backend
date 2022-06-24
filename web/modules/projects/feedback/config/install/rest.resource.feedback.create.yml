@@ -1,0 +1,11 @@
+id: feedback.create
+plugin_id: 'feedback:create'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

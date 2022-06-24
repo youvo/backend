@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Projects module.
+ */
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_install().
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function feedback_install() {
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('restful post feedback:create');
+  $role_object->save();
+}
