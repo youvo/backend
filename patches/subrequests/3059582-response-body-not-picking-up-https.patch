@@ -1,0 +1,13 @@
+diff --git a/modules/contrib/subrequests/src/Normalizer/JsonSubrequestDenormalizer.php b/modules/contrib/subrequests/src/Normalizer/JsonSubrequestDenormalizer.php
+index 75ef331..380cd40 100644
+--- a/modules/contrib/subrequests/src/Normalizer/JsonSubrequestDenormalizer.php
++++ b/modules/contrib/subrequests/src/Normalizer/JsonSubrequestDenormalizer.php
+@@ -45,7 +45,7 @@ class JsonSubrequestDenormalizer implements DenormalizerInterface {
+       empty($data->body) ? $query : $data->body,
+       $master_request->cookies ? $master_request->cookies->all() : [],
+       $master_request->files ? $master_request->files->all() : [],
+-      [],
++      $master_request->server ? $master_request->server->all() : [],
+       empty($data->body) ? '' : Json::encode($data->body)
+     );
+     // Maintain the same session as in the master request.
