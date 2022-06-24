@@ -120,8 +120,7 @@
             "drupal/jsonapi_extras": "-p4",
             "drupal/warmer": "-p4",
             "drupal/filefield_paths": "-p4",
-            "drupal/multivalue_form_element": "-p4",
-            "drupal/maillog": "-p4"
+            "drupal/multivalue_form_element": "-p4"
 		}
     },
     "require-dev": {
