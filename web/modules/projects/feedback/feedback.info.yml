@@ -1,7 +1,7 @@
 name: Feedback
 type: module
 description: 'Provides a feedback entity.'
-package: Youvo
+package: youvo
 core_version_requirement: ^9.3 || ^10
 dependencies:
   - youvo:youvo

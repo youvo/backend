@@ -17,7 +17,7 @@ interface FeedbackInterface extends ContentEntityInterface, EntityOwnerInterface
    * @return int
    *   Creation timestamp of the feedback.
    */
-  public function getCreatedTime();
+  public function getCreatedTime(): int;
 
   /**
    * Sets the feedback creation timestamp.
@@ -28,6 +28,6 @@ interface FeedbackInterface extends ContentEntityInterface, EntityOwnerInterface
    * @return \Drupal\feedback\FeedbackInterface
    *   The called feedback entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime(int $timestamp);
 
 }
