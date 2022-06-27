@@ -118,7 +118,7 @@ class FeedbackCreateResource extends ResourceBase {
       $feedback->save();
       $data = [
         'id' => $feedback->uuid(),
-        'type' => $bundle,
+        'type' => 'feedback--' . $bundle,
       ];
       return new ModifiedResourceResponse(['data' => $data], 201);
     }
@@ -128,7 +128,7 @@ class FeedbackCreateResource extends ResourceBase {
     if ($feedback instanceof FeedbackInterface) {
       $data = [
         'id' => $feedback->uuid(),
-        'type' => $feedback->bundle(),
+        'type' => 'feedback--' . $feedback->bundle(),
       ];
       return new ModifiedResourceResponse(['data' => $data], 200);
     }
