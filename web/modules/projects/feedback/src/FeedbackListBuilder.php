@@ -84,7 +84,7 @@ class FeedbackListBuilder extends EntityListBuilder {
    */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
-    $destination = $this->redirectDestination->getAsArray();
+    $destination = $this->getDestinationArray();
     foreach ($operations as $key => $operation) {
       $operations[$key]['query'] = $destination;
     }
