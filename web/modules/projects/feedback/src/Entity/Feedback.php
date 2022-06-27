@@ -20,13 +20,8 @@ use Drupal\user\EntityOwnerTrait;
  *   bundle_label = @Translation("Feedback type"),
  *   handlers = {
  *     "view_builder" = "Drupal\feedback\FeedbackViewBuilder",
+ *     "access" = "Drupal\feedback\Access\FeedbackEntityAccess",
  *     "list_builder" = "Drupal\feedback\FeedbackListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
- *     "form" = {
- *       "add" = "Drupal\feedback\Form\FeedbackForm",
- *       "edit" = "Drupal\feedback\Form\FeedbackForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     }
@@ -41,11 +36,7 @@ use Drupal\user\EntityOwnerTrait;
  *     "owner" = "author"
  *   },
  *   links = {
- *     "add-form" = "/admin/content/feedback/add/{feedback_type}",
- *     "add-page" = "/admin/content/feedback/add",
  *     "canonical" = "/feedback/{feedback}",
- *     "edit-form" = "/admin/content/feedback/{feedback}/edit",
- *     "delete-form" = "/admin/content/feedback/{feedback}/delete",
  *     "collection" = "/admin/content/feedback"
  *   },
  *   bundle_entity_type = "feedback_type",
