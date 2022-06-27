@@ -175,15 +175,16 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    * Preloads files in results array.
    */
   protected function preloadFiles(array &$results): void {
-    $file_uuids = array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value');
-    $files = $this->fileStorage
-      ->loadByProperties(['uuid' => array_unique($file_uuids)]);
-
-    // Populate results with files.
-    foreach ($results as $delta => $result) {
-      if ($result['type'] == 'file') {
-        $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
-        $results[$delta]['value'] = reset($matching_file);
+    $file_uuids = array_unique(array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value'));
+    if (!empty($file_uuids)) {
+      $files = $this->fileStorage
+        ->loadByProperties(['uuid' => array_unique($file_uuids)]);
+      // Populate results with files.
+      foreach ($results as $delta => $result) {
+        if ($result['type'] == 'file') {
+          $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
+          $results[$delta]['value'] = reset($matching_file);
+        }
       }
     }
   }
