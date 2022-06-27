@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_result_radios
+id: feedback.organization.field_result_radios
+field_name: field_result_radios
+entity_type: feedback
+bundle: organization
+label: 'Result Radios'
+description: 'Entspricht das Projektergebnis Euren Vorstellungen aus der Ausschreibung?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

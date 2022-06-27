@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_challenge_text
+id: feedback.organization.field_challenge_text
+field_name: field_challenge_text
+entity_type: feedback
+bundle: organization
+label: 'Challenge Text'
+description: 'Warum nicht?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_channels_checkboxes
+id: feedback.organization.field_channels_checkboxes
+field_name: field_channels_checkboxes
+entity_type: feedback
+bundle: organization
+label: 'Channels Checkboxes'
+description: 'Welche Medien habt Ihr genutzt, um miteinander zu kommunizieren?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

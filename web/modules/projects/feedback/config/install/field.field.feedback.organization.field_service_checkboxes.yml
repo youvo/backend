@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_service_checkboxes
+id: feedback.organization.field_service_checkboxes
+field_name: field_service_checkboxes
+entity_type: feedback
+bundle: organization
+label: 'Service Checkboxes'
+description: 'Was hat Dir besonders geholfen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

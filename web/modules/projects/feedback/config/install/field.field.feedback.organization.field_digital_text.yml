@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_digital_text
+id: feedback.organization.field_digital_text
+field_name: field_digital_text
+entity_type: feedback
+bundle: organization
+label: 'Digital Text'
+description: 'Welche weiteren Informationen zum Thema Digitalisierung und Kommunikation von Nonprofits wünscht ihr euch auf youvo?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long
