@@ -12,7 +12,11 @@ label: 'Service Checkboxes'
 description: 'Was hat Dir besonders geholfen?'
 required: false
 translatable: false
-default_value: {  }
+default_value:
+  -
+    value: 0
 default_value_callback: ''
-settings: {  }
-field_type: string
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean
