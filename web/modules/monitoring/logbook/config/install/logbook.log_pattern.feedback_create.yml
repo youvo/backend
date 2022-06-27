@@ -1,0 +1,21 @@
+langcode: de
+status: true
+dependencies: {  }
+id: feedback_create
+label: 'Feedback Create'
+tokens:
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Project'
+    required: 0
+detectable: false
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''

@@ -1,5 +1,19 @@
 services:
 
+  # Feedback logs.
+  logbook.feedback_complete.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookFeedbackCompleteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.feedback_create.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookFeedbackCreateSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+
   # Organization logs.
   logbook.organization_create.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookOrganizationCreateSubscriber
