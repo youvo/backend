@@ -24,7 +24,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   id = "feedback:create",
  *   label = @Translation("Feedback Create Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/project/{project}/feedback"
+ *     "canonical" = "/api/projects/{project}/feedback"
  *   }
  * )
  */
