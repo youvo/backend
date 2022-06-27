@@ -58,9 +58,24 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp) {
+  public function setCreatedTime(int $timestamp): FeedbackInterface {
     $this->set('created', $timestamp);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lock(): FeedbackInterface {
+    $this->set('locked', TRUE);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isLocked(): bool {
+    return !empty($this->get('locked')->value);
   }
 
   /**
@@ -91,6 +106,16 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(new TranslatableMarkup('Changed'))
       ->setDescription(new TranslatableMarkup('The time that the feedback was last edited.'));
+
+    $fields['completed'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(new TranslatableMarkup('Completed'))
+      ->setDefaultValue(0)
+      ->setDescription(new TranslatableMarkup('The time that the feedback was completed.'));
+
+    $fields['locked'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Locked'))
+      ->setDefaultValue(FALSE)
+      ->setDescription(new TranslatableMarkup('The feedback is locked after completion.'));
 
     $fields['project'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Project'))
