@@ -76,14 +76,6 @@ services:
     tags:
       - { name: event_subscriber }
 
-  # Routing.
-  logbook.route_subscriber:
-    class: Drupal\logbook\Routing\RouteSubscriber
-    arguments:
-      [ '@config.factory' ]
-    tags:
-      - { name: event_subscriber }
-
   # Database logger channel.
   logger.channel.logbook:
     parent: logger.channel_base
