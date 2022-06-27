@@ -10,6 +10,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\feedback\Event\FeedbackCompleteEvent;
 use Drupal\feedback\FeedbackInterface;
+use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -98,6 +99,26 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
 
     // This is the first time the feedback is completed.
     if ($this->get('completed')->value > 0 && !$this->isLocked()) {
+
+      // Create new project comment and append to project result.
+      $project = $this->getProject();
+      $project_result = $project->getResult();
+
+      // Just to be safe we check if there is already a comment - that should
+      // not be possible.
+      if (empty(array_filter($project_result->getComments(),
+        fn($c) => $c->getOwnerId() == $this->getOwnerId()))) {
+        $comment_object = ProjectComment::create([
+          'value' => $this->get('project_comment')->value,
+          'project_result' => $project_result->id(),
+        ]);
+        $comment_object->save();
+        $project_result->appendComment($comment_object);
+        $project_result->save();
+        $project->save();
+      }
+
+      // Dispatch feedback complete event.
       \Drupal::service('event_dispatcher')
         ->dispatch(new FeedbackCompleteEvent($this));
       $this->lock();
@@ -148,6 +169,11 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
       ->setSetting('target_type', 'project')
       ->setDescription(new TranslatableMarkup('The project referenced by this feedback.'))
       ->setTranslatable(FALSE);
+
+    $fields['project_comment'] = BaseFieldDefinition::create('string_long')
+      ->setTranslatable(FALSE)
+      ->setLabel(new TranslatableMarkup('Project Comment'))
+      ->setDescription(t('The public comment for the project.'));
 
     return $fields;
   }
