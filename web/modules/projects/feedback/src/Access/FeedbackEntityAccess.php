@@ -30,17 +30,24 @@ class FeedbackEntityAccess extends EntityAccessControlHandler {
       in_array('supervisor', $account->getRoles()) ||
       in_array('administrator', $account->getRoles())
     ) {
-      return AccessResult::allowedIf($operation != 'delete')->cachePerUser();
+      return AccessResult::allowedIf($operation != 'delete')
+        ->cachePerUser();
     }
 
     // Check access for view action.
     if ($operation == 'view') {
-      return AccessResult::allowedIf($entity->getOwnerId() == $account->id())->cachePerUser();
+      return AccessResult::allowedIf(
+        $entity->getOwnerId() == $account->id() &&
+        !$entity->isLocked()
+      )->cachePerUser();
     }
 
     // Check access for edit action.
     if ($operation == 'edit' || $operation == 'update') {
-      return AccessResult::allowedIf($entity->getOwnerId() == $account->id())->cachePerUser();
+      return AccessResult::allowedIf(
+        $entity->getOwnerId() == $account->id() &&
+        !$entity->isLocked()
+      )->cachePerUser();
     }
 
     // Check access for delete action.

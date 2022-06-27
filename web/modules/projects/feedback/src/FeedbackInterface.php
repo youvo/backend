@@ -3,6 +3,7 @@
 namespace Drupal\feedback;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 
@@ -45,5 +46,13 @@ interface FeedbackInterface extends ContentEntityInterface, EntityOwnerInterface
    *   Is locked?
    */
   public function isLocked(): bool;
+
+  /**
+   * Gets the project.
+   *
+   * @return \Drupal\projects\ProjectInterface
+   *   The project.
+   */
+  public function getProject(): ProjectInterface;
 
 }

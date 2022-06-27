@@ -7,12 +7,14 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\feedback\Entity\Feedback;
+use Drupal\feedback\Event\FeedbackCreateEvent;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -45,6 +47,8 @@ class FeedbackCreateResource extends ResourceBase {
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
    *   The current user.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
    */
   public function __construct(
     array $configuration,
@@ -53,7 +57,8 @@ class FeedbackCreateResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected AccountProxyInterface $currentUser
+    protected AccountProxyInterface $currentUser,
+    protected EventDispatcherInterface $eventDispatcher
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -74,7 +79,8 @@ class FeedbackCreateResource extends ResourceBase {
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('youvo'),
       $container->get('entity_type.manager'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('event_dispatcher')
     );
   }
 
@@ -120,6 +126,7 @@ class FeedbackCreateResource extends ResourceBase {
         'id' => $feedback->uuid(),
         'type' => 'feedback--' . $bundle,
       ];
+      $this->eventDispatcher->dispatch(new FeedbackCreateEvent($feedback));
       return new ModifiedResourceResponse(['data' => $data], 201);
     }
 

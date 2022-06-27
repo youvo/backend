@@ -4,10 +4,13 @@ namespace Drupal\feedback\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\feedback\Event\FeedbackCompleteEvent;
 use Drupal\feedback\FeedbackInterface;
+use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
 
 /**
@@ -76,6 +79,29 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
    */
   public function isLocked(): bool {
     return !empty($this->get('locked')->value);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProject(): ProjectInterface {
+    /** @var \Drupal\projects\ProjectInterface $project */
+    $project = $this->get('project')->entity;
+    return $project;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    // This is the first time the feedback is completed.
+    if ($this->get('completed')->value > 0 && !$this->isLocked()) {
+      \Drupal::service('event_dispatcher')
+        ->dispatch(new FeedbackCompleteEvent($this));
+      $this->lock();
+    }
   }
 
   /**
