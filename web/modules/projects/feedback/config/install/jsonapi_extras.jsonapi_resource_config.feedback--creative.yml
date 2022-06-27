@@ -51,7 +51,7 @@ resourceFields:
     enhancer:
       id: ''
   locked:
-    disabled: false
+    disabled: true
     fieldName: locked
     publicName: locked
     enhancer:

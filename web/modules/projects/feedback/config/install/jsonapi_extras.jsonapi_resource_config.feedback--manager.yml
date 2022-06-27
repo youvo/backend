@@ -44,6 +44,18 @@ resourceFields:
     publicName: changed
     enhancer:
       id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  locked:
+    disabled: true
+    fieldName: locked
+    publicName: locked
+    enhancer:
+      id: ''
   project:
     disabled: false
     fieldName: project
