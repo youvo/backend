@@ -5,7 +5,7 @@ dependencies:
     - feedback.feedback_type.organization
 id: feedback--organization
 disabled: false
-path: feedback/organization
+path: feedbacks/organization
 resourceType: feedback--organization
 resourceFields:
   id:

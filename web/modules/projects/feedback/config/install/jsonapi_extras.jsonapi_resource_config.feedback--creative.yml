@@ -5,7 +5,7 @@ dependencies:
     - feedback.feedback_type.creative
 id: feedback--creative
 disabled: false
-path: feedback/creative
+path: feedbacks/creative
 resourceType: feedback--creative
 resourceFields:
   id:
