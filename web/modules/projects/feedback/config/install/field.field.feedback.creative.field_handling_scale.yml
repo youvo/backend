@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_handling_scale
+id: feedback.creative.field_handling_scale
+field_name: field_handling_scale
+entity_type: feedback
+bundle: creative
+label: 'Handling Scale'
+description: 'Wie benutzerfreundlich findest Du unsere Seite?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

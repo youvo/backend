@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_handling_text
+id: feedback.creative.field_handling_text
+field_name: field_handling_text
+entity_type: feedback
+bundle: creative
+label: 'Handling Text'
+description: 'Wo gibt es Deiner Meinung nach Schwierigkeiten?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

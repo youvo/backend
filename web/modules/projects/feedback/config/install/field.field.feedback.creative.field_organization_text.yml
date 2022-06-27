@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_organization_text
+id: feedback.creative.field_organization_text
+field_name: field_organization_text
+entity_type: feedback
+bundle: creative
+label: 'Organization Text'
+description: 'Möchtest Du der Organisation, mit der Du zusammengearbeitet hast, noch etwas sagen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

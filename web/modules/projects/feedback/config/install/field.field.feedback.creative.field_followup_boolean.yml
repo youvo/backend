@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_followup_boolean
+id: feedback.creative.field_followup_boolean
+field_name: field_followup_boolean
+entity_type: feedback
+bundle: creative
+label: 'Follow-up Boolean'
+description: 'Dürfen wir Dich für weitere Fragen kontaktieren?'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean
