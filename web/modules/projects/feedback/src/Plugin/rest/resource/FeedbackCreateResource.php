@@ -111,7 +111,8 @@ class FeedbackCreateResource extends ResourceBase {
         $bundle = 'organization';
       }
       elseif ($project->getOwner()->isManager($this->currentUser)) {
-        $bundle = 'manager';
+        // @todo $bundle = 'manager' when form is available.
+        $bundle = 'creative';
       }
       else {
         $bundle = 'creative';
