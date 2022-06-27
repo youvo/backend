@@ -116,13 +116,21 @@ class FeedbackCreateResource extends ResourceBase {
         'author' => $this->currentUser->id(),
       ]);
       $feedback->save();
-      return new ModifiedResourceResponse($feedback->uuid(), 201);
+      $data = [
+        'id' => $feedback->uuid(),
+        'type' => $bundle,
+      ];
+      return new ModifiedResourceResponse(['data' => $data], 201);
     }
 
     // Otherwise, return uuid of existing feedback.
     $feedback = reset($feedbacks);
     if ($feedback instanceof FeedbackInterface) {
-      return new ModifiedResourceResponse($feedback->uuid(), 200);
+      $data = [
+        'id' => $feedback->uuid(),
+        'type' => $feedback->bundle(),
+      ];
+      return new ModifiedResourceResponse(['data' => $data], 200);
     }
 
     return new ModifiedResourceResponse('Unable to load feedback.', 422);
