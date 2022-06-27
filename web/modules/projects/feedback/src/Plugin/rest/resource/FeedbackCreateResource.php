@@ -134,6 +134,10 @@ class FeedbackCreateResource extends ResourceBase {
     // Otherwise, return uuid of existing feedback.
     $feedback = reset($feedbacks);
     if ($feedback instanceof FeedbackInterface) {
+      // Maybe the feedback was already completed.
+      if ($feedback->isLocked()) {
+        return new ModifiedResourceResponse('Feedback already completed!', 409);
+      }
       $data = [
         'id' => $feedback->uuid(),
         'type' => 'feedback--' . $feedback->bundle(),
