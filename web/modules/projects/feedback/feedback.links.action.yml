@@ -3,9 +3,3 @@ feedback.type_add:
   title: 'Add feedback type'
   appears_on:
     - entity.feedback_type.collection
-
-feedback.add_page:
-  route_name: entity.feedback.add_page
-  title: 'Add feedback'
-  appears_on:
-    - entity.feedback.collection

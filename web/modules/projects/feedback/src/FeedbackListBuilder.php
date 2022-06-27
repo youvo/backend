@@ -7,7 +7,6 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,35 +15,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FeedbackListBuilder extends EntityListBuilder {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The redirect destination service.
-   *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
-   */
-  protected $redirectDestination;
-
-  /**
    * Constructs a new FeedbackListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
-   *   The redirect destination service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityStorageInterface $storage,
+    protected DateFormatterInterface $dateFormatter
+  ) {
     parent::__construct($entity_type, $storage);
-    $this->dateFormatter = $date_formatter;
-    $this->redirectDestination = $redirect_destination;
   }
 
   /**
@@ -54,8 +39,7 @@ class FeedbackListBuilder extends EntityListBuilder {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter'),
-      $container->get('redirect.destination')
+      $container->get('date.formatter')
     );
   }
 
@@ -64,13 +48,6 @@ class FeedbackListBuilder extends EntityListBuilder {
    */
   public function render() {
     $build['table'] = parent::render();
-
-    $total = $this->getStorage()
-      ->getQuery()
-      ->count()
-      ->execute();
-
-    $build['summary']['#markup'] = $this->t('Total feedbacks: @total', ['@total' => $total]);
     return $build;
   }
 
@@ -87,9 +64,11 @@ class FeedbackListBuilder extends EntityListBuilder {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\feedback\FeedbackInterface */
+    /** @var \Drupal\feedback\FeedbackInterface $entity */
     $row['id'] = $entity->toLink();
     $row['uid']['data'] = [
       '#theme' => 'username',

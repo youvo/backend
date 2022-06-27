@@ -63,10 +63,14 @@ class FeedbackTypeForm extends BundleEntityFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function save(array $form, FormStateInterface $form_state) {
     $entity_type = $this->entity;
 
+    /** @var \Drupal\feedback\FeedbackInterface $entity_type */
     $entity_type->set('id', trim($entity_type->id()));
     $entity_type->set('label', trim($entity_type->label()));
 
@@ -79,9 +83,11 @@ class FeedbackTypeForm extends BundleEntityFormBase {
     elseif ($status == SAVED_NEW) {
       $message = $this->t('The feedback type %name has been added.', $t_args);
     }
-    $this->messenger()->addStatus($message);
+    $this->messenger()->addStatus($message ?? '');
 
     $form_state->setRedirectUrl($entity_type->toUrl('collection'));
+
+    return $status;
   }
 
 }
