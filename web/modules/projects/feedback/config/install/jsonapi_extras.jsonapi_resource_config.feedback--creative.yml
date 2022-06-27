@@ -6,7 +6,7 @@ dependencies:
 id: feedback--creative
 disabled: false
 path: feedback/creative
-resourceType: creative
+resourceType: feedback--creative
 resourceFields:
   id:
     disabled: true

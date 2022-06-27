@@ -6,7 +6,7 @@ dependencies:
 id: feedback--manager
 disabled: false
 path: feedback/manager
-resourceType: manager
+resourceType: feedback--manager
 resourceFields:
   id:
     disabled: true
