@@ -158,6 +158,7 @@ class CreativeRegisterResource extends ResourceBase {
         'type' => 'user',
         'mail' => $attributes['mail'],
         'name' => $attributes['mail'],
+        'field_city' => $attributes['city'],
         'field_name' => $attributes['name'],
         'field_skills' => $skills_ids,
       ]);
@@ -227,6 +228,7 @@ class CreativeRegisterResource extends ResourceBase {
     // Validate email, name and skills.
     $this->validateEmailFromAttributes($attributes);
     $this->validateNameFromAttributes($attributes);
+    $this->validateCityFromAttributes($attributes);
     $skills_ids = $this->validateSkillsFromRelationships($relationships);
 
     return [$attributes, $skills_ids];
@@ -266,6 +268,19 @@ class CreativeRegisterResource extends ResourceBase {
       throw new FieldAwareHttpException(400,
         'Need to provide valid name to register user.',
         'name');
+    }
+  }
+
+  /**
+   * Validates city attribute.
+   */
+  protected function validateCityFromAttributes(array $attributes): void {
+    if (array_key_exists('city', $attributes) &&
+      (!(is_string($attributes['city']) || is_null($attributes['city'])) ||
+      strlen($attributes['city']) >= 255)) {
+      throw new FieldAwareHttpException(400,
+        'Provided city is not in a valid format.',
+        'city');
     }
   }
 
