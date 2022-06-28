@@ -26,7 +26,7 @@ class FieldValidator {
    */
   public static function validateString(FieldDefinitionInterface $field, mixed $value) {
     $max_length = $field->getItemDefinition()->getSetting('max_length') ?: -1;
-    return (is_null($value) ||is_numeric($value) || is_string($value)) &&
+    return (is_null($value) || is_numeric($value) || is_string($value)) &&
       ($max_length == -1 || strlen($value) <= $max_length);
   }
 
