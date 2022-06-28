@@ -98,7 +98,8 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     parent::preSave($storage);
 
     // This is the first time the feedback is completed.
-    if ($this->get('completed')->value > 0 && !$this->isLocked()) {
+    $final_step = $this->bundle() == 'organization' ? 5 : 4;
+    if ($this->get('step')->value >= $final_step && !$this->isLocked()) {
 
       // Create new project comment and append to project result.
       $project = $this->getProject();
@@ -121,6 +122,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
       // Dispatch feedback complete event.
       \Drupal::service('event_dispatcher')
         ->dispatch(new FeedbackCompleteEvent($this));
+      $this->set('completed', \Drupal::time()->getCurrentTime());
       $this->lock();
     }
   }

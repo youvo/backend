@@ -45,7 +45,7 @@ resourceFields:
     enhancer:
       id: ''
   completed:
-    disabled: false
+    disabled: true
     fieldName: completed
     publicName: completed
     enhancer:
