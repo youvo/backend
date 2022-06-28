@@ -12,9 +12,6 @@ label: 'Skilled Boolean'
 description: 'Hast du Dich dabei speziell mit Deinen kreativen Fähigkeiten eingesetzt?'
 required: false
 translatable: false
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

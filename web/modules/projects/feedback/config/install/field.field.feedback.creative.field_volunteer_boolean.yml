@@ -12,9 +12,6 @@ label: 'Volunteer Boolean'
 description: 'Hast Du Dich außerhalb von youvo schon mal ehrenamtlich engagiert?'
 required: false
 translatable: false
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

@@ -12,9 +12,6 @@ label: 'Challenge Boolean'
 description: 'Hat Dir youvo dabei geholfen, Deine digitale oder kommunikative Herausforderung zu lösen?'
 required: false
 translatable: false
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

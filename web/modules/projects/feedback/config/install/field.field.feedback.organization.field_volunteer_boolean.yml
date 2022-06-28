@@ -12,9 +12,6 @@ label: 'Volunteer Boolean'
 description: 'Engagiert sich die oder der Kreative über das Projekt hinaus in Deiner Organisation?'
 required: false
 translatable: true
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

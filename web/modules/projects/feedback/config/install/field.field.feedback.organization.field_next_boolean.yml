@@ -12,9 +12,6 @@ label: 'Next Boolean'
 description: 'Würdet Ihr noch weitere Projekte bei youvo einstellen?'
 required: false
 translatable: true
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'

@@ -12,9 +12,6 @@ label: 'Recommend Boolean'
 description: 'Würdest Du youvo weiterempfehlen?'
 required: false
 translatable: false
-default_value:
-  -
-    value: 0
 default_value_callback: ''
 settings:
   on_label: 'On'
