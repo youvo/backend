@@ -62,3 +62,15 @@ resourceFields:
     publicName: project
     enhancer:
       id: ''
+  project_comment:
+    disabled: false
+    fieldName: project_comment
+    publicName: project_comment
+    enhancer:
+      id: ''
+  step:
+    disabled: false
+    fieldName: step
+    publicName: step
+    enhancer:
+      id: ''

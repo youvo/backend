@@ -173,7 +173,12 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     $fields['project_comment'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(FALSE)
       ->setLabel(new TranslatableMarkup('Project Comment'))
-      ->setDescription(t('The public comment for the project.'));
+      ->setDescription(new TranslatableMarkup('The public comment for the project.'));
+
+    $fields['step'] = BaseFieldDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Step'))
+      ->setDescription(new TranslatableMarkup('Step indicator for frontend form wizard.'))
+      ->setDefaultValue(0);
 
     return $fields;
   }
