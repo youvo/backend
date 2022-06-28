@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_difficulties_boolean
+id: feedback.organization.field_difficulties_boolean
+field_name: field_difficulties_boolean
+entity_type: feedback
+bundle: organization
+label: 'Difficulties Boolean'
+description: 'Gab es technische Probleme?'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

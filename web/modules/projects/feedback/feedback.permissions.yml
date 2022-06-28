@@ -1,0 +1,6 @@
+administer feedback types:
+  title: 'Administer feedback types'
+  description: 'Maintain the types of feedback entity.'
+  restrict access: true
+access feedback overview:
+  title: 'Access feedback overview page'

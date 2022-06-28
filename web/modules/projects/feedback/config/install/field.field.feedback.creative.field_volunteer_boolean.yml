@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_volunteer_boolean
+id: feedback.creative.field_volunteer_boolean
+field_name: field_volunteer_boolean
+entity_type: feedback
+bundle: creative
+label: 'Volunteer Boolean'
+description: 'Hast Du Dich außerhalb von youvo schon mal ehrenamtlich engagiert?'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

@@ -1,0 +1,4 @@
+id: feedback_complete
+langcode: 'de'
+text: 'Die %AuthorWithRole hat ein Feedback für das Projekt %Project hinterlassen.'
+public_text: ''

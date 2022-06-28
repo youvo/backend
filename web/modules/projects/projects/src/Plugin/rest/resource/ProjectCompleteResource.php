@@ -8,7 +8,6 @@ use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\FileStorageInterface;
-use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\projects\ProjectInterface;
@@ -128,25 +127,15 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
     // Decode content of the request.
     $request_body = $this->serializationJson->decode($request->getContent());
-    $comment = $request_body['comment'] ?? '';
     $results = $request_body['results'] ?? [];
 
     // Prepare data.
-    $this->validateComment($comment);
     $this->validateResults($results);
     $this->preloadFiles($results);
     [$result_files, $result_links] = $this->shapeResults($results);
 
     if ($project->lifecycle()->complete()) {
       $result = $project->getResult();
-      if (!empty($comment)) {
-        $comment_object = ProjectComment::create([
-          'value' => $comment,
-          'project_result' => $result->id(),
-        ]);
-        $comment_object->save();
-        $result->appendComment($comment_object);
-      }
       $result->setFiles($result_files);
       $result->setLinks($result_links);
       $result->save();
@@ -158,15 +147,6 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       throw new ConflictHttpException('Project can not be completed.');
     }
 
-  }
-
-  /**
-   * Validates results entries.
-   */
-  protected function validateComment(mixed $comment): void {
-    if (!is_string($comment)) {
-      throw new BadRequestHttpException('Malformed request body. The comment is not a string.');
-    }
   }
 
   /**
@@ -195,15 +175,16 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    * Preloads files in results array.
    */
   protected function preloadFiles(array &$results): void {
-    $file_uuids = array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value');
-    $files = $this->fileStorage
-      ->loadByProperties(['uuid' => array_unique($file_uuids)]);
-
-    // Populate results with files.
-    foreach ($results as $delta => $result) {
-      if ($result['type'] == 'file') {
-        $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
-        $results[$delta]['value'] = reset($matching_file);
+    $file_uuids = array_unique(array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value'));
+    if (!empty($file_uuids)) {
+      $files = $this->fileStorage
+        ->loadByProperties(['uuid' => array_unique($file_uuids)]);
+      // Populate results with files.
+      foreach ($results as $delta => $result) {
+        if ($result['type'] == 'file') {
+          $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
+          $results[$delta]['value'] = reset($matching_file);
+        }
       }
     }
   }

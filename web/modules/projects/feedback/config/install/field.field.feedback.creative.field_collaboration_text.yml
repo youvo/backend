@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_collaboration_text
+id: feedback.creative.field_collaboration_text
+field_name: field_collaboration_text
+entity_type: feedback
+bundle: creative
+label: 'Collaboration Text'
+description: 'Bitte erzähl uns, was in Deinem Projekt schiefgelaufen ist.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

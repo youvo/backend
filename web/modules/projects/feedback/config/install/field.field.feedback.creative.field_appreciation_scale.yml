@@ -1,0 +1,22 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_appreciation_scale
+id: feedback.creative.field_appreciation_scale
+field_name: field_appreciation_scale
+entity_type: feedback
+bundle: creative
+label: 'Appreciation Scale'
+description: 'Wie beurteilst Du die Wertschätzung durch die Organisation?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

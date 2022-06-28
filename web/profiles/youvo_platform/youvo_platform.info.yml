@@ -62,6 +62,7 @@ install:
   # Projects
   - lifecycle
   - projects
+  - feedback
   # Academy
   - academy
   - academy_log

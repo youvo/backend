@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Feedback module.
+ */
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_site_install_finished().
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function feedback_site_install_finished() {
+  $role_object = Role::load('authenticated');
+  $role_object->grantPermission('restful post feedback:create');
+  $role_object->save();
+}

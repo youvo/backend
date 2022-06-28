@@ -1,9 +1,8 @@
-id: project.comment
-plugin_id: 'project:comment'
+id: feedback.create
+plugin_id: 'feedback:create'
 granularity: resource
 configuration:
   methods:
-    - GET
     - POST
   formats:
     - json

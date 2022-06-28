@@ -1,0 +1,18 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_add_text
+id: feedback.organization.field_add_text
+field_name: field_add_text
+entity_type: feedback
+bundle: organization
+label: 'Add Text'
+description: 'Wollt Ihr uns sonst noch etwas sagen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

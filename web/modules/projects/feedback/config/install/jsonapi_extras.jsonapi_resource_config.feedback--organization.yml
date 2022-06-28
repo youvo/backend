@@ -1,0 +1,202 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+id: feedback--organization
+disabled: false
+path: feedbacks/organization
+resourceType: feedback--organization
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  bundle:
+    disabled: true
+    fieldName: bundle
+    publicName: bundle
+    enhancer:
+      id: ''
+  author:
+    disabled: false
+    fieldName: author
+    publicName: author
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  locked:
+    disabled: true
+    fieldName: locked
+    publicName: locked
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  field_add_text:
+    disabled: false
+    fieldName: field_add_text
+    publicName: add_text
+    enhancer:
+      id: ''
+  field_challenge_boolean:
+    disabled: false
+    fieldName: field_challenge_boolean
+    publicName: challenge_boolean
+    enhancer:
+      id: ''
+  field_challenge_text:
+    disabled: false
+    fieldName: field_challenge_text
+    publicName: challenge_text
+    enhancer:
+      id: ''
+  field_channels_checkboxes:
+    disabled: false
+    fieldName: field_channels_checkboxes
+    publicName: channels_checkboxes
+    enhancer:
+      id: ''
+  field_communication_scale:
+    disabled: false
+    fieldName: field_communication_scale
+    publicName: communication_scale
+    enhancer:
+      id: ''
+  field_difficulties_boolean:
+    disabled: false
+    fieldName: field_difficulties_boolean
+    publicName: difficulties_boolean
+    enhancer:
+      id: ''
+  field_difficulties_text:
+    disabled: false
+    fieldName: field_difficulties_text
+    publicName: difficulties_text
+    enhancer:
+      id: ''
+  field_digital_text:
+    disabled: false
+    fieldName: field_digital_text
+    publicName: digital_text
+    enhancer:
+      id: ''
+  field_features_text:
+    disabled: false
+    fieldName: field_features_text
+    publicName: features_text
+    enhancer:
+      id: ''
+  field_handling_scale:
+    disabled: false
+    fieldName: field_handling_scale
+    publicName: handling_scale
+    enhancer:
+      id: ''
+  field_handling_text:
+    disabled: false
+    fieldName: field_handling_text
+    publicName: handling_text
+    enhancer:
+      id: ''
+  field_knowledge_boolean:
+    disabled: false
+    fieldName: field_knowledge_boolean
+    publicName: knowledge_boolean
+    enhancer:
+      id: ''
+  field_meet_boolean:
+    disabled: false
+    fieldName: field_meet_boolean
+    publicName: meet_boolean
+    enhancer:
+      id: ''
+  field_next_boolean:
+    disabled: false
+    fieldName: field_next_boolean
+    publicName: next_boolean
+    enhancer:
+      id: ''
+  field_next_text:
+    disabled: false
+    fieldName: field_next_text
+    publicName: next_text
+    enhancer:
+      id: ''
+  field_recommend_boolean:
+    disabled: false
+    fieldName: field_recommend_boolean
+    publicName: recommend_boolean
+    enhancer:
+      id: ''
+  field_result_radios:
+    disabled: false
+    fieldName: field_result_radios
+    publicName: result_radios
+    enhancer:
+      id: ''
+  field_satisfied_scale:
+    disabled: false
+    fieldName: field_satisfied_scale
+    publicName: satisfied_scale
+    enhancer:
+      id: ''
+  field_service_checkboxes:
+    disabled: false
+    fieldName: field_service_checkboxes
+    publicName: service_checkboxes
+    enhancer:
+      id: ''
+  field_service_scale:
+    disabled: false
+    fieldName: field_service_scale
+    publicName: service_scale
+    enhancer:
+      id: ''
+  field_service_text:
+    disabled: false
+    fieldName: field_service_text
+    publicName: service_text
+    enhancer:
+      id: ''
+  field_struggel_boolean:
+    disabled: false
+    fieldName: field_struggel_boolean
+    publicName: struggel_boolean
+    enhancer:
+      id: ''
+  field_volunteer_boolean:
+    disabled: false
+    fieldName: field_volunteer_boolean
+    publicName: volunteer_boolean
+    enhancer:
+      id: ''
