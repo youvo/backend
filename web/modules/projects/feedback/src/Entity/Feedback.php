@@ -70,16 +70,16 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function lock(): FeedbackInterface {
-    $this->set('locked', TRUE);
+  public function complete(): FeedbackInterface {
+    $this->set('completed', \Drupal::time()->getCurrentTime());
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isLocked(): bool {
-    return !empty($this->get('locked')->value);
+  public function isCompleted(): bool {
+    return !empty($this->get('completed')->value);
   }
 
   /**
@@ -98,8 +98,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     parent::preSave($storage);
 
     // This is the first time the feedback is completed.
-    $final_step = $this->bundle() == 'organization' ? 5 : 4;
-    if ($this->get('step')->value >= $final_step && !$this->isLocked()) {
+    if ($this->isFinalStep() && !$this->isCompleted()) {
 
       // Create new project comment and append to project result.
       $project = $this->getProject();
@@ -119,12 +118,19 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
         $project->save();
       }
 
-      // Dispatch feedback complete event.
+      // Dispatch feedback complete event and complete feedback.
       \Drupal::service('event_dispatcher')
         ->dispatch(new FeedbackCompleteEvent($this));
-      $this->set('completed', \Drupal::time()->getCurrentTime());
-      $this->lock();
+      $this->complete();
     }
+  }
+
+  /**
+   * Determines whether the final step was reached.
+   */
+  public function isFinalStep(): bool {
+    $final_step = $this->bundle() == 'organization' ? 5 : 4;
+    return $this->get('step')->value >= $final_step;
   }
 
   /**
@@ -160,11 +166,6 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
       ->setLabel(new TranslatableMarkup('Completed'))
       ->setDefaultValue(0)
       ->setDescription(new TranslatableMarkup('The time that the feedback was completed.'));
-
-    $fields['locked'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(new TranslatableMarkup('Locked'))
-      ->setDefaultValue(FALSE)
-      ->setDescription(new TranslatableMarkup('The feedback is locked after completion.'));
 
     $fields['project'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Project'))

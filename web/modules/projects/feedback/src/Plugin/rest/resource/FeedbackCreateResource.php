@@ -135,7 +135,7 @@ class FeedbackCreateResource extends ResourceBase {
     $feedback = reset($feedbacks);
     if ($feedback instanceof FeedbackInterface) {
       // Maybe the feedback was already completed.
-      if ($feedback->isLocked()) {
+      if ($feedback->isCompleted()) {
         return new ModifiedResourceResponse('Feedback already completed!', 409);
       }
       $data = [

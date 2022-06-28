@@ -50,12 +50,6 @@ resourceFields:
     publicName: completed
     enhancer:
       id: ''
-  locked:
-    disabled: true
-    fieldName: locked
-    publicName: locked
-    enhancer:
-      id: ''
   project:
     disabled: false
     fieldName: project

@@ -32,20 +32,20 @@ interface FeedbackInterface extends ContentEntityInterface, EntityOwnerInterface
   public function setCreatedTime(int $timestamp): FeedbackInterface;
 
   /**
-   * Locks the feedback entity.
+   * Sets the completed timestamp for the feedback entity.
    *
    * @return \Drupal\feedback\FeedbackInterface
    *   The called feedback entity.
    */
-  public function lock(): FeedbackInterface;
+  public function complete(): FeedbackInterface;
 
   /**
-   * Checks whether the feedback is locked.
+   * Checks whether the feedback is completed.
    *
    * @return bool
-   *   Is locked?
+   *   Is completed?
    */
-  public function isLocked(): bool;
+  public function isCompleted(): bool;
 
   /**
    * Gets the project.

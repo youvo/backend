@@ -38,7 +38,7 @@ class FeedbackEntityAccess extends EntityAccessControlHandler {
     if ($operation == 'view') {
       return AccessResult::allowedIf(
         $entity->getOwnerId() == $account->id() &&
-        !$entity->isLocked()
+        !$entity->isCompleted()
       )->cachePerUser();
     }
 
@@ -46,7 +46,7 @@ class FeedbackEntityAccess extends EntityAccessControlHandler {
     if ($operation == 'edit' || $operation == 'update') {
       return AccessResult::allowedIf(
         $entity->getOwnerId() == $account->id() &&
-        !$entity->isLocked()
+        !$entity->isCompleted()
       )->cachePerUser();
     }
 
