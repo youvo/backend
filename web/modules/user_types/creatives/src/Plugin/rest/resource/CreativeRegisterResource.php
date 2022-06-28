@@ -2,12 +2,15 @@
 
 namespace Drupal\creatives\Plugin\rest\resource;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
 use Drupal\Component\Uuid\Uuid;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
-use Drupal\creatives\Event\CreativeCreateEvent;
+use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\taxonomy\TermStorageInterface;
@@ -56,6 +59,10 @@ class CreativeRegisterResource extends ResourceBase {
    *   The event dispatcher.
    * @param \Drupal\taxonomy\TermStorageInterface $termStorage
    *   The term storage.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+   *   The language manager.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time.
    */
   public function __construct(
     array $configuration,
@@ -67,7 +74,9 @@ class CreativeRegisterResource extends ResourceBase {
     protected UserStorageInterface $userStorage,
     protected EmailValidatorInterface $emailValidator,
     protected EventDispatcherInterface $eventDispatcher,
-    protected TermStorageInterface $termStorage
+    protected TermStorageInterface $termStorage,
+    protected LanguageManagerInterface $languageManager,
+    protected TimeInterface $time
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -91,7 +100,9 @@ class CreativeRegisterResource extends ResourceBase {
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('email.validator'),
       $container->get('event_dispatcher'),
-      $container->get('entity_type.manager')->getStorage('taxonomy_term')
+      $container->get('entity_type.manager')->getStorage('taxonomy_term'),
+      $container->get('language_manager'),
+      $container->get('datetime.time')
     );
   }
 
@@ -155,9 +166,24 @@ class CreativeRegisterResource extends ResourceBase {
       $creative->addRole('creative');
       $creative->activate();
       $creative->save();
-      $this->eventDispatcher->dispatch(new CreativeCreateEvent($creative));
 
-      // @todo langcode.
+      // Assemble invite link.
+      // @todo Adjust langcode.
+      // $organization->getPreferredLangcode();
+      $langcode = 'de';
+      $timestamp = $this->time->getCurrentTime();
+      $link = Url::fromRoute('creatives.register',
+        [
+          'uid' => $creative->id(),
+          'timestamp' => $timestamp,
+          'hash' => user_pass_rehash($creative, $timestamp),
+        ],
+        [
+          'absolute' => TRUE,
+          'language' => $this->languageManager->getLanguage($langcode),
+        ]
+      )->toString();
+      $this->eventDispatcher->dispatch(new CreativeRegisterEvent($creative, $link));
     }
     catch (FieldAwareHttpException $e) {
       return new ModifiedResourceResponse([

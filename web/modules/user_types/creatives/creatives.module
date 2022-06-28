@@ -31,3 +31,14 @@ function creatives_entity_field_access($operation, FieldDefinitionInterface $fie
   }
   return AccessResult::neutral();
 }
+
+/**
+ * Implements hook_theme().
+ */
+function creatives_theme($existing, $type, $theme, $path) {
+  return [
+    'creative_register_password_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}
