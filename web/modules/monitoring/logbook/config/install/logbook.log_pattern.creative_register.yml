@@ -1,0 +1,15 @@
+langcode: de
+status: true
+dependencies: {  }
+id: creative_register
+label: 'Creative Register'
+tokens:
+  -
+    token: '%Creative'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''
