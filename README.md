@@ -138,11 +138,11 @@ The database is `youvo_prod`.
 
 ```bash
 make help # show commands help
-make drush foo # execute drush commands
 make mm-on # maintenance mode on
 make mm-off # maintenance mode off
 make cr # clear caches
 make warm # warm caches
+make fis # flush all image styles
 make install # (re-)install Drupal (only available in development)
 make rebuild # calculate rebuild token
 make restart-php # restart Uberspace php

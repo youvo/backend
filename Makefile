@@ -30,6 +30,11 @@ cr:
 warm:
 	@vendor/bin/drush warmer:enqueue jsonapi --run-queue
 
+## fis		:	Flush all image styles.
+.PHONY: fis
+fis:
+	@vendor/bin/drush image:flush --all
+
 ## install	:	(Re-)install Drupal.
 .PHONY: install
 install:
