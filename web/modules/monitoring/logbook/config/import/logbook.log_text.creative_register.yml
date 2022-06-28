@@ -1,0 +1,4 @@
+id: creative_register
+langcode: 'de'
+text: 'Die Kreative %Creative hat sich registriert.'
+public_text: ''

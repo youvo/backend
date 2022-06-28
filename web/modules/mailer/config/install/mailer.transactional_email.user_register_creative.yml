@@ -1,0 +1,14 @@
+langcode: de
+status: true
+dependencies: {  }
+id: user_register_creative
+label: 'User Register Creative'
+subject: 'Deine Anmeldung auf youvo.org'
+body: "Willkommen %Name,\r\n\r\nvielen Dank, dass Du Dich bei youvo registriert hast. Klicke auf den folgenden Link oder kopiere ihn in Deine Browserzeile, um Dich einzuloggen:  \r\n\r\n%Link\r\n\r\nDu kannst diesen Link nur einmal zum Einloggen benutzen. Er führt Dich zu einer Seite, auf der Du Dein Passwort bestimmen kannst.\r\n\r\nFalls Du Unterstützung bei der Anmeldung brauchst, melde Dich bei simon@youvo.org.\r\n\r\nDein youvo-Team"
+tokens:
+  -
+    token: '%Name'
+    required: 0
+  -
+    token: '%Link'
+    required: '1'

@@ -1,5 +1,13 @@
 services:
 
+  # Creative logs.
+  logbook.creative_register.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookCreativeRegisterSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+    tags:
+      - { name: event_subscriber }
+
   # Feedback logs.
   logbook.feedback_complete.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookFeedbackCompleteSubscriber

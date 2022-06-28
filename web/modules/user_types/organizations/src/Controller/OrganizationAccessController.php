@@ -45,11 +45,6 @@ class OrganizationAccessController extends ControllerBase {
    */
   public function accessCreate(AccountInterface $account) {
 
-    // @todo Remove after development.
-    if ($account->hasPermission('administer site configuration')) {
-      return AccessResult::allowed();
-    }
-
     // Only anonymous user is allowed to create new organization.
     if ($account->isAnonymous()) {
       return AccessResult::allowed();
