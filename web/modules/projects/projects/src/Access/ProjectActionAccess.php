@@ -30,8 +30,8 @@ class ProjectActionAccess {
   public function accessNotify(AccountInterface $account, ProjectInterface $project): AccessResult {
     return AccessResult::allowedIf(
       $project->isPublished() &&
-      $project->lifecycle()->isDraft()
-      // @todo Append: && $project->getOwner()->isManager($account)
+      $project->lifecycle()->isDraft() &&
+      $project->getOwner()->isManager($account)
     );
   }
 
