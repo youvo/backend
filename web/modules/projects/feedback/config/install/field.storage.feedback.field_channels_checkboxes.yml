@@ -6,8 +6,10 @@ dependencies:
 id: feedback.field_channels_checkboxes
 field_name: field_channels_checkboxes
 entity_type: feedback
-type: boolean
-settings: {  }
+type: integer
+settings:
+  unsigned: false
+  size: normal
 module: core
 locked: false
 cardinality: -1
