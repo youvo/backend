@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Custom module which handles business logic for feedback.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\feedback\FeedbackInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function feedback_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\field_ui\Form\FieldConfigEditForm $form_object */
+  $form_object = $form_state->getFormObject();
+  /** @var Drupal\field\Entity\FieldConfig $field */
+  $field = $form_object->getEntity();
+  if ($form['#entity'] instanceof FeedbackInterface && $field->getType() == 'boolean') {
+    unset($form['default_value']);
+  }
+
+}
