@@ -129,16 +129,18 @@ class Project extends ContentEntityBase implements ProjectInterface {
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
 
-    // Create project result reference on project creation.
     if (!$update) {
       // Add new project result and reference accordingly.
       // @todo Adjust langcode.
       $project_result = ProjectResult::create([
         'project' => ['target_id' => $this->id()],
-        'langcode' => 'en',
+        'langcode' => 'de',
       ]);
       $project_result->save();
       $this->set('project_result', ['target_id' => $project_result->id()]);
+      // It is not ideal to have a recursive save here, but we trust the update
+      // argument. Unfortunately, we somehow need to resolve the IDs, which are
+      // not available before the first save, to create the relation.
       $this->save();
 
       // Dispatch a project create event if this is a proper organization.
@@ -146,6 +148,9 @@ class Project extends ContentEntityBase implements ProjectInterface {
         $event = new ProjectCreateEvent($this);
         \Drupal::service('event_dispatcher')->dispatch($event);
       }
+
+      // Invalidate cache to recalculate the field projects of the organization.
+      Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     }
 
     parent::postSave($storage, $update);
