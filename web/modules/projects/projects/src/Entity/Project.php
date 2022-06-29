@@ -112,10 +112,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
-    // Invalidate cache to recalculate the field projects of the organization.
-    Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
-    parent::postCreate($storage);
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+    if ($this->isNew()) {
+      // Store the current organization contact in the project. We do this
+      // because the contact of the organization may change in the future, and
+      // we would like to know who was responsible for past projects.
+      $this->set('field_contact', $this->getOwner()->getContact());
+    }
   }
 
   /**
