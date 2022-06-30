@@ -47,7 +47,8 @@
           "Issue #3059582": "patches/subrequests/3059582-response-body-not-picking-up-https.patch"
         },
         "drupal/image_style_warmer": {
-          "Custom: Validate image with GD toolkit": "patches/image_style_warmer/custom-validate-image-with-gd-toolkit.patch"
+          "Custom: Validate image with GD toolkit": "patches/image_style_warmer/custom-validate-image-with-gd-toolkit.patch",
+          "Custom: Queue initial image styles during installation": "patches/image_style_warmer/custom-queue-initial-image-styles-during-installation.patch"
         }
     }
 }
