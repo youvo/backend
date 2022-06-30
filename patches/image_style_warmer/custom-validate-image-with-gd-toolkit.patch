@@ -1,0 +1,15 @@
+diff --git a/modules/contrib/image_style_warmer/src/ImageStylesWarmer.php b/modules/contrib/image_style_warmer/src/ImageStylesWarmer.php
+index 4ca17bf5..5a25b3c4 100644
+--- a/modules/contrib/image_style_warmer/src/ImageStylesWarmer.php
++++ b/modules/contrib/image_style_warmer/src/ImageStylesWarmer.php
+@@ -145,8 +145,8 @@ public function addQueue(FileInterface $file, array $image_styles) {
+    */
+   public function validateImage(FileInterface $file) {
+     if ($file->isPermanent()) {
+-      $image = $this->image->get($file->getFileUri());
+-      $extensions = implode(' ', $image->getToolkit()->getSupportedExtensions());
++      $image = $this->image->get($file->getFileUri(), 'gd');
++      $extensions = implode(' ', $this->image->getSupportedExtensions());
+       if ($image->isValid() && empty(file_validate_extensions($file, $extensions))) {
+         return TRUE;
+       }

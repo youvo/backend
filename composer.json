@@ -116,6 +116,7 @@
   		"patchLevel": {
             "drupal/core": "-p2",
             "drupal/simple_oauth": "-p4",
+            "drupal/image_style_warmer": "-p4",
             "drupal/jsonapi_include": "-p4",
             "drupal/jsonapi_boost": "-p4",
             "drupal/jsonapi_cross_bundles": "-p4",
