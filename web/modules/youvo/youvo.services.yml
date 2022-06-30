@@ -11,3 +11,8 @@ services:
   logger.channel.youvo:
     parent: logger.channel_base
     arguments: [ 'youvo' ]
+
+  youvo.robots_tag_noindex:
+    class: Drupal\youvo\EventSubscriber\RobotsTagNoindexSubscriber
+    tags:
+      - { name: event_subscriber }
