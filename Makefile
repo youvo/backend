@@ -31,8 +31,8 @@ warm:
 	@vendor/bin/drush warmer:enqueue jsonapi --run-queue
 
 ## gi		:	Generate queued image styles.
-.PHONY: generate-images
-generate-images:
+.PHONY: gi
+gi:
 	@vendor/bin/drush queue-run image_style_warmer_pregenerator
 
 ## fis		:	Flush all image styles.
