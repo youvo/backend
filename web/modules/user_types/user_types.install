@@ -32,8 +32,6 @@ function user_types_site_install_finished() {
   // General permissions for caching uses and basic user permissions.
   $role_object = Role::load('creative');
   $role_object->grantPermission('general creative access');
-  $role_object->grantPermission('cancel account');
-  $role_object->grantPermission('change own username');
   $role_object->save();
   $roles = ['manager', 'supervisor'];
   foreach ($roles as $role) {
@@ -43,7 +41,6 @@ function user_types_site_install_finished() {
   }
   $role_object = Role::load('organization');
   $role_object->grantPermission('general organization access');
-  $role_object->grantPermission('change own username');
   $role_object->save();
 
 }
