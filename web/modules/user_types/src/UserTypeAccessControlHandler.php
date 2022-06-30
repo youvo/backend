@@ -4,18 +4,18 @@ namespace Drupal\user_types;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultNeutral;
-use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\CreativeAccessControlHandler;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\OrganizationAccessControlHandler;
+use Drupal\user\UserAccessControlHandler;
 
 /**
  * Provides access checks for bundled user entities.
  */
-class UserTypeAccessControlHandler extends EntityAccessControlHandler {
+class UserTypeAccessControlHandler extends UserAccessControlHandler {
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
     }
 
     // Handle access check downstream for administrators.
-    if (in_array('administrator', $account->getRoles())) {
+    if ($account->hasPermission('administer users')) {
       return parent::checkAccess($entity, $operation, $account);
     }
 
@@ -43,7 +43,7 @@ class UserTypeAccessControlHandler extends EntityAccessControlHandler {
 
     // Also run the access checks for users.
     return $access_result
-      ->orIf(parent::checkAccess($entity, $operation, $account));
+      ->andIf(parent::checkAccess($entity, $operation, $account));
   }
 
   /**
