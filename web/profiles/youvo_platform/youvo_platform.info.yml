@@ -30,6 +30,7 @@ install:
   # Contrib
   - filefield_paths
   - imagemagick
+  - image_style_warmer
   - jsonapi_cross_bundles
   - jsonapi_extras
   - jsonapi_include
