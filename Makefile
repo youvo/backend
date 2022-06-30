@@ -30,6 +30,11 @@ cr:
 warm:
 	@vendor/bin/drush warmer:enqueue jsonapi --run-queue
 
+## warm-images	:	Warm image styles.
+.PHONY: warm-images
+warm-images:
+	@vendor/bin/ddev drush image-style-warmer:warm-up
+
 ## gi		:	Generate queued image styles.
 .PHONY: gi
 gi:
