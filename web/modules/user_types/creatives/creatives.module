@@ -9,7 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\creatives\CreativeFieldAccess;
+use Drupal\creatives\Access\CreativeFieldAccess;
 use Drupal\creatives\Entity\Creative;
 
 /**

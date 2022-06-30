@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\creatives;
+namespace Drupal\creatives\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
@@ -10,7 +10,7 @@ use Drupal\creatives\Entity\Creative;
 /**
  * Access controller for the Creative entity.
  */
-class CreativeAccessControlHandler {
+class CreativeEntityAccess {
 
   /**
    * Checks access.
@@ -25,17 +25,6 @@ class CreativeAccessControlHandler {
     }
 
     return AccessResult::allowed();
-  }
-
-  /**
-   * Checks create access.
-   *
-   * @todo Rework when registration for creatives lands.
-   *
-   * @see \Drupal\user_types\UserTypeAccessControlHandler::checkCreateAccess()
-   */
-  public static function checkCreateAccess() {
-    return AccessResult::forbidden();
   }
 
 }

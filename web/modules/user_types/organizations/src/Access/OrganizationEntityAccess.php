@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\organizations;
+namespace Drupal\organizations\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
@@ -10,7 +10,7 @@ use Drupal\organizations\Entity\Organization;
 /**
  * Access controller for the Organization entity.
  */
-class OrganizationAccessControlHandler {
+class OrganizationEntityAccess {
 
   /**
    * Checks access.
@@ -30,31 +30,25 @@ class OrganizationAccessControlHandler {
     // See \Drupal\organizations\OrganizationFieldAccess.
     if ($operation == 'edit') {
       if ($entity->isOwnerOrManager($account)) {
-        return AccessResult::allowed()->cachePerUser();
+        return AccessResult::allowed()
+          ->addCacheableDependency($entity)
+          ->cachePerUser();
       }
-      return AccessResult::forbidden()->cachePerUser();
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerUser();
     }
 
     // Only managers can access prospect organizations.
     if ($entity->hasRoleProspect() &&
-      !in_array('manager', $account->getRoles())) {
-      return AccessResult::forbidden()->cachePerUser();
+      !$account->hasPermission('general manager access')) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
     }
 
-    return AccessResult::allowed();
-  }
-
-  /**
-   * Checks create access.
-   *
-   * Only administrators should use the organization creation via admin form.
-   * The creation of an organization is implemented in the following.
-   * See \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource.
-   *
-   * @todo Maybe we can cover this case by permissions.
-   */
-  public static function checkCreateAccess() {
-    return AccessResult::forbidden();
+    return AccessResult::allowed()
+      ->addCacheableDependency($entity);
   }
 
 }

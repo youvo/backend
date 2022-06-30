@@ -8,7 +8,7 @@ use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
-use Drupal\organizations\OrganizationFieldAccess;
+use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user\UserStorageInterface;
