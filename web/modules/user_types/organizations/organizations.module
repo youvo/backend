@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\organizations\Entity\Organization;
-use Drupal\organizations\OrganizationFieldAccess;
+use Drupal\organizations\Access\OrganizationFieldAccess;
 
 /**
  * Implements hook_entity_bundle_info_alter().

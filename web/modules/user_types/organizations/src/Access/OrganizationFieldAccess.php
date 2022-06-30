@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\organizations;
+namespace Drupal\organizations\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\ContentEntityInterface;
