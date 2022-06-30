@@ -6,10 +6,10 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\creatives\CreativeAccessControlHandler;
+use Drupal\creatives\Access\CreativeEntityAccess;
 use Drupal\creatives\Entity\Creative;
+use Drupal\organizations\Access\OrganizationEntityAccess;
 use Drupal\organizations\Entity\Organization;
-use Drupal\organizations\OrganizationAccessControlHandler;
 use Drupal\user\UserAccessControlHandler;
 
 /**
@@ -35,10 +35,10 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
     // Invoke access check for different user types.
     $access_result = new AccessResultNeutral();
     if ($entity instanceof Creative) {
-      $access_result = CreativeAccessControlHandler::checkAccess($entity, $operation, $account);
+      $access_result = CreativeEntityAccess::checkAccess($entity, $operation, $account);
     }
     if ($entity instanceof Organization) {
-      $access_result = OrganizationAccessControlHandler::checkAccess($entity, $operation, $account);
+      $access_result = OrganizationEntityAccess::checkAccess($entity, $operation, $account);
     }
 
     // Also run the access checks for users.

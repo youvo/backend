@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\organizations;
+namespace Drupal\organizations\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
@@ -10,7 +10,7 @@ use Drupal\organizations\Entity\Organization;
 /**
  * Access controller for the Organization entity.
  */
-class OrganizationAccessControlHandler {
+class OrganizationEntityAccess {
 
   /**
    * Checks access.
