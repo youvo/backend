@@ -44,17 +44,4 @@ class OrganizationAccessControlHandler {
     return AccessResult::allowed();
   }
 
-  /**
-   * Checks create access.
-   *
-   * Only administrators should use the organization creation via admin form.
-   * The creation of an organization is implemented in the following.
-   * See \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource.
-   *
-   * @todo Maybe we can cover this case by permissions.
-   */
-  public static function checkCreateAccess() {
-    return AccessResult::forbidden();
-  }
-
 }

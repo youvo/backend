@@ -48,18 +48,14 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * The user creation/registration is handled through custom resources.
+   *
+   * @see \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource
+   * @see \Drupal\creatives\Plugin\rest\resource\CreativeRegisterResource
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    if (in_array('administrator', $account->getRoles())) {
-      return parent::checkCreateAccess($account, $context, $entity_bundle);
-    }
-    if ($entity_bundle == 'organization') {
-      return OrganizationAccessControlHandler::checkCreateAccess();
-    }
-    if ($entity_bundle == 'user') {
-      return CreativeAccessControlHandler::checkCreateAccess();
-    }
-    return AccessResult::neutral();
+    return AccessResult::forbidden();
   }
 
 }

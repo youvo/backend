@@ -27,15 +27,4 @@ class CreativeAccessControlHandler {
     return AccessResult::allowed();
   }
 
-  /**
-   * Checks create access.
-   *
-   * @todo Rework when registration for creatives lands.
-   *
-   * @see \Drupal\user_types\UserTypeAccessControlHandler::checkCreateAccess()
-   */
-  public static function checkCreateAccess() {
-    return AccessResult::forbidden();
-  }
-
 }
