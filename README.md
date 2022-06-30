@@ -142,6 +142,7 @@ make mm-on # maintenance mode on
 make mm-off # maintenance mode off
 make cr # clear caches
 make warm # warm caches
+make gi # generate queued image styles
 make fis # flush all image styles
 make install # (re-)install Drupal (only available in development)
 make rebuild # calculate rebuild token
