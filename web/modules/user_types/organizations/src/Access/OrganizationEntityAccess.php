@@ -30,18 +30,25 @@ class OrganizationEntityAccess {
     // See \Drupal\organizations\OrganizationFieldAccess.
     if ($operation == 'edit') {
       if ($entity->isOwnerOrManager($account)) {
-        return AccessResult::allowed()->cachePerUser();
+        return AccessResult::allowed()
+          ->addCacheableDependency($entity)
+          ->cachePerUser();
       }
-      return AccessResult::forbidden()->cachePerUser();
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerUser();
     }
 
     // Only managers can access prospect organizations.
     if ($entity->hasRoleProspect() &&
-      !in_array('manager', $account->getRoles())) {
-      return AccessResult::forbidden()->cachePerUser();
+      !$account->hasPermission('general manager access')) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
     }
 
-    return AccessResult::allowed();
+    return AccessResult::allowed()
+      ->addCacheableDependency($entity);
   }
 
 }
