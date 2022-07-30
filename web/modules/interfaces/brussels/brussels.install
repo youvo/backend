@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the brussels module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function brussels_install() {
+
+}

@@ -1,0 +1,10 @@
+brussels.settings:
+  path: '/admin/config/services/brussels'
+  defaults:
+   _form: '\Drupal\brussels\Form\BrusselsSettingsForm'
+   _title: 'Brussels Settings'
+  requirements:
+    _role: 'administrator'
+  options:
+    _admin_route: TRUE
+  base_route: entity.user.admin_form

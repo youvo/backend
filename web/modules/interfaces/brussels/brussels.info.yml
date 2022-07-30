@@ -1,0 +1,16 @@
+name: 'Brussels'
+description: 'Migration for the youvo platform.'
+package: Interfaces
+configure: brussels.settings
+
+type: module
+core_version_requirement: '^9.3 || ^10'
+
+dependencies:
+  - youvo:youvo
+  - oauth_grant_remote:oauth_grant_remote
+  - projects:projects
+  - creatives:creatives
+  - organizations:organizations
+  - logbook:logbook
+  - drupal:rest
