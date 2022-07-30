@@ -1,0 +1,12 @@
+brussels.settings:
+  title: Brussels
+  route_name: brussels.settings
+  parent: system.admin_config
+  description: 'Brussels actions.'
+  position: left
+  weight: -25
+brussels.users.form:
+  title: Brussels Users
+  description: 'Brussels Users Form.'
+  route_name: brussels.users.form
+  parent: brussels.settings
