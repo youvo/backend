@@ -6,8 +6,10 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Utility\Error;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\creatives\Entity\Creative;
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Lcobucci\Clock\SystemClock;
@@ -102,23 +104,117 @@ final class BrusselsUsersForm extends FormBase {
 
   /**
    * Migrate a user in batch.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public static function migrateUser($item, &$context) {
-    $account = Creative::create([
-      'uid' => $item['account']['uid'],
-      'name' => $item['account']['mail'],
-      'mail' => $item['account']['mail'],
-      'created' => $item['account']['created'],
-      'access' => $item['account']['access'],
-      'login' => $item['account']['login'],
-      'init' => $item['account']['init'],
-      'roles' => ['creative'],
-      'status' => $item['account']['status'],
-    ]);
-    // Do nothing for now.
-    $account->id();
-    $context['results'][] = $item['account']['name'];
-    $context['message'] = t('Created @title', ['@title' => $item['account']['name']]);
+
+    // Set the current user ID.
+    $uid = $item['account']['uid'];
+
+    // Skip in some cases.
+    if (empty($uid) || !is_numeric($uid) || $uid == 0 || $uid == 1) {
+      $context['results']['error'][] = t('Detected empty or forbidden UID for @title.', ['@title' => $item['account']['name']]);
+      $context['message'] = t('Error for @title', ['@title' => $item['account']['name']]);
+      return;
+    }
+
+    // Load potentially existing user.
+    $existing_user = \Drupal::entityTypeManager()
+      ->getStorage('user')
+      ->load($uid);
+
+    // Only augment any existing users, e.g., participants of the beta.
+    if ($existing_user instanceof User) {
+
+      // Check whether role matches.
+      if (!$existing_user instanceof Creative) {
+        $context['results']['error'][] = t('Detected non-creative user for @title.', ['@title' => $item['account']['name']]);
+        $context['message'] = t('Error for @title', ['@title' => $item['account']['name']]);
+        return;
+      }
+
+      // Some properties were synced during the beta.
+      $account = $existing_user;
+
+      // Update context for results.
+      $context['results'][] = $item['account']['name'];
+      $context['results']['augmented_count'] = isset($context['results']['augmented_count']) ?
+        $context['results']['augmented_count'] + 1 : 1;
+      $context['message'] = t('Augmented @title', ['@title' => $item['account']['name']]);
+    }
+
+    // Create and migrate new user.
+    else {
+
+      // Base fields.
+      $account = Creative::create([
+        'uid' => $item['account']['uid'],
+        'name' => $item['account']['mail'],
+        'pass' => $item['account']['pass'],
+        'mail' => $item['account']['mail'],
+        'created' => $item['account']['created'],
+        'access' => $item['account']['access'],
+        'login' => $item['account']['login'],
+        'init' => $item['account']['init'],
+        'roles' => ['creative'],
+        'status' => $item['account']['status'],
+      ]);
+      $account->set('field_name', gfv($item['profile']['field_name']));
+
+      // Update context for results.
+      $context['results'][] = $item['account']['name'];
+      $context['results']['migrated_count'] = isset($context['results']['migrated_count']) ?
+        $context['results']['migrated_count'] + 1 : 1;
+      $context['message'] = t('Created @title', ['@title' => $item['account']['name']]);
+    }
+
+    // Account subscriptions.
+    $account->set('field_jobs', $item['account']['data']['jobs']);
+    $account->set('field_public_profile', $item['account']['data']['public']);
+    $account->set('field_newsletter', $item['account']['data']['newsletter']);
+
+    // Avatar.
+    if (file_exists('public://brussels/pictures/' . $item['account']['picture']['filename'])) {
+      $avatar = File::create([
+        'uid' => $uid,
+        'filename' => $item['account']['picture']['filename'],
+        'uri' => 'public://brussels/pictures/' . $item['account']['picture']['filename'],
+        'status' => 1,
+      ]);
+      $avatar->save();
+      $account->set('field_avatar', $avatar->id());
+    }
+
+    // Set skills.
+    $skills = [];
+    foreach ($item['profile']['field_skills'][LanguageInterface::LANGCODE_NOT_SPECIFIED] as $skill) {
+      $skills[] = ['target_id' => intval($skill['tid'])];
+    }
+    $account->set('field_skills', $skills);
+
+    // Compile portfolio.
+    $portfolio = [];
+    if (!empty($item['profile']['field_url'])) {
+      $portfolio[] = gfv($item['profile']['field_url']);
+    }
+    foreach ($item['profile']['field_portfolio'][LanguageInterface::LANGCODE_NOT_SPECIFIED] as $url) {
+      $portfolio[] = $url['value'];
+    }
+    $account->set('field_portfolio', $portfolio);
+
+    // Other fields.
+    $account->set('field_about', gfv($item['profile']['field_kurzbeschreibung']));
+    $account->set('field_city', gfv($item['profile']['field_city']));
+    $account->set('field_education', gfv($item['profile']['field_university']));
+    $account->set('field_phone', gfv($item['profile']['field_phone']));
+
+    // @todo Remove test state.
+    if ($uid == 14) {
+      $account->save();
+    }
   }
 
   /**
@@ -127,9 +223,21 @@ final class BrusselsUsersForm extends FormBase {
   public static function migrateUsersFinished($success, $results, $operations) {
     if ($success) {
       \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural(
-        count($results),
+        intval($results['migrated_count']),
         'One user migrated.', '@count users migrated.'
       ));
+      \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural(
+        intval($results['augmented_count']),
+        'One user augmented.', '@count users augmented.'
+      ));
+      if (isset($results['error'])) {
+        \Drupal::messenger()->addMessage(t('There were %count non-fatal error(s):', [
+          '%count' => count($results['error']),
+        ]), 'error');
+        foreach ($results['error'] as $error) {
+          \Drupal::messenger()->addMessage($error, 'error');
+        }
+      }
     }
     else {
       \Drupal::messenger()->addMessage(t('Finished with an error.'));

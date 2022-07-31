@@ -4,3 +4,12 @@
  * @file
  * Implementation of Brussels hooks.
  */
+
+use Drupal\Core\Language\LanguageInterface;
+
+/**
+ * Helper function to get field values.
+ */
+function gfv(array $item) {
+  return $item[LanguageInterface::LANGCODE_NOT_SPECIFIED][0]['value'] ?? '';
+}
