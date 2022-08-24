@@ -17,6 +17,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * Test the implementation of OptionsProviderInterface.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function testOptionsProvider() {
     $node = Node::create([
@@ -26,18 +27,20 @@ class LifecycleTest extends WorkflowsTestBase {
     ]);
     $node->save();
 
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem $field_status */
+    $field_status = $node->field_status[0];
     $this->assertEquals([
       'implementing' => 'Implementing',
       'approved' => 'Approved',
       'rejected' => 'Rejected',
       'planning' => 'Planning',
       'in_discussion' => 'In Discussion',
-    ], $node->field_status[0]->getPossibleOptions());
+    ], $field_status->getPossibleOptions());
     $this->assertEquals([
       'approved' => 'Approved',
       'rejected' => 'Rejected',
       'in_discussion' => 'In Discussion',
-    ], $node->field_status[0]->getSettableOptions());
+    ], $field_status->getSettableOptions());
 
     $this->assertEquals([
       'implementing',
@@ -45,18 +48,19 @@ class LifecycleTest extends WorkflowsTestBase {
       'rejected',
       'planning',
       'in_discussion',
-    ], $node->field_status[0]->getPossibleValues());
+    ], $field_status->getPossibleValues());
     $this->assertEquals([
       'approved',
       'rejected',
       'in_discussion',
-    ], $node->field_status[0]->getSettableValues());
+    ], $field_status->getSettableValues());
   }
 
   /**
    * Settable options are filtered by the users permissions.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function testOptionsProviderFilteredByUser() {
     $node = Node::create([
@@ -68,16 +72,18 @@ class LifecycleTest extends WorkflowsTestBase {
 
     // If a user has no permissions then the only available state is the current
     // state.
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem  $field_status */
+    $field_status = $node->field_status[0];
     $this->assertEquals([
       'in_discussion' => 'In Discussion',
-    ], $node->field_status[0]->getSettableOptions($this->createUser()));
+    ], $field_status->getSettableOptions($this->createUser()));
 
     // Grant the ability to use the approved_project transition and the user
     // should now be able to set the Approved state.
     $this->assertEquals([
       'in_discussion' => 'In Discussion',
       'approved' => 'Approved',
-    ], $node->field_status[0]->getSettableOptions($this->createUser(['use bureaucracy_workflow transition approved_project'])));
+    ], $field_status->getSettableOptions($this->createUser(['use bureaucracy_workflow transition approved_project'])));
   }
 
   /**
@@ -100,7 +106,9 @@ class LifecycleTest extends WorkflowsTestBase {
     ], LifecycleItem::calculateStorageDependencies($node->field_status->getFieldDefinition()->getFieldStorageDefinition()));
 
     // Test the getWorkflow method.
-    $this->assertEquals('bureaucracy_workflow', $node->field_status[0]->getWorkflow()->id());
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem  $field_status */
+    $field_status = $node->field_status[0];
+    $this->assertEquals('bureaucracy_workflow', $field_status->getWorkflow()->id());
   }
 
   /**
