@@ -1,25 +1,14 @@
-From 6264c97ef882a9b63560b172e41ed3d2224b8f20 Mon Sep 17 00:00:00 2001
-From: Simon Baese <simon@youvo.org>
-Date: Mon, 9 Aug 2021 15:19:31 +0200
-Subject: [PATCH] Patch htaccess to enable RewriteBase
-
----
- web/.htaccess | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/web/.htaccess b/web/.htaccess
 index b1ee36b..285cb29 100644
 --- a/web/.htaccess
 +++ b/web/.htaccess
-@@ -113,7 +113,7 @@ AddEncoding gzip svgz
+@@ -118,7 +118,7 @@ AddEncoding gzip svgz
    #
    # If your site is running in a VirtualDocumentRoot at http://example.com/,
    # uncomment the following line:
 -  # RewriteBase /
 +  RewriteBase /
- 
+
    # Redirect common PHP files to their new locations.
    RewriteCond %{REQUEST_URI} ^(.*)?/(install\.php) [OR]
--- 
-2.30.2
 
