@@ -35,6 +35,7 @@
         "drupal/multivalue_form_element": "^1.0@beta",
         "drupal/simple_oauth": "^5.2",
         "drupal/subrequests": "^3.0",
+        "drupal/upgrade_status": "^4.0",
         "drupal/user_bundle": "^1.1",
         "drush/drush": "^10.6"
     },
@@ -115,7 +116,7 @@
   		"enable-patching": true,
   		"patchLevel": {
             "drupal/core": "-p2",
-            "drupal/simple_oauth": "-p4",
+            "drupal/simple_oauth": "-p1",
             "drupal/image_style_warmer": "-p4",
             "drupal/jsonapi_include": "-p4",
             "drupal/jsonapi_boost": "-p4",

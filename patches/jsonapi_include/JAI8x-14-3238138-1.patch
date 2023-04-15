@@ -3,9 +3,9 @@ index b86e251..e4788b0 100644
 --- a/modules/contrib/jsonapi_include/README.md
 +++ b/modules/contrib/jsonapi_include/README.md
 @@ -46,7 +46,7 @@ Install module and module auto parse include and relationship of jsonapi.
- 
+
  **Advanced use:**
- 
+
 -    1. Navigate to Administration>Configuration>Web services>JSON:API Include
 +    1. Navigate to Administration>Configuration>Web services>JSON:API>JSON:API Include
      2. Enable "Use jsonapi_include query in url"
@@ -15,18 +15,17 @@ diff --git a/modules/contrib/jsonapi_include/jsonapi_include.info.yml b/modules/
 index 709b221..74d5e65 100644
 --- a/modules/contrib/jsonapi_include/jsonapi_include.info.yml
 +++ b/modules/contrib/jsonapi_include/jsonapi_include.info.yml
-@@ -1,9 +1,9 @@
+@@ -1,8 +1,8 @@
 -name: 'JSON API Include'
 +name: 'JSON:API Include'
  type: module
  description: 'Add include data to json output'
- core: '8.x'
- core_version_requirement: ^8 || ^9
+ core_version_requirement: ^8 || ^9 || ^10
  package: 'Web services'
 -configure: jsonapi_include.jsonapi_include_settings
 +configure: jsonapi_include.settings
  dependencies:
-   - jsonapi:jsonapi
+   - drupal:jsonapi
 diff --git a/modules/contrib/jsonapi_include/jsonapi_include.links.menu.yml b/modules/contrib/jsonapi_include/jsonapi_include.links.menu.yml
 deleted file mode 100644
 index f5daaf8..0000000
