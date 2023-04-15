@@ -1,6 +1,6 @@
 <h1 align="center">Backend</h1>
 <p align="center">
-  <img width="200" src="/resources/logo.png">
+  <img width="200" src="/resources/logo.png" alt="youvo Logo">
 </p>
 
 ## :wave: &nbsp;Introduction
@@ -21,10 +21,10 @@ We are not using the issue queue in this repository, yet. Just write an email to
 
 For the local development environment, we use DDEV based on Docker. For the system requirements, please see [DDEV docs](https://ddev.readthedocs.io/en/stable/).
 
-Tested on Linux with `Ubuntu 20.04.3 LTS` `composer 2.2.9` `docker 20.10.10` `ddev 1.19.1`.
+Tested on Linux with `Ubuntu 22.04.2 LTS` `composer 2.5.5` `docker 23.0.3` `ddev 1.21.6`.
 Tested on macOS with `macOS Monterey 12.3` `composer 2.2.9` `docker desktop 4.6.1` `ddev 1.19.1`.
 
-Further installation steps may be required to setup SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
+Further installation steps may be required to set up SSH agent and XDebug, see [DDEV troubleshooting](https://ddev.readthedocs.io/en/stable/users/troubleshooting/).
 
 ### Composer
 
