@@ -86,12 +86,14 @@ function logbook_user_delete(AccountInterface $account) {
   // Delete all non-detectable, non-observable and non-public logs of the
   // creative.
   $concealed_patterns = $log_pattern_storage->getQuery()
+    ->accessCheck(FALSE)
     ->condition('detectable', FALSE)
     ->condition('observable', FALSE)
     ->condition('public', FALSE)
     ->execute();
   if (!empty($concealed_patterns)) {
     $log_ids = $log_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('author', $uid)
       ->condition('type', $concealed_patterns, 'IN')
       ->execute();
@@ -114,6 +116,7 @@ function logbook_user_delete(AccountInterface $account) {
     ->condition('manager', $uid)
     ->condition('creatives', $uid, 'IN');
   $log_ids = $log_storage->getQuery()
+    ->accessCheck(FALSE)
     ->condition($or_group)
     ->execute();
   $logs = $log_storage->loadMultiple($log_ids);
@@ -128,12 +131,13 @@ function logbook_user_delete(AccountInterface $account) {
     if ($log->getManager()->id() == $uid) {
       $log->setManager($anonymous);
     }
-    if ($creatives = $log->getCreatives()) {
-      if (in_array($uid, array_map(fn($c) => $c->id(), $creatives))) {
-        $creatives = array_filter($creatives, fn($c) => $c->id() != $uid);
-        $creatives[] = $anonymous;
-        $log->setCreatives($creatives);
-      }
+    if (
+      ($creatives = $log->getCreatives()) &&
+      in_array($uid, array_map(static fn($c) => $c->id(), $creatives))
+    ) {
+      $creatives = array_filter($creatives, static fn($c) => $c->id() != $uid);
+      $creatives[] = $anonymous;
+      $log->setCreatives($creatives);
     }
     try {
       $log->save();

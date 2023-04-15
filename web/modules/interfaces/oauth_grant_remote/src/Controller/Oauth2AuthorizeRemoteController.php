@@ -30,6 +30,7 @@ use Lcobucci\JWT\Token\InvalidTokenStructure;
 use Lcobucci\JWT\Token\UnsupportedHeaderFound;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -93,6 +94,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    *   The config factory.
    * @param \Drupal\simple_oauth\KnownClientsRepositoryInterface $known_clients_repository
    *   The known client repository service.
+   * @param \League\OAuth2\Server\Repositories\ClientRepositoryInterface $client_repository
+   *   The client repository service.
    * @param \GuzzleHttp\Client $http_client
    *   Guzzle http client service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
@@ -113,6 +116,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     Oauth2GrantManagerInterface $grant_manager,
     ConfigFactoryInterface $config_factory,
     KnownClientsRepositoryInterface $known_clients_repository,
+    ClientRepositoryInterface $client_repository,
     Client $http_client,
     TimeInterface $time,
     LoggerChannelInterface $logger,
@@ -121,7 +125,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     Session $session,
     AccountProxyInterface $account
   ) {
-    parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $logger);
+    parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $client_repository, $logger);
     $this->httpClient = $http_client;
     $this->time = $time;
     $this->database = $database;
@@ -139,6 +143,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       $container->get('plugin.manager.oauth2_grant.processor'),
       $container->get('config.factory'),
       $container->get('simple_oauth.known_clients'),
+      $container->get('simple_oauth.repositories.client'),
       $container->get('http_client'),
       $container->get('datetime.time'),
       $container->get('logger.factory')->get('youvo'),

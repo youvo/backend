@@ -149,6 +149,7 @@ class ExpireRefreshTokensController extends ControllerBase {
 
     // If this user is a creative, invalidate refresh tokens.
     $query = $this->tokenStorage->getQuery();
+    $query->accessCheck(FALSE);
     $query->condition('auth_user_id', $remote_account['uid']);
     $query->condition('bundle', 'refresh_token');
     $token_ids = $query->execute();

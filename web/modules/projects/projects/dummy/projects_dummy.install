@@ -174,6 +174,7 @@ function projects_dummy_site_install_finished() {
 
   // Create shell projects for prospect organizations.
   $prospect_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
     ->condition('type', 'organization')
     ->condition('roles', 'prospect')
     ->execute();

@@ -73,6 +73,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
       $this->entityType->getKey('weight') :
       $this->entityType->getKey('id');
     $query = $this->getStorage()->getQuery()
+      ->accessCheck(FALSE)
       ->sort($sort_by)
       ->condition($this->entityType->getKey('parent'), $this->parent->id());
 
