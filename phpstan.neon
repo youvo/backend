@@ -3,6 +3,8 @@ parameters:
   checkGenericClassInNonGenericObjectType: false
   checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
+  paths:
+    - web/modules
   excludePaths:
     - web/modules/contrib/*
   ignoreErrors:
