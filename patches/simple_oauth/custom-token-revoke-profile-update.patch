@@ -1,74 +1,484 @@
-diff --git a/modules/contrib/simple_oauth/simple_oauth.module b/modules/contrib/simple_oauth/simple_oauth.module
-index 04fc84d..61d86e2 100644
---- a/modules/contrib/simple_oauth/simple_oauth.module
-+++ b/modules/contrib/simple_oauth/simple_oauth.module
-@@ -30,7 +30,7 @@ function simple_oauth_cron() {
-   if (!empty($expired_tokens = $collector->collect($token_cron_batch_size))) {
-     $collector->deleteMultipleTokens($expired_tokens);
-     $logger->notice('Deleted @limit expired tokens in cron.', [
--      '@limit' => $token_cron_batch_size,
-+      '@limit' => count($expired_tokens),
-     ]);
-   }
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..de4a392
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++/vendor
++/composer.lock
+diff --git a/composer.json b/composer.json
+index 7dc400f..9819eec 100644
+--- a/composer.json
++++ b/composer.json
+@@ -2,6 +2,12 @@
+     "name": "drupal/simple_oauth",
+     "description": "The Simple OAuth module for Drupal",
+     "type": "drupal-module",
++    "repositories": [
++        {
++            "type": "composer",
++            "url": "https://packages.drupal.org/8"
++        }
++    ],
+     "require": {
+         "lcobucci/jwt": "^4",
+         "league/oauth2-server": "^8.3",
+@@ -10,7 +16,9 @@
+         "php": ">=7.4"
+     },
+     "require-dev": {
+-      "phpspec/prophecy-phpunit": "^2"
++      "phpspec/prophecy-phpunit": "^2",
++      "drupal/core-recommended": "^9",
++      "drupal/core-dev": "^9"
+     },
+     "license": "GPL-2.0-or-later",
+     "extra": {
+@@ -19,5 +27,10 @@
+                 "drush.services.yml": "^9"
+             }
+         }
++    },
++    "config": {
++        "allow-plugins": {
++            "dealerdirect/phpcodesniffer-composer-installer": true
++        }
+     }
  }
-@@ -43,7 +43,22 @@ function simple_oauth_entity_update(EntityInterface $entity) {
-   $collector = \Drupal::service('simple_oauth.expired_collector');
-   // Collect the affected tokens and expire them.
-   if ($entity instanceof AccountInterface) {
+diff --git a/simple_oauth.module b/simple_oauth.module
+index 7a98bc6..a27055d 100644
+--- a/simple_oauth.module
++++ b/simple_oauth.module
+@@ -14,6 +14,7 @@ use Drupal\Core\Session\AccountInterface;
+ use Drupal\consumers\Entity\ConsumerInterface;
+ use Drupal\Core\StringTranslation\TranslatableMarkup;
+ use Drupal\Core\Url;
++use Drupal\simple_oauth\EntityUpdateHookHandler;
+ use Drupal\user\RoleInterface;
+ use Drupal\Core\Link;
+
+@@ -39,15 +40,7 @@ function simple_oauth_cron() {
+  * Implements hook_entity_update().
+  */
+ function simple_oauth_entity_update(EntityInterface $entity) {
+-  /** @var \Drupal\simple_oauth\ExpiredCollector $collector */
+-  $collector = \Drupal::service('simple_oauth.expired_collector');
+-  // Collect the affected tokens and expire them.
+-  if ($entity instanceof AccountInterface) {
 -    $collector->deleteMultipleTokens($collector->collectForAccount($entity));
-+    // Following the Drupal core pattern, revoke access to the system when
-+    // password has been changed.
-+    $password_changed = $entity->pass->value !== $entity->original->pass->value;
+-  }
+-  if ($entity instanceof ConsumerInterface) {
+-    $collector->deleteMultipleTokens($collector->collectForClient($entity));
+-  }
++  \Drupal::service(EntityUpdateHookHandler::class)->handleEntityUpdate($entity);
+ }
+
+ /**
+diff --git a/simple_oauth.services.yml b/simple_oauth.services.yml
+index 0455a1a..e869dab 100644
+--- a/simple_oauth.services.yml
++++ b/simple_oauth.services.yml
+@@ -109,3 +109,7 @@ services:
+     arguments: [ '@entity_type.manager', '%simple_oauth.openid.claims%', '@module_handler' ]
+     tags:
+       - { name: normalizer, priority: 21 }
++  Drupal\simple_oauth\EntityUpdateHookHandler:
++    arguments:
++      - '@simple_oauth.expired_collector'
++      - '@event_dispatcher'
+\ No newline at end of file
+diff --git a/src/EntityUpdateHookHandler.php b/src/EntityUpdateHookHandler.php
+new file mode 100644
+index 0000000..3df0448
+--- /dev/null
++++ b/src/EntityUpdateHookHandler.php
+@@ -0,0 +1,78 @@
++<?php
 +
-+    // When the account got blocked, we should revoke user's access to the site.
-+    $account_blocked = !$entity->pass->value && $entity->original->status->value;
++namespace Drupal\simple_oauth;
 +
-+    // When roles have changed, we should revoke the token to prevent potential
-+    // access to the content where the user has no access to anymore.
-+    $roles_new = $entity->getRoles();
-+    $roles_old = $entity->original->getRoles();
-+    $roles_changed = array_merge(array_diff($roles_new, $roles_old), array_diff($roles_old, $roles_new));
++use Drupal\consumers\Entity\Consumer;
++use Drupal\Core\Entity\EntityInterface;
++use Drupal\simple_oauth\Event\UserUpdateTokenInvalidationEvent;
++use Drupal\user\UserInterface;
++use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 +
-+    if ($password_changed || $account_blocked || $roles_changed) {
-+      $collector->revokeMultipleTokens($collector->collectForAccount($entity, FALSE));
++final class EntityUpdateHookHandler {
++
++  /**
++   * Token collector.
++   *
++   * @var \Drupal\simple_oauth\ExpiredCollector
++   */
++  protected ExpiredCollector $expiredCollector;
++
++  /**
++   * Event dispatcher.
++   *
++   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
++   */
++  protected EventDispatcherInterface $eventDispatcher;
++
++  public function __construct(
++    ExpiredCollector $expired_collector,
++    EventDispatcherInterface $event_dispatcher
++  ) {
++    $this->collector = $expired_collector;
++    $this->eventDispatcher = $event_dispatcher;
++  }
++
++  /**
++   * Handle invalidation of tokens secondary to entity update.
++   *
++   * @param \Drupal\Core\Entity\EntityInterface $entity
++   *   Updated entity.
++   */
++  public function handleEntityUpdate(EntityInterface $entity): void {
++    // Collect the affected tokens and expire them.
++    if ($entity instanceof UserInterface) {
++      // Following the Drupal core pattern, revoke access to the system when
++      // password has been changed.
++      $password_changed = $entity->pass->value !== $entity->original->pass->value;
++
++      // When the account got blocked, we should revoke user's access to the site.
++      $account_blocked = !$entity->isActive() && $entity->original->isActive();
++
++      // When roles have changed, we should revoke the token to prevent potential
++      // access to the content where the user has no access to anymore.
++      $roles_new = $entity->getRoles();
++      $roles_old = $entity->original->getRoles();
++      $roles_changed = array_merge(
++        array_diff($roles_new, $roles_old),
++        array_diff($roles_old, $roles_new)
++      );
++
++      $event = new UserUpdateTokenInvalidationEvent(
++        $password_changed || $account_blocked || $roles_changed
++      );
++      $this->eventDispatcher->dispatch($event);
++      if ($event->willInvalidateAccessTokens()) {
++        $this->collector
++          ->deleteMultipleTokens($this->collector->collectForAccount(
++            $entity,
++            $event->willInvalidateRefreshTokens()
++          ));
++      }
 +    }
-   }
-   if ($entity instanceof Consumer) {
-     $collector->deleteMultipleTokens($collector->collectForClient($entity));
-diff --git a/modules/contrib/simple_oauth/src/ExpiredCollector.php b/modules/contrib/simple_oauth/src/ExpiredCollector.php
-index 296f794..7e47655 100644
---- a/modules/contrib/simple_oauth/src/ExpiredCollector.php
-+++ b/modules/contrib/simple_oauth/src/ExpiredCollector.php
-@@ -81,10 +81,12 @@ public function collect($limit = 0) {
++    if ($entity instanceof Consumer) {
++      $this->collector
++        ->deleteMultipleTokens($this->collector->collectForClient($entity));
++    }
++  }
++
++}
+diff --git a/src/Event/UserUpdateTokenInvalidationEvent.php b/src/Event/UserUpdateTokenInvalidationEvent.php
+new file mode 100644
+index 0000000..1716ff4
+--- /dev/null
++++ b/src/Event/UserUpdateTokenInvalidationEvent.php
+@@ -0,0 +1,100 @@
++<?php
++
++namespace Drupal\simple_oauth\Event;
++
++use Drupal\Component\EventDispatcher\Event;
++
++/**
++ * Event for determining whether to invalidate user tokens on update.
++ */
++final class UserUpdateTokenInvalidationEvent extends Event {
++
++  /**
++   * Whether Simple OAuth has determined that the user's access has changed.
++   *
++   * @var bool
++   */
++  protected bool $haveAccessCharacteristicsChanged;
++
++  /**
++   * Whether to invalidate user's access tokens.
++   *
++   * This is TRUE by default to maintain BC. To only invalidate when access
++   * characteristics have changed, implement an event subscriber to set this to
++   * the value of ::haveUserAccessCharacteristicsChanged().
++   *
++   * @var bool
++   */
++  protected ?bool $invalidateAccessTokens = TRUE;
++
++  /**
++   * Whether to invalidate user's refresh tokens.
++   *
++   * @var bool
++   */
++  protected ?bool $invalidateRefreshTokens = FALSE;
++
++  /**
++   * Setter for access token invalidation.
++   *
++   * @param bool $flag
++   *   Whether to invalidate access tokens.
++   */
++  public function setInvalidateAccessTokens(bool $flag): void {
++    $this->invalidateAccessTokens = $flag;
++  }
++
++  /**
++   * Getter for access token invalidation behavior.
++   *
++   * @return bool
++   *   Determination.
++   */
++  public function willInvalidateAccessTokens(): bool {
++    return $this->invalidateRefreshTokens;
++  }
++
++  /**
++   * Getter for refresh token invalidation behavior.
++   *
++   * @return bool
++   *   Determination.
++   */
++  public function willInvalidateRefreshTokens(): bool {
++    return $this->invalidateRefreshTokens;
++  }
++
++  /**
++   * Setter for refresh token invalidation.
++   *
++   * @param bool $flag
++   *   Whether to invalidate refresh tokens.
++   */
++  public function setInvalidateRefreshTokens(bool $flag): void {
++    $this->invalidateRefreshTokens = $flag;
++    if ($flag === TRUE) {
++      $this->invalidateAccessTokens = TRUE;
++    }
++  }
++
++  /**
++   * Getter for Simple OAuth's determination of access characteristic change.
++   *
++   * @return bool
++   *   TRUE if the user's roles, password or status has changed.
++   */
++  public function haveUserAccessCharacteristicsChanged(): bool {
++    return $this->haveAccessCharacteristicsChanged;
++  }
++
++  /**
++   * Constructor.
++   *
++   * @param bool $access_characteristics_have_changed
++   *   Flag for whether user access characteristics have changed.
++   */
++  public function __construct(bool $access_characteristics_have_changed) {
++    $this->haveAccessCharacteristicsChanged = $access_characteristics_have_changed;
++  }
++
++}
+diff --git a/src/ExpiredCollector.php b/src/ExpiredCollector.php
+index 0eb6795..4566483 100644
+--- a/src/ExpiredCollector.php
++++ b/src/ExpiredCollector.php
+@@ -78,15 +78,19 @@ class ExpiredCollector {
+    *
+    * @param \Drupal\Core\Session\AccountInterface $account
+    *   The account.
++   * @param bool $include_refresh_tokens
++   *   Include refresh tokens. FALSE by default for BC reasons.
+    *
     * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
     *   The tokens.
     */
 -  public function collectForAccount(AccountInterface $account) {
-+  public function collectForAccount(AccountInterface $account, $exclude_refresh_token = TRUE) {
++  public function collectForAccount(AccountInterface $account, bool $include_refresh_tokens = FALSE) {
      $query = $this->tokenStorage->getQuery();
+     $query->accessCheck();
      $query->condition('auth_user_id', $account->id());
 -    $query->condition('bundle', 'refresh_token', '!=');
-+    if ($exclude_refresh_token) {
++    if (!$include_refresh_tokens) {
 +      $query->condition('bundle', 'refresh_token', '!=');
 +    }
      $entity_ids = $query->execute();
      $output = $entity_ids
        ? array_values($this->tokenStorage->loadMultiple(array_values($entity_ids)))
-@@ -142,4 +144,17 @@ public function deleteMultipleTokens(array $tokens = []) {
-     $this->tokenStorage->delete($tokens);
+--
+GitLab
+
+
+From 5ff0c27b5e125ccab69e6fe4eab4abb06e82024b Mon Sep 17 00:00:00 2001
+From: Brad Jones <brad@bradjonesllc.com>
+Date: Fri, 19 Aug 2022 23:22:58 -0600
+Subject: [PATCH 2/5] CS update
+
+---
+ simple_oauth.services.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/simple_oauth.services.yml b/simple_oauth.services.yml
+index e869dab..4b9425a 100644
+--- a/simple_oauth.services.yml
++++ b/simple_oauth.services.yml
+@@ -112,4 +112,4 @@ services:
+   Drupal\simple_oauth\EntityUpdateHookHandler:
+     arguments:
+       - '@simple_oauth.expired_collector'
+-      - '@event_dispatcher'
+\ No newline at end of file
++      - '@event_dispatcher'
+--
+GitLab
+
+
+From 5626f6ae559f2f51eda619cebab4429c3b554e62 Mon Sep 17 00:00:00 2001
+From: Brad Jones <brad@bradjonesllc.com>
+Date: Sat, 20 Aug 2022 00:15:55 -0600
+Subject: [PATCH 3/5] Fix property names
+
+---
+ src/Event/UserUpdateTokenInvalidationEvent.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Event/UserUpdateTokenInvalidationEvent.php b/src/Event/UserUpdateTokenInvalidationEvent.php
+index 1716ff4..f49a308 100644
+--- a/src/Event/UserUpdateTokenInvalidationEvent.php
++++ b/src/Event/UserUpdateTokenInvalidationEvent.php
+@@ -51,7 +51,7 @@ final class UserUpdateTokenInvalidationEvent extends Event {
+    *   Determination.
+    */
+   public function willInvalidateAccessTokens(): bool {
+-    return $this->invalidateRefreshTokens;
++    return $this->invalidateAccessTokens;
    }
 
+   /**
+--
+GitLab
+
+
+From 421586422f23219ed24b976fed450b76599de791 Mon Sep 17 00:00:00 2001
+From: Brad Jones <brad@bradjonesllc.com>
+Date: Thu, 17 Nov 2022 16:03:35 -0700
+Subject: [PATCH 4/5] Use ConsumerInterface
+
+---
+ src/EntityUpdateHookHandler.php | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/EntityUpdateHookHandler.php b/src/EntityUpdateHookHandler.php
+index 3df0448..78a0988 100644
+--- a/src/EntityUpdateHookHandler.php
++++ b/src/EntityUpdateHookHandler.php
+@@ -2,7 +2,7 @@
+
+ namespace Drupal\simple_oauth;
+
+-use Drupal\consumers\Entity\Consumer;
++use Drupal\consumers\Entity\ConsumerInterface;
+ use Drupal\Core\Entity\EntityInterface;
+ use Drupal\simple_oauth\Event\UserUpdateTokenInvalidationEvent;
+ use Drupal\user\UserInterface;
+@@ -69,7 +69,7 @@ final class EntityUpdateHookHandler {
+           ));
+       }
+     }
+-    if ($entity instanceof Consumer) {
++    if ($entity instanceof ConsumerInterface) {
+       $this->collector
+         ->deleteMultipleTokens($this->collector->collectForClient($entity));
+     }
+--
+GitLab
+
+
+From ca33f209399e1d9c34fa52a98cdc9dfe314196c3 Mon Sep 17 00:00:00 2001
+From: Dieter Holvoet <dieter.holvoet@gmail.com>
+Date: Thu, 5 Jan 2023 14:14:38 +0100
+Subject: [PATCH 5/5] Add the user entity to the event object
+
+---
+ src/EntityUpdateHookHandler.php               |  3 +-
+ .../UserUpdateTokenInvalidationEvent.php      | 33 ++++++++++++++++++-
+ 2 files changed, 34 insertions(+), 2 deletions(-)
+
+diff --git a/src/EntityUpdateHookHandler.php b/src/EntityUpdateHookHandler.php
+index 78a0988..d7dd5ee 100644
+--- a/src/EntityUpdateHookHandler.php
++++ b/src/EntityUpdateHookHandler.php
+@@ -58,7 +58,8 @@ final class EntityUpdateHookHandler {
+       );
+
+       $event = new UserUpdateTokenInvalidationEvent(
+-        $password_changed || $account_blocked || $roles_changed
++        $password_changed || $account_blocked || $roles_changed,
++        $entity
+       );
+       $this->eventDispatcher->dispatch($event);
+       if ($event->willInvalidateAccessTokens()) {
+diff --git a/src/Event/UserUpdateTokenInvalidationEvent.php b/src/Event/UserUpdateTokenInvalidationEvent.php
+index f49a308..f3095f1 100644
+--- a/src/Event/UserUpdateTokenInvalidationEvent.php
++++ b/src/Event/UserUpdateTokenInvalidationEvent.php
+@@ -3,12 +3,20 @@
+ namespace Drupal\simple_oauth\Event;
+
+ use Drupal\Component\EventDispatcher\Event;
++use Drupal\user\UserInterface;
+
+ /**
+  * Event for determining whether to invalidate user tokens on update.
+  */
+ final class UserUpdateTokenInvalidationEvent extends Event {
+
 +  /**
-+   * Revokes multiple tokens based on ID.
++   * The user entity.
 +   *
-+   * @param \Drupal\simple_oauth\Entity\Oauth2TokenInterface[] $tokens
-+   *   The token entity IDs.
++   * @var \Drupal\user\UserInterface
 +   */
-+  public function revokeMultipleTokens(array $tokens = []) {
-+    foreach ($tokens as $token) {
-+      $token->revoke();
-+      $token->save();
-+    }
++  protected UserInterface $user;
++
+   /**
+    * Whether Simple OAuth has determined that the user's access has changed.
+    *
+@@ -34,6 +42,26 @@ final class UserUpdateTokenInvalidationEvent extends Event {
+    */
+   protected ?bool $invalidateRefreshTokens = FALSE;
+
++  /**
++   * Get the changed user entity.
++   *
++   * @return \Drupal\user\UserInterface
++   *   The user entity.
++   */
++  public function getUser(): UserInterface {
++    return $this->user;
 +  }
 +
++  /**
++   * Get the unchanged user entity.
++   *
++   * @return \Drupal\user\UserInterface|null
++   *   The unchanged user entity.
++   */
++  public function getOriginalUser(): ?UserInterface {
++    return $this->user->original ?? NULL;
++  }
++
+   /**
+    * Setter for access token invalidation.
+    *
+@@ -92,9 +120,12 @@ final class UserUpdateTokenInvalidationEvent extends Event {
+    *
+    * @param bool $access_characteristics_have_changed
+    *   Flag for whether user access characteristics have changed.
++   * @param \Drupal\user\UserInterface $user
++   *   The user entity.
+    */
+-  public function __construct(bool $access_characteristics_have_changed) {
++  public function __construct(bool $access_characteristics_have_changed, UserInterface $user) {
+     $this->haveAccessCharacteristicsChanged = $access_characteristics_have_changed;
++    $this->user = $user;
+   }
+
  }

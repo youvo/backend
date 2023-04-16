@@ -23,6 +23,7 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
     try {
       $log_storage = $this->entityTypeManager->getStorage('log');
       $log_ids = $log_storage->getQuery()
+        ->accessCheck(FALSE)
         ->condition('project', $event->getProject()->id())
         ->execute();
       $logs = $log_storage->loadMultiple($log_ids);

@@ -139,7 +139,7 @@ class ProgressManager {
   /**
    * Determines the unlocked status.
    */
-  public function isUnlocked(AcademicFormatInterface $entity, AccountInterface $account = NULL): bool {
+  public function isUnlocked(AcademicFormatInterface $entity, ?AccountInterface $account = NULL): bool {
 
     // Look for cached results.
     $cache_result = $this->getProgressCache($entity, 'unlocked');
@@ -256,7 +256,7 @@ class ProgressManager {
     }
 
     $total = count($lectures);
-    $completed = count(array_filter($lectures, fn($l) => $l->completed));
+    $completed = count(array_filter($lectures, static fn($l) => $l->completed));
     $progression = ceil($completed / $total * 100);
 
     // Here, we cover an edge case. An example scenario:
@@ -320,7 +320,7 @@ class ProgressManager {
 
     // Get the first lecture that is not completed.
     $lecture = current(array_filter($lectures_by_completed,
-      fn($l) => !$l->completed));
+      static fn($l) => !$l->completed));
 
     // If somehow all lectures are completed return the first lecture.
     if (!$lecture) {
@@ -328,7 +328,7 @@ class ProgressManager {
     }
 
     // Get selected lecture from references and check unlocked status again.
-    $lecture = array_filter($lectures, fn ($l) => $l->id() == $lecture->id);
+    $lecture = array_filter($lectures, static fn ($l) => $l->id() == $lecture->id);
     $lecture = reset($lecture);
     return $this->isUnlocked($lecture) ? $lecture : $first;
   }
@@ -359,7 +359,7 @@ class ProgressManager {
     $answered = TRUE;
 
     if ($questionnaires = array_filter($lecture->getParagraphs(),
-      fn($p) => $p->bundle() == 'questionnaire')) {
+      static fn($p) => $p->bundle() == 'questionnaire')) {
       /** @var \Drupal\questionnaire\Entity\Questionnaire[] $questionnaires */
       foreach ($questionnaires as $questionnaire) {
         $questions = $questionnaire->getQuestions();
@@ -384,7 +384,7 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function loadProgress(AcademicFormatInterface $entity, AccountInterface $account = NULL): ?ProgressInterface {
+  public function loadProgress(AcademicFormatInterface $entity, ?AccountInterface $account = NULL): ?ProgressInterface {
 
     $progress_entity_type_id = $entity->getEntityTypeId() . '_progress';
 
@@ -395,6 +395,7 @@ class ProgressManager {
     $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
       ->getQuery();
     $progress_id = $query
+      ->accessCheck(FALSE)
       ->condition($entity->getEntityTypeId(), $entity->id())
       ->condition('uid', $uid)
       ->execute();
@@ -421,7 +422,7 @@ class ProgressManager {
   /**
    * Gets a field of the progress.
    */
-  protected function getProgressField(AcademicFormatInterface $entity, string $field_name, AccountInterface $account = NULL): mixed {
+  protected function getProgressField(AcademicFormatInterface $entity, string $field_name, ?AccountInterface $account = NULL): mixed {
 
     $progress = NULL;
 
@@ -445,7 +446,7 @@ class ProgressManager {
   /**
    * Gets the referenced lectures with completed status.
    */
-  public function getReferencedLecturesByCompleted(Course $course, AccountInterface $account = NULL): array {
+  public function getReferencedLecturesByCompleted(Course $course, ?AccountInterface $account = NULL): array {
 
     $lecture_references = $course->get('lectures')->getValue();
     $lecture_ids = array_column($lecture_references, 'target_id');
@@ -472,7 +473,7 @@ class ProgressManager {
   /**
    * Gets the courses with completed status.
    */
-  public function getCoursesByCompleted(AccountInterface $account = NULL) {
+  public function getCoursesByCompleted(?AccountInterface $account = NULL) {
 
     // Get id and completed with custom query sorted by weight.
     // Might be faster than loading every course individually.

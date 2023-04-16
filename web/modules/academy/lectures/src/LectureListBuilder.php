@@ -212,7 +212,7 @@ final class LectureListBuilder extends EntityListBuilder implements FormInterfac
       $delta = count($lectures);
 
       foreach ($lectures as $lecture) {
-        $row = $this->buildRow($lecture, $course_id);
+        $row = $this->buildRow($lecture, (int) $course_id);
         if (isset($row['weight'])) {
           $row['weight']['#delta'] = $delta;
         }

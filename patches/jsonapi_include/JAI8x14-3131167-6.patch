@@ -5,7 +5,7 @@ index 84d6e85..9cc4e09 100644
 @@ -19,6 +19,13 @@ class JsonapiParse implements JsonapiParseInterface {
     */
    protected $included;
- 
+
 +  /**
 +   * Allowed includes.
 +   *
@@ -33,7 +33,7 @@ index 84d6e85..9cc4e09 100644
 +    $result = $this->resolveRelationships($object, $key);
      return $result;
    }
- 
+
 @@ -116,10 +123,17 @@ class JsonapiParse implements JsonapiParseInterface {
     * @param array|mixed $resource
     *   The resource to verify.
@@ -52,7 +52,7 @@ index 84d6e85..9cc4e09 100644
 +
      return isset($resource['type']) && isset($this->included[$resource['type']]);
    }
- 
+
 @@ -129,12 +143,15 @@ class JsonapiParse implements JsonapiParseInterface {
     * @param array|mixed $data
     *   The data for resolve.
@@ -115,7 +115,7 @@ index 84d6e85..9cc4e09 100644
      if (empty($resource['relationships'])) {
        return $resource;
      }
- 
+
      foreach ($resource['relationships'] as $key => $value) {
 -      $resource[$key] = $this->resolveRelationshipData($value);
 +      $resource[$key] = $this->resolveRelationshipData($value, trim("$parent_key.$key", '.'));
@@ -129,7 +129,7 @@ index 84d6e85..9cc4e09 100644
 -    return $this->resolveRelationships($attributes);
 +    return $this->resolveRelationships($attributes, '');
    }
- 
+
    /**
 @@ -227,6 +250,8 @@ class JsonapiParse implements JsonapiParseInterface {
        return $json;

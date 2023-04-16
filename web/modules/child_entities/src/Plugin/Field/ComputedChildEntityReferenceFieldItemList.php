@@ -48,7 +48,9 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
 
     // Query for children referencing the parent.
     $query = $this->entityTypeManager()
-      ->getStorage($target_type_id)->getQuery()
+      ->getStorage($target_type_id)
+      ->getQuery()
+      ->accessCheck(FALSE)
       ->condition($parent->getEntityTypeId(), $parent->id());
 
     // Sort by weight if the field is available.
@@ -60,7 +62,7 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
 
     // Attach the query result to the list.
     $this->setValue(
-      array_map(fn ($id) => ['target_id' => $id], $query->execute())
+      array_map(static fn ($id) => ['target_id' => $id], $query->execute())
     );
   }
 
