@@ -44,8 +44,7 @@
         },
         "drupal/image_style_warmer": {
           "Custom: Validate image with GD toolkit": "patches/image_style_warmer/custom-validate-image-with-gd-toolkit.patch",
-          "Custom: Queue initial image styles during installation": "patches/image_style_warmer/custom-queue-initial-image-styles-during-installation.patch",
-          "Custom: Call image styles warmer batch operations statically": "patches/image_style_warmer/custom-call-image-styles-warmer-batch-ops-statically.patch"
+          "Custom: Queue initial image styles during installation": "patches/image_style_warmer/custom-queue-initial-image-styles-during-installation.patch"
         }
     }
 }
