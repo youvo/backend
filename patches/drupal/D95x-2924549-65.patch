@@ -1,8 +1,8 @@
 diff --git a/core/includes/install.core.inc b/core/includes/install.core.inc
-index c8103369b6..06aab93fed 100644
+index 6832eae707..8644b96e4a 100644
 --- a/core/includes/install.core.inc
 +++ b/core/includes/install.core.inc
-@@ -878,6 +878,7 @@ function install_tasks($install_state) {
+@@ -873,6 +873,7 @@ function install_tasks($install_state) {
        'run' => $needs_translations ? INSTALL_TASK_RUN_IF_NOT_COMPLETED : INSTALL_TASK_SKIP,
      ],
      'install_finished' => [],
@@ -10,8 +10,8 @@ index c8103369b6..06aab93fed 100644
    ];
 
    // Allow the installation profile to modify the full list of tasks.
-@@ -1871,6 +1872,16 @@ function install_finished(&$install_state) {
-   \Drupal::messenger()->addStatus($success_message);
+@@ -1884,6 +1885,16 @@ function install_finished(&$install_state) {
+   \Drupal::state()->set('install_time', \Drupal::time()->getRequestTime());
  }
 
 +/**
@@ -21,27 +21,22 @@ index c8103369b6..06aab93fed 100644
 + *   An array of information about the current installation state.
 + */
 +function install_invoke_finished_hooks(&$install_state) {
-+  \Drupal::moduleHandler()->invokeAll('site_install_finished', [$install_state]);
++  \Drupal::moduleHandler()->invokeAll('site_install_finished', array_values($install_state));
 +}
 +
  /**
   * Implements callback_batch_operation().
   *
 diff --git a/core/lib/Drupal/Core/Extension/module.api.php b/core/lib/Drupal/Core/Extension/module.api.php
-index e2ffe1320b..11561da340 100644
+index bab77e3a54..48ccd4eedd 100644
 --- a/core/lib/Drupal/Core/Extension/module.api.php
 +++ b/core/lib/Drupal/Core/Extension/module.api.php
-@@ -502,6 +502,30 @@ function hook_install_tasks_alter(&$tasks, $install_state) {
-   $tasks['install_configure_form']['function'] = 'myprofile_install_configure_form';
+@@ -513,6 +513,41 @@ function hook_install_tasks_alter(&$tasks, $install_state) {
+   $tasks['install_configure_form']['function'] = 'my_profile_install_configure_form';
  }
 
 +/**
-+ * Perform necessary actions after Drupal being installed.
-+ *
-+ * It is recommended that you implement this hook if you want to perform some
-+ * actions after site is installed.
-+ *
-+ * This hook is invoked at the end of installation profile.
++ * Responds to Drupal being installed.
 + *
 + * @param $install_state
 + *   An array of information about the current installation state.
@@ -49,6 +44,7 @@ index e2ffe1320b..11561da340 100644
 + * @see install_tasks()
 + */
 +function hook_site_install_finished($install_state) {
++
 +  // Example function body for setting state only once installation
 +  // has finally completed.
 +  if (!empty($install_state['parameters']['profile'])) {
@@ -57,9 +53,23 @@ index e2ffe1320b..11561da340 100644
 +      \Drupal::state()->set('my_module_special_profile_support', TRUE);
 +    }
 +  }
++
++  // Example function body setting a status message only once installation
++  // has finally completed.
++  if (!empty($install_state['parameters']['profile'])) {
++    $profile = $install_state['parameters']['profile'];
++    if ($profile === 'demo_umami') {
++      $umami = 'https://www.drupal.org/docs/8/umami-drupal-8-demonstration-installation-profile';
++      \Drupal::messenger()->addStatus(t('Read more about <a href=":umami">Umami</a> online.',
++        [
++          ':umami' => $umami,
++        ])
++      );
++    }
++  }
++
 +}
 +
  /**
   * Perform a single update between minor versions.
   *
-

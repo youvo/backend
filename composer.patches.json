@@ -1,8 +1,8 @@
 {
     "patches": {
 	    "drupal/core": {
-          "Issue #1356276: Introduce base profiles (Scheduled Drupal 9.5.0)": "patches/drupal/D94x-1356276-686.patch",
-          "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.5.0)": "patches/drupal/D91x-2924549-38.patch",
+          "Issue #3266057: Introduce base profiles": "patches/drupal/D95x-3266057-110.patch",
+          "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.5.0)": "patches/drupal/D95x-2924549-65.patch",
           "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request (Scheduled Drupal 9.5.0)": "patches/drupal/D94x-3181946-23.patch",
           "Issue #3098935: JSON:API can't handle exceptions thrown during authentication (Scheduled Drupal 9.5.0)": "patches/drupal/D94x-3098935-16.patch",
           "Custom: Change file upload route for jsonapi extras": "patches/drupal/custom-change-file-upload-route-for-jsonapi-extras.patch",
