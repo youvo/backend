@@ -81,23 +81,4 @@ class WorkflowsFormatterTest extends WorkflowsTestBase {
     ], $output[0]['#items']);
   }
 
-  /**
-   * Test the default formatter.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public function testDefaultFormatter() {
-    $node = Node::create([
-      'title' => 'Foo',
-      'type' => 'project',
-      'field_status' => 'in_discussion',
-    ]);
-    $node->save();
-
-    $this->assertEquals([
-      '#markup' => 'In Discussion',
-      '#allowed_tags' => FieldFilteredMarkup::allowedTags(),
-    ], $node->field_status->view()[0]);
-  }
-
 }

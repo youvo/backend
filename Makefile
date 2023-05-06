@@ -85,3 +85,8 @@ phpstan:
 .PHONY: phpcs
 phpcs:
 	@vendor/bin/phpcs $(filter-out $@,$(MAKECMDGOALS))
+
+## phpunit 	:	Run PHPUnit tests.
+.PHONY: phpunit
+phpunit:
+	@vendor/bin/phpunit --configuration ${PWD}/phpunit.local.xml

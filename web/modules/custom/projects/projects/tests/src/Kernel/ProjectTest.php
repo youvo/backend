@@ -14,8 +14,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests a base for project tests.
+ *
+ * @group projects
  */
-class ProjectTestBase extends KernelTestBase {
+class ProjectTest extends KernelTestBase {
 
   use RequestTrait;
   use UserCreationTrait;
