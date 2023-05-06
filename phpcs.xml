@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="phpcs">
   <description>PHP Code Sniffer configuration</description>
-  <file>web/modules/academy</file>
-  <file>web/modules/interfaces</file>
-  <file>web/modules/mailer</file>
-  <file>web/modules/monitoring</file>
-  <file>web/modules/projects</file>
-  <file>web/modules/user_types</file>
-  <file>web/modules/youvo</file>
+  <file>web/modules/custom/academy</file>
+  <file>web/modules/custom/interfaces</file>
+  <file>web/modules/custom/mailer</file>
+  <file>web/modules/custom/monitoring</file>
+  <file>web/modules/custom/projects</file>
+  <file>web/modules/custom/user_types</file>
+  <file>web/modules/custom/youvo</file>
   <arg name="extensions" value="php,module,inc,install,test,profile,theme,css,info,txt,yml" />
   <config name="drupal_core_version" value="9" />
   <rule ref="vendor/drupal/coder/coder_sniffer/Drupal" />

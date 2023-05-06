@@ -4,7 +4,7 @@ parameters:
   checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
   paths:
-    - web/modules
+    - web/modules/custom
   excludePaths:
     - web/modules/contrib/*
   ignoreErrors:
