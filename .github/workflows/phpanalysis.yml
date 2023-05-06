@@ -1,4 +1,4 @@
-name: PHP Code Analysis
+name: PHP Code Analysis & Tests
 
 on:
   pull_request:
@@ -25,3 +25,26 @@ jobs:
       - name: Static code analysis
         run: |
           vendor/bin/phpstan analyze web/modules
+  phptests:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Verify MySQL connection from host
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql --host db --port 3306 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS db"
+      - name: Setup dependencies
+        run: |
+          composer --version
+          composer validate
+          composer install -n
+      - name: Run PHPUnit tests
+        run: |
+          php vendor/phpunit/phpunit/phpunit
