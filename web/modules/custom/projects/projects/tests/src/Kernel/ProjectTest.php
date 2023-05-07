@@ -3,6 +3,7 @@
 namespace Drupal\Tests\projects\Kernel;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\organizations\Entity\Organization;
@@ -28,6 +29,13 @@ class ProjectTest extends KernelTestBase {
   // @codingStandardsIgnoreStart
   protected $strictConfigSchema = FALSE;
   // @codingStandardsIgnoreEnd
+
+  /**
+   * The administrator.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected AccountInterface $admin;
 
   /**
    * {@inheritdoc}
@@ -85,6 +93,15 @@ class ProjectTest extends KernelTestBase {
     ConfigurableLanguage::createFromLangcode('de')->save();
 
     $this->installEntitySchema('user');
+
+    $this->admin = $this->createUser(
+      ['administer projects'],
+      'Admira Mineur',
+      TRUE,
+      ['uid' => 1],
+    );
+    $this->admin->addRole('administrator');
+    $this->admin->save();
     $this->createOrganization();
 
     $this->installEntitySchema('taxonomy_term');
@@ -101,7 +118,7 @@ class ProjectTest extends KernelTestBase {
 
     // Create node with random information.
     $project = Project::create([
-      'uid' => 1,
+      'uid' => 3,
       'type' => 'project',
       'title' => 'Test Project',
       'body' => [
@@ -117,7 +134,7 @@ class ProjectTest extends KernelTestBase {
       'field_material' => 'Test',
       'field_appreciation' => 'Test',
       'field_image_copyright' => 'Test',
-      'field_lifecycle' => 'open',
+      'field_lifecycle' => 'draft',
     ]);
 
     $project->save();
@@ -128,6 +145,7 @@ class ProjectTest extends KernelTestBase {
    */
   public function testDoRequest(): void {
 
+    $this->setCurrentUser($this->admin);
     $request = Request::create('/12345/api/projects');
     $this->doRequest($request);
     self::assertStringContainsString(
@@ -170,7 +188,7 @@ class ProjectTest extends KernelTestBase {
       'type' => 'organization',
       'pass' => 'password',
       'status' => 1,
-      'uid' => 1,
+      'uid' => 3,
     ];
 
     // Create organization.
