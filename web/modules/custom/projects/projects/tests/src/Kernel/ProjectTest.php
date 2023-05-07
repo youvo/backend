@@ -25,7 +25,9 @@ class ProjectTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
+  // @codingStandardsIgnoreStart
   protected $strictConfigSchema = FALSE;
+  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}

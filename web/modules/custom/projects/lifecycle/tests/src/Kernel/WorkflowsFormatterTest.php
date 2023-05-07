@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\lifecycle\Kernel;
 
-use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\node\Entity\Node;
 
 /**

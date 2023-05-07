@@ -24,27 +24,57 @@ jobs:
 
       - name: Static code analysis
         run: |
-          vendor/bin/phpstan analyze web/modules
+          vendor/bin/phpstan analyze web/modules/custom
+
   phptests:
+    needs: phpanalysis
     runs-on: ubuntu-latest
+    env:
+      extensions: gd
+      key: cache
     services:
       db:
         image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: db
+          MYSQL_PASSWORD: db
+          MYSQL_DATABASE: db
         ports:
-          - 3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
-      - name: Verify MySQL connection from host
+      - name: Check out
+        uses: actions/checkout@v2
+
+      - name: Set up cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: 8.1
+          extensions: ${{ env.extensions }}
+          key: ${{ env.key }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: ${{ env.extensions }}
+          coverage: none
+
+      - name: Install dependencies
         run: |
-          sudo apt-get install -y mysql-client
-          mysql --host db --port 3306 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS db"
-      - name: Setup dependencies
-        run: |
-          composer --version
+          sudo apt-get install patch
           composer validate
-          composer install -n
+          composer install --no-interaction --no-progress
+
       - name: Run PHPUnit tests
         run: |
-          php vendor/phpunit/phpunit/phpunit
+          vendor/bin/phpunit

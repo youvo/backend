@@ -11,8 +11,8 @@
   <php>
     <ini name="error_reporting" value="32767"/>
     <ini name="memory_limit" value="-1"/>
-    <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
-    <env name="SIMPLETEST_DB" value="mysql://root:root@db/db"/>
+    <env name="SIMPLETEST_BASE_URL" value="http://127.0.0.1"/>
+    <env name="SIMPLETEST_DB" value="mysql://db:db@127.0.0.1:3306/db"/>
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="web/sites/simpletest/browser_output"/>
     <env name="BROWSERTEST_OUTPUT_BASE_URL" value=""/>
     <env name="MINK_DRIVER_CLASS" value=""/>
