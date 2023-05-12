@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Entity;
 
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -11,6 +12,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectCreateEvent;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
@@ -90,7 +92,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * Calls project lifecycle service which holds/manipulates the state.
    */
-  public function lifecycle() {
+  public function lifecycle(): ProjectLifecycle {
     if (!isset($this->lifecycle)) {
       $this->lifecycle = \Drupal::service('project.lifecycle');
       $this->lifecycle->setProject($this);
@@ -101,7 +103,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Invalidate cache to recalculate the field projects of the organization.
       Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
@@ -112,7 +114,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     if ($this->isNew()) {
       // Store the current organization contact in the project. We do this
@@ -127,7 +129,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
 
     if (!$update) {
       // Add new project result and reference accordingly.
@@ -158,9 +160,10 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * This override exists to set the operation to the default value "view".
    */
-  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    // This override exists to set the operation to the default value "view".
+  public function access($operation, ?AccountInterface $account = NULL, $return_as_object = FALSE): AccessResultInterface|bool {
     $operation = !empty($operation) ? $operation : 'view';
     return parent::access($operation, $account, $return_as_object);
   }
@@ -170,7 +173,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
    *
    * Overwritten method for type hinting.
    */
-  public function getOwner() {
+  public function getOwner(): Organization {
     $key = $this->getEntityType()->getKey('owner');
     /** @var \Drupal\organizations\Entity\Organization $organization */
     $organization = $this->get($key)->entity;
@@ -180,12 +183,12 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function getApplicants() {
+  public function getApplicants(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $applicants_field */
     $applicants_field = $this->get('field_applicants');
     /** @var \Drupal\creatives\Entity\Creative $applicant */
     foreach ($applicants_field->referencedEntities() as $applicant) {
-      $applicants[intval($applicant->id())] = $applicant;
+      $applicants[(int) $applicant->id()] = $applicant;
     }
     return $applicants ?? [];
   }
@@ -193,7 +196,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setApplicants(array $applicants) {
+  public function setApplicants(array $applicants): ProjectInterface {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')
@@ -205,7 +208,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function appendApplicant(AccountInterface|int $applicant) {
+  public function appendApplicant(AccountInterface|int $applicant): ProjectInterface {
     $this->get('field_applicants')
       ->appendItem(['target_id' => Profile::id($applicant)]);
     return $this;
@@ -214,28 +217,28 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function isApplicant(AccountInterface|int $applicant) {
+  public function isApplicant(AccountInterface|int $applicant): bool {
     return array_key_exists(Profile::id($applicant), $this->getApplicants());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasApplicant() {
+  public function hasApplicant(): bool {
     return !empty($this->getApplicants());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getParticipants() {
+  public function getParticipants(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
     $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
     /** @var \Drupal\user\UserInterface $participant */
     foreach ($participants_field->referencedEntities() as $delta => $participant) {
       $participant->task = $tasks[$delta]['value'];
-      $participants[intval($participant->id())] = $participant;
+      $participants[(int) $participant->id()] = $participant;
     }
     return $participants ?? [];
   }
@@ -243,7 +246,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setParticipants(array $participants, array $tasks = []) {
+  public function setParticipants(array $participants, array $tasks = []): ProjectInterface {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant) {
@@ -258,7 +261,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative') {
+  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative'): ProjectInterface {
     $this->get('field_participants')
       ->appendItem(['target_id' => Profile::id($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
@@ -268,21 +271,21 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function isParticipant(AccountInterface|int $participant) {
+  public function isParticipant(AccountInterface|int $participant): bool {
     return array_key_exists(Profile::id($participant), $this->getParticipants());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasParticipant() {
+  public function hasParticipant(): bool {
     return !empty($this->getParticipants());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isAuthor(AccountInterface|int $account) {
+  public function isAuthor(AccountInterface|int $account): bool {
     return Profile::id($account) == $this->getOwner()->id();
   }
 
@@ -338,11 +341,11 @@ class Project extends ContentEntityBase implements ProjectInterface {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $result_field */
     $result_field = $this->get('project_result');
     $result_references = $result_field->referencedEntities();
-    /** @var \Drupal\projects\ProjectResultInterface|null $result */
-    $result = reset($result_references);
-    if (empty($result)) {
+    if (empty($result_references)) {
       throw new EntityStorageException('Unable to load result of project.');
     }
+    /** @var \Drupal\projects\ProjectResultInterface $result */
+    $result = reset($result_references);
     return $result;
   }
 
@@ -351,7 +354,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::publishedBaseFieldDefinitions($entity_type);
