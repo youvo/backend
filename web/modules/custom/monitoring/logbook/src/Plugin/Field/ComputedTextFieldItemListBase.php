@@ -105,7 +105,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
     if (count($names) <= 3) {
       $first = implode(', ', array_slice($names, 0, -1));
       $last = array_slice($names, -1);
-      $both = array_filter(array_merge([$first], $last), 'strlen');
+      $both = array_filter(array_merge([$first], $last), static fn($c) => (bool) strlen($c));
       $concat_names = implode(' ' . $this->fakeTranslateAnd() . ' ', $both);
     }
     else {

@@ -212,6 +212,7 @@ final class QuestionSubmissionResource extends ResourceBase {
         'radios' => in_array($v, array_keys($question->get('options')->getValue())),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
         'task' => empty($v) || intval($v[0]) == 0,
+        // @phpstan-ignore-next-line
         default => FALSE,
       };
       if (!$valid_value) {

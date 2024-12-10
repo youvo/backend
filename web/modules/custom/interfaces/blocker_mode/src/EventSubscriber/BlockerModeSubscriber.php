@@ -12,6 +12,7 @@ use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -77,11 +78,10 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   /**
    * Handles the kernel exception.
    *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The request event to process.
    */
-  public function onKernelExceptionBlocker(RequestEvent $event) {
-    /** @var \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event */
+  public function onKernelExceptionBlocker(ExceptionEvent $event) {
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
     if (

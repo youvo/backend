@@ -17,7 +17,7 @@ use Drupal\user\Entity\Role;
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function questionnaire_site_install_finished() {
+function questionnaire_site_install_finished(): void {
 
   // View courses.
   $roles = ['creative', 'editor', 'observer', 'manager', 'supervisor'];
@@ -41,7 +41,7 @@ function questionnaire_site_install_finished() {
 /**
  * Implements hook_install().
  */
-function questionnaire_install() {
+function questionnaire_install(): void {
   // Add questionnaire target bundle to paragraph reference in lecture entity.
   $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
   $current_types = $config->get('settings.handler_settings.target_bundles');
@@ -53,7 +53,7 @@ function questionnaire_install() {
 /**
  * Implements hook_uninstall().
  */
-function questionnaire_uninstall() {
+function questionnaire_uninstall(): void {
   // Remove questionnaire target bundle to paragraph reference in lecture
   // entity.
   $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
@@ -74,7 +74,8 @@ function questionnaire_uninstall() {
     }
   }
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
-    watchdog_exception('Questionnaire', $e, 'Could not delete questionnaire paragraph type during uninstall.');
+    $logger = \Drupal::logger('academy');
+    Error::logException($logger, $e, 'Could not delete questionnaire paragraph type during uninstall.');
   }
 }
 

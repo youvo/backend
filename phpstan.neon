@@ -1,13 +1,11 @@
 parameters:
   level: 5
-  checkGenericClassInNonGenericObjectType: false
-  checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
   paths:
     - web/modules/custom
-  excludePaths:
-    - web/modules/contrib/*
   ignoreErrors:
+    - identifier: missingType.generics
+    - identifier: missingType.iterableValue
     # new static() is a best practice in Drupal, so we cannot fix that.
     - "#^Unsafe usage of new static#"
   drupal:

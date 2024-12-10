@@ -323,7 +323,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     if (!array_key_exists(3, $remote_account['roles'])) {
       $redirect_url = $auth_relay_server . '?r=oa';
       // Client ID and secret may be passed as Basic Auth. Copy the headers.
-      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
+      return new TrustedRedirectResponse($redirect_url, 302, $request->headers->all());
     }
 
     // Compare local session Uid and relayed account Uid. If both match, we can
