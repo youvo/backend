@@ -41,7 +41,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
    */
   private function __construct(
     AccountProxyInterface $user,
-    SerializerInterface $serializer
+    SerializerInterface $serializer,
   ) {
     $this->user = $user->getAccount();
     $this->serializer = $serializer;

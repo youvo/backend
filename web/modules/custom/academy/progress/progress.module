@@ -75,7 +75,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 /**
  * Implements hook_entity_field_access().
  */
-function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
 
   $result = AccessResult::neutral();
 

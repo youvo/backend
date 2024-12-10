@@ -27,7 +27,7 @@ class FeedbackListBuilder extends EntityListBuilder {
   public function __construct(
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
-    protected DateFormatterInterface $dateFormatter
+    protected DateFormatterInterface $dateFormatter,
   ) {
     parent::__construct($entity_type, $storage);
   }

@@ -88,7 +88,7 @@ class UserUpdateEmailResource extends ResourceBase {
     AccountProxyInterface $current_user,
     Json $serialization_json,
     UserStorageInterface $user_storage,
-    EmailValidatorInterface $email_validator
+    EmailValidatorInterface $email_validator,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;

@@ -23,7 +23,7 @@ class AlterJsonapiParse extends JsonapiParse {
   public function __construct(
     RequestStack $request_stack,
     protected EventDispatcherInterface $eventDispatcher,
-    protected FileUrlGeneratorInterface $fileUrlGenerator
+    protected FileUrlGeneratorInterface $fileUrlGenerator,
   ) {
     parent::__construct($request_stack);
   }

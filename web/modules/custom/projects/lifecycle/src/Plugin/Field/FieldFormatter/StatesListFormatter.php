@@ -61,7 +61,7 @@ class StatesListFormatter extends FormatterBase {
     $label,
     $view_mode,
     array $third_party_settings,
-    ConfigEntityStorage $workflow_storage
+    ConfigEntityStorage $workflow_storage,
   ) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->workflowStorage = $workflow_storage;
@@ -74,7 +74,7 @@ class StatesListFormatter extends FormatterBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $plugin_id,

@@ -57,7 +57,7 @@ class ProgressResourceAccessController extends ControllerBase implements Contain
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessProgress(AccountInterface $account, Route $route, AcademicFormatInterface $entity = NULL) {
+  public function accessProgress(AccountInterface $account, Route $route, ?AcademicFormatInterface $entity = NULL) {
 
     // Return, if entity is empty.
     if (!$entity) {

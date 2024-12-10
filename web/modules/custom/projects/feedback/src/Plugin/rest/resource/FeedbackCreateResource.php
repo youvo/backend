@@ -58,7 +58,7 @@ class FeedbackCreateResource extends ResourceBase {
     LoggerInterface $logger,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected AccountProxyInterface $currentUser,
-    protected EventDispatcherInterface $eventDispatcher
+    protected EventDispatcherInterface $eventDispatcher,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -70,7 +70,7 @@ class FeedbackCreateResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

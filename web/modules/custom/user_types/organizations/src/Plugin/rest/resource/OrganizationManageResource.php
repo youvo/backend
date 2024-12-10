@@ -51,7 +51,7 @@ class OrganizationManageResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     protected AccountInterface $currentUser,
-    protected EventDispatcherInterface $eventDispatcher
+    protected EventDispatcherInterface $eventDispatcher,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -63,7 +63,7 @@ class OrganizationManageResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

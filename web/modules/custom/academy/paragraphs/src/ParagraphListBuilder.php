@@ -75,7 +75,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
     RouteMatchInterface $route_match,
     EntityStorageInterface $paragraph_type_storage,
     FormBuilderInterface $form_builder,
-    LanguageManagerInterface $language_manager
+    LanguageManagerInterface $language_manager,
   ) {
     parent::__construct($entity_type, $storage, $route_match);
     $this->paragraphTypeStorage = $paragraph_type_storage;
@@ -88,7 +88,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
    */
   public static function createInstance(
     ContainerInterface $container,
-    EntityTypeInterface $entity_type
+    EntityTypeInterface $entity_type,
   ) {
     return new self(
       $entity_type,

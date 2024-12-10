@@ -20,7 +20,7 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
   public function __construct(
     protected ConfigFactoryInterface $config,
     protected LanguageManagerInterface $languageManager,
-    protected TimeInterface $time
+    protected TimeInterface $time,
   ) {}
 
   /**

@@ -95,7 +95,7 @@ class ProgressManager {
     TimeInterface $time,
     LoggerInterface $logger,
     Connection $database,
-    SubmissionManager $submission_manager
+    SubmissionManager $submission_manager,
   ) {
     $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;

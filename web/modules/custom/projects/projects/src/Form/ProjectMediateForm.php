@@ -22,7 +22,7 @@ class ProjectMediateForm extends ProjectActionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ProjectInterface $project = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL) {
 
     // Set title for form.
     $form['#title'] = $this->t('Mediate Project: %s', [

@@ -123,7 +123,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     Connection $database,
     SessionManager $session_manager,
     Session $session,
-    AccountProxyInterface $account
+    AccountProxyInterface $account,
   ) {
     parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $client_repository, $logger);
     $this->httpClient = $http_client;

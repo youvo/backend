@@ -50,7 +50,7 @@ abstract class ProgressResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    ProgressManager $progress_manager
+    ProgressManager $progress_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->progressManager = $progress_manager;
@@ -63,7 +63,7 @@ abstract class ProgressResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

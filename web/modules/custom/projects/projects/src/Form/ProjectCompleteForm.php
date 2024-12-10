@@ -21,7 +21,7 @@ class ProjectCompleteForm extends ProjectActionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ProjectInterface $project = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL) {
 
     // Set title for form.
     $form['#title'] = $this->t('Complete Project: %s', [

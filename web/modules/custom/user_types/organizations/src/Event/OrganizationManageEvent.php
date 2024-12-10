@@ -23,7 +23,7 @@ class OrganizationManageEvent extends Event {
    */
   public function __construct(
     protected Organization $organization,
-    protected Creative $manager
+    protected Creative $manager,
   ) {}
 
   /**

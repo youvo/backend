@@ -76,7 +76,7 @@ class CreativeRegisterResource extends ResourceBase {
     protected EventDispatcherInterface $eventDispatcher,
     protected TermStorageInterface $termStorage,
     protected LanguageManagerInterface $languageManager,
-    protected TimeInterface $time
+    protected TimeInterface $time,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -88,7 +88,7 @@ class CreativeRegisterResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

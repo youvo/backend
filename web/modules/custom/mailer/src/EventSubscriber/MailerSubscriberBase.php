@@ -42,7 +42,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
     protected MailManagerInterface $mailManager,
-    protected SimpleTokenReplacer $simpleTokenReplacer
+    protected SimpleTokenReplacer $simpleTokenReplacer,
   ) {}
 
   /**
@@ -120,7 +120,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
   /**
    * Sends email with the mail manager.
    */
-  protected function sendMail(string $to, string $subject, string $body, string $reply = NULL, string $langcode = 'de'): void {
+  protected function sendMail(string $to, string $subject, string $body, ?string $reply = NULL, string $langcode = 'de'): void {
     $this->mailManager->mail(
       'mailer',
       static::EMAIL_ID ?? 'generic',

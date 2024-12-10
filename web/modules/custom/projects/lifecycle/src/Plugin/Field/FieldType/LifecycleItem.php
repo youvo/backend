@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\lifecycle\Plugin\Field\FieldType;
 
@@ -87,14 +87,14 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPossibleValues(AccountInterface $account = NULL): array {
+  public function getPossibleValues(?AccountInterface $account = NULL): array {
     return array_keys($this->getPossibleOptions($account));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPossibleOptions(AccountInterface $account = NULL): array {
+  public function getPossibleOptions(?AccountInterface $account = NULL): array {
     $workflow = $this->getWorkflow();
     if (!$workflow) {
       // The workflow is not known yet, the field is probably being created.
@@ -111,7 +111,7 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getSettableValues(AccountInterface $account = NULL): array {
+  public function getSettableValues(?AccountInterface $account = NULL): array {
     return array_keys($this->getSettableOptions($account));
   }
 
@@ -120,7 +120,7 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getSettableOptions(AccountInterface $account = NULL) {
+  public function getSettableOptions(?AccountInterface $account = NULL) {
     // $this->value is unpopulated due to https://www.drupal.org/node/2629932
     $fieldName = $this->getFieldDefinition()->getName();
     $item = $this->getEntity()->get($fieldName)->first();

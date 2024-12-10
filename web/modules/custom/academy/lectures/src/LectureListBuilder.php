@@ -75,7 +75,7 @@ final class LectureListBuilder extends EntityListBuilder implements FormInterfac
     EntityStorageInterface $course_storage,
     FormBuilderInterface $form_builder,
     LanguageManagerInterface $language_manager,
-    Request $request
+    Request $request,
   ) {
     parent::__construct($entity_type, $storage);
     $this->courseStorage = $course_storage;
@@ -89,7 +89,7 @@ final class LectureListBuilder extends EntityListBuilder implements FormInterfac
    */
   public static function createInstance(
     ContainerInterface $container,
-    EntityTypeInterface $entity_type
+    EntityTypeInterface $entity_type,
   ) {
     return new self(
       $entity_type,

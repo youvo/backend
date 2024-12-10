@@ -42,7 +42,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
     protected BareHtmlPageRendererInterface $bareHtmlPageRenderer,
     protected BlockerModeInterface $blockerMode,
     protected string $jsonApiBasePath,
-    protected KillSwitch $pageCacheKillSwitch
+    protected KillSwitch $pageCacheKillSwitch,
   ) {}
 
   /**

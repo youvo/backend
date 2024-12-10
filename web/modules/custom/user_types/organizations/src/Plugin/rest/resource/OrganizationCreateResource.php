@@ -95,7 +95,8 @@ class OrganizationCreateResource extends ResourceBase {
     Json $serialization_json,
     UserStorageInterface $user_storage,
     EmailValidatorInterface $email_validator,
-    EventDispatcherInterface $event_dispatcher) {
+    EventDispatcherInterface $event_dispatcher,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->userStorage = $user_storage;

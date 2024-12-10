@@ -39,7 +39,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
     protected AccountInterface $currentUser,
     protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected LoggerInterface $logger
+    protected LoggerInterface $logger,
   ) {}
 
   /**

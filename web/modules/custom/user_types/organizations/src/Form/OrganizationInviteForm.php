@@ -54,7 +54,7 @@ final class OrganizationInviteForm extends FormBase {
     protected ModuleHandlerInterface $moduleHandler,
     protected SessionInterface $session,
     protected TimeInterface $time,
-    protected UserStorageInterface $userStorage
+    protected UserStorageInterface $userStorage,
   ) {}
 
   /**
@@ -95,7 +95,7 @@ final class OrganizationInviteForm extends FormBase {
   public function buildForm(
     array $form,
     FormStateInterface $form_state,
-    AccountInterface $organization = NULL
+    ?AccountInterface $organization = NULL,
   ) {
 
     // Verify that the organization is active and a prospect.

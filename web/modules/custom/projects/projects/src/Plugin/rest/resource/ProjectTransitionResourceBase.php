@@ -66,7 +66,7 @@ class ProjectTransitionResourceBase extends ResourceBase {
     LoggerInterface $logger,
     AccountInterface $current_user,
     EventDispatcherInterface $event_dispatcher,
-    RouteProviderInterface $route_provider
+    RouteProviderInterface $route_provider,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;
@@ -81,7 +81,7 @@ class ProjectTransitionResourceBase extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

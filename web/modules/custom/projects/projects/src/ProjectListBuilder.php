@@ -45,7 +45,7 @@ class ProjectListBuilder extends EntityListBuilder {
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
     DateFormatterInterface $date_formatter,
-    LanguageManager $language_manager
+    LanguageManager $language_manager,
   ) {
     parent::__construct($entity_type, $storage);
     $this->dateFormatter = $date_formatter;

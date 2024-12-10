@@ -104,7 +104,7 @@ class OrganizationFieldAccess extends FieldAccess {
     ContentEntityInterface $entity,
     string $operation,
     FieldDefinitionInterface $field,
-    AccountInterface $account
+    AccountInterface $account,
   ) {
 
     // Only project fields should be controlled by this class.

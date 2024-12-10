@@ -49,7 +49,7 @@ abstract class ProjectActionResourceBase extends ResourceBase {
     protected AccountInterface $currentUser,
     protected EventDispatcherInterface $eventDispatcher,
     protected SerializationInterface $serializationJson,
-    protected UserStorageInterface $userStorage
+    protected UserStorageInterface $userStorage,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -61,7 +61,7 @@ abstract class ProjectActionResourceBase extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

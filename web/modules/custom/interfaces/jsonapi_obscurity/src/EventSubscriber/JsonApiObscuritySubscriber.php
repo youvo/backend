@@ -24,7 +24,7 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
    */
   public function __construct(
     protected string $jsonApiBasePath,
-    protected string $obscurityPrefix
+    protected string $obscurityPrefix,
   ) {}
 
   /**
