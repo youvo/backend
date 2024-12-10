@@ -2,10 +2,10 @@
 
 namespace Drupal\courses\Form;
 
-use Drupal\youvo\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\youvo\TranslationFormButtonsTrait;
 
 /**
  * Form controller for the course entity edit forms.

@@ -40,7 +40,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     EntityTypeInterface $entity_type,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EventDispatcherInterface $eventDispatcher,
-    protected LoggerInterface $logger
+    protected LoggerInterface $logger,
   ) {
     parent::__construct($entity_type);
   }

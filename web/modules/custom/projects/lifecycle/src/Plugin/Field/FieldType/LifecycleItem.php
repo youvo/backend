@@ -10,10 +10,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\OptionsProviderInterface;
+use Drupal\lifecycle\Permissions;
 use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\StateInterface;
 use Drupal\workflows\WorkflowInterface;
-use Drupal\lifecycle\Permissions;
 
 /**
  * Workflow state field item.

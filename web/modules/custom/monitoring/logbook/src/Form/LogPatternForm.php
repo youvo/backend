@@ -3,13 +3,13 @@
 namespace Drupal\logbook\Form;
 
 use Drupal\Component\Utility\Color;
-use Drupal\youvo\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\logbook\Entity\LogText;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\youvo\SimpleToken;
+use Drupal\youvo\TranslationFormButtonsTrait;
 
 /**
  * Log pattern form.

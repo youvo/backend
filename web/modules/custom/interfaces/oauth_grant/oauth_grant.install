@@ -5,12 +5,12 @@
  * Install, update and uninstall functions for the oauth_grant module.
  */
 
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\consumers\Entity\Consumer;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\user\Entity\Role;
 use Drupal\Core\Utility\Error;
+use Drupal\user\Entity\Role;
 
 /**
  * Implements hook_install().

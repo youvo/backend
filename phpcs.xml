@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="phpcs">
   <description>PHP Code Sniffer configuration</description>
-  <file>web/modules/custom/academy</file>
-  <file>web/modules/custom/interfaces</file>
-  <file>web/modules/custom/mailer</file>
-  <file>web/modules/custom/monitoring</file>
-  <file>web/modules/custom/projects</file>
-  <file>web/modules/custom/user_types</file>
-  <file>web/modules/custom/youvo</file>
-  <arg name="extensions" value="php,module,inc,install,test,profile,theme,css,info,txt,yml" />
-  <config name="drupal_core_version" value="9" />
-  <rule ref="vendor/drupal/coder/coder_sniffer/Drupal" />
-  <rule ref="vendor/drupal/coder/coder_sniffer/DrupalPractice"/>
+  <ini name="memory_limit" value="128M" />
+  <file>web/modules/custom</file>
+  <arg name="extensions" value="php,module,inc,install,test,profile,theme,css,info,txt,yml"/>
+  <arg name="colors"/>
+  <arg value="p"/>
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+  <rule ref="SlevomatCodingStandard.Commenting.ForbiddenAnnotations">
+    <properties>
+      <property name="forbiddenAnnotations" type="array">
+        <element value="@inheritDoc"/>
+        <element value="@inheritdoc"/>
+      </property>
+    </properties>
+  </rule>
+  <rule ref="SlevomatCodingStandard.Commenting.ForbiddenComments">
+    <properties>
+      <property name="forbiddenCommentPatterns" type="array">
+        <element value="/@inheritDoc/"/>
+      </property>
+    </properties>
+  </rule>
+  <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
+    <properties>
+      <property name="caseSensitive" value="false"/>
+    </properties>
+  </rule>
 </ruleset>

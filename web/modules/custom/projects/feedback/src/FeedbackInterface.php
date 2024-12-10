@@ -3,9 +3,9 @@
 namespace Drupal\feedback;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerInterface;
-use Drupal\Core\Entity\EntityChangedInterface;
 
 /**
  * Provides an interface defining a feedback entity type.

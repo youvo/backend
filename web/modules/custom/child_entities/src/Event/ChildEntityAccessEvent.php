@@ -25,7 +25,7 @@ class ChildEntityAccessEvent extends Event {
   public function __construct(
     protected AccessResultInterface $accessResult,
     protected AccountInterface $account,
-    protected ChildEntityInterface $entity
+    protected ChildEntityInterface $entity,
   ) {}
 
   /**

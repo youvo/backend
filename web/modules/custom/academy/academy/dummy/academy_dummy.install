@@ -5,11 +5,11 @@
  * Install, update and uninstall functions for the Academy Dummy module.
  */
 
+use Drupal\Component\Utility\Random;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\file\Entity\File;
 use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
-use Drupal\Component\Utility\Random;
+use Drupal\file\Entity\File;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\questionnaire\Entity\Question;

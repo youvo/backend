@@ -125,7 +125,7 @@ class ChildEntityController extends EntityController {
   /**
    * {@inheritdoc}
    */
-  public function editTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function editTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
       return $entity->label();
     }
@@ -135,7 +135,7 @@ class ChildEntityController extends EntityController {
   /**
    * {@inheritdoc}
    */
-  protected function doGetEntity(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  protected function doGetEntity(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
 
     // Looking for the matching entity in the route parameters.
     // The entity routes follow the pattern entity.{entity_id}.edit_form!

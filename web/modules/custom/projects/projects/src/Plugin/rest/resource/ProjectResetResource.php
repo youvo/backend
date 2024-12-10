@@ -2,9 +2,9 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\projects\Event\ProjectResetEvent;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**

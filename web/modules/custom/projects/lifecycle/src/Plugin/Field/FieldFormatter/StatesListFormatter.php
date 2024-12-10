@@ -9,8 +9,8 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workflows\StateInterface;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
+use Drupal\workflows\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

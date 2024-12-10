@@ -4,8 +4,8 @@ namespace Drupal\consumer_permissions;
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\consumers\ConsumerStorage;
-use Drupal\user\UserAuthInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\user\UserAuthInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;

@@ -5,16 +5,16 @@
  * Custom module which handles business logic for project entities.
  */
 
-use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Entity\Project;
-use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\projects\Access\ProjectFieldAccess;
+use Drupal\projects\Entity\Project;
 use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;

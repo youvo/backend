@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\lifecycle\Kernel;
 
+use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Drupal\node\Entity\Node;
 use Drupal\workflows\Entity\Workflow;
-use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 
 /**
  * Test the lifecycle.

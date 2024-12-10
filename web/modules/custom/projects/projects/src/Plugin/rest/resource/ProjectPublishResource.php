@@ -3,8 +3,8 @@
 namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\projects\Event\ProjectPublishEvent;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
