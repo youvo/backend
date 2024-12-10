@@ -88,3 +88,24 @@ function projects_jsonapi_project_filter_access(EntityTypeInterface $entity_type
     JSONAPI_FILTER_AMONG_OWN => AccessResult::allowed(),
   ]);
 }
+
+/**
+ * Implements hook_theme().
+ */
+function projects_theme() {
+  return [
+    'project' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function projects_theme_suggestions_project(array $variables) {
+  $suggestions = [];
+  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+  $suggestions[] = 'project__' . $sanitized_view_mode;
+  return $suggestions;
+}

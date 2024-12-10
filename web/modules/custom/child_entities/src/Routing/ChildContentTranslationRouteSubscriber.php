@@ -94,7 +94,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events = parent::getSubscribedEvents();
     // Should run after ContentTranslationRouteSubscriber so the routes can
     // inherit altered routes for translation pages. Therefore, priority -215.

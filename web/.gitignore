@@ -35,6 +35,7 @@ web.config
 # custom module, theme, etc., are not ignored unless you purposely do so.
 /vendor/
 /modules/contrib/
+/themes/contrib/
 /sites
 
 # Ignore configuration files that may contain sensitive information.

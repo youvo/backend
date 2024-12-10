@@ -10,9 +10,9 @@ index 609ed91..4b3cf00 100644
     */
    public static function isJsonApiRequest(array $defaults) {
      return isset($defaults[RouteObjectInterface::CONTROLLER_NAME])
--      && strpos($defaults[RouteObjectInterface::CONTROLLER_NAME], static::CONTROLLER_SERVICE_NAME) === 0;
-+      && (strpos($defaults[RouteObjectInterface::CONTROLLER_NAME], static::CONTROLLER_SERVICE_NAME) === 0
-+      ||  strpos($defaults[RouteObjectInterface::CONTROLLER_NAME], 'jsonapi.file_upload') === 0);
+-      && str_starts_with($defaults[RouteObjectInterface::CONTROLLER_NAME], static::CONTROLLER_SERVICE_NAME);
++      && (str_starts_with($defaults[RouteObjectInterface::CONTROLLER_NAME], static::CONTROLLER_SERVICE_NAME)
++      ||  str_starts_with($defaults[RouteObjectInterface::CONTROLLER_NAME], 'jsonapi.file_upload'));
    }
 
    /**

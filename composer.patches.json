@@ -1,20 +1,15 @@
 {
     "patches": {
 	    "drupal/core": {
-          "Issue #3266057: Introduce base profiles": "patches/drupal/D95x-3266057-110.patch",
-          "Issue #2924549: Invoke hook after a site install is complete (Scheduled Drupal 9.5.0)": "patches/drupal/D95x-2924549-65.patch",
-          "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request (Scheduled Drupal 9.5.0)": "patches/drupal/D94x-3181946-23.patch",
-          "Issue #3098935: JSON:API can't handle exceptions thrown during authentication (Scheduled Drupal 9.5.0)": "patches/drupal/D94x-3098935-16.patch",
-          "Custom: Change file upload route for jsonapi extras": "patches/drupal/custom-change-file-upload-route-for-jsonapi-extras.patch",
-          "Custom: Modify upload user avatar access check": "patches/drupal/custom-modify-upload-user-avatar-access-check.patch",
-          "Custom: Jsonapi Upload route is recognized as jsonapi request": "patches/drupal/custom-file-upload-route-is-jsonapi-request.patch",
-          "Custom: Hide meta drupal IDs in JSON:API response": "patches/drupal/custom-hide-meta-drupal-ids-jsonapi.patch",
-          "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/drupal/page-cache-id-doesnt-compare-cid-subrequests.patch"
-        },
-        "drupal/jsonapi_include": {
-          "Issue #3131167: Infinite recursion for nested include": "patches/jsonapi_include/JAI8x14-3131167-6.patch",
-          "Issue #3238138: Move JSON:API Include settings to JSON:API configuration pages": "patches/jsonapi_include/JAI8x-14-3238138-1.patch",
-          "Custom: Deprecated use of explode in JSON parse": "patches/jsonapi_include/custom-deprecated-use-of-explode-in-json-parse.patch"
+          "Issue #3266057: Introduce base profiles": "patches/core/3266057-110.patch",
+          "Issue #2924549: Invoke hook after a site install is complete": "patches/core/2924549-65.patch",
+          "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request": "patches/core/3181946-29.patch",
+          "Issue #3098935: JSON:API can't handle exceptions thrown during authentication": "patches/core/3098935-16.patch",
+          "Custom: Change file upload route for jsonapi extras": "patches/core/custom-change-file-upload-route-for-jsonapi-extras.patch",
+          "Custom: Modify upload user avatar access check": "patches/core/custom-modify-upload-user-avatar-access-check.patch",
+          "Custom: Jsonapi Upload route is recognized as jsonapi request": "patches/core/custom-file-upload-route-is-jsonapi-request.patch",
+          "Custom: Hide meta drupal IDs in JSON:API response": "patches/core/custom-hide-meta-drupal-ids-jsonapi.patch",
+          "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/core/custom-page-cache-id-doesnt-compare-cid-subrequests.patch"
         },
         "drupal/jsonapi_boost": {
         	"Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
@@ -24,27 +19,16 @@
           "Custom: Exclude users from cross bundles resources": "patches/jsonapi_cross_bundles/custom-exclude-users-from-cross-bundle-resources.patch",
           "Custom: Plural resource paths": "patches/jsonapi_cross_bundles/custom-plural-resource-paths.patch"
         },
-        "drupal/warmer": {
-        	"Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
-        },
         "drupal/multivalue_form_element": {
           "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
           "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
         },
         "drupal/filefield_paths": {
-          "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/exclude_consumer_entity_type.patch"
+          "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"
         },
         "drupal/simple_oauth": {
           "Custom: Token revoke on profile update": "patches/simple_oauth/custom-token-revoke-profile-update.patch",
           "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/SO52-3082984-12.patch"
-        },
-        "drupal/jsonapi_extras": {
-          "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch",
-          "Custom: Adjust date format in field enhancer": "patches/jsonapi_extras/custom-adjust-date-format-field-enhancer.patch"
-        },
-        "drupal/image_style_warmer": {
-          "Custom: Validate image with GD toolkit": "patches/image_style_warmer/custom-validate-image-with-gd-toolkit.patch",
-          "Custom: Queue initial image styles during installation": "patches/image_style_warmer/custom-queue-initial-image-styles-during-installation.patch"
         }
     }
 }

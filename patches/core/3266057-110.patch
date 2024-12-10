@@ -1,8 +1,8 @@
 diff --git a/core/includes/install.core.inc b/core/includes/install.core.inc
-index fcbf23c6d6..31455b1554 100644
+index 00eadeb5..4b0ac355 100644
 --- a/core/includes/install.core.inc
 +++ b/core/includes/install.core.inc
-@@ -465,6 +465,12 @@ function install_begin_request($class_loader, &$install_state) {
+@@ -468,6 +468,12 @@ function install_begin_request($class_loader, &$install_state) {
      if (isset($install_state['profile_info']['distribution']['install']['theme'])) {
        $install_state['theme'] = $install_state['profile_info']['distribution']['install']['theme'];
      }
@@ -15,42 +15,31 @@ index fcbf23c6d6..31455b1554 100644
    }
 
    // Before having installed the system module and being able to do a module
-@@ -848,18 +854,22 @@ function install_tasks($install_state) {
+@@ -864,15 +870,17 @@ function install_tasks($install_state) {
 
    // Now add any tasks defined by the installation profile.
    if (!empty($install_state['parameters']['profile'])) {
 -    // Load the profile install file, because it is not always loaded when
 -    // hook_install_tasks() is invoked (e.g. batch processing).
 -    $profile = $install_state['parameters']['profile'];
--    $profile_install_file = $install_state['profiles'][$profile]->getPath() . '/' . $profile . '.install';
--    if (file_exists($profile_install_file)) {
--      include_once \Drupal::root() . '/' . $profile_install_file;
--    }
--    $function = $install_state['parameters']['profile'] . '_install_tasks';
--    if (function_exists($function)) {
--      $result = $function($install_state);
--      if (is_array($result)) {
--        $tasks += $result;
+-    if ($profile !== FALSE) {
+-      $profile_install_file = $install_state['profiles'][$profile]->getPath() . '/' . $profile . '.install';
 +    $profiles = \Drupal::service('extension.list.profile')->getAncestors($install_state['parameters']['profile']);
 +    foreach (array_keys($profiles) as $profile_name) {
 +      $profile = $install_state['profiles'][$profile_name];
 +      // Load the profile install file, because it is not always loaded when
 +      // hook_install_tasks() is invoked (e.g. batch processing).
 +      $profile_install_file = $profile->getPath() . '/' . $profile_name . '.install';
-+      if (file_exists($profile_install_file)) {
-+        include_once \Drupal::root() . '/' . $profile_install_file;
-+      }
+       if (file_exists($profile_install_file)) {
+         include_once \Drupal::root() . '/' . $profile_install_file;
+       }
+-      $function = $install_state['parameters']['profile'] . '_install_tasks';
 +      // If this is a base profile then the profile isn't loaded
 +      $function = $profile_name . '_install_tasks';
-+      if (function_exists($function)) {
-+        $result = $function($install_state);
-+        if (is_array($result)) {
-+          $tasks += $result;
-+        }
-       }
-     }
-   }
-@@ -877,11 +887,13 @@ function install_tasks($install_state) {
+       if (function_exists($function)) {
+         $result = $function($install_state);
+         if (is_array($result)) {
+@@ -895,11 +903,13 @@ function install_tasks($install_state) {
 
    // Allow the installation profile to modify the full list of tasks.
    if (!empty($install_state['parameters']['profile'])) {
@@ -69,7 +58,7 @@ index fcbf23c6d6..31455b1554 100644
        }
      }
    }
-@@ -1266,7 +1278,9 @@ function install_select_profile(&$install_state) {
+@@ -1281,7 +1291,9 @@ function install_select_profile(&$install_state) {
   *   - For interactive installations via request query parameters.
   *   - For non-interactive installations via install_drupal() settings.
   * - One of the available profiles is a distribution. If multiple profiles are
@@ -80,7 +69,7 @@ index fcbf23c6d6..31455b1554 100644
   * - Only one visible profile is available.
   *
   * @param array $install_state
-@@ -1291,12 +1305,9 @@ function _install_select_profile(&$install_state) {
+@@ -1306,12 +1318,9 @@ function _install_select_profile(&$install_state) {
        return $profile;
      }
    }
@@ -96,18 +85,18 @@ index fcbf23c6d6..31455b1554 100644
    }
    // Get all visible (not hidden) profiles.
    $visible_profiles = array_filter($install_state['profiles'], function ($profile) {
-@@ -1524,7 +1535,9 @@ function _install_get_version_info($version) {
-  */
+@@ -1541,7 +1550,9 @@ function _install_get_version_info($version) {
  function install_load_profile(&$install_state) {
    $profile = $install_state['parameters']['profile'];
--  $install_state['profiles'][$profile]->load();
-+  foreach (array_keys(\Drupal::service('extension.list.profile')->getAncestors($profile)) as $profile_id) {
-+    $install_state['profiles'][$profile_id]->load();
-+  }
-   $install_state['profile_info'] = install_profile_info($profile, $install_state['parameters']['langcode'] ?? 'en');
+   if ($profile !== FALSE) {
+-    $install_state['profiles'][$profile]->load();
++    foreach (array_keys(\Drupal::service('extension.list.profile')->getAncestors($profile)) as $profile_id) {
++      $install_state['profiles'][$profile_id]->load();
++    }
+     $install_state['profile_info'] = install_profile_info($profile, $install_state['parameters']['langcode'] ?? 'en');
+   }
 
-   $sync_directory = Settings::get('config_sync_directory');
-@@ -1656,7 +1669,10 @@ function install_install_profile(&$install_state) {
+@@ -1674,7 +1685,10 @@ function install_install_profile(&$install_state) {
    // any disparities that this creates.
    \Drupal::service('config.installer')->installOptionalConfig();
 
@@ -120,18 +109,21 @@ index fcbf23c6d6..31455b1554 100644
    // Ensure that the install profile's theme is used.
    // @see _drupal_maintenance_theme()
 diff --git a/core/includes/install.inc b/core/includes/install.inc
-index 4053d3c5a9..c6b74a343d 100644
+index 3391fb99..791ddc7f 100644
 --- a/core/includes/install.inc
 +++ b/core/includes/install.inc
-@@ -533,7 +533,6 @@ function _drupal_rewrite_settings_dump_one(\stdClass $variable, $prefix = '', $s
-  *   The list of modules to install.
+@@ -450,10 +450,6 @@ function _drupal_rewrite_settings_dump_one(\stdClass $variable, $prefix = '', $s
+  *   about profiles.
   */
  function drupal_verify_profile($install_state) {
 -  $profile = $install_state['parameters']['profile'];
+-  if ($profile === FALSE) {
+-    return [];
+-  }
    $info = $install_state['profile_info'];
 
    // Get the list of available modules for the selected installation profile.
-@@ -542,10 +541,11 @@ function drupal_verify_profile($install_state) {
+@@ -462,10 +458,11 @@ function drupal_verify_profile($install_state) {
    foreach ($listing->scan('module') as $present_module) {
      $present_modules[] = $present_module->getName();
    }
@@ -147,7 +139,7 @@ index 4053d3c5a9..c6b74a343d 100644
 
    // Verify that all of the profile's required modules are present.
    $missing_modules = array_diff($info['install'], $present_modules);
-@@ -1087,6 +1087,9 @@ function drupal_check_module($module) {
+@@ -1012,6 +1009,9 @@ function drupal_check_module($module) {
   *       Drupal's default installer theme.
   *     - finish_url: A destination to visit after the installation of the
   *       distribution is finished
@@ -157,7 +149,7 @@ index 4053d3c5a9..c6b74a343d 100644
   *
   * Note that this function does an expensive file system scan to get info file
   * information for dependencies. If you only need information from the info
-@@ -1114,22 +1117,9 @@ function install_profile_info($profile, $langcode = 'en') {
+@@ -1039,22 +1039,9 @@ function install_profile_info($profile, $langcode = 'en') {
    static $cache = [];
 
    if (!isset($cache[$profile][$langcode])) {
@@ -182,7 +174,7 @@ index 4053d3c5a9..c6b74a343d 100644
 
      $dependency_name_function = function ($dependency) {
        return Dependency::createFromString($dependency)->getName();
-@@ -1140,6 +1130,8 @@ function install_profile_info($profile, $langcode = 'en') {
+@@ -1065,6 +1052,8 @@ function install_profile_info($profile, $langcode = 'en') {
      // Convert install key in [project:module] format.
      $info['install'] = array_map($dependency_name_function, $info['install']);
 
@@ -191,29 +183,29 @@ index 4053d3c5a9..c6b74a343d 100644
      // Get a list of core's required modules.
      $required = [];
      $listing = new ExtensionDiscovery(\Drupal::root());
-@@ -1157,6 +1149,9 @@ function install_profile_info($profile, $langcode = 'en') {
+@@ -1082,6 +1071,9 @@ function install_profile_info($profile, $langcode = 'en') {
      // remove any duplicates.
      $info['install'] = array_unique(array_merge($info['install'], $required, $info['dependencies'], $locale));
 
 +    // Remove the base profiles from the install list.
-+    $info['install'] = array_diff($info['install'], array_keys($ancestors));
++        $info['install'] = array_diff($info['install'], array_keys($ancestors));
 +
      // If the profile has a config/sync directory use that to install drupal.
      if (is_dir($profile_path . '/config/sync')) {
        $info['config_install_path'] = $profile_path . '/config/sync';
 diff --git a/core/lib/Drupal/Core/Config/ConfigInstaller.php b/core/lib/Drupal/Core/Config/ConfigInstaller.php
-index 107ca8a071..4e4c14a94b 100644
+index 9b985573..e26351ac 100644
 --- a/core/lib/Drupal/Core/Config/ConfigInstaller.php
 +++ b/core/lib/Drupal/Core/Config/ConfigInstaller.php
-@@ -4,6 +4,7 @@
-
+@@ -5,6 +5,7 @@
  use Drupal\Component\Utility\Crypt;
+ use Drupal\Component\Utility\NestedArray;
  use Drupal\Core\Config\Entity\ConfigDependencyManager;
 +use Drupal\Core\Extension\ProfileExtensionList;
  use Drupal\Core\Extension\ExtensionPathResolver;
  use Drupal\Core\Installer\InstallerKernel;
  use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-@@ -52,6 +53,13 @@ class ConfigInstaller implements ConfigInstallerInterface {
+@@ -53,6 +54,13 @@ class ConfigInstaller implements ConfigInstallerInterface {
     */
    protected $sourceStorage;
 
@@ -227,26 +219,27 @@ index 107ca8a071..4e4c14a94b 100644
    /**
     * Is configuration being created as part of a configuration sync.
     *
-@@ -90,14 +98,17 @@ class ConfigInstaller implements ConfigInstallerInterface {
+@@ -91,8 +99,10 @@ class ConfigInstaller implements ConfigInstallerInterface {
     *   The name of the currently active installation profile.
     * @param \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver
     *   The extension path resolver.
 +   * @param \Drupal\Core\Extension\ProfileExtensionList|null $profile_list
 +   *   (optional) The profile list.
     */
--  public function __construct(ConfigFactoryInterface $config_factory, StorageInterface $active_storage, TypedConfigManagerInterface $typed_config, ConfigManagerInterface $config_manager, EventDispatcherInterface $event_dispatcher, $install_profile, ExtensionPathResolver $extension_path_resolver = NULL) {
-+  public function __construct(ConfigFactoryInterface $config_factory, StorageInterface $active_storage, TypedConfigManagerInterface $typed_config, ConfigManagerInterface $config_manager, EventDispatcherInterface $event_dispatcher, $install_profile, ExtensionPathResolver $extension_path_resolver = NULL, ProfileExtensionList $profile_list = NULL) {
+-  public function __construct(ConfigFactoryInterface $config_factory, StorageInterface $active_storage, TypedConfigManagerInterface $typed_config, ConfigManagerInterface $config_manager, EventDispatcherInterface $event_dispatcher, $install_profile, ExtensionPathResolver $extension_path_resolver) {
++  public function __construct(ConfigFactoryInterface $config_factory, StorageInterface $active_storage, TypedConfigManagerInterface $typed_config, ConfigManagerInterface $config_manager, EventDispatcherInterface $event_dispatcher, $install_profile, ExtensionPathResolver $extension_path_resolver, ProfileExtensionList $profile_list = NULL) {
      $this->configFactory = $config_factory;
      $this->activeStorages[$active_storage->getCollectionName()] = $active_storage;
      $this->typedConfig = $typed_config;
-     $this->configManager = $config_manager;
+@@ -100,6 +110,7 @@ public function __construct(ConfigFactoryInterface $config_factory, StorageInter
      $this->eventDispatcher = $event_dispatcher;
      $this->installProfile = $install_profile;
+     $this->extensionPathResolver = $extension_path_resolver;
 +    $this->profileList = $profile_list ?: \Drupal::service('extension.list.profile');
-     if (!$extension_path_resolver) {
-       @trigger_error('Calling ConfigInstaller::__construct() without the $extension_path_resolver argument is deprecated in drupal:9.3.0 and is removed from drupal:10.0.0. See https://www.drupal.org/node/2940438', E_USER_DEPRECATED);
-       $extension_path_resolver = \Drupal::service('extension.path.resolver');
-@@ -532,7 +543,8 @@ public function checkConfigurationToInstall($type, $name) {
+   }
+
+   /**
+@@ -529,7 +540,8 @@ public function checkConfigurationToInstall($type, $name) {
 
      // Install profiles can not have config clashes. Configuration that
      // has the same name as a module's configuration will be used instead.
@@ -257,7 +250,7 @@ index 107ca8a071..4e4c14a94b 100644
        // that already exists. Additionally, can not continue installing more
        // modules because those may depend on the current module being installed.
 diff --git a/core/lib/Drupal/Core/Config/ExtensionInstallStorage.php b/core/lib/Drupal/Core/Config/ExtensionInstallStorage.php
-index 1006013f5f..98dba2c523 100644
+index e48b255e..8517d122 100644
 --- a/core/lib/Drupal/Core/Config/ExtensionInstallStorage.php
 +++ b/core/lib/Drupal/Core/Config/ExtensionInstallStorage.php
 @@ -3,6 +3,7 @@
@@ -351,7 +344,7 @@ index 1006013f5f..98dba2c523 100644
      }
      return $this->folders;
 diff --git a/core/lib/Drupal/Core/Config/InstallStorage.php b/core/lib/Drupal/Core/Config/InstallStorage.php
-index a21388b3cb..01f25285b4 100644
+index 136be5d6..181c62c2 100644
 --- a/core/lib/Drupal/Core/Config/InstallStorage.php
 +++ b/core/lib/Drupal/Core/Config/InstallStorage.php
 @@ -4,6 +4,7 @@
@@ -420,7 +413,7 @@ index a21388b3cb..01f25285b4 100644
      return $this->folders;
    }
 diff --git a/core/lib/Drupal/Core/EventSubscriber/ConfigImportSubscriber.php b/core/lib/Drupal/Core/EventSubscriber/ConfigImportSubscriber.php
-index 38cdd4df3b..a372eca6a6 100644
+index d2259643..2962bffa 100644
 --- a/core/lib/Drupal/Core/EventSubscriber/ConfigImportSubscriber.php
 +++ b/core/lib/Drupal/Core/EventSubscriber/ConfigImportSubscriber.php
 @@ -7,6 +7,7 @@
@@ -431,7 +424,7 @@ index 38cdd4df3b..a372eca6a6 100644
  use Drupal\Core\Extension\ConfigImportModuleUninstallValidatorInterface;
  use Drupal\Core\Extension\ModuleExtensionList;
  use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
-@@ -138,12 +139,18 @@ protected function validateModules(ConfigImporter $config_importer) {
+@@ -144,12 +145,18 @@ protected function validateModules(ConfigImporter $config_importer) {
        $config_importer->logError($this->t('Unable to install the %module module since it does not exist.', ['%module' => $module]));
      }
 
@@ -451,7 +444,7 @@ index 38cdd4df3b..a372eca6a6 100644
            $missing_dependencies[] = $module_data[$required_module]->info['name'];
          }
        }
-@@ -163,10 +170,15 @@ protected function validateModules(ConfigImporter $config_importer) {
+@@ -169,10 +176,15 @@ protected function validateModules(ConfigImporter $config_importer) {
      $uninstalls = $config_importer->getExtensionChangelist('module', 'uninstall');
      foreach ($uninstalls as $module) {
        foreach (array_keys($module_data[$module]->required_by) as $dependent_module) {
@@ -471,44 +464,8 @@ index 38cdd4df3b..a372eca6a6 100644
          }
        }
        // Ensure that modules can be uninstalled.
-@@ -181,10 +193,31 @@ protected function validateModules(ConfigImporter $config_importer) {
-       }
-     }
-
--    // Ensure that the install profile is not being uninstalled.
--    if (in_array($install_profile, $uninstalls, TRUE)) {
--      $profile_name = $module_data[$install_profile]->info['name'];
--      $config_importer->logError($this->t('Unable to uninstall the %profile profile since it is the install profile.', ['%profile' => $profile_name]));
-+    // Don't allow profiles to be uninstalled. It's possible for no profile to
-+    // be set yet if the config is being imported during initial site install.
-+    if ($main_profile instanceof Extension) {
-+      if (in_array($main_profile->getName(), $uninstalls, TRUE)) {
-+        // Ensure that the active profile is not being uninstalled.
-+        $profile_name = $main_profile->info['name'];
-+        $config_importer->logError($this->t('Unable to uninstall the %profile profile since it is the main install profile.', ['%profile' => $profile_name]));
-+      }
-+      if ($profile_uninstalls = array_intersect_key($profiles, array_flip($uninstalls))) {
-+        // Ensure that none of the parent profiles are being uninstalled.
-+        $profile_names = [];
-+        foreach ($profile_uninstalls as $profile) {
-+          if ($profile->getName() !== $main_profile->getName()) {
-+            $profile_names[] = $module_data[$profile->getName()]->info['name'];
-+          }
-+        }
-+        if (!empty($profile_names)) {
-+          $message = $this->formatPlural(count($profile_names),
-+            'Unable to uninstall the :profile profile since it is a parent of another installed profile.',
-+            'Unable to uninstall the :profile profiles since they are parents of another installed profile.',
-+            [':profile' => implode(', ', $profile_names)]
-+          );
-+          $config_importer->logError($message);
-+        }
-+      }
-     }
-   }
-
 diff --git a/core/lib/Drupal/Core/Extension/ExtensionDiscovery.php b/core/lib/Drupal/Core/Extension/ExtensionDiscovery.php
-index 76d6f1947b..18fc2a4913 100644
+index ebd3553c..bc6bb39b 100644
 --- a/core/lib/Drupal/Core/Extension/ExtensionDiscovery.php
 +++ b/core/lib/Drupal/Core/Extension/ExtensionDiscovery.php
 @@ -91,6 +91,15 @@ class ExtensionDiscovery {
@@ -534,7 +491,7 @@ index 76d6f1947b..18fc2a4913 100644
 +   * @param \Drupal\Core\Extension\ProfileExtensionList|null $profile_list
 +   *   (optional) The profile list.
     */
--  public function __construct(string $root, $use_file_cache = TRUE, array $profile_directories = NULL, string $site_path = NULL) {
+-  public function __construct(string $root, $use_file_cache = TRUE, ?array $profile_directories = NULL, ?string $site_path = NULL) {
 +  public function __construct(string $root, bool $use_file_cache = TRUE, array $profile_directories = NULL, string $site_path = NULL, ProfileExtensionList $profile_list = NULL) {
      $this->root = $root;
      $this->fileCache = $use_file_cache ? FileCacheFactory::get('extension_discovery') : NULL;
@@ -553,10 +510,10 @@ index 76d6f1947b..18fc2a4913 100644
    }
 
    /**
-@@ -229,7 +250,19 @@ public function scan($type, $include_tests = NULL) {
-   public function setProfileDirectoriesFromSettings() {
-     $this->profileDirectories = [];
-     if ($profile = \Drupal::installProfile()) {
+@@ -246,7 +267,19 @@ public function setProfileDirectoriesFromSettings() {
+       $this->profileDirectories[] = '_does_not_exist_profile_CNKDSIUSYFUISEFCB';
+     }
+     elseif ($profile) {
 -      $this->profileDirectories[] = \Drupal::service('extension.list.profile')->getPath($profile);
 +      if ($this->profileList) {
 +        $profiles = $this->profileList->getAncestors($profile);
@@ -575,7 +532,7 @@ index 76d6f1947b..18fc2a4913 100644
      return $this;
    }
 diff --git a/core/lib/Drupal/Core/Extension/ModuleExtensionList.php b/core/lib/Drupal/Core/Extension/ModuleExtensionList.php
-index 6337cd0894..affdf7f506 100644
+index 1176b566..2a580986 100644
 --- a/core/lib/Drupal/Core/Extension/ModuleExtensionList.php
 +++ b/core/lib/Drupal/Core/Extension/ModuleExtensionList.php
 @@ -42,7 +42,7 @@ class ModuleExtensionList extends ExtensionList {
@@ -633,10 +590,10 @@ index 6337cd0894..affdf7f506 100644
      return $extensions;
    }
 diff --git a/core/lib/Drupal/Core/Extension/ModuleInstaller.php b/core/lib/Drupal/Core/Extension/ModuleInstaller.php
-index 909f0eb6c4..27d79a6978 100644
+index 5820e71e..5d31533e 100644
 --- a/core/lib/Drupal/Core/Extension/ModuleInstaller.php
 +++ b/core/lib/Drupal/Core/Extension/ModuleInstaller.php
-@@ -416,7 +416,7 @@ public function uninstall(array $module_list, $uninstall_dependents = TRUE) {
+@@ -420,7 +420,7 @@ public function uninstall(array $module_list, $uninstall_dependents = TRUE) {
              return FALSE;
            }
 
@@ -646,10 +603,10 @@ index 909f0eb6c4..27d79a6978 100644
              $module_list[$dependent] = $dependent;
            }
 diff --git a/core/lib/Drupal/Core/Extension/ProfileExtensionList.php b/core/lib/Drupal/Core/Extension/ProfileExtensionList.php
-index 5ef9c451fd..426c92a654 100644
+index 5ef9c451..cbaae106 100644
 --- a/core/lib/Drupal/Core/Extension/ProfileExtensionList.php
 +++ b/core/lib/Drupal/Core/Extension/ProfileExtensionList.php
-@@ -23,13 +23,172 @@ class ProfileExtensionList extends ExtensionList {
+@@ -23,13 +23,171 @@ class ProfileExtensionList extends ExtensionList {
      'package' => 'Other',
      'version' => NULL,
      'php' => \Drupal::MINIMUM_PHP,
@@ -670,8 +627,7 @@ index 5ef9c451fd..426c92a654 100644
 +  }
 +
 +  /**
-+   * Returns a list comprised of the profile, its parent profile if it has one,
-+   * and any further ancestors.
++   * Returns the profile, its parent profile, if it has one, and any ancestors.
 +   *
 +   * @param string $profile
 +   *   (optional) The name of profile. Defaults to the current install profile.
@@ -824,9 +780,8 @@ index 5ef9c451fd..426c92a654 100644
 
  }
 diff --git a/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php b/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php
-new file mode 100644
-index 0000000000..d5c42adea3
---- /dev/null
+index e69de29b..d5c42ade 100644
+--- a/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php
 +++ b/core/lib/Drupal/Core/Installer/InstallerProfileExtensionList.php
 @@ -0,0 +1,58 @@
 +<?php
@@ -888,10 +843,10 @@ index 0000000000..d5c42adea3
 +
 +}
 diff --git a/core/lib/Drupal/Core/Installer/NormalInstallerServiceProvider.php b/core/lib/Drupal/Core/Installer/NormalInstallerServiceProvider.php
-index a35905b587..82923801a0 100644
+index 7c8d8129..8f267134 100644
 --- a/core/lib/Drupal/Core/Installer/NormalInstallerServiceProvider.php
 +++ b/core/lib/Drupal/Core/Installer/NormalInstallerServiceProvider.php
-@@ -53,6 +53,7 @@ public function register(ContainerBuilder $container) {
+@@ -58,6 +58,7 @@ public function register(ContainerBuilder $container) {
 
      // Use performance-optimized extension lists.
      $container->getDefinition('extension.list.module')->setClass(InstallerModuleExtensionList::class);
@@ -900,7 +855,7 @@ index a35905b587..82923801a0 100644
      $container->getDefinition('extension.list.theme_engine')->setClass(InstallerThemeEngineExtensionList::class);
 
 diff --git a/core/modules/config/tests/config_test/src/TestInstallStorage.php b/core/modules/config/tests/config_test/src/TestInstallStorage.php
-index e3c4918df4..6d140815b7 100644
+index e3c4918d..6d140815 100644
 --- a/core/modules/config/tests/config_test/src/TestInstallStorage.php
 +++ b/core/modules/config/tests/config_test/src/TestInstallStorage.php
 @@ -21,9 +21,10 @@ protected function getAllFolders() {
@@ -918,11 +873,10 @@ index e3c4918df4..6d140815b7 100644
      return $this->folders;
    }
 diff --git a/core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php b/core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php
-new file mode 100644
-index 0000000000..d1fb659c06
---- /dev/null
+index e69de29b..9173bb34 100644
+--- a/core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php
 +++ b/core/modules/config/tests/src/Functional/ConfigImportBaseInstallProfileTest.php
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,109 @@
 +<?php
 +
 +namespace Drupal\Tests\config\Functional;
@@ -950,6 +904,9 @@ index 0000000000..d1fb659c06
 +   */
 +  protected $webUser;
 +
++  /**
++   * {@inheritdoc}
++   */
 +  protected function setUp(): void {
 +    parent::setUp();
 +
@@ -959,8 +916,9 @@ index 0000000000..d1fb659c06
 +  }
 +
 +  /**
-+   * Tests config importer cannot uninstall parent install profiles and
-+   * dependencies of parent profiles can be uninstalled.
++   * Tests config importer cannot uninstall parent install profile/s.
++   *
++   * Also, tests that dependencies of parent profile/s can be uninstalled.
 +   *
 +   * @see \Drupal\Core\EventSubscriber\ConfigImportSubscriber
 +   */
@@ -980,7 +938,9 @@ index 0000000000..d1fb659c06
 +
 +    // Uninstall dependencies of parent profile.
 +    $core['module']['testing'] = 0;
-+    unset($core['module']['dynamic_page_cache']);
++    if (isset($core['module']['dynamic_page_cache'])) {
++      unset($core['module']['dynamic_page_cache']);
++    }
 +    $sync->write('core.extension', $core);
 +    $sync->deleteAll('dynamic_page_cache.');
 +    $this->drupalGet('admin/config/development/configuration');
@@ -991,8 +951,9 @@ index 0000000000..d1fb659c06
 +  }
 +
 +  /**
-+   * Tests config importer cannot uninstall sub-profiles and dependencies of
-+   * sub-profiles can be uninstalled.
++   * Tests config importer cannot uninstall sub-profile/s.
++   *
++   * Also, tests dependencies of sub-profile/s can be uninstalled.
 +   *
 +   * @see \Drupal\Core\EventSubscriber\ConfigImportSubscriber
 +   */
@@ -1012,7 +973,9 @@ index 0000000000..d1fb659c06
 +
 +    // Uninstall dependencies of main profile.
 +    $core['module']['testing_inherited'] = 0;
-+    unset($core['module']['syslog']);
++    if (isset($core['module']['syslog'])) {
++      unset($core['module']['syslog']);
++    }
 +    $sync->write('core.extension', $core);
 +    $sync->deleteAll('syslog.');
 +    $this->drupalGet('admin/config/development/configuration');
@@ -1024,35 +987,34 @@ index 0000000000..d1fb659c06
 +
 +}
 diff --git a/core/modules/config/tests/src/Functional/ConfigImportInstallProfileTest.php b/core/modules/config/tests/src/Functional/ConfigImportInstallProfileTest.php
-index 6d3b222bc7..18bf9dd8b0 100644
+index 12d58a6a..9ad93c8c 100644
 --- a/core/modules/config/tests/src/Functional/ConfigImportInstallProfileTest.php
 +++ b/core/modules/config/tests/src/Functional/ConfigImportInstallProfileTest.php
-@@ -65,7 +65,7 @@ public function testInstallProfileValidation() {
+@@ -68,7 +68,7 @@ public function testInstallProfileValidation(): void {
      $this->drupalGet('admin/config/development/configuration');
      $this->submitForm([], 'Import all');
      $this->assertSession()->pageTextContains('The configuration cannot be imported because it failed validation for the following reasons:');
--    $this->assertSession()->pageTextContains('Unable to uninstall the Testing config import profile since it is the install profile.');
+-    $this->assertSession()->pageTextContains("The install profile 'Testing config import' is providing the following module(s): testing_config_import_module");
 +    $this->assertSession()->pageTextContains('Unable to uninstall the Testing config import profile since it is the main install profile.');
 
      // Uninstall dependencies of testing_config_import.
-     $core['module']['testing_config_import'] = 0;
+     unset($core['module']['syslog']);
 diff --git a/core/modules/system/src/Form/ModulesUninstallForm.php b/core/modules/system/src/Form/ModulesUninstallForm.php
-index 483959410c..2ea4ce6370 100644
+index d09f2c63..41f9563b 100644
 --- a/core/modules/system/src/Form/ModulesUninstallForm.php
 +++ b/core/modules/system/src/Form/ModulesUninstallForm.php
-@@ -164,6 +164,11 @@ public function buildForm(array $form, FormStateInterface $form_state) {
-     });
-     $validation_reasons = $this->moduleInstaller->validateUninstall(array_keys($uninstallable));
+@@ -142,6 +142,10 @@ public function buildForm(array $form, FormStateInterface $form_state) {
+       return $form;
+     }
 
 +    $profiles = \Drupal::service('extension.list.profile')->getAncestors();
-+
 +    // Remove any profiles from the list.
 +    $uninstallable = array_diff_key($uninstallable, $profiles);
 +
-     $form['uninstall'] = ['#tree' => TRUE];
-     foreach ($uninstallable as $module_key => $module) {
-       $name = $module->info['name'] ?: $module->getName();
-@@ -199,7 +204,8 @@ public function buildForm(array $form, FormStateInterface $form_state) {
+     // Deprecated and obsolete modules should appear at the top of the
+     // uninstallation list.
+     $unstable_lifecycle = array_flip([
+@@ -195,7 +199,8 @@ public function buildForm(array $form, FormStateInterface $form_state) {
          $form['uninstall'][$module->getName()]['#disabled'] = TRUE;
        }
        // All modules which depend on this one must be uninstalled first, before
@@ -1063,9 +1025,8 @@ index 483959410c..2ea4ce6370 100644
          if ($this->updateRegistry->getInstalledVersion($dependent) !== $this->updateRegistry::SCHEMA_UNINSTALLED) {
            $form['modules'][$module->getName()]['#required_by'][] = $dependent;
 diff --git a/core/profiles/testing_inherited/config/install/block.block.stable_login.yml b/core/profiles/testing_inherited/config/install/block.block.stable_login.yml
-new file mode 100644
-index 0000000000..3650c6c41a
---- /dev/null
+index e69de29b..9338951f 100644
+--- a/core/profiles/testing_inherited/config/install/block.block.stable_login.yml
 +++ b/core/profiles/testing_inherited/config/install/block.block.stable_login.yml
 @@ -0,0 +1,19 @@
 +langcode: en
@@ -1074,9 +1035,9 @@ index 0000000000..3650c6c41a
 +  module:
 +    - user
 +  theme:
-+    - stable
++    - stable9
 +id: stable_login
-+theme: stable
++theme: stable9
 +region: sidebar_first
 +weight: 0
 +provider: null
@@ -1088,17 +1049,15 @@ index 0000000000..3650c6c41a
 +  label_display: visible
 +visibility: {  }
 diff --git a/core/profiles/testing_inherited/config/install/system.theme.yml b/core/profiles/testing_inherited/config/install/system.theme.yml
-new file mode 100644
-index 0000000000..67aeeeeac7
---- /dev/null
+index e69de29b..25377e44 100644
+--- a/core/profiles/testing_inherited/config/install/system.theme.yml
 +++ b/core/profiles/testing_inherited/config/install/system.theme.yml
 @@ -0,0 +1,2 @@
 +# @todo: Remove this file in https://www.drupal.org/node/2352949
-+default: stable
++default: stable9
 diff --git a/core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml b/core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml
-new file mode 100644
-index 0000000000..132b11493f
---- /dev/null
+index e69de29b..132b1149 100644
+--- a/core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml
 +++ b/core/profiles/testing_inherited/modules/child_profile_module/child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Child profile module'
@@ -1107,9 +1066,8 @@ index 0000000000..132b11493f
 +package: Testing
 +version: VERSION
 diff --git a/core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml b/core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml
-new file mode 100644
-index 0000000000..822c572099
---- /dev/null
+index e69de29b..822c5720 100644
+--- a/core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml
 +++ b/core/profiles/testing_inherited/modules/contrib/contrib_child_profile_module/contrib_child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Contrib child profile module'
@@ -1118,9 +1076,8 @@ index 0000000000..822c572099
 +package: Testing
 +version: VERSION
 diff --git a/core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml b/core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml
-new file mode 100644
-index 0000000000..ef81a8a55b
---- /dev/null
+index e69de29b..ef81a8a5 100644
+--- a/core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml
 +++ b/core/profiles/testing_inherited/modules/custom/custom_child_profile_module/custom_child_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Custom child profile module'
@@ -1129,9 +1086,8 @@ index 0000000000..ef81a8a55b
 +package: Testing
 +version: VERSION
 diff --git a/core/profiles/testing_inherited/testing_inherited.info.yml b/core/profiles/testing_inherited/testing_inherited.info.yml
-new file mode 100644
-index 0000000000..92e183c86a
---- /dev/null
+index e69de29b..635c9353 100644
+--- a/core/profiles/testing_inherited/testing_inherited.info.yml
 +++ b/core/profiles/testing_inherited/testing_inherited.info.yml
 @@ -0,0 +1,17 @@
 +name: Testing Inherited
@@ -1150,11 +1106,10 @@ index 0000000000..92e183c86a
 +  - custom_child_profile_module
 +
 +themes:
-+  - stable
++  - stable9
 diff --git a/core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php b/core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php
-new file mode 100644
-index 0000000000..0af6c4f68d
---- /dev/null
+index e69de29b..ca08e3e3 100644
+--- a/core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php
 +++ b/core/profiles/testing_inherited/tests/src/Functional/InheritedProfileTest.php
 @@ -0,0 +1,46 @@
 +<?php
@@ -1185,7 +1140,7 @@ index 0000000000..0af6c4f68d
 +    $this->assertInstanceOf(BlockInterface::class, Block::load('stable_login'));
 +
 +    // Check that stable is the default theme.
-+    $this->assertSame('stable', $this->config('system.theme')->get('default'));
++    $this->assertSame('stable9', $this->config('system.theme')->get('default'));
 +
 +    /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
 +    $module_handler = $this->container->get('module_handler');
@@ -1199,14 +1154,13 @@ index 0000000000..0af6c4f68d
 +    $this->assertTrue($module_handler->moduleExists('custom_child_profile_module'));
 +
 +    // Check that all themes were installed.
-+    $this->assertTrue(\Drupal::service('theme_handler')->themeExists('stable'));
++    $this->assertTrue(\Drupal::service('theme_handler')->themeExists('stable9'));
 +  }
 +
 +}
 diff --git a/core/profiles/testing_inherited_standard/config/install/core.entity_view_display.node.page.teaser.yml b/core/profiles/testing_inherited_standard/config/install/core.entity_view_display.node.page.teaser.yml
-new file mode 100644
-index 0000000000..91194c2f4a
---- /dev/null
+index e69de29b..91194c2f 100644
+--- a/core/profiles/testing_inherited_standard/config/install/core.entity_view_display.node.page.teaser.yml
 +++ b/core/profiles/testing_inherited_standard/config/install/core.entity_view_display.node.page.teaser.yml
 @@ -0,0 +1,27 @@
 +langcode: en
@@ -1237,9 +1191,8 @@ index 0000000000..91194c2f4a
 +    region: content
 +hidden: {  }
 diff --git a/core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml b/core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml
-new file mode 100644
-index 0000000000..0728ada2d1
---- /dev/null
+index e69de29b..04d24749 100644
+--- a/core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml
 +++ b/core/profiles/testing_inherited_standard/testing_inherited_standard.info.yml
 @@ -0,0 +1,12 @@
 +name: Testing Inherited Standard
@@ -1253,11 +1206,10 @@ index 0000000000..0728ada2d1
 +install: []
 +
 +themes:
-+  - bartik
++  - olivero
 diff --git a/core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php b/core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php
-new file mode 100644
-index 0000000000..e98f06b1e7
---- /dev/null
+index e69de29b..c83ccae4 100644
+--- a/core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php
 +++ b/core/profiles/testing_inherited_standard/tests/src/Functional/InheritedProfileTest.php
 @@ -0,0 +1,38 @@
 +<?php
@@ -1281,7 +1233,7 @@ index 0000000000..e98f06b1e7
 +  /**
 +   * {@inheritdoc}
 +   */
-+  protected $defaultTheme = 'stable';
++  protected $defaultTheme = 'stable9';
 +
 +  /**
 +   * Tests inherited installation profile.
@@ -1299,17 +1251,15 @@ index 0000000000..e98f06b1e7
 +
 +}
 diff --git a/core/profiles/testing_sub_sub_profile/config/install/system.theme.yml b/core/profiles/testing_sub_sub_profile/config/install/system.theme.yml
-new file mode 100644
-index 0000000000..5cb3db7201
---- /dev/null
+index e69de29b..911d5890 100644
+--- a/core/profiles/testing_sub_sub_profile/config/install/system.theme.yml
 +++ b/core/profiles/testing_sub_sub_profile/config/install/system.theme.yml
 @@ -0,0 +1,2 @@
 +# @todo: Remove this file once https://www.drupal.org/node/2854576 is resolved.
-+default: stable
++default: stable9
 diff --git a/core/profiles/testing_sub_sub_profile/modules/grandchild_profile_module/grandchild_profile_module.info.yml b/core/profiles/testing_sub_sub_profile/modules/grandchild_profile_module/grandchild_profile_module.info.yml
-new file mode 100644
-index 0000000000..06e0e52d59
---- /dev/null
+index e69de29b..06e0e52d 100644
+--- a/core/profiles/testing_sub_sub_profile/modules/grandchild_profile_module/grandchild_profile_module.info.yml
 +++ b/core/profiles/testing_sub_sub_profile/modules/grandchild_profile_module/grandchild_profile_module.info.yml
 @@ -0,0 +1,5 @@
 +name: 'Grandchild profile module'
@@ -1318,9 +1268,8 @@ index 0000000000..06e0e52d59
 +package: Testing
 +version: VERSION
 diff --git a/core/profiles/testing_sub_sub_profile/testing_sub_sub_profile.info.yml b/core/profiles/testing_sub_sub_profile/testing_sub_sub_profile.info.yml
-new file mode 100644
-index 0000000000..25d7ca67ed
---- /dev/null
+index e69de29b..25d7ca67 100644
+--- a/core/profiles/testing_sub_sub_profile/testing_sub_sub_profile.info.yml
 +++ b/core/profiles/testing_sub_sub_profile/testing_sub_sub_profile.info.yml
 @@ -0,0 +1,11 @@
 +name: Testing Sub_Sub_Profile
@@ -1335,9 +1284,8 @@ index 0000000000..25d7ca67ed
 +  - syslog
 +  - grandchild_profile_module
 diff --git a/core/profiles/testing_sub_sub_profile/tests/src/Functional/DeepInheritedProfileTest.php b/core/profiles/testing_sub_sub_profile/tests/src/Functional/DeepInheritedProfileTest.php
-new file mode 100644
-index 0000000000..e14705d581
---- /dev/null
+index e69de29b..39c8f1d2 100644
+--- a/core/profiles/testing_sub_sub_profile/tests/src/Functional/DeepInheritedProfileTest.php
 +++ b/core/profiles/testing_sub_sub_profile/tests/src/Functional/DeepInheritedProfileTest.php
 @@ -0,0 +1,38 @@
 +<?php
@@ -1363,7 +1311,7 @@ index 0000000000..e14705d581
 +   */
 +  public function testDeepInheritedProfile() {
 +    // Check that stable is the default theme enabled in parent profile.
-+    $this->assertSame('stable', $this->config('system.theme')->get('default'));
++    $this->assertSame('stable9', $this->config('system.theme')->get('default'));
 +
 +    /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
 +    $module_handler = $this->container->get('module_handler');
@@ -1378,23 +1326,9 @@ index 0000000000..e14705d581
 +  }
 +
 +}
-diff --git a/core/tests/Drupal/KernelTests/Core/Config/ConfigImporterTest.php b/core/tests/Drupal/KernelTests/Core/Config/ConfigImporterTest.php
-index b252b28729..bfa5bfc4c0 100644
---- a/core/tests/Drupal/KernelTests/Core/Config/ConfigImporterTest.php
-+++ b/core/tests/Drupal/KernelTests/Core/Config/ConfigImporterTest.php
-@@ -769,7 +769,7 @@ public function testInstallProfileMisMatch() {
-       $error_log = $config_importer->getErrors();
-       // Install profiles can not be changed. Note that KernelTestBase currently
-       // does not use an install profile. This situation should be impossible
--      // to get in but site's can removed the install profile setting from
-+      // to get into but sites can change the install profile value in config or
-       // settings.php so the test is valid.
-       $this->assertEquals(['Cannot change the install profile from <em class="placeholder"></em> to <em class="placeholder">this_will_not_work</em> once Drupal is installed.'], $error_log);
-     }
 diff --git a/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php b/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php
-new file mode 100644
-index 0000000000..1d7674533a
---- /dev/null
+index e69de29b..1d767453 100644
+--- a/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php
 +++ b/core/tests/Drupal/KernelTests/Core/Extension/ProfileExtensionListTest.php
 @@ -0,0 +1,145 @@
 +<?php
@@ -1543,36 +1477,14 @@ index 0000000000..1d7674533a
 +
 +}
 diff --git a/core/tests/Drupal/Tests/Core/Database/DatabaseTest.php b/core/tests/Drupal/Tests/Core/Database/DatabaseTest.php
-index bf61c2467c..70df6cd0eb 100644
+index 0119c7ae..f7cd343b 100644
 --- a/core/tests/Drupal/Tests/Core/Database/DatabaseTest.php
 +++ b/core/tests/Drupal/Tests/Core/Database/DatabaseTest.php
-@@ -43,8 +43,10 @@ protected function setUp(): void {
-     $container = $this->createMock(ContainerInterface::class);
-     $container->expects($this->any())
-       ->method('has')
--      ->with('kernel')
--      ->willReturn(TRUE);
-+      ->will($this->returnValueMap([
-+        ['kernel', TRUE],
+@@ -54,6 +54,7 @@ protected function setUp(): void {
+       ->willReturnMap([
+         ['kernel', TRUE],
+         ['extension.list.database_driver', TRUE],
 +        ['extension.list.profile', TRUE],
-+      ]));
+       ]);
      $container->expects($this->any())
-       ->method('getParameter')
-       ->with('site.path')
-diff --git a/core/tests/Drupal/Tests/Core/Database/UrlConversionTest.php b/core/tests/Drupal/Tests/Core/Database/UrlConversionTest.php
-index 091449fd5a..45b279abc8 100644
---- a/core/tests/Drupal/Tests/Core/Database/UrlConversionTest.php
-+++ b/core/tests/Drupal/Tests/Core/Database/UrlConversionTest.php
-@@ -31,8 +31,10 @@ protected function setUp(): void {
-     $container = $this->createMock('Symfony\Component\DependencyInjection\ContainerInterface');
-     $container->expects($this->any())
-       ->method('has')
--      ->with('kernel')
--      ->willReturn(TRUE);
-+      ->will($this->returnValueMap([
-+        ['kernel', TRUE],
-+        ['extension.list.profile', TRUE],
-+      ]));
-     $container->expects($this->any())
-       ->method('getParameter')
-       ->with('site.path')
+       ->method('get')

@@ -8,6 +8,7 @@ use Drupal\jsonapi_include\JsonapiParse;
 use Drupal\youvo\Event\ParseJsonapiAttributesEvent;
 use Drupal\youvo\Event\ParseJsonapiRelationshipsEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class to dispatch events to alter JsonapiParse.
@@ -18,16 +19,14 @@ class AlterJsonapiParse extends JsonapiParse {
 
   /**
    * Constructs a AlterJsonapiParse object.
-   *
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file url generator.
    */
   public function __construct(
+    RequestStack $request_stack,
     protected EventDispatcherInterface $eventDispatcher,
     protected FileUrlGeneratorInterface $fileUrlGenerator
-  ) {}
+  ) {
+    parent::__construct($request_stack);
+  }
 
   /**
    * {@inheritdoc}

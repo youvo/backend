@@ -47,7 +47,7 @@ class OverviewController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('progress.manager'),
-      $container->get('date.formatter')
+      $container->get('date.formatter'),
     );
   }
 

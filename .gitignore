@@ -1,4 +1,7 @@
-/vendor/
+/.idea/
+.DS_Store
+
+/.ddev/.env
 
 /config/.env.api
 /config/.env.consumers.development
@@ -8,3 +11,5 @@
 /certificates/private.key
 /certificates/public.key
 /certificates/youvo7.key
+
+/vendor/

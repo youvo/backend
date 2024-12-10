@@ -117,6 +117,10 @@ class Project extends ContentEntityBase implements ProjectInterface {
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     if ($this->isNew()) {
+
+      $test = $this->getTranslation('de');
+      $test->lifecycle();
+
       // Store the current organization contact in the project. We do this
       // because the contact of the organization may change in the future, and
       // we would like to know who was responsible for past projects.
