@@ -85,6 +85,8 @@ class ProjectTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function setUp(): void {
     parent::setUp();
@@ -93,17 +95,7 @@ class ProjectTest extends KernelTestBase {
     ConfigurableLanguage::createFromLangcode('de')->save();
 
     $this->installEntitySchema('user');
-
-    $this->admin = $this->createUser(
-      ['administer projects'],
-      'Admira Minelli',
-      TRUE,
-      ['uid' => 1],
-    );
-    $this->admin->addRole('administrator');
-    $this->admin->save();
-    $this->createOrganization();
-
+    $this->installEntitySchema('path_alias');
     $this->installEntitySchema('taxonomy_term');
     $this->installConfig('user_bundle');
     $this->installConfig('user_types');
@@ -115,6 +107,16 @@ class ProjectTest extends KernelTestBase {
     $this->installEntitySchema('project');
     $this->installEntitySchema('project_result');
     $this->installConfig('projects');
+
+    $this->admin = $this->createUser(
+      ['administer projects'],
+      'Admira Minelli',
+      TRUE,
+      ['uid' => 1],
+    );
+    $this->admin->addRole('administrator');
+    $this->admin->save();
+    $this->createOrganization();
 
     // Create node with random information.
     $project = Project::create([

@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\jsonapi_include\JsonapiParse;
@@ -9,6 +10,7 @@ use Drupal\youvo\Event\ParseJsonapiAttributesEvent;
 use Drupal\youvo\Event\ParseJsonapiRelationshipsEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class to dispatch events to alter JsonapiParse.
@@ -123,6 +125,10 @@ class AlterJsonapiParse extends JsonapiParse {
    */
   protected function parseJsonContent($response) {
     $json = parent::parseJsonContent($response);
+
+    if ($json instanceof Response) {
+      $json = Json::decode($json->getContent());
+    }
 
     // Resolve offsets when pagination is requested.
     if (isset($json['links']['next']) || isset($json['links']['prev'])) {
