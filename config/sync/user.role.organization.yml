@@ -7,8 +7,8 @@ dependencies:
     - rest.resource.project.mediate
     - rest.resource.project.submit
   content:
-    - 'consumer:consumer:d1bfc6eb-19d6-4999-ae01-fd2528bef159'
-    - 'consumer:consumer:f66832f0-ba7c-4666-883b-5421f4c77cd8'
+    - 'consumer:consumer:63b60b9e-dbbc-4214-a520-f8cf4cab65da'
+    - 'consumer:consumer:ff5a1e31-557c-4c17-a7f5-a4a342d3cc19'
   module:
     - consumer_permissions
     - lifecycle

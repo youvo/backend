@@ -10,8 +10,8 @@ dependencies:
     - rest.resource.project.complete
     - rest.resource.question.submission
   content:
-    - 'consumer:consumer:53818cfc-86ac-4c88-8fa9-c09cdc62656c'
-    - 'consumer:consumer:f72300a6-f046-4261-a592-5879395e9fa5'
+    - 'consumer:consumer:7f56f1d5-154f-42c1-b591-45e4e2fd235e'
+    - 'consumer:consumer:dd9ace1c-8879-45ae-b137-9cc06b4b5821'
   module:
     - consumer_permissions
     - courses

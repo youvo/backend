@@ -73,6 +73,7 @@ function oauth_grant_install() {
       isset($consumer_redirects['REDIRECT_CREATIVE_LOCAL']) &&
       isset($consumer_secrets['SECRET_CREATIVE_LOCAL'])) {
       $consumer = Consumer::create([
+        'uuid' => 'dd9ace1c-8879-45ae-b137-9cc06b4b5821',
         'client_id' => $consumer_uuids['UUID_CREATIVE_LOCAL'],
         'label' => 'Creatives (local)',
         'third_party' => FALSE,
@@ -98,6 +99,7 @@ function oauth_grant_install() {
       isset($consumer_redirects['REDIRECT_CREATIVE']) &&
       isset($consumer_secrets['SECRET_CREATIVE'])) {
       $consumer = Consumer::create([
+        'uuid' => '7f56f1d5-154f-42c1-b591-45e4e2fd235e',
         'client_id' => $consumer_uuids['UUID_CREATIVE'],
         'label' => 'Creatives',
         'third_party' => FALSE,
@@ -123,6 +125,7 @@ function oauth_grant_install() {
       isset($consumer_redirects['REDIRECT_ORGANIZATION_LOCAL']) &&
       isset($consumer_secrets['SECRET_ORGANIZATION_LOCAL'])) {
       $consumer = Consumer::create([
+        'uuid' => 'ff5a1e31-557c-4c17-a7f5-a4a342d3cc19',
         'client_id' => $consumer_uuids['UUID_ORGANIZATION_LOCAL'],
         'label' => 'Organizations (local)',
         'third_party' => FALSE,
@@ -148,6 +151,7 @@ function oauth_grant_install() {
       isset($consumer_redirects['REDIRECT_ORGANIZATION']) &&
       isset($consumer_secrets['SECRET_ORGANIZATION'])) {
       $consumer = Consumer::create([
+        'uuid' => '63b60b9e-dbbc-4214-a520-f8cf4cab65da',
         'client_id' => $consumer_uuids['UUID_ORGANIZATION'],
         'label' => 'Organizations',
         'third_party' => FALSE,
