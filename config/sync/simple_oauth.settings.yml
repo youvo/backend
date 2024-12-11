@@ -7,5 +7,5 @@ remember_clients: true
 token_cron_batch_size: 0
 use_implicit: false
 disable_openid_connect: true
-public_key: /var/www/html/config/certs/public.key
-private_key: /var/www/html/config/certs/private.key
+public_key: ''
+private_key: ''
