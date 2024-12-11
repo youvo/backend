@@ -61,7 +61,6 @@ Adjust the config path in `web/sites/default/settings.php` such that `$settings[
 
 Set `$settings['file_public_path'] = 'files';`.
 Set `$settings['file_assets_path'] = 'files';`.
-Set `$settings['file_temp_path'] = '/tmp';`.
 Set `$settings['file_private_path'] = '../private';`.
 
 Note that some of the environment variables files will be merged in the future. We entertain some separation at the moment for development purposes.
