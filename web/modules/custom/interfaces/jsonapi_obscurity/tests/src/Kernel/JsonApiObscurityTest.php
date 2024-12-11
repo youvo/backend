@@ -70,7 +70,6 @@ class JsonApiObscurityTest extends KernelTestBase {
     parent::setUp();
 
     // Install schemas and configurations.
-    $this->installSchema('system', ['sequences']);
     $this->installConfig('filter');
     $this->installConfig(['language']);
     $this->installEntitySchema('configurable_language');

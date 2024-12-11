@@ -60,7 +60,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
     $node->field_status->value = 'planning';
     $violations = $node->validate();
     $this->assertCount(1, $violations);
-    $this->assertEquals('No transition exists to move from <em class="placeholder">in_discussion</em> to <em class="placeholder">planning</em>.', $violations[0]->getMessage());
+    $this->assertEquals('No transition exists to move from in_discussion to planning.', $violations[0]->getMessage());
   }
 
   /**
@@ -79,7 +79,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
     $node->field_status->value = 'approved';
     $violations = $node->validate();
     $this->assertCount(1, $violations);
-    $this->assertEquals('You do not have sufficient permissions to use the <em class="placeholder">Approved Project</em> transition.', $violations[0]->getMessage());
+    $this->assertEquals('You do not have sufficient permissions to use the Approved Project transition.', $violations[0]->getMessage());
   }
 
 }

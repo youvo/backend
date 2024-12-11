@@ -42,7 +42,6 @@ abstract class WorkflowsTestBase extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installEntitySchema('workflow');
     $this->installConfig(['lifecycle_test_workflows']);
-    $this->installSchema('system', ['sequences']);
 
     // Discard user 1.
     $this->createUser();
