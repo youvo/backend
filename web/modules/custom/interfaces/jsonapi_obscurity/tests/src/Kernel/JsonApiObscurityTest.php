@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\jsonapi_obscurity\Kernel;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,27 +29,28 @@ class JsonApiObscurityTest extends KernelTestBase {
    *
    * @var string
    */
-  protected $obscurityPrefix;
+  protected string $obscurityPrefix;
 
   /**
    * The JSON:API base path.
    *
    * @var string
    */
-  protected $jsonApiBasePath;
+  protected string $jsonApiBasePath;
 
   /**
    * The test node.
    *
    * @var \Drupal\node\NodeInterface
    */
-  protected $node;
+  protected NodeInterface $node;
 
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'content_translation',
+    'file',
     'filter',
     'jsonapi',
     'jsonapi_obscurity',
@@ -96,7 +100,7 @@ class JsonApiObscurityTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     parent::register($container);
     $this->obscurityPrefix = '/' . $this->randomMachineName();
     $container->setParameter('jsonapi_obscurity.prefix', $this->obscurityPrefix);
@@ -107,7 +111,7 @@ class JsonApiObscurityTest extends KernelTestBase {
    *
    * @throws \Exception
    */
-  public function testJsonApiObscurity() {
+  public function testJsonApiObscurity(): void {
 
     // Test without prefix.
     $path = $this->buildNodePath();
@@ -187,7 +191,7 @@ class JsonApiObscurityTest extends KernelTestBase {
    * @return string
    *   The node path.
    */
-  protected function buildNodePath(string $prefix = '', string $langcode = '') {
+  protected function buildNodePath(string $prefix = '', string $langcode = ''): string {
     return $prefix . $langcode . $this->jsonApiBasePath . '/node/' . $this->node->bundle() . '/' . $this->node->uuid();
   }
 
