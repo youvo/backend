@@ -3,9 +3,9 @@ _core:
 access_token_expiration: 3600
 authorization_code_expiration: 120
 refresh_token_expiration: 1209600
-token_cron_batch_size: 0
-public_key: /var/www/html/certificates/public.key
-private_key: /var/www/html/certificates/private.key
 remember_clients: true
+token_cron_batch_size: 0
 use_implicit: false
 disable_openid_connect: true
+public_key: /var/www/html/config/certs/public.key
+private_key: /var/www/html/config/certs/private.key

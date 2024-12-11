@@ -56,6 +56,7 @@ Navigate to https://youvo.ddev.site:8443/user/login and login with `admin@youvo.
 - OAuth Remote configuration `config/.env.oauth_remote.development`
 - API configuration `config/.env.api`
 - XDebug port `.ddev/php/xdebug_client_port.ini`
+- Simple OAuth certificates, see `config/certs/README.md`
 
 Adjust the config path in `web/sites/default/settings.php` such that `$settings['config_sync_directory'] = '../config/sync'`;.
 

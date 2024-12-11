@@ -25,8 +25,8 @@ function oauth_grant_install() {
   $config->set('remember_clients', TRUE);
   $config->set('disable_openid_connect', TRUE);
   $config->set('use_implicit', FALSE);
-  $config->set('public_key', dirname(DRUPAL_ROOT) . '/certificates/public.key');
-  $config->set('private_key', dirname(DRUPAL_ROOT) . '/certificates/private.key');
+  $config->set('public_key', dirname(DRUPAL_ROOT) . '/config/certs/public.key');
+  $config->set('private_key', dirname(DRUPAL_ROOT) . '/config/certs/private.key');
   $config->save(TRUE);
 
   // The following settings are for development purposes. Production settings
