@@ -3,7 +3,7 @@
   <description>PHP Code Sniffer configuration</description>
   <ini name="memory_limit" value="128M" />
   <file>web/modules/custom</file>
-  <arg name="extensions" value="php,module,inc,install,test,profile,theme,css,info,txt,yml"/>
+  <arg name="extensions" value="install,module,php,profile,test,theme,inc"/>
   <arg name="colors"/>
   <arg value="p"/>
   <rule ref="Drupal"/>
