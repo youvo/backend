@@ -127,7 +127,8 @@ class AlterJsonapiParse extends JsonapiParse {
     $json = parent::parseJsonContent($response);
 
     if ($json instanceof Response) {
-      $json = Json::decode($json->getContent());
+      $content = $json->getContent();
+      $json = $content ? Json::decode($content) : [];
     }
 
     // Resolve offsets when pagination is requested.
