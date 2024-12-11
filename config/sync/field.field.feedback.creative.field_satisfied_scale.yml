@@ -1,0 +1,25 @@
+uuid: 5b319b04-3f08-47cc-af70-bff5458eab82
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_satisfied_scale
+_core:
+  default_config_hash: r1PAZvO8VimivEflPNZYW0e07wCsZ6lLBnKKvFZIp3g
+id: feedback.creative.field_satisfied_scale
+field_name: field_satisfied_scale
+entity_type: feedback
+bundle: creative
+label: 'Satisfied Scale'
+description: 'Wie zufrieden bist Du mit dem Angebot von youvo?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

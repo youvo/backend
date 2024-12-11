@@ -1,0 +1,8 @@
+uuid: 76901624-6810-48bb-ba8d-0a1313a3d1ec
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 9bnXaFolW2Y-7AzMani-1Dw-YgAiV2a_EF7mWiK-zFo
+id: organization
+label: Organization

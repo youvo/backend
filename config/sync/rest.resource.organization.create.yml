@@ -1,0 +1,23 @@
+uuid: e262af60-5fc6-4454-ade5-15bc969bb0d3
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - organizations
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: vluFMUjqjlYHWvEnTuN8mVO9snWlHg1IUVrJB77mPXw
+id: organization.create
+plugin_id: 'organization:create'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

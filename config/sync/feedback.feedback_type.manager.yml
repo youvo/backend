@@ -1,0 +1,8 @@
+uuid: 7990e127-9f69-443d-916b-32ec973144b7
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: G-BtzhKl1T9QvPVqTlFV3cTWfaPUOIC7yoa0esqRaIo
+id: manager
+label: Manager

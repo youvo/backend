@@ -1,0 +1,8 @@
+uuid: 30a98403-a8f7-4ed4-932c-c2cbe102afef
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: B1FnwzOBLDxmfVvz4b8-R6NB4g35m83VZvgMGHVPbQ0
+id: stats
+label: Stats

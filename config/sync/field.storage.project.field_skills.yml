@@ -1,0 +1,22 @@
+uuid: 1d2704e0-2c8a-4f92-80d1-b8a05e8ca6a5
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+    - taxonomy
+_core:
+  default_config_hash: sxBwCN9Bx5spmbCKsOoBqMioeuj2F64TBtQQJRACsaI
+id: project.field_skills
+field_name: field_skills
+entity_type: project
+type: entity_reference
+settings:
+  target_type: taxonomy_term
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

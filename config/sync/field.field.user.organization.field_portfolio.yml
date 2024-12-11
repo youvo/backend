@@ -1,0 +1,21 @@
+uuid: 605fed8e-2607-471e-a2ab-67c22b58d23d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_portfolio
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: pJ0beBHK7dV7oMLZ3TCLXxwG0q4N0MPI4jIGoauWaJY
+id: user.organization.field_portfolio
+field_name: field_portfolio
+entity_type: user
+bundle: organization
+label: Portfolio
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

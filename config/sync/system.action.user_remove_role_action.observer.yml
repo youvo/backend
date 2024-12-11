@@ -1,0 +1,14 @@
+uuid: b56790d6-fb3c-40d3-8c43-ff53450f9995
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.observer
+  module:
+    - user
+id: user_remove_role_action.observer
+label: 'Remove the Observer role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: observer

@@ -1,0 +1,20 @@
+uuid: 5d62e944-d957-49c9-9ef1-55792994bf49
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.task
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: vjZCdQ9Rdw--mAo0dDDgAeyJfKG3eiAXIxhRUd4yu2k
+id: question.task
+target_entity_type_id: question
+target_bundle: task
+default_langcode: site_default
+language_alterable: false

@@ -1,0 +1,9 @@
+uuid: fef2bd78-d436-4f0e-9e56-2866ce4ee9ec
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: dGnQx-bYANlBln5NK4PSUbRQs28nPBbbOv1Vp5RSdlM
+id: organization
+label: Organization
+description: 'An organization.'

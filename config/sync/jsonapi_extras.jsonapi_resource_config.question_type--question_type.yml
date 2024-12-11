@@ -1,0 +1,61 @@
+uuid: 9702599d-0fc2-4b7a-b731-db99b950a37b
+langcode: en
+status: true
+dependencies:
+  module:
+    - questionnaire
+_core:
+  default_config_hash: kjgGZD3rbe4ons9F9VIRFvSYC1Kz361m-bU6W-jeayQ
+id: question_type--question_type
+disabled: true
+path: question_type/question_type
+resourceType: question_type--question_type
+resourceFields:
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  dependencies:
+    disabled: false
+    fieldName: dependencies
+    publicName: dependencies
+    enhancer:
+      id: ''
+  third_party_settings:
+    disabled: false
+    fieldName: third_party_settings
+    publicName: third_party_settings
+    enhancer:
+      id: ''
+  _core:
+    disabled: false
+    fieldName: _core
+    publicName: _core
+    enhancer:
+      id: ''
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  label:
+    disabled: false
+    fieldName: label
+    publicName: label
+    enhancer:
+      id: ''

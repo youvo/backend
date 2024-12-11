@@ -1,0 +1,25 @@
+uuid: 92ab898a-e4b7-4de8-84d7-92f2e1b3e35b
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_time_scale
+_core:
+  default_config_hash: EkfBGIz2UnNac_pMl5RTAVpXr1LnpP_nUNxMT4tzDbs
+id: feedback.creative.field_time_scale
+field_name: field_time_scale
+entity_type: feedback
+bundle: creative
+label: 'Time Scale'
+description: 'Wie liefen die zeitlichen Absprachen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

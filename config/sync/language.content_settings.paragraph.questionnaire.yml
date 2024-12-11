@@ -1,0 +1,20 @@
+uuid: 6e69eb97-3f32-4149-9cfe-cf9325d0c91a
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.questionnaire
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: SKb8T1tzS1jtpfS-Jx1JSrARGTjGGti_6rd-6-p8tts
+id: paragraph.questionnaire
+target_entity_type_id: paragraph
+target_bundle: questionnaire
+default_langcode: site_default
+language_alterable: false

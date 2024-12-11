@@ -1,0 +1,14 @@
+uuid: cd4dd2db-c683-4a24-a79d-63c686ccb5d2
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.configurator
+  module:
+    - user
+id: user_remove_role_action.configurator
+label: 'Remove the Configurator role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: configurator

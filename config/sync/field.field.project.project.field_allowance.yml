@@ -1,0 +1,26 @@
+uuid: de11e691-d85c-4801-82bb-5275f46dd00a
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_allowance
+  module:
+    - projects
+_core:
+  default_config_hash: wsHLlVUJdztYjPp8bqWFW4z_T5DZ2sx0zn-s92AswKc
+id: project.project.field_allowance
+field_name: field_allowance
+entity_type: project
+bundle: project
+label: Allowance
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

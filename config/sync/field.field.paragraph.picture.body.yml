@@ -1,0 +1,21 @@
+uuid: e9dcf885-fd40-4f14-945d-747d66abc8a4
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.body
+    - paragraphs.type.picture
+_core:
+  default_config_hash: S9I72EsFdYjcd1_j8Yuwytz6GW0GKI7dUXY7NbTMiGg
+id: paragraph.picture.body
+field_name: body
+entity_type: paragraph
+bundle: picture
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

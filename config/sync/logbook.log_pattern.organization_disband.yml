@@ -1,0 +1,27 @@
+uuid: e4aa2066-8954-4dfd-adf1-c46168c4569c
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 8hMlZB8S5qjRoTeWwdM-PIZbUJ6DyEevybleNL97ClI
+id: organization_disband
+label: 'Organization Disband'
+tokens:
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Organization'
+    required: '1'
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

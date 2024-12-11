@@ -1,0 +1,103 @@
+uuid: 8d2cc725-cc5f-480c-a7c5-c14f694156ab
+langcode: de
+status: true
+dependencies:
+  module:
+    - logbook
+_core:
+  default_config_hash: KNo7IPqAk6DAJNBYYvxGXljmmPNQD4VhL40VoU64Ro4
+id: log_pattern--log_pattern
+disabled: true
+path: log_pattern/log_pattern
+resourceType: log_pattern--log_pattern
+resourceFields:
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  dependencies:
+    disabled: false
+    fieldName: dependencies
+    publicName: dependencies
+    enhancer:
+      id: ''
+  third_party_settings:
+    disabled: false
+    fieldName: third_party_settings
+    publicName: third_party_settings
+    enhancer:
+      id: ''
+  _core:
+    disabled: false
+    fieldName: _core
+    publicName: _core
+    enhancer:
+      id: ''
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  label:
+    disabled: false
+    fieldName: label
+    publicName: label
+    enhancer:
+      id: ''
+  tokens:
+    disabled: false
+    fieldName: tokens
+    publicName: tokens
+    enhancer:
+      id: ''
+  detectable:
+    disabled: false
+    fieldName: detectable
+    publicName: detectable
+    enhancer:
+      id: ''
+  observable:
+    disabled: false
+    fieldName: observable
+    publicName: observable
+    enhancer:
+      id: ''
+  public:
+    disabled: false
+    fieldName: public
+    publicName: public
+    enhancer:
+      id: ''
+  promote:
+    disabled: false
+    fieldName: promote
+    publicName: promote
+    enhancer:
+      id: ''
+  hidden:
+    disabled: false
+    fieldName: hidden
+    publicName: hidden
+    enhancer:
+      id: ''
+  color:
+    disabled: false
+    fieldName: color
+    publicName: color
+    enhancer:
+      id: ''

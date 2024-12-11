@@ -1,0 +1,67 @@
+uuid: 08d33cb8-4cb6-4eaa-a0db-5f7ed73f4ec7
+langcode: en
+status: true
+dependencies:
+  module:
+    - questionnaire
+_core:
+  default_config_hash: 6M3gYD_vUQWLZtxTOX5ERflC5Y3nsVjeHA_Otak6M5Q
+id: question_submission--question_submission
+disabled: true
+path: question_submission/question_submission
+resourceType: question_submission--question_submission
+resourceFields:
+  sid:
+    disabled: false
+    fieldName: sid
+    publicName: sid
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  question:
+    disabled: false
+    fieldName: question
+    publicName: question
+    enhancer:
+      id: ''
+  question_revision:
+    disabled: false
+    fieldName: question_revision
+    publicName: question_revision
+    enhancer:
+      id: ''
+  uid:
+    disabled: false
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  value:
+    disabled: false
+    fieldName: value
+    publicName: value
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: false
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''

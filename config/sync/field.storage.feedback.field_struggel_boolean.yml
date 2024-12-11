@@ -1,0 +1,20 @@
+uuid: 0a893a71-45cd-4085-b3d0-322d4e029faf
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: gvRoFTtZfpLxp34vji4VmDp0aqIgtHBN4soVjDQYJ7s
+id: feedback.field_struggel_boolean
+field_name: field_struggel_boolean
+entity_type: feedback
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

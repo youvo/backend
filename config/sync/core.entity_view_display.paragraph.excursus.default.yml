@@ -1,0 +1,31 @@
+uuid: e0d087fa-0f3b-4ec9-861b-12a21eb92214
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.excursus.body
+    - paragraphs.type.excursus
+_core:
+  default_config_hash: 6f3_ZL6KITEkcCLoSEExLc3nyxiVozvPTp1to9dDIyk
+id: paragraph.excursus.default
+targetEntityType: paragraph
+bundle: excursus
+mode: default
+content:
+  body:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  langcode: true

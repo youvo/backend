@@ -1,0 +1,14 @@
+uuid: 3ffd74ba-995d-43f2-87bc-263ee379d5d9
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.observer
+  module:
+    - user
+id: user_add_role_action.observer
+label: 'Add the Observer role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: observer

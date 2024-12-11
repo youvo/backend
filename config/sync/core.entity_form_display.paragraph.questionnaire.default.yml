@@ -1,0 +1,30 @@
+uuid: 85c98102-e1d1-407f-a78d-73d2953c4ece
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.questionnaire.questions
+    - paragraphs.type.questionnaire
+_core:
+  default_config_hash: mrlMzTyvNZycTde2FWJF2Tu3rJOSXt8AdAzOlvWmGmQ
+id: paragraph.questionnaire.default
+targetEntityType: paragraph
+bundle: questionnaire
+mode: default
+content:
+  title:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  translation:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  langcode: true
+  questions: true

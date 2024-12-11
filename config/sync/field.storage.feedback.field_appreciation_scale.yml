@@ -1,0 +1,22 @@
+uuid: 48bdfd84-1547-465b-aa83-bca058300775
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: X6QyN4aKJ7Q0Y5E_PnPzgn3ltPZpb2Rw8q80aLeydTs
+id: feedback.field_appreciation_scale
+field_name: field_appreciation_scale
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

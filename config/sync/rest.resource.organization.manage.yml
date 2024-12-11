@@ -1,0 +1,24 @@
+uuid: 48848411-8008-4164-9073-8fdd1459c490
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - organizations
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: tqGPvzl4G2sRV5BoWqSSYD8rhW8sbczQQ5BJQP8bnfk
+id: organization.manage
+plugin_id: 'organization:manage'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+    - DELETE
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

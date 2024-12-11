@@ -1,0 +1,24 @@
+uuid: 6d9c4d09-e5aa-47b8-b589-28308bb6fca1
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+    - youvo
+_core:
+  default_config_hash: 4u6DrGYUZtge76UrXBE2fbcedwkORokA7wEpzN51L1E
+id: project_result.field_hyperlinks
+field_name: field_hyperlinks
+entity_type: project_result
+type: weighted_string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: youvo
+locked: false
+cardinality: -1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

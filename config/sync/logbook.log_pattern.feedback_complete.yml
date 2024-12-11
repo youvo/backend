@@ -1,0 +1,24 @@
+uuid: c8deb8fb-2583-478c-8f6f-b762c9611f46
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: l51f4fR5JW30eJ8CkdG0dy4D6M6WAPW0aDo2bFSi3Gc
+id: feedback_complete
+label: 'Feedback Complete'
+tokens:
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Project'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''

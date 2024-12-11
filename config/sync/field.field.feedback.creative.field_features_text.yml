@@ -1,0 +1,21 @@
+uuid: a9c0a9e1-3c6f-43da-8bcf-853348ee7535
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_features_text
+_core:
+  default_config_hash: l1-aN4gW4idPlMNZ1bPEjOhEH_Z-Lpt37T69_pX7528
+id: feedback.creative.field_features_text
+field_name: field_features_text
+entity_type: feedback
+bundle: creative
+label: 'Features Text'
+description: 'Welche Funktionen fehlen Dir?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

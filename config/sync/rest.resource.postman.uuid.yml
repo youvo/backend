@@ -1,0 +1,22 @@
+uuid: 0a267b6f-6488-4564-a693-771cd60a1a74
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - postman_interface
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: 2p_hMWbsbAapn8er61DpFWh8s63t7-KJAgwyf5HC3p0
+id: postman.uuid
+plugin_id: 'postman:uuid'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

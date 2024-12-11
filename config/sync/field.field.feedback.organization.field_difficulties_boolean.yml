@@ -1,0 +1,23 @@
+uuid: 1a19d192-4d05-4e8f-8c74-b283c7a55b0e
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_difficulties_boolean
+_core:
+  default_config_hash: 0UxEdn-DoWQelVfIXF3XT4PbtMpCAmZduUKA9SqE5EM
+id: feedback.organization.field_difficulties_boolean
+field_name: field_difficulties_boolean
+entity_type: feedback
+bundle: organization
+label: 'Difficulties Boolean'
+description: 'Gab es technische Probleme?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

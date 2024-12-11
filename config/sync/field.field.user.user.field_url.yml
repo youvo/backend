@@ -1,0 +1,21 @@
+uuid: dcff8285-524f-4847-869c-747751c48670
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_url
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: mssh-swa0RqCvR2EymWYliKks4lETtWCv-VwomniI80
+id: user.user.field_url
+field_name: field_url
+entity_type: user
+bundle: user
+label: URL
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

@@ -1,0 +1,21 @@
+uuid: 43ef42d1-7a7d-428a-bb7e-75f2f7c097fa
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_organization_text
+_core:
+  default_config_hash: ol6Fg2bxh9k-uZJCPBaAmlM6QE7tklKX6iq8lyplV2M
+id: feedback.creative.field_organization_text
+field_name: field_organization_text
+entity_type: feedback
+bundle: creative
+label: 'Organization Text'
+description: 'Möchtest Du der Organisation, mit der Du zusammengearbeitet hast, noch etwas sagen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

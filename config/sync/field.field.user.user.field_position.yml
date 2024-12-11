@@ -1,0 +1,21 @@
+uuid: a74a0eb1-592a-47dd-ac38-0a26566c4f7e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_position
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: 8Xkwq9ccJxkEIylx9xsfzpBCBxB4RL0aQAZ912JQXqM
+id: user.user.field_position
+field_name: field_position
+entity_type: user
+bundle: user
+label: Position
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

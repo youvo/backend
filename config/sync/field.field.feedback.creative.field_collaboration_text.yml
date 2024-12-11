@@ -1,0 +1,21 @@
+uuid: 6c16891b-ba16-45e5-865a-11e6a6662938
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_collaboration_text
+_core:
+  default_config_hash: owW4NOfn0ilv2lq6O-COXvvFiy_xgjdSzm00_dmUM48
+id: feedback.creative.field_collaboration_text
+field_name: field_collaboration_text
+entity_type: feedback
+bundle: creative
+label: 'Collaboration Text'
+description: 'Bitte erzähl uns, was in Deinem Projekt schiefgelaufen ist.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,27 @@
+uuid: acfb75fd-15a1-483c-970b-943c1d9f1baa
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: wVW1YSZ6w3WF4ku_ohTQGoSHM7WSXw6gYRPxidOatiM
+id: project_invite
+label: 'Project Invite'
+tokens:
+  -
+    token: '%Organization'
+    required: 1
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Project'
+    required: 1
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

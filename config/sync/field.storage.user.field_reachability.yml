@@ -1,0 +1,23 @@
+uuid: 5e752c11-00ae-4632-88f9-25664f911612
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: '-_yXvlglrW3uGv7iwd9fkKyi3Kk2Ve2gPtHdfHkpy_g'
+id: user.field_reachability
+field_name: field_reachability
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

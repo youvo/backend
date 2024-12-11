@@ -1,0 +1,21 @@
+uuid: 6c729acf-7175-4f5c-813e-639db1df7060
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_difficulties_text
+_core:
+  default_config_hash: Eg1P6yHywEiDJxLEJYsUjnMitRDGMBLslybEfutFNqg
+id: feedback.organization.field_difficulties_text
+field_name: field_difficulties_text
+entity_type: feedback
+bundle: organization
+label: 'Difficulties Text'
+description: 'Welche?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

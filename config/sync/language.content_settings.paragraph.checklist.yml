@@ -1,0 +1,20 @@
+uuid: 4838facd-bea0-407c-83bf-fe367dd2eba7
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.checklist
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: PMytUOipP3SocdRblS_U5RQduDJdQtPRdujPggae5oc
+id: paragraph.checklist
+target_entity_type_id: paragraph
+target_bundle: checklist
+default_langcode: site_default
+language_alterable: false

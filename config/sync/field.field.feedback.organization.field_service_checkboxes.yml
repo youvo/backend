@@ -1,0 +1,25 @@
+uuid: be96588f-e871-425e-8e38-91faed334a11
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_service_checkboxes
+_core:
+  default_config_hash: xh0H8R99iglqGvzPPOUFa2HLS4MkYsQLM0r1QSF8wTw
+id: feedback.organization.field_service_checkboxes
+field_name: field_service_checkboxes
+entity_type: feedback
+bundle: organization
+label: 'Service Checkboxes'
+description: 'Was hat Dir besonders geholfen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

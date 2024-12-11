@@ -1,0 +1,48 @@
+uuid: bf7eb628-8210-4fac-814b-df520a5f1a1d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project_result.field_files
+  module:
+    - filefield_paths
+    - projects
+    - youvo
+third_party_settings:
+  filefield_paths:
+    enabled: true
+    file_path:
+      value: 'projects/[project:project_id]/results'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    file_name:
+      value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
+      options:
+        slashes: false
+        pathauto: false
+        transliterate: false
+    redirect: false
+    retroactive_update: false
+    active_updating: false
+_core:
+  default_config_hash: U-EX7nS9vxBSOdqL8H4Tp8OijifcMoTgtrM9XOnCQDE
+id: project_result.project_result.field_files
+field_name: field_files
+entity_type: project_result
+bundle: project_result
+label: 'Result Files'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:file'
+  handler_settings: {  }
+  file_directory: 'projects/[project_result:project_id]/results'
+  file_extensions: 'jpg jpeg gif png pdf'
+  max_filesize: '10 MB'
+  description_field: false
+field_type: weighted_file

@@ -1,0 +1,20 @@
+uuid: 4ae52bf4-cc0f-4332-96b8-d6f492873f45
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: nzee_xE6jkCNYYUvEzTG49wjFOGoK9qS5-3UOGgRwyA
+id: user.field_newsletter
+field_name: field_newsletter
+entity_type: user
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

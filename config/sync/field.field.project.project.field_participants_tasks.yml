@@ -1,0 +1,23 @@
+uuid: cc01195b-3259-4c18-b04e-8faa189f7d49
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_participants_tasks
+  module:
+    - options
+    - projects
+_core:
+  default_config_hash: pops8VT0kIu4FAouDEyUTr0E-abBKtChUJbuMizJGco
+id: project.project.field_participants_tasks
+field_name: field_participants_tasks
+entity_type: project
+bundle: project
+label: 'Participants Tasks'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

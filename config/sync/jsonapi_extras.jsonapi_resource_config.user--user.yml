@@ -1,0 +1,205 @@
+uuid: 8000565b-f2cb-4e7d-826c-39a772643142
+langcode: de
+status: true
+dependencies:
+  config:
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: zsOloLr8vGqx9toYZIk7wqykdXXes-siTCiAAqifqYg
+id: user--user
+disabled: false
+path: users
+resourceType: user
+resourceFields:
+  uid:
+    disabled: true
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: true
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  type:
+    disabled: true
+    fieldName: type
+    publicName: type
+    enhancer:
+      id: ''
+  preferred_langcode:
+    disabled: true
+    fieldName: preferred_langcode
+    publicName: preferred_langcode
+    enhancer:
+      id: ''
+  preferred_admin_langcode:
+    disabled: true
+    fieldName: preferred_admin_langcode
+    publicName: preferred_admin_langcode
+    enhancer:
+      id: ''
+  name:
+    disabled: true
+    fieldName: name
+    publicName: name
+    enhancer:
+      id: ''
+  pass:
+    disabled: false
+    fieldName: pass
+    publicName: pass
+    enhancer:
+      id: ''
+  mail:
+    disabled: false
+    fieldName: mail
+    publicName: mail
+    enhancer:
+      id: ''
+  timezone:
+    disabled: true
+    fieldName: timezone
+    publicName: timezone
+    enhancer:
+      id: ''
+  status:
+    disabled: true
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  access:
+    disabled: true
+    fieldName: access
+    publicName: access
+    enhancer:
+      id: ''
+  login:
+    disabled: true
+    fieldName: login
+    publicName: login
+    enhancer:
+      id: ''
+  init:
+    disabled: true
+    fieldName: init
+    publicName: init
+    enhancer:
+      id: ''
+  roles:
+    disabled: false
+    fieldName: roles
+    publicName: roles
+    enhancer:
+      id: ''
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  projects:
+    disabled: false
+    fieldName: projects
+    publicName: projects
+    enhancer:
+      id: ''
+  field_about:
+    disabled: false
+    fieldName: field_about
+    publicName: about
+    enhancer:
+      id: ''
+  field_avatar:
+    disabled: false
+    fieldName: field_avatar
+    publicName: avatar
+    enhancer:
+      id: ''
+  field_city:
+    disabled: false
+    fieldName: field_city
+    publicName: city
+    enhancer:
+      id: ''
+  field_education:
+    disabled: false
+    fieldName: field_education
+    publicName: education
+    enhancer:
+      id: ''
+  field_jobs:
+    disabled: false
+    fieldName: field_jobs
+    publicName: jobs
+    enhancer:
+      id: ''
+  field_name:
+    disabled: false
+    fieldName: field_name
+    publicName: name
+    enhancer:
+      id: ''
+  field_newsletter:
+    disabled: false
+    fieldName: field_newsletter
+    publicName: newsletter
+    enhancer:
+      id: ''
+  field_phone:
+    disabled: false
+    fieldName: field_phone
+    publicName: phone
+    enhancer:
+      id: ''
+  field_portfolio:
+    disabled: false
+    fieldName: field_portfolio
+    publicName: portfolio
+    enhancer:
+      id: ''
+  field_position:
+    disabled: false
+    fieldName: field_position
+    publicName: position
+    enhancer:
+      id: ''
+  field_public_profile:
+    disabled: false
+    fieldName: field_public_profile
+    publicName: public_profile
+    enhancer:
+      id: ''
+  field_skills:
+    disabled: false
+    fieldName: field_skills
+    publicName: skills
+    enhancer:
+      id: ''
+  field_url:
+    disabled: false
+    fieldName: field_url
+    publicName: url
+    enhancer:
+      id: ''

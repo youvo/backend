@@ -1,0 +1,23 @@
+uuid: 69f1194b-90e6-4449-9580-081efd1a4d35
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.question.answers
+    - questionnaire.type.radios
+_core:
+  default_config_hash: MsFpoPWPNbR2jpRE0db5GFtNbPLwWcdEtpSdgG7jrCM
+id: question.radios.answers
+field_name: answers
+entity_type: question
+bundle: radios
+label: Answers
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

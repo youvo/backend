@@ -1,0 +1,22 @@
+uuid: 7ea5b0b1-636e-49fa-aebf-b018c4d7a267
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - feedback
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: i_aJ03oJQMwA1Tn51zLpTTkrBaX2hBdn512wuK13n0s
+id: feedback.create
+plugin_id: 'feedback:create'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

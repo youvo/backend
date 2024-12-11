@@ -48,10 +48,10 @@
  cd ..
  echo "Files folder reset ..."
 
- # Start docker containers.
+ # Start Docker containers.
  cd ../../..
- echo "Starting docker containers ..."
- ddev start
+ echo "Starting Docker containers ..."
+ ddev start > /dev/null 2>&1
 
  # Wait for containers to be accessible.
  sleep 5
@@ -64,14 +64,14 @@
 
  # Reinstall drupal.
  echo "Installing Drupal ..."
- ddev drush si -y youvo_development \
+ ddev drush si --yes --existing-config \
   --locale=en \
   --db-url="${DB_DRIVER}"://"${DB_USER}":"${DB_PASSWORD}"@"${DB_HOST}":"${DB_PORT}"/"${DB_NAME}" \
   --site-name="${SITE_NAME}" \
   --site-mail="${SITE_MAIL}" \
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
-  --account-pass="${ACCOUNT_PASS}"
+  --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
@@ -96,5 +96,3 @@
  echo "Installation duration: $DURATION seconds."
  echo "Exit in 3 seconds!"
  sleep 3
-
-

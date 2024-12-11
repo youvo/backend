@@ -1,0 +1,37 @@
+uuid: 615d6e06-29fd-4fc4-93bf-99b02ad90d11
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.questions
+    - paragraphs.type.questionnaire
+    - questionnaire.type.checkboxes
+    - questionnaire.type.radios
+    - questionnaire.type.textarea
+    - questionnaire.type.textfield
+_core:
+  default_config_hash: HW_oDSCbgPwp0jtITO-A3wRbDKs08XWxTsv5kztWp9M
+id: paragraph.questionnaire.questions
+field_name: questions
+entity_type: paragraph
+bundle: questionnaire
+label: Questions
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:question'
+  handler_settings:
+    target_bundles:
+      textarea: textarea
+      textfield: textfield
+      checkboxes: checkboxes
+      radios: radios
+    sort:
+      field: weight
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: textarea
+field_type: entity_reference

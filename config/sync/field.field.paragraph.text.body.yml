@@ -1,0 +1,21 @@
+uuid: 4f8a84b7-c52e-4e04-87c4-62ab90a58348
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.body
+    - paragraphs.type.text
+_core:
+  default_config_hash: R7sSa9gMWTcC0PHirRzVy6zfXXf70q_lpgT8h3RYbOk
+id: paragraph.text.body
+field_name: body
+entity_type: paragraph
+bundle: text
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

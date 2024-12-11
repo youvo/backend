@@ -1,0 +1,21 @@
+uuid: ea3caf9f-a9a2-428f-aade-78abd06072bb
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.list
+    - paragraphs.type.stats
+_core:
+  default_config_hash: mKd9NqDm8uhcd1rCjBxIYMq5WaSfD2xMqMVJe6BKWHM
+id: paragraph.stats.list
+field_name: list
+entity_type: paragraph
+bundle: stats
+label: Stats
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

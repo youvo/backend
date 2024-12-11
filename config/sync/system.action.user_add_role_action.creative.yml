@@ -1,0 +1,14 @@
+uuid: b76cc7e4-ec75-412e-9e12-0a176c903af4
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.creative
+  module:
+    - user
+id: user_add_role_action.creative
+label: 'Add the Creative role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: creative

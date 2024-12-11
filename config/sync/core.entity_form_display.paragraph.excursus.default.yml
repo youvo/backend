@@ -1,0 +1,37 @@
+uuid: fe924a11-d234-48e8-a760-01a2c015c65b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.excursus.body
+    - paragraphs.type.excursus
+_core:
+  default_config_hash: JvziNjV8YJEOQqsA4vs3q6lB03n5ucOdyZ20WL72l5E
+id: paragraph.excursus.default
+targetEntityType: paragraph
+bundle: excursus
+mode: default
+content:
+  body:
+    type: string_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  title:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  translation:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  langcode: true

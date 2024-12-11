@@ -1,0 +1,21 @@
+uuid: ddb02767-0ed2-427f-b297-2f8418151349
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 59Z5t27Yfg-Z0hD5xhsfkVzmquOa4Jctb-1tVucNaes
+id: project_complete
+label: 'Project Complete'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+detectable: true
+observable: true
+public: true
+promote: true
+hidden: false
+color: ''

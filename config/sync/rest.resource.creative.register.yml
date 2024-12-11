@@ -1,0 +1,23 @@
+uuid: 6b201cc1-d74d-4013-aba8-958543e2bfd7
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - creatives
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: pco3i7EF6YoZQi7Teu1Xkh_bd5g1s79h2LfRMh1cJsg
+id: creative.register
+plugin_id: 'creative:register'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

@@ -1,0 +1,23 @@
+uuid: eb695086-ec89-4f23-a3ca-118445965dee
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_recommend_boolean
+_core:
+  default_config_hash: Z6rhLERBGSKBFFgTmMnQDVqzWHJPUqbSpXk5VNrVsm8
+id: feedback.organization.field_recommend_boolean
+field_name: field_recommend_boolean
+entity_type: feedback
+bundle: organization
+label: 'Recommend Boolean'
+description: 'Würdest Du youvo weiterempfehlen?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

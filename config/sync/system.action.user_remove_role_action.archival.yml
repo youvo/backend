@@ -1,0 +1,14 @@
+uuid: a51c8574-e687-4cb6-8b13-3c35f9268200
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.archival
+  module:
+    - user
+id: user_remove_role_action.archival
+label: 'Remove the Archival Organization role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: archival

@@ -1,0 +1,27 @@
+uuid: f1692345-9521-4d72-a1df-520aae6ead4c
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.skills
+  module:
+    - content_translation
+    - logbook
+    - mailer
+    - system
+    - taxonomy
+_core:
+  default_config_hash: i1GGUgl0UhbU1eGQO_6IccHbxoPTvwiRr2diSVqnLHs
+id: configurator
+label: Configurator
+weight: 1
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access taxonomy overview'
+  - 'create content translations'
+  - 'edit log pattern'
+  - 'edit terms in skills'
+  - 'edit transactional emails'
+  - 'translate log_text'
+  - 'translate skills taxonomy_term'

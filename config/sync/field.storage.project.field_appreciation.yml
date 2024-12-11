@@ -1,0 +1,21 @@
+uuid: 39f86c66-b281-4d4c-8e9c-3450d755f506
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: nqpMeaTQt2u8kSL5WkaxU4_MrJtQV-XQEZ6XC9dRIAs
+id: project.field_appreciation
+field_name: field_appreciation
+entity_type: project
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

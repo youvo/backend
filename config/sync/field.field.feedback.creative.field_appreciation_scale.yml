@@ -1,0 +1,25 @@
+uuid: 1973766a-012c-4920-aea8-3dae88e76473
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_appreciation_scale
+_core:
+  default_config_hash: '-ynWK6a2xUoo3BroN5Fjcf6MHx3tv7h78E422_wrR20'
+id: feedback.creative.field_appreciation_scale
+field_name: field_appreciation_scale
+entity_type: feedback
+bundle: creative
+label: 'Appreciation Scale'
+description: 'Wie beurteilst Du die Wertschätzung durch die Organisation?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

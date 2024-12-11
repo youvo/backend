@@ -1,0 +1,21 @@
+uuid: c4aa1862-fefd-4b3a-a7cd-b28c2b0b73d0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_aim
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: awE47XfeU_YvN8FnXNNkvAPNH6l-gsYz9tLp3A6wWhU
+id: user.organization.field_aim
+field_name: field_aim
+entity_type: user
+bundle: organization
+label: Aim
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

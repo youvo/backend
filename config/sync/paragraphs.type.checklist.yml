@@ -1,0 +1,8 @@
+uuid: 9a3e012f-1b50-4e25-85fd-758ef30377ef
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 6mdD7ocmug50_4-npVdRxv3fR6dAlfzxlY7HehlV7io
+id: checklist
+label: Checklist

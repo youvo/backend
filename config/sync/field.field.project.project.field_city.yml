@@ -1,0 +1,22 @@
+uuid: c03f6152-ec1f-4450-bdbe-23725687d09f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_city
+  module:
+    - projects
+_core:
+  default_config_hash: qKZE0jXUZwUVx_WSuL8rg-UsdU8CyH6tfFZCjuMNPH8
+id: project.project.field_city
+field_name: field_city
+entity_type: project
+bundle: project
+label: City
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

@@ -1,0 +1,19 @@
+uuid: 44f21c8a-9e21-4d81-bf15-21ef60964d5a
+langcode: de
+status: true
+dependencies:
+  module:
+    - content_translation
+    - courses
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: egc5gP7PTkZVEDybI2GWv6OpQrUerI9T9DNdhUB0EuE
+id: course.course
+target_entity_type_id: course
+target_bundle: course
+default_langcode: site_default
+language_alterable: false

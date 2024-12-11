@@ -1,0 +1,23 @@
+uuid: 74e75706-c378-45c1-9125-afc238cc69e4
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_volunteer_boolean
+_core:
+  default_config_hash: sZYpkECsyGyS-9yUz-8d246PUIb9hY-ri19AWxwpyMU
+id: feedback.creative.field_volunteer_boolean
+field_name: field_volunteer_boolean
+entity_type: feedback
+bundle: creative
+label: 'Volunteer Boolean'
+description: 'Hast Du Dich außerhalb von youvo schon mal ehrenamtlich engagiert?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

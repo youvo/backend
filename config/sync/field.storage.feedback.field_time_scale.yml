@@ -1,0 +1,22 @@
+uuid: bb2c07b0-fa8b-487d-be54-8b5203fa75ee
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: RuRz6qtWlX7XFuVcPw_fh-qCSgITsoH8ryQeIyL_TVs
+id: feedback.field_time_scale
+field_name: field_time_scale
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

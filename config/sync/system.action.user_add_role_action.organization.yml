@@ -1,0 +1,14 @@
+uuid: ab75aea4-1d5c-4c5d-986a-ae5939b0c04a
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.organization
+  module:
+    - user
+id: user_add_role_action.organization
+label: 'Add the Organization role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: organization

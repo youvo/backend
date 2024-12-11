@@ -1,0 +1,20 @@
+uuid: b719588f-a113-4993-8b4d-3d2ea4d58b22
+langcode: en
+status: true
+dependencies:
+  config:
+    - paragraphs.type.download
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: slNobKzHQLh3eCTxLXNjepbtmPpd-jayGyeG-NBB88M
+id: paragraph.download
+target_entity_type_id: paragraph
+target_bundle: download
+default_langcode: site_default
+language_alterable: false

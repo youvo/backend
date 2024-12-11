@@ -1,0 +1,23 @@
+uuid: 65ba9bb2-050f-4ef4-880e-7b0719383e3a
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project_result.field_hyperlinks
+  module:
+    - projects
+    - youvo
+_core:
+  default_config_hash: UpXSrcawkwudjZdlPgaCjj-1IiLFVoGgE99stAN_fCo
+id: project_result.project_result.field_hyperlinks
+field_name: field_hyperlinks
+entity_type: project_result
+bundle: project_result
+label: Hyperlinks
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: weighted_string

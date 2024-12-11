@@ -1,0 +1,22 @@
+uuid: 36294376-c5c1-4bc2-8ae2-fc64105da220
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: iXcQfStroiP7ifBHuJ2FM7OG7j3CoDBADWjSyNlxVN4
+id: project.submit
+plugin_id: 'project:submit'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

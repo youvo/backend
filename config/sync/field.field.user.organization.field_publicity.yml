@@ -1,0 +1,21 @@
+uuid: 88ee1493-7d0b-4a53-a119-296230900627
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_publicity
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: ojXqBtwSJPVRNCTGY4JMO9DH51VqYdaU2nrUMRZBc9Q
+id: user.organization.field_publicity
+field_name: field_publicity
+entity_type: user
+bundle: organization
+label: Publicity
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

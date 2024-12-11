@@ -1,0 +1,21 @@
+uuid: 5dd57fcf-9e92-47e7-8510-223bdd035478
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_contact
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: kc4PX45oLRviPiWVqcmNa2A3D0w3h5enoH4QfABBJOs
+id: user.organization.field_contact
+field_name: field_contact
+entity_type: user
+bundle: organization
+label: Contact
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

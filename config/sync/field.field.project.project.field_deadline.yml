@@ -1,0 +1,23 @@
+uuid: 84768130-ade1-4d58-849a-354629a2a14c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_deadline
+  module:
+    - datetime
+    - projects
+_core:
+  default_config_hash: IBD7hYDz7RlXaRmLZ8BOjK28_OPkdM1eG7iaFVmERwc
+id: project.project.field_deadline
+field_name: field_deadline
+entity_type: project
+bundle: project
+label: Deadline
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime

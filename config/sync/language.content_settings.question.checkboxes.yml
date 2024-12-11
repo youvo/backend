@@ -1,0 +1,20 @@
+uuid: ea925df6-1502-4bf7-8571-6de6142937e9
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.checkboxes
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: i20Mc8V47nhbab5bHU3Ig8Bf_CsTdeMAKHWbSbJ_aYs
+id: question.checkboxes
+target_entity_type_id: question
+target_bundle: checkboxes
+default_langcode: site_default
+language_alterable: false

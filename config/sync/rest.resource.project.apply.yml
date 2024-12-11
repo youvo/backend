@@ -1,0 +1,23 @@
+uuid: a4bdb115-c5ac-48b5-a373-3b4db3db817e
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: mRq3OxdKYKQavEMcstiaNvjrESwz541CWr3PxV8Zlk0
+id: project.apply
+plugin_id: 'project:apply'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

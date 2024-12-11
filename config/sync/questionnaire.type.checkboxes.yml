@@ -1,0 +1,8 @@
+uuid: fc4a471f-14cd-4e37-98c3-72d18ace232e
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 0DPOJ-NxrlupSIoD1gIyf1oJ1g2OFZcxPJW94gzFJ2k
+id: checkboxes
+label: 'Multiple Choice'

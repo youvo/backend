@@ -1,0 +1,8 @@
+uuid: 1af1ea55-e7b3-4043-b3be-4c5fbdcab351
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: CHgc1_A0UZGAWUxKRAYZyBIVaSCm-Qy6Cs-gEo3fqD8
+id: picture
+label: Picture

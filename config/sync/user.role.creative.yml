@@ -1,0 +1,46 @@
+uuid: dc1c6c96-1439-4e17-be83-fd3b716bb5f5
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.progress.course.access
+    - rest.resource.progress.lecture.access
+    - rest.resource.progress.lecture.complete
+    - rest.resource.project.apply
+    - rest.resource.project.complete
+    - rest.resource.question.submission
+  content:
+    - 'consumer:consumer:39b340eb-5b18-4fbd-b763-bdeda21bdf10'
+    - 'consumer:consumer:fa49fce2-8745-47c5-a9e7-b61548723d5f'
+  module:
+    - consumer_permissions
+    - courses
+    - lifecycle
+    - rest
+    - simple_oauth
+    - user_types
+_core:
+  default_config_hash: GG3KnHcurQb3RzOvsm6i2-ZB3ONndwp8cYwUY1BslX4
+id: creative
+label: Creative
+weight: 3
+is_admin: null
+permissions:
+  - 'access user profiles'
+  - 'authorize with client 2'
+  - 'authorize with client 3'
+  - 'general creative access'
+  - 'grant simple_oauth codes'
+  - 'restful get progress:course:access'
+  - 'restful get progress:lecture:access'
+  - 'restful get progress:lecture:complete'
+  - 'restful get project:apply'
+  - 'restful get question:submission'
+  - 'restful post progress:course:access'
+  - 'restful post progress:lecture:access'
+  - 'restful post progress:lecture:complete'
+  - 'restful post project:apply'
+  - 'restful post project:complete'
+  - 'restful post question:submission'
+  - 'use project_lifecycle transition complete'
+  - 'view courses'

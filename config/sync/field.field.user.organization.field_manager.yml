@@ -1,0 +1,42 @@
+uuid: 0d929dda-a764-42c9-87bc-f1c74174be5c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_manager
+    - user_bundle.user_type.organization
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: z4tSSDar_34K9ZuEfrIFxBRSLD5Gfol3QN8eNyjF904
+id: user.organization.field_manager
+field_name: field_manager
+entity_type: user
+bundle: organization
+label: Manager
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:user'
+  handler_settings:
+    target_bundles:
+      user: user
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+    filter:
+      type: role
+      role:
+        manager: manager
+        supervisor: supervisor
+        administrator: '0'
+        creative: '0'
+        organization: '0'
+        observer: '0'
+        editor: '0'
+    include_anonymous: false
+field_type: entity_reference

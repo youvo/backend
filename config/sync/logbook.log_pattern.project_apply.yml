@@ -1,0 +1,21 @@
+uuid: ed7cfec0-1d42-4ad9-8b6d-8e13fcce0638
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: izmL6SicFqYlztDHhPPyjhXjRNixLS1qU1srW0qeXHQ
+id: project_apply
+label: 'Project Apply'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%Creative'
+    required: '1'
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

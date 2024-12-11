@@ -1,0 +1,18 @@
+uuid: 026dd0a1-751d-4e5a-80f7-cb508a50d76e
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.causes
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+_core:
+  default_config_hash: QfSItLqOITs5d4dzcLejvYqmWPMe-j7gpHsgK4YzO4I
+id: taxonomy_term.causes
+target_entity_type_id: taxonomy_term
+target_bundle: causes
+default_langcode: site_default
+language_alterable: false

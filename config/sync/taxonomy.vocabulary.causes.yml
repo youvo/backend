@@ -1,0 +1,11 @@
+uuid: bac65421-48d9-48e1-a689-e811762e7f6c
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 2EXLBAw8GTq77H8VeSnix-p8g2ThkwcbHdgFqNa8e_8
+name: Causes
+vid: causes
+description: null
+weight: 0
+new_revision: false

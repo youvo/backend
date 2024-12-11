@@ -1,0 +1,60 @@
+uuid: 7cb560e1-7f7c-407a-8bc0-a51bf451eb71
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.organization.manage
+    - rest.resource.progress.course.access
+    - rest.resource.progress.lecture.access
+    - rest.resource.progress.lecture.complete
+    - rest.resource.project.complete
+    - rest.resource.project.mediate
+    - rest.resource.project.notify
+    - rest.resource.project.publish
+    - rest.resource.project.reset
+    - rest.resource.project.submit
+    - rest.resource.question.submission
+  module:
+    - courses
+    - lifecycle
+    - logbook
+    - mailer
+    - projects
+    - rest
+    - system
+    - user_types
+_core:
+  default_config_hash: aiA6JRNtMyjAITqiFAvqAxTS0MuADbogocyOoHWp7ZA
+id: supervisor
+label: Supervisor
+weight: 8
+is_admin: false
+permissions:
+  - 'access content'
+  - 'bypass project_lifecycle transition access'
+  - 'create project'
+  - 'delete any project'
+  - 'edit transactional emails'
+  - 'general manager access'
+  - 'restful delete organization:manage'
+  - 'restful get organization:manage'
+  - 'restful get progress:course:access'
+  - 'restful get progress:lecture:access'
+  - 'restful get progress:lecture:complete'
+  - 'restful get project:mediate'
+  - 'restful get question:submission'
+  - 'restful post organization:manage'
+  - 'restful post progress:course:access'
+  - 'restful post progress:lecture:access'
+  - 'restful post progress:lecture:complete'
+  - 'restful post project:complete'
+  - 'restful post project:mediate'
+  - 'restful post project:notify'
+  - 'restful post project:publish'
+  - 'restful post project:reset'
+  - 'restful post project:submit'
+  - 'restful post question:submission'
+  - 'update any project'
+  - 'view courses'
+  - 'view detectable log'
+  - 'view observable log'

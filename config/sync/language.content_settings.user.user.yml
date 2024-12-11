@@ -1,0 +1,20 @@
+uuid: fdfb97fe-ec2f-4f74-931b-9cbbfb0b3530
+langcode: en
+status: true
+dependencies:
+  config:
+    - user_bundle.user_type.user
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: false
+    bundle_settings:
+      untranslatable_fields_hide: '0'
+_core:
+  default_config_hash: '-Kbk_BUzY-TD2ETIvh26zlRwNdptAQvlWS_LcBdwvGI'
+id: user.user
+target_entity_type_id: user
+target_bundle: user
+default_langcode: site_default
+language_alterable: false

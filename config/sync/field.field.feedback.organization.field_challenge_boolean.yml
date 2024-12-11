@@ -1,0 +1,23 @@
+uuid: 82e7238d-72fd-4571-a8e7-8255761162cc
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_challenge_boolean
+_core:
+  default_config_hash: eScd9LgsOVv7BAfDEe_yDyXOAMLTdkQNEBzlhKgA3TI
+id: feedback.organization.field_challenge_boolean
+field_name: field_challenge_boolean
+entity_type: feedback
+bundle: organization
+label: 'Challenge Boolean'
+description: 'Hat Dir youvo dabei geholfen, Deine digitale oder kommunikative Herausforderung zu lösen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

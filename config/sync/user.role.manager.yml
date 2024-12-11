@@ -1,0 +1,60 @@
+uuid: dc886365-0a8d-4efd-b2d2-8c167ad4624b
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.organization.manage
+    - rest.resource.progress.course.access
+    - rest.resource.progress.lecture.access
+    - rest.resource.progress.lecture.complete
+    - rest.resource.project.complete
+    - rest.resource.project.mediate
+    - rest.resource.project.notify
+    - rest.resource.project.publish
+    - rest.resource.question.submission
+  module:
+    - courses
+    - lifecycle
+    - logbook
+    - projects
+    - rest
+    - system
+    - user_types
+_core:
+  default_config_hash: 13LyE_8gFmVpIRHieUjJIRjNvxTCKBfdSl3YaOd5fEs
+id: manager
+label: Manager
+weight: 7
+is_admin: false
+permissions:
+  - 'access content'
+  - 'create project'
+  - 'delete any project'
+  - 'general manager access'
+  - 'restful delete organization:manage'
+  - 'restful get organization:manage'
+  - 'restful get progress:course:access'
+  - 'restful get progress:lecture:access'
+  - 'restful get progress:lecture:complete'
+  - 'restful get project:mediate'
+  - 'restful get question:submission'
+  - 'restful post organization:manage'
+  - 'restful post progress:course:access'
+  - 'restful post progress:lecture:access'
+  - 'restful post progress:lecture:complete'
+  - 'restful post project:complete'
+  - 'restful post project:mediate'
+  - 'restful post project:notify'
+  - 'restful post project:publish'
+  - 'restful post question:submission'
+  - 'update any project'
+  - 'use project_lifecycle transition complete'
+  - 'use project_lifecycle transition mediate'
+  - 'use project_lifecycle transition publish'
+  - 'use project_lifecycle transition remain_completed'
+  - 'use project_lifecycle transition remain_draft'
+  - 'use project_lifecycle transition remain_ongoing'
+  - 'use project_lifecycle transition remain_open'
+  - 'use project_lifecycle transition remain_pending'
+  - 'view courses'
+  - 'view observable log'

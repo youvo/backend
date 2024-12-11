@@ -1,0 +1,26 @@
+uuid: eb7d35c8-191c-4226-b25c-7632490abe58
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_workload
+  module:
+    - projects
+_core:
+  default_config_hash: 6IpExAqeSU3znP2DnzZgmriqcP0t3wwIehOzguWGrTU
+id: project.project.field_workload
+field_name: field_workload
+entity_type: project
+bundle: project
+label: Workload
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: 0.0
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: decimal

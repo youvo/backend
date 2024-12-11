@@ -1,0 +1,21 @@
+uuid: 576b8f46-1088-4731-af76-bcc1578202f2
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_phone
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: pXjXCXEmBfe9_jdiC8U-7Jw5XuI4fDjDv7zo66pjnHM
+id: user.organization.field_phone
+field_name: field_phone
+entity_type: user
+bundle: organization
+label: Phone
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

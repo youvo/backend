@@ -1,0 +1,21 @@
+uuid: d6d67d1b-b85c-4ee6-81ab-4678653cf7f7
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.body
+    - paragraphs.type.illustration
+_core:
+  default_config_hash: nIbZe2iuK_RQnsvCPDN-bv1aLJLhsYgun4zF1NoqR4M
+id: paragraph.illustration.body
+field_name: body
+entity_type: paragraph
+bundle: illustration
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

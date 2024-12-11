@@ -1,0 +1,24 @@
+uuid: 3aa130ec-755d-4840-969e-50a8b4f3b34c
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: JcVCJteXr0GyvMRLsavsVBi-cyHDlSOq07pZTxMQX7o
+id: project_reset
+label: 'Project Reset'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: false
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

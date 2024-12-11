@@ -1,0 +1,25 @@
+uuid: 26f90f31-68f2-4796-b071-8db6c96e9a5a
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_handling_scale
+_core:
+  default_config_hash: 5Mbv1-nO5q2pys-A3iJ-_ScHRKj_J2V3sL3RuJBQHOE
+id: feedback.organization.field_handling_scale
+field_name: field_handling_scale
+entity_type: feedback
+bundle: organization
+label: 'Handling Scale'
+description: 'Wie benutzerfreundlich findest Du unsere Seite?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

@@ -1,0 +1,22 @@
+uuid: a3cd5e0b-7941-47a1-b2a3-7ed6eed7f7aa
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: W-tttF-YM40ztsE_LeMqujinmqibpxfc-Id6B26JnnA
+id: feedback.field_result_radios
+field_name: field_result_radios
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

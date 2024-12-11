@@ -1,0 +1,7 @@
+_core:
+  default_config_hash: PYRRlqfGIp6Jq8eXtFLPQBht4VbGHFyz91cQ178w-3Y
+initial_image_styles:
+  avatar: avatar
+  content: content
+  teaser: teaser
+queue_image_styles: {  }

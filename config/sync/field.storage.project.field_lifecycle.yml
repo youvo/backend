@@ -1,0 +1,24 @@
+uuid: 8a325d0f-a8c8-4784-bba9-16b9ec234aa0
+langcode: en
+status: true
+dependencies:
+  config:
+    - workflows.workflow.project_lifecycle
+  module:
+    - lifecycle
+    - projects
+_core:
+  default_config_hash: 04AZXuwgub3hrYq_naPu4D365QmE0D-Eh9lYD9vgnMg
+id: project.field_lifecycle
+field_name: field_lifecycle
+entity_type: project
+type: lifecycle_item
+settings:
+  workflow: project_lifecycle
+module: lifecycle
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

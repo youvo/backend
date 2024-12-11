@@ -1,0 +1,23 @@
+uuid: 55ca8525-68ea-4fc1-a647-25df012d31ab
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: p0cDLZZ4aO7HW1Niv5KbXlr6CVnqZAZSTt7iafQttQo
+id: user.field_city
+field_name: field_city
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

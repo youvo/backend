@@ -1,0 +1,6 @@
+_core:
+  default_config_hash: _DRBeKdDI2d9YE3GZXutlUyPNuuJgOty0wN_qEHGlw8
+jwt_expiration: 60
+jwt_key_path: /var/www/html/certificates/youvo7.key
+auth_relay_url: ''
+development: '1'

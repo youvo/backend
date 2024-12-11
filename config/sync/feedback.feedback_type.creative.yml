@@ -1,0 +1,8 @@
+uuid: 6da00fff-7007-48f8-bef5-07564d6278d4
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 1WndQ-eElO8nda5qgeAbSwoz1zhCA-0MM_jDKFJQwXs
+id: creative
+label: Creative

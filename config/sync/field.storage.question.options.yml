@@ -1,0 +1,23 @@
+uuid: 026f13c3-4a74-443b-b010-d952c481ee2d
+langcode: en
+status: true
+dependencies:
+  module:
+    - questionnaire
+_core:
+  default_config_hash: JkC0N6bTrqtNTn2sOGV5wQEyMktmZ1pAX6W3SzEecVQ
+id: question.options
+field_name: options
+entity_type: question
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

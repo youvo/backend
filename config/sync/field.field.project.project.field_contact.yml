@@ -1,0 +1,22 @@
+uuid: d42dc0dd-cb62-4ad4-9cba-f96ee74faa1c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_contact
+  module:
+    - projects
+_core:
+  default_config_hash: Pq5nX4KKP28ktWHDcZkpFhIjmjYtAVZ5y7XMyvLHTEw
+id: project.project.field_contact
+field_name: field_contact
+entity_type: project
+bundle: project
+label: Contact
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

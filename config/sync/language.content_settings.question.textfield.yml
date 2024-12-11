@@ -1,0 +1,20 @@
+uuid: 1749f100-e31b-4b4a-ade9-a1d0143c71b1
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.textfield
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: D2rSLoTD20hbU-QClvjsgyaU2tAoa2OZOKXTkSoNamQ
+id: question.textfield
+target_entity_type_id: question
+target_bundle: textfield
+default_langcode: site_default
+language_alterable: false

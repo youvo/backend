@@ -1,0 +1,8 @@
+uuid: 681d8704-c7b0-4e11-a917-faf1e5ae0f52
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 7ti1kECwFPQQBCrpn9C--wc4qJtmNo3HsimAtcXCSJg
+id: excursus
+label: Excursus

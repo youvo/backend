@@ -1,0 +1,8 @@
+uuid: 0989641d-0ff6-4fef-8f56-037550de0b18
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: n42Met-RSBLN_mapPSqjw2Ve79_JSDhiPbNX6bzmryQ
+id: illustration
+label: Illustration

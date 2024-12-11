@@ -1,0 +1,14 @@
+uuid: ac945af6-cb9b-4850-a4bb-69cd586fee6f
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.archival
+  module:
+    - user
+id: user_add_role_action.archival
+label: 'Add the Archival Organization role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: archival

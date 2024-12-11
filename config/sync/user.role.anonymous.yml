@@ -1,0 +1,31 @@
+uuid: b7e8ad32-4aa9-4690-9762-619a31edf7bb
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.creative.register
+    - rest.resource.organization.create
+    - rest.resource.stats.public
+  module:
+    - courses
+    - rest
+    - simple_oauth
+    - subrequests
+    - system
+_core:
+  default_config_hash: 6AhSaEvO_NlvZZxQzincBV_izbwisoghocnVbs7FG8w
+id: anonymous
+label: Guest
+weight: 0
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access user profiles'
+  - 'debug simple_oauth tokens'
+  - 'issue subrequests'
+  - 'restful get creative:register'
+  - 'restful get organization:create'
+  - 'restful get stats:public'
+  - 'restful post creative:register'
+  - 'restful post organization:create'
+  - 'view courses overview'

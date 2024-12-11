@@ -1,0 +1,20 @@
+uuid: ee5dbd65-c00f-4920-9e95-01ec3d5745b8
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: UzCICmb9kODKhfXSXLXOtoszcdkoovwJluO4ZNJWGKA
+id: feedback.field_skilled_boolean
+field_name: field_skilled_boolean
+entity_type: feedback
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

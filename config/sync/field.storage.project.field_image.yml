@@ -1,0 +1,32 @@
+uuid: 8f467d7c-3abe-40a1-b207-056f02f41acf
+langcode: en
+status: true
+dependencies:
+  module:
+    - file
+    - image
+    - projects
+_core:
+  default_config_hash: DLbPrVTgEMXoMt75szbyOhu8iLsHuGfhAZHSUgHDBHk
+id: project.field_image
+field_name: field_image
+entity_type: project
+type: image
+settings:
+  target_type: file
+  display_field: false
+  display_default: false
+  uri_scheme: public
+  default_image:
+    uuid: ''
+    alt: ''
+    title: Testbild
+    width: 1920
+    height: 1080
+module: image
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

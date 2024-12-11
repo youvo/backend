@@ -1,0 +1,23 @@
+uuid: caf1a2b7-8fcd-4e78-9795-54351b867442
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - questionnaire
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: teEFuIIqPPDaewjPbOcRa2uVgg6y0yIsRJ5avr-V-5c
+id: question.submission
+plugin_id: 'question:submission'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

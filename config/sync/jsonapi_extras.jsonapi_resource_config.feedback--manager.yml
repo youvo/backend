@@ -1,0 +1,73 @@
+uuid: 1155eca7-c39c-4bc7-813c-7cd3b2078a54
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.manager
+_core:
+  default_config_hash: 4C7bm-bojSx2nPtANzH5i-_36wZmpfrk1DmXC9GPixA
+id: feedback--manager
+disabled: false
+path: feedbacks/manager
+resourceType: feedback--manager
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  bundle:
+    disabled: true
+    fieldName: bundle
+    publicName: bundle
+    enhancer:
+      id: ''
+  author:
+    disabled: false
+    fieldName: author
+    publicName: author
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  completed:
+    disabled: true
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  project_comment:
+    disabled: false
+    fieldName: project_comment
+    publicName: project_comment
+    enhancer:
+      id: ''
+  step:
+    disabled: false
+    fieldName: step
+    publicName: step
+    enhancer:
+      id: ''

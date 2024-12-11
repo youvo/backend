@@ -1,0 +1,26 @@
+uuid: 69d964c1-c892-4443-97cc-cb84800ea331
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_local
+  module:
+    - projects
+_core:
+  default_config_hash: ts_Lm1PKW815FTI7RfocHy7OyJ5G6fGoevhD6zDIdok
+id: project.project.field_local
+field_name: field_local
+entity_type: project
+bundle: project
+label: Local
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings:
+  on_label: Local
+  off_label: Remote
+field_type: boolean

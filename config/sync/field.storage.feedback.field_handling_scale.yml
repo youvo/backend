@@ -1,0 +1,22 @@
+uuid: fb15ad37-249d-4d16-b3e8-788a93e5f4b5
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: 1yuvFeOn0H-sf0kaVPik2aAcIUa3qyYOdeGE_43Dvos
+id: feedback.field_handling_scale
+field_name: field_handling_scale
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

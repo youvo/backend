@@ -1,0 +1,33 @@
+uuid: 8b061b63-7360-41ca-8a2d-4ed63d67204d
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.progress.course.access
+    - rest.resource.progress.lecture.access
+    - rest.resource.progress.lecture.complete
+    - rest.resource.question.submission
+  module:
+    - courses
+    - logbook
+    - rest
+    - system
+_core:
+  default_config_hash: JNUgbm2ITni7RJBcAfR6jcC4WNnLwOVL4V2xyUfjVw4
+id: observer
+label: Observer
+weight: 5
+is_admin: false
+permissions:
+  - 'access content'
+  - 'restful get progress:course:access'
+  - 'restful get progress:lecture:access'
+  - 'restful get progress:lecture:complete'
+  - 'restful get question:submission'
+  - 'restful post progress:course:access'
+  - 'restful post progress:lecture:access'
+  - 'restful post progress:lecture:complete'
+  - 'restful post question:submission'
+  - 'view courses'
+  - 'view detectable log'
+  - 'view observable log'

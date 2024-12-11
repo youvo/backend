@@ -1,0 +1,48 @@
+uuid: c0e9d4f0-626d-46f4-991f-2df4c62f7527
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.files
+    - paragraphs.type.download
+  module:
+    - file
+    - filefield_paths
+third_party_settings:
+  filefield_paths:
+    enabled: true
+    file_path:
+      value: 'academy/[paragraph:course_machine_name]/[paragraph:lecture_id]'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    file_name:
+      value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    redirect: false
+    retroactive_update: false
+    active_updating: false
+_core:
+  default_config_hash: K7Z_kPNyt3c8zEkkHVxTReakMYj8Bl6JMKzPQyghsko
+id: paragraph.download.files
+field_name: files
+entity_type: paragraph
+bundle: download
+label: Files
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:file'
+  handler_settings: {  }
+  file_directory: '[date:custom:Y]-[date:custom:m]'
+  file_extensions: 'txt jpg png pdf gif jpeg rtf'
+  max_filesize: ''
+  description_field: true
+field_type: file

@@ -1,0 +1,23 @@
+uuid: 18a28d03-abdd-4850-ac2c-0a43de7d10b3
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: '-Q7dVkN-CIqifqVriW0HpswqBoAIOZbfzWCXaun3tak'
+id: project.field_city
+field_name: field_city
+entity_type: project
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

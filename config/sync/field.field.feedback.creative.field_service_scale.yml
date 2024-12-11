@@ -1,0 +1,25 @@
+uuid: 8dabfcad-4af0-4d65-81ea-e6a9f0ffdb5c
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_service_scale
+_core:
+  default_config_hash: 7t8qObKOyT5TJGkr-3lNVr-SSXUtISFn26JT3gevcXc
+id: feedback.creative.field_service_scale
+field_name: field_service_scale
+entity_type: feedback
+bundle: creative
+label: 'Service Scale'
+description: 'Wie zufrieden bist Du mit der Betreuung durch youvo?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

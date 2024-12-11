@@ -96,7 +96,7 @@ class ProjectTest extends KernelTestBase {
 
     $this->admin = $this->createUser(
       ['administer projects'],
-      'Admira Mineur',
+      'Admira Minelli',
       TRUE,
       ['uid' => 1],
     );

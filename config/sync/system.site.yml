@@ -1,0 +1,14 @@
+_core:
+  default_config_hash: W2bmjG0IN2IwHf-C83DkNLKRNvT8n75KIK4tFi36hig
+langcode: en
+uuid: 91c2fb2e-2587-4031-8ed8-971068356871
+name: youvo.org
+mail: hello@youvo.org
+slogan: 'You create. You volunteer.'
+page:
+  403: ''
+  404: ''
+  front: /dashboard
+admin_compact_mode: false
+weight_select_max: 100
+default_langcode: de

@@ -1,0 +1,22 @@
+uuid: e4f1376d-88b7-4b6e-b210-dfbf3910ac36
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: xESYI5lLYLveqkhD6I1WYq2amK2wAPqAp7iQygr8TiM
+id: project.notify
+plugin_id: 'project:notify'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

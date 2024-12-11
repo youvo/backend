@@ -1,0 +1,8 @@
+uuid: e602e2d9-6703-438f-a889-39d90d16b61f
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: emM4IPoEKMPcqMro6ZG9Q7eOIEoi6xrL2EfkpVReej0
+id: textarea
+label: 'Text (Area)'
