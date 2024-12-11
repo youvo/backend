@@ -2,9 +2,9 @@
 
 namespace Drupal\logbook\Form;
 
-use Drupal\youvo\TranslationFormButtonsTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\youvo\TranslationFormButtonsTrait;
 
 /**
  * Form controller for the log entity edit forms.

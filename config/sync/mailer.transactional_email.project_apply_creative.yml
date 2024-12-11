@@ -1,0 +1,38 @@
+uuid: d9a62d07-a412-49bb-88af-f4d541fd76ed
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: CplU599FH3Eq9IIeE2g9hPhSnf4Twakw7ual0gBNrxI
+id: project_apply_creative
+label: 'Project Apply Creative'
+subject: 'Deine Interessensbekundung für das Projekt %TitleProject'
+body: "Hallo %NameCreative,\r\n\r\nvielen Dank für Dein Interesse an dem Projekt %TitleProject. Die Organisation wurde benachrichtigt und wird sich bald bei Dir melden. Falls Du weitere Fragen hast, melde Dich gern bei der Organisation:\r\n\r\n%NameOrganization\r\nc/o %ContactOrganization\r\n%AddressOrganization\r\n%EmailOrganization\r\n%PhoneOrganization\r\n\r\nWenn Du länger keine Antwort bekommen solltest oder weitere Fragen hast, wende Dich gern an: %EmailManager.\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%NameCreative'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%NameOrganization'
+    required: 0
+  -
+    token: '%ContactOrganization'
+    required: 0
+  -
+    token: '%AddressOrganization'
+    required: 0
+  -
+    token: '%EmailOrganization'
+    required: 0
+  -
+    token: '%PhoneOrganization'
+    required: 0
+  -
+    token: '%EmailManager'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0

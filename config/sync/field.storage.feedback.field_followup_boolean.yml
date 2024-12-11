@@ -1,0 +1,20 @@
+uuid: bfef65dd-0031-4693-9428-078ff2e2ccf6
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: cstFlOvchhRFHBATEf52wd7-TB8UBppqF9de9So7e1Q
+id: feedback.field_followup_boolean
+field_name: field_followup_boolean
+entity_type: feedback
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

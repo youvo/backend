@@ -1,0 +1,23 @@
+uuid: dd3dcaad-ea5d-4b4d-84da-c65b8e52d4f9
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_public_profile
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: oyuID1riDyCzPcolanIKsT8-JynTCZgtQwIibYHGo1g
+id: user.user.field_public_profile
+field_name: field_public_profile
+entity_type: user
+bundle: user
+label: 'Public Profile'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

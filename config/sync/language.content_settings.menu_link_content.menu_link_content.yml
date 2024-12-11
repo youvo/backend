@@ -1,0 +1,19 @@
+uuid: 5536b10d-76f6-4e0f-a70b-bf6f67cb2575
+langcode: en
+status: true
+dependencies:
+  module:
+    - content_translation
+    - menu_link_content
+third_party_settings:
+  content_translation:
+    enabled: false
+    bundle_settings:
+      untranslatable_fields_hide: '0'
+_core:
+  default_config_hash: ReudFn5bePHZE_kGOcGf92hvqFIAmaL3KcuGSlNpYz8
+id: menu_link_content.menu_link_content
+target_entity_type_id: menu_link_content
+target_bundle: menu_link_content
+default_langcode: site_default
+language_alterable: false

@@ -1,0 +1,20 @@
+uuid: 30ac3c41-293c-45b7-9348-43c7186f13f6
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: 1BUY9biOz_F6Y7xnhO5D0oQQw6zbKTbJKDLqmK-cZ_c
+id: user.field_public_profile
+field_name: field_public_profile
+entity_type: user
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

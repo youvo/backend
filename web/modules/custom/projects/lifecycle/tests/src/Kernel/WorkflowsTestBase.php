@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\lifecycle\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
@@ -15,9 +17,7 @@ abstract class WorkflowsTestBase extends KernelTestBase {
   use UserCreationTrait;
 
   /**
-   * Modules to enable.
-   *
-   * @var array
+   * {@inheritdoc}
    */
   protected static $modules = [
     'system',
@@ -42,7 +42,6 @@ abstract class WorkflowsTestBase extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installEntitySchema('workflow');
     $this->installConfig(['lifecycle_test_workflows']);
-    $this->installSchema('system', ['sequences']);
 
     // Discard user 1.
     $this->createUser();

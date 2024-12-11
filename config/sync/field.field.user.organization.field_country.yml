@@ -1,0 +1,21 @@
+uuid: ea56125d-2b61-464e-8a6f-40790464ed7f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_country
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: snKnPw80AO89J7CatfAeNSrY0HuZz48Hk0xzqaLkT_w
+id: user.organization.field_country
+field_name: field_country
+entity_type: user
+bundle: organization
+label: Country
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

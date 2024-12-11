@@ -1,0 +1,79 @@
+uuid: 12978c2d-43eb-4a54-b0f9-9e94ced08e81
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+_core:
+  default_config_hash: Ft53_na9Bkns_Qkxf1khM2zNRWIcw7nhXEjhYdpVJl4
+id: transactional_email--transactional_email
+disabled: true
+path: transactional_email/transactional_email
+resourceType: transactional_email--transactional_email
+resourceFields:
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  dependencies:
+    disabled: false
+    fieldName: dependencies
+    publicName: dependencies
+    enhancer:
+      id: ''
+  third_party_settings:
+    disabled: false
+    fieldName: third_party_settings
+    publicName: third_party_settings
+    enhancer:
+      id: ''
+  _core:
+    disabled: false
+    fieldName: _core
+    publicName: _core
+    enhancer:
+      id: ''
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  label:
+    disabled: false
+    fieldName: label
+    publicName: label
+    enhancer:
+      id: ''
+  subject:
+    disabled: false
+    fieldName: subject
+    publicName: subject
+    enhancer:
+      id: ''
+  body:
+    disabled: false
+    fieldName: body
+    publicName: body
+    enhancer:
+      id: ''
+  tokens:
+    disabled: false
+    fieldName: tokens
+    publicName: tokens
+    enhancer:
+      id: ''

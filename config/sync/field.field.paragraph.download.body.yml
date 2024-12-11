@@ -1,0 +1,21 @@
+uuid: 1f3103a2-ffbc-4756-9b0f-b7a2d4c35f68
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.body
+    - paragraphs.type.download
+_core:
+  default_config_hash: RUcXOz0d7Vb23aG06oeLNb3WD3cmQEnDi-tcwlqsex0
+id: paragraph.download.body
+field_name: body
+entity_type: paragraph
+bundle: download
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

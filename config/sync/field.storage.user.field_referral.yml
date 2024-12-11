@@ -1,0 +1,23 @@
+uuid: ef89a87d-e089-4e2c-8550-2520eb47a91c
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: Yqh4Xl5ivtrSTwuhV6Dd_5V_MugWkAs7jiHwQGw8n4g
+id: user.field_referral
+field_name: field_referral
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,22 @@
+uuid: 00a26f40-4f4f-4c40-85a3-dee90beeb196
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: Dmcoj9BWwTWfQ0bdtzIglN1kwcvUNYpntmvFoy09B9Q
+id: project.complete
+plugin_id: 'project:complete'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

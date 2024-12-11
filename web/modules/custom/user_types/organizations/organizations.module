@@ -9,8 +9,8 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Access\OrganizationFieldAccess;
+use Drupal\organizations\Entity\Organization;
 
 /**
  * Implements hook_entity_bundle_info_alter().
@@ -24,7 +24,7 @@ function organizations_entity_bundle_info_alter(&$bundles) {
 /**
  * Implements hook_entity_field_access().
  */
-function organizations_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+function organizations_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
   $entity = $items?->getEntity();
   if ($entity instanceof Organization) {
     return OrganizationFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);

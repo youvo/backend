@@ -1,0 +1,8 @@
+uuid: 44a56b07-9265-440d-9b70-16e14076bc15
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: YfiAJW4PS2kuPL3ETq-fL6jivjGpwGLRGVYCM_DILCQ
+id: radios
+label: 'Single Choice'

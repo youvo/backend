@@ -20,7 +20,7 @@ abstract class FieldAccess {
     ContentEntityInterface $entity,
     string $operation,
     FieldDefinitionInterface $field,
-    AccountInterface $account
+    AccountInterface $account,
   );
 
   /**

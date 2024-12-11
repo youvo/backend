@@ -26,7 +26,7 @@ class SimpleToken {
    */
   public function __construct(
     protected string $token,
-    protected bool $required
+    protected bool $required,
   ) {}
 
   /**

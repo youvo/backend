@@ -1,0 +1,20 @@
+uuid: 10ab53ea-77a2-4b68-92b7-780ecaabf7f9
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - postman_interface
+    - serialization
+_core:
+  default_config_hash: 60gBrZ8FppEc3v2Ibp6Ze4U2dLjxs-nLljASDcOikGo
+id: postman.variables
+plugin_id: 'postman:variables'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth

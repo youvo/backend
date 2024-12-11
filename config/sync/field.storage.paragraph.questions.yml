@@ -1,0 +1,22 @@
+uuid: 0435719a-1357-4ac3-82d1-f87c42e752a1
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+    - questionnaire
+_core:
+  default_config_hash: WkSd_2pVdkj4_AHrkauwhWoLp8BxcHR5TjPADx19VPE
+id: paragraph.questions
+field_name: questions
+entity_type: paragraph
+type: entity_reference
+settings:
+  target_type: question
+module: core
+locked: false
+cardinality: -1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,23 @@
+uuid: 1a353df2-2031-419d-bc7a-bb12054d859c
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - serialization
+    - simple_oauth
+    - user_types
+_core:
+  default_config_hash: KZ_aeX8wCDVcQlYEhcmtkg0wXEdayhqfG0QYmXefnYo
+id: user.update.mail
+plugin_id: 'user:update:mail'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - PATCH
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

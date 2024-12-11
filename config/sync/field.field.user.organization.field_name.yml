@@ -1,0 +1,21 @@
+uuid: c0414191-ee48-4716-a1b5-800fcdcb3e1c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_name
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: ugHzt4dORa6tonasNf1e9l7To3FZM7uwHC36xgoYB9s
+id: user.organization.field_name
+field_name: field_name
+entity_type: user
+bundle: organization
+label: Name
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

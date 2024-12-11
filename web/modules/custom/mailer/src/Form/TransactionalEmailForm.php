@@ -4,8 +4,8 @@ namespace Drupal\mailer\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\youvo\SimpleToken;
 use Drupal\multivalue_form_element\Element\MultiValue;
+use Drupal\youvo\SimpleToken;
 
 /**
  * Transactional Email form.

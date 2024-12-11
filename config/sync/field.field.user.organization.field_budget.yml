@@ -1,0 +1,21 @@
+uuid: 8dfb2ae2-e574-417e-92d6-49663c60c2b3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_budget
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: sf0tKBTbM3Iorn5XuCvBk3C697PLYZJ-Cg9cNZi1vLE
+id: user.organization.field_budget
+field_name: field_budget
+entity_type: user
+bundle: organization
+label: Budget
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,61 @@
+uuid: 0da3bc1c-3523-4232-a2d1-b64452b641f9
+langcode: en
+status: true
+dependencies:
+  module:
+    - progress
+_core:
+  default_config_hash: _sPZ_YQUYEHuPGyXzrAJYS87ENNRvyUCoItmbHKoWJU
+id: course_progress--course_progress
+disabled: true
+path: course_progress/course_progress
+resourceType: course_progress--course_progress
+resourceFields:
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  uid:
+    disabled: false
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  enrolled:
+    disabled: false
+    fieldName: enrolled
+    publicName: enrolled
+    enhancer:
+      id: ''
+  accessed:
+    disabled: false
+    fieldName: accessed
+    publicName: accessed
+    enhancer:
+      id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  course:
+    disabled: false
+    fieldName: course
+    publicName: course
+    enhancer:
+      id: ''

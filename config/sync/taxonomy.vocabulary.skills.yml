@@ -1,0 +1,11 @@
+uuid: e96b3f08-5198-4fc3-b172-479d985612ac
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 1VbhMCgM-ucosrGHUbJBd6O1-MuLeVZfSpSvamvX0uw
+name: Skills
+vid: skills
+description: null
+weight: 0
+new_revision: false

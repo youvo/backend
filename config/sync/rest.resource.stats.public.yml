@@ -1,0 +1,22 @@
+uuid: 1db57b8b-c868-4671-8f86-e0654f2231ee
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - serialization
+    - simple_oauth
+    - stats
+_core:
+  default_config_hash: PRq4G6KeN1sd9Jnq-5kPGPB4Dwm6N15uQIsh00owZU4
+id: stats.public
+plugin_id: 'stats:public'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

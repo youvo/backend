@@ -1,0 +1,23 @@
+uuid: 33acfab7-1f75-447d-9133-684db1de471a
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: Dx65Jv76nOzpJ9enFU4GUeMnCW7FNNMNazuEyQvQJwc
+id: user.field_zip
+field_name: field_zip
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,23 @@
+uuid: e3aa7a8d-faff-48d2-8f75-ee4bbffd9e21
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_knowledge_boolean
+_core:
+  default_config_hash: jRC9Q3a9kzVhM3nqe8UFeEWhQ2qBBvLlIteoiBLk-vU
+id: feedback.organization.field_knowledge_boolean
+field_name: field_knowledge_boolean
+entity_type: feedback
+bundle: organization
+label: 'Knowledge Boolean'
+description: 'Hat Deine Organisation durch die Projektumsetzung neues Wissen gewonnen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

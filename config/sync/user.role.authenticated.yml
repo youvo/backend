@@ -1,0 +1,39 @@
+uuid: 4c5d6f01-0ce4-43b1-94d0-29c4b50474eb
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.feedback.create
+    - rest.resource.postman.uuid
+    - rest.resource.stats.public
+    - rest.resource.user.update.mail
+    - rest.resource.user.update.password
+  module:
+    - courses
+    - logbook
+    - projects
+    - rest
+    - simple_oauth
+    - subrequests
+    - system
+_core:
+  default_config_hash: Bz-jBCXBKMjC8njE5CuTPAAVhvRxtAO5BxUXXjy-R5Y
+id: authenticated
+label: 'Authenticated User'
+weight: 1
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access log overview'
+  - 'access user profiles'
+  - 'debug simple_oauth tokens'
+  - 'issue subrequests'
+  - 'restful get postman:uuid'
+  - 'restful get stats:public'
+  - 'restful get user:update:mail'
+  - 'restful patch user:update:mail'
+  - 'restful patch user:update:password'
+  - 'restful post feedback:create'
+  - 'view courses overview'
+  - 'view project'
+  - 'view public log'

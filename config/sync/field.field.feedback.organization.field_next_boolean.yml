@@ -1,0 +1,23 @@
+uuid: 00d2591e-0dbb-4006-b8fa-c1650cdfb1ec
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_next_boolean
+_core:
+  default_config_hash: gnWndctNjXv6C0E-p0uYmelPhc2vhV3aP856ig_Xhro
+id: feedback.organization.field_next_boolean
+field_name: field_next_boolean
+entity_type: feedback
+bundle: organization
+label: 'Next Boolean'
+description: 'Würdet Ihr noch weitere Projekte bei youvo einstellen?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

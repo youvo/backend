@@ -1,0 +1,26 @@
+uuid: de4ef074-ff5e-4a24-bc87-4bc8254fadfd
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_about
+    - user_bundle.user_type.organization
+  module:
+    - text
+_core:
+  default_config_hash: zSug-dWXZWW308LTaXqqNXkvMpLSWGb2eX7onyik5Hk
+id: user.organization.field_about
+field_name: field_about
+entity_type: user
+bundle: organization
+label: About
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: true
+  required_summary: false
+  allowed_formats: {  }
+field_type: text_with_summary

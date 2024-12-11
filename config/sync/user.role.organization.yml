@@ -1,0 +1,44 @@
+uuid: 7e0a5879-7b15-4e92-ba46-cb63d5c30fe2
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.project.complete
+    - rest.resource.project.mediate
+    - rest.resource.project.submit
+  content:
+    - 'consumer:consumer:63b60b9e-dbbc-4214-a520-f8cf4cab65da'
+    - 'consumer:consumer:ff5a1e31-557c-4c17-a7f5-a4a342d3cc19'
+  module:
+    - consumer_permissions
+    - lifecycle
+    - projects
+    - rest
+    - simple_oauth
+    - user_types
+_core:
+  default_config_hash: VGn9WSznHyAgTSnfbmqg0RC9DjUlRJ4Qtxhw52DqmKY
+id: organization
+label: Organization
+weight: 4
+is_admin: null
+permissions:
+  - 'authorize with client 4'
+  - 'authorize with client 5'
+  - 'create project'
+  - 'delete own project'
+  - 'general organization access'
+  - 'grant simple_oauth codes'
+  - 'restful get project:mediate'
+  - 'restful post project:complete'
+  - 'restful post project:mediate'
+  - 'restful post project:submit'
+  - 'update own project'
+  - 'use project_lifecycle transition complete'
+  - 'use project_lifecycle transition mediate'
+  - 'use project_lifecycle transition remain_completed'
+  - 'use project_lifecycle transition remain_draft'
+  - 'use project_lifecycle transition remain_ongoing'
+  - 'use project_lifecycle transition remain_open'
+  - 'use project_lifecycle transition remain_pending'
+  - 'use project_lifecycle transition submit'

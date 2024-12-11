@@ -1,0 +1,26 @@
+uuid: a63c9cae-9abc-490a-ae28-9fae5d4b3e9f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_about
+    - user_bundle.user_type.user
+  module:
+    - text
+_core:
+  default_config_hash: OxejmT_dqBS4OnoSHZy0hniZlNSy3nej_rpzPtMRFO8
+id: user.user.field_about
+field_name: field_about
+entity_type: user
+bundle: user
+label: About
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: true
+  required_summary: false
+  allowed_formats: {  }
+field_type: text_with_summary

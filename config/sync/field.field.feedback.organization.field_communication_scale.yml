@@ -1,0 +1,25 @@
+uuid: 56e3739c-7dbc-45b9-89f4-7c9b66e97292
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_communication_scale
+_core:
+  default_config_hash: vkvoSkiMa9nD2Ru9OxPA862aA4c_fLOb2hNV-RVljmg
+id: feedback.organization.field_communication_scale
+field_name: field_communication_scale
+entity_type: feedback
+bundle: organization
+label: 'Communication Scale'
+description: 'Wie war die Kommunikation mit der oder dem Kreativen?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

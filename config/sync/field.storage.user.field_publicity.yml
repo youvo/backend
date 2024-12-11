@@ -1,0 +1,21 @@
+uuid: 4a0f5bcb-0afd-40aa-9afb-a18cfb2ac1ee
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: C8RMxANp4VVQMXCWp-69Wb33k4xctqnGENvgbhKe_6g
+id: user.field_publicity
+field_name: field_publicity
+entity_type: user
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

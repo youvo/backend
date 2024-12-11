@@ -24,7 +24,7 @@ class OrganizationAccessController extends ControllerBase {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessManage(AccountInterface $account, UserInterface $organization = NULL) {
+  public function accessManage(AccountInterface $account, ?UserInterface $organization = NULL) {
 
     // Return, if organizations is empty.
     if (!$organization instanceof Organization) {

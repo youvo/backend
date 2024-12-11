@@ -1,0 +1,23 @@
+uuid: 61c9ecc4-d892-4418-b36c-f5332b70c851
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_volunteer_boolean
+_core:
+  default_config_hash: 6yAHUqNhnIrUvQkV9AVme1PbUQ6-JMlKPnT2fyaTjAA
+id: feedback.organization.field_volunteer_boolean
+field_name: field_volunteer_boolean
+entity_type: feedback
+bundle: organization
+label: 'Volunteer Boolean'
+description: 'Engagiert sich die oder der Kreative über das Projekt hinaus in Deiner Organisation?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

@@ -1,0 +1,42 @@
+uuid: 4c47e608-c3d3-4caa-a656-683724100440
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.progress.course.access
+    - rest.resource.progress.lecture.access
+    - rest.resource.progress.lecture.complete
+    - rest.resource.question.submission
+  module:
+    - blocker_mode
+    - content_translation
+    - courses
+    - lectures
+    - paragraphs
+    - questionnaire
+    - rest
+    - system
+_core:
+  default_config_hash: JoFvngLC1yirkFLIYRLDvLEoiBIcj3YM-GxRcXoB2iE
+id: editor
+label: Editor
+weight: 6
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access site'
+  - 'create content translations'
+  - 'manage courses'
+  - 'restful get progress:course:access'
+  - 'restful get progress:lecture:access'
+  - 'restful get progress:lecture:complete'
+  - 'restful get question:submission'
+  - 'restful post progress:course:access'
+  - 'restful post progress:lecture:access'
+  - 'restful post progress:lecture:complete'
+  - 'restful post question:submission'
+  - 'translate course'
+  - 'translate lecture'
+  - 'translate paragraph'
+  - 'translate question'
+  - 'view courses'

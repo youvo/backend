@@ -1,0 +1,45 @@
+uuid: 1f5fa3fe-f9ff-44a2-8dce-d786574aea6d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.skills.machine_name
+    - taxonomy.vocabulary.skills
+  module:
+    - text
+_core:
+  default_config_hash: Mf5xjBlNZ9ySjpPdmSFh4OGgWfKNJbBG7mouHyR0JYE
+id: taxonomy_term.skills.default
+targetEntityType: taxonomy_term
+bundle: skills
+mode: default
+content:
+  description:
+    type: text_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  machine_name:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  langcode: true
+  path: true
+  status: true
+  translation: true

@@ -1,0 +1,22 @@
+uuid: 88d62bee-81b2-4feb-b8d3-eeba4d83d3de
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: Oz7cMXgwO0fVJyUZsRgBOFzsmRJ4rhXovgYYXC1bRf8
+id: project.field_workload
+field_name: field_workload
+entity_type: project
+type: decimal
+settings:
+  precision: 10
+  scale: 1
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,22 @@
+uuid: 96fe9d99-1a56-46c5-8514-ac3fd2b52b99
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: aEhAM65sFyTXSdhskkTuLVdd7V6nzw1evGvws859EUc
+id: feedback.field_satisfied_scale
+field_name: field_satisfied_scale
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

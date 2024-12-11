@@ -1,0 +1,23 @@
+uuid: 9bcf5efe-bef1-4deb-aa7c-de09e50d9c5d
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_meet_boolean
+_core:
+  default_config_hash: XxyASKkvIivbRKM1fVjqxSun4yBr5u6JOajuuqXYxho
+id: feedback.organization.field_meet_boolean
+field_name: field_meet_boolean
+entity_type: feedback
+bundle: organization
+label: 'Meet Boolean'
+description: 'Habt Ihr Euch persönlich mit der oder dem Kreativen getroffen?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

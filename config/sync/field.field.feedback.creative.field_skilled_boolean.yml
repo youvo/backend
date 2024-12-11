@@ -1,0 +1,23 @@
+uuid: 4f904425-363f-48f6-b75e-7385afa24da8
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_skilled_boolean
+_core:
+  default_config_hash: 4tRhQo1r9xzmxQ9jTfdDsjtFv2godXVrGDYP9NXf7PM
+id: feedback.creative.field_skilled_boolean
+field_name: field_skilled_boolean
+entity_type: feedback
+bundle: creative
+label: 'Skilled Boolean'
+description: 'Hast du Dich dabei speziell mit Deinen kreativen Fähigkeiten eingesetzt?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

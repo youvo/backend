@@ -6,9 +6,9 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
-use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\user\UserStorageInterface;
@@ -18,10 +18,10 @@ use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides Organization Create Resource.
@@ -95,7 +95,8 @@ class OrganizationCreateResource extends ResourceBase {
     Json $serialization_json,
     UserStorageInterface $user_storage,
     EmailValidatorInterface $email_validator,
-    EventDispatcherInterface $event_dispatcher) {
+    EventDispatcherInterface $event_dispatcher,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
     $this->userStorage = $user_storage;

@@ -1,0 +1,24 @@
+uuid: 964ed449-c564-4059-b158-139519db6308
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: Ltp3mCtTXTtyErKaLKASflpSeAkY8NbHxhWOT3ZhuNE
+id: project_mediate
+label: 'Project Mediate'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%Creatives'
+    required: 0
+  -
+    token: '%AuthorWithRole'
+    required: 0
+detectable: true
+observable: true
+public: true
+promote: true
+hidden: false
+color: ''

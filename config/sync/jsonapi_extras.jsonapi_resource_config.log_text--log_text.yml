@@ -1,0 +1,97 @@
+uuid: 98f518df-8dce-490a-8b35-ff23983b33c8
+langcode: de
+status: true
+dependencies:
+  module:
+    - logbook
+_core:
+  default_config_hash: WREqaeQZzMnI7aIfrgiCLx63qC8VbreSqcfGQYtHkDk
+id: log_text--log_text
+disabled: true
+path: log_text/log_text
+resourceType: log_text--log_text
+resourceFields:
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  text:
+    disabled: false
+    fieldName: text
+    publicName: text
+    enhancer:
+      id: ''
+  public_text:
+    disabled: false
+    fieldName: public_text
+    publicName: public_text
+    enhancer:
+      id: ''
+  log_pattern:
+    disabled: false
+    fieldName: log_pattern
+    publicName: log_pattern
+    enhancer:
+      id: ''
+  weight:
+    disabled: false
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
+  default_langcode:
+    disabled: false
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  content_translation_source:
+    disabled: false
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: false
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
+  content_translation_uid:
+    disabled: false
+    fieldName: content_translation_uid
+    publicName: content_translation_uid
+    enhancer:
+      id: ''
+  content_translation_status:
+    disabled: false
+    fieldName: content_translation_status
+    publicName: content_translation_status
+    enhancer:
+      id: ''
+  content_translation_created:
+    disabled: false
+    fieldName: content_translation_created
+    publicName: content_translation_created
+    enhancer:
+      id: ''
+  content_translation_changed:
+    disabled: false
+    fieldName: content_translation_changed
+    publicName: content_translation_changed
+    enhancer:
+      id: ''

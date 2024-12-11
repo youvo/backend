@@ -20,7 +20,7 @@ class CreativeRegisterEvent extends Event {
    */
   public function __construct(
     protected Creative $creative,
-    protected string $link
+    protected string $link,
   ) {}
 
   /**

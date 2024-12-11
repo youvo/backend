@@ -1,0 +1,21 @@
+uuid: d10ac116-2ef0-4c8f-95d6-09de2af1b354
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_street
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: VFUrERB2x36N_gXAd1fP3_1qmMO1nbL6mh1KcK5mxOQ
+id: user.organization.field_street
+field_name: field_street
+entity_type: user
+bundle: organization
+label: Street
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

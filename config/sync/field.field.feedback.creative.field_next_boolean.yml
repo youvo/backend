@@ -1,0 +1,23 @@
+uuid: 1912de3e-fb53-4d59-a984-d43473ab70e3
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_next_boolean
+_core:
+  default_config_hash: tnCBLMUPNsrP4TpBZKFOcmV3Fkq8aZElaidFeNpGqo0
+id: feedback.creative.field_next_boolean
+field_name: field_next_boolean
+entity_type: feedback
+bundle: creative
+label: 'Next Boolean'
+description: 'Würdest Du ein weiteres youvo-Projekt absolvieren?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

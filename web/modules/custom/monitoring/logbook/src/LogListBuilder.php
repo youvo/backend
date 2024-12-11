@@ -55,7 +55,7 @@ final class LogListBuilder extends EntityListBuilder {
     EntityStorageInterface $storage,
     EntityViewBuilderInterface $view_builder,
     EntityStorageInterface $pattern_storage,
-    Request $request
+    Request $request,
   ) {
     parent::__construct($entity_type, $storage);
     $this->viewBuilder = $view_builder;
@@ -68,7 +68,7 @@ final class LogListBuilder extends EntityListBuilder {
    */
   public static function createInstance(
     ContainerInterface $container,
-    EntityTypeInterface $entity_type
+    EntityTypeInterface $entity_type,
   ) {
     return new self(
       $entity_type,

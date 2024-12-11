@@ -1,0 +1,21 @@
+uuid: 0de6b217-a9e8-43ef-8361-a892f3a58d82
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.url
+    - paragraphs.type.video
+_core:
+  default_config_hash: '-shD9888MMvVjj18iZJfKrWxVSvc93DD3H_-LWq1h8s'
+id: paragraph.video.url
+field_name: url
+entity_type: paragraph
+bundle: video
+label: URL
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

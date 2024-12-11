@@ -1,0 +1,22 @@
+uuid: 06aa96d8-2e7d-4d87-be51-0976657db18e
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_image_copyright
+  module:
+    - projects
+_core:
+  default_config_hash: tX_C4_O2dnbx4NKkSXLLcasy27DUJ2Bm9HmvoNx3yhM
+id: project.project.field_image_copyright
+field_name: field_image_copyright
+entity_type: project
+bundle: project
+label: 'Image Copyright'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

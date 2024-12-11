@@ -1,0 +1,21 @@
+uuid: b1c91fbd-a944-496a-b88e-f33482a9d5d1
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: XpmNCb39gb08Du3zmEtlOA9nH3LrkmFUb17e-HW2L9A
+id: organization_create
+label: 'Organization Create'
+tokens:
+  -
+    token: '%Organization'
+    required: '1'
+  -
+    token: '%Project'
+    required: 0
+detectable: true
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

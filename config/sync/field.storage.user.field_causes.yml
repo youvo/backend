@@ -1,0 +1,22 @@
+uuid: 610f5fbb-797f-4ec5-b79d-b326213e03b6
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+    - user
+_core:
+  default_config_hash: gv2NQ17lqvOuQb7m15wodMsoyXEWJKMnMMXpiAZB5mw
+id: user.field_causes
+field_name: field_causes
+entity_type: user
+type: entity_reference
+settings:
+  target_type: taxonomy_term
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

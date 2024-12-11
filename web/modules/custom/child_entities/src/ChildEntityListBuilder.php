@@ -42,7 +42,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
   public function __construct(
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
-    RouteMatchInterface $route_match
+    RouteMatchInterface $route_match,
   ) {
     $this->entityImplementsChildEntityInterface($entity_type);
     parent::__construct($entity_type, $storage);
@@ -56,7 +56,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
    */
   public static function createInstance(
     ContainerInterface $container,
-    EntityTypeInterface $entity_type
+    EntityTypeInterface $entity_type,
   ) {
     return new static(
       $entity_type,

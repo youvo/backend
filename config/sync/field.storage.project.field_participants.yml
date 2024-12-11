@@ -1,0 +1,22 @@
+uuid: 9ace7e8f-2fe8-4bda-bce1-eb09c53944a8
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+    - user
+_core:
+  default_config_hash: K1X6AIUI03dTjoJUcEt2J5GY03cF_F41eckRx3W3brw
+id: project.field_participants
+field_name: field_participants
+entity_type: project
+type: entity_reference
+settings:
+  target_type: user
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

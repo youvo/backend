@@ -1,0 +1,21 @@
+uuid: 13404ea0-9626-46a1-832b-687d0043f8e2
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_short_name
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: z-N5bMR15HYP6bPU_VrTrIEJSDwkySx4Q-aJZj4XMz8
+id: user.organization.field_short_name
+field_name: field_short_name
+entity_type: user
+bundle: organization
+label: 'Short Name'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

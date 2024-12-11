@@ -1,0 +1,8 @@
+uuid: 4d81cd23-171b-41f0-ab95-328eddc4fef3
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: hY-Vfi-ZQd2o_IxPpp8jeOlZk5T1ZkdI46nug9qx1UM
+id: textfield
+label: 'Text (Field)'

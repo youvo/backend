@@ -1,0 +1,20 @@
+uuid: 62b76447-627e-40eb-bb6a-2b22a5ac4456
+langcode: en
+status: true
+dependencies:
+  module:
+    - questionnaire
+_core:
+  default_config_hash: IBQ8Iy7ZnQya7uNHJt2oPED66SKbTSTQr7k_yQf-SIE
+id: question.answers
+field_name: answers
+entity_type: question
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

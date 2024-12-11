@@ -1,0 +1,61 @@
+uuid: 4b18b1ef-08f0-4e32-a076-be022a528ebe
+langcode: en
+status: true
+dependencies:
+  module:
+    - progress
+_core:
+  default_config_hash: FNDlcaQ2sDiVlHc9z0lJwKGG_KJG7bPbca8MDME_T5A
+id: lecture_progress--lecture_progress
+disabled: true
+path: lecture_progress/lecture_progress
+resourceType: lecture_progress--lecture_progress
+resourceFields:
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  uid:
+    disabled: false
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  enrolled:
+    disabled: false
+    fieldName: enrolled
+    publicName: enrolled
+    enhancer:
+      id: ''
+  accessed:
+    disabled: false
+    fieldName: accessed
+    publicName: accessed
+    enhancer:
+      id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  lecture:
+    disabled: false
+    fieldName: lecture
+    publicName: lecture
+    enhancer:
+      id: ''

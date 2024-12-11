@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\lifecycle\Kernel;
 
 use Drupal\node\Entity\Node;
@@ -16,7 +18,7 @@ class WorkflowsFormatterTest extends WorkflowsTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testStatesListFormatter() {
+  public function testStatesListFormatter(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',

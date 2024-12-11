@@ -1,0 +1,163 @@
+uuid: bcee4368-97a0-48b1-9baf-038785ee16d9
+langcode: en
+status: true
+dependencies:
+  module:
+    - courses
+_core:
+  default_config_hash: I934_Mb3imPDikTKuzN--6YwQzWaAcHy2MNWX_RvCS4
+id: course--course
+disabled: false
+path: courses
+resourceType: course
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  title:
+    disabled: false
+    fieldName: title
+    publicName: title
+    enhancer:
+      id: ''
+  machine_name:
+    disabled: false
+    fieldName: machine_name
+    publicName: machine_name
+    enhancer:
+      id: ''
+  subtitle:
+    disabled: false
+    fieldName: subtitle
+    publicName: subtitle
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  description:
+    disabled: false
+    fieldName: description
+    publicName: description
+    enhancer:
+      id: ''
+  uid:
+    disabled: true
+    fieldName: uid
+    publicName: uid
+    enhancer:
+      id: ''
+  created:
+    disabled: true
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  tags:
+    disabled: false
+    fieldName: tags
+    publicName: tags
+    enhancer:
+      id: ''
+  weight:
+    disabled: false
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
+  default_langcode:
+    disabled: true
+    fieldName: default_langcode
+    publicName: default_langcode
+    enhancer:
+      id: ''
+  lectures:
+    disabled: false
+    fieldName: lectures
+    publicName: lectures
+    enhancer:
+      id: ''
+  progress:
+    disabled: false
+    fieldName: progress
+    publicName: progress
+    enhancer:
+      id: ''
+  completed:
+    disabled: false
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  unlocked:
+    disabled: false
+    fieldName: unlocked
+    publicName: unlocked
+    enhancer:
+      id: ''
+  current_lecture:
+    disabled: false
+    fieldName: current_lecture
+    publicName: current_lecture
+    enhancer:
+      id: ''
+  content_translation_source:
+    disabled: true
+    fieldName: content_translation_source
+    publicName: content_translation_source
+    enhancer:
+      id: ''
+  content_translation_outdated:
+    disabled: true
+    fieldName: content_translation_outdated
+    publicName: content_translation_outdated
+    enhancer:
+      id: ''
+  content_translation_uid:
+    disabled: true
+    fieldName: content_translation_uid
+    publicName: content_translation_uid
+    enhancer:
+      id: ''
+  content_translation_status:
+    disabled: true
+    fieldName: content_translation_status
+    publicName: content_translation_status
+    enhancer:
+      id: ''
+  content_translation_created:
+    disabled: true
+    fieldName: content_translation_created
+    publicName: content_translation_created
+    enhancer:
+      id: ''
+  content_translation_changed:
+    disabled: true
+    fieldName: content_translation_changed
+    publicName: content_translation_changed
+    enhancer:
+      id: ''

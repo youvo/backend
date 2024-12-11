@@ -1,0 +1,30 @@
+uuid: 6d8c362f-c944-4907-8297-a06544133453
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: Mbl0mLi9Qei9qPSfa4LxT_IUaT0DBwRLsRKPKlGmiqM
+id: project_publish
+label: 'Project Publish'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0
+  -
+    token: '%Organization'
+    required: 0
+detectable: true
+observable: true
+public: true
+promote: true
+hidden: false
+color: ''

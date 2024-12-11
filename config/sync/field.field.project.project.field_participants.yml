@@ -1,0 +1,43 @@
+uuid: 199d329f-7ec4-4aa5-9483-8ddd9a492920
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_participants
+    - user_bundle.user_type.user
+  module:
+    - projects
+_core:
+  default_config_hash: H7nSSQaUdIqWgi3TvJhjiSPpirELZxCtFJvZi_W3TsM
+id: project.project.field_participants
+field_name: field_participants
+entity_type: project
+bundle: project
+label: Participants
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:user'
+  handler_settings:
+    target_bundles:
+      user: user
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+    filter:
+      type: role
+      role:
+        creative: creative
+        administrator: '0'
+        organization: '0'
+        observer: '0'
+        editor: '0'
+        manager: '0'
+        supervisor: '0'
+    include_anonymous: false
+field_type: entity_reference

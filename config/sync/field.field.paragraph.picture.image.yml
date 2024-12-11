@@ -1,0 +1,65 @@
+uuid: 927582cc-7a0a-43da-b246-07993ff504b1
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.image
+    - paragraphs.type.picture
+  module:
+    - content_translation
+    - filefield_paths
+    - image
+third_party_settings:
+  filefield_paths:
+    enabled: true
+    file_path:
+      value: 'academy/[paragraph:course_machine_name]/[paragraph:lecture_id]'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    file_name:
+      value: '[file:ffp-name-only-original].[file:ffp-extension-original]'
+      options:
+        slashes: true
+        pathauto: false
+        transliterate: true
+    redirect: false
+    retroactive_update: false
+    active_updating: false
+  content_translation:
+    translation_sync:
+      file: file
+      alt: '0'
+      title: '0'
+_core:
+  default_config_hash: rzrUH_T1YG86vO2J5ii1m267qrMKJzQPqnwNn5-ys_U
+id: paragraph.picture.image
+field_name: image
+entity_type: paragraph
+bundle: picture
+label: Picture
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:file'
+  handler_settings: {  }
+  file_directory: '[date:custom:Y]-[date:custom:m]'
+  file_extensions: 'png gif jpg jpeg'
+  max_filesize: ''
+  max_resolution: ''
+  min_resolution: ''
+  alt_field: true
+  alt_field_required: true
+  title_field: false
+  title_field_required: false
+  default_image:
+    uuid: ''
+    alt: ''
+    title: ''
+    width: null
+    height: null
+field_type: image

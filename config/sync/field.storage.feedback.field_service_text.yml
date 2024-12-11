@@ -1,0 +1,21 @@
+uuid: 94106e5a-9c89-4679-9122-74d1bf9cfd59
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: 2DliqZ3G4xzqeZr81NhiJc01Am-USuIx9Ti1ixzfUPg
+id: feedback.field_service_text
+field_name: field_service_text
+entity_type: feedback
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

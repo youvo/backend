@@ -1,0 +1,21 @@
+uuid: 523a3c9b-4b70-471a-b3bf-14100505e36b
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_count_fulltime
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: kaDfKe1fWXeDD0lZn_QsQXvS0Jz6fTJudM1DBBqTAPU
+id: user.organization.field_count_fulltime
+field_name: field_count_fulltime
+entity_type: user
+bundle: organization
+label: 'Count Full-time'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

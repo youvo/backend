@@ -1,0 +1,23 @@
+uuid: aa9ae9c4-e592-4ac0-b3a6-40b1bacc85e1
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - progress
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: FzqcHMc33P4M5cqzkApDvjnP6pcfdYo13qd3RLhspio
+id: progress.course.access
+plugin_id: 'progress:course:access'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

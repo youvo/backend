@@ -10,8 +10,8 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
-use Drupal\rest\ResourceResponse;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -80,7 +80,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     EventDispatcherInterface $event_dispatcher,
     RouteProviderInterface $route_provider,
     SerializationInterface $serialization_json,
-    EntityTypeManagerInterface $entity_type_manager
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $current_user, $event_dispatcher, $route_provider);
     $this->serializationJson = $serialization_json;
@@ -94,7 +94,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

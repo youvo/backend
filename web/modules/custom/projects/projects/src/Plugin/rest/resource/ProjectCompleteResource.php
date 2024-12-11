@@ -9,8 +9,8 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\FileStorageInterface;
 use Drupal\projects\Event\ProjectCompleteEvent;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\ModifiedResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -79,7 +79,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     EventDispatcherInterface $event_dispatcher,
     RouteProviderInterface $route_provider,
     SerializationInterface $serialization_json,
-    FileStorageInterface $file_storage
+    FileStorageInterface $file_storage,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $current_user, $event_dispatcher, $route_provider);
     $this->serializationJson = $serialization_json;
@@ -93,7 +93,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

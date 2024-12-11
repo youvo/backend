@@ -18,10 +18,10 @@ use Drupal\user\UserStorageInterface;
 use Drupal\youvo\Exception\FieldAwareHttpException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides Creative Create Resource.
@@ -76,7 +76,7 @@ class CreativeRegisterResource extends ResourceBase {
     protected EventDispatcherInterface $eventDispatcher,
     protected TermStorageInterface $termStorage,
     protected LanguageManagerInterface $languageManager,
-    protected TimeInterface $time
+    protected TimeInterface $time,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
   }
@@ -88,7 +88,7 @@ class CreativeRegisterResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

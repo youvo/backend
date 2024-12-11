@@ -1,0 +1,23 @@
+uuid: 2dd263d6-ed79-42e5-b67b-9e6918cce19d
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: suoR4UEmhf3d_pbOyZmwP3BFzAjL1rx62whVNFTmAog
+id: user.field_contact
+field_name: field_contact
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

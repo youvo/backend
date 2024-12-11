@@ -1,0 +1,21 @@
+uuid: 9119a27e-ac02-4cfc-ba3a-364f41282de9
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_zip
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: mwl5aMWRUcH9x4otGH5PeyckIK37NbVo3LRfz7XDMJE
+id: user.organization.field_zip
+field_name: field_zip
+entity_type: user
+bundle: organization
+label: ZIP
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

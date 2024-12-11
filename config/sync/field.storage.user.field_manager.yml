@@ -1,0 +1,21 @@
+uuid: f0fd9470-7b7e-41e4-9f8a-6c244b55c8bf
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: XODzMxo6gqcBml7RFgB8Q1uTEtjX6tfydARjOe_f-yM
+id: user.field_manager
+field_name: field_manager
+entity_type: user
+type: entity_reference
+settings:
+  target_type: user
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

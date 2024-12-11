@@ -1,0 +1,32 @@
+uuid: da9082cb-47b7-4ca2-a854-15474e77c675
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_skills
+    - taxonomy.vocabulary.skills
+  module:
+    - projects
+_core:
+  default_config_hash: 31Rp2cdDK46fUthOcEZTPp-gpdGkysNxmiOGxEfHNEw
+id: project.project.field_skills
+field_name: field_skills
+entity_type: project
+bundle: project
+label: Skills
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      skills: skills
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

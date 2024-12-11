@@ -23,9 +23,9 @@ class FieldAwareHttpException extends HttpException {
     int $statusCode,
     ?string $message = '',
     ?string $field = '',
-    \Throwable $previous = NULL,
+    ?\Throwable $previous = NULL,
     array $headers = [],
-    ?int $code = 0
+    ?int $code = 0,
   ) {
     parent::__construct($statusCode, $message, $previous, $headers, $code);
     $this->field = $field;

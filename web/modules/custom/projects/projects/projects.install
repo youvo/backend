@@ -62,8 +62,9 @@ function projects_site_install_finished() {
   $roles = ['creative', 'organization', 'manager', 'supervisor'];
   foreach ($roles as $role) {
     $role_object = Role::load($role);
-    $role_object->grantPermission('restful get project:comment');
-    $role_object->grantPermission('restful post project:comment');
+    // @todo Maybe restore when project comments are done.
+    // $role_object->grantPermission('restful get project:comment');
+    // $role_object->grantPermission('restful post project:comment');
     $role_object->save();
   }
 

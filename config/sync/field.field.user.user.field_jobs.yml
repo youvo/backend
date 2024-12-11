@@ -1,0 +1,23 @@
+uuid: 10eed524-2e96-4e7c-a312-449c11de2c31
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_jobs
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: 1Sq9em2byDFIOYqYlt7Z7qoValB72HURPJFwH7D5vHo
+id: user.user.field_jobs
+field_name: field_jobs
+entity_type: user
+bundle: user
+label: Jobs
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

@@ -1,0 +1,23 @@
+uuid: 13584b52-aeee-4037-9642-1dfdc3032f14
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+_core:
+  default_config_hash: g5HcsSqHQUl0oIdqIBivnkQaKoKg0HfBYJDC1x4lTDE
+id: user.field_count_volunteer
+field_name: field_count_volunteer
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

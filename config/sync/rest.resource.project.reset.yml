@@ -1,0 +1,22 @@
+uuid: 91e49579-79dc-4ed0-aa44-df8e06cf1d75
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: hj15fHmB1lLZuWeHSMFDVvLlTirZ-sbCCak_Bucokhg
+id: project.reset
+plugin_id: 'project:reset'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

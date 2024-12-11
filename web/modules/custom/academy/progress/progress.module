@@ -5,23 +5,23 @@
  * Provides hooks to document progress in academy.
  */
 
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Plugin\Field\CompletedFieldItemList;
 use Drupal\progress\Plugin\Field\CurrentLectureFieldItemList;
 use Drupal\progress\Plugin\Field\ProgressFieldItemList;
 use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
-use Drupal\Core\Utility\Error;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -75,7 +75,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 /**
  * Implements hook_entity_field_access().
  */
-function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
 
   $result = AccessResult::neutral();
 

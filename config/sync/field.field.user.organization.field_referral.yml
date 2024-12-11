@@ -1,0 +1,21 @@
+uuid: d5611ed6-a358-4732-975d-c370153c1235
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_referral
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: J8jjhMfXK1BtIkrIXrM2EF4yunbciDBqe1WnaAVI-Pk
+id: user.organization.field_referral
+field_name: field_referral
+entity_type: user
+bundle: organization
+label: Reachability
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

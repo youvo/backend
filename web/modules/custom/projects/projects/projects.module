@@ -5,16 +5,16 @@
  * Custom module which handles business logic for project entities.
  */
 
-use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Entity\Project;
-use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\projects\Access\ProjectFieldAccess;
+use Drupal\projects\Entity\Project;
 use Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
@@ -22,7 +22,7 @@ use Drupal\projects\ProjectResultInterface;
 /**
  * Implements hook_entity_field_access().
  */
-function projects_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+function projects_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
   $entity = $items?->getEntity();
   if ($entity instanceof Project) {
     return ProjectFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
@@ -87,4 +87,25 @@ function projects_jsonapi_project_filter_access(EntityTypeInterface $entity_type
     JSONAPI_FILTER_AMONG_PUBLISHED => AccessResult::allowed(),
     JSONAPI_FILTER_AMONG_OWN => AccessResult::allowed(),
   ]);
+}
+
+/**
+ * Implements hook_theme().
+ */
+function projects_theme() {
+  return [
+    'project' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function projects_theme_suggestions_project(array $variables) {
+  $suggestions = [];
+  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+  $suggestions[] = 'project__' . $sanitized_view_mode;
+  return $suggestions;
 }

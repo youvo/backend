@@ -41,7 +41,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
    */
   private function __construct(
     AccountProxyInterface $user,
-    SerializerInterface $serializer
+    SerializerInterface $serializer,
   ) {
     $this->user = $user->getAccount();
     $this->serializer = $serializer;
@@ -91,7 +91,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
     $data['uuid'] = $this->user->uuid();
     $data['roles'] = array_column($this->user->get('roles')->getValue(),
       'target_id');
-    return JsonResponse::create($data);
+    return new JsonResponse($data);
   }
 
 }

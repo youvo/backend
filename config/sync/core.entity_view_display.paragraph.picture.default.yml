@@ -1,0 +1,43 @@
+uuid: 74c93931-65e5-4cc0-b851-eac2c20bae80
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.picture.body
+    - field.field.paragraph.picture.image
+    - paragraphs.type.picture
+  module:
+    - image
+_core:
+  default_config_hash: 4x1sDA8YGsQtbwZEQT7WT7MDGPD1d8UFliorJ09tVAk
+id: paragraph.picture.default
+targetEntityType: paragraph
+bundle: picture
+mode: default
+content:
+  body:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  image:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  langcode: true

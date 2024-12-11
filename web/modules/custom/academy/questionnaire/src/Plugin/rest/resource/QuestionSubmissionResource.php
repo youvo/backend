@@ -74,7 +74,7 @@ final class QuestionSubmissionResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     Json $serialization_json,
-    SubmissionManager $submission_manager
+    SubmissionManager $submission_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->serializationJson = $serialization_json;
@@ -88,7 +88,7 @@ final class QuestionSubmissionResource extends ResourceBase {
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new self(
       $configuration,
@@ -212,6 +212,7 @@ final class QuestionSubmissionResource extends ResourceBase {
         'radios' => in_array($v, array_keys($question->get('options')->getValue())),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
         'task' => empty($v) || intval($v[0]) == 0,
+        // @phpstan-ignore-next-line
         default => FALSE,
       };
       if (!$valid_value) {

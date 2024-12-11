@@ -1,0 +1,23 @@
+uuid: 116ebb02-f6c2-4e08-9446-2aac19cac6b6
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - progress
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: 4KUmwABbVuqsjAWrbBUDrr2VKNNhozXvo-jdySBCplo
+id: progress.lecture.access
+plugin_id: 'progress:lecture:access'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

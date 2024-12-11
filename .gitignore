@@ -1,10 +1,21 @@
-/vendor/
+/.idea/
+.DS_Store
+.phpunit.result.cache
+.editorconfig
+.gitattributes
+
+/.ddev/.env
 
 /config/.env.api
 /config/.env.consumers.development
 /config/.env.development
 /config/.env.oauth_remote.development
 /config/.env.production
-/certificates/private.key
-/certificates/public.key
-/certificates/youvo7.key
+/config/certs/private.key
+/config/certs/public.key
+/config/certs/youvo7.key
+
+/private
+/tmp
+
+/vendor/

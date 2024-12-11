@@ -1,0 +1,73 @@
+uuid: abe8f793-1230-4900-90ce-9f22c2b52595
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: _O9ElBlTHqxA1zGEadmX76aHzRTnJapMQHTVJ-iPO_I
+id: project_result--project_result
+disabled: false
+path: results
+resourceType: result
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  project_comments:
+    disabled: false
+    fieldName: project_comments
+    publicName: comments
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  weight:
+    disabled: true
+    fieldName: weight
+    publicName: weight
+    enhancer:
+      id: ''
+  field_files:
+    disabled: false
+    fieldName: field_files
+    publicName: files
+    enhancer:
+      id: ''
+  field_hyperlinks:
+    disabled: false
+    fieldName: field_hyperlinks
+    publicName: hyperlinks
+    enhancer:
+      id: ''

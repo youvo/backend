@@ -1,0 +1,14 @@
+uuid: d65879bc-ac9d-4766-acaa-d203a075e79f
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.creative
+  module:
+    - user
+id: user_remove_role_action.creative
+label: 'Remove the Creative role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: creative

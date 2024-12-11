@@ -26,7 +26,7 @@ class QuestionSubmissionAccessController extends ControllerBase {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function accessQuestionSubmission(AccountInterface $account, Route $route, Question $question = NULL) {
+  public function accessQuestionSubmission(AccountInterface $account, Route $route, ?Question $question = NULL) {
 
     // Gather properties.
     $methods = $route->getMethods();

@@ -1,0 +1,23 @@
+uuid: 00270c25-859e-45c8-8393-a38bd089d8b3
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_struggel_boolean
+_core:
+  default_config_hash: 4W0-LR--4QDMEHGWO18vf_E7zoxFfR60pAz2Em8kXkY
+id: feedback.organization.field_struggel_boolean
+field_name: field_struggel_boolean
+entity_type: feedback
+bundle: organization
+label: 'Struggel Boolean'
+description: 'Hattet Ihr Probleme, Eure Vorstellungen zu kommunizieren?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

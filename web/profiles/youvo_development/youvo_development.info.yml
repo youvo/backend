@@ -11,7 +11,6 @@ install:
   - admin_toolbar
   - devel
   - devel_mail_logger
-  - druqs
   - field_ui
   - mailsystem
   - menu_ui

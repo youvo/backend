@@ -1,0 +1,21 @@
+uuid: 0381bfa7-512a-4708-b842-6b198a20309a
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_count_volunteer
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: xRNGeHRob4EOGRwH1GSrUtDc2RI9Noutau6B-Hjtfd8
+id: user.organization.field_count_volunteer
+field_name: field_count_volunteer
+entity_type: user
+bundle: organization
+label: 'Count Volunteer'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

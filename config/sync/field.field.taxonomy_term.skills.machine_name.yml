@@ -1,0 +1,21 @@
+uuid: 55ed2b14-7800-45ec-aba7-7db5381d1b3c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.machine_name
+    - taxonomy.vocabulary.skills
+_core:
+  default_config_hash: NDE-oNrXrU8Ji4xGLRT43SEBxFJXa5XWoC1uGOHs5zE
+id: taxonomy_term.skills.machine_name
+field_name: machine_name
+entity_type: taxonomy_term
+bundle: skills
+label: 'Machine name'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

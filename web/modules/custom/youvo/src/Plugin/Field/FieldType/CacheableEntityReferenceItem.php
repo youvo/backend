@@ -15,7 +15,7 @@ use Drupal\Core\TypedData\DataReferenceTargetDefinition;
  *   label = @Translation("Cacheable Entity Reference Item"),
  *   description = @Translation("A field containing an entity reference value and cacheability metadata."),
  *   no_ui = TRUE,
- *   category = @Translation("Reference"),
+ *   category = "reference",
  *   default_widget = "entity_reference_autocomplete",
  *   default_formatter = "entity_reference_label",
  *   list_class = "\Drupal\Core\Field\EntityReferenceFieldItemList"

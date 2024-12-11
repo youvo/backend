@@ -19,7 +19,7 @@ final class CreativeController extends ControllerBase {
    * Constructs a OrganizationController object.
    */
   public function __construct(
-    protected UserStorageInterface $userStorage
+    protected UserStorageInterface $userStorage,
   ) {}
 
   /**

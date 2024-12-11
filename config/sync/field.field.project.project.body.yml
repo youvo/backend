@@ -1,0 +1,26 @@
+uuid: 3e16e124-3bca-40fa-8a38-64a10d55a82d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.body
+  module:
+    - projects
+    - text
+_core:
+  default_config_hash: Sc-XPuOBg6uTWgz2kCZMvQbgLgmueOeIlIvjb__tpJo
+id: project.project.body
+field_name: body
+entity_type: project
+bundle: project
+label: 'Project Details'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: true
+  required_summary: false
+  allowed_formats: {  }
+field_type: text_with_summary

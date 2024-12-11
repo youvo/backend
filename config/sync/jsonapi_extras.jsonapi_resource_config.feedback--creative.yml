@@ -1,0 +1,181 @@
+uuid: 58e276d0-28cc-4733-9a58-ff81a891add8
+langcode: en
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+_core:
+  default_config_hash: ELUGEGs9JwOpoB0tyxeznSJ3C6MQtRqYBgyK4rKTtJw
+id: feedback--creative
+disabled: false
+path: feedbacks/creative
+resourceType: feedback--creative
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  bundle:
+    disabled: true
+    fieldName: bundle
+    publicName: bundle
+    enhancer:
+      id: ''
+  author:
+    disabled: false
+    fieldName: author
+    publicName: author
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  changed:
+    disabled: true
+    fieldName: changed
+    publicName: changed
+    enhancer:
+      id: ''
+  completed:
+    disabled: true
+    fieldName: completed
+    publicName: completed
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  project_comment:
+    disabled: false
+    fieldName: project_comment
+    publicName: project_comment
+    enhancer:
+      id: ''
+  step:
+    disabled: false
+    fieldName: step
+    publicName: step
+    enhancer:
+      id: ''
+  field_appreciation_scale:
+    disabled: false
+    fieldName: field_appreciation_scale
+    publicName: appreciation_scale
+    enhancer:
+      id: ''
+  field_collaboration_scale:
+    disabled: false
+    fieldName: field_collaboration_scale
+    publicName: collaboration_scale
+    enhancer:
+      id: ''
+  field_collaboration_text:
+    disabled: false
+    fieldName: field_collaboration_text
+    publicName: collaboration_text
+    enhancer:
+      id: ''
+  field_communication_scale:
+    disabled: false
+    fieldName: field_communication_scale
+    publicName: communication_scale
+    enhancer:
+      id: ''
+  field_features_text:
+    disabled: false
+    fieldName: field_features_text
+    publicName: features_text
+    enhancer:
+      id: ''
+  field_followup_boolean:
+    disabled: false
+    fieldName: field_followup_boolean
+    publicName: followup_boolean
+    enhancer:
+      id: ''
+  field_handling_scale:
+    disabled: false
+    fieldName: field_handling_scale
+    publicName: handling_scale
+    enhancer:
+      id: ''
+  field_handling_text:
+    disabled: false
+    fieldName: field_handling_text
+    publicName: handling_text
+    enhancer:
+      id: ''
+  field_next_boolean:
+    disabled: false
+    fieldName: field_next_boolean
+    publicName: next_boolean
+    enhancer:
+      id: ''
+  field_next_text:
+    disabled: false
+    fieldName: field_next_text
+    publicName: next_text
+    enhancer:
+      id: ''
+  field_organization_text:
+    disabled: false
+    fieldName: field_organization_text
+    publicName: organization_text
+    enhancer:
+      id: ''
+  field_recommend_boolean:
+    disabled: false
+    fieldName: field_recommend_boolean
+    publicName: recommend_boolean
+    enhancer:
+      id: ''
+  field_satisfied_scale:
+    disabled: false
+    fieldName: field_satisfied_scale
+    publicName: satisfied_scale
+    enhancer:
+      id: ''
+  field_service_scale:
+    disabled: false
+    fieldName: field_service_scale
+    publicName: service_scale
+    enhancer:
+      id: ''
+  field_service_text:
+    disabled: false
+    fieldName: field_service_text
+    publicName: service_text
+    enhancer:
+      id: ''
+  field_skilled_boolean:
+    disabled: false
+    fieldName: field_skilled_boolean
+    publicName: skilled_boolean
+    enhancer:
+      id: ''
+  field_time_scale:
+    disabled: false
+    fieldName: field_time_scale
+    publicName: time_scale
+    enhancer:
+      id: ''
+  field_volunteer_boolean:
+    disabled: false
+    fieldName: field_volunteer_boolean
+    publicName: volunteer_boolean
+    enhancer:
+      id: ''

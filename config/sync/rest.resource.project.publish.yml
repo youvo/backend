@@ -1,0 +1,22 @@
+uuid: 17ed1bb9-1c7c-4c91-ab63-c34e5ac9246a
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: gGlFWAFUCRB5jt4w4hKo20b4JPoma5PxUu_0JfISCuo
+id: project.publish
+plugin_id: 'project:publish'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

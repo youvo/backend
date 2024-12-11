@@ -1,0 +1,21 @@
+uuid: eca4d970-34c1-4890-9cb9-6e6c92e1e339
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_next_text
+_core:
+  default_config_hash: ZxXwhVltPNRqijn2F42wCwuB_Kn61BnW5NJJcONldB0
+id: feedback.organization.field_next_text
+field_name: field_next_text
+entity_type: feedback
+bundle: organization
+label: 'Next Text'
+description: 'Warum nicht?'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

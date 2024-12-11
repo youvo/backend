@@ -4,8 +4,8 @@ namespace Drupal\mailer\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\youvo\SimpleToken;
 use Drupal\mailer\TransactionalEmailInterface;
+use Drupal\youvo\SimpleToken;
 
 /**
  * Defines the transactional email entity type.

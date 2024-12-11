@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\lifecycle\Kernel;
 
 use Drupal\node\Entity\Node;
@@ -16,11 +18,12 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraintValidator
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testValidTransitionsNoViolations() {
-    $this->container->set('current_user', $this->createUser([
+  public function testValidTransitionsNoViolations(): void {
+    $user = $this->createUser([
       'use bureaucracy_workflow transition approved_project',
       'use bureaucracy_workflow transition ready_for_planning',
-    ]));
+    ]);
+    $this->setCurrentUser($user);
 
     $node = Node::create([
       'title' => 'Foo',
@@ -45,7 +48,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testInvalidTransition() {
+  public function testInvalidTransition(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -57,7 +60,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
     $node->field_status->value = 'planning';
     $violations = $node->validate();
     $this->assertCount(1, $violations);
-    $this->assertEquals('No transition exists to move from <em class="placeholder">in_discussion</em> to <em class="placeholder">planning</em>.', $violations[0]->getMessage());
+    $this->assertEquals('No transition exists to move from in_discussion to planning.', $violations[0]->getMessage());
   }
 
   /**
@@ -65,7 +68,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testNotAllowedTransition() {
+  public function testNotAllowedTransition(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -76,7 +79,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
     $node->field_status->value = 'approved';
     $violations = $node->validate();
     $this->assertCount(1, $violations);
-    $this->assertEquals('You do not have sufficient permissions to use the <em class="placeholder">Approved Project</em> transition.', $violations[0]->getMessage());
+    $this->assertEquals('You do not have sufficient permissions to use the Approved Project transition.', $violations[0]->getMessage());
   }
 
 }

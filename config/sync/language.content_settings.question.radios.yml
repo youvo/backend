@@ -1,0 +1,20 @@
+uuid: 7faa8539-fd1b-4131-a554-b49a792104dc
+langcode: en
+status: true
+dependencies:
+  config:
+    - questionnaire.type.radios
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: 78RGpvceJVFxFtGVQiwEPfS3Qy8z2qDo7X4n4hxZDNk
+id: question.radios
+target_entity_type_id: question
+target_bundle: radios
+default_langcode: site_default
+language_alterable: false

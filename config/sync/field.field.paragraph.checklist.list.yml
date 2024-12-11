@@ -1,0 +1,21 @@
+uuid: d8ace931-b1cb-4efa-aef8-2f4b5c0d127d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.list
+    - paragraphs.type.checklist
+_core:
+  default_config_hash: 8Bw1j_g1itka3K_dslFvTUaF5dAe_kze701vPw2s3wk
+id: paragraph.checklist.list
+field_name: list
+entity_type: paragraph
+bundle: checklist
+label: List
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

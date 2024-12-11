@@ -1,0 +1,23 @@
+uuid: 3b16e476-891a-4037-b8a5-93ef80f02fec
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+_core:
+  default_config_hash: jSCS7BBJ1-d_DZKzYkQOlF9iG6WyeGYdkmjhpbpf66w
+id: project.mediate
+plugin_id: 'project:mediate'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

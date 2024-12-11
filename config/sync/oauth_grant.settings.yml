@@ -1,0 +1,5 @@
+_core:
+  default_config_hash: zGS4nLwyhyT8c3Ln8zdh7TJSlcgVfzlEQqK4spwKgyI
+auth_success_redirect: /auth/login
+auth_failure_redirect: /auth/callback
+local: 0

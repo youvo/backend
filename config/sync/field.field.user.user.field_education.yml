@@ -1,0 +1,21 @@
+uuid: f850d4f5-e024-4f30-a29e-34338a1d47d6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_education
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: KDHZ1k3A7m_rIvCsMW188vm-PXRNNz_S86igLoEFOEc
+id: user.user.field_education
+field_name: field_education
+entity_type: user
+bundle: user
+label: Education
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

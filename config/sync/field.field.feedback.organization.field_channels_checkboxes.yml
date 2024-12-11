@@ -1,0 +1,25 @@
+uuid: 7e844c57-38e7-4301-87f9-a1f18d8cfac1
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.storage.feedback.field_channels_checkboxes
+_core:
+  default_config_hash: GrxuHphS9ET0vJ1QHVh7MjeseKbdgU9HHhP75MJXlsU
+id: feedback.organization.field_channels_checkboxes
+field_name: field_channels_checkboxes
+entity_type: feedback
+bundle: organization
+label: 'Channels Checkboxes'
+description: 'Welche Medien habt Ihr genutzt, um miteinander zu kommunizieren?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

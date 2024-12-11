@@ -35,7 +35,7 @@ web.config
 # custom module, theme, etc., are not ignored unless you purposely do so.
 /vendor/
 /modules/contrib/
-/sites
+/themes/contrib/
 
 # Ignore configuration files that may contain sensitive information.
 sites/*/settings*.php
@@ -50,6 +50,7 @@ sites/sites.php
 # Ignore paths that contain user-generated content.
 sites/*/files
 sites/*/private
+/files
 
 # Ignore SimpleTest multi-site environment.
 sites/simpletest

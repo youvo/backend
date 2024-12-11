@@ -1,0 +1,21 @@
+uuid: 9017d4cb-f8f7-4a6e-ba9e-7a7346419abc
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.storage.feedback.field_next_text
+_core:
+  default_config_hash: 97xP33IOGkDm_1Q7sf3uMTLns5Fado9fAtMsWC1MEJw
+id: feedback.creative.field_next_text
+field_name: field_next_text
+entity_type: feedback
+bundle: creative
+label: 'Next Text'
+description: 'Warum nicht?'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,19 @@
+uuid: a300e80b-0527-4d58-932a-8fc5a220dcf1
+langcode: en
+status: true
+dependencies:
+  module:
+    - content_translation
+    - projects
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: nVua8rX4ZUHJbWnDasY8quD8dUcIJPaHEG8VaAkDIDk
+id: project.project
+target_entity_type_id: project
+target_bundle: project
+default_langcode: site_default
+language_alterable: false

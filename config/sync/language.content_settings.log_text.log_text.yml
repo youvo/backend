@@ -1,0 +1,19 @@
+uuid: c9125289-7d2d-4448-8022-5b24c7a2606c
+langcode: en
+status: true
+dependencies:
+  module:
+    - content_translation
+    - logbook
+third_party_settings:
+  content_translation:
+    enabled: true
+    bundle_settings:
+      untranslatable_fields_hide: '1'
+_core:
+  default_config_hash: D9NbYwHbbwg6zP2Ok4OZoPxf9rgeriJ5l59FfrtXmt4
+id: log_text.log_text
+target_entity_type_id: log_text
+target_bundle: log_text
+default_langcode: site_default
+language_alterable: false

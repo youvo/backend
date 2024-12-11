@@ -1,0 +1,18 @@
+uuid: 2bb7cec9-ab5d-4cf3-8ed4-4d6ff4281adc
+langcode: de
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: MRRF314jY8kfN9XkRkEQNTvZKzn8DqXiMb4gveSDCYI
+id: creative_register
+label: 'Creative Register'
+tokens:
+  -
+    token: '%Creative'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''

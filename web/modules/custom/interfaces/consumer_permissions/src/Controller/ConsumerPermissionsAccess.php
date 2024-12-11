@@ -20,7 +20,7 @@ class ConsumerPermissionsAccess implements ContainerInjectionInterface {
    */
   public function __construct(
     protected ConsumerStorage $consumerStorage,
-    protected Request $request
+    protected Request $request,
   ) {}
 
   /**

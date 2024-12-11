@@ -1,0 +1,20 @@
+uuid: eaee53db-990a-4fd6-bbef-5a9ba9355608
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: paXbqvqYqT-JfxQejvus3bTBwTkG2Z8sVf_aVVnWJ-M
+id: project.field_allowance
+field_name: field_allowance
+entity_type: project
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

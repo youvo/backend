@@ -1,0 +1,23 @@
+uuid: 04d6597c-4420-4a2c-b20b-6027a3c67922
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.question.answers
+    - questionnaire.type.checkboxes
+_core:
+  default_config_hash: 2DBLaJOPuC1K055KBGfN-dWTlGYyrVhmVuyns2ZUOPE
+id: question.checkboxes.answers
+field_name: answers
+entity_type: question
+bundle: checkboxes
+label: Answers
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

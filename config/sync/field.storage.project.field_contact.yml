@@ -1,0 +1,23 @@
+uuid: 38c91688-8187-429d-9ccc-3ab592835021
+langcode: en
+status: true
+dependencies:
+  module:
+    - projects
+_core:
+  default_config_hash: ejqM0nuDKZWN4CwAuFKKodT0L1YKxLp6gq5EdbYD548
+id: project.field_contact
+field_name: field_contact
+entity_type: project
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

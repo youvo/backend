@@ -4,6 +4,7 @@ namespace Drupal\oauth_grant_remote\Controller;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
@@ -12,13 +13,12 @@ use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
-use Drupal\user\Entity\User;
-use Drupal\user\UserInterface;
-use GuzzleHttp\Client;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\simple_oauth\Controller\Oauth2AuthorizeController;
 use Drupal\simple_oauth\KnownClientsRepositoryInterface;
 use Drupal\simple_oauth\Plugin\Oauth2GrantManagerInterface;
+use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Response;
 use Lcobucci\Clock\SystemClock;
@@ -123,7 +123,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     Connection $database,
     SessionManager $session_manager,
     Session $session,
-    AccountProxyInterface $account
+    AccountProxyInterface $account,
   ) {
     parent::__construct($message_factory, $grant_manager, $config_factory, $known_clients_repository, $client_repository, $logger);
     $this->httpClient = $http_client;
@@ -323,7 +323,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     if (!array_key_exists(3, $remote_account['roles'])) {
       $redirect_url = $auth_relay_server . '?r=oa';
       // Client ID and secret may be passed as Basic Auth. Copy the headers.
-      return TrustedRedirectResponse::create($redirect_url, 302, $request->headers->all());
+      return new TrustedRedirectResponse($redirect_url, 302, $request->headers->all());
     }
 
     // Compare local session Uid and relayed account Uid. If both match, we can

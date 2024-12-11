@@ -41,7 +41,7 @@ final class Profile {
   protected static function isUserType(
     AccountInterface $account,
     string $type,
-    string $class
+    string $class,
   ): bool {
     if ($account instanceof AccountProxyInterface) {
       $account = $account->getAccount();

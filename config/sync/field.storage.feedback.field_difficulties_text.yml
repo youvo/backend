@@ -1,0 +1,21 @@
+uuid: accfa379-4791-4034-944a-07a1487f09f1
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: wJ_bKQpL6TbITfqKssBaqBEWzJtXkR_cQK8ZGK4QWiI
+id: feedback.field_difficulties_text
+field_name: field_difficulties_text
+entity_type: feedback
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

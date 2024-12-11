@@ -1,0 +1,23 @@
+uuid: 7d9ec22f-7b47-412a-b4b2-bd6de9397c58
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_newsletter
+    - user_bundle.user_type.user
+_core:
+  default_config_hash: rCp0AYx0Hvwx2NO--onA6H3ORYrzSg8vT5tNk7v5Gl4
+id: user.user.field_newsletter
+field_name: field_newsletter
+entity_type: user
+bundle: user
+label: Newsletter
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean

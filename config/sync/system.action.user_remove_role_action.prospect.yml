@@ -1,0 +1,14 @@
+uuid: 94d1e7b6-ba10-4ee0-ad71-ce8792134a56
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.prospect
+  module:
+    - user
+id: user_remove_role_action.prospect
+label: 'Remove the Prospect Organization role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: prospect

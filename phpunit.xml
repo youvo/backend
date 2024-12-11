@@ -18,6 +18,7 @@
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
     <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled" />
   </php>
   <testsuites>
     <testsuite name="custom">

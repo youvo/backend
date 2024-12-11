@@ -1,0 +1,21 @@
+uuid: 3a384f2c-dd86-45fb-924e-52db1fc4a4f5
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: HZcBMotddEOypxT33CoME-NNVIZrLtD3FEt0JfqfOco
+id: feedback.field_challenge_text
+field_name: field_challenge_text
+entity_type: feedback
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

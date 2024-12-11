@@ -1,0 +1,46 @@
+uuid: dfeaa376-9946-4f0f-8dc5-6c4a2cbc1399
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.checklist.body
+    - field.field.paragraph.checklist.list
+    - paragraphs.type.checklist
+_core:
+  default_config_hash: nyoY0XlO_NnB5VcUz-2rGQIxVhGuMx9Kt-pfnp2m7LA
+id: paragraph.checklist.default
+targetEntityType: paragraph
+bundle: checklist
+mode: default
+content:
+  body:
+    type: string_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  list:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  title:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  translation:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  langcode: true

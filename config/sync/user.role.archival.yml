@@ -1,0 +1,11 @@
+uuid: d859759a-52f9-49d2-a91e-d00e401de854
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 14Jq5kKnKaDafKujXvcaAJZ4H76ItXlL0IAiutgZDM0
+id: archival
+label: 'Archival Organization'
+weight: 9
+is_admin: false
+permissions: {  }

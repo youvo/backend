@@ -1,0 +1,11 @@
+uuid: 0c15aec1-44f7-4ea2-af1e-0145593502b6
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: jruQze4wiy2CbzMPtyWp6LXviAMb9M-QxrqMg0TALr0
+id: prospect
+label: 'Prospect Organization'
+weight: 10
+is_admin: false
+permissions: {  }

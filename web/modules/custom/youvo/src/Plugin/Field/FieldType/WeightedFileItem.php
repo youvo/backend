@@ -13,7 +13,7 @@ use Drupal\file\Plugin\Field\FieldType\FileItem;
  *   id = "weighted_file",
  *   label = @Translation("Weighted File"),
  *   description = @Translation("This field stores the ID of a file as an integer value."),
- *   category = @Translation("Reference"),
+ *   category = "reference",
  *   no_ui = TRUE,
  *   default_widget = "file_generic",
  *   default_formatter = "file_default",

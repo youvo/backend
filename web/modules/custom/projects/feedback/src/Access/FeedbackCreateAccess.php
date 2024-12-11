@@ -26,7 +26,7 @@ class FeedbackCreateAccess {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access results.
    */
-  public function access(AccountInterface $account, Route $route, ProjectInterface $project = NULL) {
+  public function access(AccountInterface $account, Route $route, ?ProjectInterface $project = NULL) {
     if (!$project instanceof ProjectInterface) {
       return new AccessResultNeutral();
     }

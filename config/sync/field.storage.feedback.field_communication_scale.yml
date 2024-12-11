@@ -1,0 +1,22 @@
+uuid: 0bf4de48-7871-49f3-a438-e9ae6c48a1c4
+langcode: de
+status: true
+dependencies:
+  module:
+    - feedback
+_core:
+  default_config_hash: T7jTHyF4gESwRFOIx5Q2FFe-tYolXhxpjxd4zEga69k
+id: feedback.field_communication_scale
+field_name: field_communication_scale
+entity_type: feedback
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

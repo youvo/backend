@@ -1,0 +1,21 @@
+uuid: 009ba7e3-0e09-4d95-bfaa-f5da7491b5c2
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_reachability
+    - user_bundle.user_type.organization
+_core:
+  default_config_hash: MZGmiZFh9lAkRYcB8BPM3ZEdxVkbs9t48dL5y4UMPPs
+id: user.organization.field_reachability
+field_name: field_reachability
+entity_type: user
+bundle: organization
+label: Reachability
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

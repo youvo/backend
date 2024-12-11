@@ -3,8 +3,8 @@
 namespace Drupal\questionnaire\Entity;
 
 use Drupal\Core\Cache\Cache;
-use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\paragraphs\Entity\Paragraph;
 
 /**
  * Implements questionnaire specific methods.

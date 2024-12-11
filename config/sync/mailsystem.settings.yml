@@ -1,0 +1,6 @@
+_core:
+  default_config_hash: yvRwojY5A9XvZpvh7zWtBUrkD_9HqhLyw3gUjmEENK4
+theme: current
+defaults:
+  sender: devel_mail_logger
+  formatter: php_mail

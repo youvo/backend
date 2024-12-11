@@ -1,0 +1,26 @@
+uuid: 126c0bf3-2ff7-422b-b43b-4502d418ad12
+langcode: en
+status: true
+dependencies:
+  module:
+    - file
+    - projects
+    - youvo
+_core:
+  default_config_hash: El8qBWSFZlCxiiENvtvubqW0O66jYPhZTRY1tMmpS9I
+id: project_result.field_files
+field_name: field_files
+entity_type: project_result
+type: weighted_file
+settings:
+  target_type: file
+  display_field: false
+  display_default: false
+  uri_scheme: public
+module: youvo
+locked: false
+cardinality: 3
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

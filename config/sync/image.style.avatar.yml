@@ -1,0 +1,23 @@
+uuid: 40ab6dd2-3c44-4928-8c7b-0b9142237760
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: VHMnw1NphezXKbXpml0qOpr4TXSwz9rN-FPnSVtfKrM
+name: avatar
+label: Avatar
+effects:
+  b9ef5199-d1e8-4728-8177-8ae8c9422a90:
+    uuid: b9ef5199-d1e8-4728-8177-8ae8c9422a90
+    id: image_scale_and_crop
+    weight: -9
+    data:
+      width: 192
+      height: 192
+      anchor: center-center
+  fe656649-5f85-4f83-ab56-2f1a888d57a3:
+    uuid: fe656649-5f85-4f83-ab56-2f1a888d57a3
+    id: image_convert
+    weight: -10
+    data:
+      extension: jpg

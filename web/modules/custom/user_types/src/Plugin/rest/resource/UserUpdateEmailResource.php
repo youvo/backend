@@ -7,8 +7,8 @@ use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\ResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\rest\ResourceResponse;
 use Drupal\user\UserStorageInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -88,7 +88,7 @@ class UserUpdateEmailResource extends ResourceBase {
     AccountProxyInterface $current_user,
     Json $serialization_json,
     UserStorageInterface $user_storage,
-    EmailValidatorInterface $email_validator
+    EmailValidatorInterface $email_validator,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->currentUser = $current_user;

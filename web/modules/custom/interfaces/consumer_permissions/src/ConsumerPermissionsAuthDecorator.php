@@ -4,11 +4,11 @@ namespace Drupal\consumer_permissions;
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\consumers\ConsumerStorage;
-use Drupal\Core\Http\RequestStack;
-use Drupal\user\UserAuthInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\user\UserAuthInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Validates user permissions to authenticate with certain consumers.
@@ -55,7 +55,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Http\RequestStack $request_stack
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack service.
    * @param \Drupal\user\UserAuthInterface $user_auth
    *   The user auth service.
@@ -66,7 +66,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     RequestStack $request_stack,
-    UserAuthInterface $user_auth
+    UserAuthInterface $user_auth,
   ) {
     /** @var \Drupal\consumers\ConsumerStorage $consumer_storage */
     $consumer_storage = $entity_type_manager->getStorage('consumer');

@@ -1,0 +1,14 @@
+uuid: f7dcd28c-449b-4b87-bac0-4b82338c7cde
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.configurator
+  module:
+    - user
+id: user_add_role_action.configurator
+label: 'Add the Configurator role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: configurator

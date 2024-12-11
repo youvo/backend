@@ -5,10 +5,10 @@ namespace Drupal\creatives\Form;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Flood\FloodInterface;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
@@ -54,7 +54,7 @@ final class CreativeRegisterForm extends FormBase {
     protected ModuleHandlerInterface $moduleHandler,
     protected SessionInterface $session,
     protected TimeInterface $time,
-    protected UserStorageInterface $userStorage
+    protected UserStorageInterface $userStorage,
   ) {}
 
   /**
@@ -95,7 +95,7 @@ final class CreativeRegisterForm extends FormBase {
   public function buildForm(
     array $form,
     FormStateInterface $form_state,
-    AccountInterface $user = NULL
+    ?AccountInterface $user = NULL,
   ) {
 
     // Verify that the creative is active.
