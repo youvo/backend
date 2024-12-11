@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\lifecycle\Kernel;
 
 use Drupal\node\Entity\Node;
@@ -16,11 +18,12 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraintValidator
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testValidTransitionsNoViolations() {
-    $this->container->set('current_user', $this->createUser([
+  public function testValidTransitionsNoViolations(): void {
+    $user = $this->createUser([
       'use bureaucracy_workflow transition approved_project',
       'use bureaucracy_workflow transition ready_for_planning',
-    ]));
+    ]);
+    $this->setCurrentUser($user);
 
     $node = Node::create([
       'title' => 'Foo',
@@ -45,7 +48,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testInvalidTransition() {
+  public function testInvalidTransition(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -65,7 +68,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testNotAllowedTransition() {
+  public function testNotAllowedTransition(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',

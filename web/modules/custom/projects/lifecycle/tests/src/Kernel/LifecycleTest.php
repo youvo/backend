@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\lifecycle\Kernel;
 
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
@@ -19,7 +21,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function testOptionsProvider() {
+  public function testOptionsProvider(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -62,7 +64,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function testOptionsProviderFilteredByUser() {
+  public function testOptionsProviderFilteredByUser(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -90,7 +92,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @covers \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testFieldType() {
+  public function testFieldType(): void {
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -114,7 +116,7 @@ class LifecycleTest extends WorkflowsTestBase {
   /**
    * @covers \Drupal\lifecycle\Plugin\WorkflowType\Lifecycle
    */
-  public function testWorkflowType() {
+  public function testWorkflowType(): void {
     // Test the initial state based on the config, despite the state weights.
     $type = Workflow::load('bureaucracy_workflow')->getTypePlugin();
     $this->assertEquals('in_discussion', $type->getInitialState()->id());
