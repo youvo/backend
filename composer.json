@@ -39,7 +39,8 @@
         "drupal/subrequests": "^3.0",
         "drupal/upgrade_status": "^4.0",
         "drupal/user_bundle": "^1.2",
-        "drush/drush": "^12"
+        "drush/drush": "^12",
+        "joachim-n/composer-manifest": "^1.1"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -55,6 +56,7 @@
             "drupal/core-composer-scaffold": true,
             "drupal/core-project-message": true,
             "drupal/core-vendor-hardening": true,
+            "joachim-n/composer-manifest": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
             "tbachert/spi": true
