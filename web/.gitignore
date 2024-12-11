@@ -50,6 +50,7 @@ sites/sites.php
 # Ignore paths that contain user-generated content.
 sites/*/files
 sites/*/private
+/files
 
 # Ignore SimpleTest multi-site environment.
 sites/simpletest

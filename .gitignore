@@ -1,5 +1,8 @@
 /.idea/
 .DS_Store
+.phpunit.result.cache
+.editorconfig
+.gitattributes
 
 /.ddev/.env
 
@@ -11,5 +14,8 @@
 /certificates/private.key
 /certificates/public.key
 /certificates/youvo7.key
+
+/private
+/tmp
 
 /vendor/
