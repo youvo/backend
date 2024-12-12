@@ -5,7 +5,9 @@ namespace Drupal\consumer_permissions;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\consumers\ConsumerStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\user\UserAuthenticationInterface;
 use Drupal\user\UserAuthInterface;
+use Drupal\user\UserInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -20,7 +22,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * website (because the user has an account), but will not be able to authorize
  * with the client later.
  */
-class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
+class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthenticationInterface {
 
   /**
    * The consumer storage.
@@ -39,9 +41,9 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
   /**
    * The user auth service.
    *
-   * @var \Drupal\user\UserAuthInterface
+   * @var \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface
    */
-  protected UserAuthInterface $userAuth;
+  protected UserAuthInterface|UserAuthenticationInterface $userAuth;
 
   /**
    * The user storage.
@@ -57,7 +59,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
    *   The entity type manager service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack service.
-   * @param \Drupal\user\UserAuthInterface $user_auth
+   * @param \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface $user_auth
    *   The user auth service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -66,7 +68,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     RequestStack $request_stack,
-    UserAuthInterface $user_auth,
+    UserAuthInterface|UserAuthenticationInterface $user_auth,
   ) {
     /** @var \Drupal\consumers\ConsumerStorage $consumer_storage */
     $consumer_storage = $entity_type_manager->getStorage('consumer');
@@ -125,6 +127,21 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface {
     }
 
     return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lookupAccount($identifier): UserInterface|false {
+    return $this->userAuth->lookupAccount($identifier);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function authenticateAccount(UserInterface $account, string $password): bool {
+    // @todo Clean up implementation when removing the deprecated interface.
+    return $this->authenticate($account->getAccountName(), $password);
   }
 
 }
