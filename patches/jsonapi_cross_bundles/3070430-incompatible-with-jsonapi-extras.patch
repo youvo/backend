@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/jsonapi_cross_bundles/jsonapi_cross_bundles.services.yml b/modules/contrib/jsonapi_cross_bundles/jsonapi_cross_bundles.services.yml
+diff --git a/jsonapi_cross_bundles.services.yml b/jsonapi_cross_bundles.services.yml
 index db73f9f4709a8ee0ceffc59fc22b186fb517c93f..231e10b5707208b8b5254ec24cbdb4d61fe74d88 100644
---- a/modules/contrib/jsonapi_cross_bundles/jsonapi_cross_bundles.services.yml
-+++ b/modules/contrib/jsonapi_cross_bundles/jsonapi_cross_bundles.services.yml
+--- a/jsonapi_cross_bundles.services.yml
++++ b/jsonapi_cross_bundles.services.yml
 @@ -2,6 +2,7 @@ services:
    jsonapi_cross_bundles.cross_bundle_resource_type_repository:
      class: Drupal\jsonapi_cross_bundles\ResourceType\CrossBundleResourceTypeRepository
@@ -10,10 +10,10 @@ index db73f9f4709a8ee0ceffc59fc22b186fb517c93f..231e10b5707208b8b5254ec24cbdb4d6
      decorates: jsonapi.resource_type.repository
      arguments:
        - '@jsonapi_cross_bundles.cross_bundle_resource_type_repository.inner'
-diff --git a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+diff --git a/src/ResourceType/CrossBundleResourceTypeRepository.php b/src/ResourceType/CrossBundleResourceTypeRepository.php
 index db729466442062adeba7e35f890b6fe63fb22c42..010b6ffa1e4b6d6b841593ecaa119a8a76f44d62 100644
---- a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
-+++ b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+--- a/src/ResourceType/CrossBundleResourceTypeRepository.php
++++ b/src/ResourceType/CrossBundleResourceTypeRepository.php
 @@ -102,7 +102,7 @@ class CrossBundleResourceTypeRepository implements ResourceTypeRepositoryInterfa
          // If none of the bundle-specific resource types is locatable, the
          // cross-bundle resource type should not be locatable.

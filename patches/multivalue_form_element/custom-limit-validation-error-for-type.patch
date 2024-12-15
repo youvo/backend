@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/multivalue_form_element/src/Element/MultiValue.php b/modules/contrib/multivalue_form_element/src/Element/MultiValue.php
+diff --git a/src/Element/MultiValue.php b/src/Element/MultiValue.php
 index 70fb74a..7d4246b 100644
---- a/modules/contrib/multivalue_form_element/src/Element/MultiValue.php
-+++ b/modules/contrib/multivalue_form_element/src/Element/MultiValue.php
+--- a/src/Element/MultiValue.php
++++ b/src/Element/MultiValue.php
 @@ -228,7 +228,7 @@ public static function processMultiValue(array &$element, FormStateInterface $fo
          '#name' => strtr($id_prefix, '-', '_') . '_add_more',
          '#value' => $element['#add_more_label'],

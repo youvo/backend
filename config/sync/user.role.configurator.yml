@@ -6,8 +6,10 @@ dependencies:
     - taxonomy.vocabulary.skills
   module:
     - content_translation
+    - contextual
     - logbook
     - mailer
+    - navigation
     - system
     - taxonomy
 _core:
@@ -18,6 +20,8 @@ weight: 1
 is_admin: false
 permissions:
   - 'access content'
+  - 'access contextual links'
+  - 'access navigation'
   - 'access taxonomy overview'
   - 'create content translations'
   - 'edit log pattern'

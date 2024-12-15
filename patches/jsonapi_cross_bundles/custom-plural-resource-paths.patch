@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundlesResourceType.php b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundlesResourceType.php
+diff --git a/src/ResourceType/CrossBundlesResourceType.php b/src/ResourceType/CrossBundlesResourceType.php
 index de45180..83cd8a9 100644
---- a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundlesResourceType.php
-+++ b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundlesResourceType.php
+--- a/src/ResourceType/CrossBundlesResourceType.php
++++ b/src/ResourceType/CrossBundlesResourceType.php
 @@ -54,7 +54,7 @@ public function getBundleResourceTypes() {
     * {@inheritdoc}
     */

@@ -15,10 +15,12 @@ dependencies:
     - rest.resource.project.submit
     - rest.resource.question.submission
   module:
+    - contextual
     - courses
     - lifecycle
     - logbook
     - mailer
+    - navigation
     - projects
     - rest
     - system
@@ -31,6 +33,8 @@ weight: 8
 is_admin: false
 permissions:
   - 'access content'
+  - 'access contextual links'
+  - 'access navigation'
   - 'bypass project_lifecycle transition access'
   - 'create project'
   - 'delete any project'

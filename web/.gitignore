@@ -17,6 +17,7 @@ core
 .gitattributes
 .ht.router.php
 .htaccess
+.htaccess.orig
 autoload.php
 composer.json
 composer.lock
@@ -51,6 +52,8 @@ sites/sites.php
 sites/*/files
 sites/*/private
 /files
+/assets/css
+/assets/js
 
 # Ignore SimpleTest multi-site environment.
 sites/simpletest

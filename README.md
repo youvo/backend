@@ -61,7 +61,7 @@ Navigate to https://youvo.ddev.site:8443/user/login and login with `admin@youvo.
 Adjust the config path in `web/sites/default/settings.php` such that `$settings['config_sync_directory'] = '../config/sync'`;.
 
 Set `$settings['file_public_path'] = 'files';`.
-Set `$settings['file_assets_path'] = 'files';`.
+Set `$settings['file_assets_path'] = 'assets';`.
 Set `$settings['file_private_path'] = '../private';`.
 
 Note that some of the environment variables files will be merged in the future. We entertain some separation at the moment for development purposes.
