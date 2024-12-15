@@ -71,7 +71,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
    *
    * We set the mandatory course value here!
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
@@ -84,15 +84,15 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
       /** @var \Drupal\courses\Entity\Course $parent */
       $parent = $this->getParentEntity();
       $children = $parent->getLectures();
       if (!empty($children)) {
-        $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', intval($max_weight) + 1);
+        $max_weight = max(array_map(static fn($c) => $c->get('weight')->value, $children));
+        $this->set('weight', (int) $max_weight + 1);
       }
     }
   }
@@ -100,7 +100,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Delete all referenced paragraphs.
       $paragraphs = $this->getParagraphs();
@@ -116,14 +116,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   /**
    * Gets the title.
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return $this->get('title')->value;
   }
 
   /**
    * Sets the title.
    */
-  public function setTitle(string $title) {
+  public function setTitle(string $title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -131,14 +131,14 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
   /**
    * Gets the created time.
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * Sets the created time.
    */
-  public function setCreatedTime(int $timestamp) {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -149,7 +149,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
    * @return \Drupal\paragraphs\Entity\Paragraph[]
    *   The referenced paragraphs.
    */
-  public function getParagraphs() {
+  public function getParagraphs(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $paragraphs_field */
     $paragraphs_field = $this->get('paragraphs');
     /** @var \Drupal\paragraphs\Entity\Paragraph[] $paragraphs */
@@ -162,7 +162,7 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

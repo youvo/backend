@@ -10,7 +10,7 @@
 /**
  * Implements hook_install().
  */
-function lectures_install() {
+function lectures_install(): void {
   $entity_type = \Drupal::service('entity_type.manager')->getDefinition('course');
   \Drupal::service('entity.definition_update_manager')->updateEntityType($entity_type);
 }
@@ -18,7 +18,7 @@ function lectures_install() {
 /**
  * Implements hook_uninstall().
  */
-function lectures_uninstall() {
+function lectures_uninstall(): void {
   $entity_type = \Drupal::service('entity_type.manager')->getDefinition('course');
   \Drupal::service('entity.definition_update_manager')->updateEntityType($entity_type);
 }
