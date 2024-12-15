@@ -3,6 +3,7 @@
 namespace Drupal\questionnaire\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\multivalue_form_element\Element\MultiValue;
@@ -23,7 +24,7 @@ class QuestionForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     // Build parent form.
     $form = parent::form($form, $form_state);
@@ -35,10 +36,12 @@ class QuestionForm extends ContentEntityForm {
     $question = $this->getEntity();
     $disable_correct = FALSE;
 
-    if (!$question->isNew() &&
-      $question->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-      static::addTranslationButtons($form, $question);
-      $disable_correct = $question->language()->getId() != $question->getUntranslated()->language()->getId();
+    if (
+      !$question->isNew() &&
+      $question->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')
+    ) {
+      $this->addTranslationButtons($form, $question);
+      $disable_correct = $question->language()->getId() !== $question->getUntranslated()->language()->getId();
     }
 
     // Type container for validation trait.
@@ -48,7 +51,7 @@ class QuestionForm extends ContentEntityForm {
     ];
 
     // Add answers multi value form element.
-    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'radios') {
+    if ($question->bundle() === 'checkboxes' || $question->bundle() === 'radios') {
 
       // Load default values for answers.
       $default_answers = [];
@@ -91,7 +94,7 @@ class QuestionForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     // Describe relevant entities.
     /** @var \Drupal\questionnaire\Entity\Question $question */
@@ -100,8 +103,7 @@ class QuestionForm extends ContentEntityForm {
     $paragraph = $question->getParentEntity();
 
     // Add values from multi_answers form element.
-    if ($form_state->getValue('type') == 'checkboxes' ||
-      $form_state->getValue('type') == 'radios') {
+    if ($form_state->getValue('type') === 'checkboxes' || $form_state->getValue('type') === 'radios') {
       $this->populateMultiAnswerToQuestion($question, $form_state);
     }
 
@@ -129,7 +131,7 @@ class QuestionForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): ContentEntityInterface {
     $entity = parent::validateForm($form, $form_state);
     $this->validateQuestion($form, $form_state);
     return $entity;
@@ -138,24 +140,23 @@ class QuestionForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
 
-    // Get entities actions.
     $actions = parent::actions($form, $form_state);
 
-    // Add an abort button.
     /** @var \Drupal\child_entities\ChildEntityInterface $question */
     $question = $this->getEntity();
     /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $paragraph = $question->getParentEntity();
     /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $lecture = $paragraph->getParentEntity();
+
+    // Add an abort button.
     $url = Url::fromRoute('entity.paragraph.edit_form', [
       'lecture' => $lecture->id(),
       'course' => $lecture->getParentEntity()->id(),
       'paragraph' => $paragraph->id(),
     ]);
-    $actions['submit']['#value'] = $this->t('Save @language', ['@language' => $question->language()->getName()]);
     $actions['abort'] = [
       '#type' => 'link',
       '#title' => $this->t('Abort'),
@@ -165,6 +166,11 @@ class QuestionForm extends ContentEntityForm {
       ],
       '#weight' => 10,
     ];
+
+    $actions['submit']['#value'] = $this->t('Save @language', [
+      '@language' => $question->language()->getName(),
+    ]);
+
     return $actions;
   }
 

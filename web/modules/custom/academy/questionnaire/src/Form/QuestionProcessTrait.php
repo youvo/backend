@@ -23,7 +23,7 @@ trait QuestionProcessTrait {
   /**
    * Validates form fields for creating a question.
    */
-  public function validateQuestion(array &$form, FormStateInterface $form_state) {
+  public function validateQuestion(array &$form, FormStateInterface $form_state): void {
 
     // Get current question type.
     $question_type = $form_state->getValue('type');
@@ -75,9 +75,9 @@ trait QuestionProcessTrait {
   /**
    * Adds answers to question from form_state.
    */
-  public function populateMultiAnswerToQuestion(Question &$question, FormStateInterface $form_state) {
+  public function populateMultiAnswerToQuestion(Question $question, FormStateInterface $form_state): void {
     $answers = $form_state->getValue('multi_answers');
-    $correct_set = count(array_filter($answers, fn($a) => $a['correct']));
+    $correct_set = count(array_filter($answers, static fn($a) => $a['correct']));
     $question->set('options', []);
     $question->set('answers', []);
     foreach ($answers as $answer) {

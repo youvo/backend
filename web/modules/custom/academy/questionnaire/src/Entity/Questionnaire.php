@@ -17,7 +17,7 @@ class Questionnaire extends Paragraph {
    * @return \Drupal\questionnaire\Entity\Question[]
    *   The referenced questions.
    */
-  public function getQuestions() {
+  public function getQuestions(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $questions_field */
     $questions_field = $this->get('questions');
     /** @var \Drupal\questionnaire\Entity\Question[] $questions */
@@ -31,6 +31,7 @@ class Questionnaire extends Paragraph {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
+
     parent::postSave($storage, $update);
 
     // If questionnaire is updated all evaluations in this course need updating.
@@ -41,13 +42,15 @@ class Questionnaire extends Paragraph {
     $evaluations = [];
     foreach ($lectures as $lecture) {
       $paragraphs = $lecture->getParagraphs();
-      $evaluations = array_merge($evaluations,
-        array_filter($paragraphs, fn($p) => $p->bundle() == 'evaluation'));
+      $evaluations[] = array_filter($paragraphs, static fn($p) => $p->bundle() === 'evaluation');
     }
+    $evaluations = array_filter(array_merge(...$evaluations));
+
     $tags = [];
     foreach ($evaluations as $evaluation) {
       $tags[] = 'paragraph:' . $evaluation->id();
     }
+
     Cache::invalidateTags($tags);
   }
 

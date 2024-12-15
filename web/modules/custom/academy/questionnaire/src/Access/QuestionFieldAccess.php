@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\questionnaire;
+namespace Drupal\questionnaire\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;

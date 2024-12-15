@@ -4,14 +4,13 @@ namespace Drupal\questionnaire\Plugin\Field;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Field\FieldItemList;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\questionnaire\SubmissionManagerInjectionTrait;
 
 /**
  * SubmissionFieldItemList class to generate a computed field.
  */
-class SubmissionFieldItemList extends FieldItemList implements FieldItemListInterface {
+class SubmissionFieldItemList extends FieldItemList {
 
   use ComputedItemListTrait;
   use SubmissionManagerInjectionTrait;
@@ -21,7 +20,7 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     // Populate list if it was not calculated yet.
     if (empty($this->list)) {
@@ -32,12 +31,12 @@ class SubmissionFieldItemList extends FieldItemList implements FieldItemListInte
       $submission = $this->submissionManager()->getSubmission($question);
 
       // If submission is found, calculate list.
-      if (!empty($submission)) {
+      if ($submission !== NULL) {
 
         $input = Html::escape($submission->get('value')->value);
 
         // Explode input for checkboxes and radios.
-        if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
+        if ($question->bundle() === 'checkboxes' || $question->bundle() === 'task') {
           $values = explode(',', $input);
           foreach ($values as $value) {
             /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */

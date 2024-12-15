@@ -15,7 +15,6 @@ use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\questionnaire\SubmissionManager;
-use Drupal\user\EntityOwnerInterface;
 use Psr\Log\LoggerInterface;
 
 /**

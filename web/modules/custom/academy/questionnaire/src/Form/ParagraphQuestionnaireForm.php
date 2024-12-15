@@ -2,14 +2,11 @@
 
 namespace Drupal\questionnaire\Form;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\MessageCommand;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
@@ -31,43 +28,16 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
 
   /**
    * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected LanguageManagerInterface $languageManager;
-
-  /**
-   * Constructs a ContentEntityForm object.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager service.
-   */
-  public function __construct(
-    EntityRepositoryInterface $entity_repository,
-    EntityTypeBundleInfoInterface $entity_type_bundle_info,
-    TimeInterface $time,
-    LanguageManagerInterface $language_manager,
-  ) {
-    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-    $this->languageManager = $language_manager;
-  }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time'),
-      $container->get('language_manager')
-    );
+    $instance = parent::create($container);
+    $instance->languageManager = $container->get('language_manager');
+    return $instance;
   }
 
   /**
@@ -87,7 +57,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Adds form elements for questionnaire.
    */
-  protected function attachQuestionnaireForm(&$form, FormStateInterface $form_state) {
+  protected function attachQuestionnaireForm(array &$form, FormStateInterface $form_state): void {
 
     // Delete all queued messages.
     $this->messenger()->deleteAll();
@@ -138,8 +108,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      $this->logger('academy')
-        ->error('An error occurred while loading questions. %type: @message in %function (line %line of %file).', $variables);
+      $this->logger('academy')->error('An error occurred while loading questions. %type: @message in %function (line %line of %file).', $variables);
     }
 
     $form['questions']['question_entities'] = [
@@ -203,14 +172,17 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     }
 
     // We use hidden elements here, because multi-value form element requires
-    // the $form element to be build in order to generate more fields.
+    // the $form element to be built in order to generate more fields.
     $answers_hidden = FALSE;
     $hidden = ['class' => ['hidden']];
-    if ($form_state->hasValue('type') &&
-      ($form_state->getValue('type') == 'textarea' ||
-      $form_state->getValue('type') == 'textfield') ||
-      $form_state->getValue('type') == 'task') {
-      $answers_hidden = TRUE;
+    if ($form_state->hasValue('type')) {
+      if (
+        $form_state->getValue('type') === 'textarea' ||
+        $form_state->getValue('type') === 'textfield' ||
+        $form_state->getValue('type') === 'task'
+      ) {
+        $answers_hidden = TRUE;
+      }
     }
 
     // Provide containers to transport id and type between Ajax responses.
@@ -378,13 +350,15 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Adds a question form to the questionnaire.
    */
-  public function showQuestionFieldset(array &$form, FormStateInterface $form_state) {
+  public function showQuestionFieldset(array &$form, FormStateInterface $form_state): void {
     $current_input = $form_state->getUserInput();
-    unset($current_input['body']);
-    unset($current_input['help']);
-    unset($current_input['explanation']);
-    unset($current_input['multi_answers']);
-    unset($current_input['required']);
+    unset(
+      $current_input['body'],
+      $current_input['help'],
+      $current_input['explanation'],
+      $current_input['multi_answers'],
+      $current_input['required'],
+    );
     $form_state->setUserInput($current_input);
     $form_state->setValue('type', $form_state->getTriggeringElement()['#attributes']['data-type']);
     $form_state->setRebuild();
@@ -393,26 +367,27 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Rebuilds the form or delivers form errors from validation.
    */
-  public function rebuildAjax(array $form, FormStateInterface $form_state) {
+  public function rebuildAjax(array $form, FormStateInterface $form_state): AjaxResponse|array {
+
     if (!$form_state->hasAnyErrors()) {
       return $form['questions'];
     }
-    else {
-      $response = new AjaxResponse();
-      $errors = $form_state->getErrors();
-      foreach ($errors as $error) {
-        $response->addCommand(new MessageCommand($error->render(),
-            '#error-wrapper',
-            ['type' => 'error']));
-      }
-      return $response;
+
+    $response = new AjaxResponse();
+    $errors = $form_state->getErrors();
+    foreach ($errors as $error) {
+      $response->addCommand(new MessageCommand($error->render(),
+          '#error-wrapper',
+          ['type' => 'error']));
     }
+
+    return $response;
   }
 
   /**
    * Adds a question form to the questionnaire.
    */
-  public function submitAbortQuestion(array &$form, FormStateInterface $form_state) {
+  public function submitAbortQuestion(array &$form, FormStateInterface $form_state): void {
     $form_state->unsetValue('type');
     $form_state->setRebuild();
   }
@@ -422,7 +397,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitCreateQuestion(array &$form, FormStateInterface $form_state) {
+  public function submitCreateQuestion(array &$form, FormStateInterface $form_state): void {
 
     // The paragraph might be new. We save here to ensure that an ID is present.
     $this->entity->set('title', $form_state->getValue('title'));
@@ -439,8 +414,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
     ]);
 
     // Add values from multi_answers form element.
-    if ($form_state->getValue('type') == 'checkboxes' ||
-      $form_state->getValue('type') == 'radios') {
+    if ($form_state->getValue('type') === 'checkboxes' || $form_state->getValue('type') === 'radios') {
       $this->populateMultiAnswerToQuestion($new_question, $form_state);
     }
 
@@ -456,7 +430,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Populates hidden fields for deletion.
    */
-  public function prepareDeleteQuestion(array &$form, FormStateInterface $form_state) {
+  public function prepareDeleteQuestion(array &$form, FormStateInterface $form_state): AjaxResponse {
 
     // Get question id from data attribute.
     $question_id = $form_state->getTriggeringElement()['#attributes']['data-id'];
@@ -477,7 +451,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitDeleteQuestion(array &$form, FormStateInterface $form_state) {
+  public function submitDeleteQuestion(array &$form, FormStateInterface $form_state): void {
 
     // Get the requested question.
     $question_id = $form_state->getValue('current_id');
@@ -486,9 +460,9 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
 
     // If the question is not new, we need to delete the question and rebuild
     // the reference in paragraph entity.
-    if (!$question->isNew()) {
-      $questions = array_map(fn($q) => ['target_id' => $q], array_keys($questions));
-      $key = array_search($question->id(), array_column($questions, 'target_id'));
+    if ($question instanceof Question && !$question->isNew()) {
+      $questions = array_map(static fn($q) => ['target_id' => $q], array_keys($questions));
+      $key = array_search($question->id(), array_column($questions, 'target_id'), TRUE);
       $question->delete();
       unset($questions[$key]);
       $this->entity->set('title', $form_state->getValue('title'));
@@ -611,20 +585,21 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   }
 
   /**
-   * Searches for the question in an array of question objects.
+   * Searches for the question in an array of questions.
    *
-   * @param array $questions
-   *   Array of Question objects.
+   * @param \Drupal\questionnaire\Entity\Question[] $questions
+   *   An array of questions.
    * @param int $question_id
-   *   Requested question id.
+   *   The requested question ID.
    *
-   * @return \Drupal\questionnaire\Entity\Question
-   *   The requested question.
+   * @return \Drupal\questionnaire\Entity\Question|null
+   *   The requested question or NULL if not found.
    */
-  protected function getRequestedQuestion(array $questions, int $question_id) {
-    $question = array_filter($questions, function ($q) use ($question_id) {
-      return $q->id() == $question_id;
-    });
+  protected function getRequestedQuestion(array $questions, int $question_id): ?Question {
+    if (empty($questions)) {
+      return NULL;
+    }
+    $question = array_filter($questions, static fn($q) => $q->id() == $question_id);
     return reset($question);
   }
 

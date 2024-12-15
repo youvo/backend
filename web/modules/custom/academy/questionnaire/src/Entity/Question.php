@@ -5,11 +5,13 @@ namespace Drupal\questionnaire\Entity;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\user\UserInterface;
+use Drupal\user\EntityOwnerInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the question entity class.
@@ -57,10 +59,11 @@ use Drupal\user\UserInterface;
  *   field_ui_base_route = "entity.question_type.edit_form"
  * )
  */
-class Question extends ContentEntityBase implements ChildEntityInterface {
+class Question extends ContentEntityBase implements ChildEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   use ChildEntityTrait;
   use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -68,7 +71,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
    * When a new question entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
@@ -81,15 +84,15 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
       /** @var \Drupal\questionnaire\Entity\Questionnaire $parent */
       $parent = $this->getParentEntity();
       $children = $parent->getQuestions();
       if (!empty($children)) {
-        $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', intval($max_weight) + 1);
+        $max_weight = max(array_map(static fn($c) => $c->get('weight')->value, $children));
+        $this->set('weight', (int) $max_weight + 1);
       }
     }
   }
@@ -97,7 +100,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Remove all submissions made for this question.
       // @todo Maybe has to be moved to cron bulk delete in the future.
@@ -116,53 +119,23 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
   /**
    * Get created time.
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * Set created time.
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime($timestamp): static {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * Get owner.
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * Get owner ID.
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * Set ownder ID.
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * Set owner.
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
     return $this;
   }
 
   /**
    * Is required?
    */
-  public function isRequired() {
-    return $this->get('required')->value;
+  public function isRequired(): bool {
+    return (bool) $this->get('required')->value;
   }
 
   /**
@@ -170,7 +143,7 @@ class Question extends ContentEntityBase implements ChildEntityInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
