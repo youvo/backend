@@ -73,7 +73,7 @@ class ProjectForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $multi_participants = $form_state->getValues()['multi_participants'];
     foreach ($multi_participants as $multi_participant) {
       if (!empty($multi_participant['participant'])) {

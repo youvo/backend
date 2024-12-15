@@ -144,7 +144,7 @@ class ProjectLifecycle {
   /**
    * Abstraction of forward transition flow check.
    */
-  protected function hasTransition($transition): bool {
+  protected function hasTransition(string $transition): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->entityTypeManager->getStorage('workflow')->load(self::WORKFLOW_ID);
     return $workflow->getTypePlugin()->hasTransition($transition);
