@@ -39,7 +39,6 @@ abstract class ProjectActionResourceBase extends ResourceBase {
     $instance->currentUser = $container->get('current_user');
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->eventDispatcher = $container->get('event_dispatcher');
-    $instance->logger = $container->get('logger.channel.projects');
     return $instance;
   }
 

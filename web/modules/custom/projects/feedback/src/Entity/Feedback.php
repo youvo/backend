@@ -62,7 +62,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): FeedbackInterface {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -70,7 +70,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function complete(): FeedbackInterface {
+  public function complete(): static {
     $this->set('completed', \Drupal::time()->getCurrentTime());
     return $this;
   }
@@ -94,7 +94,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // This is the first time the feedback is completed.
@@ -106,8 +106,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
 
       // Just to be safe we check if there is already a comment - that should
       // not be possible.
-      if (empty(array_filter($project_result->getComments(),
-        fn($c) => $c->getOwnerId() == $this->getOwnerId()))) {
+      if (empty(array_filter($project_result->getComments(), fn($c) => $c->getOwnerId() == $this->getOwnerId()))) {
         $comment_object = ProjectComment::create([
           'value' => $this->get('project_comment')->value,
           'project_result' => $project_result->id(),
@@ -129,7 +128,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
    * Determines whether the final step was reached.
    */
   public function isFinalStep(): bool {
-    $final_step = $this->bundle() == 'organization' ? 5 : 4;
+    $final_step = $this->bundle() === 'organization' ? 5 : 4;
     return $this->get('step')->value >= $final_step;
   }
 
@@ -138,7 +137,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::ownerBaseFieldDefinitions($entity_type);

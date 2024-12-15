@@ -22,22 +22,13 @@ interface FeedbackInterface extends ContentEntityInterface, EntityOwnerInterface
 
   /**
    * Sets the feedback creation timestamp.
-   *
-   * @param int $timestamp
-   *   The feedback creation timestamp.
-   *
-   * @return \Drupal\feedback\FeedbackInterface
-   *   The called feedback entity.
    */
-  public function setCreatedTime(int $timestamp): FeedbackInterface;
+  public function setCreatedTime(int $timestamp): static;
 
   /**
    * Sets the completed timestamp for the feedback entity.
-   *
-   * @return \Drupal\feedback\FeedbackInterface
-   *   The called feedback entity.
    */
-  public function complete(): FeedbackInterface;
+  public function complete(): static;
 
   /**
    * Checks whether the feedback is completed.

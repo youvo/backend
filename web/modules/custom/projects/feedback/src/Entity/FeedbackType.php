@@ -46,16 +46,12 @@ class FeedbackType extends ConfigEntityBundleBase {
 
   /**
    * The machine name of this feedback type.
-   *
-   * @var string
    */
-  protected $id;
+  protected string $id;
 
   /**
    * The human-readable name of the feedback type.
-   *
-   * @var string
    */
-  protected $label;
+  protected string $label;
 
 }
