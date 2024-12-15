@@ -2,7 +2,6 @@
 
 namespace Drupal\blocker_mode\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\State\StateInterface;
@@ -17,76 +16,44 @@ class BlockerModeSettingsForm extends ConfigFormBase {
 
   /**
    * The state keyvalue collection.
-   *
-   * @var \Drupal\Core\State\StateInterface
    */
-  protected $state;
-
-  /**
-   * Constructs a new BlockerModeSettingsForm.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, StateInterface $state) {
-    parent::__construct($config_factory);
-    $this->state = $state;
-  }
+  protected StateInterface $state;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('state')
-    );
+    $instance = parent::create($container);
+    $instance->state = $container->get('state');
+    return $instance;
   }
 
   /**
-   * Returns a unique string identifying the form.
-   *
-   * @return string
-   *   The unique string identifying the form.
+   * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'blocker_mode_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['blocker_mode.settings'];
   }
 
   /**
-   * Form submission handler.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
+   * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->state->set('system.blocker_mode', $form_state->getValue('blocker_mode'));
     parent::submitForm($form, $form_state);
   }
 
   /**
-   * Defines the settings form for Access Token entities.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return array
-   *   Form definition array.
+   * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
 
     $form['blocker_mode'] = [
       '#type' => 'checkbox',

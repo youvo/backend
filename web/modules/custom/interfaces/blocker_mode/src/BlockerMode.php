@@ -15,16 +15,13 @@ class BlockerMode implements BlockerModeInterface {
 
   /**
    * Constructs a new blocker mode service.
-   *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state.
    */
   public function __construct(protected StateInterface $state) {}
 
   /**
    * {@inheritdoc}
    */
-  public function applies(Request $request) {
+  public function applies(Request $request): bool {
 
     // Get configuration state.
     if (!$this->state->get('system.blocker_mode')) {
@@ -38,10 +35,12 @@ class BlockerMode implements BlockerModeInterface {
     // allowed through the client.
     if ($request->headers->has('user-agent')) {
       $user_agent = $request->headers->get('user-agent');
-      if ($user_agent == 'youvo-frontend' ||
-        $user_agent == 'youvo-ip' ||
-        $user_agent == 'youvo-subrequests' ||
-        str_starts_with($user_agent, 'Postman')) {
+      if (
+        $user_agent === 'youvo-frontend' ||
+        $user_agent === 'youvo-ip' ||
+        $user_agent === 'youvo-subrequests' ||
+        str_starts_with($user_agent, 'Postman')
+      ) {
         return FALSE;
       }
     }
@@ -56,7 +55,7 @@ class BlockerMode implements BlockerModeInterface {
       $allowed_routes[] = 'simple_oauth.userinfo';
       $allowed_routes[] = 'user.login';
       $allowed_routes[] = 'user.logout';
-      if (in_array($route_name, $allowed_routes)) {
+      if (in_array($route_name, $allowed_routes, TRUE)) {
         return FALSE;
       }
     }
@@ -67,10 +66,10 @@ class BlockerMode implements BlockerModeInterface {
   /**
    * {@inheritdoc}
    */
-  public function exempt(RouteMatchInterface $route_match, AccountInterface $account) {
+  public function exempt(RouteMatchInterface $route_match, AccountInterface $account): bool {
 
     // Administrators are welcome.
-    if (in_array('administrator', $account->getRoles())) {
+    if (in_array('administrator', $account->getRoles(), TRUE)) {
       return TRUE;
     }
 

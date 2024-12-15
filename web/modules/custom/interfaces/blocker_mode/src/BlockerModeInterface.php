@@ -13,26 +13,12 @@ interface BlockerModeInterface {
 
   /**
    * Returns whether the site is in blocker mode.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return bool
-   *   TRUE if the site is in blocker mode.
    */
-  public function applies(Request $request);
+  public function applies(Request $request): bool;
 
   /**
    * Determines whether a user has access to the site in blocker mode.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The logged-in user.
-   *
-   * @return bool
-   *   TRUE if the user should be exempted from blocker mode.
    */
-  public function exempt(RouteMatchInterface $route_match, AccountInterface $account);
+  public function exempt(RouteMatchInterface $route_match, AccountInterface $account): bool;
 
 }
