@@ -13,11 +13,9 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 /**
  * Implements hook_cron().
  *
- * @throws \Exception
- *
  * @todo Can be deleted when beta finishes or users are migrated.
  */
-function oauth_grant_remote_cron() {
+function oauth_grant_remote_cron(): void {
 
   // Load config.
   $settings = \Drupal::configFactory()->get('oauth_grant_remote.settings');
@@ -26,7 +24,7 @@ function oauth_grant_remote_cron() {
   if ($settings->get('development')) {
     \Drupal::logger('youvo')
       ->warning('Cron job is not maintained. Skipped in development mode.');
-    return NULL;
+    return;
   }
 
   // Check validity of settings.
@@ -35,7 +33,7 @@ function oauth_grant_remote_cron() {
     empty($settings->get('auth_relay_url'))) {
     \Drupal::logger('youvo')
       ->warning('Cron job is not maintained. Auth Relay is not configured. Check the OAuth Grant Remote settings form.');
-    return NULL;
+    return;
   }
 
   // Get current accounts.
@@ -64,13 +62,12 @@ function oauth_grant_remote_cron() {
   // Sending POST Request with the JWT to the Auth Relay.
   try {
     $auth_relay_url = $settings->get('auth_relay_url') . '/api/auth/cron';
-    $response = \Drupal::httpClient()
-      ->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
+    $response = \Drupal::httpClient()->post($auth_relay_url, ['json' => ['jwt' => $jwt]]);
   }
   catch (ClientException) {
     \Drupal::logger('youvo')
       ->warning('Cron job is not maintained. Unable to contact Auth Relay.');
-    return NULL;
+    return;
   }
 
   if ($response->getStatusCode() != 200) {
