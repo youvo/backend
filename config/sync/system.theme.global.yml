@@ -11,6 +11,6 @@ features:
   favicon: true
   node_user_picture: false
 logo:
-  path: ''
+  path: 'public://y.svg'
   url: ''
-  use_default: true
+  use_default: false
