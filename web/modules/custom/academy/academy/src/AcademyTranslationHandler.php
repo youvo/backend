@@ -56,6 +56,8 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
    *
    * Delete warning, which is displayed when untranslatable fields are excluded
    * from display.
+   *
+   * @phpstan-ignore-next-line Parent does not define proper types.
    */
   public function entityFormSharedElements($element, FormStateInterface $form_state, $form): array {
     $element = parent::entityFormSharedElements($element, $form_state, $form);

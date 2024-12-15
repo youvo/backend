@@ -2,17 +2,13 @@
 
 /**
  * @file
+ * Provides hooks for academy entities.
  */
 
 use Drupal\academy\AcademicFormatInterface;
 use Drupal\academy\AcademyTranslationHandler;
 use Drupal\content_translation\ContentTranslationMetadataWrapper;
 use Drupal\content_translation\Form\ContentTranslationDeleteForm;
-
-/**
- * @file
- * Provides hooks for academy entities.
- */
 
 /**
  * Add content translation alterations here.

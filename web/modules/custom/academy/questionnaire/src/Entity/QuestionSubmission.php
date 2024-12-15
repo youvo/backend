@@ -56,7 +56,7 @@ class QuestionSubmission extends ContentEntityBase implements EntityChangedInter
   /**
    * Set created time.
    */
-  public function setCreatedTime($timestamp): static {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }

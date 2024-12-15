@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Provides hooks for a questionnaire entity type.
  */
 
 use Drupal\Core\Access\AccessResult;
@@ -31,7 +32,7 @@ function questionnaire_entity_bundle_info_alter(array &$bundles): void {
 /**
  * Implements hook_entity_field_access().
  */
-function questionnaire_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL): AccessResultInterface {
+function questionnaire_entity_field_access(string $operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL): AccessResultInterface {
   $entity = $items?->getEntity();
   if ($entity instanceof Question) {
     return QuestionFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
@@ -42,7 +43,7 @@ function questionnaire_entity_field_access($operation, FieldDefinitionInterface 
 /**
  * Implements hook_entity_type_alter().
  */
-function questionnaire_entity_type_alter(array &$entity_types) {
+function questionnaire_entity_type_alter(array &$entity_types): void {
   // We alter the default paragraph.{add,edit} form handlers in order
   // to load a different class than the standard add- and  edit form for
   // paragraphs.
@@ -76,7 +77,7 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
   }
 
   // Add computed evaluation field to evaluation paragraphs.
-  if ($entity_type->id() === 'paragraph' && $bundle === 'evaluation') {
+  if ($bundle === 'evaluation' && $entity_type->id() === 'paragraph') {
     $fields['questions'] = ComputedFieldStorageDefinition::create('entity_reference')
       ->setLabel(t('Computed Course Questions'))
       ->setDescription(t('Computes the questions contained in this course.'))

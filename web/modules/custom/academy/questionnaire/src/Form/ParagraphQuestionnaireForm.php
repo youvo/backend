@@ -34,7 +34,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = parent::create($container);
     $instance->languageManager = $container->get('language_manager');
     return $instance;
@@ -477,7 +477,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Gives header for table of questions.
    */
-  protected function buildHeader() {
+  protected function buildHeader(): array {
     $header['type'] = $this->t('Type');
     $header['body'] = $this->t('Question');
     $header['translations'] = $this->t('Translation');
@@ -492,7 +492,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * Gives rows for table of questions.
    */
-  protected function buildRow($question, $buttons_disabled) {
+  protected function buildRow(Question $question, bool $buttons_disabled): array {
     // Get bundle for question entity.
     /** @var \Drupal\questionnaire\Entity\Question $question */
     $bundle = '';

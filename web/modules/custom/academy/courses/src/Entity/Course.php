@@ -96,7 +96,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title): static {
+  public function setTitle(string $title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -111,7 +111,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp): static {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -126,7 +126,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function setMachineName($machine_name): static {
+  public function setMachineName(string $machine_name): static {
     $this->set('machine_name', $machine_name);
     return $this;
   }

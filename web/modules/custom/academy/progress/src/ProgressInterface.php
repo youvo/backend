@@ -27,7 +27,7 @@ interface ProgressInterface extends ContentEntityInterface, EntityChangedInterfa
   public function setAccessTime(int $timestamp): static;
 
   /**
-   * Gets the lecture completed timestamp.   *
+   * Gets the lecture completed timestamp.
    */
   public function getCompletedTime(): int;
 

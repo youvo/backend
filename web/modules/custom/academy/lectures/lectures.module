@@ -164,7 +164,7 @@ function lectures_form_lecture_edit_form_redirect(array $form, FormStateInterfac
 /**
  * Adds abort button to form array.
  */
-function lectures_add_abort_button(&$form, $url): void {
+function lectures_add_abort_button(array &$form, Url $url): void {
   $form['actions']['abort'] = [
     '#type' => 'link',
     '#title' => t('Abort'),

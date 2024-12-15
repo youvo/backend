@@ -18,7 +18,7 @@ use Drupal\questionnaire\Entity\Question;
 /**
  * Implements hook_install().
  */
-function academy_dummy_install() {
+function academy_dummy_install(): void {
   module_set_weight('academy_dummy', 3);
 }
 
