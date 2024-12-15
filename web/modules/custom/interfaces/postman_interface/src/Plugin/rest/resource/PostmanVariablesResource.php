@@ -4,10 +4,12 @@ namespace Drupal\postman_interface\Plugin\rest\resource;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -26,53 +28,22 @@ class PostmanVariablesResource extends ResourceBase {
 
   /**
    * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * Constructs a QuestionSubmissionResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('entity_type.manager')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @return \Drupal\rest\ResourceResponse
-   *   The response.
    */
-  public function get() {
+  public function get(): ResourceResponseInterface {
 
     // Get some creative.
     try {
@@ -283,7 +254,7 @@ class PostmanVariablesResource extends ResourceBase {
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'resource' => strtr($this->pluginId, ':', '.'),
+      'resource' => str_replace(':', '.', $this->pluginId),
       'data' => [
         'creative' => $creative?->uuid(),
         'manager' => $manager?->uuid(),
@@ -338,11 +309,11 @@ class PostmanVariablesResource extends ResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  protected function entityQuery(string $entity_type) {
+  protected function entityQuery(string $entity_type): QueryInterface {
     return $this->entityTypeManager
       ->getStorage($entity_type)
       ->getQuery()
-      ->accessCheck(TRUE);
+      ->accessCheck();
   }
 
   /**
@@ -359,7 +330,7 @@ class PostmanVariablesResource extends ResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  protected function entityLoad(string $entity_type, int $entity_id) {
+  protected function entityLoad(string $entity_type, int $entity_id): EntityInterface {
     return $this->entityTypeManager
       ->getStorage($entity_type)
       ->load($entity_id);
@@ -368,13 +339,13 @@ class PostmanVariablesResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
