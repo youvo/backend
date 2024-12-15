@@ -11,9 +11,6 @@ class StatsCalculator {
 
   /**
    * Constructs a StatsCalculator service.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
    */
   public function __construct(protected Connection $database) {}
 
