@@ -10,7 +10,7 @@ use Drupal\progress\ProgressManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -22,69 +22,23 @@ use Symfony\Component\Routing\RouteCollection;
 abstract class ProgressResource extends ResourceBase {
 
   /**
-   * The progress manager service.
-   *
-   * @var \Drupal\progress\ProgressManager
+   * The progress manager.
    */
   protected ProgressManager $progressManager;
 
   /**
-   * Constructs a ProgressResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\progress\ProgressManager $progress_manager
-   *   The progress manager service.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    ProgressManager $progress_manager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->progressManager = $progress_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('progress.manager')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->progressManager = $container->get('progress.manager');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Drupal\academy\AcademicFormatInterface $entity
-   *   The referenced lecture or course.
-   *
-   * @return \Drupal\rest\ResourceResponse|ModifiedResourceResponse
-   *   The response.
    */
-  public function get(AcademicFormatInterface $entity) {
+  public function get(AcademicFormatInterface $entity): ResourceResponseInterface {
 
     try {
       // Get the respective progress by lecture or course and current user.
@@ -98,13 +52,13 @@ abstract class ProgressResource extends ResourceBase {
     }
 
     // There is no progress for this lecture by this user.
-    if (empty($progress)) {
+    if ($progress === NULL) {
       return new ModifiedResourceResponse(NULL, 204);
     }
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'resource' => strtr($this->pluginId, ':', '.'),
+      'resource' => str_replace(':', '.', $this->pluginId),
       'data' => [
         'type' => $progress->getEntityTypeId(),
         'enrolled' => $progress->getEnrollmentTime(),
@@ -127,19 +81,19 @@ abstract class ProgressResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
     $entity_type = $this->getEntityTypeIdFromPluginId();
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\progress\Controller\ProgressResourceAccessController::accessProgress');
+      $route->setRequirement('_custom_access', '\Drupal\progress\Access\ProgressResourceAccess::accessProgress');
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'entity' => [
@@ -155,13 +109,10 @@ abstract class ProgressResource extends ResourceBase {
 
   /**
    * Gets the entity type ID from the plugin ID.
-   *
-   * @return string
-   *   The entity type ID.
    */
-  private function getEntityTypeIdFromPluginId() {
+  private function getEntityTypeIdFromPluginId(): string {
     $plugin_id_substrings = explode(':', $this->pluginId);
-    return $plugin_id_substrings[1];
+    return $plugin_id_substrings[1] ?? '';
   }
 
 }

@@ -54,14 +54,14 @@ class LogText extends ContentEntityBase implements LogTextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getText() {
+  public function getText(): string {
     return $this->get('text')->value ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setText(string $text): LogTextInterface {
+  public function setText(string $text): static {
     $this->set('text', $text);
     return $this;
   }
@@ -69,7 +69,7 @@ class LogText extends ContentEntityBase implements LogTextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPublicText(bool $fallback = FALSE) {
+  public function getPublicText(bool $fallback = FALSE): string {
     if ($fallback) {
       $public_text = $this->get('public_text')->value;
       return !empty($public_text) ? $public_text : $this->getText();
@@ -80,7 +80,7 @@ class LogText extends ContentEntityBase implements LogTextInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPublicText(string $public_text): LogTextInterface {
+  public function setPublicText(string $public_text): static {
     $this->set('public_text', $public_text);
     return $this;
   }
@@ -90,7 +90,7 @@ class LogText extends ContentEntityBase implements LogTextInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

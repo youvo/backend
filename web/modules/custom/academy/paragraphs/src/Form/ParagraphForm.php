@@ -20,7 +20,7 @@ class ParagraphForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     // Build parent form.
     $form = parent::form($form, $form_state);
@@ -28,15 +28,17 @@ class ParagraphForm extends ContentEntityForm {
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $this->getEntity();
 
-    if (!$paragraph->isNew() &&
-      $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview') &&
-      $paragraph->bundle() != 'evaluation' &&
-      $paragraph->bundle() != 'questionnaire') {
-      static::addTranslationButtons($form, $paragraph);
+    if (
+      !$paragraph->isNew() &&
+      $paragraph->bundle() !== 'evaluation' &&
+      $paragraph->bundle() !== 'questionnaire' &&
+      $paragraph->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')
+    ) {
+      $this->addTranslationButtons($form, $paragraph);
     }
 
     // Add answers multi value form element.
-    if ($paragraph->bundle() == 'stats') {
+    if ($paragraph->bundle() === 'stats') {
 
       // Attach js to hide 'show row weights' buttons.
       $form['#attached']['library'][] = 'academy/hideweightbutton';
@@ -80,14 +82,14 @@ class ParagraphForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     // Describe relevant entities.
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $this->getEntity();
 
     // Add values from multi-stats form element.
-    if ($paragraph->bundle() == 'stats') {
+    if ($paragraph->bundle() === 'stats') {
       $stats = $form_state->getValue('multi_stats');
       $paragraph->set('list', []);
       $paragraph->set('description', []);
@@ -108,7 +110,7 @@ class ParagraphForm extends ContentEntityForm {
     // Add status and logger messages.
     $arguments = ['%label' => $paragraph->label()];
 
-    if ($result == SAVED_NEW) {
+    if ($result === SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New paragraph %label has been created.', $arguments));
       $this->logger('academy')->notice('Created new paragraph %label', $arguments);
     }
@@ -129,21 +131,21 @@ class ParagraphForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
 
     // Get entities actions.
     $actions = parent::actions($form, $form_state);
 
-    // Add an abort button.
     /** @var \Drupal\child_entities\ChildEntityInterface $paragraph */
     $paragraph = $this->getEntity();
     /** @var \Drupal\child_entities\ChildEntityInterface $lecture */
     $lecture = $paragraph->getParentEntity();
+
+    // Add an abort button.
     $url = Url::fromRoute('entity.paragraph.collection', [
       'lecture' => $lecture->id(),
       'course' => $lecture->getParentEntity()->id(),
     ]);
-    $actions['submit']['#value'] = $this->t('Save @language', ['@language' => $paragraph->language()->getName()]);
     $actions['abort'] = [
       '#type' => 'link',
       '#title' => $this->t('Abort'),
@@ -153,6 +155,11 @@ class ParagraphForm extends ContentEntityForm {
       ],
       '#weight' => 10,
     ];
+
+    $actions['submit']['#value'] = $this->t('Save @language', [
+      '@language' => $paragraph->language()->getName(),
+    ]);
+
     return $actions;
   }
 

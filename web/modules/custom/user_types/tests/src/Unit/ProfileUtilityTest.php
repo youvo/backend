@@ -2,12 +2,15 @@
 
 namespace Drupal\Tests\user_types\Unit;
 
+use Drupal\consumers\Entity\ConsumerInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\simple_oauth\Authentication\TokenAuthUser;
 use Drupal\simple_oauth\Authentication\TokenAuthUserInterface;
+use Drupal\simple_oauth\Entity\Oauth2TokenInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\user_types\Utility\Profile;
 
@@ -70,12 +73,12 @@ class ProfileUtilityTest extends UnitTestCase {
 
     parent::setUp();
 
-    $this->account = $this->createMock('\Drupal\Core\Session\AccountInterface');
+    $this->account = $this->createMock(AccountInterface::class);
     $this->account->expects($this->any())
       ->method('id')
       ->willReturn(1);
 
-    $this->accountProxy = $this->createMock('\Drupal\Core\Session\AccountProxyInterface');
+    $this->accountProxy = $this->createMock(AccountProxyInterface::class);
     $this->accountProxy->expects($this->any())
       ->method('id')
       ->willReturn(2);
@@ -98,30 +101,30 @@ class ProfileUtilityTest extends UnitTestCase {
       ->method('bundle')
       ->willReturn('organization');
 
-    $consumer = $this->createMock('Drupal\consumers\Entity\ConsumerInterface');
-    $consumer_field = $this->createMock('Drupal\Core\Field\EntityReferenceFieldItemListInterface');
+    $consumer = $this->createMock(ConsumerInterface::class);
+    $consumer_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
     $consumer_field->expects($this->any())
       ->method('__get')
       ->with('entity')
       ->willReturn($consumer);
 
-    $creative_field = $this->createMock('Drupal\Core\Field\EntityReferenceFieldItemListInterface');
+    $creative_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
     $creative_field->expects($this->any())
       ->method('__get')
       ->with('entity')
       ->willReturn($this->creative);
-    $creative_token = $this->createMock('Drupal\simple_oauth\Entity\Oauth2TokenInterface');
+    $creative_token = $this->createMock(Oauth2TokenInterface::class);
     $creative_token->expects($this->any())
       ->method('get')
       ->willReturnOnConsecutiveCalls($consumer_field, $creative_field);
     $this->creativeAuthUser = new TokenAuthUser($creative_token);
 
-    $organization_field = $this->createMock('Drupal\Core\Field\EntityReferenceFieldItemListInterface');
+    $organization_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
     $organization_field->expects($this->any())
       ->method('__get')
       ->with('entity')
       ->willReturn($this->organization);
-    $organization_token = $this->createMock('Drupal\simple_oauth\Entity\Oauth2TokenInterface');
+    $organization_token = $this->createMock(Oauth2TokenInterface::class);
     $organization_token->expects($this->any())
       ->method('get')
       ->willReturnOnConsecutiveCalls($consumer_field, $organization_field);

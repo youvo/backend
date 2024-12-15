@@ -20,7 +20,7 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
    *
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     $all_question_ids = [];
 
@@ -39,20 +39,19 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
       foreach ($lectures as $lecture) {
         // The paragraphs are weighted correctly.
         $paragraphs = $lecture->getParagraphs();
-        $questionnaires = array_merge($questionnaires,
-          array_filter($paragraphs, fn($p) => $p->bundle() == 'questionnaire'));
+        $questionnaires[] = array_filter($paragraphs, static fn($p) => $p->bundle() === 'questionnaire');
       }
+      $questionnaires = array_merge(...$questionnaires);
 
       // Compile all questions within all questionnaires.
       foreach ($questionnaires as $questionnaire) {
         $questions = $questionnaire instanceof Questionnaire ?
           $questionnaire->getQuestions() : [];
         // Questions are not weighted correctly. Therefore, sort them.
-        usort($questions,
-          fn($a, $b) => $a->get('weight')->value <=> $b->get('weight')->value);
-        $all_question_ids = array_merge($all_question_ids,
-          array_map(fn ($q) => $q->id(), $questions));
+        usort($questions, static fn($a, $b) => $a->get('weight')->value <=> $b->get('weight')->value);
+        $all_question_ids[] = array_map(static fn ($q) => $q->id(), $questions);
       }
+      $all_question_ids = array_merge(...$all_question_ids);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -61,7 +60,7 @@ class ContainedQuestionsFieldItemList extends EntityReferenceFieldItemList {
     }
 
     // Attach all questions as references.
-    $this->setValue(array_map(fn ($id) => ['target_id' => $id], $all_question_ids));
+    $this->setValue(array_map(static fn ($id) => ['target_id' => $id], $all_question_ids));
   }
 
 }

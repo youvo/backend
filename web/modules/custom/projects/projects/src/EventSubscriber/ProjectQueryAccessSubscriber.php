@@ -15,17 +15,15 @@ class ProjectQueryAccessSubscriber implements EventSubscriberInterface {
   /**
    * Modifies the access conditions based on the current user.
    */
-  public function onQueryAccess(QueryAccessEvent $event) {
+  public function onQueryAccess(QueryAccessEvent $event): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return [
-      'entity.query_access.project' => 'onQueryAccess',
-    ];
+  public static function getSubscribedEvents(): array {
+    return ['entity.query_access.project' => 'onQueryAccess'];
   }
 
 }

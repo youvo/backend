@@ -6,6 +6,8 @@ use Drupal\child_entities\ChildEntityEnsureTrait;
 use Drupal\child_entities\Controller\ChildEntityController;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides routes for child entities.
@@ -20,7 +22,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
   /**
    * {@inheritdoc}
    */
-  public function getAddPageRoute(EntityTypeInterface $entity_type) {
+  public function getAddPageRoute(EntityTypeInterface $entity_type): ?Route {
     if ($route = parent::getAddPageRoute($entity_type)) {
       $route->setDefault('_controller', ChildEntityController::class . '::addPage');
       return $route;
@@ -36,8 +38,8 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
    *
    * @todo Route path definition is manual at the moment. Rework maybe.
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
-    $this->entityImplementsChildEntityInterface($entity_type);
+  public function getRoutes(EntityTypeInterface $entity_type): RouteCollection|array {
+    static::entityImplementsChildEntityInterface($entity_type);
     $collection = parent::getRoutes($entity_type);
     foreach ($collection as $key => $route) {
       if (strpos($key, 'edit_form')) {
@@ -64,7 +66,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  private function appendParentOptionParameters(array &$option_parameters, EntityTypeInterface $entity_type) {
+  private function appendParentOptionParameters(array &$option_parameters, EntityTypeInterface $entity_type): void {
     // Add entity option parameters.
     $option_parameters[$entity_type->getKey('parent')] = [
       'type' => 'entity:' . $entity_type->getKey('parent'),

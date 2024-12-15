@@ -14,7 +14,7 @@ use Drupal\questionnaire\SubmissionManager;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -33,97 +33,37 @@ use Symfony\Component\Routing\RouteCollection;
  *   }
  * )
  */
-final class QuestionSubmissionResource extends ResourceBase {
+class QuestionSubmissionResource extends ResourceBase {
 
   /**
-   * The serialization by Json service.
-   *
-   * @var \Drupal\Component\Serialization\Json
-   */
-  protected Json $serializationJson;
-
-  /**
-   * The submission manager service.
-   *
-   * @var \Drupal\questionnaire\SubmissionManager
+   * The submission manager.
    */
   protected SubmissionManager $submissionManager;
 
   /**
-   * Constructs a QuestionSubmissionResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Component\Serialization\Json $serialization_json
-   *   The serialization by Json service.
-   * @param \Drupal\questionnaire\SubmissionManager $submission_manager
-   *   The submission manager service.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    Json $serialization_json,
-    SubmissionManager $submission_manager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->serializationJson = $serialization_json;
-    $this->submissionManager = $submission_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new self(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('serialization.json'),
-      $container->get('submission.manager')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->submissionManager = $container->get('submission.manager');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Drupal\questionnaire\Entity\Question $question
-   *   The referenced question.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse|ResourceResponse
-   *   The response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function get(Question $question) {
+  public function get(Question $question): ResourceResponseInterface {
 
     // Get the respective submission by question and current user.
     $submission = $this->getSubmission($question);
 
     // There is no submission for this question by this user.
-    if (empty($submission)) {
+    if ($submission === NULL) {
       return new ModifiedResourceResponse(NULL, 204);
     }
 
     // Prepare and sanitize output.
-    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
+    if ($question->bundle() === 'checkboxes' || $question->bundle() === 'task') {
       $value = explode(',', Html::escape($submission->get('value')->value));
     }
     else {
@@ -132,7 +72,7 @@ final class QuestionSubmissionResource extends ResourceBase {
 
     // Fetch questions and answers.
     $response = new ResourceResponse([
-      'resource' => strtr($this->pluginId, ':', '.'),
+      'resource' => str_replace(':', '.', $this->pluginId),
       'data' => [
         'type' => $submission->getEntityTypeId(),
         'value' => $value,
@@ -155,23 +95,11 @@ final class QuestionSubmissionResource extends ResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Drupal\questionnaire\Entity\Question $question
-   *   The referenced question.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Contains request data.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Question $question, Request $request) {
+  public function post(Question $question, Request $request): ResourceResponseInterface {
 
     // Decode content of the request.
-    $request_content = $this->serializationJson
-      ->decode($request->getContent());
+    $request_content = Json::decode($request->getContent());
 
     // The type is required to process the request.
     if (!array_key_exists('type', $request_content)) {
@@ -184,21 +112,21 @@ final class QuestionSubmissionResource extends ResourceBase {
     }
 
     // Check for matching type.
-    if ($question->bundle() != $request_content['type']) {
+    if ($question->bundle() !== $request_content['type']) {
       throw new BadRequestHttpException('Question type mismatch.');
     }
 
     // Check if posted value has valid format.
     $v = $request_content['value'];
-    if ($question->bundle() == 'checkboxes' || $question->bundle() == 'task') {
-      $v = array_filter($v, fn($s) => $s !== NULL && $s !== "");
+    if ($question->bundle() === 'checkboxes' || $question->bundle() === 'task') {
+      $v = array_filter($v, static fn($s) => $s !== NULL && $s !== "");
     }
     $valid_type = match($question->bundle()) {
       'textarea' => is_string($v),
       'textfield' => is_string($v) && strlen($v) < 255,
-      'radios' => is_string($v) && is_numeric($v) && intval($v) == $v,
-      'checkboxes' => is_array($v) && !in_array(FALSE, array_map(fn($s) => is_numeric($s) && intval($s) == $s, $v), TRUE),
-      'task' => is_array($v) && !in_array(FALSE, array_map(fn($s) => is_numeric($s) && intval($s) == $s, $v), TRUE) && count($v) <= 1,
+      'radios' => is_string($v) && is_numeric($v) && (int) $v == $v,
+      'checkboxes' => is_array($v) && !in_array(FALSE, array_map(static fn($s) => is_numeric($s) && (int) $s == $s, $v), TRUE),
+      'task' => is_array($v) && !in_array(FALSE, array_map(static fn($s) => is_numeric($s) && (int) $s == $s, $v), TRUE) && count($v) <= 1,
       default => throw new BadRequestHttpException('Action for question type not specified.'),
     };
 
@@ -209,9 +137,9 @@ final class QuestionSubmissionResource extends ResourceBase {
     // Check if posted value is a valid option.
     if (in_array($question->bundle(), ['radios', 'checkboxes', 'task'])) {
       $valid_value = match($question->bundle()) {
-        'radios' => in_array($v, array_keys($question->get('options')->getValue())),
+        'radios' => array_key_exists($v, $question->get('options')->getValue()),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
-        'task' => empty($v) || intval($v[0]) == 0,
+        'task' => empty($v) || (int) $v[0] == 0,
         // @phpstan-ignore-next-line
         default => FALSE,
       };
@@ -237,7 +165,7 @@ final class QuestionSubmissionResource extends ResourceBase {
       // submission.
       // @todo Pass langcode in which question was answered.
       // @todo Issue #11: Add revision id of question.
-      if (empty($submission)) {
+      if ($submission === NULL) {
         $submission = QuestionSubmission::create([
           'question' => $question->id(),
           'langcode' => 'de',
@@ -261,34 +189,32 @@ final class QuestionSubmissionResource extends ResourceBase {
     }
 
     // Delete previous submission or do nothing if value is empty.
-    else {
-      if (!empty($submission)) {
-        try {
-          $submission->delete();
-        }
-        catch (EntityStorageException $e) {
-          throw new HttpException(500, 'Internal Server Error', $e);
-        }
+    if ($submission !== NULL) {
+      try {
+        $submission->delete();
       }
-      return new ModifiedResourceResponse(NULL, 204);
+      catch (EntityStorageException $e) {
+        throw new HttpException(500, 'Internal Server Error', $e);
+      }
     }
+    return new ModifiedResourceResponse(NULL, 204);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\questionnaire\Controller\QuestionSubmissionAccessController::accessQuestionSubmission');
+      $route->setRequirement('_custom_access', '\Drupal\questionnaire\Access\QuestionSubmissionAccess::accessQuestionSubmission');
       $parameters = $route->getOption('parameters') ?: [];
       $route->setOption('parameters', $parameters + [
         'question' => [

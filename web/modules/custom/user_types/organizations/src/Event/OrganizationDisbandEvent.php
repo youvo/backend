@@ -9,6 +9,4 @@ namespace Drupal\organizations\Event;
  *
  * @see OrganizationManageResource::delete
  */
-class OrganizationDisbandEvent extends OrganizationManageEvent {
-
-}
+class OrganizationDisbandEvent extends OrganizationManageEvent {}

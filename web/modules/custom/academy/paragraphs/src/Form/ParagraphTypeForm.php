@@ -5,6 +5,7 @@ namespace Drupal\paragraphs\Form;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\paragraphs\Entity\ParagraphType;
 
 /**
  * Form handler for paragraph type forms.
@@ -14,11 +15,12 @@ class ParagraphTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
+
     $form = parent::form($form, $form_state);
 
     $entity_type = $this->entity;
-    if ($this->operation == 'add') {
+    if ($this->operation === 'add') {
       $form['#title'] = $this->t('Add paragraph type');
     }
     else {
@@ -42,7 +44,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
       '#default_value' => $entity_type->id(),
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
-        'exists' => ['Drupal\paragraphs\Entity\ParagraphType', 'load'],
+        'exists' => [ParagraphType::class, 'load'],
         'source' => ['label'],
       ],
       '#description' => $this->t('A unique machine-readable name for this paragraph type. It must only contain lowercase letters, numbers, and underscores.'),
@@ -54,7 +56,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save paragraph type');
     $actions['delete']['#value'] = $this->t('Delete paragraph type');
@@ -67,7 +69,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
     /** @var \Drupal\paragraphs\Entity\ParagraphType $entity_type */
     $entity_type = $this->entity;
 
@@ -77,7 +79,7 @@ class ParagraphTypeForm extends BundleEntityFormBase {
     $status = $entity_type->save();
 
     $t_args = ['%name' => $entity_type->label()];
-    if ($status == SAVED_NEW) {
+    if ($status === SAVED_NEW) {
       $message = $this->t('The paragraph type %name has been added.', $t_args);
     }
     else {

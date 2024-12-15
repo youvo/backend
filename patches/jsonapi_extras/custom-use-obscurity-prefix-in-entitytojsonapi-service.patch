@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/jsonapi_extras/jsonapi_extras.services.yml b/modules/contrib/jsonapi_extras/jsonapi_extras.services.yml
+diff --git a/jsonapi_extras.services.yml b/jsonapi_extras.services.yml
 index 0447bb1..0090c72 100644
---- a/modules/contrib/jsonapi_extras/jsonapi_extras.services.yml
-+++ b/modules/contrib/jsonapi_extras/jsonapi_extras.services.yml
+--- a/jsonapi_extras.services.yml
++++ b/jsonapi_extras.services.yml
 @@ -57,6 +57,7 @@ services:
        - '@jsonapi.resource_type.repository'
        - '@session'
@@ -10,10 +10,10 @@ index 0447bb1..0090c72 100644
 
    jsonapi_extras.jsonapi_build_subscriber:
      class: Drupal\jsonapi_extras\EventSubscriber\JsonApiBuildSubscriber
-diff --git a/modules/contrib/jsonapi_extras/src/EntityToJsonApi.php b/modules/contrib/jsonapi_extras/src/EntityToJsonApi.php
+diff --git a/src/EntityToJsonApi.php b/src/EntityToJsonApi.php
 index c6e1c97..e4f83b8 100644
---- a/modules/contrib/jsonapi_extras/src/EntityToJsonApi.php
-+++ b/modules/contrib/jsonapi_extras/src/EntityToJsonApi.php
+--- a/src/EntityToJsonApi.php
++++ b/src/EntityToJsonApi.php
 @@ -47,6 +47,13 @@ class EntityToJsonApi {
     */
    protected $currentRequest;
@@ -39,7 +39,7 @@ index c6e1c97..e4f83b8 100644
      HttpKernelInterface $http_kernel,
      ResourceTypeRepositoryInterface $resource_type_repository,
      SessionInterface $session,
--    RequestStack $request_stack
+-    RequestStack $request_stack,
 +    RequestStack $request_stack,
 +    string $obscurity_prefix
    ) {

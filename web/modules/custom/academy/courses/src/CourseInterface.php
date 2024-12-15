@@ -3,69 +3,40 @@
 namespace Drupal\courses;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\user\EntityOwnerInterface;
 
 /**
  * Provides an interface defining a course entity type.
  */
-interface CourseInterface extends ContentEntityInterface, EntityOwnerInterface, EntityChangedInterface {
+interface CourseInterface extends ContentEntityInterface {
 
   /**
    * Gets the course title.
-   *
-   * @return string
-   *   Title of the course.
    */
-  public function getTitle();
+  public function getTitle(): string;
 
   /**
    * Sets the course title.
-   *
-   * @param string $title
-   *   The course title.
-   *
-   * @return \Drupal\courses\CourseInterface
-   *   The called course entity.
    */
-  public function setTitle(string $title);
+  public function setTitle(string $title): static;
 
   /**
    * Gets the course machine name.
-   *
-   * @return string
-   *   Machine name of the course.
    */
-  public function getMachineName();
+  public function getMachineName(): string;
 
   /**
    * Sets the course machine name.
-   *
-   * @param string $machine_name
-   *   The course title.
-   *
-   * @return \Drupal\courses\CourseInterface
-   *   The called course entity.
    */
-  public function setMachineName(string $machine_name);
+  public function setMachineName(string $machine_name): static;
 
   /**
    * Gets the course creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the course.
    */
-  public function getCreatedTime();
+  public function getCreatedTime(): int;
 
   /**
    * Sets the course creation timestamp.
-   *
-   * @param int $timestamp
-   *   The course creation timestamp.
-   *
-   * @return \Drupal\courses\CourseInterface
-   *   The called course entity.
    */
-  public function setCreatedTime(int $timestamp);
+  public function setCreatedTime(int $timestamp): static;
 
 }

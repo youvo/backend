@@ -11,19 +11,13 @@ interface LogPatternInterface extends ConfigEntityInterface {
 
   /**
    * Gets the text.
-   *
-   * @return string
-   *   The text.
    */
-  public function getText();
+  public function getText(): string;
 
   /**
    * Gets the public text.
-   *
-   * @return string
-   *   The public text.
    */
-  public function getPublicText(bool $fallback = FALSE);
+  public function getPublicText(bool $fallback = FALSE): string;
 
   /**
    * Gets the tokens.
@@ -34,69 +28,45 @@ interface LogPatternInterface extends ConfigEntityInterface {
    * @return array
    *   The tokens.
    */
-  public function getTokens(bool $as_array = FALSE);
+  public function getTokens(bool $as_array = FALSE): array;
 
   /**
    * Gets the standard background color.
-   *
-   * @return string
-   *   The standard background color.
    */
-  public function getColor();
+  public function getColor(): string;
 
   /**
    * Returns whether the log pattern is enabled.
-   *
-   * @returns bool
-   *   The enabled status.
    */
-  public function isEnabled();
+  public function isEnabled(): bool;
 
   /**
    * Returns whether the log pattern is detectable.
-   *
-   * @returns bool
-   *   The detectable status.
    */
-  public function isDetectable();
+  public function isDetectable(): bool;
 
   /**
    * Returns whether the log pattern is observable.
-   *
-   * @returns bool
-   *   The observable status.
    */
-  public function isObservable();
+  public function isObservable(): bool;
 
   /**
    * Returns whether the log pattern is public.
-   *
-   * @returns bool
-   *   The public status.
    */
-  public function isPublic();
+  public function isPublic(): bool;
 
   /**
    * Returns whether the log pattern is promoted.
-   *
-   * @returns bool
-   *   The promoted status.
    */
-  public function isPromoted();
+  public function isPromoted(): bool;
 
   /**
    * Returns whether the log pattern is hidden.
-   *
-   * @returns bool
-   *   The hidden status.
    */
-  public function isHidden();
+  public function isHidden(): bool;
 
   /**
    * Gets the associated log text entity.
-   *
-   * @returns \Drupal\logbook\LogTextInterface
-   *   The log text entity.
    */
   public function getLogTextEntity(): ?LogTextInterface;
 

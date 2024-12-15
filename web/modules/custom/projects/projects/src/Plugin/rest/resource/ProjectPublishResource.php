@@ -5,6 +5,7 @@ namespace Drupal\projects\Plugin\rest\resource;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
@@ -23,26 +24,15 @@ class ProjectPublishResource extends ProjectTransitionResourceBase {
   /**
    * Responds to POST requests.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
    * @throws \Drupal\Core\Entity\EntityStorageException
-   *   Thrown if unable to save project.
    */
-  public function post(ProjectInterface $project) {
-
-    if ($project->lifecycle()->publish()) {
-      $project->save();
-      $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
-      return new ModifiedResourceResponse('Project published.');
-    }
-    else {
+  public function post(ProjectInterface $project): ResourceResponseInterface {
+    if (!$project->lifecycle()->publish()) {
       throw new ConflictHttpException('Project can not be published.');
     }
-
+    $project->save();
+    $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
+    return new ModifiedResourceResponse('Project published.');
   }
 
 }

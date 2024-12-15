@@ -2,34 +2,31 @@
 
 namespace Drupal\stats\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\stats\StatsCalculator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller for stats pages.
  */
-class StatsController extends ControllerBase {
+class StatsController implements ContainerInjectionInterface {
 
   /**
    * Construct stats overview controller with services.
-   *
-   * @param \Drupal\stats\StatsCalculator $statsCalculator
-   *   The stat calculator service.
    */
   public function __construct(protected StatsCalculator $statsCalculator) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('stats.calculator'));
   }
 
   /**
    * Controls overview.
    */
-  public function overview() {
+  public function overview(): array {
 
     $page['creatives'] = $this->statsCalculator->countCreatives();
     $page['organizations'] = $this->statsCalculator->countOrganizations();

@@ -4,8 +4,8 @@ namespace Drupal\stats\Plugin\rest\resource;
 
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\rest\ResourceResponseInterface;
 use Drupal\stats\StatsCalculator;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,58 +22,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class StatsResource extends ResourceBase {
 
   /**
-   * Constructs a ProjectActionResourceBase object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\stats\StatsCalculator $statsCalculator
-   *   The stat calculator service.
+   * The stats calculator service.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    protected StatsCalculator $statsCalculator,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-  }
+  protected StatsCalculator $statsCalculator;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('youvo'),
-      $container->get('stats.calculator')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->statsCalculator = $container->get('stats.calculator');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
    */
-  public function get() {
+  public function get(): ResourceResponseInterface {
 
     $stats['creatives'] = $this->statsCalculator->countCreatives();
     $stats['organizations'] = $this->statsCalculator->countOrganizations();

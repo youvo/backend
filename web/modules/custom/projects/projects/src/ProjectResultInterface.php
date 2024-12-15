@@ -14,22 +14,13 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
 
   /**
    * Gets the project result creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the project result.
    */
   public function getCreatedTime(): int;
 
   /**
    * Sets the project result creation timestamp.
-   *
-   * @param int $timestamp
-   *   The project result creation timestamp.
-   *
-   * @return \Drupal\projects\ProjectResultInterface
-   *   The called project result entity.
    */
-  public function setCreatedTime(int $timestamp): ProjectResultInterface;
+  public function setCreatedTime(int $timestamp): static;
 
   /**
    * Sets the files by file IDs.
@@ -38,10 +29,10 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    *   An array of file targets. Each entry has the form:
    *   ['target_id' => int, 'weight' => int, 'description' => ?string].
    *
-   * @return \Drupal\projects\ProjectResultInterface
+   * @return $this
    *   The called project result entity.
    */
-  public function setFiles(array $file_targets): ProjectResultInterface;
+  public function setFiles(array $file_targets): static;
 
   /**
    * Sets the hyperlinks field.
@@ -50,10 +41,10 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    *   An array of hyperlinks. Each entry has the form:
    *   ['value' => string, 'weight' => int, 'description' => ?string].
    *
-   * @return \Drupal\projects\ProjectResultInterface
+   * @return $this
    *   The called project result entity.
    */
-  public function setLinks(array $links): ProjectResultInterface;
+  public function setLinks(array $links): static;
 
   /**
    * Appends a project comment.
@@ -61,10 +52,10 @@ interface ProjectResultInterface extends ContentEntityInterface, EntityChangedIn
    * @param \Drupal\projects\ProjectCommentInterface $comment
    *   The project comment entity.
    *
-   * @return \Drupal\projects\ProjectResultInterface
+   * @return $this
    *   The called project result entity.
    */
-  public function appendComment(ProjectCommentInterface $comment): ProjectResultInterface;
+  public function appendComment(ProjectCommentInterface $comment): static;
 
   /**
    * Gets the project comments.

@@ -35,7 +35,7 @@ class LifecycleConstraintValidator extends ConstraintValidator implements Contai
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = new static();
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->currentUser = $container->get('current_user');
@@ -48,7 +48,7 @@ class LifecycleConstraintValidator extends ConstraintValidator implements Contai
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function validate($value, Constraint $constraint): void {
+  public function validate(mixed $value, Constraint $constraint): void {
     assert($value instanceof LifecycleItem);
     assert($constraint instanceof LifecycleConstraint);
 

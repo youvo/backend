@@ -5,6 +5,7 @@ namespace Drupal\projects\Access;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
@@ -24,7 +25,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Get project for child entities.
     if ($entity instanceof ChildEntityInterface) {
@@ -38,8 +39,8 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
 
     // Administrators and supervisors skip access checks.
     if (
-      in_array('supervisor', $account->getRoles()) ||
-      in_array('administrator', $account->getRoles())
+      in_array('supervisor', $account->getRoles(), TRUE) ||
+      in_array('administrator', $account->getRoles(), TRUE)
     ) {
       return AccessResult::allowed()->cachePerUser();
     }
@@ -57,17 +58,17 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     $access_result = new AccessResultNeutral();
 
     // Check access for edit action.
-    if ($operation == 'view') {
+    if ($operation === 'view') {
       $access_result = $this->checkViewAccess($entity, $account);
     }
 
     // Check access for edit action.
-    if ($operation == 'edit' || $operation == 'update') {
+    if ($operation === 'edit' || $operation === 'update') {
       $access_result = $this->checkEditAccess($entity, $account);
     }
 
     // Check access for delete action.
-    if ($operation == 'delete') {
+    if ($operation === 'delete') {
       $access_result = $this->checkDeleteAccess($entity, $account);
     }
 
@@ -77,15 +78,15 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * Helps to check access for view operation.
    */
-  private function checkViewAccess(ProjectInterface $project, AccountInterface $account) {
+  private function checkViewAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
 
     $organization = $project->getOwner();
 
     // Managers can view draft projects of organizations without managers.
     if (
-      in_array('manager', $account->getRoles()) &&
-      $project->lifecycle()->isDraft() &&
-      !$organization->hasManager()
+      !$organization->hasManager() &&
+      in_array('manager', $account->getRoles(), TRUE) &&
+      $project->lifecycle()->isDraft()
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($organization)
@@ -95,8 +96,8 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
 
     // Managers of the organization can view the project in any state.
     if (
-      in_array('manager', $account->getRoles()) &&
-      $organization->isManager($account)
+      $organization->isManager($account) &&
+      in_array('manager', $account->getRoles(), TRUE)
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($organization)
@@ -123,11 +124,11 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * Helps to check access for edit operation.
    */
-  private function checkEditAccess(ProjectInterface $project, AccountInterface $account) {
+  private function checkEditAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
 
     // Managers of the organization can edit the project.
     if (
-      in_array('manager', $account->getRoles()) &&
+      in_array('manager', $account->getRoles(), TRUE) &&
       $project->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
@@ -153,11 +154,11 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * Helps to check access for delete operation.
    */
-  private function checkDeleteAccess(ProjectInterface $project, AccountInterface $account) {
+  private function checkDeleteAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
 
     // Managers of the organization can delete the project.
     if (
-      in_array('manager', $account->getRoles()) &&
+      in_array('manager', $account->getRoles(), TRUE) &&
       $project->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
@@ -182,15 +183,15 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL): AccessResultInterface {
 
     // Organizations, Manager, Supervisors and Administrators can create
     // projects.
     if (
-      in_array('organization', $account->getRoles()) ||
-      in_array('manager', $account->getRoles()) ||
-      in_array('supervisor', $account->getRoles()) ||
-      in_array('administrator', $account->getRoles())
+      in_array('organization', $account->getRoles(), TRUE) ||
+      in_array('manager', $account->getRoles(), TRUE) ||
+      in_array('supervisor', $account->getRoles(), TRUE) ||
+      in_array('administrator', $account->getRoles(), TRUE)
     ) {
       return AccessResult::allowed()->cachePerUser();
     }

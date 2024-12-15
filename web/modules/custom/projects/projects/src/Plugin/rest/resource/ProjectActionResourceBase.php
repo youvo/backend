@@ -2,13 +2,11 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\Component\Serialization\SerializationInterface;
 use Drupal\Core\Access\AccessException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Access\ProjectActionAccess;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\user\UserStorageInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -19,61 +17,29 @@ use Symfony\Component\Routing\RouteCollection;
 abstract class ProjectActionResourceBase extends ResourceBase {
 
   /**
-   * Constructs a ProjectActionResourceBase object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Component\Serialization\SerializationInterface $serializationJson
-   *   Serialization with Json.
-   * @param \Drupal\user\UserStorageInterface $userStorage
-   *   The user storage.
+   * The current user.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    protected AccountInterface $currentUser,
-    protected EventDispatcherInterface $eventDispatcher,
-    protected SerializationInterface $serializationJson,
-    protected UserStorageInterface $userStorage,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-  }
+  protected AccountInterface $currentUser;
+
+  /**
+   * The entity type manager.
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The event dispatcher.
+   */
+  protected EventDispatcherInterface $eventDispatcher;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('projects'),
-      $container->get('current_user'),
-      $container->get('event_dispatcher'),
-      $container->get('serialization.json'),
-      $container->get('entity_type.manager')->getStorage('user')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->currentUser = $container->get('current_user');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
+    return $instance;
   }
 
   /**
@@ -83,15 +49,15 @@ abstract class ProjectActionResourceBase extends ResourceBase {
    *   A string with the access callback.
    *
    * @return \Symfony\Component\Routing\RouteCollection
-   *   The route.
+   *   The route collection.
    */
-  public function routesWithAccessCallback(string $access_callback) {
+  public function routesWithAccessCallback(string $access_callback): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {

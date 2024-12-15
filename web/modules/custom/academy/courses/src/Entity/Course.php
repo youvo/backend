@@ -4,6 +4,7 @@ namespace Drupal\courses\Entity;
 
 use Drupal\academy\AcademicFormatInterface;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Url;
 use Drupal\courses\CourseInterface;
+use Drupal\user\EntityOwnerInterface;
 use Drupal\user\EntityOwnerTrait;
 
 /**
@@ -51,7 +53,7 @@ use Drupal\user\EntityOwnerTrait;
  *   },
  * )
  */
-class Course extends ContentEntityBase implements CourseInterface, AcademicFormatInterface {
+class Course extends ContentEntityBase implements CourseInterface, AcademicFormatInterface, EntityOwnerInterface, EntityChangedInterface {
 
   use EntityChangedTrait;
   use EntityPublishedTrait;
@@ -63,7 +65,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
    * When a new course entity is created, set the uid entity reference to
    * the current user as the creator of the entity.
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
@@ -73,7 +75,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Delete all referenced lectures.
       $lectures = $this->getLectures();
@@ -87,14 +89,14 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return $this->get('title')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle(string $title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -102,14 +104,14 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
+  public function getCreatedTime(): int {
     return (int) $this->get('created')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -117,14 +119,14 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public function getMachineName() {
+  public function getMachineName(): string {
     return $this->get('machine_name')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMachineName($machine_name) {
+  public function setMachineName(string $machine_name): static {
     $this->set('machine_name', $machine_name);
     return $this;
   }
@@ -133,9 +135,9 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
    * Gets the referenced lectures.
    *
    * @return \Drupal\lectures\Entity\Lecture[]
-   *   Array of referenced lectures.
+   *   An array of referenced lectures.
    */
-  public function getLectures() {
+  public function getLectures(): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $lectures_field */
     $lectures_field = $this->get('lectures');
     /** @var \Drupal\lectures\Entity\Lecture[] $lectures */
@@ -146,7 +148,7 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
   /**
    * {@inheritdoc}
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
@@ -240,13 +242,11 @@ class Course extends ContentEntityBase implements CourseInterface, AcademicForma
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
+  public function toUrl($rel = 'canonical', array $options = []): Url {
+    if ($rel === 'canonical') {
       return Url::fromUri('route:<nolink>')->setOptions($options);
     }
-    else {
-      return parent::toUrl($rel, $options);
-    }
+    return parent::toUrl($rel, $options);
   }
 
 }

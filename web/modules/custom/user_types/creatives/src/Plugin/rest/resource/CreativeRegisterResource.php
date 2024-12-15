@@ -7,16 +7,16 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
 use Drupal\Component\Uuid\Uuid;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
 use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\taxonomy\TermStorageInterface;
-use Drupal\user\UserStorageInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Drupal\youvo\Exception\FieldAwareHttpException;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,85 +37,47 @@ use Symfony\Component\Routing\RouteCollection;
 class CreativeRegisterResource extends ResourceBase {
 
   /**
-   * Constructs a CreativeRegisterResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Component\Serialization\Json $serializationJson
-   *   The serialization by Json service.
-   * @param \Drupal\user\UserStorageInterface $userStorage
-   *   The user storage.
-   * @param \Drupal\Component\Utility\EmailValidatorInterface $emailValidator
-   *   The email validator service.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
-   * @param \Drupal\taxonomy\TermStorageInterface $termStorage
-   *   The term storage.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
-   *   The language manager.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time.
+   * The entity type manager.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    protected Json $serializationJson,
-    protected UserStorageInterface $userStorage,
-    protected EmailValidatorInterface $emailValidator,
-    protected EventDispatcherInterface $eventDispatcher,
-    protected TermStorageInterface $termStorage,
-    protected LanguageManagerInterface $languageManager,
-    protected TimeInterface $time,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-  }
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The email validator.
+   */
+  protected EmailValidatorInterface $emailValidator;
+
+  /**
+   * The event dispatcher.
+   */
+  protected EventDispatcherInterface $eventDispatcher;
+
+  /**
+   * The language manager.
+   */
+  protected LanguageManagerInterface $languageManager;
+
+  /**
+   * The time service.
+   */
+  protected TimeInterface $time;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('serialization.json'),
-      $container->get('entity_type.manager')->getStorage('user'),
-      $container->get('email.validator'),
-      $container->get('event_dispatcher'),
-      $container->get('entity_type.manager')->getStorage('taxonomy_term'),
-      $container->get('language_manager'),
-      $container->get('datetime.time')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->emailValidator = $container->get('email.validator');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
+    $instance->languageManager = $container->get('language_manager');
+    $instance->time = $container->get('datetime.time');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
    */
-  public function get(Request $request) {
+  public function get(Request $request): ResourceResponseInterface {
 
     // Get email query parameter.
     $email = trim($request->query->get('mail'));
@@ -142,16 +104,8 @@ class CreativeRegisterResource extends ResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function post(Request $request) {
+  public function post(Request $request): ResourceResponseInterface {
     try {
       [$attributes, $skills_ids] = $this->validateAndShiftRequest($request);
       $creative = Creative::create([
@@ -192,7 +146,7 @@ class CreativeRegisterResource extends ResourceBase {
         'field' => $e->getField(),
       ], $e->getStatusCode());
     }
-    catch (HttpException $e) {
+    catch (HttpException | EntityStorageException $e) {
       return new ModifiedResourceResponse($e->getMessage(), $e->getStatusCode());
     }
 
@@ -206,15 +160,15 @@ class CreativeRegisterResource extends ResourceBase {
    *   The request.
    *
    * @return array
-   *   The shiftedc creative attributes.
+   *   The shifted creative attributes.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
-  protected function validateAndShiftRequest(Request $request) {
+  protected function validateAndShiftRequest(Request $request): array {
 
     // Decode content of the request.
-    $content = $this->serializationJson->decode($request->getContent());
+    $content = Json::decode($request->getContent());
 
     // Decline request body without organization data.
     if (empty($content['data'])) {
@@ -254,8 +208,11 @@ class CreativeRegisterResource extends ResourceBase {
   /**
    * Checks whether email used by already existing account.
    */
-  protected function accountExistsForEmail(string $email) {
-    return !empty($this->userStorage->loadByProperties(['mail' => $email]));
+  protected function accountExistsForEmail(string $email): bool {
+    $accounts = $this->entityTypeManager
+      ->getStorage('user')
+      ->loadByProperties(['mail' => $email]);
+    return !empty($accounts);
   }
 
   /**
@@ -292,21 +249,22 @@ class CreativeRegisterResource extends ResourceBase {
     // Does every entry provide an ID?
     // Is the ID a valid UUID?
     if (empty($relationships['skills']['data']) ||
-      in_array(FALSE, array_map(fn($r) => array_key_exists('id', $r), $relationships['skills']['data'])) ||
+      in_array(FALSE, array_map(static fn($r) => array_key_exists('id', $r), $relationships['skills']['data']), TRUE) ||
       count(array_filter(array_column($relationships['skills']['data'], 'id'),
-        [Uuid::class, 'isValid'])) != count($relationships['skills']['data'])) {
+        [Uuid::class, 'isValid'])) !== count($relationships['skills']['data'])) {
       throw new FieldAwareHttpException(400,
         'Need to provide well-structured skills array to register user.',
         'skills');
     }
     // Can the provided skills be loaded?
     $skills_uuids = array_column($relationships['skills']['data'], 'id');
-    $skills_ids = $this->termStorage
+    $skills_ids = $this->entityTypeManager
+      ->getStorage('taxonomy_term')
       ->getQuery()
       ->accessCheck(FALSE)
       ->condition('uuid', $skills_uuids, 'IN')
       ->execute();
-    if (count($skills_ids) != count($skills_uuids)) {
+    if (count($skills_ids) !== count($skills_uuids)) {
       throw new FieldAwareHttpException(409,
         'Unable to load one or more of the provided skills.',
         'skills');
@@ -317,18 +275,18 @@ class CreativeRegisterResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\creatives\Controller\CreativeAccessController::accessCreate');
+      $route->setRequirement('_custom_access', '\Drupal\creatives\Access\CreativeEntityAccess::accessCreate');
       $collection->add("$route_name.$method", $route);
     }
 

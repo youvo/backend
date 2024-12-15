@@ -86,6 +86,11 @@ phpstan:
 phpcs:
 	@vendor/bin/phpcs $(filter-out $@,$(MAKECMDGOALS))
 
+## phpcbf 	:	Automatic code styling fixes with phpcbf.
+.PHONY: phpcbf
+phpcbf:
+	@vendor/bin/phpcbf $(filter-out $@,$(MAKECMDGOALS))
+
 ## phpunit 	:	Run PHPUnit tests.
 .PHONY: phpunit
 phpunit:

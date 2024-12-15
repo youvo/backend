@@ -26,7 +26,7 @@ class WeightedFileItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     $schema = parent::schema($field_definition);
     $schema['columns']['weight'] = [
       'description' => 'Weight of the file.',
@@ -39,7 +39,7 @@ class WeightedFileItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties = parent::propertyDefinitions($field_definition);
 
     $properties['weight'] = DataDefinition::create('integer')

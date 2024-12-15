@@ -15,14 +15,14 @@ class ProjectSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'entity_project_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['project_settings']['#markup'] = Link::fromTextAndUrl($this->t('Field settings'), Url::fromRoute('entity.project.field_ui_fields'))->toString();
     return $form;
   }
@@ -30,7 +30,7 @@ class ProjectSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Do nothing.
   }
 

@@ -4,6 +4,7 @@ namespace Drupal\logbook\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\logbook\LogTextInterface;
 use Drupal\youvo\TranslationFormButtonsTrait;
 
 /**
@@ -20,7 +21,7 @@ class LogTextForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     // Build parent form.
     $form = parent::form($form, $form_state);
@@ -37,12 +38,16 @@ class LogTextForm extends ContentEntityForm {
       '#default_value' => $this->entity->getPublicText(),
     ];
 
-    /** @var \Drupal\logbook\Entity\LogText $log_text */
     $log_text = $this->getEntity();
+    if (!$log_text instanceof LogTextInterface) {
+      return $form;
+    }
 
-    if (!$log_text->isNew() &&
-      $log_text->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-      static::addTranslationButtons($form, $log_text);
+    if (
+      !$log_text->isNew() &&
+      $log_text->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')
+    ) {
+      $this->addTranslationButtons($form, $log_text);
     }
 
     $form_state->setRedirect('entity.log_pattern.edit_form', [
@@ -55,7 +60,7 @@ class LogTextForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     $result = parent::save($form, $form_state);
     $form_state->setRedirect('entity.log_pattern.edit_form', [

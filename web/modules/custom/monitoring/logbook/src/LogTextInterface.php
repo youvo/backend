@@ -3,48 +3,31 @@
 namespace Drupal\logbook;
 
 use Drupal\child_entities\ChildEntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
  * Provides an interface defining a log text entity type.
  */
-interface LogTextInterface extends ChildEntityInterface {
+interface LogTextInterface extends ChildEntityInterface, ContentEntityInterface {
 
   /**
    * Gets the text.
-   *
-   * @return string
-   *   The text.
    */
-  public function getText();
+  public function getText(): string;
 
   /**
    * Sets the text.
-   *
-   * @param string $text
-   *   The text.
-   *
-   * @return \Drupal\logbook\LogTextInterface
-   *   The current log text.
    */
-  public function setText(string $text): LogTextInterface;
+  public function setText(string $text): static;
 
   /**
    * Gets the public text.
-   *
-   * @return string
-   *   The public text.
    */
-  public function getPublicText(bool $fallback = FALSE);
+  public function getPublicText(bool $fallback = FALSE): string;
 
   /**
    * Sets the public text.
-   *
-   * @param string $public_text
-   *   The public text.
-   *
-   * @return \Drupal\logbook\LogTextInterface
-   *   The current log text.
    */
-  public function setPublicText(string $public_text): LogTextInterface;
+  public function setPublicText(string $public_text): static;
 
 }

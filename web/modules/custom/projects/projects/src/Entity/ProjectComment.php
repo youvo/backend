@@ -64,7 +64,7 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): ProjectCommentInterface {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }

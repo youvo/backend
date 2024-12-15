@@ -1,10 +1,10 @@
-<h3>Hello, {{ page.name }}!</h3>
+<h2>Hello, {{ page.name }}!</h2>
 
 <div class="leader">
   {% if page.monitoring %}
     <div class="claro-details">
       <div class="claro-details__wrapper">
-        <h4>Monitoring</h4>
+        <h3>Monitoring</h3>
         {{ page.logbook}}
         {{ page.stats}}
         {{ page.academy_participants }}
@@ -15,7 +15,7 @@
   {% if page.moderation %}
     <div class="claro-details">
       <div class="claro-details__wrapper">
-        <h4>Content Moderation</h4>
+        <h3>Content Moderation</h3>
         {{ page.academy_administration }}
       </div>
     </div>
@@ -24,7 +24,7 @@
   {% if page.configuration %}
     <div class="claro-details">
       <div class="claro-details__wrapper">
-        <h4>Configuration</h4>
+        <h3>Configuration</h3>
         {{ page.transactional_emails }}
         {{ page.log_patterns }}
         {{ page.skills }}

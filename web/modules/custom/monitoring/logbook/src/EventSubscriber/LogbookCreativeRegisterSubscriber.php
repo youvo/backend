@@ -3,13 +3,14 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\creatives\Event\CreativeRegisterEvent;
 
 /**
  * Logbook creative register event subscriber.
  */
 class LogbookCreativeRegisterSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = 'Drupal\creatives\Event\CreativeRegisterEvent';
+  const EVENT_CLASS = CreativeRegisterEvent::class;
   const LOG_PATTERN = 'creative_register';
 
   /**

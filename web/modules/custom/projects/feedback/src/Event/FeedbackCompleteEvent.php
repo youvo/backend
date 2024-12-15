@@ -12,9 +12,6 @@ class FeedbackCompleteEvent extends Event {
 
   /**
    * Constructs a FeedbackCompleteEvent object.
-   *
-   * @param \Drupal\feedback\FeedbackInterface $feedback
-   *   The feedback.
    */
   public function __construct(protected FeedbackInterface $feedback) {}
 

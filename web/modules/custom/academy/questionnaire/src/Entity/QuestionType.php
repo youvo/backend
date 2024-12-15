@@ -46,16 +46,12 @@ class QuestionType extends ConfigEntityBundleBase {
 
   /**
    * The machine name of this question type.
-   *
-   * @var string
    */
-  protected $id;
+  protected string $id;
 
   /**
    * The human-readable name of the question type.
-   *
-   * @var string
    */
-  protected $label;
+  protected string $label;
 
 }

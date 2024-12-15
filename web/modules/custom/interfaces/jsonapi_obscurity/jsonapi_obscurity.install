@@ -12,17 +12,18 @@
  */
 function jsonapi_obscurity_requirements(string $phase): array {
 
-  if ($phase == 'runtime') {
-    $requirements['jsonapi_obscurity'] = [
-      'title' => t('JSON:API Obscurity'),
-      'value' => t('Obscurity prefix not defined!'),
-    ];
+  if ($phase === 'runtime') {
+    $requirements['jsonapi_obscurity']['title'] = t('JSON:API Obscurity');
     if (empty(\Drupal::getContainer()->getParameter('jsonapi_obscurity.prefix'))) {
       $requirements['jsonapi_obscurity']['description'] = t('Please set the parameter %parameter in the file %file.', [
         '%parameter' => 'jsonapi_obscurity.prefix',
         '%file' => 'sites/default/services.yml',
       ]);
       $requirements['jsonapi_obscurity']['severity'] = REQUIREMENT_ERROR;
+      $requirements['jsonapi_obscurity']['value'] = t('Obscurity prefix not defined!');
+    }
+    else {
+      $requirements['jsonapi_obscurity']['value'] = t('Obscurity prefix is defined.');
     }
   }
 

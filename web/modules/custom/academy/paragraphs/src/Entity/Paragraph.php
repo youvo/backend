@@ -71,7 +71,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
    *
    * We set the mandatory lecture value here!
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
@@ -84,7 +84,8 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
+
     // Adjust weight depending on existing children.
     if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
       /** @var \Drupal\lectures\Entity\Lecture $parent */
@@ -98,7 +99,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
     // Add a cache tag for evaluation paragraphs in order to easily identify
     // and invalidate all cached evaluations in a course.
-    if ($this->isNew() && $this->bundle() == 'evaluation') {
+    if ($this->isNew() && $this->bundle() === 'evaluation') {
       $course = $this->getOriginEntity();
       $cache_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . $this->bundle();
       $this->addCacheTags($cache_tags);
@@ -108,7 +109,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Invalidate parent cache to update the computed children field.
       $this->invalidateParentCache();
@@ -119,14 +120,14 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   /**
    * Gets the title.
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return $this->get('title')->value;
   }
 
   /**
    * Sets the title.
    */
-  public function setTitle(string $title) {
+  public function setTitle(string $title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -134,14 +135,14 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
   /**
    * Gets the created time.
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * Sets the created time.
    */
-  public function setCreatedTime(int $timestamp) {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -151,7 +152,7 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

@@ -18,7 +18,7 @@ class ComputedFieldStorageDefinition extends BaseFieldDefinition {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField() {
+  public function isBaseField(): bool {
     return FALSE;
   }
 

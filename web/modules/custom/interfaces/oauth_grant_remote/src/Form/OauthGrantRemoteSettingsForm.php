@@ -2,7 +2,6 @@
 
 namespace Drupal\oauth_grant_remote\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\simple_oauth\Service\Filesystem\FileSystemChecker;
@@ -17,66 +16,39 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
 
   /**
    * The file system checker.
-   *
-   * @var \Drupal\simple_oauth\Service\Filesystem\FileSystemChecker
    */
-  protected $fileSystemChecker;
+  protected FileSystemChecker $fileSystemChecker;
 
   /**
-   * Oauth2TokenSettingsForm constructor.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The factory for configuration objects.
-   * @param \Drupal\simple_oauth\Service\Filesystem\FileSystemChecker $file_system_checker
-   *   The simple_oauth.filesystem service.
+   * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $configFactory, FileSystemChecker $file_system_checker) {
-    parent::__construct($configFactory);
-    $this->fileSystemChecker = $file_system_checker;
+  public static function create(ContainerInterface $container): static {
+    $instance = parent::create($container);
+    $instance->fileSystemChecker = $container->get('simple_oauth.filesystem_checker');
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('simple_oauth.filesystem_checker')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'oauth_grant_remote_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['oauth_grant_remote.settings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $settings = $this->config('oauth_grant_remote.settings');
-    $settings->set('jwt_expiration', $form_state->getValue('jwt_expiration'));
-    $settings->set('jwt_key_path', $form_state->getValue('jwt_key_path'));
-    $settings->set('auth_relay_url', $form_state->getValue('auth_relay_url'));
-    $settings->set('development', $form_state->getValue('development'));
-    $settings->save();
-    parent::submitForm($form, $form_state);
-  }
+  public function buildForm(array $form, FormStateInterface $form_state): array {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('oauth_grant_remote.settings');
+
     $form['jwt_expiration'] = [
       '#type' => 'number',
       '#title' => $this->t('JWT Token Expiration Time'),
@@ -126,7 +98,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
    * @param array $complete_form
    *   The complete form structure.
    */
-  public function validateExistingFile(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public function validateExistingFile(array &$element, FormStateInterface $form_state, array &$complete_form): void {
     if (!empty($element['#value'])) {
       $path = $element['#value'];
       // Does the file exist?
@@ -138,6 +110,19 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
         $form_state->setError($element, $this->t('The %field file at the specified location is not readable.', ['%field' => $element['#title']]));
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $settings = $this->config('oauth_grant_remote.settings');
+    $settings->set('jwt_expiration', $form_state->getValue('jwt_expiration'));
+    $settings->set('jwt_key_path', $form_state->getValue('jwt_key_path'));
+    $settings->set('auth_relay_url', $form_state->getValue('auth_relay_url'));
+    $settings->set('development', $form_state->getValue('development'));
+    $settings->save();
+    parent::submitForm($form, $form_state);
   }
 
 }

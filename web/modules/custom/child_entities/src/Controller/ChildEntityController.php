@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Class ChildEntityController.
@@ -31,9 +32,9 @@ class ChildEntityController extends EntityController {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function addPage($entity_type_id) {
+  public function addPage($entity_type_id): RedirectResponse|array {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    $this->entityImplementsChildEntityInterface($entity_type);
+    static::entityImplementsChildEntityInterface($entity_type);
 
     $bundles = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
     $bundle_key = $entity_type->getKey('bundle');
@@ -80,7 +81,7 @@ class ChildEntityController extends EntityController {
 
     $form_route_name = 'entity.' . $entity_type_id . '.add_form';
     // Redirect if there's only one bundle available.
-    if (count($bundles) == 1) {
+    if (count($bundles) === 1) {
       $bundle_names = array_keys($bundles);
       $bundle_name = reset($bundle_names);
       $route_arguments[$bundle_argument] = $bundle_name;
@@ -110,7 +111,7 @@ class ChildEntityController extends EntityController {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  private function addParentRouteArguments(array &$route_arguments, EntityTypeInterface $entity_type) {
+  private function addParentRouteArguments(array &$route_arguments, EntityTypeInterface $entity_type): void {
     // Add entity route arguments.
     $parent_argument = $entity_type->getKey('parent');
     $route_arguments[$parent_argument] = $this->getParentEntityFromRoute($parent_argument)->id();
@@ -125,9 +126,9 @@ class ChildEntityController extends EntityController {
   /**
    * {@inheritdoc}
    */
-  public function editTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
+  public function editTitle(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL): ?string {
     if ($entity = $this->doGetEntity($route_match, $_entity)) {
-      return $entity->label();
+      return (string) $entity->label();
     }
     return NULL;
   }
@@ -135,13 +136,13 @@ class ChildEntityController extends EntityController {
   /**
    * {@inheritdoc}
    */
-  protected function doGetEntity(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL) {
+  protected function doGetEntity(RouteMatchInterface $route_match, ?EntityInterface $_entity = NULL): ?EntityInterface {
 
     // Looking for the matching entity in the route parameters.
     // The entity routes follow the pattern entity.{entity_id}.edit_form!
     $route_name = explode('.', $route_match->getRouteName());
     $parameters = $route_match->getParameters()->all();
-    if (in_array($route_name[1], array_keys($parameters))) {
+    if (array_key_exists($route_name[1], $parameters)) {
       $candidate = $parameters[$route_name[1]];
       if ($candidate instanceof ChildEntityInterface) {
         $_entity = $candidate;

@@ -5,6 +5,7 @@ namespace Drupal\questionnaire\Form;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\questionnaire\Entity\QuestionType;
 
 /**
  * Form handler for question type forms.
@@ -14,11 +15,11 @@ class QuestionTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $entity_type = $this->entity;
-    if ($this->operation == 'add') {
+    if ($this->operation === 'add') {
       $form['#title'] = $this->t('Add question type');
     }
     else {
@@ -42,7 +43,7 @@ class QuestionTypeForm extends BundleEntityFormBase {
       '#default_value' => $entity_type->id(),
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
-        'exists' => ['Drupal\questionnaire\Entity\QuestionType', 'load'],
+        'exists' => [QuestionType::class, 'load'],
         'source' => ['label'],
       ],
       '#description' => $this->t('A unique machine-readable name for this question type. It must only contain lowercase letters, numbers, and underscores.'),
@@ -54,7 +55,7 @@ class QuestionTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save question type');
     $actions['delete']['#value'] = $this->t('Delete question type');
@@ -67,7 +68,8 @@ class QuestionTypeForm extends BundleEntityFormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
+
     /** @var \Drupal\questionnaire\Entity\QuestionType $entity_type */
     $entity_type = $this->entity;
 
@@ -77,10 +79,10 @@ class QuestionTypeForm extends BundleEntityFormBase {
     $status = $entity_type->save();
 
     $t_args = ['%name' => $entity_type->label()];
-    if ($status == SAVED_UPDATED) {
+    if ($status === SAVED_UPDATED) {
       $message = $this->t('The question type %name has been updated.', $t_args);
     }
-    elseif ($status == SAVED_NEW) {
+    elseif ($status === SAVED_NEW) {
       $message = $this->t('The question type %name has been added.', $t_args);
     }
     else {

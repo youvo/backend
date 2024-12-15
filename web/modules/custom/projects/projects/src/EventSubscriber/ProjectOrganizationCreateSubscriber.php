@@ -5,6 +5,7 @@ namespace Drupal\projects\EventSubscriber;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
@@ -23,26 +24,11 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
 
   /**
-   * Constructs a ProjectOrganizationCreateSubscriber object.
-   *
-   * @param \Drupal\Component\Serialization\Json $serializationJson
-   *   The serialization by Json service.
-   */
-  public function __construct(protected Json $serializationJson) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getSubscribedEvents() {
-    return ['Drupal\organizations\Event\OrganizationCreateEvent' => 'createProject'];
-  }
-
-  /**
    * Creates new project.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function createProject(Event $event) {
+  public function createProject(Event $event): void {
     $project = Project::create(['type' => 'project']);
     /** @var \Drupal\organizations\Event\OrganizationCreateEvent $event */
     $attributes = $this->validateAndShiftRequest($event->getRequest());
@@ -66,14 +52,16 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
-  public function validateAndShiftRequest(Request $request) {
+  public function validateAndShiftRequest(Request $request): array {
 
     // Decode content of the request.
-    $content = $this->serializationJson->decode($request->getContent());
+    $content = Json::decode($request->getContent());
 
     // Decline request body without project data.
-    if (empty($content['data']) ||
-      !in_array('project', array_column($content['data'], 'type'))) {
+    if (
+      empty($content['data']) ||
+      !in_array('project', array_column($content['data'], 'type'), TRUE)
+    ) {
       throw new HttpException(400, 'Request body does not provide project data.');
     }
 
@@ -100,7 +88,7 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
    *
    * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
-  public function populateFields(array $attributes, ProjectInterface $project) {
+  public function populateFields(array $attributes, ProjectInterface $project): void {
     foreach ($attributes as $field_key => $value) {
       $field_name = $this->validateAndRenameField($field_key, $project);
       $field_definition = $project->getFieldDefinition($field_name);
@@ -113,7 +101,7 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   /**
    * Resolves the field name.
    */
-  protected function validateAndRenameField(string $field_key, ProjectInterface $project) {
+  protected function validateAndRenameField(string $field_key, ProjectInterface $project): string {
     if ($project->hasField($field_key)) {
       $field_name = $field_key;
     }
@@ -131,7 +119,7 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   /**
    * Checks the field access with the help of ProjectFieldAccess.
    */
-  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key) {
+  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key): void {
     if (!ProjectFieldAccess::isFieldOfGroup($field_definition,
       ProjectFieldAccess::UNRESTRICTED_FIELDS)) {
       throw new FieldAwareHttpException(403,
@@ -143,12 +131,19 @@ class ProjectOrganizationCreateSubscriber implements EventSubscriberInterface {
   /**
    * Validates the field value with the help of the FieldValidator.
    */
-  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value) {
+  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value): void {
     if (!FieldValidator::validate($field_definition, $value)) {
       throw new FieldAwareHttpException(400,
         'Malformed request body. Unable to validate the project field ' . $field_key,
         $field_key);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getSubscribedEvents(): array {
+    return [OrganizationCreateEvent::class => 'createProject'];
   }
 
 }

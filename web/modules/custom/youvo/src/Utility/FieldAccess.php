@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo\Utility;
 
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -21,21 +22,20 @@ abstract class FieldAccess {
     string $operation,
     FieldDefinitionInterface $field,
     AccountInterface $account,
-  );
+  ): AccessResultInterface;
 
   /**
    * Determines if a field is part of a defined group.
    */
-  public static function isFieldOfGroup(FieldDefinitionInterface|string $field, array $group) {
-    return in_array(static::getFieldName($field), $group);
+  public static function isFieldOfGroup(FieldDefinitionInterface|string $field, array $group): bool {
+    return in_array(static::getFieldName($field), $group, TRUE);
   }
 
   /**
-   * Helper function to fetch field name.
+   * Gets the field name.
    */
-  protected static function getFieldName(FieldDefinitionInterface|string $field) {
-    return $field instanceof FieldDefinitionInterface ?
-      $field->getName() : $field;
+  protected static function getFieldName(FieldDefinitionInterface|string $field): string {
+    return $field instanceof FieldDefinitionInterface ? $field->getName() : $field;
   }
 
 }

@@ -14,8 +14,11 @@ use Drupal\node\Entity\Node;
 class LifecycleConstraintTest extends WorkflowsTestBase {
 
   /**
+   * Tests that we can apply valid transitions.
+   *
    * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraint
    * @covers \Drupal\lifecycle\Plugin\Validation\Constraint\LifecycleConstraintValidator
+   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testValidTransitionsNoViolations(): void {
@@ -44,7 +47,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
   }
 
   /**
-   * Test we can not apply invalid transitions.
+   * Tests that we can not apply invalid transitions.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
@@ -64,7 +67,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
   }
 
   /**
-   * Test we cannot apply a valid transition unless we have permission.
+   * Tests that we cannot apply a valid transition unless we have permission.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

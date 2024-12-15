@@ -3,12 +3,10 @@
 namespace Drupal\consumer_permissions;
 
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\consumers\ConsumerStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\UserAuthenticationInterface;
 use Drupal\user\UserAuthInterface;
 use Drupal\user\UserInterface;
-use Drupal\user\UserStorageInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -25,69 +23,23 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthenticationInterface {
 
   /**
-   * The consumer storage.
-   *
-   * @var \Drupal\consumers\ConsumerStorage
-   */
-  protected ConsumerStorage $consumerStorage;
-
-  /**
-   * The request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request|null
-   */
-  protected ?Request $request;
-
-  /**
-   * The user auth service.
-   *
-   * @var \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface
-   */
-  protected UserAuthInterface|UserAuthenticationInterface $userAuth;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected UserStorageInterface $userStorage;
-
-  /**
    * Constructs a ConsumerPermissionsAuthDecorator object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack service.
-   * @param \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface $user_auth
-   *   The user auth service.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(
-    EntityTypeManagerInterface $entity_type_manager,
-    RequestStack $request_stack,
-    UserAuthInterface|UserAuthenticationInterface $user_auth,
-  ) {
-    /** @var \Drupal\consumers\ConsumerStorage $consumer_storage */
-    $consumer_storage = $entity_type_manager->getStorage('consumer');
-    $this->consumerStorage = $consumer_storage;
-    $this->request = $request_stack->getCurrentRequest();
-    $this->userAuth = $user_auth;
-    /** @var \Drupal\user\UserStorageInterface $user_storage */
-    $user_storage = $entity_type_manager->getStorage('user');
-    $this->userStorage = $user_storage;
-  }
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected RequestStack $requestStack,
+    protected UserAuthInterface|UserAuthenticationInterface $userAuth,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public function authenticate($username, $password) {
+  public function authenticate($username, $password): bool {
 
     // Resolve client ID and response type from destination.
-    if ($this->request->query->has('destination')) {
-      $destination = $this->request->query->get('destination');
+    $current_request = $this->requestStack->getCurrentRequest();
+    if ($current_request instanceof Request && $current_request->query->has('destination')) {
+      $destination = $current_request->query->get('destination');
       $options = UrlHelper::parse($destination);
       $client_id = $options['query']['client_id'] ?? NULL;
     }
@@ -97,8 +49,9 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthent
       return $this->userAuth->authenticate($username, $password);
     }
 
-    $clients = $this->consumerStorage
-      ->loadByProperties(['uuid' => $client_id]);
+    $clients = $this->entityTypeManager
+      ->getStorage('consumer')
+      ->loadByProperties(['client_id' => $client_id]);
     $client = reset($clients);
 
     // Should not happen since the client is validated in the controller.
@@ -107,9 +60,11 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthent
     }
 
     // Using the same condition for the arguments as in the decorated service.
-    if (!empty($username) && strlen($password) > 0) {
+    if (!empty($username) && $password !== '') {
 
-      $accounts = $this->userStorage->loadByProperties(['name' => $username]);
+      $accounts = $this->entityTypeManager
+        ->getStorage('user')
+        ->loadByProperties(['name' => $username]);
       $account = reset($accounts);
 
       // Do not authenticate if unable to load account.

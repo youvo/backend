@@ -14,7 +14,7 @@ use Drupal\node\Entity\Node;
 class WorkflowsFormatterTest extends WorkflowsTestBase {
 
   /**
-   * Test the states list formatter.
+   * Tests the states list formatter.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

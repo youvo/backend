@@ -5,7 +5,7 @@ namespace Drupal\youvo\Event;
 use Drupal\Component\EventDispatcher\Event;
 
 /**
- * Event that is fired when json api relationships are parsed.
+ * Event that is fired when JSON:API relationships are parsed.
  */
 class ParseJsonapiAttributesEvent extends Event {
 
@@ -18,9 +18,6 @@ class ParseJsonapiAttributesEvent extends Event {
 
   /**
    * Constructs a ParseJsonapiAttributesEvent object.
-   *
-   * @param array $item
-   *   The item.
    */
   public function __construct(array $item) {
     $this->item = $item;
@@ -29,14 +26,14 @@ class ParseJsonapiAttributesEvent extends Event {
   /**
    * Gets the item.
    */
-  public function getItem() {
+  public function getItem(): array {
     return $this->item;
   }
 
   /**
    * Sets the item.
    */
-  public function setItem(array $item) {
+  public function setItem(array $item): static {
     $this->item = $item;
     return $this;
   }

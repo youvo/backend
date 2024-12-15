@@ -14,7 +14,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function alterRoutes(RouteCollection $collection) {
+  protected function alterRoutes(RouteCollection $collection): void {
     if ($route = $collection->get('entity.course.edit_form')) {
       $route->setDefault('_title_callback', ChildEntityController::class . '::editTitle');
     }

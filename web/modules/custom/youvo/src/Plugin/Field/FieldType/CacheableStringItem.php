@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\youvo\Plugin\DataType\CacheableStringData;
 
 /**
  * Defines the 'cacheable string' entity field type.
@@ -24,7 +25,7 @@ class CacheableStringItem extends StringItem {
   /**
    * {@inheritdoc}
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties['value'] = DataDefinition::create('cacheable_string')
       ->setLabel(new TranslatableMarkup('Cacheable Text value'))
       ->setSetting('case_sensitive', $field_definition->getSetting('case_sensitive'))
@@ -40,7 +41,7 @@ class CacheableStringItem extends StringItem {
    *
    * @see \Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
     return $value === NULL;
   }
@@ -52,7 +53,7 @@ class CacheableStringItem extends StringItem {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getValueProperty() {
+  public function getValueProperty(): CacheableStringData {
     /** @var \Drupal\youvo\Plugin\DataType\CacheableStringData $value */
     $value = $this->get('value');
     return $value;

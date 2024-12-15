@@ -8,9 +8,7 @@ namespace Drupal\projects\Event;
 class ProjectInviteEvent extends ProjectEventBase {
 
   /**
-   * A invite link.
-   *
-   * @var string
+   * An invitation link.
    */
   protected string $link;
 

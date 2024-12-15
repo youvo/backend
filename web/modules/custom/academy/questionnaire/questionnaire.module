@@ -2,31 +2,28 @@
 
 /**
  * @file
- * Alterations for paragraph entity.
- *
- * This module does not define a new questionnaire entity. A questionnaire is a
- * paragraph entity or more explicitly a type of paragraph entity. We use the
- * following hooks to implement alterations to extend paragraphs for
- * questionnaires.
+ * Provides hooks for a questionnaire entity type.
  */
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\questionnaire\Access\QuestionFieldAccess;
 use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\Questionnaire;
+use Drupal\questionnaire\Form\ParagraphQuestionnaireForm;
 use Drupal\questionnaire\Plugin\Field\ContainedQuestionsFieldItemList;
 use Drupal\questionnaire\Plugin\Field\SubmissionFieldItemList;
-use Drupal\questionnaire\QuestionFieldAccess;
 use Drupal\youvo\ComputedFieldStorageDefinition;
 
 /**
  * Implements hook_entity_bundle_info_alter().
  */
-function questionnaire_entity_bundle_info_alter(&$bundles) {
+function questionnaire_entity_bundle_info_alter(array &$bundles): void {
   if (isset($bundles['paragraph']['questionnaire'])) {
     $bundles['paragraph']['questionnaire']['class'] = Questionnaire::class;
   }
@@ -35,7 +32,7 @@ function questionnaire_entity_bundle_info_alter(&$bundles) {
 /**
  * Implements hook_entity_field_access().
  */
-function questionnaire_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
+function questionnaire_entity_field_access(string $operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL): AccessResultInterface {
   $entity = $items?->getEntity();
   if ($entity instanceof Question) {
     return QuestionFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
@@ -46,24 +43,24 @@ function questionnaire_entity_field_access($operation, FieldDefinitionInterface 
 /**
  * Implements hook_entity_type_alter().
  */
-function questionnaire_entity_type_alter(array &$entity_types) {
+function questionnaire_entity_type_alter(array &$entity_types): void {
   // We alter the default paragraph.{add,edit} form handlers in order
   // to load a different class than the standard add- and  edit form for
   // paragraphs.
   // @todo Check if there is a better way to define handlers by bundle.
-  $entity_types['paragraph']->setFormClass('add', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
-  $entity_types['paragraph']->setFormClass('edit', 'Drupal\\questionnaire\\Form\\ParagraphQuestionnaireForm');
+  $entity_types['paragraph']->setFormClass('add', ParagraphQuestionnaireForm::class);
+  $entity_types['paragraph']->setFormClass('edit', ParagraphQuestionnaireForm::class);
 }
 
 /**
  * Implements hook_entity_bundle_field_info().
  */
-function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type, string $bundle, array $base_field_definitions): array {
 
   $fields = [];
 
   // Add computed evaluation field to evaluation paragraphs.
-  if ($entity_type->id() == 'question') {
+  if ($entity_type->id() === 'question') {
     // It is not a basefield, so we need a custom field storage definition see
     // https://www.drupal.org/project/drupal/issues/2346347#comment-12206126
     $fields['submission'] = ComputedFieldStorageDefinition::create('cacheable_string')
@@ -74,13 +71,13 @@ function questionnaire_entity_bundle_field_info(EntityTypeInterface $entity_type
       ->setClass(SubmissionFieldItemList::class)
       ->setTargetEntityTypeId($entity_type->id())
       ->setTargetBundle($bundle);
-    if ($bundle == 'checkboxes' || $bundle == 'task') {
+    if ($bundle === 'checkboxes' || $bundle === 'task') {
       $fields['submission']->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
     }
   }
 
   // Add computed evaluation field to evaluation paragraphs.
-  if ($entity_type->id() == 'paragraph' && $bundle == 'evaluation') {
+  if ($bundle === 'evaluation' && $entity_type->id() === 'paragraph') {
     $fields['questions'] = ComputedFieldStorageDefinition::create('entity_reference')
       ->setLabel(t('Computed Course Questions'))
       ->setDescription(t('Computes the questions contained in this course.'))

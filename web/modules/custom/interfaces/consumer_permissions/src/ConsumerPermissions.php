@@ -2,8 +2,8 @@
 
 namespace Drupal\consumer_permissions;
 
-use Drupal\consumers\ConsumerStorage;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,26 +18,21 @@ class ConsumerPermissions implements ContainerInjectionInterface {
 
   /**
    * Constructs a ConsumerPermissions instance.
-   *
-   * @param \Drupal\consumers\ConsumerStorage $consumerStorage
-   *   The consumer storage.
    */
-  public function __construct(protected ConsumerStorage $consumerStorage) {}
+  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')->getStorage('consumer')
-    );
+  public static function create(ContainerInterface $container): static {
+    return new static($container->get('entity_type.manager'));
   }
 
   /**
    * Generates permissions for all consumers.
    */
   public function generate(): array {
-    foreach ($this->consumerStorage->loadMultiple() as $client) {
+    foreach ($this->entityTypeManager->getStorage('consumer')->loadMultiple() as $client) {
       $permissions[self::PREFIX . $client->id()] = [
         'title' => $this->t('Authorize with client %label', ['%label' => $client->label()]),
         'dependencies' => [$client->getConfigDependencyKey() => [$client->getConfigDependencyName()]],

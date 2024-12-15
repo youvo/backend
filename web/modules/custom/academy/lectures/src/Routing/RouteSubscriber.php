@@ -13,7 +13,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function alterRoutes(RouteCollection $collection) {
+  protected function alterRoutes(RouteCollection $collection): void {
     if ($route = $collection->get('entity.lecture.collection')) {
       $route->setRequirement('_permission', 'manage courses');
     }

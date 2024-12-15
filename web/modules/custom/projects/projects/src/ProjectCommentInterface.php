@@ -34,9 +34,9 @@ interface ProjectCommentInterface extends ContentEntityInterface, EntityChangedI
    * @param int $timestamp
    *   The project comment creation timestamp.
    *
-   * @return \Drupal\projects\ProjectCommentInterface
+   * @return $this
    *   The called project comment entity.
    */
-  public function setCreatedTime(int $timestamp): ProjectCommentInterface;
+  public function setCreatedTime(int $timestamp): static;
 
 }

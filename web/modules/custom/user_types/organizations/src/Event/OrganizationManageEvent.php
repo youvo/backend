@@ -15,11 +15,6 @@ class OrganizationManageEvent extends Event {
 
   /**
    * Constructs a OrganizationManageEvent object.
-   *
-   * @param \Drupal\organizations\Entity\Organization $organization
-   *   The organization.
-   * @param \Drupal\creatives\Entity\Creative $manager
-   *   The manager.
    */
   public function __construct(
     protected Organization $organization,
@@ -29,14 +24,14 @@ class OrganizationManageEvent extends Event {
   /**
    * Gets the organization.
    */
-  public function getOrganization() {
+  public function getOrganization(): Organization {
     return $this->organization;
   }
 
   /**
    * Gets the manager.
    */
-  public function getManager() {
+  public function getManager(): Creative {
     return $this->manager;
   }
 

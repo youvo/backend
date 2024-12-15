@@ -26,17 +26,6 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
 
   /**
    * Constructs a BlockerModeSubscriber object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The current user.
-   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer
-   *   The bare HTML page renderer.
-   * @param \Drupal\blocker_mode\BlockerModeInterface $blockerMode
-   *   The blocker mode.
-   * @param string $jsonApiBasePath
-   *   The JSON:API base path.
-   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $pageCacheKillSwitch
-   *   The page cache kill switch.
    */
   public function __construct(
     protected AccountInterface $account,
@@ -47,41 +36,36 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   ) {}
 
   /**
-   * Handles the kernel request.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The request event to process.
+   * Handles request events.
    */
-  public function onKernelRequestBlocker(RequestEvent $event) {
+  public function onKernelRequestBlocker(RequestEvent $event): void {
 
     $request = $event->getRequest();
     $route_match = RouteMatch::createFromRequest($request);
 
-    if ($this->blockerMode->applies($request)) {
-      if (!$this->blockerMode->exempt($route_match, $this->account)) {
+    if (
+      $this->blockerMode->applies($request) &&
+      !$this->blockerMode->exempt($route_match, $this->account)
+    ) {
 
-        // One last effort to redirect the user. Can happen if logged-in user
-        // tries to access /user/login which redirects to user canonical.
-        if ($this->account->hasPermission('access site') &&
-          RouteMatch::createFromRequest($event->getRequest())->getRouteName() == 'entity.user.canonical') {
-          $redirect_url = Url::fromRoute('youvo.dashboard');
-          $event->setResponse(new RedirectResponse($redirect_url->toString()));
-        }
-        // Access forbidden.
-        else {
-          $this->forbiddenResponse($event);
-        }
+      // One last effort to redirect the user. Can happen if logged-in user
+      // tries to access /user/login which redirects to user canonical.
+      if ($this->account->hasPermission('access site') &&
+        RouteMatch::createFromRequest($event->getRequest())->getRouteName() === 'entity.user.canonical') {
+        $redirect_url = Url::fromRoute('youvo.dashboard');
+        $event->setResponse(new RedirectResponse($redirect_url->toString()));
+      }
+      // Access forbidden.
+      else {
+        $this->forbiddenResponse($event);
       }
     }
   }
 
   /**
-   * Handles the kernel exception.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
-   *   The request event to process.
+   * Handles exception events.
    */
-  public function onKernelExceptionBlocker(ExceptionEvent $event) {
+  public function onKernelExceptionBlocker(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     $path = $event->getRequest()->getPathInfo();
     if (
@@ -110,11 +94,8 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
 
   /**
    * Delivers the forbidden response.
-   *
-   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
-   *   The event to process.
    */
-  private function forbiddenResponse(RequestEvent $event) {
+  private function forbiddenResponse(RequestEvent $event): void {
     $request = $event->getRequest();
     $this->pageCacheKillSwitch->trigger();
     if ($request->getRequestFormat() !== 'html') {
@@ -131,7 +112,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[KernelEvents::REQUEST][] = ['onKernelRequestBlocker', 31];
     $events[KernelEvents::EXCEPTION][] = ['onKernelExceptionBlocker', 1];
     return $events;

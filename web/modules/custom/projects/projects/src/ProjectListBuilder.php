@@ -5,9 +5,8 @@ namespace Drupal\projects;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Language\LanguageManager;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -17,57 +16,28 @@ class ProjectListBuilder extends EntityListBuilder {
 
   /**
    * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
    */
   protected DateFormatterInterface $dateFormatter;
 
   /**
    * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManager
    */
-  protected LanguageManager $languageManager;
-
-  /**
-   * Constructs a new NodeListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
-   * @param \Drupal\Core\Language\LanguageManager $language_manager
-   *   The language manager.
-   */
-  public function __construct(
-    EntityTypeInterface $entity_type,
-    EntityStorageInterface $storage,
-    DateFormatterInterface $date_formatter,
-    LanguageManager $language_manager,
-  ) {
-    parent::__construct($entity_type, $storage);
-    $this->dateFormatter = $date_formatter;
-    $this->languageManager = $language_manager;
-  }
+  protected LanguageManagerInterface $languageManager;
 
   /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter'),
-      $container->get('language_manager')
-    );
+    $instance = parent::createInstance($container, $entity_type);
+    $instance->dateFormatter = $container->get('date.formatter');
+    $instance->languageManager = $container->get('language_manager');
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
+  public function buildHeader(): array {
     // Enable language column and filter if multiple languages are added.
     $header = [
       'title' => $this->t('Title'),
@@ -95,7 +65,7 @@ class ProjectListBuilder extends EntityListBuilder {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\projects\Entity\Project $entity */
     $row['title']['data'] = [
       '#type' => 'link',

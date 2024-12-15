@@ -8,7 +8,7 @@
 /**
  * Implements hook_mail().
  */
-function mailer_mail($key, &$message, $params) {
+function mailer_mail(string $key, array &$message, array $params): void {
   $message['subject'] = $params['_subject'];
   $message['body'][] = $params['_body'];
 }

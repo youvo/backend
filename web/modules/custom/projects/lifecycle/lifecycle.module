@@ -8,13 +8,13 @@
 /**
  * Implements hook_field_widget_info_alter().
  */
-function lifecycle_field_widget_info_alter(array &$info) {
+function lifecycle_field_widget_info_alter(array &$info): void {
   $info['options_select']['field_types'][] = 'lifecycle_item';
 }
 
 /**
  * Implements hook_field_formatter_info_alter().
  */
-function lifecycle_field_formatter_info_alter(array &$info) {
+function lifecycle_field_formatter_info_alter(array &$info): void {
   $info['list_default']['field_types'][] = 'lifecycle_item';
 }

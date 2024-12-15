@@ -14,47 +14,17 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Service that provides functionality to manage the submission of a question.
- *
- * @see questionnaire -> questionnaire.services.yml
  */
 class SubmissionManager {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected AccountInterface $currentUser;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Logger channel.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
    * Constructs a SubmissionManager object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
    */
-  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger,) {
-    $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->logger = $logger;
-  }
+  public function __construct(
+    protected AccountInterface $currentUser,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected LoggerInterface $logger,
+  ) {}
 
   /**
    * Loads the respective submission of the question by the current user.
@@ -63,7 +33,7 @@ class SubmissionManager {
    *   The requested question.
    *
    * @returns \Drupal\questionnaire\Entity\QuestionSubmission|null
-   *   The respective submission or NULL if no storage.
+   *   The respective submission or NULL if not found.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException

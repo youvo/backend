@@ -2,6 +2,7 @@
 
 namespace Drupal\child_entities\Context;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -28,7 +29,7 @@ trait ChildEntityRouteContextTrait {
    * @return \Drupal\Core\Routing\RouteMatchInterface
    *   The current route match object.
    */
-  protected function getCurrentRouteMatch() {
+  protected function getCurrentRouteMatch(): RouteMatchInterface {
     if (!isset($this->currentRouteMatch)) {
       $this->currentRouteMatch = \Drupal::service('current_route_match');
     }
@@ -48,7 +49,7 @@ trait ChildEntityRouteContextTrait {
    * @return \Drupal\Core\Entity\EntityInterface|null
    *   The parent entity if one could be found, NULL otherwise.
    */
-  public function getParentEntityFromRoute(string $parent_entity_type) {
+  public function getParentEntityFromRoute(string $parent_entity_type): ?EntityInterface {
     $route_match = $this->getCurrentRouteMatch();
 
     // See if the route has a group parameter and try to retrieve it.

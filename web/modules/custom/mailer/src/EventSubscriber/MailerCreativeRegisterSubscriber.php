@@ -4,6 +4,7 @@ namespace Drupal\mailer\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\mailer\Entity\TransactionalEmail;
 
 /**
@@ -43,7 +44,7 @@ class MailerCreativeRegisterSubscriber extends MailerSubscriberBase {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return ['Drupal\creatives\Event\CreativeRegisterEvent' => 'mail'];
+    return [CreativeRegisterEvent::class => 'mail'];
   }
 
 }

@@ -200,7 +200,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setApplicants(array $applicants): ProjectInterface {
+  public function setApplicants(array $applicants): static {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
       $this->get('field_applicants')
@@ -212,7 +212,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function appendApplicant(AccountInterface|int $applicant): ProjectInterface {
+  public function appendApplicant(AccountInterface|int $applicant): static {
     $this->get('field_applicants')
       ->appendItem(['target_id' => Profile::id($applicant)]);
     return $this;
@@ -250,7 +250,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setParticipants(array $participants, array $tasks = []): ProjectInterface {
+  public function setParticipants(array $participants, array $tasks = []): static {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant) {
@@ -265,7 +265,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative'): ProjectInterface {
+  public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative'): static {
     $this->get('field_participants')
       ->appendItem(['target_id' => Profile::id($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
@@ -303,7 +303,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle(string $title): ProjectInterface {
+  public function setTitle(string $title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -318,7 +318,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): ProjectInterface {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -333,7 +333,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPromoted(bool $promoted): ProjectInterface {
+  public function setPromoted(bool $promoted): static {
     $this->set('promote', $promoted ? ProjectInterface::PROMOTED : ProjectInterface::NOT_PROMOTED);
     return $this;
   }

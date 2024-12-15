@@ -2,18 +2,15 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\Component\Serialization\SerializationInterface;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Routing\RouteProviderInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\file\FileInterface;
-use Drupal\file\FileStorageInterface;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -32,101 +29,28 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
   /**
-   * Serialization with Json.
-   *
-   * @var \Drupal\Component\Serialization\SerializationInterface
+   * The entity type manager.
    */
-  protected SerializationInterface $serializationJson;
-
-  /**
-   * The file storage.
-   *
-   * @var \Drupal\file\FileStorageInterface
-   */
-  protected FileStorageInterface $fileStorage;
-
-  /**
-   * Constructs a ProjectMediateResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
-   *   The route provider.
-   * @param \Drupal\Component\Serialization\SerializationInterface $serialization_json
-   *   Serialization with Json.
-   * @param \Drupal\file\FileStorageInterface $file_storage
-   *   The file storage.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountInterface $current_user,
-    EventDispatcherInterface $event_dispatcher,
-    RouteProviderInterface $route_provider,
-    SerializationInterface $serialization_json,
-    FileStorageInterface $file_storage,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $current_user, $event_dispatcher, $route_provider);
-    $this->serializationJson = $serialization_json;
-    $this->fileStorage = $file_storage;
-  }
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('projects'),
-      $container->get('current_user'),
-      $container->get('event_dispatcher'),
-      $container->get('router.route_provider'),
-      $container->get('serialization.json'),
-      $container->get('entity_type.manager')->getStorage('file')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    return $instance;
   }
 
   /**
    * Responds to POST requests.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
    * @throws \Drupal\Core\Entity\EntityStorageException
-   *   Thrown if unable to save project.
    */
-  public function post(ProjectInterface $project, Request $request) {
+  public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     // Decode content of the request.
-    $request_body = $this->serializationJson->decode($request->getContent());
+    $request_body = Json::decode($request->getContent());
     $results = $request_body['results'] ?? [];
 
     // Prepare data.
@@ -143,10 +67,8 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
       return new ModifiedResourceResponse('Project completed.');
     }
-    else {
-      throw new ConflictHttpException('Project can not be completed.');
-    }
 
+    throw new ConflictHttpException('Project can not be completed.');
   }
 
   /**
@@ -154,15 +76,17 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    */
   protected function validateResults(array $results): void {
     foreach ($results as $result) {
-      if (!array_key_exists('type', $result) ||
+      if (
+        !array_key_exists('type', $result) ||
         !array_key_exists('value', $result) ||
-        !array_key_exists('description', $result)) {
+        !array_key_exists('description', $result)
+      ) {
         throw new BadRequestHttpException('Malformed request body. A result does not define type, value or description.');
       }
-      if ($result['type'] == 'file' && !Uuid::isValid($result['value'])) {
+      if ($result['type'] === 'file' && !Uuid::isValid($result['value'])) {
         throw new BadRequestHttpException('Malformed request body. A file result has an invalid UUID.');
       }
-      if ($result['type'] == 'link' && !is_string($result['value'])) {
+      if ($result['type'] === 'link' && !is_string($result['value'])) {
         throw new BadRequestHttpException('Malformed request body. A result link is not a string.');
       }
       if (!is_string($result['description'] ?? '')) {
@@ -175,14 +99,15 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    * Preloads files in results array.
    */
   protected function preloadFiles(array &$results): void {
-    $file_uuids = array_unique(array_column(array_filter($results, fn($r) => $r['type'] == 'file'), 'value'));
+    $file_uuids = array_unique(array_column(array_filter($results, static fn($r) => $r['type'] === 'file'), 'value'));
     if (!empty($file_uuids)) {
-      $files = $this->fileStorage
+      $files = $this->entityTypeManager
+        ->getStorage('file')
         ->loadByProperties(['uuid' => array_unique($file_uuids)]);
       // Populate results with files.
       foreach ($results as $delta => $result) {
-        if ($result['type'] == 'file') {
-          $matching_file = array_filter($files, fn($f) => $f->uuid() == $result['value']);
+        if ($result['type'] === 'file') {
+          $matching_file = array_filter($files, static fn($f) => $f->uuid() === $result['value']);
           $results[$delta]['value'] = reset($matching_file);
         }
       }
@@ -194,7 +119,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    */
   protected function shapeResults(array $results): array {
     foreach (array_values($results) as $delta => $result) {
-      if ($result['type'] == 'file') {
+      if ($result['type'] === 'file') {
         // Maybe file was not loaded correctly.
         if (!$result['value'] instanceof FileInterface) {
           continue;
@@ -206,7 +131,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
         ];
       }
 
-      if ($result['type'] == 'link') {
+      if ($result['type'] === 'link') {
         $result_links[] = [
           'value' => $result['value'],
           'weight' => $delta,

@@ -12,9 +12,6 @@ abstract class ProjectEventBase extends Event {
 
   /**
    * Constructs a ProjectEventBase object.
-   *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
    */
   public function __construct(protected ProjectInterface $project) {}
 

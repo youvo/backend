@@ -16,9 +16,11 @@ class QuestionnaireUninstallValidator extends ContentUninstallValidator {
    *
    * @todo Offer functionality to bulk delete questionnaire content entities.
    */
-  public function validate($module) {
+  public function validate($module): array {
+
     $reasons = [];
-    if ($module == 'questionnaire') {
+
+    if ($module === 'questionnaire') {
       try {
         $paragraphs = $this->entityTypeManager
           ->getStorage('paragraph')

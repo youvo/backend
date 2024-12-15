@@ -16,11 +16,6 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
 
   /**
    * Creates a new JsonApiObscuritySubscriber object.
-   *
-   * @param string $jsonApiBasePath
-   *   The JSON:API base path.
-   * @param string $obscurityPrefix
-   *   The JSON:API obscurity prefix.
    */
   public function __construct(
     protected string $jsonApiBasePath,
@@ -52,13 +47,15 @@ class JsonApiObscuritySubscriber implements EventSubscriberInterface {
   protected function validatePrefix(Request $request): void {
     $this->obscurityPrefix = '/' . ltrim($this->obscurityPrefix, '/');
     $prefix = strstr($request->getPathInfo(), $this->jsonApiBasePath, TRUE);
-    if ($prefix == $this->obscurityPrefix) {
+    if ($prefix === $this->obscurityPrefix) {
       return;
     }
     // Check with potential langcode.
     $langcode = substr($prefix, strrpos($prefix, '/') + 1);
-    if (array_key_exists($langcode, LanguageManager::getStandardLanguageList()) &&
-      $prefix == $this->obscurityPrefix . '/' . $langcode) {
+    if (
+      $prefix === $this->obscurityPrefix . '/' . $langcode &&
+      array_key_exists($langcode, LanguageManager::getStandardLanguageList())
+    ) {
       return;
     }
     throw new NotFoundHttpException();

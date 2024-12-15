@@ -3,7 +3,7 @@
 namespace Drupal\progress\EventSubscriber;
 
 use Drupal\academy\AcademicFormatInterface;
-use Drupal\Component\EventDispatcher\Event;
+use Drupal\child_entities\Event\ChildEntityAccessEvent;
 use Drupal\Core\Access\AccessResult;
 use Drupal\progress\ProgressManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -15,21 +15,15 @@ class ProgressChildEntityAccessSubscriber implements EventSubscriberInterface {
 
   /**
    * Constructs a ProgressChildEntityAccessSubscriber object.
-   *
-   * @param \Drupal\progress\ProgressManager $progressManager
-   *   The progress manager.
    */
   public function __construct(protected ProgressManager $progressManager) {}
 
   /**
    * Checks access for child entities in context of progress.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function checkAccess(Event $event) {
+  public function checkAccess(ChildEntityAccessEvent $event): void {
 
     // Skip, if this is not an academy entity.
-    /** @var \Drupal\child_entities\Event\ChildEntityAccessEvent $event */
     $origin = $event->getEntity()->getOriginEntity();
     if (!$origin instanceof AcademicFormatInterface) {
       return;
@@ -54,8 +48,8 @@ class ProgressChildEntityAccessSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return ['Drupal\child_entities\Event\ChildEntityAccessEvent' => 'checkAccess'];
+  public static function getSubscribedEvents(): array {
+    return [ChildEntityAccessEvent::class => 'checkAccess'];
   }
 
 }

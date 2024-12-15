@@ -2,36 +2,17 @@
 
 namespace Drupal\child_entities\Plugin\Field;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
 /**
  * Computes referencing children of parent.
+ *
+ * @todo Use DI after https://www.drupal.org/project/drupal/issues/3294266
  */
 class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItemList {
 
   use ComputedItemListTrait;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Retrieves the entity type manager.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
-   *   The entity type manager.
-   */
-  protected function entityTypeManager() {
-    if (!isset($this->entityTypeManager)) {
-      $this->entityTypeManager = \Drupal::entityTypeManager();
-    }
-    return $this->entityTypeManager;
-  }
 
   /**
    * Computes the field value.
@@ -40,22 +21,23 @@ class ComputedChildEntityReferenceFieldItemList extends EntityReferenceFieldItem
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     // Fetch the parent and the desired target type.
     $parent = $this->getEntity();
     $target_type_id = $this->getSetting('target_type');
 
+    $entity_type_manager = \Drupal::entityTypeManager();
+
     // Query for children referencing the parent.
-    $query = $this->entityTypeManager()
+    $query = $entity_type_manager
       ->getStorage($target_type_id)
       ->getQuery()
       ->accessCheck(FALSE)
       ->condition($parent->getEntityTypeId(), $parent->id());
 
     // Sort by weight if the field is available.
-    $target_type = $this->entityTypeManager()
-      ->getDefinition($target_type_id);
+    $target_type = $entity_type_manager->getDefinition($target_type_id);
     if ($target_type->hasKey('weight')) {
       $query->sort($target_type->getKey('weight'));
     }

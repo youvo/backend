@@ -6,7 +6,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -25,60 +25,22 @@ class PostmanUuidResource extends ResourceBase {
 
   /**
    * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
    */
   protected AccountInterface $currentUser;
 
   /**
-   * Constructs a QuestionSubmissionResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountInterface $current_user,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->currentUser = $current_user;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('current_user')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->currentUser = $container->get('current_user');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @return \Drupal\rest\ResourceResponse
-   *   The response.
    */
-  public function get() {
+  public function get(): ResourceResponseInterface {
 
     // Get the uuid of the current user.
     $current_user = $this->currentUser;
@@ -102,13 +64,13 @@ class PostmanUuidResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {

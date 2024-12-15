@@ -15,7 +15,7 @@ use Faker\Factory;
 /**
  * Implements hook_install().
  */
-function creatives_dummy_install() {
+function creatives_dummy_install(): void {
   module_set_weight('creatives_dummy', 2);
 }
 
@@ -24,7 +24,7 @@ function creatives_dummy_install() {
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function creatives_dummy_site_install_finished() {
+function creatives_dummy_site_install_finished(): void {
 
   // Object for random content.
   $faker = Factory::create('de_DE');

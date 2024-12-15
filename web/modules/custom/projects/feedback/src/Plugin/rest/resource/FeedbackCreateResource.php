@@ -5,14 +5,14 @@ namespace Drupal\feedback\Plugin\rest\resource;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\feedback\Event\FeedbackCreateEvent;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -31,68 +31,37 @@ use Symfony\Component\Routing\RouteCollection;
 class FeedbackCreateResource extends ResourceBase {
 
   /**
-   * Constructs a FeedbackCreateResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
+   * The current user.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected AccountProxyInterface $currentUser,
-    protected EventDispatcherInterface $eventDispatcher,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-  }
+  protected AccountInterface $currentUser;
+
+  /**
+   * The entity type manager.
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The event dispatcher.
+   */
+  protected EventDispatcherInterface $eventDispatcher;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('youvo'),
-      $container->get('entity_type.manager'),
-      $container->get('current_user'),
-      $container->get('event_dispatcher')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->currentUser = $container->get('current_user');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
+    return $instance;
   }
 
   /**
    * Responds to POST requests.
    *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function post(ProjectInterface $project) {
+  public function post(ProjectInterface $project): ResourceResponseInterface {
 
     try {
       $feedbacks = $this->entityTypeManager->getStorage('feedback')
@@ -151,13 +120,13 @@ class FeedbackCreateResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {

@@ -3,6 +3,7 @@
 namespace Drupal\child_entities;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Provides an interface for access to an entity's published state.
@@ -11,50 +12,28 @@ interface ChildEntityInterface extends EntityInterface {
 
   /**
    * Returns the parent entity type name.
-   *
-   * @return string
-   *   The parent Entity Type machine name.
    */
-  public function getParentEntityTypeId();
+  public function getParentEntityTypeId(): string;
 
   /**
    * Returns the parent entity type.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface|null
-   *   The parent entity.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getParentEntityType();
+  public function getParentEntityType(): ?EntityTypeInterface;
 
   /**
    * Checks if the parent is also a child entity.
-   *
-   * @return bool
-   *   Parent is a child entity?
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function isParentAnotherChildEntity();
+  public function isParentAnotherChildEntity(): bool;
 
   /**
    * Returns the entity parent's entity.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   The parent entity.
    */
-  public function getParentEntity();
+  public function getParentEntity(): EntityInterface;
 
   /**
    * Sets the entity parent's entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $parent
-   *   The parent entity.
-   *
-   * @return $this
-   *   The updated child entity.
    */
-  public function setParentEntity(EntityInterface $parent);
+  public function setParentEntity(EntityInterface $parent): static;
 
   /**
    * Returns the entity parent's ID.
@@ -63,27 +42,16 @@ interface ChildEntityInterface extends EntityInterface {
    *   The parent ID, or NULL in case the parent ID field has not been set on
    *   the entity.
    */
-  public function getParentId();
+  public function getParentId(): ?int;
 
   /**
    * Sets the entity parent's ID.
-   *
-   * @param int $id
-   *   The parent id.
-   *
-   * @return $this
-   *   The updated child entity.
    */
-  public function setParentId(int $id);
+  public function setParentId(int $id): static;
 
   /**
    * Gets origin entity of descendant tree.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   The origin entity.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getOriginEntity();
+  public function getOriginEntity(): EntityInterface;
 
 }

@@ -18,39 +18,17 @@ use Symfony\Component\Serializer\SerializerInterface;
 class UserInfoOverwriteController implements ContainerInjectionInterface {
 
   /**
-   * The authenticated user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
+   * Constructs a new UserInfoOverwriteController object.
    */
-  private $user;
-
-  /**
-   * The serializer.
-   *
-   * @var \Symfony\Component\Serializer\SerializerInterface
-   */
-  private $serializer;
-
-  /**
-   * UserInfo constructor.
-   *
-   * @param \Drupal\Core\Session\AccountProxyInterface $user
-   *   The user.
-   * @param \Symfony\Component\Serializer\SerializerInterface $serializer
-   *   The serializer service.
-   */
-  private function __construct(
-    AccountProxyInterface $user,
-    SerializerInterface $serializer,
-  ) {
-    $this->user = $user->getAccount();
-    $this->serializer = $serializer;
-  }
+  public function __construct(
+    protected AccountProxyInterface $currentUser,
+    protected SerializerInterface $serializer,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('current_user'),
       $container->get('serializer')
@@ -58,39 +36,41 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
   }
 
   /**
-   * The controller.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The response.
+   * Handles the controller callback.
    *
    * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
    */
-  public function handle() {
-    if (!$this->user instanceof TokenAuthUser) {
+  public function handle(): JsonResponse {
+
+    $user = $this->currentUser->getAccount();
+    if (!$user instanceof TokenAuthUser) {
       throw new AccessDeniedHttpException('This route is only available for authenticated requests using OAuth2.');
     }
+
     assert($this->serializer instanceof NormalizerInterface);
-    $identifier = $this->user->id();
+    $identifier = $user->id();
     $user_entity = new UserEntityWithClaims();
     $user_entity->setIdentifier($identifier);
-    $data = $this->serializer
-      ->normalize($user_entity, 'json', [$identifier => $this->user]);
+    $data = $this->serializer->normalize($user_entity, 'json', [$identifier => $user]);
+
     if (isset($data['email'])) {
       $data['mail'] = $data['email'];
       unset($data['email']);
     }
+
     if (isset($data['email_verified'])) {
       $data['mail_verified'] = $data['email_verified'];
       unset($data['email_verified']);
     }
+
     $data['profile'] = 'https://www.youvo.org/kreative/' . $identifier;
-    if ($this->user->hasField('field_name')) {
-      $data['name'] = $this->user->get('field_name')->value;
+    if ($user->hasField('field_name')) {
+      $data['name'] = $user->get('field_name')->value;
     }
     $data['preferred_username'] = $data['name'];
-    $data['uuid'] = $this->user->uuid();
-    $data['roles'] = array_column($this->user->get('roles')->getValue(),
-      'target_id');
+    $data['uuid'] = $user->uuid();
+    $data['roles'] = array_column($user->get('roles')->getValue(), 'target_id');
+
     return new JsonResponse($data);
   }
 

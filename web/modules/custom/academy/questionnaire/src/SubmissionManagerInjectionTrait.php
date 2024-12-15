@@ -7,26 +7,19 @@ namespace Drupal\questionnaire;
  *
  * For the FieldItemList consider:
  *
- * @todo Replace with proper DI after
- *   https://www.drupal.org/project/drupal/issues/2914419 or
- *   https://www.drupal.org/project/drupal/issues/2053415
+ * @todo Use DI after https://www.drupal.org/project/drupal/issues/3294266
  */
 trait SubmissionManagerInjectionTrait {
 
   /**
    * The submission manager.
-   *
-   * @var \Drupal\questionnaire\SubmissionManager
    */
   protected SubmissionManager $submissionManager;
 
   /**
    * Gets the submission manager.
-   *
-   * @return \Drupal\questionnaire\SubmissionManager
-   *   The submission manager.
    */
-  protected function submissionManager() {
+  protected function submissionManager(): SubmissionManager {
     if (!isset($this->submissionManager)) {
       $this->submissionManager = \Drupal::service('submission.manager');
     }

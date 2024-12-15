@@ -11,13 +11,12 @@ use Drupal\feedback\FeedbackInterface;
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function feedback_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function feedback_form_field_config_edit_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   /** @var \Drupal\field_ui\Form\FieldConfigEditForm $form_object */
   $form_object = $form_state->getFormObject();
   /** @var Drupal\field\Entity\FieldConfig $field */
   $field = $form_object->getEntity();
-  if ($form['#entity'] instanceof FeedbackInterface && $field->getType() == 'boolean') {
+  if ($form['#entity'] instanceof FeedbackInterface && $field->getType() === 'boolean') {
     unset($form['default_value']);
   }
-
 }

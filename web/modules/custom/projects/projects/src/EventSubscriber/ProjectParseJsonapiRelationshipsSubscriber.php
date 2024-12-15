@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\youvo\Event\ParseJsonapiRelationshipsEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -15,10 +16,10 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
   /**
    * Resolves relationships for results in JSON:API parsing.
    */
-  public function resolveRelationships(Event $event) {
+  public function resolveRelationships(Event $event): void {
 
     /** @var \Drupal\youvo\Event\ParseJsonapiRelationshipsEvent $event */
-    if ($event->getParentKey() == 'result') {
+    if ($event->getParentKey() === 'result') {
       $resource = $event->getResource();
       $results = [];
       if (isset($resource['hyperlinks'])) {
@@ -31,15 +32,13 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
           $results[] = ['weight' => $file['meta']['weight'] ?? 0] + $file;
         }
       }
-      usort($results, fn ($a, $b) => $a['weight'] <=> $b['weight']);
+      usort($results, static fn ($a, $b) => $a['weight'] <=> $b['weight']);
       foreach ($results as &$result) {
-        unset($result['weight']);
-        unset($result['meta']['weight']);
-        unset($result['meta']['display']);
+        unset($result['weight'], $result['meta']['weight'], $result['meta']['display']);
       }
+      unset($result);
       $resource['items'] = $results;
-      unset($resource['hyperlinks']);
-      unset($resource['files']);
+      unset($resource['hyperlinks'], $resource['files']);
       $event->setResource($resource);
     }
   }
@@ -47,8 +46,8 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return ['Drupal\youvo\Event\ParseJsonapiRelationshipsEvent' => 'resolveRelationships'];
+  public static function getSubscribedEvents(): array {
+    return [ParseJsonapiRelationshipsEvent::class => 'resolveRelationships'];
   }
 
 }

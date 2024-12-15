@@ -29,13 +29,11 @@ class CacheableStringData extends StringData implements RefinableCacheableDepend
    *
    * {@inheritdoc}
    */
-  public function getCastedValue() {
+  public function getCastedValue(): string {
     if ($this->getValue() instanceof StringItem) {
       return $this->getValue()->getString();
     }
-    else {
-      return $this->getString();
-    }
+    return $this->getString();
   }
 
 }

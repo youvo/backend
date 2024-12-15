@@ -5,6 +5,7 @@ namespace Drupal\courses;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -31,7 +32,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
    *
    * @see \Drupal\child_entities\ChildEntityAccessControlHandler
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Check if access handler suits Course descendants logic.
     if (!($entity instanceof Course || $entity instanceof ChildEntityInterface)) {
@@ -39,7 +40,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
     }
 
     // Prevent deletion when entity is new.
-    if ($operation == 'delete' && $entity->isNew()) {
+    if ($operation === 'delete' && $entity->isNew()) {
       return AccessResult::forbidden()->addCacheableDependency($entity);
     }
 
@@ -52,7 +53,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
     // Resolve view access for users with different permissions. This will be
     // used to grant access for anonymous users to the course overview page.
     $view_access = AccessResult::allowedIfHasPermission($account, 'view courses');
-    if (!$view_access->isAllowed() && $entity instanceof Course) {
+    if ($entity instanceof Course && !$view_access->isAllowed()) {
       $view_access = AccessResult::allowedIfHasPermission($account, 'view courses overview');
     }
 
@@ -70,7 +71,7 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
    * Separate from the checkAccess because the entity does not yet exist. It
    * will be created during the 'add' process.
    */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL): AccessResultInterface {
 
     // Check the admin_permission as defined in Course entity annotation.
     $admin_permission = $this->entityType->getAdminPermission();

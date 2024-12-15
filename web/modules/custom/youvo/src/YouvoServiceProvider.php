@@ -14,12 +14,12 @@ class YouvoServiceProvider extends ServiceProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function alter(ContainerBuilder $container) {
+  public function alter(ContainerBuilder $container): void {
 
     // Overwrite class for jsonapi_include.parse service.
     if ($container->hasDefinition('jsonapi_include.parse')) {
       $definition = $container->getDefinition('jsonapi_include.parse');
-      $definition->setClass('Drupal\youvo\AlterJsonapiParse')
+      $definition->setClass(AlterJsonapiParse::class)
         ->addArgument(new Reference('event_dispatcher'))
         ->addArgument(new Reference('file_url_generator'));
     }

@@ -6,7 +6,6 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\ParamConverter\EntityConverter;
-use Drupal\Core\ParamConverter\ParamConverterInterface;
 
 /**
  * Parameter converter for replacing UUIDs with IDs.
@@ -15,7 +14,7 @@ use Drupal\Core\ParamConverter\ParamConverterInterface;
  *
  * @todo Remove when https://www.drupal.org/node/2353611 lands.
  */
-class UuidParamConverter extends EntityConverter implements ParamConverterInterface {
+class UuidParamConverter extends EntityConverter {
 
   /**
    * {@inheritdoc}
@@ -50,10 +49,10 @@ class UuidParamConverter extends EntityConverter implements ParamConverterInterf
    * @param array $defaults
    *   The route defaults array.
    */
-  private function isRestRequest(array $defaults) {
+  private function isRestRequest(array $defaults): bool {
     $valid_methods = $defaults['_route_object']->getMethods();
     $method = substr($defaults['_route'], strrpos($defaults['_route'], ".") + 1);
-    return in_array($method, $valid_methods);
+    return in_array($method, $valid_methods, TRUE);
   }
 
 }

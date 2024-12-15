@@ -15,7 +15,7 @@ class ProjectResultForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     /** @var \Drupal\child_entities\ChildEntityInterface $entity */
     $entity = $this->getEntity();
@@ -23,7 +23,7 @@ class ProjectResultForm extends ContentEntityForm {
 
     $message_arguments = ['%label' => $this->entity->label()];
 
-    if ($result == SAVED_NEW) {
+    if ($result === SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New project result %label has been created.', $message_arguments));
     }
     else {

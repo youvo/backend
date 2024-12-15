@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\lifecycle\Plugin\WorkflowType;
 
 use Drupal\workflows\Plugin\WorkflowTypeBase;
+use Drupal\workflows\StateInterface;
 
 /**
  * Lifecycle workflow type.
@@ -23,7 +24,7 @@ class Lifecycle extends WorkflowTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getInitialState() {
+  public function getInitialState(): StateInterface {
     return $this->getState($this->configuration['initial_state']);
   }
 

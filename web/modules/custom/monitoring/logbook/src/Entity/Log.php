@@ -86,7 +86,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): LogInterface {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -112,7 +112,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProject(ProjectInterface|int $project): LogInterface {
+  public function setProject(ProjectInterface|int $project): static {
     $id = $project instanceof ProjectInterface ? $project->id() : $project;
     $this->set('project', $id);
     return $this;
@@ -139,7 +139,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOrganization(Organization|int $organization): LogInterface {
+  public function setOrganization(Organization|int $organization): static {
     $this->set('organization', Profile::id($organization));
     return $this;
   }
@@ -165,7 +165,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setManager(AccountInterface|int $manager): LogInterface {
+  public function setManager(AccountInterface|int $manager): static {
     $this->set('manager', Profile::id($manager));
     return $this;
   }
@@ -185,7 +185,7 @@ class Log extends ContentEntityBase implements LogInterface {
     $creatives_field = $this->get('creatives');
     /** @var \Drupal\creatives\Entity\Creative $creative */
     foreach ($creatives_field->referencedEntities() as $creative) {
-      $creatives[intval($creative->id())] = $creative;
+      $creatives[(int) $creative->id()] = $creative;
     }
     return $creatives ?? [];
   }
@@ -193,7 +193,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatives(array $creatives): LogInterface {
+  public function setCreatives(array $creatives): static {
     $this->set('creatives', NULL);
     foreach ($creatives as $creative) {
       $this->get('creatives')
@@ -212,7 +212,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMessage(string $message): LogInterface {
+  public function setMessage(string $message): static {
     $this->set('message', $message);
     return $this;
   }
@@ -227,7 +227,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMisc(array $misc): LogInterface {
+  public function setMisc(array $misc): static {
     if ($encoded = Json::encode($misc)) {
       $this->set('misc', $encoded);
     }
@@ -262,7 +262,7 @@ class Log extends ContentEntityBase implements LogInterface {
   /**
    * {@inheritdoc}
    */
-  public function setColor(string $color): LogInterface {
+  public function setColor(string $color): static {
     $this->set('color', $color);
     return $this;
   }
@@ -278,14 +278,12 @@ class Log extends ContentEntityBase implements LogInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * Overwritten method for type hinting.
    */
-  public function getOwner() {
+  public function getOwner(): Creative|Organization {
     $key = $this->getEntityType()->getKey('owner');
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $this->get($key)->entity;
-    return $organization;
+    /** @var \Drupal\creatives\Entity\Creative|\Drupal\organizations\Entity\Organization $owner */
+    $owner = $this->get($key)->entity;
+    return $owner;
   }
 
   /**
@@ -293,7 +291,7 @@ class Log extends ContentEntityBase implements LogInterface {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::ownerBaseFieldDefinitions($entity_type);

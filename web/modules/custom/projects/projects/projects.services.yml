@@ -19,8 +19,6 @@ services:
     class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
     tags:
       - { name: event_subscriber }
-    arguments:
-      [ '@serialization.json' ]
   logger.channel.projects:
     parent: logger.channel_base
     arguments: [ 'projects' ]

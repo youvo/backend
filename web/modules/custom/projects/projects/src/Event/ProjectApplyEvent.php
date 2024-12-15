@@ -11,22 +11,16 @@ class ProjectApplyEvent extends ProjectEventBase {
 
   /**
    * The applicant.
-   *
-   * @var \Drupal\creatives\Entity\Creative|null
    */
   protected ?Creative $applicant = NULL;
 
   /**
    * The message.
-   *
-   * @var string
    */
   protected string $message;
 
   /**
    * The phone number.
-   *
-   * @var string
    */
   protected string $phoneNumber;
 

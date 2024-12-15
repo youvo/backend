@@ -6,6 +6,8 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Project Notify Resource.
@@ -22,14 +24,8 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Drupal\projects\Entity\Project $project
-   *   The project.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
    */
-  public function post(Project $project) {
+  public function post(Project $project): ResourceResponseInterface {
     if ($project->getOwner()->hasRoleProspect()) {
       $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
     }
@@ -42,7 +38,7 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
     return $this->routesWithAccessCallback('accessNotify');
   }
 

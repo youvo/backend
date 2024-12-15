@@ -16,7 +16,7 @@ use Drupal\workflows\Entity\Workflow;
 class LifecycleTest extends WorkflowsTestBase {
 
   /**
-   * Test the implementation of OptionsProviderInterface.
+   * Tests the implementation of OptionsProviderInterface.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException

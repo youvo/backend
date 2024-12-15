@@ -8,6 +8,8 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * AcademyTranslationHandler extends functionality of ContentTranslationHandler.
+ *
+ * @todo Should be moved to a more general namespace. Also, see youvo.module.
  */
 class AcademyTranslationHandler extends ContentTranslationHandler {
 
@@ -21,7 +23,7 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
+  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity): void {
     parent::entityFormAlter($form, $form_state, $entity);
 
     // Hide content translation field.
@@ -36,7 +38,7 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
 
     foreach ($translations as $translation) {
       $langcode = $translation->getId();
-      if ($langcode != $form_langcode) {
+      if ($langcode !== $form_langcode) {
         $form['translations'][$langcode] = [
           '#type' => 'link',
           '#title' => $translation->getName(),
@@ -54,8 +56,10 @@ class AcademyTranslationHandler extends ContentTranslationHandler {
    *
    * Delete warning, which is displayed when untranslatable fields are excluded
    * from display.
+   *
+   * @phpstan-ignore-next-line Parent does not define proper types.
    */
-  public function entityFormSharedElements($element, FormStateInterface $form_state, $form) {
+  public function entityFormSharedElements($element, FormStateInterface $form_state, $form): array {
     $element = parent::entityFormSharedElements($element, $form_state, $form);
     $this->messenger->deleteByType('warning');
     return $element;

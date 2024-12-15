@@ -8,6 +8,6 @@
 /**
  * Implements hook_local_tasks_alter().
  */
-function blocker_mode_local_tasks_alter(&$local_tasks) {
+function blocker_mode_local_tasks_alter(array &$local_tasks): void {
   unset($local_tasks['user.pass']);
 }

@@ -3,12 +3,13 @@
 namespace Drupal\consumer_permissions\Controller;
 
 use Drupal\consumer_permissions\ConsumerPermissions;
-use Drupal\consumers\ConsumerStorage;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Controller that provides access methods for consumer permissions.
@@ -19,31 +20,32 @@ class ConsumerPermissionsAccess implements ContainerInjectionInterface {
    * Constructs a ConsumerAccess object.
    */
   public function __construct(
-    protected ConsumerStorage $consumerStorage,
-    protected Request $request,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected RequestStack $requestStack,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('entity_type.manager')->getStorage('consumer'),
-      $container->get('request_stack')->getCurrentRequest()
+      $container->get('entity_type.manager'),
+      $container->get('request_stack')
     );
   }
 
   /**
    * Checks access for users requesting to authenticate with client.
    */
-  public function accessClient(AccountProxyInterface $account) {
+  public function accessClient(AccountProxyInterface $account): AccessResultInterface {
 
     // If the client can not be loaded or the user does not have the
     // permission to authenticate with the client access is forbidden.
     if ($account->isAuthenticated()) {
-      $client_uuid = $this->request->get('client_id');
-      $clients = $this->consumerStorage
-        ->loadByProperties(['uuid' => $client_uuid]);
+      $client_uuid = $this->requestStack->getCurrentRequest()->get('client_id');
+      $clients = $this->entityTypeManager
+        ->getStorage('consumer')
+        ->loadByProperties(['client_id' => $client_uuid]);
       $client = reset($clients);
 
       if (empty($client)) {

@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -27,17 +28,8 @@ class LectureAccessResource extends ProgressResource {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Drupal\lectures\Entity\Lecture $entity
-   *   The referenced lecture.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   Response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Lecture $entity) {
+  public function post(Lecture $entity): ResourceResponseInterface {
 
     try {
       // Get the respective lecture progress by lecture and current user.
@@ -52,7 +44,7 @@ class LectureAccessResource extends ProgressResource {
 
     // There is no progress for this lecture by this user.
     // @todo Pass langcode in which lecture was enrolled.
-    if (empty($progress)) {
+    if ($progress === NULL) {
       $progress = LectureProgress::create([
         'lecture' => $entity->id(),
         'uid' => $this->progressManager->getCurrentUserId(),

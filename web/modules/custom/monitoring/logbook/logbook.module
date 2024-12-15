@@ -17,7 +17,7 @@ use Drupal\user_types\Utility\Profile;
 /**
  * Implements hook_theme().
  */
-function logbook_theme() {
+function logbook_theme(): array {
   return [
     'log' => [
       'render element' => 'elements',
@@ -28,7 +28,7 @@ function logbook_theme() {
 /**
  * Prepares variables for log templates.
  */
-function template_preprocess_log(array &$variables) {
+function template_preprocess_log(array &$variables): void {
   /** @var \Drupal\logbook\LogInterface $log */
   $log = $variables['elements']['#log'];
   $variables['log'] = $log;
@@ -62,7 +62,7 @@ function template_preprocess_log(array &$variables) {
  * - All references in other logs are anonymized by replacing the respective
  *   user ID with 0 (anonymous user).
  */
-function logbook_user_delete(AccountInterface $account) {
+function logbook_user_delete(AccountInterface $account): void {
 
   if (Profile::isOrganization($account)) {
     return;
@@ -133,7 +133,7 @@ function logbook_user_delete(AccountInterface $account) {
     }
     if (
       ($creatives = $log->getCreatives()) &&
-      in_array($uid, array_map(static fn($c) => $c->id(), $creatives))
+      in_array($uid, array_map(static fn($c) => $c->id(), $creatives), TRUE)
     ) {
       $creatives = array_filter($creatives, static fn($c) => $c->id() != $uid);
       $creatives[] = $anonymous;

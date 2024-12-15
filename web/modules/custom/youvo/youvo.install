@@ -16,7 +16,7 @@ use Drupal\user\Entity\User;
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function youvo_site_install_finished() {
+function youvo_site_install_finished(): void {
 
   // Create taxonomy terms for taxonomy skills.
   $vocabulary = 'skills';

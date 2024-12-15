@@ -2,36 +2,17 @@
 
 namespace Drupal\projects\Plugin\Field;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
 /**
  * Computes referencing children of parent.
+ *
+ * @todo Use DI after https://www.drupal.org/project/drupal/issues/3294266
  */
 class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList {
 
   use ComputedItemListTrait;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Retrieves the entity type manager.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
-   *   The entity type manager.
-   */
-  protected function entityTypeManager() {
-    if (!isset($this->entityTypeManager)) {
-      $this->entityTypeManager = \Drupal::entityTypeManager();
-    }
-    return $this->entityTypeManager;
-  }
 
   /**
    * Computes the field value.
@@ -40,24 +21,23 @@ class ComputedProjectReferenceFieldItemList extends EntityReferenceFieldItemList
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     // Fetch the user and determine respective field.
     $account = $this->getEntity();
-    $field = $account->bundle() == 'user' ? 'field_participants' : 'uid';
+    $field = $account->bundle() === 'user' ? 'field_participants' : 'uid';
+
+    $project_storage = \Drupal::entityTypeManager()->getStorage('project');
 
     // Query projects referencing user.
-    $query = $this->entityTypeManager()
-      ->getStorage('project')->getQuery()
+    $query = $project_storage->getQuery()
       ->accessCheck(TRUE)
       ->condition($field, $account->id());
     $project_ids = $query->execute();
 
     // This kind of programming is sinful.
     // @todo Work out query access for project entities.
-    $projects = $this->entityTypeManager()
-      ->getStorage('project')
-      ->loadMultiple($project_ids);
+    $projects = $project_storage->loadMultiple($project_ids);
     $accessible_projects = [];
     foreach ($projects as $project) {
       if ($project->access('view')) {

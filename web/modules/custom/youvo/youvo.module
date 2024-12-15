@@ -2,23 +2,24 @@
 
 /**
  * @file
- * Custom module which provides implementation of core youvo functionality.
+ * Custom module which provides implementation of youvo base functionality.
  */
 
+use Drupal\academy\AcademyTranslationHandler;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function youvo_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function youvo_form_user_login_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   $form['#submit'][] = 'youvo_user_login_form_submit';
 }
 
 /**
  * Custom submit handler for the login form.
  */
-function youvo_user_login_form_submit($form, FormStateInterface $form_state) {
+function youvo_user_login_form_submit(array $form, FormStateInterface $form_state): void {
   $url = Url::fromRoute('youvo.dashboard');
   $form_state->setRedirectUrl($url);
 }
@@ -28,7 +29,7 @@ function youvo_user_login_form_submit($form, FormStateInterface $form_state) {
  *
  * @throws \Drupal\Core\Entity\EntityMalformedException
  */
-function youvo_form_taxonomy_term_skills_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function youvo_form_taxonomy_term_skills_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   /** @var \Drupal\taxonomy\TermForm $form_object */
   $form_object = $form_state->getFormObject();
   $term = $form_object->getEntity();
@@ -56,12 +57,14 @@ function youvo_form_taxonomy_term_skills_form_alter(&$form, FormStateInterface $
 /**
  * Removes text format guidelines and helpers.
  */
-function youvo_formats_remove_help($form_element, FormStateInterface $form_state) {
+function youvo_formats_remove_help(array $form_element, FormStateInterface $form_state): array {
   if (isset($form_element[0]['format'])) {
-    unset($form_element[0]['format']['guidelines']);
-    unset($form_element[0]['format']['help']);
-    unset($form_element[0]['format']['#type']);
-    unset($form_element[0]['format']['#theme_wrappers']);
+    unset(
+      $form_element[0]['format']['guidelines'],
+      $form_element[0]['format']['help'],
+      $form_element[0]['format']['#type'],
+      $form_element[0]['format']['#theme_wrappers']
+    );
     $form_element[0]['format']['format']['#access'] = FALSE;
   }
   return $form_element;
@@ -70,14 +73,14 @@ function youvo_formats_remove_help($form_element, FormStateInterface $form_state
 /**
  * Implements hook_entity_type_alter().
  */
-function youvo_entity_type_alter(array &$entity_types) {
-  $entity_types['taxonomy_term']->setHandlerClass('translation', 'Drupal\academy\AcademyTranslationHandler');
+function youvo_entity_type_alter(array &$entity_types): void {
+  $entity_types['taxonomy_term']->setHandlerClass('translation', AcademyTranslationHandler::class);
 }
 
 /**
  * Implements hook_theme().
  */
-function youvo_theme($existing, $type, $theme, $path) {
+function youvo_theme(array $existing, string $type, string $theme, string $path): array {
   return [
     'dashboard' => [
       'template' => 'content--dashboard',

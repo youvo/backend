@@ -5,6 +5,7 @@ namespace Drupal\mailer\EventSubscriber;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\mailer\Entity\TransactionalEmail;
+use Drupal\projects\Event\ProjectNotifyEvent;
 
 /**
  * Mailer project notify event subscriber.
@@ -46,7 +47,7 @@ class MailerProjectNotifySubscriber extends MailerSubscriberBase {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return ['Drupal\projects\Event\ProjectNotifyEvent' => 'mail'];
+    return [ProjectNotifyEvent::class => 'mail'];
   }
 
 }

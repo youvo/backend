@@ -3,49 +3,25 @@
 namespace Drupal\logbook\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\user_types\Utility\Profile;
-use Drupal\youvo\SimpleTokenReplacer;
 
 /**
  * Provides a base for computed text fields for logs.
+ *
+ * @todo Use DI after https://www.drupal.org/project/drupal/issues/3294266
  */
-abstract class ComputedTextFieldItemListBase extends FieldItemList implements FieldItemListInterface {
+abstract class ComputedTextFieldItemListBase extends FieldItemList {
 
   use ComputedItemListTrait;
-
-  /**
-   * The simple token replacer.
-   *
-   * @var \Drupal\youvo\SimpleTokenReplacer
-   */
-  protected SimpleTokenReplacer $simpleTokenReplacer;
-
-  /**
-   * Gets the simple token replacer.
-   *
-   * @todo Replace with proper DI after
-   *   https://www.drupal.org/project/drupal/issues/2914419 or
-   *   https://www.drupal.org/project/drupal/issues/2053415
-   *
-   * @return \Drupal\youvo\SimpleTokenReplacer
-   *   The simple token replacer.
-   */
-  protected function simpleTokenReplacer() {
-    if (!isset($this->simpleTokenReplacer)) {
-      $this->simpleTokenReplacer = \Drupal::service('youvo.token_replacer');
-    }
-    return $this->simpleTokenReplacer;
-  }
 
   /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     if (!isset($this->list[0])) {
 
@@ -53,11 +29,13 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
       $log = $this->getEntity();
       $pattern = $log->getPattern();
 
+      $simple_token_replacer = \Drupal::service('youvo.token_replacer');
+
       // Replace and validate tokens in text.
       $text = $this->getText($pattern);
       $tokens = $pattern->getTokens();
-      $this->simpleTokenReplacer()->populateReplacements($this->getReplacements(), $tokens);
-      $this->simpleTokenReplacer()->replace($text, $tokens);
+      $simple_token_replacer->populateReplacements($this->getReplacements(), $tokens);
+      $simple_token_replacer->replace($text, $tokens);
 
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
       $item = $this->createItem(0, $text);
@@ -121,7 +99,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
    * Returns 'and' in English or German.
    */
   protected function fakeTranslateAnd(): string {
-    if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+    if (\Drupal::languageManager()->getCurrentLanguage()->getId() === 'de') {
       return 'und';
     }
     return 'and';
@@ -133,11 +111,11 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
   protected function fakeTranslateMoreCreatives(array $more): string {
     $text = 'and %count other creatives';
     $one = 'one';
-    if (\Drupal::languageManager()->getCurrentLanguage()->getId() == 'de') {
+    if (\Drupal::languageManager()->getCurrentLanguage()->getId() === 'de') {
       $text = 'und %count weitere Kreative';
       $one = 'eine';
     }
-    $extra_count = count($more) == 1 ? $one : count($more);
+    $extra_count = count($more) === 1 ? $one : count($more);
     return str_replace('%count', $extra_count, $text);
   }
 
@@ -145,40 +123,51 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList implements Fi
    * Returns the author role with respect to the project in English or German.
    */
   protected function fakeTranslateRole(): string {
+
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
     $author = $log->getOwner();
     $project = $log->getProject();
     $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
     if (Profile::isOrganization($author)) {
-      if ($langcode == 'de') {
+      if ($langcode === 'de') {
         return 'Organisation';
       }
       return 'organization';
     }
+
     if ($log->getManager()?->id() == Profile::id($author)) {
-      if ($langcode == 'de') {
+      if ($langcode === 'de') {
         return 'Managerin';
       }
       return 'manager';
     }
-    if (in_array('supervisor', $author->getRoles()) &&
-      (!$project || !$project->isParticipant($author))) {
-      if ($langcode == 'de') {
+
+    if (
+      (!$project || !$project->isParticipant($author)) &&
+      in_array('supervisor', $author->getRoles(), TRUE)
+    ) {
+      if ($langcode === 'de') {
         return 'Supervisorin';
       }
       return 'supervisor';
     }
-    if (in_array('administrator', $author->getRoles()) &&
-      (!$project || !$project->isParticipant($author))) {
-      if ($langcode == 'de') {
+
+    if (
+      (!$project || !$project->isParticipant($author)) &&
+      in_array('administrator', $author->getRoles(), TRUE)
+    ) {
+      if ($langcode === 'de') {
         return 'Administratorin';
       }
       return 'administrator';
     }
-    if ($langcode == 'de') {
+
+    if ($langcode === 'de') {
       return 'Kreative';
     }
+
     return 'creative';
   }
 

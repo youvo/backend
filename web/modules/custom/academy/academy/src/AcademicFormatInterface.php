@@ -9,6 +9,4 @@ use Drupal\Core\Entity\ContentEntityInterface;
  *
  * Currently, used for Course and Lecture.
  */
-interface AcademicFormatInterface extends ContentEntityInterface {
-
-}
+interface AcademicFormatInterface extends ContentEntityInterface {}

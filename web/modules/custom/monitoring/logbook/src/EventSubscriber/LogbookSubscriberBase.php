@@ -25,15 +25,6 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
 
   /**
    * Constructs a LogbookSubscriberBase object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The mailer logger channel.
    */
   public function __construct(
     protected AccountInterface $currentUser,
@@ -59,7 +50,7 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
       $this->logger->error('Unable to load log pattern (%id).', ['%id' => static::LOG_PATTERN]);
       return NULL;
     }
-    if (empty($log_pattern) || !$log_pattern instanceof LogPatternInterface) {
+    if (!$log_pattern instanceof LogPatternInterface) {
       $this->logger->error('Log pattern does not exist (%id).', ['%id' => static::LOG_PATTERN]);
       return NULL;
     }

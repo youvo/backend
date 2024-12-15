@@ -3,14 +3,13 @@
 namespace Drupal\progress\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\progress\ProgressManagerInjectionTrait;
 
 /**
  * ProgressFieldItemList class to generate a computed field.
  */
-class CurrentLectureFieldItemList extends FieldItemList implements FieldItemListInterface {
+class CurrentLectureFieldItemList extends FieldItemList {
 
   use ComputedItemListTrait;
   use ProgressManagerInjectionTrait;
@@ -20,7 +19,7 @@ class CurrentLectureFieldItemList extends FieldItemList implements FieldItemList
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     if (!isset($this->list[0])) {
 

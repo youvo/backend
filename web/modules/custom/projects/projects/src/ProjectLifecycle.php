@@ -2,7 +2,6 @@
 
 namespace Drupal\projects;
 
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -33,24 +32,9 @@ class ProjectLifecycle {
   protected ?ProjectInterface $project = NULL;
 
   /**
-   * The workflow storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected EntityStorageInterface $workflowStorage;
-
-  /**
    * Constructs a ProjectLifecycle object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->workflowStorage = $entity_type_manager->getStorage('workflow');
-  }
+  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
 
   /**
    * Sets the project property.
@@ -115,7 +99,7 @@ class ProjectLifecycle {
    * Checks if the project can transition by transition label.
    */
   public function canTransition(string $transition): bool {
-    if ($transition == self::TRANSITION_MEDIATE) {
+    if ($transition === self::TRANSITION_MEDIATE) {
       return $this->project()->hasApplicant() &&
         $this->hasTransition($transition);
     }
@@ -160,9 +144,9 @@ class ProjectLifecycle {
   /**
    * Abstraction of forward transition flow check.
    */
-  protected function hasTransition($transition): bool {
+  protected function hasTransition(string $transition): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = $this->workflowStorage->load(self::WORKFLOW_ID);
+    $workflow = $this->entityTypeManager->getStorage('workflow')->load(self::WORKFLOW_ID);
     return $workflow->getTypePlugin()->hasTransition($transition);
   }
 

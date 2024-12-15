@@ -3,11 +3,13 @@
 namespace Drupal\questionnaire\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\user\UserInterface;
+use Drupal\user\EntityOwnerInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the question submission entity class.
@@ -26,9 +28,10 @@ use Drupal\user\UserInterface;
  *   }
  * )
  */
-class QuestionSubmission extends ContentEntityBase {
+class QuestionSubmission extends ContentEntityBase implements EntityChangedInterface, EntityOwnerInterface {
 
   use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -36,7 +39,7 @@ class QuestionSubmission extends ContentEntityBase {
    * When a new question_submission entity is created, set the uid entity
    * reference to the current user as the creator of the entity.
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
@@ -46,52 +49,22 @@ class QuestionSubmission extends ContentEntityBase {
   /**
    * Get created time.
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getCreatedTime(): int {
+    return (int) $this->get('created')->value;
   }
 
   /**
    * Set created time.
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * Get owner.
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * Get owner ID.
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * Set ownder ID.
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * Set owner.
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

@@ -68,8 +68,8 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $options = array_map(function (WorkflowInterface $workflow): string {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
+    $options = array_map(static function (WorkflowInterface $workflow): string {
       return (string) $workflow->label();
     }, Workflow::loadMultipleByType('lifecycle'));
 
@@ -101,7 +101,7 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
       return [];
     }
 
-    return array_map(function (StateInterface $state): string {
+    return array_map(static function (StateInterface $state): string {
       return $state->label();
     }, $workflow->getTypePlugin()->getStates());
   }
@@ -120,41 +120,45 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getSettableOptions(?AccountInterface $account = NULL) {
+  public function getSettableOptions(?AccountInterface $account = NULL): array {
     // $this->value is unpopulated due to https://www.drupal.org/node/2629932
     $fieldName = $this->getFieldDefinition()->getName();
     $item = $this->getEntity()->get($fieldName)->first();
     assert($item instanceof static);
 
     $workflow = $this->getWorkflow();
+    if (!$workflow instanceof WorkflowInterface) {
+      return [];
+    }
+
     $type = $workflow->getTypePlugin();
-    $currentStateId = $item->value;
-    /** @var \Drupal\workflows\StateInterface|null $currentState */
-    $currentState = ($currentStateId && $type->hasState($currentStateId)) ? $type->getState($currentStateId) : NULL;
+    $current_state_id = $item->value;
+    /** @var \Drupal\workflows\StateInterface|null $current_state */
+    $current_state = ($current_state_id && $type->hasState($current_state_id)) ? $type->getState($current_state_id) : NULL;
     $states = $type->getStates();
-    if ($currentState) {
+    if ($current_state) {
       // If the current state is valid, then filter out undesirable states:
-      $states = array_filter($states, function (StateInterface $state) use ($currentState, $workflow, $account): bool {
+      $states = array_filter($states, static function (StateInterface $state) use ($current_state, $workflow, $account): bool {
         // Always include the current state as a possible option.
-        if ($currentState->id() === $state->id()) {
+        if ($current_state->id() === $state->id()) {
           return TRUE;
         }
 
         // If we don't have a valid transition, or we don't have an account then
         // all we care about is whether the transition is valid so return.
-        $validTransition = $currentState->canTransitionTo($state->id());
-        if (!$validTransition || !$account) {
-          return $validTransition;
+        $valid_transition = $current_state->canTransitionTo($state->id());
+        if (!$valid_transition || !$account) {
+          return $valid_transition;
         }
 
         // If we have an account object then ensure the user has permission to
         // this transition and that it's a valid transition.
-        $transition = $currentState->getTransitionTo($state->id());
+        $transition = $current_state->getTransitionTo($state->id());
         return Permissions::useTransition($account, $workflow->id(), $transition);
       });
     }
 
-    return array_map(function ($state): string {
+    return array_map(static function ($state): string {
       return (string) $state->label();
     }, $states);
   }
@@ -164,7 +168,7 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
    *
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     if ($workflow = $this->getWorkflow()) {
       $initial_state = $workflow->getTypePlugin()->getInitialState();
       $this->setValue(['value' => $initial_state->id()], $notify);
@@ -175,18 +179,15 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public static function calculateStorageDependencies(FieldStorageDefinitionInterface $field_definition) {
+  public static function calculateStorageDependencies(FieldStorageDefinitionInterface $field_definition): array {
     $dependencies['config'][] = sprintf('workflows.workflow.%s', $field_definition->getSetting('workflow'));
     return $dependencies;
   }
 
   /**
    * Gets the workflow associated with this field.
-   *
-   * @return \Drupal\workflows\WorkflowInterface|null
-   *   The workflow of NULL.
    */
-  public function getWorkflow() {
+  public function getWorkflow(): ?WorkflowInterface {
     return !empty($this->getSetting('workflow')) ? Workflow::load($this->getSetting('workflow')) : NULL;
   }
 

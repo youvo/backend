@@ -5,7 +5,6 @@ namespace Drupal\feedback;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -15,38 +14,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FeedbackListBuilder extends EntityListBuilder {
 
   /**
-   * Constructs a new FeedbackListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
+   * The date formatter service.
    */
-  public function __construct(
-    EntityTypeInterface $entity_type,
-    EntityStorageInterface $storage,
-    protected DateFormatterInterface $dateFormatter,
-  ) {
-    parent::__construct($entity_type, $storage);
-  }
+  protected DateFormatterInterface $dateFormatter;
 
   /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('date.formatter')
-    );
+    $instance = parent::createInstance($container, $entity_type);
+    $instance->dateFormatter = $container->get('date.formatter');
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build['table'] = parent::render();
     return $build;
   }
@@ -54,7 +38,7 @@ class FeedbackListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
+  public function buildHeader(): array {
     $header['id'] = $this->t('ID');
     $header['uid'] = $this->t('Author');
     $header['created'] = $this->t('Created');
@@ -67,7 +51,7 @@ class FeedbackListBuilder extends EntityListBuilder {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\feedback\FeedbackInterface $entity */
     $row['id'] = $entity->toLink();
     $row['uid']['data'] = [
@@ -82,7 +66,7 @@ class FeedbackListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity) {
+  protected function getDefaultOperations(EntityInterface $entity): array {
     $operations = parent::getDefaultOperations($entity);
     $destination = $this->getDestinationArray();
     foreach ($operations as $key => $operation) {

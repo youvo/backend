@@ -1,36 +1,30 @@
 <?php
 
-namespace Drupal\questionnaire\Controller;
+namespace Drupal\questionnaire\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\questionnaire\Entity\Question;
 use Symfony\Component\Routing\Route;
 
 /**
- * Access controller for questionnaire rest resources.
+ * Access handler for questionnaire rest resources.
  */
-class QuestionSubmissionAccessController extends ControllerBase {
+class QuestionSubmissionAccess {
 
   /**
    * Checks access for question submission.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   Run access checks for this account.
-   * @param \Symfony\Component\Routing\Route $route
-   *   The requested route.
-   * @param \Drupal\questionnaire\Entity\Question|null $question
-   *   The questionnaire entity.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access results.
    */
-  public function accessQuestionSubmission(AccountInterface $account, Route $route, ?Question $question = NULL) {
+  public function accessQuestionSubmission(AccountInterface $account, Route $route, ?Question $question = NULL): AccessResultInterface {
+
+    if ($question === NULL) {
+      return AccessResult::neutral();
+    }
 
     // Gather properties.
     $methods = $route->getMethods();
-    $rest_resource = strtr($route->getDefault('_rest_resource_config'), '.', ':');
+    $rest_resource = str_replace('.', ':', $route->getDefault('_rest_resource_config'));
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $question->getParentEntity();
     /** @var \Drupal\lectures\Entity\Lecture $lecture */

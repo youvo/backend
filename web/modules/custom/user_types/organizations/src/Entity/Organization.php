@@ -3,6 +3,7 @@
 namespace Drupal\organizations\Entity;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\ManagerInterface;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\user_types\Utility\Profile;
@@ -51,14 +52,14 @@ class Organization extends TypedUser implements ManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasManager() {
+  public function hasManager(): bool {
     return !$this->get('field_manager')->isEmpty();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getManager() {
+  public function getManager(): ?Creative {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $manager_field */
     $manager_field = $this->get('field_manager');
     $manager_references = $manager_field->referencedEntities();
@@ -70,7 +71,7 @@ class Organization extends TypedUser implements ManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setManager(AccountInterface $account) {
+  public function setManager(AccountInterface $account): static|false {
     if ($this->hasManager()) {
       return FALSE;
     }
@@ -81,7 +82,7 @@ class Organization extends TypedUser implements ManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteManager() {
+  public function deleteManager(): static {
     $this->set('field_manager', NULL);
     return $this;
   }
@@ -89,38 +90,36 @@ class Organization extends TypedUser implements ManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function isManager(AccountInterface|int $account) {
-    return $this->hasManager() &&
-      $this->getManager()->id() == Profile::id($account);
+  public function isManager(AccountInterface|int $account): bool {
+    return $this->hasManager() && $this->getManager()->id() == Profile::id($account);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isOwnerOrManager(AccountInterface|int $account) {
-    return $this->id() == Profile::id($account) ||
-      $this->isManager($account);
+  public function isOwnerOrManager(AccountInterface|int $account): bool {
+    return $this->id() == Profile::id($account) || $this->isManager($account);
   }
 
   /**
    * Determines if this organization has the role archival.
    */
-  public function hasRoleArchival() {
-    return in_array(self::ROLE_ARCHIVAL, $this->getRoles());
+  public function hasRoleArchival(): bool {
+    return in_array(self::ROLE_ARCHIVAL, $this->getRoles(), TRUE);
   }
 
   /**
    * Determines if this organization has the role prospect.
    */
-  public function hasRoleProspect() {
-    return in_array(self::ROLE_PROSPECT, $this->getRoles());
+  public function hasRoleProspect(): bool {
+    return in_array(self::ROLE_PROSPECT, $this->getRoles(), TRUE);
   }
 
   /**
    * Determines if this organization has the role organization.
    */
-  public function hasRoleOrganization() {
-    return in_array(self::ROLE_ORGANIZATION, $this->getRoles());
+  public function hasRoleOrganization(): bool {
+    return in_array(self::ROLE_ORGANIZATION, $this->getRoles(), TRUE);
   }
 
   /**
@@ -129,8 +128,8 @@ class Organization extends TypedUser implements ManagerInterface {
    * @return $this|false
    *   The current organization or FALSE if organization is not a prospect.
    */
-  public function promoteProspect() {
-    if (!in_array('prospect', $this->getRoles())) {
+  public function promoteProspect(): static|false {
+    if (!in_array('prospect', $this->getRoles(), TRUE)) {
       return FALSE;
     }
     $this->removeRole('prospect');

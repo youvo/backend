@@ -107,7 +107,7 @@ class SimpleToken {
    */
   public static function createMultiple(array $tokens): array {
     foreach ($tokens as $token) {
-      if (isset($token['token']) && isset($token['required'])) {
+      if (isset($token['token'], $token['required'])) {
         $token_objects[] = new SimpleToken(
           $token['token'],
           (bool) $token['required']

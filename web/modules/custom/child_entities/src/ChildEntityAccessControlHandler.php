@@ -6,6 +6,7 @@ use Drupal\child_entities\Event\ChildEntityAccessEvent;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -26,15 +27,6 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
 
   /**
    * Constructs a ChildEntityAccessControlHandler constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
    */
   public function __construct(
     EntityTypeInterface $entity_type,
@@ -60,7 +52,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
   /**
    * {@inheritdoc}
    */
-  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Check if the passed entity is indeed a child entity.
     /** @var \Drupal\child_entities\ChildEntityInterface $entity */
@@ -127,7 +119,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
         $parent_key = $entity_type->getKey('parent');
         $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
         $parent_class = $parent_entity_type->getOriginalClass();
-      } while (in_array(ChildEntityTrait::class, class_uses($parent_class)));
+      } while (in_array(ChildEntityTrait::class, class_uses($parent_class), TRUE));
 
       /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
       $access_handler = $this->entityTypeManager
@@ -136,8 +128,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      $this->logger
-        ->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
+      $this->logger->error('Unable to resolve origin access handler. %type: @message in %function (line %line of %file).', $variables);
       return AccessResult::neutral();
     }
   }

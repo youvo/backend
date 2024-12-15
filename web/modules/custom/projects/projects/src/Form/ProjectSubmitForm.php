@@ -14,18 +14,18 @@ class ProjectSubmitForm extends ProjectActionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'project_submit_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL): array {
 
     // Set title for form.
     $form['#title'] = $this->t('Submit Project: %s', [
-      '%s' => $project->getTitle(),
+      '%s' => $project?->getTitle() ?? '',
     ]);
 
     // Store project for submit handler.
@@ -47,7 +47,7 @@ class ProjectSubmitForm extends ProjectActionFormBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     /** @var \Drupal\projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];

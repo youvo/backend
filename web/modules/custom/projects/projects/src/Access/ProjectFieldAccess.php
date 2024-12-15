@@ -3,6 +3,7 @@
 namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -65,7 +66,7 @@ class ProjectFieldAccess extends FieldAccess {
     string $operation,
     FieldDefinitionInterface $field,
     AccountInterface $account,
-  ) {
+  ): AccessResultInterface {
 
     // Only project fields should be controlled by this class.
     if (!$entity instanceof ProjectInterface) {
@@ -78,46 +79,51 @@ class ProjectFieldAccess extends FieldAccess {
     }
 
     // Viewing public fields is handled downstream.
-    if ($operation == 'view' &&
-      self::isFieldOfGroup($field,
-        array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))) {
+    if ($operation === 'view' &&
+      self::isFieldOfGroup($field, array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
+    ) {
       return AccessResult::neutral();
     }
 
     // Editing unrestricted fields is handled downstream.
-    if ($operation == 'edit' &&
-      self::isFieldOfGroup($field, self::UNRESTRICTED_FIELDS)) {
+    if ($operation === 'edit' &&
+      self::isFieldOfGroup($field, self::UNRESTRICTED_FIELDS)
+    ) {
       return AccessResult::neutral();
     }
 
     // A manager can determine the organization when creating a project.
-    if ($operation == 'edit' &&
+    if ($operation === 'edit' &&
       $entity->isNew() &&
-      $entity->getOwner()->isManager($account) &&
-      $field->getName() == self::OWNER_FIELD) {
+      $field->getName() === self::OWNER_FIELD &&
+      $entity->getOwner()->isManager($account)
+    ) {
       return AccessResult::allowed()
         ->cachePerUser();
     }
 
     // Creatives may view the computed status fields.
-    if ($operation == 'view' &&
+    if ($operation === 'view' &&
       $account->hasPermission('general creative access') &&
-      self::isFieldOfGroup($field, self::USER_STATUS_FIELDS)) {
+      self::isFieldOfGroup($field, self::USER_STATUS_FIELDS)
+    ) {
       return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Result fields for completed projects are handled downstream.
-    if ($operation == 'view' &&
-      $entity->lifecycle()->isCompleted() &&
-      self::isFieldOfGroup($field, self::RESULT_FIELDS)) {
+    if ($operation === 'view' &&
+      self::isFieldOfGroup($field, self::RESULT_FIELDS) &&
+      $entity->lifecycle()->isCompleted()
+    ) {
       return AccessResult::neutral()->addCacheableDependency($entity);
     }
 
     // Authors and managers may view applicants for open projects.
-    if ($operation == 'view' &&
+    if ($operation === 'view' &&
+      $field->getName() === self::APPLICANTS_FIELD &&
       $entity->lifecycle()->isOpen() &&
-      $field->getName() == self::APPLICANTS_FIELD &&
-      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))) {
+      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))
+    ) {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())
@@ -126,10 +132,11 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Authors and managers may view participants for ongoing projects. Note
     // that completed projects are handled above.
-    if ($operation == 'view' &&
+    if ($operation === 'view' &&
+      $field->getName() === self::PARTICIPANTS_FIELD &&
       $entity->lifecycle()->isOngoing() &&
-      $field->getName() == self::PARTICIPANTS_FIELD &&
-      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))) {
+      ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))
+    ) {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())

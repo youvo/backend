@@ -11,7 +11,6 @@ use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
  * Sets the parent entity as a context on parent routes.
@@ -22,32 +21,17 @@ class ChildEntityRouteContext implements ContextProviderInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  private EntityTypeManagerInterface $entityTypeManager;
-
-  /**
    * Constructs a new ChildEntityRouteContext.
-   *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $current_route_match
-   *   The current route match object.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
    */
-  public function __construct(RouteMatchInterface $current_route_match, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
-    $this->currentRouteMatch = $current_route_match;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->stringTranslation = $string_translation;
-  }
+  public function __construct(
+    protected RouteMatchInterface $currentRouteMatch,
+    protected EntityTypeManagerInterface $entityTypeManager,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public function getRuntimeContexts(array $unqualified_context_ids) {
+  public function getRuntimeContexts(array $unqualified_context_ids): array {
     // Create an optional context definition for child entities.
     $contexts = [];
 
@@ -77,7 +61,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getAvailableContexts() {
+  public function getAvailableContexts(): array {
     $contexts = [];
     foreach ($this->getChildEntityTypes() as $parent_entity_type_id) {
       $parent_entity_type = $this->entityTypeManager->getDefinition($parent_entity_type_id);
@@ -95,7 +79,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
    * @return array
    *   The entity types that implement the ChildEntityTrait.
    */
-  private function getChildEntityTypes() {
+  private function getChildEntityTypes(): array {
     $child_entity_types = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $definition) {

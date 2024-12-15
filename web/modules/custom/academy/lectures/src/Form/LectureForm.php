@@ -18,7 +18,7 @@ class LectureForm extends ContentEntityForm {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
 
     /** @var \Drupal\lectures\Entity\Lecture $lecture */
@@ -26,7 +26,7 @@ class LectureForm extends ContentEntityForm {
 
     if (!$lecture->isNew() &&
       $lecture->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-      static::addTranslationButtons($form, $lecture);
+      $this->addTranslationButtons($form, $lecture);
     }
 
     return $form;
@@ -35,13 +35,13 @@ class LectureForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     // Save entity.
     $result = parent::save($form, $form_state);
     $arguments = ['%label' => $this->entity->label()];
 
-    if ($result == SAVED_NEW) {
+    if ($result === SAVED_NEW) {
       $this->messenger()->addStatus($this->t('New lecture %label has been created.', $arguments));
       $this->logger('academy')->notice('Created new lecture %label', $arguments);
     }

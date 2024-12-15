@@ -4,17 +4,14 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Component\Serialization\SerializationInterface;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Routing\RouteProviderInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ResourceResponse;
-use Psr\Log\LoggerInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -33,93 +30,23 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
   /**
-   * Serialization with Json.
-   *
-   * @var \Drupal\Component\Serialization\SerializationInterface
-   */
-  protected SerializationInterface $serializationJson;
-
-  /**
    * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * Constructs a ProjectMediateResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
-   *   The route provider.
-   * @param \Drupal\Component\Serialization\SerializationInterface $serialization_json
-   *   Serialization with Json.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountInterface $current_user,
-    EventDispatcherInterface $event_dispatcher,
-    RouteProviderInterface $route_provider,
-    SerializationInterface $serialization_json,
-    EntityTypeManagerInterface $entity_type_manager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger, $current_user, $event_dispatcher, $route_provider);
-    $this->serializationJson = $serialization_json;
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('projects'),
-      $container->get('current_user'),
-      $container->get('event_dispatcher'),
-      $container->get('router.route_provider'),
-      $container->get('serialization.json'),
-      $container->get('entity_type.manager')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   *
-   * @return \Drupal\rest\ResourceResponse
-   *   The response.
    */
-  public function get(ProjectInterface $project) {
+  public function get(ProjectInterface $project): ResourceResponseInterface {
 
     // Fetch applicants in desired structure.
     $applicants = [];
@@ -136,7 +63,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
 
     // Compile response with structured data.
     $response = new ResourceResponse([
-      'resource' => strtr($this->pluginId, ':', '.'),
+      'resource' => str_replace(':', '.', $this->pluginId),
       'data' => [
         'type' => 'project',
         'id' => $project->uuid(),
@@ -157,21 +84,13 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
   /**
    * Responds to POST requests.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ResourceResponse
-   *   The response.
-   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   Thrown if unable to save project.
    */
-  public function post(ProjectInterface $project, Request $request) {
+  public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     // Decode content of the request.
-    $request_content = $this->serializationJson->decode($request->getContent());
+    $request_content = Json::decode($request->getContent());
 
     // The selected_creatives are required to process the request.
     if (!array_key_exists('selected_creatives', $request_content)) {
@@ -192,15 +111,15 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     }
 
     // The entries of the selected creatives array are expected to be UUIDs.
-    if (count(array_filter($selected_creatives, [Uuid::class, 'isValid'])) != count($selected_creatives)) {
+    if (count(array_filter($selected_creatives, [Uuid::class, 'isValid'])) !== count($selected_creatives)) {
       throw new BadRequestHttpException('The entries of the selected_creatives array are not valid UUIDs.');
     }
 
     // Get applicants for current project and check if selected_creatives are
     // applicable.
     $applicants = $project->getApplicants();
-    $applicants_uuids = array_map(fn ($a) => $a->uuid(), $applicants);
-    if (count(array_intersect($selected_creatives, $applicants_uuids)) != count($selected_creatives)) {
+    $applicants_uuids = array_map(static fn ($a) => $a->uuid(), $applicants);
+    if (count(array_intersect($selected_creatives, $applicants_uuids)) !== count($selected_creatives)) {
       throw new UnprocessableEntityHttpException('Some selected creatives did not apply for this project.');
     }
 

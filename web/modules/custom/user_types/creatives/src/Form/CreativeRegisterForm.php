@@ -3,6 +3,7 @@
 namespace Drupal\creatives\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
@@ -13,9 +14,9 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
 use Drupal\user\UserInterface;
-use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -31,21 +32,6 @@ final class CreativeRegisterForm extends FormBase {
 
   /**
    * Constructs a CreativeRegisterForm object.
-   *
-   * @param \Drupal\Core\Session\AccountProxyInterface $account
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Core\Flood\FloodInterface $flood
-   *   The flood service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
-   * @param \Symfony\Component\HttpFoundation\Session\SessionInterface $session
-   *   The session.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\user\UserStorageInterface $userStorage
-   *   The user storage.
    */
   public function __construct(
     protected AccountProxyInterface $account,
@@ -54,13 +40,13 @@ final class CreativeRegisterForm extends FormBase {
     protected ModuleHandlerInterface $moduleHandler,
     protected SessionInterface $session,
     protected TimeInterface $time,
-    protected UserStorageInterface $userStorage,
+    protected EntityTypeManagerInterface $entityTypeManager,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new self(
       $container->get('current_user'),
       $container->get('event_dispatcher'),
@@ -68,35 +54,25 @@ final class CreativeRegisterForm extends FormBase {
       $container->get('module_handler'),
       $container->get('session'),
       $container->get('datetime.time'),
-      $container->get('entity_type.manager')->getStorage('user')
+      $container->get('entity_type.manager')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'creative_register_password_form';
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\Core\Session\AccountInterface $user
-   *   Creative that request to register.
-   *
-   * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
-   *   The form or a redirect.
    */
   public function buildForm(
     array $form,
     FormStateInterface $form_state,
     ?AccountInterface $user = NULL,
-  ) {
+  ): RedirectResponse|array {
 
     // Verify that the creative is active.
     if (
@@ -178,7 +154,7 @@ final class CreativeRegisterForm extends FormBase {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): RedirectResponse {
 
     $timestamp = $form_state->getValue('timestamp');
     $hash = $form_state->getValue('hash');
@@ -187,10 +163,10 @@ final class CreativeRegisterForm extends FormBase {
     $creative = $form_state->getValue('user');
 
     if (
+      !empty($password) &&
       $creative->isAuthenticated() &&
       $timestamp <= $this->time->getCurrentTime() &&
-      hash_equals($hash, user_pass_rehash($creative, $timestamp)) &&
-      !empty($password)
+      hash_equals($hash, user_pass_rehash($creative, $timestamp))
     ) {
       $creative->setPassword($password);
       $creative->save();
@@ -223,7 +199,9 @@ final class CreativeRegisterForm extends FormBase {
     $this->getLogger('user')->notice('Session opened for %name.',
       ['%name' => $account->getAccountName()]);
     $account->setLastLoginTime($this->time->getRequestTime());
-    $this->userStorage->updateLastLoginTimestamp($account);
+    /** @var \Drupal\user\UserStorageInterface $user_storage */
+    $user_storage = $this->entityTypeManager->getStorage('user');
+    $user_storage->updateLastLoginTimestamp($account);
     $this->session->migrate();
     $this->session->set('uid', $account->id());
     $this->session->set('check_logged_in', TRUE);

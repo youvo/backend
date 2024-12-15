@@ -168,42 +168,42 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   /**
    * {@inheritdoc}
    */
-  public function isEnabled() {
+  public function isEnabled(): bool {
     return $this->status();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isDetectable() {
+  public function isDetectable(): bool {
     return !empty($this->detectable);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isObservable() {
+  public function isObservable(): bool {
     return !empty($this->observable);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isPublic() {
+  public function isPublic(): bool {
     return !empty($this->public);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isPromoted() {
+  public function isPromoted(): bool {
     return !empty($this->promote);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isHidden() {
+  public function isHidden(): bool {
     return !empty($this->hidden);
   }
 

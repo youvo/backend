@@ -3,6 +3,7 @@
 namespace Drupal\projects\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -13,7 +14,7 @@ class ProjectAddForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     $form['title'] = [
       '#type' => 'textfield',
@@ -41,7 +42,7 @@ class ProjectAddForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): ContentEntityInterface {
     // Shape values to be consumed by content entity form.
     $form_state->setValue('uid', [0 => ['target_id' => $form_state->getValue('uid')]]);
     $form_state->setValue('title', [0 => ['value' => $form_state->getValue('title')]]);

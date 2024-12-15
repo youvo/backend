@@ -46,16 +46,12 @@ class ParagraphType extends ConfigEntityBundleBase {
 
   /**
    * The machine name of this paragraph type.
-   *
-   * @var string
    */
-  protected $id;
+  protected string $id;
 
   /**
    * The human-readable name of the paragraph type.
-   *
-   * @var string
    */
-  protected $label;
+  protected string $label;
 
 }

@@ -22,8 +22,7 @@ class LogbookParseJsonapiAttributesSubscriber implements EventSubscriberInterfac
    * @param \Drupal\youvo\Event\ParseJsonapiAttributesEvent $event
    *   The event to process.
    */
-  public function resolveAttributes(ParseJsonapiAttributesEvent $event) {
-
+  public function resolveAttributes(ParseJsonapiAttributesEvent $event): void {
     $item = $event->getItem();
     unset($item['relationships']['log_type']);
     $event->setItem($item);
@@ -32,10 +31,8 @@ class LogbookParseJsonapiAttributesSubscriber implements EventSubscriberInterfac
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return [
-      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
-    ];
+  public static function getSubscribedEvents(): array {
+    return [ParseJsonapiAttributesEvent::class => 'resolveAttributes'];
   }
 
 }

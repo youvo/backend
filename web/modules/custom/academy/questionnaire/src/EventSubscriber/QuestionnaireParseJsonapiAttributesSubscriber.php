@@ -24,18 +24,19 @@ class QuestionnaireParseJsonapiAttributesSubscriber implements EventSubscriberIn
    * @see SubmissionFieldItemList
    * @see ParagraphForm
    */
-  public function resolveAttributes(ParseJsonapiAttributesEvent $event) {
+  public function resolveAttributes(ParseJsonapiAttributesEvent $event): void {
 
     $item = $event->getItem();
 
     // Filter empty states from checkboxes submission.
-    if (isset($item['type']) && in_array($item['type'], ['checkboxes', 'task'])) {
-      if (isset($item['attributes']['submission'])) {
-        $item['attributes']['submission'] = array_filter(
-          $item['attributes']['submission'],
-          fn($s) => $s !== NULL && $s !== ""
-        );
-      }
+    if (
+      isset($item['type'], $item['attributes']['submission']) &&
+      in_array($item['type'], ['checkboxes', 'task'])
+    ) {
+      $item['attributes']['submission'] = array_filter(
+        $item['attributes']['submission'],
+        static fn($s) => $s !== NULL && $s !== ""
+      );
     }
 
     $event->setItem($item);
@@ -44,10 +45,8 @@ class QuestionnaireParseJsonapiAttributesSubscriber implements EventSubscriberIn
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return [
-      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
-    ];
+  public static function getSubscribedEvents(): array {
+    return [ParseJsonapiAttributesEvent::class => 'resolveAttributes'];
   }
 
 }

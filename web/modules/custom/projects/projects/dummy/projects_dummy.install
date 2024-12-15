@@ -8,6 +8,7 @@
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Utility\Error;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\projects\Entity\Project;
 use Drupal\user\Entity\User;
 use Faker\Factory;
@@ -15,7 +16,7 @@ use Faker\Factory;
 /**
  * Implements hook_install().
  */
-function projects_dummy_install() {
+function projects_dummy_install(): void {
   module_set_weight('projects_dummy', 3);
 }
 
@@ -24,7 +25,7 @@ function projects_dummy_install() {
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function projects_dummy_site_install_finished() {
+function projects_dummy_site_install_finished(): void {
 
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')
@@ -72,12 +73,12 @@ function projects_dummy_site_install_finished() {
     $image_file = projects_dummy_get_stock_image($i);
 
     // Set random time in last year.
-    $rnd_time = rand($created, $created + 1209600);
+    $rnd_time = random_int($created, $created + 1209600);
     $deadline = \Drupal::service('date.formatter')
       ->format($rnd_time, 'custom', 'Y-m-d');
 
     // Increase created time randomly.
-    $created += rand(min(86400, $max_created_increment), $max_created_increment);
+    $created += random_int(min(86400, $max_created_increment), $max_created_increment);
 
     // Get random state.
     $state = $faker->randomElement($lifecycle_states);
@@ -115,7 +116,7 @@ function projects_dummy_site_install_finished() {
       'promote' => in_array($state, ['open', 'completed']) && $faker->boolean(),
       'field_allowance' => $faker->boolean(),
       'field_contact' => $contact,
-      'field_workload' => rand(1, 5),
+      'field_workload' => random_int(1, 5),
       'field_deadline' => $deadline,
       'field_city' => $faker->city(),
       'field_material' => $faker->text(100),
@@ -131,9 +132,9 @@ function projects_dummy_site_install_finished() {
     ]);
 
     // Set applicants for open projects.
-    if ($state == 'open') {
+    if ($state === 'open') {
       shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(0, min(5, count($creative_ids))));
+      $applicants = array_slice($creative_ids, 0, random_int(0, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
       if (!empty($applicants)) {
         $project->setApplicants(array_map('intval', $applicants));
@@ -144,12 +145,12 @@ function projects_dummy_site_install_finished() {
     }
 
     // Set applicants and participants for ongoing or completed projects.
-    if ($state == 'ongoing' || $state == 'completed') {
+    if ($state === 'ongoing' || $state === 'completed') {
       shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, rand(1, min(5, count($creative_ids))));
+      $applicants = array_slice($creative_ids, 0, random_int(1, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
       $project->setApplicants(array_map('intval', $applicants));
-      $participants = array_slice($applicants, 0, rand(1, count($applicants)));
+      $participants = array_slice($applicants, 0, random_int(1, count($applicants)));
       $tasks = array_fill(0, count($participants), 'Creative');
       $project->setParticipants(array_map('intval', $participants), $tasks);
       if ($manager) {
@@ -158,7 +159,7 @@ function projects_dummy_site_install_finished() {
     }
 
     // Set result text.
-    if ($state == 'completed') {
+    if ($state === 'completed') {
       // @todo Add project results.
     }
 
@@ -213,10 +214,10 @@ function projects_dummy_site_install_finished() {
  * @param int $i
  *   Iteration index.
  *
- * @return \Drupal\file\Entity\File
+ * @return \Drupal\file\FileInterface
  *   Image file.
  */
-function projects_dummy_get_stock_image(int $i) {
+function projects_dummy_get_stock_image(int $i): FileInterface {
 
   $index = sprintf('%02d', (($i - 1) % 12) + 1);
   $image_path = \Drupal::service('extension.list.module')->getPath('projects_dummy') . '/img/' . $index . '.jpg';

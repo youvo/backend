@@ -3,13 +3,14 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\organizations\Event\OrganizationManageEvent;
 
 /**
  * Logbook organization manage event subscriber.
  */
 class LogbookOrganizationManageSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = 'Drupal\organizations\Event\OrganizationManageEvent';
+  const EVENT_CLASS = OrganizationManageEvent::class;
   const LOG_PATTERN = 'organization_manage';
 
   /**

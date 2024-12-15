@@ -13,7 +13,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public function alterRoutes(RouteCollection $collection) {
+  public function alterRoutes(RouteCollection $collection): void {
     if ($route = $collection->get('simple_oauth.userinfo')) {
       $route->setDefaults([
         '_controller' => '\Drupal\oauth_grant\Controller\UserInfoOverwriteController::handle',
