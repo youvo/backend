@@ -26,7 +26,6 @@ class ChildEntityRouteContext implements ContextProviderInterface {
   public function __construct(
     protected RouteMatchInterface $currentRouteMatch,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected $stringTranslation,
   ) {}
 
   /**

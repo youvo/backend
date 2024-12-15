@@ -277,7 +277,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($form_state->getValue('entities') as $id => $value) {
       /** @var \Drupal\paragraphs\Entity\Paragraph|null $paragraph */
       $paragraph = $this->entities[$id];

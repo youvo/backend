@@ -22,7 +22,7 @@ class BlockerModeSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = parent::create($container);
     $instance->state = $container->get('state');
     return $instance;

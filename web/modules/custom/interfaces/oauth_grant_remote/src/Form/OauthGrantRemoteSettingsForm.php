@@ -22,7 +22,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = parent::create($container);
     $instance->fileSystemChecker = $container->get('simple_oauth.filesystem_checker');
     return $instance;

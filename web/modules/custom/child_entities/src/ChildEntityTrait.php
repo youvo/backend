@@ -148,7 +148,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function setParentId($uid): static {
+  public function setParentId(int $uid): static {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $uid);
     return $this;
