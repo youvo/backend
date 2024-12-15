@@ -3,13 +3,14 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\organizations\Event\OrganizationCreateEvent;
 
 /**
  * Logbook organization create event subscriber.
  */
 class LogbookOrganizationCreateSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = 'Drupal\organizations\Event\OrganizationCreateEvent';
+  const EVENT_CLASS = OrganizationCreateEvent::class;
   const LOG_PATTERN = 'organization_create';
   // Should run after project is created.
   const PRIORITY = -100;

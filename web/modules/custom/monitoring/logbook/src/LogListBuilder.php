@@ -3,12 +3,11 @@
 namespace Drupal\logbook;
 
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityViewBuilderInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a list controller for the log entity type.
@@ -16,73 +15,29 @@ use Symfony\Component\HttpFoundation\Request;
 final class LogListBuilder extends EntityListBuilder {
 
   /**
-   * The view builder.
-   *
-   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
+   * The entity type manager.
    */
-  protected EntityViewBuilderInterface $viewBuilder;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * The pattern storage class.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
+   * The request stack.
    */
-  protected EntityStorageInterface $patternStorage;
+  protected RequestStack $requestStack;
 
   /**
-   * The current request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
+   * {@inheritdoc}
    */
-  protected Request $request;
-
-  /**
-   * Constructs a new LectureListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $view_builder
-   *   The view builder.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $pattern_storage
-   *   The pattern storage class.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The current request.
-   */
-  public function __construct(
-    EntityTypeInterface $entity_type,
-    EntityStorageInterface $storage,
-    EntityViewBuilderInterface $view_builder,
-    EntityStorageInterface $pattern_storage,
-    Request $request,
-  ) {
-    parent::__construct($entity_type, $storage);
-    $this->viewBuilder = $view_builder;
-    $this->patternStorage = $pattern_storage;
-    $this->request = $request;
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    $instance = parent::createInstance($container, $entity_type);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->requestStack = $container->get('request_stack');
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(
-    ContainerInterface $container,
-    EntityTypeInterface $entity_type,
-  ) {
-    return new self(
-      $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('entity_type.manager')->getViewBuilder('log'),
-      $container->get('entity_type.manager')->getStorage($entity_type->getBundleEntityType()),
-      $container->get('request_stack')->getCurrentRequest(),
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function render() {
+  public function render(): array {
 
     $build['options'] = [
       '#type' => 'container',
@@ -90,7 +45,7 @@ final class LogListBuilder extends EntityListBuilder {
       '#suffix' => '</div></div>',
     ];
 
-    if ($this->request->query->get('hidden')) {
+    if ($this->requestStack->getCurrentRequest()->query->get('hidden')) {
       $build['options']['show_hidden'] = [
         '#markup' => Link::createFromRoute($this->t('Collapse hidden logs'), 'entity.log.collection')->toString(),
       ];
@@ -110,7 +65,7 @@ final class LogListBuilder extends EntityListBuilder {
     ];
 
     foreach ($this->load() as $entity) {
-      if ($row = $this->viewBuilder->view($entity)) {
+      if ($row = $this->entityTypeManager->getViewBuilder('log')->view($entity)) {
         $build['table'][] = $row;
       }
     }
@@ -128,14 +83,15 @@ final class LogListBuilder extends EntityListBuilder {
       'status' => TRUE,
       'detectable' => TRUE,
     ];
-    if (!$this->request->query->get('hidden')) {
+    if (!$this->requestStack->getCurrentRequest()->query->get('hidden')) {
       $properties['hidden'] = FALSE;
     }
-    $detectable_log_patterns = $this->patternStorage
+    $detectable_log_patterns = $this->entityTypeManager
+      ->getStorage($this->entityType->getBundleEntityType())
       ->loadByProperties($properties);
     if (!empty($detectable_log_patterns)) {
       $query = $this->getStorage()->getQuery()
-        ->condition('type', array_map(fn($p) => $p->id(), $detectable_log_patterns), 'IN')
+        ->condition('type', array_map(static fn($p) => $p->id(), $detectable_log_patterns), 'IN')
         ->accessCheck(TRUE)
         ->sort($this->entityType->getKey('id'), 'DESC');
       // Only add the pager if a limit is specified.

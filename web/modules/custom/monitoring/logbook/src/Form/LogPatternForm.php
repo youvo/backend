@@ -7,6 +7,7 @@ use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\logbook\Entity\LogText;
+use Drupal\logbook\LogTextInterface;
 use Drupal\multivalue_form_element\Element\MultiValue;
 use Drupal\youvo\SimpleToken;
 use Drupal\youvo\TranslationFormButtonsTrait;
@@ -25,11 +26,11 @@ class LogPatternForm extends BundleEntityFormBase {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     $form = parent::form($form, $form_state);
 
-    if ($this->operation == 'add') {
+    if ($this->operation === 'add') {
       $form['#title'] = $this->t('Add log pattern');
     }
     else {
@@ -38,11 +39,13 @@ class LogPatternForm extends BundleEntityFormBase {
         ['%label' => $this->entity->label()]
       );
 
-      /** @var \Drupal\logbook\Entity\LogText|null $log_text */
       $log_text = $this->entity->getLogTextEntity();
 
-      if ($log_text?->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')) {
-        static::addTranslationButtons($form, $log_text);
+      if (
+        $log_text instanceof LogTextInterface &&
+        $log_text->getEntityType()->hasLinkTemplate('drupal:content-translation-overview')
+      ) {
+        $this->addTranslationButtons($form, $log_text);
       }
     }
 
@@ -78,24 +81,24 @@ class LogPatternForm extends BundleEntityFormBase {
       '%Creatives',
       '%Creative',
     ];
-    $public_tokens = array_filter($tokens, fn($t) => in_array($t['token'], $allowed_public_tokens));
-    if ($required_tokens = array_filter($tokens, fn($t) => $t['required'] ?? FALSE)) {
+    $public_tokens = array_filter($tokens, static fn($t) => in_array($t['token'], $allowed_public_tokens, TRUE));
+    if ($required_tokens = array_filter($tokens, static fn($t) => $t['required'] ?? FALSE)) {
       $tokens_description[] = $this->t('Required Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($required_tokens, 'token')),
       ]);
 
     }
-    if ($required_public_tokens = array_filter($public_tokens, fn($t) => $t['required'] ?? FALSE)) {
+    if ($required_public_tokens = array_filter($public_tokens, static fn($t) => $t['required'] ?? FALSE)) {
       $public_tokens_description[] = $this->t('Required Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($required_public_tokens, 'token')),
       ]);
     }
-    if ($optional_tokens = array_filter($tokens, fn($t) => !isset($t['required']) || !$t['required'])) {
+    if ($optional_tokens = array_filter($tokens, static fn($t) => !isset($t['required']) || !$t['required'])) {
       $tokens_description[] = $this->t('Optional Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($optional_tokens, 'token')),
       ]);
     }
-    if ($optional_public_tokens = array_filter($public_tokens, fn($t) => !isset($t['required']) || !$t['required'])) {
+    if ($optional_public_tokens = array_filter($public_tokens, static fn($t) => !isset($t['required']) || !$t['required'])) {
       $public_tokens_description[] = $this->t('Optional Tokens: @tokens', [
         '@tokens' => implode(', ', array_column($optional_public_tokens, 'token')),
       ]);
@@ -217,7 +220,7 @@ class LogPatternForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save log pattern');
     return $actions;
@@ -258,7 +261,7 @@ class LogPatternForm extends BundleEntityFormBase {
     // Remove empty values from tokens.
     /** @var array $token_values */
     $token_values = $form_state->getValue('tokens');
-    $form_state->setValue('tokens', array_filter($token_values, fn($t) => !empty($t['token'])));
+    $form_state->setValue('tokens', array_filter($token_values, static fn($t) => !empty($t['token'])));
     parent::submitForm($form, $form_state);
   }
 
@@ -268,11 +271,11 @@ class LogPatternForm extends BundleEntityFormBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
     $result = parent::save($form, $form_state);
 
     // Create text entity.
-    if ($result == SAVED_NEW) {
+    if ($result === SAVED_NEW) {
       $log_text = LogText::create([
         'log_pattern' => $this->entity->id(),
         'text' => $form_state->getValue('text'),
@@ -287,7 +290,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $log_text->save();
 
     $message_args = ['%label' => $this->entity->label()];
-    $message = $result == SAVED_NEW
+    $message = $result === SAVED_NEW
       ? $this->t('Created new log pattern %label.', $message_args)
       : $this->t('Updated log pattern %label.', $message_args);
     $this->messenger()->addStatus($message);

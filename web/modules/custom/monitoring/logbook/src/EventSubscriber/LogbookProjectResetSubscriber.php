@@ -5,13 +5,14 @@ namespace Drupal\logbook\EventSubscriber;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\projects\Event\ProjectResetEvent;
 
 /**
  * Logbook project reset event subscriber.
  */
 class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = 'Drupal\projects\Event\ProjectResetEvent';
+  const EVENT_CLASS = ProjectResetEvent::class;
   const LOG_PATTERN = 'project_reset';
 
   /**

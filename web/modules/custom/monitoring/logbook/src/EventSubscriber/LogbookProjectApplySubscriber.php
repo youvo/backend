@@ -3,13 +3,14 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\projects\Event\ProjectApplyEvent;
 
 /**
  * Logbook project apply event subscriber.
  */
 class LogbookProjectApplySubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = 'Drupal\projects\Event\ProjectApplyEvent';
+  const EVENT_CLASS = ProjectApplyEvent::class;
   const LOG_PATTERN = 'project_apply';
 
   /**
