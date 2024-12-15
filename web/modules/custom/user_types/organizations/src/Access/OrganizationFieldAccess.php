@@ -3,6 +3,7 @@
 namespace Drupal\organizations\Access;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -105,7 +106,7 @@ class OrganizationFieldAccess extends FieldAccess {
     string $operation,
     FieldDefinitionInterface $field,
     AccountInterface $account,
-  ) {
+  ): AccessResultInterface {
 
     // Only project fields should be controlled by this class.
     if (!$entity instanceof Organization) {
@@ -113,24 +114,24 @@ class OrganizationFieldAccess extends FieldAccess {
     }
 
     // Administrators and supervisors pass through. This also targets editing.
-    if (in_array('administrator', $account->getRoles()) ||
-      in_array('supervisor', $account->getRoles())) {
+    if (in_array('administrator', $account->getRoles(), TRUE) ||
+      in_array('supervisor', $account->getRoles(), TRUE)) {
       return AccessResult::neutral()->cachePerUser();
     }
 
     // Viewing public fields is handled downstream.
-    if ($operation == 'view' && $field->getName() == self::ROLES) {
+    if ($operation === 'view' && $field->getName() === self::ROLES) {
       return AccessResult::allowed();
     }
 
     // Viewing public fields is handled downstream.
-    if ($operation == 'view' &&
+    if ($operation === 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PUBLIC)) {
       return AccessResult::neutral();
     }
 
     // Viewing private fields when owner or manager is handled downstream.
-    if ($operation == 'view' &&
+    if ($operation === 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PRIVATE) &&
       $entity->isOwnerOrManager($account)) {
       return AccessResult::neutral()->cachePerUser();
@@ -138,7 +139,7 @@ class OrganizationFieldAccess extends FieldAccess {
 
     // Editing fields when owner or manager is handled downstream. Note that
     // edit permissions are handled by the organization access handler.
-    if ($operation == 'edit' &&
+    if ($operation === 'edit' &&
       self::isFieldOfGroup($field, self::EDIT_OWNER_OR_MANAGER)) {
       return AccessResult::neutral();
     }

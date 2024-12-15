@@ -5,6 +5,7 @@ namespace Drupal\youvo\Plugin\Field\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\IntegerItem;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\youvo\Plugin\DataType\CacheableIntegerData;
 
 /**
  * Defines the 'integer' entity field type with cacheability metadata.
@@ -23,7 +24,7 @@ class CacheableIntegerItem extends IntegerItem {
   /**
    * {@inheritdoc}
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties['value'] = DataDefinition::create('cacheable_integer')
       ->setLabel(t('Cacheable integer value'))
       ->setRequired(TRUE);
@@ -37,7 +38,7 @@ class CacheableIntegerItem extends IntegerItem {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getValueProperty() {
+  public function getValueProperty(): CacheableIntegerData {
     /** @var \Drupal\youvo\Plugin\DataType\CacheableIntegerData $value */
     $value = $this->get('value');
     return $value;

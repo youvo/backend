@@ -8,6 +8,8 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * AcademyTranslationHandler extends functionality of ContentTranslationHandler.
+ *
+ * @todo Should be moved to a more general namespace. Also, see youvo.module.
  */
 class AcademyTranslationHandler extends ContentTranslationHandler {
 

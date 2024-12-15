@@ -3,6 +3,7 @@
 namespace Drupal\questionnaire;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -27,7 +28,7 @@ class QuestionFieldAccess extends FieldAccess {
     string $operation,
     FieldDefinitionInterface $field,
     AccountInterface $account,
-  ) {
+  ): AccessResultInterface {
 
     // Only question fields should be controlled by this class.
     if (!$entity instanceof Question) {

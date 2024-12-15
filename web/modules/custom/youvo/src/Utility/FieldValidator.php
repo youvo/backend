@@ -12,7 +12,7 @@ class FieldValidator {
   /**
    * Determines the type of the field and delegates the validation.
    */
-  public static function validate(FieldDefinitionInterface $field, mixed $value) {
+  public static function validate(FieldDefinitionInterface $field, mixed $value): bool {
     $type = explode("_", $field->getType());
     $method = 'validate' . implode(array_map('ucfirst', $type));
     if (method_exists(__CLASS__, $method)) {
@@ -24,7 +24,7 @@ class FieldValidator {
   /**
    * Validates field of type string.
    */
-  public static function validateString(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateString(FieldDefinitionInterface $field, mixed $value): bool {
     $max_length = $field->getItemDefinition()->getSetting('max_length') ?: -1;
     return (is_null($value) || is_numeric($value) || is_string($value)) &&
       ($max_length == -1 || strlen($value) <= $max_length);
@@ -33,21 +33,21 @@ class FieldValidator {
   /**
    * Validates field of type string long.
    */
-  public static function validateStringLong(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateStringLong(FieldDefinitionInterface $field, mixed $value): bool {
     return self::validateString($field, $value);
   }
 
   /**
    * Validates field of type text.
    */
-  public static function validateText(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateText(FieldDefinitionInterface $field, mixed $value): bool {
     return is_null($value) || is_string($value);
   }
 
   /**
    * Validates field of type text with summary.
    */
-  public static function validateTextWithSummary(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateTextWithSummary(FieldDefinitionInterface $field, mixed $value): bool {
     if (is_array($value)) {
       $summary_is_valid = !array_key_exists('summary', $value) ||
         is_null($value['summary']) || is_string($value['summary']);
@@ -55,20 +55,20 @@ class FieldValidator {
         (is_null($value['value']) || is_string($value['value'])) &&
         $summary_is_valid;
     }
-    return is_null($value) ||is_string($value);
+    return is_null($value) || is_string($value);
   }
 
   /**
    * Validates field of type boolean.
    */
-  public static function validateBool(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateBool(FieldDefinitionInterface $field, mixed $value): bool {
     return is_bool($value);
   }
 
   /**
    * Validates field of type email.
    */
-  public static function validateEmail(FieldDefinitionInterface $field, mixed $value) {
+  public static function validateEmail(FieldDefinitionInterface $field, mixed $value): bool {
     return \Drupal::service('email.validator')->isValid($value);
   }
 

@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 
 /**
- * Controller for youvo_work landing pages.
+ * Controller for dashboard landing page.
  */
 class DashboardController extends ControllerBase {
 
@@ -16,7 +16,7 @@ class DashboardController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function dashboard() {
+  public function dashboard(): array {
 
     $page = [];
 

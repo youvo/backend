@@ -19,7 +19,7 @@ trait TranslationFormButtonsTrait {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function addTranslationButtons(array &$form, ContentEntityInterface $entity) {
+  public function addTranslationButtons(array &$form, ContentEntityInterface $entity): void {
 
     $form['translations'] = [
       '#type' => 'container',

@@ -6,4 +6,4 @@ youvo.dashboard:
   requirements:
     _role: 'editor+administrator'
   options:
-    no_cache: 'TRUE'
+    no_cache: TRUE

@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataReferenceTargetDefinition;
+use Drupal\youvo\Plugin\DataType\CacheableIntegerData;
 
 /**
  * Defines the 'entity reference' field type with cacheability metadata.
@@ -28,7 +29,7 @@ class CacheableEntityReferenceItem extends EntityReferenceItem {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     $properties = parent::propertyDefinitions($field_definition);
     $settings = $field_definition->getSettings();
     $target_type_info = \Drupal::entityTypeManager()->getDefinition($settings['target_type']);
@@ -45,7 +46,7 @@ class CacheableEntityReferenceItem extends EntityReferenceItem {
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  public function getTargetIdProperty() {
+  public function getTargetIdProperty(): CacheableIntegerData {
     /** @var \Drupal\youvo\Plugin\DataType\CacheableIntegerData $target_id */
     $target_id = $this->get('target_id');
     return $target_id;
