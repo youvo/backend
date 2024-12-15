@@ -12,59 +12,38 @@ use Symfony\Component\HttpFoundation\Request;
 class OrganizationCreateEvent extends Event {
 
   /**
-   * The created organization.
-   *
-   * @var \Drupal\organizations\Entity\Organization
-   */
-  protected Organization $organization;
-
-  /**
    * The created project ID.
-   *
-   * @var int
    *
    * @see \Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
    */
   protected int $projectId;
 
   /**
-   * The request.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected Request $request;
-
-  /**
    * Constructs a OrganizationCreateEvent object.
-   *
-   * @param \Drupal\organizations\Entity\Organization $organization
-   *   The created organization.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
    */
-  public function __construct(Organization $organization, Request $request) {
-    $this->organization = $organization;
-    $this->request = $request;
-  }
+  public function __construct(
+    protected Organization $organization,
+    protected Request $request,
+  ) {}
 
   /**
    * Gets the created organization.
    */
-  public function getOrganization() {
+  public function getOrganization(): Organization {
     return $this->organization;
   }
 
   /**
    * Gets the request.
    */
-  public function getRequest() {
+  public function getRequest(): Request {
     return $this->request;
   }
 
   /**
    * Sets the project ID.
    */
-  public function setProjectId(int $project_id): OrganizationCreateEvent {
+  public function setProjectId(int $project_id): static {
     $this->projectId = $project_id;
     return $this;
   }

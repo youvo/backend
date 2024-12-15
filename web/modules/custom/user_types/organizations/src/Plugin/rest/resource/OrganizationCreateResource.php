@@ -5,18 +5,19 @@ namespace Drupal\organizations\Plugin\rest\resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Component\Utility\Random;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\user\UserStorageInterface;
+use Drupal\rest\ResourceResponseInterface;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\youvo\Exception\FieldAwareHttpException;
 use Drupal\youvo\Utility\FieldValidator;
 use Drupal\youvo\Utility\RestContentShifter;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,102 +38,35 @@ use Symfony\Component\Routing\RouteCollection;
 class OrganizationCreateResource extends ResourceBase {
 
   /**
-   * The serialization by Json service.
-   *
-   * @var \Drupal\Component\Serialization\Json
-   */
-  protected Json $serializationJson;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected UserStorageInterface $userStorage;
-
-  /**
    * The email validator service.
-   *
-   * @var \Drupal\Component\Utility\EmailValidatorInterface
    */
   protected EmailValidatorInterface $emailValidator;
 
   /**
+   * The user storage.
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected EventDispatcherInterface $eventDispatcher;
 
   /**
-   * Constructs a OrganizationCreateResource object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Component\Serialization\Json $serialization_json
-   *   The serialization by Json service.
-   * @param \Drupal\user\UserStorageInterface $user_storage
-   *   The user storage.
-   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
-   *   The email validator service.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    Json $serialization_json,
-    UserStorageInterface $user_storage,
-    EmailValidatorInterface $email_validator,
-    EventDispatcherInterface $event_dispatcher,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->serializationJson = $serialization_json;
-    $this->userStorage = $user_storage;
-    $this->emailValidator = $email_validator;
-    $this->eventDispatcher = $event_dispatcher;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('serialization.json'),
-      $container->get('entity_type.manager')->getStorage('user'),
-      $container->get('email.validator'),
-      $container->get('event_dispatcher')
-    );
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->emailValidator = $container->get('email.validator');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
+    return $instance;
   }
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function get(Request $request) {
+  public function get(Request $request): ResourceResponseInterface {
 
     // Get email query parameter.
     $email = trim($request->query->get('mail'));
@@ -167,16 +101,8 @@ class OrganizationCreateResource extends ResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function post(Request $request) {
+  public function post(Request $request): ResourceResponseInterface {
 
     try {
       // Create new organization user.
@@ -201,7 +127,7 @@ class OrganizationCreateResource extends ResourceBase {
         'field' => $e->getField(),
       ], $e->getStatusCode());
     }
-    catch (HttpException $e) {
+    catch (HttpException | EntityStorageException $e) {
       return new ModifiedResourceResponse($e->getMessage(), $e->getStatusCode());
     }
 
@@ -220,14 +146,16 @@ class OrganizationCreateResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    * @throws \Drupal\youvo\Exception\FieldAwareHttpException
    */
-  protected function validateAndShiftRequest(Request $request) {
+  protected function validateAndShiftRequest(Request $request): array {
 
     // Decode content of the request.
-    $content = $this->serializationJson->decode($request->getContent());
+    $content = Json::decode($request->getContent());
 
     // Decline request body without organization data.
-    if (empty($content['data']) ||
-      !in_array('organization', array_column($content['data'], 'type'))) {
+    if (
+      empty($content['data']) ||
+      !in_array('organization', array_column($content['data'], 'type'), TRUE)
+    ) {
       throw new HttpException(400, 'Request body does not provide organization data.');
     }
 
@@ -260,7 +188,7 @@ class OrganizationCreateResource extends ResourceBase {
    * @param \Drupal\user_bundle\Entity\TypedUser $organization
    *   The organization.
    */
-  protected function populateFields(array $attributes, TypedUser $organization) {
+  protected function populateFields(array $attributes, TypedUser $organization): void {
 
     // Prepare, validate and set each field.
     foreach ($attributes as $field_key => $value) {
@@ -271,7 +199,7 @@ class OrganizationCreateResource extends ResourceBase {
       $organization->set($field_name, $value);
 
       // Set username identical to provided mail.
-      if ($field_name == 'mail') {
+      if ($field_name === 'mail') {
         $organization->setUsername($value);
       }
     }
@@ -280,16 +208,19 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Checks whether email used by already existing account.
    */
-  protected function accountExistsForEmail(string $email) {
-    return !empty($this->userStorage->loadByProperties(['mail' => $email]));
+  protected function accountExistsForEmail(string $email): bool {
+    $accounts = $this->entityTypeManager
+      ->getStorage('user')
+      ->loadByProperties(['mail' => $email]);
+    return !empty($accounts);
   }
 
   /**
    * Resolves the field name.
    */
-  protected function validateAndRenameField(string $field_key, TypedUser $organization) {
+  protected function validateAndRenameField(string $field_key, TypedUser $organization): string {
     // Validate if field is available. Target field_name instead of name.
-    if ($organization->hasField($field_key) && $field_key != 'name') {
+    if ($field_key !== 'name' && $organization->hasField($field_key)) {
       $field_name = $field_key;
     }
     else {
@@ -306,7 +237,7 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Checks the field access with the help of OrganizationFieldAccess.
    */
-  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key) {
+  protected function checkFieldAccess(FieldDefinitionInterface $field_definition, string $field_key): void {
     $fields_allowed = array_merge(['mail', 'field_referral'],
       OrganizationFieldAccess::EDIT_OWNER_OR_MANAGER);
     if (!OrganizationFieldAccess::isFieldOfGroup($field_definition, $fields_allowed)) {
@@ -319,7 +250,7 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * Validates the field value with the help of the FieldValidator.
    */
-  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value) {
+  protected function validateFieldValue(FieldDefinitionInterface $field_definition, string $field_key, mixed $value): void {
     if (!FieldValidator::validate($field_definition, $value)) {
       throw new FieldAwareHttpException(400,
         'Malformed request body. Unable to validate the organization field ' . $field_key,
@@ -330,18 +261,18 @@ class OrganizationCreateResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
 
     // Gather properties.
     $collection = new RouteCollection();
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->pluginId, ':', '.');
+    $route_name = str_replace(':', '.', $this->pluginId);
 
     // Add access check and route entity context parameter for each method.
     foreach ($this->availableMethods() as $method) {
       $route = $this->getBaseRoute($canonical_path, $method);
-      $route->setRequirement('_custom_access', '\Drupal\organizations\Controller\OrganizationAccessController::accessCreate');
+      $route->setRequirement('_custom_access', '\Drupal\organizations\Access\OrganizationEntityAccess::accessCreate');
       $collection->add("$route_name.$method", $route);
     }
 

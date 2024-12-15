@@ -18,13 +18,11 @@ class CreativeEntityAccess {
    *
    * @see \Drupal\user_types\UserTypeAccessControlHandler::checkAccess()
    */
-  public static function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
-
-    // Only creatives should be handled by this handler.
+  public static function checkAccess(EntityInterface $entity, string $operation, AccountInterface $account): AccessResultInterface {
+    // Only creatives should be handled by this check.
     if (!$entity instanceof Creative) {
       return AccessResult::neutral();
     }
-
     return AccessResult::allowed();
   }
 

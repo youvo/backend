@@ -13,7 +13,7 @@ use Faker\Factory;
 /**
  * Implements hook_install().
  */
-function organizations_dummy_install() {
+function organizations_dummy_install(): void {
   module_set_weight('organizations_dummy', 3);
 }
 
@@ -22,7 +22,7 @@ function organizations_dummy_install() {
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
-function organizations_dummy_site_install_finished() {
+function organizations_dummy_site_install_finished(): void {
 
   // Object for random content.
   $faker = Factory::create('de_DE');
