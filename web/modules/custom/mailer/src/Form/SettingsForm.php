@@ -40,7 +40,7 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
-    if ($form_state->getValue('example') != 'example') {
+    if ($form_state->getValue('example') !== 'example') {
       $form_state->setErrorByName('example', $this->t('The value is not correct.'));
     }
     parent::validateForm($form, $form_state);

@@ -4,6 +4,7 @@ namespace Drupal\mailer;
 
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
@@ -17,7 +18,7 @@ class TransactionalEmailAccessControlHandler extends EntityAccessControlHandler 
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     if (!$entity instanceof TransactionalEmailInterface) {
       throw new AccessException('The TransactionalEmailAccessControlHandler was called by an entity that is not a TransactionalEmail.');
@@ -27,7 +28,7 @@ class TransactionalEmailAccessControlHandler extends EntityAccessControlHandler 
       return AccessResult::allowed()->cachePerUser();
     }
 
-    if ($operation == 'update' || $operation == 'edit') {
+    if ($operation === 'update' || $operation === 'edit') {
       return AccessResult::allowedIf($account->hasPermission('edit transactional emails'));
     }
 

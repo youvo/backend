@@ -119,7 +119,7 @@ class TransactionalEmailForm extends EntityForm {
     // Remove empty values from tokens.
     /** @var array $token_values */
     $token_values = $form_state->getValue('tokens');
-    $form_state->setValue('tokens', array_filter($token_values, fn($t) => !empty($t['token'])));
+    $form_state->setValue('tokens', array_filter($token_values, static fn($t) => !empty($t['token'])));
     parent::submitForm($form, $form_state);
   }
 
@@ -131,7 +131,7 @@ class TransactionalEmailForm extends EntityForm {
   public function save(array $form, FormStateInterface $form_state): int {
     $result = parent::save($form, $form_state);
     $message_args = ['%label' => $this->entity->label()];
-    $message = $result == SAVED_NEW
+    $message = $result === SAVED_NEW
       ? $this->t('Created new transactional email %label.', $message_args)
       : $this->t('Updated transactional email %label.', $message_args);
     $this->messenger()->addStatus($message);

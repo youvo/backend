@@ -11,19 +11,13 @@ interface TransactionalEmailInterface extends ConfigEntityInterface {
 
   /**
    * Gets the subject.
-   *
-   * @return string
-   *   The subject.
    */
-  public function subject();
+  public function subject(): string;
 
   /**
    * Gets the body.
-   *
-   * @return string
-   *   The body.
    */
-  public function body();
+  public function body(): string;
 
   /**
    * Gets the tokens.
@@ -34,6 +28,6 @@ interface TransactionalEmailInterface extends ConfigEntityInterface {
    * @return array
    *   The tokens.
    */
-  public function tokens(bool $as_array = FALSE);
+  public function tokens(bool $as_array = FALSE): array;
 
 }

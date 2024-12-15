@@ -22,19 +22,6 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
 
   /**
    * Constructs a MailerSubscriberBase object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $currentUser
-   *   The current user.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The mailer logger channel.
-   * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
-   *   The mail manager service.
-   * @param \Drupal\youvo\SimpleTokenReplacer $simpleTokenReplacer
-   *   The mailer token replacer service.
    */
   public function __construct(
     protected AccountInterface $currentUser,
@@ -57,7 +44,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
     catch (InvalidPluginDefinitionException | PluginNotFoundException) {
       $transactional_email = NULL;
     }
-    if (empty($transactional_email)) {
+    if ($transactional_email === NULL) {
       $this->logger->error('Unable to load transactional email entity (%id).', ['%id' => $email_id]);
     }
     return $transactional_email;
@@ -138,7 +125,7 @@ abstract class MailerSubscriberBase implements EventSubscriberInterface {
   /**
    * Gets the site email.
    */
-  protected function getSiteMail() {
+  protected function getSiteMail(): string {
     return $this->configFactory->get('system.site')->get('mail');
   }
 

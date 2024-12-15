@@ -3,6 +3,7 @@
 namespace Drupal\mailer\EventSubscriber;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\projects\Event\ProjectInviteEvent;
 
 /**
  * Mailer project invite event subscriber.
@@ -17,7 +18,7 @@ class MailerProjectInviteSubscriber extends MailerProjectNotifySubscriber {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return ['Drupal\projects\Event\ProjectInviteEvent' => 'mail'];
+    return [ProjectInviteEvent::class => 'mail'];
   }
 
 }

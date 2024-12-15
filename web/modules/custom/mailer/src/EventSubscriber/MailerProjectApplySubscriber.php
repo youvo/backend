@@ -6,6 +6,7 @@ use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Entity\TransactionalEmail;
+use Drupal\projects\Event\ProjectApplyEvent;
 
 /**
  * Mailer project apply event subscriber.
@@ -79,7 +80,7 @@ class MailerProjectApplySubscriber extends MailerSubscriberBase {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return ['Drupal\projects\Event\ProjectApplyEvent' => 'mail'];
+    return [ProjectApplyEvent::class => 'mail'];
   }
 
 }
