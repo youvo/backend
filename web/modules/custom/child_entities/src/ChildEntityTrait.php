@@ -142,7 +142,11 @@ trait ChildEntityTrait {
    * {@inheritdoc}
    */
   public function getParentId(): ?int {
-    return $this->getEntityKey('parent');
+    $parent_id = $this->getEntityKey('parent');
+    if ($parent_id === NULL) {
+      return NULL;
+    }
+    return (int) $parent_id;
   }
 
   /**
