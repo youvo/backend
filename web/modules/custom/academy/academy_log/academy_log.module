@@ -8,7 +8,7 @@
 /**
  * Implements hook_theme().
  */
-function academy_log_theme($existing, $type, $theme, $path) {
+function academy_log_theme(array $existing, string $type, string $theme, string $path): array {
   return [
     'overview' => [
       'template' => 'content--overview',

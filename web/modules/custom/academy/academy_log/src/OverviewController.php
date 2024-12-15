@@ -2,8 +2,9 @@
 
 namespace Drupal\academy_log;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\courses\Entity\Course;
 use Drupal\progress\ProgressManager;
@@ -12,42 +13,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Overview for academy log.
  */
-class OverviewController extends ControllerBase {
-
-  /**
-   * The progress manager service.
-   *
-   * @var \Drupal\progress\ProgressManager
-   */
-  private ProgressManager $progressManager;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatter
-   */
-  private DateFormatter $dateFormatter;
+class OverviewController implements ContainerInjectionInterface {
 
   /**
    * Construct overview controller with services.
-   *
-   * @param \Drupal\progress\ProgressManager $progress_manager
-   *   The progress manager service.
-   * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
-   *   The date formatter service.
    */
-  public function __construct(ProgressManager $progress_manager, DateFormatter $date_formatter) {
-    $this->progressManager = $progress_manager;
-    $this->dateFormatter = $date_formatter;
-  }
+  public function __construct(
+    protected DateFormatter $dateFormatter,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ProgressManager $progressManager,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('progress.manager'),
       $container->get('date.formatter'),
+      $container->get('entity_type.manager'),
+      $container->get('progress.manager'),
     );
   }
 
@@ -58,7 +42,7 @@ class OverviewController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function overview() {
+  public function overview(): array {
 
     // Initialize.
     $page = [];
@@ -90,7 +74,7 @@ class OverviewController extends ControllerBase {
 
         // If there is no progress for the first progress, break and skip this
         // account (see below).
-        if ($course->getMachineName() == 'intro' && !isset($progress)) {
+        if (!isset($progress) && $course->getMachineName() === 'intro') {
           break;
         }
 
@@ -104,21 +88,21 @@ class OverviewController extends ControllerBase {
         $accessed = $progress?->getAccessTime();
         $slip['accessed'] = isset($accessed) ? $this->dateFormatter->format($accessed, 'short') : NULL;
         $completed = $progress?->getCompletedTime();
-        $slip['completed'] = isset($completed) && $completed != 0 ? $this->dateFormatter->format($completed, 'short') : NULL;
+        $slip['completed'] = isset($completed) && $completed !== 0 ? $this->dateFormatter->format($completed, 'short') : NULL;
         if (!isset($accessed)) {
           break;
         }
         $sheet['courses'][$course->id()] = $slip;
-        if (isset($completed) && $completed == 0) {
+        if (isset($completed) && $completed === 0) {
           $overall_progression += $course_progression / $total_courses;
         }
-        if (!isset($completed) || $completed == 0) {
+        if (!isset($completed) || $completed === 0) {
           break;
         }
       }
 
       // If a user never clicked on any courses - do not list.
-      if (empty($sheet['courses']) || $overall_progression == 0) {
+      if (empty($sheet['courses']) || $overall_progression === 0) {
         continue;
       }
 
@@ -129,8 +113,7 @@ class OverviewController extends ControllerBase {
 
     // Sort participants by progression.
     if (!empty($page['participants'])) {
-      usort($page['participants'],
-        fn($a, $b) => $b['progression'] <=> $a['progression']);
+      usort($page['participants'], static fn($a, $b) => $b['progression'] <=> $a['progression']);
     }
 
     return [
@@ -145,20 +128,20 @@ class OverviewController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  private function getCreativeAccounts() {
+  private function getCreativeAccounts(): array {
     // Get all creatives, that are active and not associates.
     $associates_ids = [
       1, 14, 50, 130, 134, 136, 616, 621, 1200, 1888, 1889, 5124, 15970,
     ];
-    $storage = $this->entityTypeManager()->getStorage('user');
-    $user_ids = $storage->getQuery()
+    $user_storage = $this->entityTypeManager->getStorage('user');
+    $user_ids = $user_storage->getQuery()
       ->accessCheck(TRUE)
       ->condition('status', '1')
       ->condition('roles', 'creative')
       ->condition('uid', $associates_ids, 'NOT IN')
       ->execute();
     /** @var \Drupal\user\UserInterface[] $accounts */
-    $accounts = $storage->loadMultiple($user_ids);
+    $accounts = $user_storage->loadMultiple($user_ids);
     return $accounts;
   }
 
@@ -168,16 +151,16 @@ class OverviewController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  private function getAllCourses() {
+  private function getAllCourses(): array {
     // Get all creatives, that are active and not associates.
-    $storage = $this->entityTypeManager()->getStorage('course');
-    $course_ids = $storage->getQuery()
-      ->accessCheck(TRUE)
+    $course_storage = $this->entityTypeManager->getStorage('course');
+    $course_ids = $course_storage->getQuery()
+      ->accessCheck()
       ->condition('status', '1')
       ->sort('weight')
       ->execute();
     /** @var \Drupal\courses\Entity\Course[] $courses */
-    $courses = $storage->loadMultiple($course_ids);
+    $courses = $course_storage->loadMultiple($course_ids);
     return $courses;
   }
 
@@ -196,7 +179,7 @@ class OverviewController extends ControllerBase {
 
     // Calculate percentage.
     $total = count($lectures);
-    $completed = count(array_filter($lectures, fn($l) => $l->completed));
+    $completed = count(array_filter($lectures, static fn($l) => $l->completed));
     return (int) ceil($completed / $total * 100);
   }
 
