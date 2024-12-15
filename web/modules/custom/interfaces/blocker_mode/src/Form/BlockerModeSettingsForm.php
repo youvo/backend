@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class BlockerModeSettingsForm extends ConfigFormBase {
 
   /**
-   * The state keyvalue collection.
+   * The state key-value collection.
    */
   protected StateInterface $state;
 

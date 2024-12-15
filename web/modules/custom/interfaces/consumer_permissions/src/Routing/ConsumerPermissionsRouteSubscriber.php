@@ -13,7 +13,7 @@ class ConsumerPermissionsRouteSubscriber extends RouteSubscriberBase {
   /**
    * Alters OAuth authorization route.
    */
-  public function alterRoutes(RouteCollection $collection) {
+  public function alterRoutes(RouteCollection $collection): void {
     if ($route = $collection->get('oauth2_token.authorize')) {
       $route->setRequirements([
         '_custom_access' => '\Drupal\consumer_permissions\Controller\ConsumerPermissionsAccess::accessClient',
