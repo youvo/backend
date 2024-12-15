@@ -159,7 +159,7 @@ packages:
     ramsey/collection: 2.0.0
     ramsey/uuid: 4.7.6
     react/promise: v3.2.0
-    roave/security-advisories: 'dev-latest:233f7c395ac3b83e3c85aa304f3350bf8897aca5'
+    roave/security-advisories: '9999999-dev:233f7c395ac3b83e3c85aa304f3350bf8897aca5'
     sebastian/cli-parser: 1.0.2
     sebastian/code-unit: 1.0.8
     sebastian/code-unit-reverse-lookup: 2.0.3
