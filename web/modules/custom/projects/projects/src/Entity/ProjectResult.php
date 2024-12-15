@@ -58,7 +58,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime(int $timestamp): ProjectResultInterface {
+  public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -66,7 +66,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function setFiles(array $file_targets): ProjectResultInterface {
+  public function setFiles(array $file_targets): static {
     $this->set('field_files', NULL);
     foreach ($file_targets as $file_target) {
       $this->get('field_files')->appendItem($file_target);
@@ -77,7 +77,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function setLinks(array $links): ProjectResultInterface {
+  public function setLinks(array $links): static {
     $this->set('field_hyperlinks', NULL);
     foreach ($links as $link) {
       $this->get('field_hyperlinks')->appendItem($link);
@@ -88,7 +88,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
   /**
    * {@inheritdoc}
    */
-  public function appendComment(ProjectCommentInterface $comment): ProjectResultInterface {
+  public function appendComment(ProjectCommentInterface $comment): static {
     $this->get('project_comments')->appendItem(['target_id' => $comment->id()]);
     return $this;
   }
@@ -112,7 +112,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
     $comments_field = $this->get('project_comments');
     /** @var \Drupal\projects\ProjectCommentInterface[] $comments */
     $comments = $comments_field->referencedEntities();
-    $comments_filtered = array_filter($comments, fn($c) => $c->getOwnerId() == $account->id());
+    $comments_filtered = array_filter($comments, static fn($c) => $c->getOwnerId() == $account->id());
     $comment = reset($comments_filtered);
     return $comment !== FALSE ? $comment->getComment() : NULL;
   }
@@ -122,7 +122,7 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

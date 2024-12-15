@@ -3,17 +3,14 @@
 namespace Drupal\projects\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 
 /**
  * AppliedFieldItemList class to generate a computed field.
  *
- * @todo Use proper DI after
- *   https://www.drupal.org/project/drupal/issues/2914419 or
- *   https://www.drupal.org/project/drupal/issues/2053415
+ * @todo Use DI after https://www.drupal.org/project/drupal/issues/3294266
  */
-class UserIsApplicantFieldItemList extends FieldItemList implements FieldItemListInterface {
+class UserIsApplicantFieldItemList extends FieldItemList {
 
   use ComputedItemListTrait;
 
@@ -22,7 +19,7 @@ class UserIsApplicantFieldItemList extends FieldItemList implements FieldItemLis
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     if (empty($this->list)) {
 

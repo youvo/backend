@@ -3,6 +3,7 @@
 namespace Drupal\projects\Access;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Permissions;
 use Drupal\projects\ProjectInterface;
@@ -15,7 +16,7 @@ class ProjectTransitionAccess {
   /**
    * Checks access for project transition.
    */
-  public function accessTransition(AccountInterface $account, ProjectInterface $project, string $transition): AccessResult {
+  public function accessTransition(AccountInterface $account, ProjectInterface $project, string $transition): AccessResultInterface {
 
     // Bypass access control.
     if ($account->hasPermission('bypass project_lifecycle transition access')) {
@@ -26,38 +27,32 @@ class ProjectTransitionAccess {
     $party_access = AccessResult::allowed();
 
     // Parties for transition submit.
-    if ($transition == 'submit') {
-      if (!$project->isAuthor($account)) {
-        $party_access = AccessResult::forbidden();
-      }
+    if (($transition === 'submit') && !$project->isAuthor($account)) {
+      $party_access = AccessResult::forbidden();
     }
 
     // Parties for transition publish.
-    if ($transition == 'publish') {
-      if (!$project->getOwner()->isManager($account)) {
-        $party_access = AccessResult::forbidden();
-      }
+    if (($transition === 'publish') && !$project->getOwner()->isManager($account)) {
+      $party_access = AccessResult::forbidden();
     }
 
     // Parties for transition mediate.
-    if ($transition == 'mediate') {
-      if (
-        !$project->isAuthor($account) &&
-        !$project->getOwner()->isManager($account)
-      ) {
-        $party_access = AccessResult::forbidden();
-      }
+    if (
+      ($transition === 'mediate') &&
+      !$project->isAuthor($account) &&
+      !$project->getOwner()->isManager($account)
+    ) {
+      $party_access = AccessResult::forbidden();
     }
 
     // Parties for transition complete.
-    if ($transition == 'complete') {
-      if (
-        !$project->isAuthor($account) &&
-        !$project->getOwner()->isManager($account) &&
-        !$project->isParticipant($account)
-      ) {
-        $party_access = AccessResult::forbidden();
-      }
+    if (
+      ($transition === 'complete') &&
+      !$project->isAuthor($account) &&
+      !$project->isParticipant($account) &&
+      !$project->getOwner()->isManager($account)
+    ) {
+      $party_access = AccessResult::forbidden();
     }
 
     return $party_access->andIf(

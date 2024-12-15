@@ -2,10 +2,13 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Project Apply Resource.
@@ -22,14 +25,8 @@ class ProjectApplyResource extends ProjectActionResourceBase {
 
   /**
    * Responds to GET requests.
-   *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
    */
-  public function get(ProjectInterface $project) {
+  public function get(ProjectInterface $project): ResourceResponseInterface {
 
     // Is the project open?
     if (!$project->lifecycle()->isOpen()) {
@@ -37,31 +34,22 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     }
 
     // Did creative already apply to project?
-    elseif ($project->isApplicant($this->currentUser)) {
+    if ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
 
     // Otherwise, project is open to apply for creative.
-    else {
-      return new ModifiedResourceResponse('Creative can apply to project.', 200);
-    }
+    return new ModifiedResourceResponse('Creative can apply to project.', 200);
   }
 
   /**
    * Responds to POST requests.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
-   *   Thrown if project can not be saved.
    */
-  public function post(ProjectInterface $project, Request $request) {
+  public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     // Is the project open?
     if (!$project->lifecycle()->isOpen()) {
@@ -69,44 +57,41 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     }
 
     // Did creative already apply to project?
-    elseif ($project->isApplicant($this->currentUser)) {
+    if ($project->isApplicant($this->currentUser)) {
       return new ModifiedResourceResponse('Creative already applied to project.', 403);
     }
 
     // Otherwise, project is open to apply for creative.
-    else {
+    /** @var \Drupal\creatives\Entity\Creative $applicant */
+    $applicant = $this->entityTypeManager->getStorage('user')->load($this->currentUser->id());
 
-      /** @var \Drupal\creatives\Entity\Creative $applicant */
-      $applicant = $this->userStorage->load($this->currentUser->id());
+    // Decode content of the request.
+    $content = Json::decode($request->getContent());
 
-      // Decode content of the request.
-      $content = $this->serializationJson->decode($request->getContent());
-
-      // Add phone number to creative.
-      if (!empty($content['phone'])) {
-        $applicant->setPhoneNumber($content['phone']);
-        $applicant->save();
-      }
-
-      // Append applicant to project.
-      $project->appendApplicant($applicant);
-      $project->save();
-
-      // Dispatch project apply event.
-      $event = new ProjectApplyEvent($project);
-      $event->setMessage($content['message'] ?? '');
-      $event->setPhoneNumber($content['phone'] ?? '');
-      $event->setApplicant($applicant);
-      $this->eventDispatcher->dispatch($event);
-
-      return new ModifiedResourceResponse('Added creative to applicants.', 200);
+    // Add phone number to creative.
+    if (!empty($content['phone'])) {
+      $applicant->setPhoneNumber($content['phone']);
+      $applicant->save();
     }
+
+    // Append applicant to project.
+    $project->appendApplicant($applicant);
+    $project->save();
+
+    // Dispatch project apply event.
+    $event = new ProjectApplyEvent($project);
+    $event->setMessage($content['message'] ?? '');
+    $event->setPhoneNumber($content['phone'] ?? '');
+    $event->setApplicant($applicant);
+    $this->eventDispatcher->dispatch($event);
+
+    return new ModifiedResourceResponse('Added creative to applicants.', 200);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): RouteCollection {
     return $this->routesWithAccessCallback('accessApply');
   }
 

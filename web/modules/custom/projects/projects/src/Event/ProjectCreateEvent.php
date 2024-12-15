@@ -5,6 +5,4 @@ namespace Drupal\projects\Event;
 /**
  * Defines a project create event.
  */
-class ProjectCreateEvent extends ProjectEventBase {
-
-}
+class ProjectCreateEvent extends ProjectEventBase {}

@@ -3,14 +3,13 @@
 namespace Drupal\projects\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\user_types\Utility\Profile;
 
 /**
  * Computes task of project comment owner.
  */
-class ProjectCommentTaskFieldItemList extends FieldItemList implements FieldItemListInterface {
+class ProjectCommentTaskFieldItemList extends FieldItemList {
 
   use ComputedItemListTrait;
 
@@ -20,7 +19,7 @@ class ProjectCommentTaskFieldItemList extends FieldItemList implements FieldItem
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function computeValue() {
+  protected function computeValue(): void {
 
     if (!isset($this->list[0])) {
 
@@ -32,7 +31,7 @@ class ProjectCommentTaskFieldItemList extends FieldItemList implements FieldItem
       // Resolve task of participant or author.
       if (Profile::isCreative($comment->getOwner())) {
         $participants = $project->getParticipants();
-        $participants_filtered = array_filter($participants, fn($p) => $p->id() == $comment->getOwnerId());
+        $participants_filtered = array_filter($participants, static fn($p) => $p->id() == $comment->getOwnerId());
         $participant = reset($participants_filtered);
         /** @var string $task */
         $task = $participant->task ?? '';

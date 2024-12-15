@@ -12,26 +12,14 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 abstract class ProjectActionFormBase extends FormBase {
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $eventDispatcher;
-
-  /**
    * Constructs a ProjectActionFormBase object.
-   *
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
    */
-  public function __construct(EventDispatcherInterface $event_dispatcher) {
-    $this->eventDispatcher = $event_dispatcher;
-  }
+  public function __construct(protected EventDispatcherInterface $eventDispatcher) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('event_dispatcher'));
   }
 

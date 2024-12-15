@@ -13,7 +13,7 @@ class ProjectRouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function alterRoutes(RouteCollection $collection) {
+  protected function alterRoutes(RouteCollection $collection): void {
     // @todo Change logic when other content types land.
     if ($route = $collection->get('system.admin_content')) {
       $route->setDefault('_title', 'Projects');

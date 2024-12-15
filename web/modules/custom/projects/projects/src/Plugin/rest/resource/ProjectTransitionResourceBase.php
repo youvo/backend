@@ -5,7 +5,6 @@ namespace Drupal\projects\Plugin\rest\resource;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\Plugin\ResourceBase;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
@@ -19,91 +18,40 @@ class ProjectTransitionResourceBase extends ResourceBase {
 
   /**
    * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
    */
   protected AccountInterface $currentUser;
 
   /**
    * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected EventDispatcherInterface $eventDispatcher;
 
   /**
    * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
    */
   protected RouteProviderInterface $routeProvider;
 
   /**
-   * Constructs a ProjectActionResourceBase object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param array $serializer_formats
-   *   The available serialization formats.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
-   *   The route provider.
+   * {@inheritdoc}
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountInterface $current_user,
-    EventDispatcherInterface $event_dispatcher,
-    RouteProviderInterface $route_provider,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->currentUser = $current_user;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->routeProvider = $route_provider;
+  public static function create(ContainerInterface $container, ...$defaults) {
+    $instance = parent::create($container, ...$defaults);
+    $instance->currentUser = $container->get('current_user');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
+    $instance->logger = $container->get('logger.channel.projects');
+    $instance->routeProvider = $container->get('router.route_provider');
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('projects'),
-      $container->get('current_user'),
-      $container->get('event_dispatcher'),
-      $container->get('router.route_provider')
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function routes() {
+  public function routes(): RouteCollection {
     $collection = new RouteCollection();
 
     $definition = $this->getPluginDefinition();
     $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = strtr($this->getPluginId(), ':', '.');
+    $route_name = str_replace(':', '.', $this->getPluginId());
 
     // The base route is not available during installation. Route definition
     // will be updated during first cache rebuild.
@@ -132,18 +80,12 @@ class ProjectTransitionResourceBase extends ResourceBase {
   }
 
   /**
-   * Checks if base route was properly defined in routing.yml.
-   *
-   * @param \Symfony\Component\Routing\Route $base_route
-   *   Base route of transition.
+   * Checks if the base route was properly defined in routing.yml.
    */
-  private function baseRouteProper(Route $base_route) {
-    if (empty($base_route->getDefault('transition')) ||
+  private function baseRouteProper(Route $base_route): bool {
+    return !(empty($base_route->getDefault('transition')) ||
       empty($base_route->getRequirement('_custom_access')) ||
-      empty($base_route->getOption('parameters'))) {
-      return FALSE;
-    }
-    return TRUE;
+      empty($base_route->getOption('parameters')));
   }
 
 }
