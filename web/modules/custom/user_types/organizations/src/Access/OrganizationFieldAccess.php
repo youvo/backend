@@ -26,9 +26,9 @@ use Drupal\youvo\Utility\FieldAccess;
  * See \Drupal\organizations\Plugin\rest\resource\OrganizationManageResource
  * See \Drupal\user_types\Plugin\rest\resource\UserUpdateEmailResource.
  * See \Drupal\user_types\Plugin\rest\resource\UserUpdatePasswordResource.
- * These may have their own access controller.
+ * These may have their own access handler.
  * See \Drupal\organizations\Controller\OrganizationAccessController.
- * See \Drupal\user_types\Controller\UserTypeAccessController.
+ * See \Drupal\user_types\Access\UserTypeAccess.
  *
  * The field projects is a computed field.
  * See \Drupal\projects\Plugin\Field\ComputedProjectReferenceFieldItemList.

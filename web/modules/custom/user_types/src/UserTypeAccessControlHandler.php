@@ -3,6 +3,7 @@
 namespace Drupal\user_types;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -20,10 +21,10 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Prevent deletion when entity is new.
-    if ($operation == 'delete' && $entity->isNew()) {
+    if ($operation === 'delete' && $entity->isNew()) {
       return AccessResult::forbidden()->addCacheableDependency($entity);
     }
 
@@ -42,8 +43,7 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
     }
 
     // Also run the access checks for users.
-    return $access_result
-      ->andIf(parent::checkAccess($entity, $operation, $account));
+    return $access_result->andIf(parent::checkAccess($entity, $operation, $account));
   }
 
   /**
@@ -54,7 +54,7 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
    * @see \Drupal\organizations\Plugin\rest\resource\OrganizationCreateResource
    * @see \Drupal\creatives\Plugin\rest\resource\CreativeRegisterResource
    */
-  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL): AccessResultInterface {
     return AccessResult::forbidden();
   }
 
