@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\questionnaire\Entity\Question;
@@ -25,10 +26,8 @@ function academy_dummy_install() {
  * Implements hook_site_install_finished().
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
- *
- * @throws \Drupal\Core\Entity\EntityStorageException
  */
-function academy_dummy_site_install_finished() {
+function academy_dummy_site_install_finished(): void {
 
   // Set course titles.
   $course_titles = [
@@ -71,7 +70,7 @@ function academy_dummy_site_install_finished() {
       'machine_name' => $course_machine_names[$j],
       'weight' => -7 + $j,
     ]);
-    $max = rand(3, 6);
+    $max = random_int(3, 6);
     for ($k = 0; $k < $max; $k++) {
       $course->get('tags')->appendItem($random->sentences(1, TRUE));
     }
@@ -143,7 +142,7 @@ function academy_dummy_site_install_finished() {
         'weight' => -3,
         'uid' => 1,
       ]);
-      $max = rand(3, 6);
+      $max = random_int(3, 6);
       for ($k = 0; $k < $max; $k++) {
         $paragraph->get('list')->appendItem($random->sentences(3, TRUE));
       }
@@ -201,10 +200,10 @@ function academy_dummy_site_install_finished() {
         'weight' => 1,
         'uid' => 1,
       ]);
-      $max = rand(1, 3);
+      $max = random_int(1, 3);
       $i = 1;
       while ($i <= $max) {
-        $paragraph->get('list')->appendItem(ceil(rand(1, 300)) * 100);
+        $paragraph->get('list')->appendItem(ceil(random_int(1, 300)) * 100);
         $paragraph->get('description')->appendItem($random->sentences(5, TRUE));
         $i++;
       }
@@ -279,16 +278,16 @@ function academy_dummy_site_install_finished() {
         'explanation' => rtrim($random->paragraphs(1)),
         'paragraph' => $questionnaire->id(),
         'weight' => -2,
-        'required' => rand(0, 1) == 1,
+        'required' => random_int(0, 1) === 1,
         'uid' => 1,
       ]);
-      $max = rand(3, 5);
-      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
+      $max = random_int(3, 5);
+      $correct = random_int(0, 1) === 1 ? random_int(1, $max) : 0;
       $i = 1;
       while ($i <= $max) {
         $question->get('options')->appendItem($random->sentences(3, TRUE));
         if ($correct) {
-          if ($i == $correct) {
+          if ($i === $correct) {
             $question->get('answers')->appendItem(TRUE);
           }
           else {
@@ -308,20 +307,20 @@ function academy_dummy_site_install_finished() {
         'explanation' => rtrim($random->paragraphs(1)),
         'paragraph' => $questionnaire->id(),
         'weight' => -1,
-        'required' => rand(0, 1) == 1,
+        'required' => random_int(0, 1) == 1,
         'uid' => 1,
       ]);
-      $max = rand(3, 5);
-      $correct = rand(0, 1) == 1 ? rand(1, $max) : 0;
+      $max = random_int(3, 5);
+      $correct = random_int(0, 1) === 1 ? random_int(1, $max) : 0;
       $i = 1;
       while ($i <= $max) {
         $question->get('options')->appendItem($random->sentences(3, TRUE));
         if ($correct) {
-          if ($i == $correct) {
+          if ($i === $correct) {
             $question->get('answers')->appendItem(TRUE);
           }
           else {
-            $question->get('answers')->appendItem(rand(0, 100) < 20);
+            $question->get('answers')->appendItem(random_int(0, 100) < 20);
           }
         }
         $i++;
@@ -338,7 +337,7 @@ function academy_dummy_site_install_finished() {
         'explanation' => rtrim($random->paragraphs(1)),
         'paragraph' => $questionnaire->id(),
         'weight' => -1,
-        'required' => rand(0, 1) == 1,
+        'required' => random_int(0, 1) == 1,
         'uid' => 1,
       ]);
 
@@ -379,14 +378,8 @@ function academy_dummy_site_install_finished() {
 
 /**
  * Returns stock image file.
- *
- * @param int $i
- *   Iteration index.
- *
- * @return \Drupal\file\Entity\File
- *   Image file.
  */
-function academy_dummy_get_stock_image(int $i) {
+function academy_dummy_get_stock_image(int $i): FileInterface {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
   $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/img/' . $index . '.jpg';
@@ -410,14 +403,8 @@ function academy_dummy_get_stock_image(int $i) {
 
 /**
  * Returns stock illustration file.
- *
- * @param int $i
- *   Iteration index.
- *
- * @return \Drupal\file\Entity\File
- *   Image file.
  */
-function academy_dummy_get_stock_illustration(int $i) {
+function academy_dummy_get_stock_illustration(int $i): FileInterface {
 
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
   $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/gfx/' . $index . '.png';
@@ -441,11 +428,8 @@ function academy_dummy_get_stock_illustration(int $i) {
 
 /**
  * Returns test file.
- *
- * @return \Drupal\file\Entity\File
- *   Image file.
  */
-function academy_dummy_get_test_file() {
+function academy_dummy_get_test_file(): FileInterface {
 
   $file_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/file/test.txt';
   $public_path = \Drupal::service('file_system')->copy($file_path, 'public://test.txt');

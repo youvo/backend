@@ -22,7 +22,7 @@ class AcademyParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
    * @param \Drupal\youvo\Event\ParseJsonapiRelationshipsEvent $event
    *   The event to process.
    */
-  public function resolveRelationships(ParseJsonapiRelationshipsEvent $event) {
+  public function resolveRelationships(ParseJsonapiRelationshipsEvent $event): void {
 
     $resource = $event->getResource();
 
@@ -35,12 +35,17 @@ class AcademyParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
       }
 
       // Skip, if this is an evaluation paragraph. These are pre-sorted.
-      if ($event->getParentKey() == 'paragraphs' && $resource['type'] == 'evaluation' && $key == 'questions') {
+      if (
+        isset($resource['type']) &&
+        $resource['type'] === 'evaluation' &&
+        $key === 'questions' &&
+        $event->getParentKey() === 'paragraphs'
+      ) {
         continue;
       }
 
       // Otherwise, sort the included resource by weight.
-      usort($resource[$key], fn($a, $b) => $a['weight'] <=> $b['weight']);
+      usort($resource[$key], static fn($a, $b) => $a['weight'] <=> $b['weight']);
     }
 
     $event->setResource($resource);
@@ -49,10 +54,8 @@ class AcademyParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return [
-      ParseJsonapiRelationshipsEvent::class => 'resolveRelationships',
-    ];
+  public static function getSubscribedEvents(): array {
+    return [ParseJsonapiRelationshipsEvent::class => 'resolveRelationships'];
   }
 
 }
