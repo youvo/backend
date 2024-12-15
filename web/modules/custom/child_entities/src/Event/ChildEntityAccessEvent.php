@@ -14,13 +14,6 @@ class ChildEntityAccessEvent extends Event {
 
   /**
    * Constructs a ChildEntityAccessEvent object.
-   *
-   * @param \Drupal\Core\Access\AccessResultInterface $accessResult
-   *   The access results.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The account.
-   * @param \Drupal\child_entities\ChildEntityInterface $entity
-   *   The entity.
    */
   public function __construct(
     protected AccessResultInterface $accessResult,

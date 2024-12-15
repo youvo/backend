@@ -30,7 +30,7 @@ class Questionnaire extends Paragraph {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // If questionnaire is updated all evaluations in this course need updating.

@@ -44,20 +44,15 @@ class ChildEntityListBuilder extends EntityListBuilder {
     EntityStorageInterface $storage,
     RouteMatchInterface $route_match,
   ) {
-    $this->entityImplementsChildEntityInterface($entity_type);
+    static::entityImplementsChildEntityInterface($entity_type);
     parent::__construct($entity_type, $storage);
     $this->parent = $route_match->getParameter($entity_type->getKey('parent'));
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function createInstance(
-    ContainerInterface $container,
-    EntityTypeInterface $entity_type,
-  ) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -68,7 +63,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityIds() {
+  protected function getEntityIds(): array {
     $sort_by = $this->entityType->hasKey('weight') ?
       $this->entityType->getKey('weight') :
       $this->entityType->getKey('id');
@@ -89,7 +84,7 @@ class ChildEntityListBuilder extends EntityListBuilder {
    *
    * This avoids problems, for example when saving weights for children.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $invalidate_tags[] = $this->parent->getEntityTypeId() . ':' . $this->parent->id();
     Cache::invalidateTags($invalidate_tags);
   }

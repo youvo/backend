@@ -24,7 +24,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // Invalidate parent cache to update the computed children field.
@@ -42,7 +42,7 @@ trait ChildEntityTrait {
    *
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    */
-  public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function childBaseFieldDefinitions(EntityTypeInterface $entity_type): array {
     self::entityImplementsChildEntityInterface($entity_type);
     return [
       $entity_type->getKey('parent') => BaseFieldDefinition::create('entity_reference')
@@ -59,16 +59,10 @@ trait ChildEntityTrait {
 
   /**
    * Checks whether entity is child entity.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The child entity type.
-   *
-   * @return bool
-   *   Entity type is a child entity?
    */
-  private function isChildEntity(EntityTypeInterface $entity_type) {
+  private function isChildEntity(EntityTypeInterface $entity_type): bool {
     $original_class = $entity_type->getOriginalClass();
-    if (in_array(ChildEntityTrait::class, class_uses($original_class))) {
+    if (in_array(ChildEntityTrait::class, class_uses($original_class), TRUE)) {
       return TRUE;
     }
     return FALSE;
@@ -87,7 +81,7 @@ trait ChildEntityTrait {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function buildParentParams(array $uri_route_parameters, ChildEntityInterface $parent_entity) {
+  public function buildParentParams(array $uri_route_parameters, ChildEntityInterface $parent_entity): array {
 
     $uri_route_parameters[$parent_entity->getParentEntityTypeId()] = $parent_entity->getParentId();
 
@@ -105,7 +99,7 @@ trait ChildEntityTrait {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function urlRouteParameters($rel) {
+  protected function urlRouteParameters($rel): array {
     $uri_route_parameters = parent::urlRouteParameters($rel) + [
       $this->getParentEntityTypeId() => $this->getParentId(),
     ];
@@ -122,7 +116,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getParentEntityTypeId() {
+  public function getParentEntityTypeId(): string {
     if ($this->getEntityType()->hasKey('parent')) {
       return $this->getEntityType()->getKey('parent');
     }
@@ -132,7 +126,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getParentEntityType() {
+  public function getParentEntityType(): ?EntityTypeInterface {
     return $this->entityTypeManager()
       ->getDefinition($this->getParentEntityTypeId());
   }
@@ -140,21 +134,21 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function isParentAnotherChildEntity() {
+  public function isParentAnotherChildEntity(): bool {
     return $this->isChildEntity($this->getParentEntityType());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getParentId() {
+  public function getParentId(): ?int {
     return $this->getEntityKey('parent');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setParentId($uid) {
+  public function setParentId($uid): static {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $uid);
     return $this;
@@ -163,7 +157,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getParentEntity() {
+  public function getParentEntity(): EntityInterface {
     $key = $this->getEntityType()->getKey('parent');
     return $this->get($key)->entity;
   }
@@ -171,7 +165,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function setParentEntity(EntityInterface $parent) {
+  public function setParentEntity(EntityInterface $parent): static {
     $key = $this->getEntityType()->getKey('parent');
     $this->set($key, $parent);
     return $this;
@@ -180,7 +174,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getOriginEntity() {
+  public function getOriginEntity(): EntityInterface {
     $child = $this;
     while ($child->isParentAnotherChildEntity()) {
       $child = $child->getParentEntity();
@@ -193,19 +187,17 @@ trait ChildEntityTrait {
    *
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function toUrl($rel = 'canonical', array $options = []) {
-    if ($rel == 'canonical') {
+  public function toUrl($rel = 'canonical', array $options = []): Url {
+    if ($rel === 'canonical') {
       return Url::fromUri('route:<nolink>')->setOptions($options);
     }
-    else {
-      return parent::toUrl($rel, $options);
-    }
+    return parent::toUrl($rel, $options);
   }
 
   /**
    * Invalidates the cache of the parent.
    */
-  private function invalidateParentCache() {
+  protected function invalidateParentCache(): void {
     $parent = $this->getParentEntity();
     $invalidate_tags[] = $parent->getEntityTypeId() . ':' . $parent->id();
     Cache::invalidateTags($invalidate_tags);

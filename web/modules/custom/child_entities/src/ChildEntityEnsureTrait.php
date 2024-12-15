@@ -16,7 +16,7 @@ trait ChildEntityEnsureTrait {
    *   Thrown when the entity type does not implement ChildEntityInterface
    *   or if it does not have "parent" and "weight" entity keys.
    */
-  public static function entityImplementsChildEntityInterface($entity_type) {
+  public static function entityImplementsChildEntityInterface($entity_type): void {
 
     if (!$entity_type->entityClassImplements(ChildEntityInterface::class)) {
       throw new UnsupportedEntityTypeDefinitionException(
