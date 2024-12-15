@@ -8,7 +8,9 @@ use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\CourseProgress;
+use Drupal\progress\ProgressInterface;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -28,17 +30,8 @@ class LectureCompleteResource extends ProgressResource {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Drupal\lectures\Entity\Lecture $entity
-   *   The referenced lecture.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Lecture $entity) {
+  public function post(Lecture $entity): ResourceResponseInterface {
 
     try {
       // Get the respective lecture progress by lecture and current user.
@@ -52,7 +45,7 @@ class LectureCompleteResource extends ProgressResource {
     }
 
     // There is no progress for this lecture by this user.
-    if (empty($progress)) {
+    if ($progress === NULL) {
       throw new BadRequestHttpException('Creative is not enrolled in this lecture.');
     }
 
@@ -92,7 +85,7 @@ class LectureCompleteResource extends ProgressResource {
       // A sneaky way to ensure that the course progress exists before the
       // lecture and course progresses interfere.
       // @todo Adjust langcode.
-      if (!$course_progress) {
+      if (!$course_progress instanceof ProgressInterface) {
         $course_progress = CourseProgress::create([
           'course' => $entity->getParentEntity()->id(),
           'uid' => $progress->getOwnerId(),
@@ -104,11 +97,12 @@ class LectureCompleteResource extends ProgressResource {
       }
 
       // Set the parent course completed if this is the last lecture.
-      if (!$course_progress->getCompletedTime()) {
-        if ($this->progressManager->isLastLecture($entity)) {
-          $course_progress->setCompletedTime($timestamp);
-          $course_progress->save();
-        }
+      if (
+        !$course_progress->getCompletedTime() &&
+        $this->progressManager->isLastLecture($entity)
+      ) {
+        $course_progress->setCompletedTime($timestamp);
+        $course_progress->save();
       }
     }
     catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {

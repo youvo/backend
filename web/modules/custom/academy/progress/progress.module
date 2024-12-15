@@ -8,6 +8,7 @@
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -26,14 +27,14 @@ use Drupal\progress\Plugin\Field\UnlockedFieldItemList;
 /**
  * Implements hook_entity_base_field_info().
  */
-function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
+function progress_entity_base_field_info(EntityTypeInterface $entity_type): array {
 
   $fields = [];
 
   // Add the progress field to entity Course. Append this field first because
   // in edge cases it can change the progress of a creative within a course.
   // Then, this change can be caught by the calculation of the next fields.
-  if ($entity_type->id() == 'course') {
+  if ($entity_type->id() === 'course') {
     $fields['progress'] = BaseFieldDefinition::create('cacheable_integer')
       ->setLabel(t('Progress'))
       ->setDescription(t('Computes the progress status by user.'))
@@ -43,7 +44,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
   }
 
   // Add completed and unlocked base fields to entity Lecture and Course.
-  if ($entity_type->id() == 'lecture' || $entity_type->id() == 'course') {
+  if ($entity_type->id() === 'lecture' || $entity_type->id() === 'course') {
     $fields['completed'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('Completed'))
       ->setDescription(t('Computes the completed status by user.'))
@@ -60,7 +61,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   // Add current lecture base field to entity Course. Returns the first unlocked
   // lecture of a creative depending on their progress.
-  if ($entity_type->id() == 'course') {
+  if ($entity_type->id() === 'course') {
     $fields['current_lecture'] = BaseFieldDefinition::create('cacheable_string')
       ->setLabel(t('Current Lecture'))
       ->setDescription(t('Computes the last unlocked lecture by user.'))
@@ -75,7 +76,7 @@ function progress_entity_base_field_info(EntityTypeInterface $entity_type) {
 /**
  * Implements hook_entity_field_access().
  */
-function progress_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL) {
+function progress_entity_field_access(string $operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL): AccessResultInterface {
 
   $result = AccessResult::neutral();
 
@@ -83,10 +84,11 @@ function progress_entity_field_access($operation, FieldDefinitionInterface $fiel
   // view courses permission. This excludes users with the view courses overview
   // permission.
   $progress_fields = ['progress', 'unlocked', 'completed'];
-  if (in_array($field_definition->getName(), $progress_fields)) {
-    if (!$account->hasPermission('view courses')) {
-      $result = AccessResult::forbidden();
-    }
+  if (
+    !$account->hasPermission('view courses') &&
+    in_array($field_definition->getName(), $progress_fields)
+  ) {
+    $result = AccessResult::forbidden();
   }
 
   return $result;
@@ -97,7 +99,7 @@ function progress_entity_field_access($operation, FieldDefinitionInterface $fiel
  *
  * Delete all relevant progress entries when lecture is deleted.
  */
-function progress_lecture_delete(EntityInterface $entity) {
+function progress_lecture_delete(EntityInterface $entity): void {
 
   if ($entity instanceof Lecture) {
     try {
@@ -121,7 +123,7 @@ function progress_lecture_delete(EntityInterface $entity) {
  *
  * Delete all relevant progress entries when course is deleted.
  */
-function progress_course_delete(EntityInterface $entity) {
+function progress_course_delete(EntityInterface $entity): void {
 
   if ($entity instanceof Course) {
     try {

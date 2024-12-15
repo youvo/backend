@@ -15,95 +15,30 @@ use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\questionnaire\SubmissionManager;
+use Drupal\user\EntityOwnerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Service that provides functionality to manage the progress of a lecture.
- *
- * @see progress -> progress.services.yml
  */
 class ProgressManager {
 
   /**
    * The progress results cache.
-   *
-   * @var array
    */
-  protected array $progressCache;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected AccountInterface $currentUser;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected TimeInterface $time;
-
-  /**
-   * Logger channel.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * Database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected Connection $database;
-
-  /**
-   * The submission manager.
-   *
-   * @var \Drupal\questionnaire\SubmissionManager
-   */
-  protected SubmissionManager $submissionManager;
+  protected array $progressCache = [];
 
   /**
    * Constructs a ProgressManager object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger instance.
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\questionnaire\SubmissionManager $submission_manager
-   *   The submission manager service.
    */
   public function __construct(
-    AccountInterface $current_user,
-    EntityTypeManagerInterface $entity_type_manager,
-    TimeInterface $time,
-    LoggerInterface $logger,
-    Connection $database,
-    SubmissionManager $submission_manager,
-  ) {
-    $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->time = $time;
-    $this->logger = $logger;
-    $this->database = $database;
-    $this->submissionManager = $submission_manager;
-  }
+    protected AccountInterface $currentUser,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected TimeInterface $time,
+    protected LoggerInterface $logger,
+    protected Connection $database,
+    protected SubmissionManager $submissionManager,
+  ) {}
 
   /**
    * Returns the current user ID.
@@ -174,7 +109,7 @@ class ProgressManager {
     $courses = $this->getCoursesByCompleted($account);
 
     // The workshop is always locked.
-    if ($course->getMachineName() == 'project') {
+    if ($course->getMachineName() === 'project') {
       return FALSE;
     }
 
@@ -257,29 +192,27 @@ class ProgressManager {
 
     $total = count($lectures);
     $completed = count(array_filter($lectures, static fn($l) => $l->completed));
-    $progression = ceil($completed / $total * 100);
+    $progression = (int) ceil($completed / $total * 100);
 
     // Here, we cover an edge case. An example scenario:
     // The user has completed 4/5 lectures. The 5th lecture gets deleted by
     // the editor. Then the progression is 100, but the course is not
     // completed. Therefore, we grant the course completion on access, when
     // progression is 100.
-    if ($progression == 100) {
+    if ($progression === 100) {
       try {
         $progress = $this->loadProgress($course);
-        $progress->setCompletedTime($this->getRequestTime());
-        $progress->save();
+        $progress?->setCompletedTime($this->getRequestTime());
+        $progress?->save();
         $this->setProgressCache($course, 'completed', TRUE);
       }
       catch (EntityStorageException | InvalidPluginDefinitionException | PluginNotFoundException $e) {
         $variables = Error::decodeException($e);
-        $this->logger
-          ->error('Progression 100, but not completed. Can not retrieve progress or save entity. %type: @message in %function (line %line of %file).', $variables);
+        $this->logger->error('Progression 100, but not completed. Can not retrieve progress or save entity. %type: @message in %function (line %line of %file).', $variables);
       }
       catch (EntityMalformedException $e) {
         $variables = Error::decodeException($e);
-        $this->logger
-          ->error('Progression 100, but not completed. The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+        $this->logger->error('Progression 100, but not completed. The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
       }
     }
 
@@ -343,8 +276,7 @@ class ProgressManager {
     /** @var \Drupal\courses\Entity\Course $course */
     $course = $lecture->getParentEntity();
     $lectures = $this->getReferencedLecturesByCompleted($course);
-    return !empty($lectures) &&
-      $lectures[array_key_last($lectures)]->id == $lecture->id();
+    return !empty($lectures) && $lectures[array_key_last($lectures)]->id == $lecture->id();
   }
 
   /**
@@ -354,12 +286,14 @@ class ProgressManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function requiredQuestionsAnswered(Lecture $lecture) {
+  public function requiredQuestionsAnswered(Lecture $lecture): bool {
 
     $answered = TRUE;
 
-    if ($questionnaires = array_filter($lecture->getParagraphs(),
-      static fn($p) => $p->bundle() == 'questionnaire')) {
+    if (
+      $questionnaires = array_filter($lecture->getParagraphs(),
+      static fn($p) => $p->bundle() === 'questionnaire')
+    ) {
       /** @var \Drupal\questionnaire\Entity\Questionnaire[] $questionnaires */
       foreach ($questionnaires as $questionnaire) {
         $questions = $questionnaire->getQuestions();
@@ -378,7 +312,7 @@ class ProgressManager {
    * Gets the respective progress of the lecture or course by the current user.
    *
    * @returns \Drupal\progress\ProgressInterface|null
-   *   The respective progress or NULL if no storage.
+   *   The respective progress or NULL if not found.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -392,30 +326,33 @@ class ProgressManager {
     $uid = isset($account) ? $account->id() : $this->currentUser->id();
 
     // Get referenced Progress.
-    $query = $this->entityTypeManager->getStorage($progress_entity_type_id)
+    $query = $this->entityTypeManager
+      ->getStorage($progress_entity_type_id)
       ->getQuery();
-    $progress_id = $query
+    $progress_ids = $query
       ->accessCheck(FALSE)
       ->condition($entity->getEntityTypeId(), $entity->id())
       ->condition('uid', $uid)
       ->execute();
 
     // Return nothing if there is no progress.
-    if (empty($progress_id)) {
+    if (empty($progress_ids)) {
       return NULL;
     }
 
     // Something went wrong here.
-    if (count($progress_id) > 1) {
+    if (count($progress_ids) > 1) {
       throw new EntityMalformedException(
         sprintf('The "%s" entity type query has inconsistent persistent data.', $progress_entity_type_id)
       );
     }
 
     // Return loaded progress.
+    $progress_id = reset($progress_ids);
     /** @var \Drupal\progress\ProgressInterface $progress */
-    $progress = $this->entityTypeManager->getStorage($progress_entity_type_id)
-      ->load(reset($progress_id));
+    $progress = $this->entityTypeManager
+      ->getStorage($progress_entity_type_id)
+      ->load($progress_id);
     return $progress;
   }
 
@@ -431,13 +368,11 @@ class ProgressManager {
     }
     catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
-      $this->logger
-        ->error('Can not retrieve progress entity. %type: @message in %function (line %line of %file).', $variables);
+      $this->logger->error('Can not retrieve progress entity. %type: @message in %function (line %line of %file).', $variables);
     }
     catch (EntityMalformedException $e) {
       $variables = Error::decodeException($e);
-      $this->logger
-        ->error('The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
+      $this->logger->error('The progress of the requested entity has inconsistent persistent data. %type: @message in %function (line %line of %file).', $variables);
     }
 
     return $progress?->get($field_name)->value;
@@ -473,7 +408,7 @@ class ProgressManager {
   /**
    * Gets the courses with completed status.
    */
-  public function getCoursesByCompleted(?AccountInterface $account = NULL) {
+  public function getCoursesByCompleted(?AccountInterface $account = NULL): array {
 
     // Get id and completed with custom query sorted by weight.
     // Might be faster than loading every course individually.
@@ -495,16 +430,13 @@ class ProgressManager {
     if (!in_array($request, ['unlocked', 'completed'])) {
       return NULL;
     }
-    if (isset($this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request])) {
-      return $this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request];
-    }
-    return NULL;
+    return $this->progressCache[$entity->getEntityTypeId()][$entity->id()][$request] ?? NULL;
   }
 
   /**
    * Sets the cache for calculated results.
    */
-  private function setProgressCache(AcademicFormatInterface $entity, string $request, bool $value) {
+  private function setProgressCache(AcademicFormatInterface $entity, string $request, bool $value): void {
     if (!in_array($request, ['unlocked', 'completed'])) {
       return;
     }

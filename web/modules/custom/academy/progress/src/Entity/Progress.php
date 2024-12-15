@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\progress\ProgressInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Base class for progress entities.
@@ -14,25 +15,26 @@ use Drupal\progress\ProgressInterface;
 abstract class Progress extends ContentEntityBase implements ProgressInterface {
 
   use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getEnrollmentTime() {
+  public function getEnrollmentTime(): int {
     return (int) $this->get('enrolled')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAccessTime() {
+  public function getAccessTime(): int {
     return (int) $this->get('accessed')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setAccessTime(int $timestamp): ProgressInterface {
+  public function setAccessTime(int $timestamp): static {
     $this->set('accessed', $timestamp);
     return $this;
   }
@@ -40,14 +42,14 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCompletedTime() {
+  public function getCompletedTime(): int {
     return (int) $this->get('completed')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCompletedTime(int $timestamp): ProgressInterface {
+  public function setCompletedTime(int $timestamp): static {
     $this->set('completed', $timestamp);
     return $this;
   }
@@ -55,24 +57,7 @@ abstract class Progress extends ContentEntityBase implements ProgressInterface {
   /**
    * {@inheritdoc}
    */
-  public function getOwner() {
-    $key = $this->getEntityType()->getKey('owner');
-    /** @var \Drupal\user\UserInterface $owner */
-    $owner = $this->get($key)->entity;
-    return $owner;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwnerId() {
-    return $this->getEntityKey('owner');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 

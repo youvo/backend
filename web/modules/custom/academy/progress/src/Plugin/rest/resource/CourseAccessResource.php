@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\courses\Entity\Course;
 use Drupal\progress\Entity\CourseProgress;
 use Drupal\rest\ModifiedResourceResponse;
+use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -27,17 +28,8 @@ class CourseAccessResource extends ProgressResource {
 
   /**
    * Responds to POST requests.
-   *
-   * @param \Drupal\courses\Entity\Course $entity
-   *   The referenced course.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(Course $entity) {
+  public function post(Course $entity): ResourceResponseInterface {
 
     try {
       // Get the respective course progress by course and current user.
@@ -52,7 +44,7 @@ class CourseAccessResource extends ProgressResource {
 
     // There is no progress for this course by this user.
     // @todo Pass langcode in which course was enrolled.
-    if (empty($progress)) {
+    if ($progress === NULL) {
       $progress = CourseProgress::create([
         'course' => $entity->id(),
         'uid' => $this->progressManager->getCurrentUserId(),
