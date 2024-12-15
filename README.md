@@ -161,6 +161,7 @@ make rebuild # calculate rebuild token
 make restart-php # restart Uberspace php
 make phpstan %PATH # run PHPStan analysis at specified path
 make phpcs # run PHP_CodeSniffer analysis for custom modules
+make phpcbf # run PHP_CodeSniffer automatic fixes for custom modules
 ```
 
 ### Notes
