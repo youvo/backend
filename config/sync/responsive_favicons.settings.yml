@@ -1,0 +1,16 @@
+_core:
+  default_config_hash: q2QxaHH2DKzN8zFKH4sBu5eWpPMNQERApyo7cDmngt4
+path_type: path
+path: /assets/favicons/
+tags:
+  - '<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />'
+  - '<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />'
+  - '<link rel="icon" type="image/png" href="favicon-48x48.png" sizes="48x48" />'
+  - '<link rel="icon" type="image/png" href="favicon-192x192.png" sizes="192x192" />'
+  - '<link rel="icon" type="image/svg+xml" href="favicon.svg" />'
+  - '<link rel="shortcut icon" href="favicon.ico" />'
+  - '<link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167x167.png" />'
+  - '<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180x180.png" />'
+  - '<meta name="apple-mobile-web-app-title" content="youvo" />'
+  - '<link rel="manifest" href="site.webmanifest" />'
+remove_default: 1

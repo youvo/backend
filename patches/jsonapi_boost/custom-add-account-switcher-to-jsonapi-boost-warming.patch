@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php b/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
+diff --git a/src/Plugin/warmer/ResourceWarmer.php b/src/Plugin/warmer/ResourceWarmer.php
 index e628605..0efa7b6 100644
---- a/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
-+++ b/modules/contrib/jsonapi_boost/src/Plugin/warmer/ResourceWarmer.php
+--- a/src/Plugin/warmer/ResourceWarmer.php
++++ b/src/Plugin/warmer/ResourceWarmer.php
 @@ -5,6 +5,7 @@
  use Drupal\Core\Annotation\Translation;
  use Drupal\Core\Entity\EntityTypeManagerInterface;

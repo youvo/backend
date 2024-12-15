@@ -10,8 +10,10 @@ dependencies:
   module:
     - blocker_mode
     - content_translation
+    - contextual
     - courses
     - lectures
+    - navigation
     - paragraphs
     - questionnaire
     - rest
@@ -24,6 +26,8 @@ weight: 6
 is_admin: false
 permissions:
   - 'access content'
+  - 'access contextual links'
+  - 'access navigation'
   - 'access site'
   - 'create content translations'
   - 'manage courses'

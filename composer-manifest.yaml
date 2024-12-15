@@ -41,12 +41,12 @@ packages:
     drupal/config_ignore: 3.3.0
     drupal/consumer_image_styles: 4.0.10
     drupal/consumers: 1.19.0
-    drupal/core: 10.3.10
-    drupal/core-composer-scaffold: 10.3.10
-    drupal/core-dev: 10.3.10
-    drupal/core-project-message: 10.3.10
-    drupal/core-recommended: 10.3.10
-    drupal/core-vendor-hardening: 10.3.10
+    drupal/core: 10.4.0-rc1
+    drupal/core-composer-scaffold: 10.4.0-rc1
+    drupal/core-dev: 10.4.0-rc1
+    drupal/core-project-message: 10.4.0-rc1
+    drupal/core-recommended: 10.4.0-rc1
+    drupal/core-vendor-hardening: 10.4.0-rc1
     drupal/devel: 5.3.1
     drupal/devel_mail_logger: 2.0.0
     drupal/entity: 1.5.0
@@ -67,6 +67,7 @@ packages:
     drupal/openapi_jsonapi: 3.0.5
     drupal/openapi_ui: 1.0.0-rc5
     drupal/openapi_ui_redoc: 1.0.0-rc5
+    drupal/responsive_favicons: 2.0.1
     drupal/restui: 1.22.0
     drupal/schemata: 1.0.0
     drupal/schemata_json_schema: 1.0.0
@@ -86,9 +87,9 @@ packages:
     google/protobuf: v4.29.1
     grasmash/expander: 3.0.1
     grasmash/yaml-cli: 3.2.1
-    guzzlehttp/guzzle: 7.8.2
+    guzzlehttp/guzzle: 7.9.2
     guzzlehttp/promises: 2.0.4
-    guzzlehttp/psr7: 2.6.3
+    guzzlehttp/psr7: 2.7.0
     joachim-n/composer-manifest: 1.1.6
     justinrainbow/json-schema: 5.3.0
     lcobucci/clock: 3.0.0
@@ -158,6 +159,7 @@ packages:
     ramsey/collection: 2.0.0
     ramsey/uuid: 4.7.6
     react/promise: v3.2.0
+    roave/security-advisories: '9999999-dev:233f7c395ac3b83e3c85aa304f3350bf8897aca5'
     sebastian/cli-parser: 1.0.2
     sebastian/code-unit: 1.0.8
     sebastian/code-unit-reverse-lookup: 2.0.3
@@ -198,18 +200,17 @@ packages:
     symfony/mailer: v6.4.13
     symfony/mime: v6.4.13
     symfony/phpunit-bridge: v6.4.16
-    symfony/polyfill-ctype: v1.29.0
-    symfony/polyfill-iconv: v1.29.0
-    symfony/polyfill-intl-grapheme: v1.29.0
-    symfony/polyfill-intl-idn: v1.29.0
-    symfony/polyfill-intl-normalizer: v1.29.0
-    symfony/polyfill-mbstring: v1.29.0
-    symfony/polyfill-php72: v1.31.0
+    symfony/polyfill-ctype: v1.31.0
+    symfony/polyfill-iconv: v1.31.0
+    symfony/polyfill-intl-grapheme: v1.31.0
+    symfony/polyfill-intl-idn: v1.31.0
+    symfony/polyfill-intl-normalizer: v1.31.0
+    symfony/polyfill-mbstring: v1.31.0
     symfony/polyfill-php73: v1.31.0
     symfony/polyfill-php80: v1.31.0
     symfony/polyfill-php81: v1.31.0
     symfony/polyfill-php82: v1.31.0
-    symfony/polyfill-php83: v1.29.0
+    symfony/polyfill-php83: v1.31.0
     symfony/process: v6.4.15
     symfony/psr-http-message-bridge: v6.4.13
     symfony/routing: v6.4.16

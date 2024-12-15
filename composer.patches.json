@@ -11,6 +11,9 @@
             "Custom: Hide meta drupal IDs in JSON:API response": "patches/core/custom-hide-meta-drupal-ids-jsonapi.patch",
             "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/core/custom-page-cache-id-doesnt-compare-cid-subrequests.patch"
         },
+        "drupal/filefield_paths": {
+            "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"
+        },
         "drupal/jsonapi_boost": {
         	  "Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
         },
@@ -30,12 +33,15 @@
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
         },
-        "drupal/filefield_paths": {
-            "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"
+        "drupal/responsive_favicons": {
+            "Issue #3382829: Split Icon links in their own meta tag definition": "patches/responsive_favicons/3382839-9.patch"
         },
         "drupal/simple_oauth": {
             "Custom: Token revoke on profile update": "patches/simple_oauth/custom-token-revoke-profile-update.patch",
             "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/SO52-3082984-12.patch"
+        },
+        "drupal/warmer": {
+            "Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
         }
     }
 }

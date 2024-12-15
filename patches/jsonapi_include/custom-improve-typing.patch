@@ -1,6 +1,6 @@
 diff --git a/src/JsonapiParse.php b/src/JsonapiParse.php
 --- a/src/JsonapiParse.php	(revision 72bebc5a96543ca9a7f7f6dd78c91a74e29b3a02)
-+++ b//src/JsonapiParse.php	(revision 40c8f1a95b01f3a26959dafe371da4007578ccb2)
++++ b/src/JsonapiParse.php	(revision 40c8f1a95b01f3a26959dafe371da4007578ccb2)
 @@ -58,14 +58,10 @@
    /**
     * {@inheritdoc}

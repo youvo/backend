@@ -1,7 +1,7 @@
-diff --git a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+diff --git a/src/ResourceType/CrossBundleResourceTypeRepository.php b/src/ResourceType/CrossBundleResourceTypeRepository.php
 index 010b6ff..4b9cc04 100644
---- a/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
-+++ b/modules/contrib/jsonapi_cross_bundles/src/ResourceType/CrossBundleResourceTypeRepository.php
+--- a/src/ResourceType/CrossBundleResourceTypeRepository.php
++++ b/src/ResourceType/CrossBundleResourceTypeRepository.php
 @@ -99,6 +99,9 @@ public function all() {
          if (!$entity_type->getKey('bundle')) {
            continue;

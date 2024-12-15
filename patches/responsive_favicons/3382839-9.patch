@@ -1,0 +1,75 @@
+diff --git a/responsive_favicons.module b/responsive_favicons.module
+--- a/responsive_favicons.module
++++ b/responsive_favicons.module	(date 1682128284000)
+@@ -5,9 +5,8 @@
+  * Contains responsive_favicons.module.
+  */
+
++use Drupal\Component\Utility\UrlHelper;
+ use Drupal\Core\Routing\RouteMatchInterface;
+-use \Drupal\Component\Utility\UrlHelper;
+-use Drupal\Core\Render\Markup;
+ use Drupal\Core\StreamWrapper\PublicStream;
+
+ /**
+@@ -33,22 +32,45 @@
+  * the next tag in the HTML head section starts on the next line.
+  */
+ function responsive_favicons_page_attachments(array &$page) {
+-  $tags = responsive_favicons_load_all_icons();
+-  if (!empty($tags['found'])) {
+-    $html = [
+-      '#tag' => 'meta',
+-      '#attributes' => [
+-        'name' => 'favicon-generator',
+-        'content' => 'Drupal responsive_favicons + realfavicongenerator.net',
+-      ],
+-      // This seems like the only way to inject raw HTML into the head section
+-      // of Drupal 8.
+-      // @todo find a way to make this better.
+-      '#prefix' => Markup::create(implode(PHP_EOL, $tags['found']) . PHP_EOL),
+-      '#suffix' => '',
+-    ];
+-
+-    $page['#attached']['html_head'][] = [$html, 'responsive_favicons'];
++  $tags = responsive_favicons_load_all_icons()['found'];
++  if (!empty($tags)) {
++    foreach ($tags as $key => $tag) {
++      if (str_starts_with($tag, '<link')) {
++        preg_match('/\brel=["\']([^"\']+)["\']/i', $tag, $rel_matches);
++        preg_match('/\btype=["\']([^"\']+)["\']/i', $tag, $type_matches);
++        preg_match('/\bhref=["\']([^"\']+)["\']/i', $tag, $href_matches);
++        preg_match('/\bsizes=["\']([^"\']+)["\']/i', $tag, $sizes_matches);
++        $page['#attached']['html_head'][] = [
++          [
++            '#tag' => 'link',
++            '#attributes' => [
++              'rel' => $rel_matches[1] ?? NULL,
++              'type' => $type_matches[1] ?? NULL,
++              'href' => $href_matches[1] ?? NULL,
++              'sizes' => $sizes_matches[1] ?? NULL,
++            ],
++          ],
++          'responsive_favicons_tag_' . $key,
++        ];
++      }
++      elseif (str_starts_with($tag, '<meta')) {
++        preg_match('/\bname=["\']([^"\']+)["\']/i', $tag, $name_matches);
++        preg_match('/\bcontent=["\']([^"\']+)["\']/i', $tag, $content_matches);
++        $page['#attached']['html_head'][] = [
++          [
++            '#tag' => 'meta',
++            '#attributes' => [
++              'name' => $name_matches[1] ?? NULL,
++              'content' => $content_matches[1] ?? NULL,
++            ],
++          ],
++          'responsive_favicons_tag_' . $key,
++        ];
++      }
++      else {
++        \Drupal::logger('responsive_favicons')->notice('Unknown favicon tag provided.');
++      }
++    }
+   }
+ }

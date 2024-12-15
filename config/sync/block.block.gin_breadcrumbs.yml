@@ -1,15 +1,15 @@
-uuid: e78c301d-4d5f-48fd-915a-9ee983d6a454
+uuid: ed77c7ca-6031-45ba-b029-004583aff39d
 langcode: en
 status: true
 dependencies:
   module:
     - system
   theme:
-    - stark
+    - gin
 _core:
-  default_config_hash: NjcxOBrPOiK5-38t56DwFBDVY4yer7YSlbRWXFuHe7A
-id: stark_breadcrumbs
-theme: stark
+  default_config_hash: y9X3xgCsO59pQyzNLzY1D3SDJJxCHILLWkpPnmuTJ2E
+id: gin_breadcrumbs
+theme: gin
 region: breadcrumb
 weight: 0
 provider: null

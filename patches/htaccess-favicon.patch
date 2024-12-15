@@ -1,0 +1,12 @@
+diff --git a/web/.htaccess b/web/.htaccess
+--- a/web/.htaccess
++++ b/web/.htaccess	(date 1734200283885)
+@@ -126,7 +126,7 @@
+   # index.php.
+   RewriteCond %{REQUEST_FILENAME} !-f
+   RewriteCond %{REQUEST_FILENAME} !-d
+-  RewriteCond %{REQUEST_URI} !=/favicon.ico
++  # RewriteCond %{REQUEST_URI} !=/favicon.ico
+   RewriteRule ^ index.php [L]
+
+   # For security reasons, deny access to other PHP files on public sites.

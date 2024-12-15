@@ -19,11 +19,11 @@
         "cweagans/composer-patches": "^1.7",
         "drupal/config_ignore": "^3.3",
         "drupal/consumer_image_styles": "^4.0",
-        "drupal/core": "^10.3",
-        "drupal/core-composer-scaffold": "^10.3",
-        "drupal/core-project-message": "^10.3",
-        "drupal/core-recommended": "^10.3",
-        "drupal/core-vendor-hardening": "^10.3",
+        "drupal/core": "^10.4",
+        "drupal/core-composer-scaffold": "^10.4",
+        "drupal/core-project-message": "^10.4",
+        "drupal/core-recommended": "^10.4",
+        "drupal/core-vendor-hardening": "^10.4",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^3.0@RC",
@@ -35,6 +35,7 @@
         "drupal/jsonapi_include": "^1.6",
         "drupal/mail_login": "^4.0",
         "drupal/multivalue_form_element": "^1.0@beta",
+        "drupal/responsive_favicons": "^2.0",
         "drupal/simple_oauth": "^5.2",
         "drupal/subrequests": "^3.0",
         "drupal/upgrade_status": "^4.0",
@@ -124,24 +125,15 @@
         "patches-file": "composer.patches.json",
   		"enable-patching": true,
   		"patchLevel": {
-            "drupal/core": "-p2",
-            "drupal/simple_oauth": "-p1",
-            "drupal/image_style_warmer": "-p4",
-            "drupal/jsonapi_include": "-p1",
-            "drupal/jsonapi_boost": "-p4",
-            "drupal/jsonapi_cross_bundles": "-p4",
-            "drupal/jsonapi_extras": "-p1",
-            "drupal/warmer": "-p4",
-            "drupal/filefield_paths": "-p4",
-            "drupal/multivalue_form_element": "-p4",
-            "drupal/subrequests": "-p4"
-		}
+            "drupal/core": "-p2"
+        }
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
         "drupal/admin_toolbar": "^3.3",
         "drupal/coder": "^8.3",
-        "drupal/core-dev": "^10.3",
+        "drupal/core-dev": "^10.4",
         "drupal/devel": "^5.1",
         "drupal/devel_mail_logger": "^2.0",
         "drupal/mailsystem": "^4.4",
@@ -160,7 +152,8 @@
     },
     "scripts": {
 		"post-drupal-scaffold-cmd": [
-		  	"patch -p1 < patches/htaccess-rewritebase.patch"
+		  	"patch -p1 < patches/htaccess-rewritebase.patch",
+            "patch -p1 < patches/htaccess-favicon.patch"
 		]
 	}
 }

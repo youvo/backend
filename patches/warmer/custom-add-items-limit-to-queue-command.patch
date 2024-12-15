@@ -1,8 +1,7 @@
-diff --git a/modules/contrib/warmer/src/Commands/WarmerCommands.php b/modules/contrib/warmer/src/Commands/WarmerCommands.php
-index eed20b19..7bd30b4c 100644
---- a/modules/contrib/warmer/src/Commands/WarmerCommands.php
-+++ b/modules/contrib/warmer/src/Commands/WarmerCommands.php
-@@ -101,6 +101,7 @@ public function enqueue(array $warmer_ids, array $options = ['run-queue' => FALS
+diff --git a/src/Drush/Commands/WarmerCommands.php b/src/Drush/Commands/WarmerCommands.php
+--- a/src/Drush/Commands/WarmerCommands.php
++++ b/src/Drush/Commands/WarmerCommands.php	(date 1734209465451)
+@@ -104,6 +104,7 @@
        return $count;
      }, $warmers);
      $total = array_sum($count_list);
@@ -10,12 +9,12 @@ index eed20b19..7bd30b4c 100644
      $this->logger()->success(
        dt('@total items enqueued for cache warming.', ['@total' => $total])
      );
-@@ -111,7 +112,7 @@ public function enqueue(array $warmer_ids, array $options = ['run-queue' => FALS
-       return;
+@@ -115,7 +116,7 @@
      }
      $this->logger()->success(dt('Warming caches in @count batches from the "warmer" queue.', ['@count' => $batch_count]));
--    $this->queueCommands->run('warmer', ['time-limit' => static::VERY_HIGH_NUMBER]);
-+    $this->queueCommands->run('warmer', ['items-limit' => $items_limit, 'time-limit' => static::VERY_HIGH_NUMBER]);
+
+-    $this->processManager()->drush($this->siteAliasManager()->getSelf(), 'queue:run', ['warmer'], ['time-limit' => static::VERY_HIGH_NUMBER, 'items-limit' => $total]);
++    $this->processManager()->drush($this->siteAliasManager()->getSelf(), 'queue:run', ['warmer'], ['time-limit' => static::VERY_HIGH_NUMBER, 'items-limit' => $items_limit]);
    }
 
    /**

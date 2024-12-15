@@ -1,15 +1,15 @@
-uuid: 55aac0d2-0c31-4174-ab73-cefc7a5058b9
+uuid: cd63ea3b-b32a-4dce-be66-f91ce77308d0
 langcode: en
 status: true
 dependencies:
   module:
     - system
   theme:
-    - stark
+    - gin
 _core:
-  default_config_hash: a0Yyx1GeyKarZ4T_yXQBR_ZFKnXiFLtxAb6gWLd8nr0
-id: stark_content
-theme: stark
+  default_config_hash: hBHXB7hC05XU7pDYzETt-GUcpFlogK1gkjyAsg0Ym58
+id: gin_content
+theme: gin
 region: content
 weight: 0
 provider: null

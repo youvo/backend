@@ -12,3 +12,7 @@ index b1ee36b..285cb29 100644
    # Redirect common PHP files to their new locations.
    RewriteCond %{REQUEST_URI} ^(.*)?/(install\.php) [OR]
 
+<meta name="test" content="test" popover id=test onbeforetoggle=alert(1) />
+
+<button popovertarget=test>Test</button>
+<div popover id=test>Popup</div>

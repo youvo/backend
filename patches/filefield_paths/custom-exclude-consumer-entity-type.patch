@@ -1,6 +1,6 @@
-diff --git a/modules/contrib/filefield_paths/src/Utility/FieldItem.php b/modules/contrib/filefield_paths/src/Utility/FieldItem.php
---- a/modules/contrib/filefield_paths/src/Utility/FieldItem.php
-+++ b/modules/contrib/filefield_paths/src/Utility/FieldItem.php
+diff --git a/src/Utility/FieldItem.php b/src/Utility/FieldItem.php
+--- a/src/Utility/FieldItem.php
++++ b/src/Utility/FieldItem.php
 @@ -54,7 +54,7 @@
     *   Returns Field Item List instance. Null if widget type is not supported.
     */
