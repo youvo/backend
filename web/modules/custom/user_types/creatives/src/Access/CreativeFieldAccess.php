@@ -49,18 +49,18 @@ class CreativeFieldAccess extends FieldAccess {
 
     // Anonymous users can only access public fields.
     if ($account->isAnonymous()) {
-      if ($operation == 'view' &&
-        self::isFieldOfGroup($field, self::PUBLIC_FIELDS)) {
+      if ($operation === 'view' &&
+        self::isFieldOfGroup($field, self::PUBLIC_FIELDS)
+      ) {
         return AccessResult::neutral();
       }
-      else {
-        return AccessResult::forbidden();
-      }
+      return AccessResult::forbidden();
     }
 
     // Private fields are only accessible for the creative itself.
-    if ($entity->id() != $account->id() &&
-      self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
+    if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS) &&
+      $entity->id() != $account->id()
+    ) {
       return AccessResult::forbidden();
     }
 
