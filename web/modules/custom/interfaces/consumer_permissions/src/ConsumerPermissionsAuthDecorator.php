@@ -98,7 +98,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthent
     }
 
     $clients = $this->consumerStorage
-      ->loadByProperties(['uuid' => $client_id]);
+      ->loadByProperties(['client_id' => $client_id]);
     $client = reset($clients);
 
     // Should not happen since the client is validated in the controller.

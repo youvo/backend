@@ -43,7 +43,7 @@ class ConsumerPermissionsAccess implements ContainerInjectionInterface {
     if ($account->isAuthenticated()) {
       $client_uuid = $this->request->get('client_id');
       $clients = $this->consumerStorage
-        ->loadByProperties(['uuid' => $client_uuid]);
+        ->loadByProperties(['client_id' => $client_uuid]);
       $client = reset($clients);
 
       if (empty($client)) {
