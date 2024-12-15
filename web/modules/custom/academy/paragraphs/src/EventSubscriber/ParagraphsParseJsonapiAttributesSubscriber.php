@@ -20,21 +20,22 @@ class ParagraphsParseJsonapiAttributesSubscriber implements EventSubscriberInter
    * @param \Drupal\youvo\Event\ParseJsonapiAttributesEvent $event
    *   The event to process.
    */
-  public function resolveAttributes(ParseJsonapiAttributesEvent $event) {
+  public function resolveAttributes(ParseJsonapiAttributesEvent $event): void {
 
     $item = $event->getItem();
 
     // Rearrange values from multi-field for stats paragraphs. Merge stats and
     // description to one array. We can assume that both are the same length.
-    if (isset($item['type']) && $item['type'] == 'stats') {
-      if (isset($item['attributes']['stats']) && isset($item['attributes']['description'])) {
-        $stats = [];
-        foreach ($item['attributes']['stats'] as $key => $stat) {
-          $stats[] = [$stat, $item['attributes']['description'][$key]];
-        }
-        $item['attributes']['stats'] = $stats;
-        unset($item['attributes']['description']);
+    if (
+      isset($item['type'], $item['attributes']['stats'], $item['attributes']['description']) &&
+      $item['type'] === 'stats'
+    ) {
+      $stats = [];
+      foreach ($item['attributes']['stats'] as $key => $stat) {
+        $stats[] = [$stat, $item['attributes']['description'][$key]];
       }
+      $item['attributes']['stats'] = $stats;
+      unset($item['attributes']['description']);
     }
 
     $event->setItem($item);
@@ -43,10 +44,8 @@ class ParagraphsParseJsonapiAttributesSubscriber implements EventSubscriberInter
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    return [
-      ParseJsonapiAttributesEvent::class => 'resolveAttributes',
-    ];
+  public static function getSubscribedEvents(): array {
+    return [ParseJsonapiAttributesEvent::class => 'resolveAttributes'];
   }
 
 }

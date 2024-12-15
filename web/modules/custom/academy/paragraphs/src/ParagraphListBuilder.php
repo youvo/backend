@@ -128,7 +128,8 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
+
     // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
     $bundle = $this->paragraphTypeStorage->load($entity->bundle());
@@ -148,10 +149,9 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
       '#markup' => $bundle->label(),
     ];
     $translations = '';
-    if ($entity->bundle() != 'evaluation' && $entity->bundle() != 'questionnaire') {
+    if ($entity->bundle() !== 'evaluation' && $entity->bundle() !== 'questionnaire') {
       foreach ($this->languageManager->getLanguages() as $language) {
-        if ($language->getId() == $this->languageManager
-          ->getDefaultLanguage()->getId()) {
+        if ($language->getId() === $this->languageManager->getDefaultLanguage()->getId()) {
           continue;
         }
         if (!$entity->hasTranslation($language->getId())) {
@@ -183,14 +183,14 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'paragraph_collection';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
 
     // Attach js to hide 'show row weights' buttons.
     $form['#attached']['library'][] = 'academy/hideweightbutton';
@@ -268,7 +268,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // No validation.
   }
 

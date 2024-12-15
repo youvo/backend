@@ -17,12 +17,12 @@ use Drupal\lectures\Entity\Lecture;
 /**
  * Implements hook_entity_base_field_info().
  */
-function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
+function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type): array {
 
   $fields = [];
 
   // Add paragraphs base field to entity Lecture.
-  if ($entity_type->id() == 'lecture') {
+  if ($entity_type->id() === 'lecture') {
     $fields['paragraphs'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Computed Children'))
       ->setSetting('target_type', 'paragraph')
@@ -39,7 +39,7 @@ function paragraphs_entity_base_field_info(EntityTypeInterface $entity_type) {
 /**
  * Implements hook_entity_operation().
  */
-function paragraphs_entity_operation(EntityInterface $entity) {
+function paragraphs_entity_operation(EntityInterface $entity): array {
   $operations = [];
   if ($entity instanceof Lecture) {
     $operations['add_paragraphs'] = [
@@ -57,11 +57,11 @@ function paragraphs_entity_operation(EntityInterface $entity) {
 /**
  * Implements hook_tokens().
  */
-function paragraphs_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
+function paragraphs_tokens(string $type, array $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata): array {
 
   $replacements = [];
 
-  if ($type == 'paragraph' && !empty($data['paragraph'])) {
+  if ($type === 'paragraph' && !empty($data['paragraph'])) {
     /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
     $paragraph = $data['paragraph'];
     /** @var \Drupal\lectures\Entity\Lecture $lecture */

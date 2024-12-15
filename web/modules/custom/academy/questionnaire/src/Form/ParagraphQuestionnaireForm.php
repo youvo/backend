@@ -73,7 +73,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
 
     $form = parent::form($form, $form_state);
 
@@ -354,7 +354,7 @@ class ParagraphQuestionnaireForm extends ParagraphForm {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
 
     // Save Questionnaire as Paragraph.
     $result = parent::save($form, $form_state);

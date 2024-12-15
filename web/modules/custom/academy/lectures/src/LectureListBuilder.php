@@ -108,7 +108,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
     $lectures_grouped_sorted = [];
     if (!empty($course_ids)) {
       $sorted_query = $course_storage->getQuery()
-        ->accessCheck(TRUE)
+        ->accessCheck()
         ->condition('id', $course_ids, 'IN')
         ->sort('weight')
         ->execute();
@@ -255,7 +255,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
 
     $translations = '';
     foreach ($this->languageManager->getLanguages() as $language) {
-      if ($language->getId() == $this->languageManager->getDefaultLanguage()->getId()) {
+      if ($language->getId() === $this->languageManager->getDefaultLanguage()->getId()) {
         continue;
       }
       if (!$entity->hasTranslation($language->getId())) {

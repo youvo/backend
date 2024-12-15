@@ -54,7 +54,7 @@ class Questionnaire extends Paragraph {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       // Remove question references in questionnaire paragraph entity.
       $questions = $this->getQuestions();
