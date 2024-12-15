@@ -15,21 +15,21 @@ class OauthGrantSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'oauth_grant_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['oauth_grant.settings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $settings = $this->config('oauth_grant.settings');
     $settings->set('auth_success_redirect', $form_state->getValue('auth_success_redirect'));
     $settings->set('auth_failure_redirect', $form_state->getValue('auth_failure_redirect'));
@@ -41,7 +41,7 @@ class OauthGrantSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
 
     $config = $this->config('oauth_grant.settings');
 

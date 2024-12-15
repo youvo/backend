@@ -14,7 +14,7 @@ use Drupal\Core\Utility\Error;
 /**
  * Implements hook_install().
  */
-function oauth_grant_install() {
+function oauth_grant_install(): void {
 
   // Overwrite simple_oauth settings.
   $config = \Drupal::configFactory()->getEditable('simple_oauth.settings');
