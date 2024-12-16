@@ -129,7 +129,6 @@
         }
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
         "drupal/admin_toolbar": "^3.3",
         "drupal/coder": "^8.3",
@@ -143,12 +142,14 @@
         "drupal/openapi_ui_redoc": "^1.0@RC",
         "drupal/restui": "^1.21",
         "fakerphp/faker": "^1.21",
+        "jangregor/phpstan-prophecy": "^1.0",
         "mglaman/phpstan-drupal": "^1.1",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpspec/prophecy-phpunit": "^2",
         "phpstan/extension-installer": "^1.2",
         "phpstan/phpstan": "^1.10",
-        "phpstan/phpstan-deprecation-rules": "^1.1"
+        "phpstan/phpstan-deprecation-rules": "^1.1",
+        "roave/security-advisories": "dev-latest"
     },
     "scripts": {
 		"post-drupal-scaffold-cmd": [
