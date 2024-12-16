@@ -4,14 +4,12 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -30,20 +28,6 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
   protected const TRANSITION = 'complete';
-
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, ...$defaults) {
-    $instance = parent::create($container, ...$defaults);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
-    return $instance;
-  }
 
   /**
    * {@inheritdoc}

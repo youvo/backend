@@ -3,12 +3,15 @@
 namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
+use Drupal\user_types\Utility\Profile;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Project Apply Resource.
@@ -24,46 +27,46 @@ use Symfony\Component\Routing\RouteCollection;
 class ProjectApplyResource extends ProjectActionResourceBase {
 
   /**
+   * {@inheritdoc}
+   */
+  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+
+    $access_result = AccessResult::allowed();
+
+    // The project may not be open to apply.
+    if (!$project->isPublished() || !$project->lifecycle()->isOpen()) {
+      $access_result = AccessResult::forbidden('The project is not open for applications.');
+    }
+
+    // The user may not be allowed to apply to this project.
+    if (!Profile::isCreative($account) || $project->getOwner()->isManager($account)) {
+      $access_result = AccessResult::forbidden('The user is not allowed to apply to this project.');
+    }
+
+    // The user maybe already applied to this project.
+    if ($project->isApplicant($account)) {
+      $access_result = AccessResult::forbidden('The user already applied to this project.');
+    }
+
+    return $access_result->addCacheableDependency($project)->cachePerUser();
+  }
+
+  /**
    * Responds to GET requests.
    */
-  public function get(ProjectInterface $project): ResourceResponseInterface {
-
-    // Is the project open?
-    if (!$project->lifecycle()->isOpen()) {
-      return new ModifiedResourceResponse('Project is not open to apply.', 403);
-    }
-
-    // Did creative already apply to project?
-    if ($project->isApplicant($this->currentUser)) {
-      return new ModifiedResourceResponse('Creative already applied to project.', 403);
-    }
-
-    // Otherwise, project is open to apply for creative.
-    return new ModifiedResourceResponse('Creative can apply to project.', 200);
+  public function get(): ResourceResponseInterface {
+    return new ModifiedResourceResponse('The user may apply to the project.', 200);
   }
 
   /**
    * Responds to POST requests.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    // Is the project open?
-    if (!$project->lifecycle()->isOpen()) {
-      return new ModifiedResourceResponse('Project is not open to apply.', 403);
-    }
-
-    // Did creative already apply to project?
-    if ($project->isApplicant($this->currentUser)) {
-      return new ModifiedResourceResponse('Creative already applied to project.', 403);
-    }
-
-    // Otherwise, project is open to apply for creative.
     /** @var \Drupal\creatives\Entity\Creative $applicant */
-    $applicant = $this->entityTypeManager->getStorage('user')->load($this->currentUser->id());
+    $applicant = $this->currentUser->getAccount();
 
     // Decode content of the request.
     $content = Json::decode($request->getContent());
@@ -86,13 +89,6 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     $this->eventDispatcher->dispatch($event);
 
     return new ModifiedResourceResponse('Added creative to applicants.', 200);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function routes(): RouteCollection {
-    return $this->routesWithAccessCallback('accessApply');
   }
 
 }

@@ -6,13 +6,11 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -31,20 +29,6 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
   protected const TRANSITION = 'mediate';
-
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, ...$defaults) {
-    $instance = parent::create($container, ...$defaults);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
-    return $instance;
-  }
 
   /**
    * {@inheritdoc}
