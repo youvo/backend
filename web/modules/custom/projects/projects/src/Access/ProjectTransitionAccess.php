@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Permissions;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectTransition;
 
 /**
  * Access controller for project transitions.
@@ -27,18 +28,18 @@ class ProjectTransitionAccess {
     $party_access = AccessResult::allowed();
 
     // Parties for transition submit.
-    if (($transition === 'submit') && !$project->isAuthor($account)) {
+    if (($transition === ProjectTransition::SUBMIT->value) && !$project->isAuthor($account)) {
       $party_access = AccessResult::forbidden();
     }
 
     // Parties for transition publish.
-    if (($transition === 'publish') && !$project->getOwner()->isManager($account)) {
+    if (($transition === ProjectTransition::PUBLISH->value) && !$project->getOwner()->isManager($account)) {
       $party_access = AccessResult::forbidden();
     }
 
     // Parties for transition mediate.
     if (
-      ($transition === 'mediate') &&
+      ($transition === ProjectTransition::MEDIATE->value) &&
       !$project->isAuthor($account) &&
       !$project->getOwner()->isManager($account)
     ) {
@@ -47,7 +48,7 @@ class ProjectTransitionAccess {
 
     // Parties for transition complete.
     if (
-      ($transition === 'complete') &&
+      ($transition === ProjectTransition::COMPLETE->value) &&
       !$project->isAuthor($account) &&
       !$project->isParticipant($account) &&
       !$project->getOwner()->isManager($account)
@@ -59,7 +60,7 @@ class ProjectTransitionAccess {
       AccessResult::allowedIf(
         $project->isPublished() &&
         Permissions::useTransition($account, 'project_lifecycle', $transition) &&
-        $project->lifecycle()->canTransition($transition)
+        $project->lifecycle()->canTransition(ProjectTransition::from($transition))
       )
     );
   }

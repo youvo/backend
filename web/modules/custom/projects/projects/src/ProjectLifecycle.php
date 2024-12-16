@@ -3,23 +3,12 @@
 namespace Drupal\projects;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\lifecycle\Exception\LifecycleTransitionException;
 
 /**
  * Provides methods to manage the workflow of a project.
  */
 class ProjectLifecycle {
-
-  const STATE_DRAFT = 'draft';
-  const STATE_PENDING = 'pending';
-  const STATE_OPEN = 'open';
-  const STATE_ONGOING = 'ongoing';
-  const STATE_COMPLETED = 'completed';
-
-  const TRANSITION_SUBMIT = 'submit';
-  const TRANSITION_PUBLISH = 'publish';
-  const TRANSITION_MEDIATE = 'mediate';
-  const TRANSITION_COMPLETE = 'complete';
-  const TRANSITION_RESET = 'reset';
 
   const WORKFLOW_ID = 'project_lifecycle';
   const LIFECYCLE_FIELD = 'field_lifecycle';
@@ -34,19 +23,22 @@ class ProjectLifecycle {
   /**
    * Constructs a ProjectLifecycle object.
    */
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+  ) {}
 
   /**
-   * Sets the project property.
+   * Sets the project.
    */
-  public function setProject(ProjectInterface $project): void {
+  public function setProject(ProjectInterface $project): static {
     $this->project = $project;
+    return $this;
   }
 
   /**
-   * Calls the project property.
+   * Gets the project.
    */
-  protected function project(): ProjectInterface {
+  public function project(): ProjectInterface {
     if (isset($this->project)) {
       return $this->project;
     }
@@ -56,50 +48,51 @@ class ProjectLifecycle {
   /**
    * Gets the current state of the project.
    */
-  protected function getState(): string {
-    return $this->project()->get(self::LIFECYCLE_FIELD)->value;
+  protected function getState(): ProjectState {
+    $state = $this->project()->get(static::LIFECYCLE_FIELD)->value;
+    return ProjectState::from($state);
   }
 
   /**
    * Checks if the project is a draft.
    */
   public function isDraft(): bool {
-    return $this->getState() === self::STATE_DRAFT;
+    return $this->getState() === ProjectState::DRAFT;
   }
 
   /**
    * Checks if the project is pending.
    */
   public function isPending(): bool {
-    return $this->getState() === self::STATE_PENDING;
+    return $this->getState() === ProjectState::PENDING;
   }
 
   /**
    * Checks if the project is open.
    */
   public function isOpen(): bool {
-    return $this->getState() === self::STATE_OPEN;
+    return $this->getState() === ProjectState::OPEN;
   }
 
   /**
    * Checks if the project is ongoing.
    */
   public function isOngoing(): bool {
-    return $this->getState() === self::STATE_ONGOING;
+    return $this->getState() === ProjectState::ONGOING;
   }
 
   /**
    * Checks if the project is completed.
    */
   public function isCompleted(): bool {
-    return $this->getState() === self::STATE_COMPLETED;
+    return $this->getState() === ProjectState::COMPLETED;
   }
 
   /**
    * Checks if the project can transition by transition label.
    */
-  public function canTransition(string $transition): bool {
-    if ($transition === self::TRANSITION_MEDIATE) {
+  public function canTransition(ProjectTransition $transition): bool {
+    if ($transition === ProjectTransition::MEDIATE) {
       return $this->project()->hasApplicant() &&
         $this->hasTransition($transition);
     }
@@ -110,69 +103,69 @@ class ProjectLifecycle {
    * Submits the project.
    */
   public function submit(): bool {
-    return $this->doTransition(self::TRANSITION_SUBMIT);
+    return $this->doTransition(ProjectTransition::SUBMIT);
   }
 
   /**
    * Publishes the project.
    */
   public function publish(): bool {
-    return $this->doTransition(self::TRANSITION_PUBLISH);
+    return $this->doTransition(ProjectTransition::PUBLISH);
   }
 
   /**
    * Mediates the project.
    */
   public function mediate(): bool {
-    return $this->doTransition(self::TRANSITION_MEDIATE);
+    return $this->doTransition(ProjectTransition::MEDIATE);
   }
 
   /**
    * Completes the project.
    */
   public function complete(): bool {
-    return $this->doTransition(self::TRANSITION_COMPLETE);
+    return $this->doTransition(ProjectTransition::COMPLETE);
   }
 
   /**
    * Resets the project.
    */
   public function reset(): bool {
-    return $this->doTransition(self::TRANSITION_RESET);
+    return $this->doTransition(ProjectTransition::RESET);
   }
 
   /**
    * Abstraction of forward transition flow check.
    */
-  protected function hasTransition(string $transition): bool {
+  protected function hasTransition(ProjectTransition $transition): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = $this->entityTypeManager->getStorage('workflow')->load(self::WORKFLOW_ID);
-    return $workflow->getTypePlugin()->hasTransition($transition);
+    $workflow = $this->entityTypeManager->getStorage('workflow')->load(static::WORKFLOW_ID);
+    return $workflow->getTypePlugin()->hasTransition($transition->value);
   }
 
   /**
    * Sets new project state for given transition.
    */
-  protected function doTransition(string $transition): bool {
+  protected function doTransition(ProjectTransition $transition): bool {
     if ($this->canTransition($transition)) {
       $new_state = $this->getSuccessorFromTransition($transition);
-      $this->project()->set(self::LIFECYCLE_FIELD, $new_state);
+      $this->project()->set(static::LIFECYCLE_FIELD, $new_state);
       return TRUE;
     }
-    return FALSE;
+    throw new LifecycleTransitionException($transition->value);
   }
 
   /**
    * Gets new state assuming linear transition flow.
    */
-  protected function getSuccessorFromTransition(string $transition): string {
+  protected function getSuccessorFromTransition(ProjectTransition $transition): ProjectState {
     return match ($transition) {
-      self::TRANSITION_SUBMIT => self::STATE_PENDING,
-      self::TRANSITION_PUBLISH => self::STATE_OPEN,
-      self::TRANSITION_MEDIATE => self::STATE_ONGOING,
-      self::TRANSITION_COMPLETE => self::STATE_COMPLETED,
-      self::TRANSITION_RESET => self::STATE_DRAFT,
-      default => '',
+      ProjectTransition::SUBMIT => ProjectState::PENDING,
+      ProjectTransition::PUBLISH => ProjectState::OPEN,
+      ProjectTransition::MEDIATE => ProjectState::ONGOING,
+      ProjectTransition::COMPLETE => ProjectState::COMPLETED,
+      // All other transitions, including reset, set the project state to draft.
+      default => ProjectState::DRAFT,
     };
   }
 
