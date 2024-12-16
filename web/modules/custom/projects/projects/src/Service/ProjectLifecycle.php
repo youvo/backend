@@ -1,14 +1,17 @@
 <?php
 
-namespace Drupal\projects;
+namespace Drupal\projects\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
+use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 
 /**
  * Provides methods to manage the workflow of a project.
  */
-class ProjectLifecycle {
+class ProjectLifecycle implements ProjectLifecycleInterface {
 
   const WORKFLOW_ID = 'project_lifecycle';
   const LIFECYCLE_FIELD = 'field_lifecycle';
@@ -28,7 +31,7 @@ class ProjectLifecycle {
   ) {}
 
   /**
-   * Sets the project.
+   * {@inheritdoc}
    */
   public function setProject(ProjectInterface $project): static {
     $this->project = $project;
@@ -36,7 +39,7 @@ class ProjectLifecycle {
   }
 
   /**
-   * Gets the project.
+   * {@inheritdoc}
    */
   public function project(): ProjectInterface {
     if (isset($this->project)) {
@@ -54,42 +57,44 @@ class ProjectLifecycle {
   }
 
   /**
-   * Checks if the project is a draft.
+   * {@inheritdoc}
    */
   public function isDraft(): bool {
     return $this->getState() === ProjectState::DRAFT;
   }
 
   /**
-   * Checks if the project is pending.
+   * {@inheritdoc}
    */
   public function isPending(): bool {
     return $this->getState() === ProjectState::PENDING;
   }
 
   /**
-   * Checks if the project is open.
+   * {@inheritdoc}
    */
   public function isOpen(): bool {
     return $this->getState() === ProjectState::OPEN;
   }
 
   /**
-   * Checks if the project is ongoing.
+   * {@inheritdoc}
    */
   public function isOngoing(): bool {
     return $this->getState() === ProjectState::ONGOING;
   }
 
   /**
-   * Checks if the project is completed.
+   * {@inheritdoc}
    */
   public function isCompleted(): bool {
     return $this->getState() === ProjectState::COMPLETED;
   }
 
   /**
-   * Checks if the project can transition by transition label.
+   * {@inheritdoc}
+   *
+   * @todo Check whether this can be protected.
    */
   public function canTransition(ProjectTransition $transition): bool {
     if ($transition === ProjectTransition::MEDIATE) {

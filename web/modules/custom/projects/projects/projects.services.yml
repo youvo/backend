@@ -4,7 +4,7 @@ services:
     tags:
       - { name: event_subscriber }
   project.lifecycle:
-    class: Drupal\projects\ProjectLifecycle
+    class: Drupal\projects\Service\ProjectLifecycle
     arguments:
       [ '@entity_type.manager' ]
   project.route_subscriber:

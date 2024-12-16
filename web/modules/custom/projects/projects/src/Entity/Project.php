@@ -18,8 +18,8 @@ use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectLifecycle;
 use Drupal\projects\ProjectResultInterface;
+use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
 
@@ -85,14 +85,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * The project lifecycle.
    *
-   * @var \Drupal\projects\ProjectLifecycle
+   * @var \Drupal\projects\Service\ProjectLifecycleInterface
    */
-  protected ProjectLifecycle $lifecycle;
+  protected ProjectLifecycleInterface $lifecycle;
 
   /**
    * Calls project lifecycle service which holds/manipulates the state.
    */
-  public function lifecycle(): ProjectLifecycle {
+  public function lifecycle(): ProjectLifecycleInterface {
     if (!isset($this->lifecycle)) {
       $this->lifecycle = \Drupal::service('project.lifecycle');
       $this->lifecycle->setProject($this);

@@ -9,9 +9,10 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\Plugin\WorkflowType\Lifecycle;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectLifecycle;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
+use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\workflows\Entity\Workflow;
 use Prophecy\Argument;
@@ -19,7 +20,7 @@ use Prophecy\Argument;
 /**
  * Tests the project lifecycle.
  *
- * @coversDefaultClass \Drupal\projects\ProjectLifecycle
+ * @coversDefaultClass \Drupal\projects\Service\ProjectLifecycle
  * @group projects
  */
 class ProjectLifecycleTest extends UnitTestCase {
@@ -27,7 +28,7 @@ class ProjectLifecycleTest extends UnitTestCase {
   /**
    * The project lifecycle.
    */
-  protected ProjectLifecycle $lifecycle;
+  protected ProjectLifecycleInterface $lifecycle;
 
   /**
    * {@inheritdoc}
@@ -216,11 +217,11 @@ class ProjectLifecycleTest extends UnitTestCase {
    */
   protected function prophesizeWorkflow(array $has_transition_return_values, bool $has_applicant): void {
 
-    $lifecycle = $this->prophesize(Lifecycle::class);
-    $lifecycle->hasTransition(Argument::any())->willReturn(...$has_transition_return_values);
+    $lifecycle_config = $this->prophesize(Lifecycle::class);
+    $lifecycle_config->hasTransition(Argument::any())->willReturn(...$has_transition_return_values);
 
     $workflow = $this->prophesize(Workflow::class);
-    $workflow->getTypePlugin()->willReturn($lifecycle->reveal());
+    $workflow->getTypePlugin()->willReturn($lifecycle_config->reveal());
 
     $workflow_storage = $this->prophesize(EntityStorageInterface::class);
     $workflow_storage->load(Argument::any())->willReturn($workflow->reveal());
