@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -9,7 +10,7 @@ use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
- * Provides Project Submit Resource.
+ * Provides resource to submit projects.
  *
  * @RestResource(
  *   id = "project:submit",
@@ -20,6 +21,15 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  * )
  */
 class ProjectSubmitResource extends ProjectTransitionResourceBase {
+
+  protected const TRANSITION = 'submit';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return $project->isAuthor($account);
+  }
 
   /**
    * Responds to POST requests.

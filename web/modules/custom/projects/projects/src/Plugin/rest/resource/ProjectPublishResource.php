@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -20,6 +21,15 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  * )
  */
 class ProjectPublishResource extends ProjectTransitionResourceBase {
+
+  protected const TRANSITION = 'publish';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return $project->getOwner()->isManager($account);
+  }
 
   /**
    * Responds to POST requests.

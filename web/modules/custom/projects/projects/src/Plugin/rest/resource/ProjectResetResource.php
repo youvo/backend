@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectResetEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -21,8 +22,19 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  */
 class ProjectResetResource extends ProjectTransitionResourceBase {
 
+  protected const TRANSITION = 'reset';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return FALSE;
+  }
+
   /**
    * Responds to POST requests.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
     if (!$project->lifecycle()->reset()) {

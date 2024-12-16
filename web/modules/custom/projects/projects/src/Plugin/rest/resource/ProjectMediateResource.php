@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ResourceResponse;
@@ -29,6 +30,8 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
+  protected const TRANSITION = 'mediate';
+
   /**
    * The entity type manager.
    */
@@ -41,6 +44,13 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     $instance = parent::create($container, ...$defaults);
     $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return $project->isAuthor($account) || $project->getOwner()->isManager($account);
   }
 
   /**
@@ -85,7 +95,6 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    * Responds to POST requests.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
-   *   Thrown if unable to save project.
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 

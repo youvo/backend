@@ -7,8 +7,8 @@ namespace Drupal\lifecycle\Plugin\Validation\Constraint;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\lifecycle\Permissions;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
+use Drupal\lifecycle\WorkflowPermissions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -86,7 +86,8 @@ class LifecycleConstraintValidator extends ConstraintValidator implements Contai
     }
     else {
       $transition = $workflow_type->getTransitionFromStateToState($originalState, $newState);
-      if (!Permissions::useTransition($this->currentUser, $value->getWorkflow()->id(), $transition)) {
+      $permission = WorkflowPermissions::useTransition($value->getWorkflow()->id(), $transition);
+      if (!$this->currentUser->hasPermission($permission)) {
         $this->context->addViolation($constraint->insufficientPermissionsTransition, [
           '%transition' => $transition->label(),
         ]);

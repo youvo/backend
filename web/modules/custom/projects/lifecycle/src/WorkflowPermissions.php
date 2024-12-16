@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\lifecycle;
 
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\TransitionInterface;
@@ -14,7 +13,7 @@ use Drupal\workflows\TransitionInterface;
  *
  * @internal
  */
-class Permissions {
+class WorkflowPermissions {
 
   use StringTranslationTrait;
 
@@ -46,21 +45,32 @@ class Permissions {
   }
 
   /**
-   * Determines whether a user can use a transition.
+   * Determines permission for a workflow transition.
    *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user accounts.
-   * @param string $workflowId
+   * @param string $workflow_id
    *   The workflow the transition belongs to.
    * @param \Drupal\workflows\TransitionInterface|string $transition
    *   The transition or the transition ID.
    *
-   * @return bool
-   *   Whether the user can use the transition.
+   * @return string
+   *   The matching workflow permission.
    */
-  public static function useTransition(AccountInterface $account, string $workflowId, TransitionInterface|string $transition): bool {
+  public static function useTransition(string $workflow_id, TransitionInterface|string $transition): string {
     $transition_id = $transition instanceof TransitionInterface ? $transition->id() : $transition;
-    return $account->hasPermission(sprintf('use %s transition %s', $workflowId, $transition_id));
+    return sprintf('use %s transition %s', $workflow_id, $transition_id);
+  }
+
+  /**
+   * Determines permission to bypass a workflow transition.
+   *
+   * @param string $workflow_id
+   *   The workflow the transition belongs to.
+   *
+   * @return string
+   *   The matching workflow permission.
+   */
+  public static function bypassTransition(string $workflow_id): string {
+    return sprintf('bypass %s transition access', $workflow_id);
   }
 
 }
