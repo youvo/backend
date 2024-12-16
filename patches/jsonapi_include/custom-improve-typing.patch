@@ -15,7 +15,7 @@ diff --git a/src/JsonapiParse.php b/src/JsonapiParse.php
 -    $this->parseJsonContent($response);
 +  public function parse(Response $response): Response {
 +    $content = Json::decode($response->getContent() ?: []);
-+    $this->parseJsonContent($content);
++    $content = $this->parseJsonContent($content);
 +    $response->setContent(Json::encode($content));
      return $response;
    }
