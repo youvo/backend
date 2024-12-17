@@ -22,8 +22,6 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 

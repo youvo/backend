@@ -14,7 +14,7 @@ use Drupal\user_types\Utility\Profile;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Provides Project Apply Resource.
+ * Provides project apply resource.
  *
  * @RestResource(
  *   id = "project:apply",
@@ -88,7 +88,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     $event->setApplicant($applicant);
     $this->eventDispatcher->dispatch($event);
 
-    return new ModifiedResourceResponse('Added creative to applicants.', 200);
+    return new ModifiedResourceResponse('Application completed');
   }
 
 }

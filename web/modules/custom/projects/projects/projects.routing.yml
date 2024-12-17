@@ -5,3 +5,79 @@ entity.project.settings:
     _title: 'Project Settings'
   requirements:
     _permission: 'administer projects'
+
+# @todo Adjust access for project transition forms.
+project.submit:
+  path: '/projects/{project}/submit'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectSubmitForm'
+    _title: 'Submit Project'
+    transition: 'submit'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project
+
+project.publish:
+  path: '/projects/{project}/publish'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectPublishForm'
+    _title: 'Publish Project'
+    transition: 'publish'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project
+
+project.mediate:
+  path: '/projects/{project}/mediate'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectMediateForm'
+    _title: 'Mediate Project'
+    transition: 'mediate'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project
+
+project.complete:
+  path: '/projects/{project}/complete'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectCompleteForm'
+    _title: 'Complete Project'
+    transition: 'complete'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project
+
+project.reset:
+  path: '/projects/{project}/reset'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectResetForm'
+    _title: 'Reset Project'
+    transition: 'reset'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project

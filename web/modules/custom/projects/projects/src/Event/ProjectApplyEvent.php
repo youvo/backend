@@ -17,24 +17,24 @@ class ProjectApplyEvent extends ProjectEventBase {
   /**
    * The message.
    */
-  protected string $message;
+  protected string $message = '';
 
   /**
    * The phone number.
    */
-  protected string $phoneNumber;
+  protected string $phoneNumber = '';
 
   /**
    * Gets the message.
    */
   public function getMessage(): string {
-    return $this->message ?? '';
+    return $this->message;
   }
 
   /**
    * Sets the message.
    */
-  public function setMessage(string $message): ProjectApplyEvent {
+  public function setMessage(string $message): static {
     $this->message = $message;
     return $this;
   }
@@ -43,13 +43,13 @@ class ProjectApplyEvent extends ProjectEventBase {
    * Gets the phone number.
    */
   public function getPhoneNumber(): string {
-    return $this->phoneNumber ?? '';
+    return $this->phoneNumber;
   }
 
   /**
    * Sets the phone number.
    */
-  public function setPhoneNumber(string $phone_number): ProjectApplyEvent {
+  public function setPhoneNumber(string $phone_number): static {
     $this->phoneNumber = $phone_number;
     return $this;
   }
@@ -64,7 +64,7 @@ class ProjectApplyEvent extends ProjectEventBase {
   /**
    * Sets the applicant.
    */
-  public function setApplicant(Creative $applicant): ProjectApplyEvent {
+  public function setApplicant(Creative $applicant): static {
     $this->applicant = $applicant;
     return $this;
   }

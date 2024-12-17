@@ -3,6 +3,7 @@
 namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectResetEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -10,7 +11,7 @@ use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
- * Provides Project Reset Resource.
+ * Provides project reset resource.
  *
  * @RestResource(
  *   id = "project:reset",
@@ -33,16 +34,16 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
-    if (!$project->lifecycle()->reset()) {
+    try {
+      $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
+    }
+    catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be reset.');
     }
-    $project->setPromoted(FALSE);
-    $project->save();
-    $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
+    catch (\Throwable) {
+    }
     return new ModifiedResourceResponse('Project reset.');
   }
 

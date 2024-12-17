@@ -13,7 +13,7 @@ use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 
 /**
- * Provides Project Notify Resource.
+ * Provides project notify resource.
  *
  * @RestResource(
  *   id = "project:notify",
