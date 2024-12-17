@@ -3,16 +3,12 @@
 namespace Drupal\projects\Event;
 
 use Drupal\creatives\Entity\Creative;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Defines a project apply event.
  */
 class ProjectApplyEvent extends ProjectEventBase {
-
-  /**
-   * The applicant.
-   */
-  protected ?Creative $applicant = NULL;
 
   /**
    * The message.
@@ -23,6 +19,23 @@ class ProjectApplyEvent extends ProjectEventBase {
    * The phone number.
    */
   protected string $phoneNumber = '';
+
+  /**
+   * Constructs a ProjectApplyEvent object.
+   */
+  public function __construct(
+    ProjectInterface $project,
+    protected Creative $applicant,
+  ) {
+    parent::__construct($project);
+  }
+
+  /**
+   * Gets the applicant.
+   */
+  public function getApplicant(): Creative {
+    return $this->applicant;
+  }
 
   /**
    * Gets the message.
@@ -51,21 +64,6 @@ class ProjectApplyEvent extends ProjectEventBase {
    */
   public function setPhoneNumber(string $phone_number): static {
     $this->phoneNumber = $phone_number;
-    return $this;
-  }
-
-  /**
-   * Gets the applicant.
-   */
-  public function getApplicant(): ?Creative {
-    return $this->applicant;
-  }
-
-  /**
-   * Sets the applicant.
-   */
-  public function setApplicant(Creative $applicant): static {
-    $this->applicant = $applicant;
     return $this;
   }
 

@@ -60,35 +60,23 @@ class ProjectApplyResource extends ProjectActionResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
+    $content = Json::decode($request->getContent());
     /** @var \Drupal\creatives\Entity\Creative $applicant */
     $applicant = $this->currentUser->getAccount();
 
-    // Decode content of the request.
-    $content = Json::decode($request->getContent());
-
-    // Add phone number to creative.
-    if (!empty($content['phone'])) {
-      $applicant->setPhoneNumber($content['phone']);
-      $applicant->save();
+    try {
+      $event = new ProjectApplyEvent($project, $applicant);
+      $event->setMessage($content['message'] ?? '');
+      $event->setPhoneNumber($content['phone'] ?? '');
+      $this->eventDispatcher->dispatch($event);
+    }
+    catch (\Throwable) {
     }
 
-    // Append applicant to project.
-    $project->appendApplicant($applicant);
-    $project->save();
-
-    // Dispatch project apply event.
-    $event = new ProjectApplyEvent($project);
-    $event->setMessage($content['message'] ?? '');
-    $event->setPhoneNumber($content['phone'] ?? '');
-    $event->setApplicant($applicant);
-    $this->eventDispatcher->dispatch($event);
-
-    return new ModifiedResourceResponse('Application completed');
+    return new ModifiedResourceResponse('Application completed.');
   }
 
 }

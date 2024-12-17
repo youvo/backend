@@ -18,12 +18,10 @@ class ProjectCompleteSubscriber implements EventSubscriberInterface {
    */
   public function onProjectComplete(ProjectCompleteEvent $event): void {
 
-    // Transition project.
     $project = $event->getProject();
     $project->lifecycle()->complete();
     $project->save();
 
-    // Save results.
     $result = $project->getResult();
     $result->setFiles($event->getFiles());
     $result->setLinks($event->getLinks());

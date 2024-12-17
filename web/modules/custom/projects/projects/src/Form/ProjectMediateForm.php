@@ -4,13 +4,14 @@ namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
+use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
  * The ProjectMediateForm provides a simple UI for changing lifecycle state.
  */
-class ProjectMediateForm extends ProjectActionFormBase {
+class ProjectMediateForm extends ProjectTransitionFormBase {
 
   /**
    * {@inheritdoc}
@@ -58,31 +59,23 @@ class ProjectMediateForm extends ProjectActionFormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     /** @var \Drupal\projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];
-    $participants = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
+    $selected_creatives = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
 
-    // Mediate project.
-    if ($project->lifecycle()->mediate()) {
-      $project->setPromoted(FALSE);
-      $project->setParticipants($participants);
-      if ($manager = $project->getOwner()->getManager()) {
-        $project->appendParticipant($manager, 'Manager');
-      }
-      $project->save();
+    try {
+      $event = new ProjectMediateEvent($project);
+      $event->setCreatives($selected_creatives);
       $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
-    else {
-      $this->messenger()->addError($this->t('Could not mediate project.'));
+    catch (\Throwable $e) {
+      $this->messenger()->addError($e->getMessage());
     }
 
-    // Set redirect after submission.
     $form_state->setRedirect('entity.node.canonical', ['node' => $project->id()]);
   }
 

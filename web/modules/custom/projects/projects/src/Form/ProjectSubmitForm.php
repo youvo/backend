@@ -9,7 +9,7 @@ use Drupal\projects\ProjectInterface;
 /**
  * The project submit form provides a simple UI to change the lifecycle state.
  */
-class ProjectSubmitForm extends ProjectActionFormBase {
+class ProjectSubmitForm extends ProjectTransitionFormBase {
 
   /**
    * {@inheritdoc}
@@ -44,25 +44,20 @@ class ProjectSubmitForm extends ProjectActionFormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     /** @var \Drupal\projects\Entity\Project $project */
     $project = $form_state->getValues()['project'];
 
-    // Mediate project.
-    if ($project->lifecycle()->submit()) {
-      $project->save();
+    try {
       $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
       $this->messenger()->addMessage($this->t('Project was submitted successfully.'));
     }
-    else {
-      $this->messenger()->addError($this->t('Could not submit project.'));
+    catch (\Throwable $e) {
+      $this->messenger()->addError($e->getMessage());
     }
 
-    // Set redirect after submission.
     $form_state->setRedirect('entity.node.canonical', ['node' => $project->id()]);
   }
 
