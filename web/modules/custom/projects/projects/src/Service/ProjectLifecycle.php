@@ -154,7 +154,7 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   protected function doTransition(ProjectTransition $transition): bool {
     if ($this->canTransition($transition)) {
       $new_state = $this->getSuccessorFromTransition($transition);
-      $this->project()->set(static::LIFECYCLE_FIELD, $new_state);
+      $this->project()->set(static::LIFECYCLE_FIELD, $new_state->value);
       return TRUE;
     }
     throw new LifecycleTransitionException($transition->value);
