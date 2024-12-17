@@ -3,7 +3,6 @@
 namespace Drupal\projects\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\ProjectInterface;
 
