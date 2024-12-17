@@ -2,21 +2,23 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
+use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
- * Provides Project Complete Resource.
+ * Provides project complete resource.
  *
  * @RestResource(
  *   id = "project:complete",
@@ -28,53 +30,48 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  */
 class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected const TRANSITION = 'complete';
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, ...$defaults) {
-    $instance = parent::create($container, ...$defaults);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
-    return $instance;
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return $project->isAuthor($account) ||
+      $project->isParticipant($account) ||
+      $project->getOwner()->isManager($account);
   }
 
   /**
    * Responds to POST requests.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    // Decode content of the request.
-    $request_body = Json::decode($request->getContent());
-    $results = $request_body['results'] ?? [];
+    $content = Json::decode($request->getContent());
+    $this->validateRequestContent($content);
 
-    // Prepare data.
-    $this->validateResults($results);
-    $this->preloadFiles($results);
-    [$result_files, $result_links] = $this->shapeResults($results);
-
-    if ($project->lifecycle()->complete()) {
-      $result = $project->getResult();
-      $result->setFiles($result_files);
-      $result->setLinks($result_links);
-      $result->save();
-      $project->save();
+    try {
+      $results = $content['results'] ?? [];
+      $this->preloadFiles($results);
+      [$result_files, $result_links] = $this->shapeResults($results);
+      $event = new ProjectCompleteEvent($project);
+      $event->setFiles($result_files);
+      $event->setLinks($result_links);
       $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
-      return new ModifiedResourceResponse('Project completed.');
+    }
+    catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
+      throw new ConflictHttpException('Project can not be completed.');
+    }
+    catch (\Throwable) {
     }
 
-    throw new ConflictHttpException('Project can not be completed.');
+    return new ModifiedResourceResponse('Project completed.');
   }
 
   /**
-   * Validates results entries.
+   * Validates the request body.
    */
-  protected function validateResults(array $results): void {
+  protected function validateRequestContent(array $content): void {
+    $results = $content['results'] ?? [];
     foreach ($results as $result) {
       if (
         !array_key_exists('type', $result) ||
@@ -97,14 +94,19 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
   /**
    * Preloads files in results array.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function preloadFiles(array &$results): void {
+
     $file_uuids = array_unique(array_column(array_filter($results, static fn($r) => $r['type'] === 'file'), 'value'));
+
+    // Populate results with files.
     if (!empty($file_uuids)) {
       $files = $this->entityTypeManager
         ->getStorage('file')
         ->loadByProperties(['uuid' => array_unique($file_uuids)]);
-      // Populate results with files.
       foreach ($results as $delta => $result) {
         if ($result['type'] === 'file') {
           $matching_file = array_filter($files, static fn($f) => $f->uuid() === $result['value']);
@@ -118,7 +120,9 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    * Shapes the results as required by the fields.
    */
   protected function shapeResults(array $results): array {
+
     foreach (array_values($results) as $delta => $result) {
+
       if ($result['type'] === 'file') {
         // Maybe file was not loaded correctly.
         if (!$result['value'] instanceof FileInterface) {
@@ -139,6 +143,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
         ];
       }
     }
+
     return [$result_files ?? [], $result_links ?? []];
   }
 

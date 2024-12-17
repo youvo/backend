@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * Provides a base class for project action forms.
  */
-abstract class ProjectActionFormBase extends FormBase {
+abstract class ProjectTransitionFormBase extends FormBase {
 
   /**
    * Constructs a ProjectActionFormBase object.

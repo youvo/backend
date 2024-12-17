@@ -28,9 +28,15 @@
     <listener class="\Drupal\Tests\Listeners\DrupalListener">
     </listener>
   </listeners>
-  <coverage>
+  <coverage includeUncoveredFiles="false">
     <include>
       <directory>web/modules/custom</directory>
     </include>
+    <exclude>
+      <directory>web/modules/custom/*/src/Tests</directory>
+      <directory>web/modules/custom/*/tests</directory>
+      <directory>web/modules/custom/*/*/src/Tests</directory>
+      <directory>web/modules/custom/*/*/tests</directory>
+    </exclude>
   </coverage>
 </phpunit>

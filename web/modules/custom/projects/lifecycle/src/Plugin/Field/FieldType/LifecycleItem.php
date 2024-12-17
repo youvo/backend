@@ -10,7 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\OptionsProviderInterface;
-use Drupal\lifecycle\Permissions;
+use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\workflows\Entity\Workflow;
 use Drupal\workflows\StateInterface;
 use Drupal\workflows\WorkflowInterface;
@@ -154,7 +154,8 @@ class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
         // If we have an account object then ensure the user has permission to
         // this transition and that it's a valid transition.
         $transition = $current_state->getTransitionTo($state->id());
-        return Permissions::useTransition($account, $workflow->id(), $transition);
+        $permission = WorkflowPermissions::useTransition($workflow->id(), $transition);
+        return $account->hasPermission($permission);
       });
     }
 

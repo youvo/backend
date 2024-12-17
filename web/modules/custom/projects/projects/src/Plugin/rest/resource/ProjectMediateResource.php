@@ -6,18 +6,18 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
- * Provides Project Mediate Resource.
+ * Provides project mediate resource.
  *
  * @RestResource(
  *   id = "project:mediate",
@@ -29,18 +29,13 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
-  /**
-   * The entity type manager.
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected const TRANSITION = 'mediate';
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, ...$defaults) {
-    $instance = parent::create($container, ...$defaults);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
-    return $instance;
+  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
+    return $project->isAuthor($account) || $project->getOwner()->isManager($account);
   }
 
   /**
@@ -83,22 +78,39 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
 
   /**
    * Responds to POST requests.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   *   Thrown if unable to save project.
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    // Decode content of the request.
-    $request_content = Json::decode($request->getContent());
+    $content = Json::decode($request->getContent());
+    $this->validateRequestContent($content);
+
+    try {
+      $selected_creatives = $this->loadSelectedCreatives($content);
+      $event = new ProjectMediateEvent($project);
+      $event->setCreatives($selected_creatives);
+      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
+    }
+    catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
+      throw new UnprocessableEntityHttpException('Could not mediate project.');
+    }
+    catch (\Throwable) {
+    }
+
+    return new ResourceResponse('Project was mediated successfully.');
+  }
+
+  /**
+   * Validates the request content.
+   */
+  protected function validateRequestContent(array $content): void {
 
     // The selected_creatives are required to process the request.
-    if (!array_key_exists('selected_creatives', $request_content)) {
+    if (!array_key_exists('selected_creatives', $content)) {
       throw new BadRequestHttpException('Request body does not specify selected_creatives.');
     }
 
     // Set preliminary selected_creatives variable.
-    $selected_creatives = array_unique($request_content['selected_creatives']);
+    $selected_creatives = array_unique($content['selected_creatives'] ?? []);
 
     // Force at least one selected creative.
     if (empty($selected_creatives)) {
@@ -114,45 +126,34 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     if (count(array_filter($selected_creatives, [Uuid::class, 'isValid'])) !== count($selected_creatives)) {
       throw new BadRequestHttpException('The entries of the selected_creatives array are not valid UUIDs.');
     }
+  }
 
-    // Get applicants for current project and check if selected_creatives are
-    // applicable.
-    $applicants = $project->getApplicants();
-    $applicants_uuids = array_map(static fn ($a) => $a->uuid(), $applicants);
-    if (count(array_intersect($selected_creatives, $applicants_uuids)) !== count($selected_creatives)) {
-      throw new UnprocessableEntityHttpException('Some selected creatives did not apply for this project.');
-    }
-
-    // Now we are finally sure to mediate the project. We get the UIDs by query.
-    try {
-      $selected_creatives_ids = $this->entityTypeManager
-        ->getStorage('user')
-        ->getQuery()
-        ->accessCheck(FALSE)
-        ->condition('uuid', $selected_creatives, 'IN')
-        ->execute();
-      $selected_creatives_ids = array_map('intval', $selected_creatives_ids);
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
-      throw new UnprocessableEntityHttpException('Could not mediate project.', $e);
-    }
-
-    // Mediate project with participants.
-    if (!empty($selected_creatives_ids) && $project->lifecycle()->mediate()) {
-
-      $project->setPromoted(FALSE);
-      $project->setParticipants($selected_creatives_ids);
-      if ($manager = $project->getOwner()->getManager()) {
-        $project->appendParticipant($manager, 'Manager');
-      }
-      $project->save();
-
-      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
-
-      return new ResourceResponse('Project was mediated successfully.');
-    }
-
-    throw new UnprocessableEntityHttpException('Could not mediate project.');
+  /**
+   * Loads the selected creatives from the request content.
+   *
+   * @param array $content
+   *   The request content.
+   *
+   * @return \Drupal\creatives\Entity\Creative[]
+   *   The selected creatives.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function loadSelectedCreatives(array $content): array {
+    $selected_creatives_uuids = array_unique($content['selected_creatives'] ?? []);
+    $selected_creatives_ids = $this->entityTypeManager
+      ->getStorage('user')
+      ->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('uuid', $selected_creatives_uuids, 'IN')
+      ->execute();
+    $selected_creatives_ids = array_map('intval', $selected_creatives_ids);
+    /** @var \Drupal\creatives\Entity\Creative[] $selected_creatives */
+    $selected_creatives = $this->entityTypeManager
+      ->getStorage('user')
+      ->loadMultiple($selected_creatives_ids);
+    return $selected_creatives;
   }
 
 }

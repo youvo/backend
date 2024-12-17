@@ -2,24 +2,33 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\Core\Routing\RouteProviderInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\lifecycle\WorkflowPermissions;
+use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectTransition;
+use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Symfony\Component\Routing\Route;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides base class for project transition resources.
+ *
+ * @todo Use enums for transition constant starting with PHP 8.2.
  */
-class ProjectTransitionResourceBase extends ResourceBase {
+abstract class ProjectTransitionResourceBase extends ResourceBase {
+
+  use ProjectResourceRoutesTrait;
+
+  protected const TRANSITION = 'undefined';
 
   /**
-   * The current user.
+   * The entity type manager.
    */
-  protected AccountInterface $currentUser;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The event dispatcher.
@@ -27,65 +36,52 @@ class ProjectTransitionResourceBase extends ResourceBase {
   protected EventDispatcherInterface $eventDispatcher;
 
   /**
-   * The route provider.
-   */
-  protected RouteProviderInterface $routeProvider;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults) {
     $instance = parent::create($container, ...$defaults);
-    $instance->currentUser = $container->get('current_user');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->eventDispatcher = $container->get('event_dispatcher');
-    $instance->logger = $container->get('logger.channel.projects');
-    $instance->routeProvider = $container->get('router.route_provider');
     return $instance;
   }
 
   /**
-   * {@inheritdoc}
+   * Handles custom access logic for the resource.
    */
-  public function routes(): RouteCollection {
-    $collection = new RouteCollection();
+  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    $definition = $this->getPluginDefinition();
-    $canonical_path = $definition['uri_paths']['canonical'];
-    $route_name = str_replace(':', '.', $this->getPluginId());
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
+    $transition = static::TRANSITION;
+    $access_result = AccessResult::allowed();
 
-    // The base route is not available during installation. Route definition
-    // will be updated during first cache rebuild.
-    $base_route_array = $this->routeProvider->getRoutesByNames([$route_name]);
-    $base_route = !empty($base_route_array) ? reset($base_route_array) : NULL;
-
-    $methods = $this->availableMethods();
-    foreach ($methods as $method) {
-      $route = $this->getBaseRoute($canonical_path, $method);
-
-      // Bequeath route definition from base route.
-      if ($base_route instanceof Route) {
-        if (!$this->baseRouteProper($base_route)) {
-          throw new InvalidParameterException('Transition path has to provide transition default, _custom_access requirement and entity:node parameters.');
-        }
-        $route->setDefault('transition', $base_route->getDefault('transition'));
-        $route->setRequirement('_custom_access', $base_route->getRequirement('_custom_access'));
-        $route->addOptions(['parameters' => $base_route->getOption('parameters')]);
-      }
-
-      // Appended method is crucial for recognition in parameter converter.
-      $collection->add("$route_name.$method", $route);
+    // The user may be permitted to bypass access control.
+    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
+    if ($account->hasPermission($bybass_permission)) {
+      return $access_result->cachePerPermissions();
     }
 
-    return $collection;
+    // The resource should define project-dependent access conditions.
+    if (!static::projectAccessCondition($account, $project)) {
+      $access_result = AccessResult::forbidden('The project conditions for this transition are not met.');
+    }
+
+    // The project should be able to perform the given transition.
+    if (!$project->isPublished() || !$project->lifecycle()->canTransition(ProjectTransition::from($transition))) {
+      $access_result = AccessResult::forbidden('The project is not ready for this transition.');
+    }
+
+    // The user may not have the permission to initiate this transition.
+    $permission = WorkflowPermissions::useTransition($workflow_id, $transition);
+    if (!$account->hasPermission($permission)) {
+      $access_result = AccessResult::forbidden('The user is not allowed to initiate this transition.');
+    }
+
+    return $access_result->addCacheableDependency($project)->cachePerUser();
   }
 
   /**
-   * Checks if the base route was properly defined in routing.yml.
+   * Defines project-dependent access condition.
    */
-  private function baseRouteProper(Route $base_route): bool {
-    return !(empty($base_route->getDefault('transition')) ||
-      empty($base_route->getRequirement('_custom_access')) ||
-      empty($base_route->getOption('parameters')));
-  }
+  abstract protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool;
 
 }

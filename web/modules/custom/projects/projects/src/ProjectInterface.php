@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -36,10 +37,10 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   /**
    * Calls project workflow manager which holds/manipulates the state.
    *
-   * @return \Drupal\projects\ProjectLifecycle
+   * @return \Drupal\projects\Service\ProjectLifecycleInterface
    *   The project workflow manager.
    */
-  public function lifecycle(): ProjectLifecycle;
+  public function lifecycle(): ProjectLifecycleInterface;
 
   /**
    * Checks whether the user is an applicant.

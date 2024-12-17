@@ -4,7 +4,7 @@ services:
     tags:
       - { name: event_subscriber }
   project.lifecycle:
-    class: Drupal\projects\ProjectLifecycle
+    class: Drupal\projects\Service\ProjectLifecycle
     arguments:
       [ '@entity_type.manager' ]
   project.route_subscriber:
@@ -22,3 +22,25 @@ services:
   logger.channel.projects:
     parent: logger.channel_base
     arguments: [ 'projects' ]
+
+  # Project transition event subscribers.
+  projects.project_complete.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Transition\ProjectCompleteSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_mediate.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Transition\ProjectMediateSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_publish.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Transition\ProjectPublishSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_reset.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Transition\ProjectResetSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_submit.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Transition\ProjectSubmitSubscriber
+    tags:
+      - { name: event_subscriber }

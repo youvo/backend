@@ -3,6 +3,7 @@
 namespace Drupal\projects\Event;
 
 use Drupal\creatives\Entity\Creative;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Defines a project apply event.
@@ -10,31 +11,43 @@ use Drupal\creatives\Entity\Creative;
 class ProjectApplyEvent extends ProjectEventBase {
 
   /**
-   * The applicant.
-   */
-  protected ?Creative $applicant = NULL;
-
-  /**
    * The message.
    */
-  protected string $message;
+  protected string $message = '';
 
   /**
    * The phone number.
    */
-  protected string $phoneNumber;
+  protected string $phoneNumber = '';
+
+  /**
+   * Constructs a ProjectApplyEvent object.
+   */
+  public function __construct(
+    ProjectInterface $project,
+    protected Creative $applicant,
+  ) {
+    parent::__construct($project);
+  }
+
+  /**
+   * Gets the applicant.
+   */
+  public function getApplicant(): Creative {
+    return $this->applicant;
+  }
 
   /**
    * Gets the message.
    */
   public function getMessage(): string {
-    return $this->message ?? '';
+    return $this->message;
   }
 
   /**
    * Sets the message.
    */
-  public function setMessage(string $message): ProjectApplyEvent {
+  public function setMessage(string $message): static {
     $this->message = $message;
     return $this;
   }
@@ -43,29 +56,14 @@ class ProjectApplyEvent extends ProjectEventBase {
    * Gets the phone number.
    */
   public function getPhoneNumber(): string {
-    return $this->phoneNumber ?? '';
+    return $this->phoneNumber;
   }
 
   /**
    * Sets the phone number.
    */
-  public function setPhoneNumber(string $phone_number): ProjectApplyEvent {
+  public function setPhoneNumber(string $phone_number): static {
     $this->phoneNumber = $phone_number;
-    return $this;
-  }
-
-  /**
-   * Gets the applicant.
-   */
-  public function getApplicant(): ?Creative {
-    return $this->applicant;
-  }
-
-  /**
-   * Sets the applicant.
-   */
-  public function setApplicant(Creative $applicant): ProjectApplyEvent {
-    $this->applicant = $applicant;
     return $this;
   }
 
