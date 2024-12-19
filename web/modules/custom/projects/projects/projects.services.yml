@@ -44,3 +44,9 @@ services:
     class: Drupal\projects\EventSubscriber\Transition\ProjectSubmitSubscriber
     tags:
       - { name: event_subscriber }
+
+  # Project action event subscribers.
+  projects.project_apply.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber
+    tags:
+      - { name: event_subscriber }
