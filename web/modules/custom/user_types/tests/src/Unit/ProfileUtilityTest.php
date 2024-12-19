@@ -24,7 +24,6 @@ class ProfileUtilityTest extends UnitTestCase {
 
   /**
    * The mock account.
-
    */
   protected AccountInterface $account;
 
