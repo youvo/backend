@@ -3,7 +3,6 @@
 namespace Drupal\projects\Service;
 
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectTransition;
 
 /**
  * Provides methods to manage the workflow of a project.
@@ -44,11 +43,6 @@ interface ProjectLifecycleInterface {
    * Checks if the project is completed.
    */
   public function isCompleted(): bool;
-
-  /**
-   * Checks if the project can transition by transition label.
-   */
-  public function canTransition(ProjectTransition $transition): bool;
 
   /**
    * Submits the project.

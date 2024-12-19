@@ -1,0 +1,26 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project_result.field_files
+  module:
+    - projects
+    - youvo
+id: project_result.project_result.field_files
+field_name: field_files
+entity_type: project_result
+bundle: project_result
+label: 'Result Files'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:file'
+  handler_settings: {  }
+  file_directory: ''
+  file_extensions: 'jpg jpeg gif png pdf'
+  max_filesize: '10 MB'
+  description_field: false
+field_type: file

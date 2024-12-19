@@ -2,7 +2,6 @@
 
 namespace Drupal\projects\EventSubscriber\Transition;
 
-use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -21,25 +20,14 @@ class ProjectMediateSubscriber implements EventSubscriberInterface {
 
     $project = $event->getProject();
     $selected_creatives = $event->getCreatives();
-
-    // Check whether there are any selected creatives.
-    if (empty($selected_creatives)) {
-      throw new LifecycleTransitionException('Unable to mediate project without selecting creatives.');
-    }
-
-    // Get project applicants and check if selected creatives are applicable.
-    $applicants = $project->getApplicants();
-    if (count(array_intersect($selected_creatives, $applicants)) !== count($selected_creatives)) {
-      throw new LifecycleTransitionException('Some selected creatives did not apply for this project.');
-    }
-
-    // Transition project.
-    $project->lifecycle()->mediate();
     $project->setParticipants($selected_creatives);
-    $project->setPromoted(FALSE);
+
     if ($manager = $project->getOwner()->getManager()) {
       $project->appendParticipant($manager, 'Manager');
     }
+
+    $project->lifecycle()->mediate();
+    $project->setPromoted(FALSE);
     $project->save();
   }
 

@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_lifecycle
+  module:
+    - lifecycle
+id: project.project.field_lifecycle
+field_name: field_lifecycle
+entity_type: project
+bundle: project
+label: Lifecycle
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: draft
+default_value_callback: ''
+settings: {  }
+field_type: lifecycle_item

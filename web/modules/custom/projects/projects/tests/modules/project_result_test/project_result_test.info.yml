@@ -1,0 +1,4 @@
+name: Project Result Test
+type: module
+description: Adds project results for testing.
+core_version_requirement: ^10.3 || ^11

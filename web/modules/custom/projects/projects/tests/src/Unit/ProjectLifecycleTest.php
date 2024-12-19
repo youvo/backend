@@ -131,7 +131,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    *   An array to mock the workflow allowed from settings.
    * @param array $has_transition_return_values
    *   An array to mock the workflow transition settings.
-   * @param bool $has_applicant
+   * @param bool $has_participant
    *   Whether the project has an applicant. Relevant for mediate transition.
    *
    * @covers ::submit
@@ -146,14 +146,14 @@ class ProjectLifecycleTest extends UnitTestCase {
    *
    * @dataProvider doTransitionProvider
    */
-  public function testDoTransition(ProjectTransition $transition, array $allowed_from, array $has_transition_return_values, bool $has_applicant): void {
-    $this->prophesizeWorkflow($has_transition_return_values, $has_applicant);
+  public function testDoTransition(ProjectTransition $transition, array $allowed_from, array $has_transition_return_values, bool $has_participant): void {
+    $this->prophesizeWorkflow($has_transition_return_values, $has_participant);
     foreach (ProjectState::cases() as $state) {
       try {
         $this->assertTrue($this->lifecycle->{$transition->value}());
       }
       catch (LifecycleTransitionException) {
-        $this->assertFalse(in_array($state, $allowed_from, TRUE) && $has_applicant);
+        $this->assertFalse(in_array($state, $allowed_from, TRUE) && $has_participant);
       }
     }
   }
@@ -168,7 +168,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       'allowed_from' => [ProjectState::DRAFT],
       'has_transition_return_values' => [TRUE, FALSE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
-      'has_applicant' => FALSE,
+      'has_participant' => FALSE,
     ];
 
     $cases[ProjectTransition::PUBLISH->value] = [
@@ -176,29 +176,28 @@ class ProjectLifecycleTest extends UnitTestCase {
       'allowed_from' => [ProjectState::PENDING],
       'has_transition_return_values' => [FALSE, TRUE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
-      'has_applicant' => FALSE,
+      'has_participant' => FALSE,
     ];
 
     $cases[ProjectTransition::MEDIATE->value . '-without-applicant'] = [
       'transition' => ProjectTransition::MEDIATE,
       'allowed_from' => [ProjectState::OPEN],
       'has_transition_return_values' => [FALSE, FALSE, FALSE, FALSE, FALSE],
-      'has_applicant' => FALSE,
+      'has_participant' => FALSE,
     ];
 
     $cases[ProjectTransition::MEDIATE->value . '-with-applicant'] = [
       'transition' => ProjectTransition::MEDIATE,
       'allowed_from' => [ProjectState::OPEN],
       'has_transition_return_values' => [FALSE, FALSE, TRUE, FALSE, FALSE],
-      'has_applicant' => TRUE,
+      'has_participant' => TRUE,
     ];
 
     $cases[ProjectTransition::COMPLETE->value] = [
       'transition' => ProjectTransition::COMPLETE,
       'allowed_from' => [ProjectState::ONGOING],
       'has_transition_return_values' => [FALSE, FALSE, FALSE, TRUE, FALSE],
-      // Not relevant for this case.
-      'has_applicant' => FALSE,
+      'has_participant' => TRUE,
     ];
 
     $cases[ProjectTransition::RESET->value] = [
@@ -206,7 +205,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       'allowed_from' => ProjectState::cases(),
       'has_transition_return_values' => [TRUE, TRUE, TRUE, TRUE, TRUE],
       // Not relevant for this case.
-      'has_applicant' => FALSE,
+      'has_participant' => FALSE,
     ];
 
     return $cases;
@@ -215,7 +214,7 @@ class ProjectLifecycleTest extends UnitTestCase {
   /**
    * Prophesizes a project lifecycle with different workflow conditions.
    */
-  protected function prophesizeWorkflow(array $has_transition_return_values, bool $has_applicant): void {
+  protected function prophesizeWorkflow(array $has_transition_return_values, bool $has_participant): void {
 
     $lifecycle_config = $this->prophesize(Lifecycle::class);
     $lifecycle_config->hasTransition(Argument::any())->willReturn(...$has_transition_return_values);
@@ -231,7 +230,7 @@ class ProjectLifecycleTest extends UnitTestCase {
 
     $project = $this->prophesize(ProjectInterface::class);
     $project->set(Argument::any(), Argument::any())->willReturn(TRUE);
-    $project->hasApplicant()->willReturn($has_applicant);
+    $project->hasParticipant('Creative')->willReturn($has_participant);
 
     $this->lifecycle = new ProjectLifecycle($entity_type_manager->reveal());
     $this->lifecycle->setProject($project->reveal());

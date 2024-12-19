@@ -1,0 +1,90 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - lifecycle
+id: project_lifecycle
+label: 'Project Lifecycle'
+type: lifecycle
+type_settings:
+  states:
+    draft:
+      label: Draft
+      weight: 0
+    completed:
+      label: Completed
+      weight: 4
+    ongoing:
+      label: Ongoing
+      weight: 3
+    open:
+      label: Open
+      weight: 2
+    pending:
+      label: Pending
+      weight: 1
+  transitions:
+    remain_draft:
+      label: 'Project Remain Draft'
+      from:
+        - draft
+      to: draft
+      weight: 0
+    complete:
+      label: 'Project Complete'
+      from:
+        - ongoing
+      to: completed
+      weight: 7
+    mediate:
+      label: 'Project Mediate'
+      from:
+        - open
+      to: ongoing
+      weight: 5
+    publish:
+      label: 'Project Publish'
+      from:
+        - pending
+      to: open
+      weight: 3
+    remain_completed:
+      label: 'Project Remain Completed'
+      from:
+        - completed
+      to: completed
+      weight: 8
+    remain_ongoing:
+      label: 'Project Remain Ongoing'
+      from:
+        - ongoing
+      to: ongoing
+      weight: 6
+    remain_open:
+      label: 'Project Remain Open'
+      from:
+        - open
+      to: open
+      weight: 4
+    remain_pending:
+      label: 'Project Remain Pending'
+      from:
+        - pending
+      to: pending
+      weight: 2
+    reset:
+      label: 'Project Reset'
+      from:
+        - completed
+        - ongoing
+        - open
+        - pending
+      to: draft
+      weight: 9
+    submit:
+      label: 'Project Submit'
+      from:
+        - draft
+      to: pending
+      weight: 1
+  initial_state: draft

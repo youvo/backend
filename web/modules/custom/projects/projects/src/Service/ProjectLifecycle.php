@@ -92,19 +92,6 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * @todo Check whether this can be protected.
-   */
-  public function canTransition(ProjectTransition $transition): bool {
-    if ($transition === ProjectTransition::MEDIATE) {
-      return $this->project()->hasApplicant() &&
-        $this->hasTransition($transition);
-    }
-    return $this->hasTransition($transition);
-  }
-
-  /**
    * Submits the project.
    */
   public function submit(): bool {
@@ -146,6 +133,16 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->entityTypeManager->getStorage('workflow')->load(static::WORKFLOW_ID);
     return $workflow->getTypePlugin()->hasTransition($transition->value);
+  }
+
+  /**
+   * Checks if the project can perform the given transition.
+   */
+  protected function canTransition(ProjectTransition $transition): bool {
+    if ($transition === ProjectTransition::MEDIATE || $transition === ProjectTransition::COMPLETE) {
+      return $this->project()->hasParticipant('Creative');
+    }
+    return $this->hasTransition($transition);
   }
 
   /**

@@ -74,7 +74,9 @@ function youvo_formats_remove_help(array $form_element, FormStateInterface $form
  * Implements hook_entity_type_alter().
  */
 function youvo_entity_type_alter(array &$entity_types): void {
-  $entity_types['taxonomy_term']->setHandlerClass('translation', AcademyTranslationHandler::class);
+  if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
+    $entity_types['taxonomy_term']->setHandlerClass('translation', AcademyTranslationHandler::class);
+  }
 }
 
 /**

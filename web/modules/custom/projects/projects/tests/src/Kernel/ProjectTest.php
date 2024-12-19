@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
  * Tests a base for project tests.
  *
  * @group projects
+ * @coversNothing
  */
 class ProjectTest extends KernelTestBase {
 

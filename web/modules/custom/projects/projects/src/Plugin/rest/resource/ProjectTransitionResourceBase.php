@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -66,7 +65,7 @@ abstract class ProjectTransitionResourceBase extends ResourceBase {
     }
 
     // The project should be able to perform the given transition.
-    if (!$project->isPublished() || !$project->lifecycle()->canTransition(ProjectTransition::from($transition))) {
+    if (!$project->isPublished()) {
       $access_result = AccessResult::forbidden('The project is not ready for this transition.');
     }
 
