@@ -19,7 +19,6 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
    * @covers ::create
    * @covers ::routes
    * @covers ::access
-   * @covers ::projectAccessCondition
    * @covers ::post
    */
   public function testProjectReset(): void {

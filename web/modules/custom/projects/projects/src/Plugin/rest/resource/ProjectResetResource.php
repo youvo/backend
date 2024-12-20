@@ -47,7 +47,8 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
     try {
       $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
     }
-    // @codeCoverageIgnoreStart Not possible with the current configuration.
+    // @codeCoverageIgnoreStart
+    // This exception is not possible with the current configuration.
     catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be reset.');
     }

@@ -19,7 +19,6 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
    * @covers ::create
    * @covers ::routes
    * @covers ::access
-   * @covers ::projectAccessCondition
    * @covers ::post
    */
   public function testProjectSubmit(): void {
