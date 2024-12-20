@@ -6,10 +6,15 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
+use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectTransition;
+use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,13 +34,37 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
-  protected const TRANSITION = 'mediate';
-
   /**
    * {@inheritdoc}
    */
-  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
-    return $project->isAuthor($account) || $project->getOwner()->isManager($account);
+  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
+    $access_result = AccessResult::allowed();
+
+    // The user may be permitted to bypass access control.
+    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
+    if ($account->hasPermission($bybass_permission)) {
+      return $access_result->cachePerPermissions();
+    }
+
+    // The resource should define project-dependent access conditions.
+    if (!$project->isAuthor($account) && !$project->getOwner()->isManager($account)) {
+      $access_result = AccessResult::forbidden('The project conditions for this transition are not met.');
+    }
+
+    // The project should be able to perform the given transition.
+    if (!$project->isPublished()) {
+      $access_result = AccessResult::forbidden('The project is not ready for this transition.');
+    }
+
+    // The user may not have the permission to initiate this transition.
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
+    if (!$account->hasPermission($permission)) {
+      $access_result = AccessResult::forbidden('The user is not allowed to initiate this transition.');
+    }
+
+    return $access_result->addCacheableDependency($project)->cachePerUser();
   }
 
   /**
