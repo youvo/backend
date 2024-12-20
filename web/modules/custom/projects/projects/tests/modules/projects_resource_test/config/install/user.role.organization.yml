@@ -1,0 +1,30 @@
+uuid: 7e0a5879-7b15-4e92-ba46-cb63d5c30fe2
+langcode: en
+status: true
+dependencies:
+  config:
+    - rest.resource.project.complete
+    - rest.resource.project.mediate
+    - rest.resource.project.submit
+  module:
+    - lifecycle
+    - projects
+    - rest
+    - user_types
+id: organization
+label: Organization
+weight: 4
+is_admin: null
+permissions:
+  - 'restful get project:mediate'
+  - 'restful post project:complete'
+  - 'restful post project:mediate'
+  - 'restful post project:submit'
+  - 'use project_lifecycle transition complete'
+  - 'use project_lifecycle transition mediate'
+  - 'use project_lifecycle transition remain_completed'
+  - 'use project_lifecycle transition remain_draft'
+  - 'use project_lifecycle transition remain_ongoing'
+  - 'use project_lifecycle transition remain_open'
+  - 'use project_lifecycle transition remain_pending'
+  - 'use project_lifecycle transition submit'

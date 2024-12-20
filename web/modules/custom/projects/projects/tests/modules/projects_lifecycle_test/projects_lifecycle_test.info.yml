@@ -1,4 +1,4 @@
-name: Project Lifecycle Test
+name: Projects Lifecycle Test
 type: module
 description: Adds project lifecycle for testing.
 core_version_requirement: ^10.3 || ^11

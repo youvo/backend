@@ -1,0 +1,4 @@
+name: Projects Resource Test
+type: module
+description: Adds project resources for testing.
+core_version_requirement: ^10.3 || ^11

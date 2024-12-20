@@ -18,7 +18,7 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
    */
   protected static $modules = [
     'file',
-    'project_result_test',
+    'projects_result_test',
   ];
 
   /**
@@ -26,7 +26,7 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->installConfig('project_result_test');
+    $this->installConfig('projects_result_test');
   }
 
   /**
