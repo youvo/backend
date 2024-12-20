@@ -8,88 +8,88 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Tests for the project submit resource.
  *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectSubmitResource
+ * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectPublishResource
  * @group projects
  */
-class ProjectSubmitResourceTest extends ProjectResourceTestBase {
+class ProjectPublishResourceTest extends ProjectResourceTestBase {
 
   /**
-   * Tests the for the project submit resource - standard workflow.
+   * Tests the for the project publish resource - standard workflow.
    *
    * @covers ::create
    * @covers ::routes
    * @covers ::access
    * @covers ::post
    */
-  public function testProjectSubmit(): void {
+  public function testProjectPublish(): void {
 
-    $project = $this->createProject();
-    $organization = $project->getOwner();
+    $project = $this->createProject(ProjectState::PENDING);
+    $manager = $project->getOwner()->getManager();
 
-    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
+    $this->authenticateRequest($request, $manager);
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"Project submitted."', $response->getContent());
+    $this->assertEquals('"Project published."', $response->getContent());
   }
 
   /**
-   * Tests the for the project submit resource - not draft.
+   * Tests the for the project publish resource - not pending.
    *
    * @covers ::post
    */
-  public function testProjectSubmitNotDraft(): void {
+  public function testProjectPublishNotPending(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
-    $organization = $project->getOwner();
+    $project = $this->createProject(ProjectState::ONGOING);
+    $manager = $project->getOwner()->getManager();
 
-    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
+    $this->authenticateRequest($request, $manager);
 
     $response = $this->doRequest($request);
     $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('{"message":"Project can not be submitted."}', $response->getContent());
+    $this->assertEquals('{"message":"Project can not be published."}', $response->getContent());
   }
 
   /**
-   * Tests the for the project submit resource - supervisor.
+   * Tests the for the project publish resource - supervisor.
    *
    * @covers ::access
    */
-  public function testProjectSubmitSupervisor(): void {
+  public function testProjectPublishSupervisor(): void {
 
-    $project = $this->createProject();
+    $project = $this->createProject(ProjectState::OPEN);
     $supervisor = $this->createSupervisor();
 
-    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
     $this->authenticateRequest($request, $supervisor);
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"Project submitted."', $response->getContent());
+    $this->assertEquals('"Project published."', $response->getContent());
   }
 
   /**
-   * Tests the for the project submit resource - not owner.
+   * Tests the for the project submit resource - not manager.
    *
    * @covers ::access
    */
-  public function testProjectSubmitNotOwner(): void {
+  public function testProjectPublishNotManager(): void {
 
     $project = $this->createProject();
-    $other_organization = $this->createOrganization();
+    $other_creative = $this->createCreative();
 
-    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $other_organization);
+    $this->authenticateRequest($request, $other_creative);
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
@@ -97,21 +97,21 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project submit resource - not published.
+   * Tests the for the project publish resource - not published (status).
    *
    * @covers ::access
    */
-  public function testProjectSubmitNotPublished(): void {
+  public function testProjectPublishNotPublished(): void {
 
     $project = $this->createProject();
     $project->setUnpublished();
     $project->save();
-    $organization = $project->getOwner();
+    $manager = $project->getOwner()->getManager();
 
-    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
+    $this->authenticateRequest($request, $manager);
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());

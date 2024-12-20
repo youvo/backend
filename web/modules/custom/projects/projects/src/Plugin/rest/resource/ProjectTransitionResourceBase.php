@@ -12,8 +12,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides base class for project transition resources.
- *
- * @todo Use enums for transition constant starting with PHP 8.2.
  */
 abstract class ProjectTransitionResourceBase extends ResourceBase {
 

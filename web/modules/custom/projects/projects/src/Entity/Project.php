@@ -80,6 +80,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
   use EntityOwnerTrait;
   use EntityChangedTrait;
+  // @todo This is confusing when working with the lifecycle. Maybe replace
+  //   with "archived" as entity key.
   use EntityPublishedTrait;
 
   /**
