@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\youvo\Traits;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\KernelTests\AssertContentTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +34,14 @@ trait RequestTrait {
     $this->setRawContent($content);
 
     return $response;
+  }
+
+  /**
+   * Authenticates a request with basic auth.
+   */
+  protected function authenticateRequest(Request $request, AccountInterface $account): void {
+    $request->headers->set('PHP_AUTH_USER', $account->getEmail());
+    $request->headers->set('PHP_AUTH_PW', 'password');
   }
 
 }

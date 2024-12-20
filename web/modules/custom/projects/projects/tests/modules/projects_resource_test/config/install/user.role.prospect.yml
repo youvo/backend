@@ -1,8 +1,0 @@
-langcode: en
-status: true
-dependencies: {  }
-id: prospect
-label: 'Prospect Organization'
-weight: 10
-is_admin: false
-permissions: {  }

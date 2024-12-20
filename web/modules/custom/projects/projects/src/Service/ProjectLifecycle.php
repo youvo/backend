@@ -129,28 +129,31 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Abstraction of forward transition flow check.
    */
-  protected function hasTransition(ProjectTransition $transition): bool {
+  protected function hasTransition(ProjectState $from, ProjectState $to): bool {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = $this->entityTypeManager->getStorage('workflow')->load(static::WORKFLOW_ID);
-    return $workflow->getTypePlugin()->hasTransition($transition->value);
+    $workflow = $this->entityTypeManager
+      ->getStorage('workflow')
+      ->load(static::WORKFLOW_ID);
+    return $workflow->getTypePlugin()
+      ->hasTransitionFromStateToState($from->value, $to->value);
   }
 
   /**
    * Checks if the project can perform the given transition.
    */
-  protected function canTransition(ProjectTransition $transition): bool {
+  protected function canTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): bool {
     if ($transition === ProjectTransition::MEDIATE || $transition === ProjectTransition::COMPLETE) {
-      return $this->project()->hasParticipant('Creative');
+      return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
-    return $this->hasTransition($transition);
+    return $this->hasTransition($from, $to);
   }
 
   /**
    * Sets new project state for given transition.
    */
   protected function doTransition(ProjectTransition $transition): bool {
-    if ($this->canTransition($transition)) {
-      $new_state = $this->getSuccessorFromTransition($transition);
+    $new_state = $this->getSuccessorFromTransition($transition);
+    if ($this->canTransition($transition, $this->getState(), $new_state)) {
       $this->project()->set(static::LIFECYCLE_FIELD, $new_state->value);
       return TRUE;
     }
