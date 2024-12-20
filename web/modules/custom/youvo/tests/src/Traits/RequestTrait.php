@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\youvo;
+namespace Drupal\Tests\youvo\Traits;
 
 use Drupal\KernelTests\AssertContentTrait;
 use Symfony\Component\HttpFoundation\Request;

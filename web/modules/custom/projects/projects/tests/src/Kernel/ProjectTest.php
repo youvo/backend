@@ -9,7 +9,7 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\Tests\user\Traits\UserCreationTrait;
-use Drupal\Tests\youvo\RequestTrait;
+use Drupal\Tests\youvo\Traits\RequestTrait;
 use Faker\Factory;
 use Symfony\Component\HttpFoundation\Request;
 

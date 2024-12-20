@@ -26,7 +26,8 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
     $project = $this->createProject();
     $organization = $project->getOwner();
 
-    $request = Request::create('/api/projects/' . $project->uuid() . '/submit', 'POST');
+    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
     $request->headers->set('PHP_AUTH_USER', $organization->getAccountName());
     $request->headers->set('PHP_AUTH_PW', 'password');

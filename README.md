@@ -100,6 +100,14 @@ You may use the DDEV Integration plugin or configure the database connection as 
 - User: `db`
 - Password: `db`
 
+### PHPUnit Tests
+
+We have four different testsuites: `unit`, `kernel`, `functional` and `existing-site`. You can run them locally with the following command.
+
+```
+vendor/bin/phpunit --testsuite unit --configuration phpunit.ddev.xml
+```
+
 ### PHPStorm CodeSniffer configuration
 
 * https://www.drupal.org/node/1419988

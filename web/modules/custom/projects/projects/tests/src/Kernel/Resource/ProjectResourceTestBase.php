@@ -8,7 +8,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\youvo\RequestTrait;
+use Drupal\Tests\youvo\Traits\RequestTrait;
 
 /**
  * Provides a test base for project resources.
