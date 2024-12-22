@@ -107,6 +107,22 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   }
 
   /**
+   * Creates a manager for testing purposes.
+   */
+  protected function createManager(): Creative {
+    $manager = Creative::create([
+      'name' => $this->randomString(),
+      'mail' => 'other_manager@example.com',
+      'pass' => 'password',
+      'status' => 1,
+    ]);
+    $manager->addRole('manager');
+    $manager->save();
+    $this->markEntityForCleanup($manager);
+    return $manager;
+  }
+
+  /**
    * Creates a creative for testing purposes.
    */
   protected function createSupervisor(): Creative {
@@ -132,6 +148,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
       'pass' => 'password',
       'status' => 1,
     ]);
+    $organization->addRole('organization');
     $organization->save();
     $this->markEntityForCleanup($organization);
     return $organization;

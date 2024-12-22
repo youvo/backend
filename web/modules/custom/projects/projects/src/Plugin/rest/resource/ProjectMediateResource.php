@@ -8,6 +8,7 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -19,7 +20,7 @@ use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project mediate resource.
@@ -39,32 +40,30 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $access_result = AccessResult::allowed();
-
     // The user may be permitted to bypass access control.
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
     if ($account->hasPermission($bybass_permission)) {
-      return $access_result->cachePerPermissions();
-    }
-
-    // The resource should define project-dependent access conditions.
-    if (!$project->isAuthor($account) && !$project->getOwner()->isManager($account)) {
-      $access_result = AccessResult::forbidden('The project conditions for this transition are not met.');
-    }
-
-    // The project should be able to perform the given transition.
-    if (!$project->isPublished()) {
-      $access_result = AccessResult::forbidden('The project is not ready for this transition.');
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
     // The user may not have the permission to initiate this transition.
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
-    if (!$account->hasPermission($permission)) {
-      $access_result = AccessResult::forbidden('The user is not allowed to initiate this transition.');
-    }
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    return $access_result->addCacheableDependency($project)->cachePerUser();
+    // The resource should define project-dependent access conditions.
+    $organization = $project->getOwner();
+    $project_condition = $project->isPublished() && ($project->isAuthor($account) || $organization->isManager($account));
+    $access_project = AccessResult::allowedIf($project_condition)
+      ->addCacheableDependency($project)
+      ->addCacheableDependency($organization);
+
+    $access_result = $access_result->andIf($access_project);
+    if ($access_result instanceof AccessResultReasonInterface) {
+      $access_result->setReason('The project conditions for this transition are not met.');
+    }
+    return $access_result;
   }
 
   /**
@@ -117,19 +116,21 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       $selected_creatives = $this->loadSelectedCreatives($content);
       $event = new ProjectMediateEvent($project);
       $event->setCreatives($selected_creatives);
-      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
+      $this->eventDispatcher->dispatch($event);
     }
     catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
-      throw new UnprocessableEntityHttpException('Could not mediate project.');
+      throw new ConflictHttpException('Project can not be mediated.');
     }
     catch (\Throwable) {
     }
 
-    return new ResourceResponse('Project was mediated successfully.');
+    return new ResourceResponse('Project mediated.');
   }
 
   /**
    * Validates the request content.
+   *
+   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
 

@@ -93,7 +93,7 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The user is not allowed to initiate this transition."}', $response->getContent());
+    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
   }
 
   /**

@@ -84,16 +84,16 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
   public function testProjectPublishNotManager(): void {
 
     $project = $this->createProject();
-    $other_creative = $this->createCreative();
+    $other_manager = $this->createManager();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';
     $request = Request::create($path, 'POST');
     $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $other_creative);
+    $this->authenticateRequest($request, $other_manager);
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The user is not allowed to initiate this transition."}', $response->getContent());
+    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
   }
 
   /**
