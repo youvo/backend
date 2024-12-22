@@ -26,22 +26,16 @@ class JsonApiObscurityTest extends KernelTestBase {
 
   /**
    * The JSON:API obscurity prefix.
-   *
-   * @var string
    */
   protected string $obscurityPrefix;
 
   /**
    * The JSON:API base path.
-   *
-   * @var string
    */
   protected string $jsonApiBasePath;
 
   /**
    * The test node.
-   *
-   * @var \Drupal\node\NodeInterface
    */
   protected NodeInterface $node;
 

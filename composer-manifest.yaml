@@ -52,8 +52,8 @@ packages:
     drupal/entity: 1.5.0
     drupal/file_mdm: 3.1.0
     drupal/filefield_paths: 1.0.0-beta8
-    drupal/gin: 3.0.0-rc16
-    drupal/gin_toolbar: 1.0.0-rc8
+    drupal/gin: 4.0.0
+    drupal/gin_toolbar: 1.0.0
     drupal/image_style_warmer: 1.3.0-rc1
     drupal/imagemagick: 4.0.2
     drupal/jsonapi_boost: 2.0.4
@@ -91,13 +91,13 @@ packages:
     guzzlehttp/promises: 2.0.4
     guzzlehttp/psr7: 2.7.0
     jangregor/phpstan-prophecy: 1.0.2
-    joachim-n/composer-manifest: 1.1.6
+    joachim-n/composer-manifest: 1.1.7
     justinrainbow/json-schema: 5.3.0
     lcobucci/clock: 3.0.0
     lcobucci/jwt: 4.3.0
     league/container: 4.2.4
     league/event: 2.2.0
-    league/oauth2-server: 8.5.4
+    league/oauth2-server: 8.5.5
     league/uri: 7.5.1
     league/uri-interfaces: 7.5.0
     lullabot/mink-selenium2-driver: v1.7.4
@@ -160,7 +160,7 @@ packages:
     ramsey/collection: 2.0.0
     ramsey/uuid: 4.7.6
     react/promise: v3.2.0
-    roave/security-advisories: 'dev-latest:4aa68d3ea343b9576b5fdebef1332f701a7bc994'
+    roave/security-advisories: 'dev-latest:abbccc97f36a9c78f033525c019d310433f22b57'
     sebastian/cli-parser: 1.0.2
     sebastian/code-unit: 1.0.8
     sebastian/code-unit-reverse-lookup: 2.0.3
