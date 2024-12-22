@@ -37,11 +37,11 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project reset resource - no access.
+   * Tests the for the project reset resource - no permission.
    *
    * @covers ::access
    */
-  public function testProjectResetNoAccess(): void {
+  public function testProjectResetNoPermission(): void {
 
     $project = $this->createProject();
     $creative = $this->createCreative();
@@ -53,7 +53,7 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The user is not allowed to initiate this transition."}', $response->getContent());
+    $this->assertEquals('{"message":"The \u0027restful post project:reset\u0027 permission is required."}', $response->getContent());
   }
 
 }

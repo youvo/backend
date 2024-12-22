@@ -34,10 +34,7 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
     // This resource may only be permitted for users with access control bypass.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    if ($account->hasPermission($bybass_permission)) {
-      return AccessResult::allowed()->cachePerPermissions();
-    }
-    return AccessResult::forbidden('The user is not allowed to initiate this transition.');
+    return AccessResult::allowedIfHasPermission($account, $bybass_permission);
   }
 
   /**
