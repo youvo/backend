@@ -109,7 +109,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    $content = Json::decode($request->getContent());
+    $content = Json::decode($request->getContent()) ?? [];
     $this->validateRequestContent($content);
 
     try {

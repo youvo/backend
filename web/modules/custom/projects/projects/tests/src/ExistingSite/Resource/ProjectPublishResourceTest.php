@@ -37,26 +37,6 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project publish resource - not pending.
-   *
-   * @covers ::post
-   */
-  public function testProjectPublishNotPending(): void {
-
-    $project = $this->createProject(ProjectState::ONGOING);
-    $manager = $project->getOwner()->getManager();
-
-    $path = '/api/projects/' . $project->uuid() . '/publish';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $manager);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('{"message":"Project can not be published."}', $response->getContent());
-  }
-
-  /**
    * Tests the for the project publish resource - supervisor.
    *
    * @covers ::access
@@ -74,6 +54,26 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project published."', $response->getContent());
+  }
+
+  /**
+   * Tests the for the project publish resource - not pending.
+   *
+   * @covers ::post
+   */
+  public function testProjectPublishNotPending(): void {
+
+    $project = $this->createProject(ProjectState::ONGOING);
+    $manager = $project->getOwner()->getManager();
+
+    $path = '/api/projects/' . $project->uuid() . '/publish';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $manager);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(409, $response->getStatusCode());
+    $this->assertEquals('{"message":"Project can not be published."}', $response->getContent());
   }
 
   /**

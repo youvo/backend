@@ -37,26 +37,6 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project submit resource - not draft.
-   *
-   * @covers ::post
-   */
-  public function testProjectSubmitNotDraft(): void {
-
-    $project = $this->createProject(ProjectState::OPEN);
-    $organization = $project->getOwner();
-
-    $path = '/api/projects/' . $project->uuid() . '/submit';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('{"message":"Project can not be submitted."}', $response->getContent());
-  }
-
-  /**
    * Tests the for the project submit resource - supervisor.
    *
    * @covers ::access
@@ -74,6 +54,26 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project submitted."', $response->getContent());
+  }
+
+  /**
+   * Tests the for the project submit resource - not draft.
+   *
+   * @covers ::post
+   */
+  public function testProjectSubmitNotDraft(): void {
+
+    $project = $this->createProject(ProjectState::OPEN);
+    $organization = $project->getOwner();
+
+    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $organization);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(409, $response->getStatusCode());
+    $this->assertEquals('{"message":"Project can not be submitted."}', $response->getContent());
   }
 
   /**

@@ -93,14 +93,14 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   /**
    * Creates a creative for testing purposes.
    */
-  protected function createCreative(): Creative {
+  protected function createCreative(string $role = 'creative'): Creative {
     $creative = Creative::create([
       'name' => $this->randomString(),
       'mail' => 'test@example.com',
       'pass' => 'password',
       'status' => 1,
     ]);
-    $creative->addRole('creative');
+    $creative->addRole($role);
     $creative->save();
     $this->markEntityForCleanup($creative);
     return $creative;

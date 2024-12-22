@@ -91,27 +91,6 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project mediate resource - not open.
-   *
-   * @covers ::post
-   */
-  public function testProjectMediateNotOpen(): void {
-
-    $project = $this->createProject(ProjectState::COMPLETED);
-    $organization = $project->getOwner();
-
-    $path = '/api/projects/' . $project->uuid() . '/mediate';
-    $body = ['selected_creatives' => [$this->createCreative()->uuid()]];
-    $request = Request::create($path, 'POST', [], [], [], [], Json::encode($body));
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('{"message":"Project can not be mediated."}', $response->getContent());
-  }
-
-  /**
    * Tests the project mediate resource - supervisor.
    *
    * @covers ::access
@@ -130,6 +109,27 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project mediated."', $response->getContent());
+  }
+
+  /**
+   * Tests the project mediate resource - not open.
+   *
+   * @covers ::post
+   */
+  public function testProjectMediateNotOpen(): void {
+
+    $project = $this->createProject(ProjectState::COMPLETED);
+    $organization = $project->getOwner();
+
+    $path = '/api/projects/' . $project->uuid() . '/mediate';
+    $body = ['selected_creatives' => [$this->createCreative()->uuid()]];
+    $request = Request::create($path, 'POST', [], [], [], [], Json::encode($body));
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $organization);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(409, $response->getStatusCode());
+    $this->assertEquals('{"message":"Project can not be mediated."}', $response->getContent());
   }
 
   /**
