@@ -115,7 +115,27 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project is not ready for this transition."}', $response->getContent());
+    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+  }
+
+  /**
+   * Tests the project publish resource - no permission.
+   *
+   * @covers ::access
+   */
+  public function testProjectPublishNoPermission(): void {
+
+    $project = $this->createProject();
+    $organization = $this->createOrganization();
+
+    $path = '/api/projects/' . $project->uuid() . '/publish';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $organization);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('{"message":"The \u0027restful post project:publish\u0027 permission is required."}', $response->getContent());
   }
 
 }

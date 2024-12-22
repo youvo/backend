@@ -123,7 +123,7 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
    *
    * @covers ::access
    */
-  public function testProjectMediateNoPermission(): void {
+  public function testProjectSubmitNoPermission(): void {
 
     $project = $this->createProject();
     $creative = $this->createCreative();
