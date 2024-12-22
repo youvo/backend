@@ -115,7 +115,27 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project is not ready for this transition."}', $response->getContent());
+    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+  }
+
+  /**
+   * Tests the project submit resource - no permission.
+   *
+   * @covers ::access
+   */
+  public function testProjectMediateNoPermission(): void {
+
+    $project = $this->createProject();
+    $creative = $this->createCreative();
+
+    $path = '/api/projects/' . $project->uuid() . '/submit';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $creative);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('{"message":"The \u0027restful post project:submit\u0027 permission is required."}', $response->getContent());
   }
 
 }
