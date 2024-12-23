@@ -6,15 +6,22 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
+use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectTransition;
+use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project mediate resource.
@@ -29,13 +36,33 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 class ProjectMediateResource extends ProjectTransitionResourceBase {
 
-  protected const TRANSITION = 'mediate';
-
   /**
    * {@inheritdoc}
    */
-  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
-    return $project->isAuthor($account) || $project->getOwner()->isManager($account);
+  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+
+    // The user may be permitted to bypass access control.
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
+    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
+    if ($account->hasPermission($bybass_permission)) {
+      return AccessResult::allowed()->cachePerPermissions();
+    }
+
+    // The user requires the permission to initiate this transition.
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
+
+    // The resource should define project-dependent access conditions.
+    $organization = $project->getOwner();
+    $project_condition = $project->isPublished() && ($project->isAuthor($account) || $organization->isManager($account));
+    $access_project = AccessResult::allowedIf($project_condition)
+      ->addCacheableDependency($project)
+      ->addCacheableDependency($organization);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this transition are not met.');
+    }
+
+    return $access_result->andIf($access_project);
   }
 
   /**
@@ -81,26 +108,28 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    $content = Json::decode($request->getContent());
+    $content = Json::decode($request->getContent()) ?? [];
     $this->validateRequestContent($content);
 
     try {
       $selected_creatives = $this->loadSelectedCreatives($content);
       $event = new ProjectMediateEvent($project);
       $event->setCreatives($selected_creatives);
-      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
+      $this->eventDispatcher->dispatch($event);
     }
     catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
-      throw new UnprocessableEntityHttpException('Could not mediate project.');
+      throw new ConflictHttpException('Project can not be mediated.');
     }
     catch (\Throwable) {
     }
 
-    return new ResourceResponse('Project was mediated successfully.');
+    return new ResourceResponse('Project mediated.');
   }
 
   /**
    * Validates the request content.
+   *
+   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
 
@@ -141,6 +170,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function loadSelectedCreatives(array $content): array {
+
     $selected_creatives_uuids = array_unique($content['selected_creatives'] ?? []);
     $selected_creatives_ids = $this->entityTypeManager
       ->getStorage('user')
@@ -149,10 +179,21 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       ->condition('uuid', $selected_creatives_uuids, 'IN')
       ->execute();
     $selected_creatives_ids = array_map('intval', $selected_creatives_ids);
+
     /** @var \Drupal\creatives\Entity\Creative[] $selected_creatives */
     $selected_creatives = $this->entityTypeManager
       ->getStorage('user')
       ->loadMultiple($selected_creatives_ids);
+
+    // Safeguard against unintentionally loaded users that are not creatives.
+    foreach ($selected_creatives as $uid => $creative) {
+      if (!$creative instanceof Creative) {
+        // @codeCoverageIgnoreStart
+        unset($selected_creatives[$uid]);
+        // @codeCoverageIgnoreEnd
+      }
+    }
+
     return $selected_creatives;
   }
 

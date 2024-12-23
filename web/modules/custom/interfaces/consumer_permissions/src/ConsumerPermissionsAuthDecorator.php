@@ -95,8 +95,9 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthent
    * {@inheritdoc}
    */
   public function authenticateAccount(UserInterface $account, string $password): bool {
+    // Note that we are using the mail_login module.
     // @todo Clean up implementation when removing the deprecated interface.
-    return $this->authenticate($account->getAccountName(), $password);
+    return $this->authenticate($account->getEmail(), $password);
   }
 
 }

@@ -5,7 +5,9 @@ namespace Drupal\projects\Plugin\rest\resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -31,24 +33,31 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    $access_result = AccessResult::allowed();
+    // The user requires the permission to do this action.
+    $permission = 'restful post project:apply';
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    // The project may not be open to apply.
-    if (!$project->isPublished() || !$project->lifecycle()->isOpen()) {
-      $access_result = AccessResult::forbidden('The project is not open for applications.');
+    // The resource should define project-dependent access conditions.
+    $project_condition = $project->isPublished() && $project->lifecycle()->isOpen();
+    $access_project = AccessResult::allowedIf($project_condition)
+      ->addCacheableDependency($project);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this application are not met.');
+    }
+    $access_result = $access_result->andIf($access_project);
+
+    // The resource should define applicant-dependent access conditions. We
+    // assume that the user type can not change.
+    $organization = $project->getOwner();
+    $applicant_condition = Profile::isCreative($account) && !$organization->isManager($account) && !$project->isApplicant($account);
+    $access_applicant = AccessResult::allowedIf($applicant_condition)
+      ->addCacheableDependency($organization)
+      ->addCacheableDependency($project);
+    if ($access_applicant instanceof AccessResultReasonInterface) {
+      $access_applicant->setReason('The applicant conditions for this application are not met. The creative may already applied.');
     }
 
-    // The user may not be allowed to apply to this project.
-    if (!Profile::isCreative($account) || $project->getOwner()->isManager($account)) {
-      $access_result = AccessResult::forbidden('The user is not allowed to apply to this project.');
-    }
-
-    // The user maybe already applied to this project.
-    if ($project->isApplicant($account)) {
-      $access_result = AccessResult::forbidden('The user already applied to this project.');
-    }
-
-    return $access_result->addCacheableDependency($project)->cachePerUser();
+    return $access_result->andIf($access_applicant);
   }
 
   /**
@@ -64,8 +73,14 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent());
-    /** @var \Drupal\creatives\Entity\Creative $applicant */
     $applicant = $this->currentUser->getAccount();
+
+    // Safeguard against a current user that is not a creative.
+    if (!$applicant instanceof Creative) {
+      // @codeCoverageIgnoreStart
+      return new ModifiedResourceResponse('The application is not possible for the current user.');
+      // @codeCoverageIgnoreEnd
+    }
 
     try {
       $event = new ProjectApplyEvent($project, $applicant);

@@ -54,8 +54,6 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type): arra
 
 /**
  * Implements hook_tokens().
- *
- * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function projects_tokens(string $type, array $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata): array {
 

@@ -1,42 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="web/core/tests/bootstrap.php" colors="true"
+         bootstrap="vendor/weitzman/drupal-test-traits/src/bootstrap.php" colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
          failOnWarning="true"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
-         cacheResult="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+         cacheResult="false">
+
   <php>
     <ini name="error_reporting" value="32767"/>
     <ini name="memory_limit" value="-1"/>
+    <env name="DTT_BASE_URL" value="http://localhost:80"/>
+    <env name="DTT_API_URL" value="http://localhost:80"/>
     <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
     <env name="SIMPLETEST_DB" value="mysql://db:db@db/db"/>
-    <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="web/sites/simpletest/browser_output"/>
+    <env name="BROWSERTEST_OUTPUT_DIRECTORY" value=""/>
     <env name="BROWSERTEST_OUTPUT_BASE_URL" value=""/>
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
     <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
   </php>
+
   <testsuites>
-    <testsuite name="custom">
-      <directory>web/modules/custom</directory>
+    <testsuite name="unit">
+      <directory>./modules/custom/*/tests/src/Unit</directory>
+      <directory>./modules/custom/*/*/tests/src/Unit</directory>
+    </testsuite>
+    <testsuite name="existing-site">
+      <directory>./modules/custom/*/tests/src/ExistingSite</directory>
+      <directory>./modules/custom/*/*/tests/src/ExistingSite</directory>
+    </testsuite>
+    <testsuite name="kernel">
+      <directory>./modules/custom/*/tests/src/Kernel</directory>
+      <directory>./modules/custom/*/*/tests/src/Kernel</directory>
+    </testsuite>
+    <testsuite name="functional">
+      <directory>./modules/custom/*/tests/src/Functional</directory>
+      <directory>./modules/custom/*/*/tests/src/Functional</directory>
     </testsuite>
   </testsuites>
+
   <listeners>
     <listener class="\Drupal\Tests\Listeners\DrupalListener">
     </listener>
   </listeners>
+
   <coverage includeUncoveredFiles="false">
     <include>
-      <directory>web/modules/custom</directory>
+      <directory>./web/modules/custom</directory>
     </include>
     <exclude>
-      <directory>web/modules/custom/*/src/Tests</directory>
-      <directory>web/modules/custom/*/tests</directory>
-      <directory>web/modules/custom/*/*/src/Tests</directory>
-      <directory>web/modules/custom/*/*/tests</directory>
+      <directory>./web/modules/custom/*/tests</directory>
+      <directory>./web/modules/custom/*/*/tests</directory>
     </exclude>
   </coverage>
+
 </phpunit>

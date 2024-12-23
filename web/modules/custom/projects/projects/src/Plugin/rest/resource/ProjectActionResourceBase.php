@@ -2,7 +2,6 @@
 
 namespace Drupal\projects\Plugin\rest\resource;
 
-use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -41,8 +40,6 @@ abstract class ProjectActionResourceBase extends ResourceBase {
   /**
    * Handles custom access logic for the resource.
    */
-  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
-    return AccessResult::neutral();
-  }
+  abstract public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface;
 
 }

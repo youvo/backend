@@ -6,11 +6,17 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\FileInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
+use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectTransition;
+use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,15 +36,33 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  */
 class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
-  protected const TRANSITION = 'complete';
-
   /**
-   * {@inheritdoc}
+   * Handles custom access logic for the resource.
    */
-  protected static function projectAccessCondition(AccountInterface $account, ProjectInterface $project): bool {
-    return $project->isAuthor($account) ||
-      $project->isParticipant($account) ||
-      $project->getOwner()->isManager($account);
+  public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+
+    // The user may be permitted to bypass access control.
+    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
+    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
+    if ($account->hasPermission($bybass_permission)) {
+      return AccessResult::allowed()->cachePerPermissions();
+    }
+
+    // The user requires the permission to initiate this transition.
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::COMPLETE->value);
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
+
+    // The resource should define project-dependent access conditions.
+    $organization = $project->getOwner();
+    $project_condition = $project->isPublished() && ($project->isAuthor($account) || $project->isParticipant($account) || $organization->isManager($account));
+    $access_project = AccessResult::allowedIf($project_condition)
+      ->addCacheableDependency($project)
+      ->addCacheableDependency($organization);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this transition are not met.');
+    }
+
+    return $access_result->andIf($access_project);
   }
 
   /**
@@ -46,7 +70,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    $content = Json::decode($request->getContent());
+    $content = Json::decode($request->getContent()) ?? [];
     $this->validateRequestContent($content);
 
     try {
@@ -69,6 +93,8 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
   /**
    * Validates the request body.
+   *
+   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
     $results = $content['results'] ?? [];

@@ -89,8 +89,14 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
 
   /**
    * Checks whether the project has a participant.
+   *
+   * @param string|null $task
+   *   Check whether the project has a participant with the given task.
+   *
+   * @return bool
+   *   TRUE if participant found (with given task).
    */
-  public function hasParticipant(): bool;
+  public function hasParticipant(?string $task = NULL): bool;
 
   /**
    * Gets the participants array keyed by UID.

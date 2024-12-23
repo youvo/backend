@@ -17,57 +17,43 @@ use Drupal\user_types\Utility\Profile;
 /**
  * Test coverage for the profile utility class.
  *
+ * @coversDefaultClass \Drupal\user_types\Utility\Profile
  * @group user_types
  */
 class ProfileUtilityTest extends UnitTestCase {
 
   /**
-   * The account mock user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
+   * The mock account.
    */
   protected AccountInterface $account;
 
   /**
-   * The account proxy mock user.
-   *
-   * @var \Drupal\Core\Session\AccountProxyInterface
+   * The mock account proxy.
    */
   protected AccountProxyInterface $accountProxy;
 
   /**
    * The mock creative.
-   *
-   * @var \Drupal\creatives\Entity\Creative
    */
   protected Creative $creative;
 
   /**
-   * The mock creative.
-   *
-   * @var \Drupal\organizations\Entity\Organization
+   * The mock organization.
    */
   protected Organization $organization;
 
   /**
    * The mock creative auth user.
-   *
-   * @var \Drupal\simple_oauth\Authentication\TokenAuthUserInterface
    */
   protected TokenAuthUserInterface $creativeAuthUser;
 
   /**
    * The mock organization auth user.
-   *
-   * @var \Drupal\simple_oauth\Authentication\TokenAuthUserInterface
    */
   protected TokenAuthUserInterface $organizationAuthUser;
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \League\OAuth2\Server\Exception\OAuthServerException
-   *   When the user can not be identified.
    */
   protected function setUp(): void {
 
@@ -78,11 +64,6 @@ class ProfileUtilityTest extends UnitTestCase {
       ->method('id')
       ->willReturn(1);
 
-    $this->accountProxy = $this->createMock(AccountProxyInterface::class);
-    $this->accountProxy->expects($this->any())
-      ->method('id')
-      ->willReturn(2);
-
     $this->creative = $this->createMock(Creative::class);
     $this->creative->expects($this->any())
       ->method('id')
@@ -92,6 +73,15 @@ class ProfileUtilityTest extends UnitTestCase {
     $this->creative->expects($this->any())
       ->method('bundle')
       ->willReturn('user');
+
+    $this->accountProxy = $this->createMock(AccountProxyInterface::class);
+    $this->accountProxy->expects($this->any())
+      ->method('id')
+      ->willReturn(2);
+    // For testing, we will proxy the creative.
+    $this->accountProxy->expects($this->any())
+      ->method('getAccount')
+      ->willReturn($this->creative);
 
     $this->organization = $this->createMock(Organization::class);
     $this->organization->expects($this->any())
@@ -132,7 +122,9 @@ class ProfileUtilityTest extends UnitTestCase {
   }
 
   /**
-   * @covers \Drupal\user_types\Utility\Profile::id
+   * Tests the id method.
+   *
+   * @covers ::id
    */
   public function testId(): void {
     $this->assertSame(1, Profile::id($this->account));
@@ -146,9 +138,13 @@ class ProfileUtilityTest extends UnitTestCase {
   }
 
   /**
-   * @covers \Drupal\user_types\Utility\Profile::isCreative
+   * Tests the isCreative method.
+   *
+   * @covers ::isCreative
+   * @covers ::isUserType
    */
   public function testIsCreative(): void {
+    $this->assertTrue(Profile::isCreative($this->accountProxy));
     $this->assertTrue(Profile::isCreative($this->creative));
     $this->assertTrue(Profile::isCreative($this->creativeAuthUser));
     $this->assertFalse(Profile::isCreative($this->organization));
@@ -156,9 +152,13 @@ class ProfileUtilityTest extends UnitTestCase {
   }
 
   /**
-   * @covers \Drupal\user_types\Utility\Profile::isOrganization
+   * Tests the isOrganization method.
+   *
+   * @covers ::isOrganization
+   * @covers ::isUserType
    */
   public function testIsOrganization(): void {
+    $this->assertFalse(Profile::isOrganization($this->accountProxy));
     $this->assertFalse(Profile::isOrganization($this->creative));
     $this->assertFalse(Profile::isOrganization($this->creativeAuthUser));
     $this->assertTrue(Profile::isOrganization($this->organization));

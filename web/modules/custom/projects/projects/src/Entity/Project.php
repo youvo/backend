@@ -80,6 +80,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
   use EntityOwnerTrait;
   use EntityChangedTrait;
+  // @todo This is confusing when working with the lifecycle. Maybe replace
+  //   with "archived" as entity key.
   use EntityPublishedTrait;
 
   /**
@@ -117,10 +119,6 @@ class Project extends ContentEntityBase implements ProjectInterface {
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     if ($this->isNew()) {
-
-      $test = $this->getTranslation('de');
-      $test->lifecycle();
-
       // Store the current organization contact in the project. We do this
       // because the contact of the organization may change in the future, and
       // we would like to know who was responsible for past projects.
@@ -203,8 +201,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   public function setApplicants(array $applicants): static {
     $this->set('field_applicants', NULL);
     foreach ($applicants as $applicant) {
-      $this->get('field_applicants')
-        ->appendItem(['target_id' => Profile::id($applicant)]);
+      $this->get('field_applicants')->appendItem(['target_id' => Profile::id($applicant)]);
     }
     return $this;
   }
@@ -213,8 +210,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * {@inheritdoc}
    */
   public function appendApplicant(AccountInterface|int $applicant): static {
-    $this->get('field_applicants')
-      ->appendItem(['target_id' => Profile::id($applicant)]);
+    $this->get('field_applicants')->appendItem(['target_id' => Profile::id($applicant)]);
     return $this;
   }
 
@@ -249,13 +245,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @todo Introduce field type to associate creative and task better.
    */
   public function setParticipants(array $participants, array $tasks = []): static {
     $this->set('field_participants', NULL);
     $this->set('field_participants_tasks', NULL);
     foreach ($participants as $delta => $participant) {
-      $this->get('field_participants')
-        ->appendItem(['target_id' => Profile::id($participant)]);
+      $this->get('field_participants')->appendItem(['target_id' => Profile::id($participant)]);
       $task = $tasks[$delta] ?? 'Creative';
       $this->get('field_participants_tasks')->appendItem($task);
     }
@@ -266,8 +263,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * {@inheritdoc}
    */
   public function appendParticipant(AccountInterface|int $participant, string $task = 'Creative'): static {
-    $this->get('field_participants')
-      ->appendItem(['target_id' => Profile::id($participant)]);
+    $this->get('field_participants')->appendItem(['target_id' => Profile::id($participant)]);
     $this->get('field_participants_tasks')->appendItem($task);
     return $this;
   }
@@ -282,8 +278,15 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasParticipant(): bool {
-    return !empty($this->getParticipants());
+  public function hasParticipant(?string $task = NULL): bool {
+
+    if ($task === NULL) {
+      return !empty($this->getParticipants());
+    }
+
+    $tasks = $this->get('field_participants_tasks')->getValue();
+    $someone_has_task = in_array($task, array_column($tasks, 'value'), TRUE);
+    return !empty($this->getParticipants()) && $someone_has_task;
   }
 
   /**

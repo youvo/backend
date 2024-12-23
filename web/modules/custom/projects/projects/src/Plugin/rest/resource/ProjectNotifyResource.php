@@ -4,6 +4,7 @@ namespace Drupal\projects\Plugin\rest\resource;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectInviteEvent;
@@ -30,37 +31,41 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    $access_result = AccessResult::allowed();
-
-    // Supervisors may bypass the access check.
+    // The user may be permitted to bypass access control.
+    // @todo Add specific permission.
     if (in_array('supervisor', $account->getRoles(), TRUE)) {
-      return $access_result->addCacheableDependency($project)->cachePerUser();
+      return AccessResult::allowed()->addCacheContexts(['user.roles:supervisor'])->cachePerUser();
     }
 
-    // The project may not be open to apply.
-    if (!$project->isPublished() || !$project->lifecycle()->isDraft()) {
-      $access_result = AccessResult::forbidden('The organization can not be notified for this project.');
+    // The user requires the permission to do this action.
+    $permission = 'restful post project:notify';
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
+
+    // The resource should define project-dependent access conditions.
+    $organization = $project->getOwner();
+    $project_condition = $project->isPublished() && $project->lifecycle()->isDraft() && $organization->isManager($account);
+    $access_project = AccessResult::allowedIf($project_condition)
+      ->addCacheableDependency($organization)
+      ->addCacheableDependency($project);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this action are not met.');
     }
 
-    // The project notification may only be triggered by its manager.
-    if (!$project->getOwner()->isManager($account)) {
-      $access_result = AccessResult::forbidden('The user does not manage the project.');
-    }
-
-    return $access_result->addCacheableDependency($project)->cachePerUser();
+    return $access_result->andIf($access_project);
   }
 
   /**
    * Responds to POST requests.
    */
   public function post(Project $project): ResourceResponseInterface {
+
     if ($project->getOwner()->hasRoleProspect()) {
       $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
+      return new ModifiedResourceResponse('The organization was invited.');
     }
-    else {
-      $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
-    }
-    return new ModifiedResourceResponse();
+
+    $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
+    return new ModifiedResourceResponse('The organization was notified.');
   }
 
 }
