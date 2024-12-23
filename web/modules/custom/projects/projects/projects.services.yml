@@ -1,24 +1,9 @@
 services:
-  project.query_access_subscriber:
-    class: Drupal\projects\EventSubscriber\ProjectQueryAccessSubscriber
-    tags:
-      - { name: event_subscriber }
+
   project.lifecycle:
     class: Drupal\projects\Service\ProjectLifecycle
     arguments:
       [ '@entity_type.manager' ]
-  project.route_subscriber:
-    class: Drupal\projects\Routing\ProjectRouteSubscriber
-    tags:
-      - { name: event_subscriber }
-  project.parse_jsonapi.relationships:
-    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiRelationshipsSubscriber
-    tags:
-      - { name: event_subscriber }
-  project.organization.create:
-    class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
-    tags:
-      - { name: event_subscriber }
   logger.channel.projects:
     parent: logger.channel_base
     arguments: [ 'projects' ]
@@ -48,5 +33,13 @@ services:
   # Project action event subscribers.
   projects.project_apply.event_subscriber:
     class: Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber
+    tags:
+      - { name: event_subscriber }
+  project.organization_create.event_subscriber:
+    class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
+    tags:
+      - { name: event_subscriber }
+  project.parse_jsonapi_relationships.event_subscriber:
+    class: Drupal\projects\EventSubscriber\ProjectParseJsonapiRelationshipsSubscriber
     tags:
       - { name: event_subscriber }
