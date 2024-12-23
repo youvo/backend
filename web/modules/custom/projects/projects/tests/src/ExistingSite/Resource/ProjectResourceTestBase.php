@@ -51,7 +51,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   /**
    * Creates a minimal project for testing purposes.
    */
-  protected function createProject(ProjectState $state = ProjectState::DRAFT): ProjectInterface {
+  protected function createProject(ProjectState $state = ProjectState::DRAFT, string $role = 'organization'): ProjectInterface {
 
     $manager = Creative::create([
       'name' => $this->randomString(),
@@ -71,7 +71,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
       'pass' => 'password',
       'status' => 1,
     ]);
-    $organization->addRole('organization');
+    $organization->addRole($role);
     $organization->save();
     $this->markEntityForCleanup($organization);
 

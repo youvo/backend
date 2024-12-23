@@ -33,7 +33,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    // The user may not have the permission to initiate this transition.
+    // The user requires the permission to do this action.
     $permission = 'restful post project:apply';
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
