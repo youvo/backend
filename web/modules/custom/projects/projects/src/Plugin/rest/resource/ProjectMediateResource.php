@@ -10,6 +10,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectMediateEvent;
@@ -48,7 +49,6 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     }
 
     // The user may not have the permission to initiate this transition.
-    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
@@ -58,12 +58,11 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization);
-
-    $access_result = $access_result->andIf($access_project);
-    if ($access_result instanceof AccessResultReasonInterface) {
-      $access_result->setReason('The project conditions for this transition are not met.');
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this transition are not met.');
     }
-    return $access_result;
+
+    return $access_result->andIf($access_project);
   }
 
   /**
@@ -171,6 +170,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function loadSelectedCreatives(array $content): array {
+
     $selected_creatives_uuids = array_unique($content['selected_creatives'] ?? []);
     $selected_creatives_ids = $this->entityTypeManager
       ->getStorage('user')
@@ -179,10 +179,21 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       ->condition('uuid', $selected_creatives_uuids, 'IN')
       ->execute();
     $selected_creatives_ids = array_map('intval', $selected_creatives_ids);
+
     /** @var \Drupal\creatives\Entity\Creative[] $selected_creatives */
     $selected_creatives = $this->entityTypeManager
       ->getStorage('user')
       ->loadMultiple($selected_creatives_ids);
+
+    // Safeguard against unintentionally loaded users that are not creatives.
+    foreach ($selected_creatives as $uid => $creative) {
+      if (!$creative instanceof Creative) {
+        // @codeCoverageIgnoreStart
+        unset($selected_creatives[$uid]);
+        // @codeCoverageIgnoreEnd
+      }
+    }
+
     return $selected_creatives;
   }
 

@@ -59,6 +59,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
       'pass' => 'password',
       'status' => 1,
     ]);
+    $manager->addRole('creative');
     $manager->addRole('manager');
     $manager->save();
     $this->markEntityForCleanup($manager);
@@ -116,6 +117,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
       'pass' => 'password',
       'status' => 1,
     ]);
+    $manager->addRole('creative');
     $manager->addRole('manager');
     $manager->save();
     $this->markEntityForCleanup($manager);

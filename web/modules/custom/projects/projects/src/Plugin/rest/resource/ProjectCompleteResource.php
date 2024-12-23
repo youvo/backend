@@ -49,7 +49,6 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     }
 
     // The user may not have the permission to initiate this transition.
-    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::COMPLETE->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 

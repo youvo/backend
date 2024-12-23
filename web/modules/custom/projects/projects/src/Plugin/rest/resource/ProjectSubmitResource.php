@@ -42,20 +42,18 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
     }
 
     // The user may not have the permission to initiate this transition.
-    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::SUBMIT->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
     // The resource should define project-dependent access conditions.
     $project_condition = $project->isPublished() && $project->isAuthor($account);
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project);
-
-    $access_result = $access_result->andIf($access_project);
-    if ($access_result instanceof AccessResultReasonInterface) {
-      $access_result->setReason('The project conditions for this transition are not met.');
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this transition are not met.');
     }
-    return $access_result;
+
+    return $access_result->andIf($access_project);
   }
 
   /**
