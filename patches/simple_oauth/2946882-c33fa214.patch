@@ -1,0 +1,728 @@
+diff --git a/simple_oauth.module b/simple_oauth.module
+index 70c65b0bd409ceddee0238d312341e3ece4d0945..6bc782d1b7b93039ac2697db7008ad439fdffe91 100644
+--- a/simple_oauth.module
++++ b/simple_oauth.module
+@@ -11,17 +11,18 @@ use Drupal\Core\Entity\EntityTypeInterface;
+ use Drupal\Core\Field\BaseFieldDefinition;
+ use Drupal\Core\Field\FieldStorageDefinitionInterface;
+ use Drupal\Core\Form\FormStateInterface;
+-use Drupal\Core\Session\AccountInterface;
+ use Drupal\Core\StringTranslation\TranslatableMarkup;
+ use Drupal\Core\Url;
++use Drupal\simple_oauth\EntityUpdateHookHandler;
+ use Drupal\consumers\Entity\ConsumerInterface;
++use Drupal\user\UserInterface;
+ use Symfony\Component\HttpFoundation\RedirectResponse;
+
+ /**
+  * Implements hook_cron().
+  */
+ function simple_oauth_cron() {
+-  /** @var \Drupal\simple_oauth\ExpiredCollector $collector */
++  /** @var \Drupal\simple_oauth\ExpiredCollectorInterface $collector */
+   $collector = \Drupal::service('simple_oauth.expired_collector');
+   $config = \Drupal::config('simple_oauth.settings');
+   $logger = \Drupal::logger('simple_oauth');
+@@ -39,15 +40,14 @@ function simple_oauth_cron() {
+  * Implements hook_entity_update().
+  */
+ function simple_oauth_entity_update(EntityInterface $entity) {
+-  /** @var \Drupal\simple_oauth\ExpiredCollector $collector */
+-  $collector = \Drupal::service('simple_oauth.expired_collector');
+-  // Collect the affected tokens and expire them.
+-  if ($entity instanceof AccountInterface) {
+-    $collector->deleteMultipleTokens($collector->collectForAccount($entity));
+-  }
+-  if ($entity instanceof ConsumerInterface) {
+-    $collector->deleteMultipleTokens($collector->collectForClient($entity));
+-  }
++  \Drupal::service(EntityUpdateHookHandler::class)->handleEntityUpdate($entity);
++}
++
++/**
++ * Implements hook_ENTITY_TYPE_predelete() for user entities.
++ */
++function simple_oauth_user_predelete(UserInterface $entity) {
++  \Drupal::service(EntityUpdateHookHandler::class)->handleUserDelete($entity);
+ }
+
+ /**
+diff --git a/simple_oauth.services.yml b/simple_oauth.services.yml
+index 2fbc8a929bab56f4c507be3c2dee6a829fc28c51..f2e38a9bf5400fcdc76b88d41e3591121d996f07 100644
+--- a/simple_oauth.services.yml
++++ b/simple_oauth.services.yml
+@@ -108,6 +108,10 @@ services:
+   simple_oauth.known_clients:
+     class: \Drupal\simple_oauth\KnownClientsRepository
+     arguments: [ '@user.data' ]
++  Drupal\simple_oauth\EntityUpdateHookHandler:
++    arguments:
++      - '@simple_oauth.expired_collector'
++      - '@event_dispatcher'
+
+   # Services for OpenID Connect.
+   Drupal\simple_oauth\OpenIdConnect\UserIdentityProvider:
+diff --git a/src/EntityUpdateHookHandler.php b/src/EntityUpdateHookHandler.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..d827a516eb6429e90122ee6d57a2c8c83ca7f749
+--- /dev/null
++++ b/src/EntityUpdateHookHandler.php
+@@ -0,0 +1,100 @@
++<?php
++
++namespace Drupal\simple_oauth;
++
++use Drupal\consumers\Entity\ConsumerInterface;
++use Drupal\Core\Entity\EntityInterface;
++use Drupal\simple_oauth\Event\UserUpdateTokenInvalidationEvent;
++use Drupal\user\UserInterface;
++use Symfony\Component\EventDispatcher\EventDispatcherInterface;
++
++/**
++ * Service that dispatches events on specific entity updates.
++ */
++final class EntityUpdateHookHandler implements EntityUpdateHookHandlerInterface {
++
++  /**
++   * Token collector.
++   *
++   * @var \Drupal\simple_oauth\ExpiredCollectorInterface
++   */
++  protected ExpiredCollectorInterface $expiredCollector;
++
++  /**
++   * Event dispatcher.
++   *
++   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
++   */
++  protected EventDispatcherInterface $eventDispatcher;
++
++  /**
++   * EntityUpdateHookHandler constructor.
++   *
++   * @param \Drupal\simple_oauth\ExpiredCollectorInterface $expired_collector
++   *   The expired collector service.
++   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
++   *   The event dispatcher.
++   */
++  public function __construct(
++    ExpiredCollectorInterface $expired_collector,
++    EventDispatcherInterface $event_dispatcher,
++  ) {
++    $this->expiredCollector = $expired_collector;
++    $this->eventDispatcher = $event_dispatcher;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function handleEntityUpdate(EntityInterface $entity): void {
++    // Collect the affected tokens and expire them.
++    if ($entity instanceof UserInterface) {
++      // Following the Drupal core pattern, revoke access to the system when
++      // password has been changed.
++      $password_changed = $entity->pass->value !== $entity->original->pass->value;
++
++      // When the account got blocked, we should revoke user's access to
++      // the site.
++      $account_blocked = !$entity->isActive() && $entity->original->isActive();
++
++      // When roles have changed, we should revoke the token to prevent
++      // potential access to the content where the user has no access
++      // to anymore.
++      $roles_new = $entity->getRoles();
++      $roles_old = $entity->original->getRoles();
++      $roles_changed = !empty(array_merge(
++        array_diff($roles_new, $roles_old),
++        array_diff($roles_old, $roles_new)
++      ));
++
++      $event = new UserUpdateTokenInvalidationEvent(
++        $password_changed || $account_blocked || $roles_changed,
++        $entity
++      );
++      $this->eventDispatcher->dispatch($event);
++      if ($event->willInvalidateAccessTokens()) {
++        $this->expiredCollector
++          ->deleteMultipleTokens($this->expiredCollector->collectForAccount(
++            $entity,
++            $event->willInvalidateRefreshTokens()
++          ));
++      }
++    }
++    if ($entity instanceof ConsumerInterface) {
++      $this->expiredCollector
++        ->deleteMultipleTokens($this->expiredCollector->collectForClient($entity));
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function handleUserDelete(UserInterface $user): void {
++    $this->expiredCollector
++      ->deleteMultipleTokens($this->expiredCollector->collectForAccount(
++        $user,
++        TRUE
++      ));
++  }
++
++}
+diff --git a/src/EntityUpdateHookHandlerInterface.php b/src/EntityUpdateHookHandlerInterface.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd91a49c1a7c65dea03fb49efbb387e9095feb4
+--- /dev/null
++++ b/src/EntityUpdateHookHandlerInterface.php
+@@ -0,0 +1,33 @@
++<?php
++
++namespace Drupal\simple_oauth;
++
++use Drupal\Core\Entity\EntityInterface;
++use Drupal\user\UserInterface;
++
++/**
++ * Interface for the EntityUpdateHookHandler.
++ */
++interface EntityUpdateHookHandlerInterface {
++
++  /**
++   * Handle invalidation of tokens secondary to entity update.
++   *
++   * @param \Drupal\Core\Entity\EntityInterface $entity
++   *   Updated entity.
++   *
++   * @throws \Drupal\Core\Entity\EntityStorageException
++   */
++  public function handleEntityUpdate(EntityInterface $entity): void;
++
++  /**
++   * Handle invalidation of tokens secondary to user delete.
++   *
++   * @param \Drupal\user\UserInterface $user
++   *   Updated user.
++   *
++   * @throws \Drupal\Core\Entity\EntityStorageException
++   */
++  public function handleUserDelete(UserInterface $user): void;
++
++}
+diff --git a/src/Event/UserUpdateTokenInvalidationEvent.php b/src/Event/UserUpdateTokenInvalidationEvent.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..f3095f15b2b22303dc66a705201f58b5b68d0268
+--- /dev/null
++++ b/src/Event/UserUpdateTokenInvalidationEvent.php
+@@ -0,0 +1,131 @@
++<?php
++
++namespace Drupal\simple_oauth\Event;
++
++use Drupal\Component\EventDispatcher\Event;
++use Drupal\user\UserInterface;
++
++/**
++ * Event for determining whether to invalidate user tokens on update.
++ */
++final class UserUpdateTokenInvalidationEvent extends Event {
++
++  /**
++   * The user entity.
++   *
++   * @var \Drupal\user\UserInterface
++   */
++  protected UserInterface $user;
++
++  /**
++   * Whether Simple OAuth has determined that the user's access has changed.
++   *
++   * @var bool
++   */
++  protected bool $haveAccessCharacteristicsChanged;
++
++  /**
++   * Whether to invalidate user's access tokens.
++   *
++   * This is TRUE by default to maintain BC. To only invalidate when access
++   * characteristics have changed, implement an event subscriber to set this to
++   * the value of ::haveUserAccessCharacteristicsChanged().
++   *
++   * @var bool
++   */
++  protected ?bool $invalidateAccessTokens = TRUE;
++
++  /**
++   * Whether to invalidate user's refresh tokens.
++   *
++   * @var bool
++   */
++  protected ?bool $invalidateRefreshTokens = FALSE;
++
++  /**
++   * Get the changed user entity.
++   *
++   * @return \Drupal\user\UserInterface
++   *   The user entity.
++   */
++  public function getUser(): UserInterface {
++    return $this->user;
++  }
++
++  /**
++   * Get the unchanged user entity.
++   *
++   * @return \Drupal\user\UserInterface|null
++   *   The unchanged user entity.
++   */
++  public function getOriginalUser(): ?UserInterface {
++    return $this->user->original ?? NULL;
++  }
++
++  /**
++   * Setter for access token invalidation.
++   *
++   * @param bool $flag
++   *   Whether to invalidate access tokens.
++   */
++  public function setInvalidateAccessTokens(bool $flag): void {
++    $this->invalidateAccessTokens = $flag;
++  }
++
++  /**
++   * Getter for access token invalidation behavior.
++   *
++   * @return bool
++   *   Determination.
++   */
++  public function willInvalidateAccessTokens(): bool {
++    return $this->invalidateAccessTokens;
++  }
++
++  /**
++   * Getter for refresh token invalidation behavior.
++   *
++   * @return bool
++   *   Determination.
++   */
++  public function willInvalidateRefreshTokens(): bool {
++    return $this->invalidateRefreshTokens;
++  }
++
++  /**
++   * Setter for refresh token invalidation.
++   *
++   * @param bool $flag
++   *   Whether to invalidate refresh tokens.
++   */
++  public function setInvalidateRefreshTokens(bool $flag): void {
++    $this->invalidateRefreshTokens = $flag;
++    if ($flag === TRUE) {
++      $this->invalidateAccessTokens = TRUE;
++    }
++  }
++
++  /**
++   * Getter for Simple OAuth's determination of access characteristic change.
++   *
++   * @return bool
++   *   TRUE if the user's roles, password or status has changed.
++   */
++  public function haveUserAccessCharacteristicsChanged(): bool {
++    return $this->haveAccessCharacteristicsChanged;
++  }
++
++  /**
++   * Constructor.
++   *
++   * @param bool $access_characteristics_have_changed
++   *   Flag for whether user access characteristics have changed.
++   * @param \Drupal\user\UserInterface $user
++   *   The user entity.
++   */
++  public function __construct(bool $access_characteristics_have_changed, UserInterface $user) {
++    $this->haveAccessCharacteristicsChanged = $access_characteristics_have_changed;
++    $this->user = $user;
++  }
++
++}
+diff --git a/src/ExpiredCollector.php b/src/ExpiredCollector.php
+index c8e498626d58d3fc58193a4ac5ac5e7de9e6798b..9cb4504a9b847169828766025ef97f6bfe11c643 100644
+--- a/src/ExpiredCollector.php
++++ b/src/ExpiredCollector.php
+@@ -12,7 +12,7 @@ use Drupal\consumers\Entity\Consumer;
+ /**
+  * Service in charge of deleting or expiring tokens that cannot be used anymore.
+  */
+-class ExpiredCollector {
++class ExpiredCollector implements ExpiredCollectorInterface {
+
+   /**
+    * The token storage.
+@@ -52,13 +52,7 @@ class ExpiredCollector {
+   }
+
+   /**
+-   * Collect all expired token ids.
+-   *
+-   * @param int $limit
+-   *   Number of tokens to fetch.
+-   *
+-   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
+-   *   The expired tokens.
++   * {@inheritdoc}
+    */
+   public function collect(int $limit = 0): array {
+     $query = $this->tokenStorage->getQuery();
+@@ -75,21 +69,17 @@ class ExpiredCollector {
+   }
+
+   /**
+-   * Collect all the tokens associated with the provided account.
+-   *
+-   * @param \Drupal\Core\Session\AccountInterface $account
+-   *   The account.
+-   *
+-   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
+-   *   The tokens.
++   * {@inheritdoc}
+    */
+-  public function collectForAccount(AccountInterface $account): array {
++  public function collectForAccount(AccountInterface $account, bool $include_refresh_tokens = FALSE): array {
+     $clients = [];
+     $output = [];
+     $query = $this->tokenStorage->getQuery();
+     $query->accessCheck();
+     $query->condition('auth_user_id', $account->id());
+-    $query->condition('bundle', 'refresh_token', '!=');
++    if (!$include_refresh_tokens) {
++      $query->condition('bundle', 'refresh_token', '!=');
++    }
+     $entity_ids = $query->execute();
+     $output = $entity_ids
+       ? array_values($this->tokenStorage->loadMultiple(array_values($entity_ids)))
+@@ -118,13 +108,7 @@ class ExpiredCollector {
+   }
+
+   /**
+-   * Collect all the tokens associated a particular client.
+-   *
+-   * @param \Drupal\consumers\Entity\Consumer $client
+-   *   The account.
+-   *
+-   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
+-   *   The tokens.
++   * {@inheritdoc}
+    */
+   public function collectForClient(Consumer $client): array {
+     $query = $this->tokenStorage->getQuery();
+@@ -139,14 +123,9 @@ class ExpiredCollector {
+   }
+
+   /**
+-   * Deletes multiple tokens based on ID.
+-   *
+-   * @param \Drupal\simple_oauth\Entity\Oauth2TokenInterface[] $tokens
+-   *   The token entity IDs.
+-   *
+-   * @throws \Drupal\Core\Entity\EntityStorageException
++   * {@inheritdoc}
+    */
+-  public function deleteMultipleTokens(array $tokens = []) {
++  public function deleteMultipleTokens(array $tokens = []): void {
+     $this->tokenStorage->delete($tokens);
+   }
+
+diff --git a/src/ExpiredCollectorInterface.php b/src/ExpiredCollectorInterface.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..bc318d5e975442c16b389d9977ba472d953604dc
+--- /dev/null
++++ b/src/ExpiredCollectorInterface.php
+@@ -0,0 +1,58 @@
++<?php
++
++namespace Drupal\simple_oauth;
++
++use Drupal\consumers\Entity\Consumer;
++use Drupal\Core\Session\AccountInterface;
++
++/**
++ * Expired collector interface.
++ */
++interface ExpiredCollectorInterface {
++
++  /**
++   * Collect all expired token ids.
++   *
++   * @param int $limit
++   *   Number of tokens to fetch.
++   *
++   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
++   *   The expired tokens.
++   */
++  public function collect(int $limit = 0): array;
++
++  /**
++   * Collect all the tokens associated with the provided account.
++   *
++   * @param \Drupal\Core\Session\AccountInterface $account
++   *   The account.
++   * @param bool $include_refresh_tokens
++   *   Include refresh tokens. FALSE by default for BC reasons.
++   *
++   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
++   *   The tokens.
++   */
++  public function collectForAccount(AccountInterface $account, bool $include_refresh_tokens = FALSE): array;
++
++  /**
++   * Collect all the tokens associated a particular client.
++   *
++   * @param \Drupal\consumers\Entity\Consumer $client
++   *   The account.
++   *
++   * @return \Drupal\simple_oauth\Entity\Oauth2TokenInterface[]
++   *   The tokens.
++   */
++  public function collectForClient(Consumer $client): array;
++
++  /**
++   * Deletes multiple tokens based on ID.
++   *
++   * @param \Drupal\simple_oauth\Entity\Oauth2TokenInterface[] $tokens
++   *   The token entity IDs.
++   *
++   * @throws \Drupal\Core\Entity\EntityStorageException
++   */
++  public function deleteMultipleTokens(array $tokens = []): void;
++
++}
+diff --git a/src/Form/Oauth2TokenSettingsForm.php b/src/Form/Oauth2TokenSettingsForm.php
+index 30a203015419ba8b96ff6103b65e4c101b9d6c46..70cb95b4e40c3fcdf34862f1ffcbff13df909fab 100644
+--- a/src/Form/Oauth2TokenSettingsForm.php
++++ b/src/Form/Oauth2TokenSettingsForm.php
+@@ -46,8 +46,6 @@ class Oauth2TokenSettingsForm extends ConfigFormBase {
+    *
+    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+    *   The factory for configuration objects.
+-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+-   *   The typed config manager.
+    * @param \Drupal\simple_oauth\Service\Filesystem\FileSystemCheckerInterface $file_system_checker
+    *   The simple_oauth.filesystem service.
+    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+@@ -56,14 +54,16 @@ class Oauth2TokenSettingsForm extends ConfigFormBase {
+    *   The entity type manager.
+    * @param \Drupal\simple_oauth\Plugin\ScopeProviderManagerInterface $scope_provider_manager
+    *   The scope provider plugin manager.
++   * @param \Drupal\Core\Config\TypedConfigManager|null $typedConfigManager
++   *   The typed config object.
+    */
+   public function __construct(
+     ConfigFactoryInterface $configFactory,
+-    TypedConfigManagerInterface $typedConfigManager,
+     FileSystemCheckerInterface $file_system_checker,
+     MessengerInterface $messenger,
+     EntityTypeManagerInterface $entity_type_manager,
+     ScopeProviderManagerInterface $scope_provider_manager,
++    ?TypedConfigManagerInterface $typedConfigManager = NULL,
+   ) {
+     parent::__construct($configFactory, $typedConfigManager);
+     $this->fileSystemChecker = $file_system_checker;
+@@ -78,11 +78,11 @@ class Oauth2TokenSettingsForm extends ConfigFormBase {
+   public static function create(ContainerInterface $container): self {
+     return new static(
+       $container->get('config.factory'),
+-      $container->get('config.typed'),
+       $container->get('simple_oauth.filesystem_checker'),
+       $container->get('messenger'),
+       $container->get('entity_type.manager'),
+-      $container->get('plugin.manager.scope_provider')
++      $container->get('plugin.manager.scope_provider'),
++      $container->get('config.typed'),
+     );
+   }
+
+diff --git a/src/Form/OpenIdConnectSettingsForm.php b/src/Form/OpenIdConnectSettingsForm.php
+index 49a7eb11b4409005c1aaf4162f2edfcf6f3eb7b9..131b32e341a24b13d5ab4d37609d5d39d4ddb9d3 100644
+--- a/src/Form/OpenIdConnectSettingsForm.php
++++ b/src/Form/OpenIdConnectSettingsForm.php
+@@ -21,7 +21,7 @@ class OpenIdConnectSettingsForm extends ConfigFormBase {
+    *
+    * @var string[]
+    */
+-  private $claimNames;
++  private array $claimNames;
+
+   /**
+    * Oauth2TokenSettingsForm constructor.
+@@ -32,8 +32,14 @@ class OpenIdConnectSettingsForm extends ConfigFormBase {
+    *   The typed config manager.
+    * @param string[] $claim_names
+    *   The names of the claims.
++   * @param \Drupal\Core\Config\TypedConfigManagerInterface|null $typedConfigManager
++   *   The typed config object.
+    */
+-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, array $claim_names) {
++  public function __construct(
++    ConfigFactoryInterface $config_factory,
++    array $claim_names,
++    TypedConfigManager $typedConfigManager = NULL,
++  ) {
+     parent::__construct($config_factory, $typedConfigManager);
+     $this->claimNames = $claim_names;
+   }
+@@ -50,8 +56,8 @@ class OpenIdConnectSettingsForm extends ConfigFormBase {
+   public static function create(ContainerInterface $container) {
+     return new static(
+       $container->get('config.factory'),
+-      $container->get('config.typed'),
+-      $container->getParameter('simple_oauth.openid.claims')
++      $container->getParameter('simple_oauth.openid.claims'),
++      $container->get('config.typed')
+     );
+   }
+
+diff --git a/tests/src/Unit/EntityUpdateHandlerTest.php b/tests/src/Unit/EntityUpdateHandlerTest.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..899e9aad2f3cc03f2082e98460e8d08109d4322e
+--- /dev/null
++++ b/tests/src/Unit/EntityUpdateHandlerTest.php
+@@ -0,0 +1,140 @@
++<?php
++
++namespace Drupal\Tests\simple_oauth\Unit;
++
++use Drupal\Component\EventDispatcher\Event;
++use Drupal\simple_oauth\EntityUpdateHookHandler;
++use Drupal\simple_oauth\Event\UserUpdateTokenInvalidationEvent;
++use Drupal\simple_oauth\ExpiredCollectorInterface;
++use Drupal\Tests\UnitTestCase;
++use Drupal\user\UserInterface;
++use Prophecy\Argument;
++use Symfony\Component\EventDispatcher\EventDispatcherInterface;
++
++/**
++ * @coversDefaultClass \Drupal\simple_oauth\EntityUpdateHookHandler
++ * @group simple_oauth
++ */
++class EntityUpdateHandlerTest extends UnitTestCase {
++
++  /**
++   * The expired collector prophecy.
++   *
++   * @var \Drupal\simple_oauth\ExpiredCollectorInterface
++   */
++  protected $expiredCollector;
++
++  /**
++   * The entity update handler prophecy.
++   *
++   * @var \Drupal\simple_oauth\EntityUpdateHookHandlerInterface
++   */
++  protected $updateHandler;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp(): void {
++    parent::setUp();
++
++    $this->expiredCollector = $this->prophesize(ExpiredCollectorInterface::class);
++    $this->expiredCollector
++      ->collectForAccount(Argument::type(UserInterface::class), Argument::type('bool'))
++      ->willReturn([]);
++
++    $event_dispatcher = $this->prophesize(EventDispatcherInterface::class);
++    $event_dispatcher
++      ->dispatch(Argument::type(UserUpdateTokenInvalidationEvent::class))
++      ->willReturn(new Event());
++
++    $this->updateHandler = new EntityUpdateHookHandler(
++      $this->expiredCollector->reveal(),
++      $event_dispatcher->reveal()
++    );
++  }
++
++  /**
++   * Tokens should be invalidated when user roles change.
++   *
++   * @covers ::entityUpdateHandler
++   */
++  public function testEntityUpdateHandlerRoleChange() {
++    $user = $this->prophesize(UserInterface::class);
++    $user->getRoles()->willReturn(['role1']);
++    $user->pass = (object) ['value' => 'password'];
++    $user->isActive()->willReturn(TRUE);
++
++    $user_original = $this->prophesize(UserInterface::class);
++    $user_original->getRoles()->willReturn(['role1', 'role2']);
++    $user_original->pass = (object) ['value' => 'password'];
++    $user_original->isActive()->willReturn(TRUE);
++    $user->original = $user_original->reveal();
++
++    $this->updateHandler->handleEntityUpdate($user->reveal());
++    $this->expiredCollector->deleteMultipleTokens([])->shouldBeCalled();
++  }
++
++  /**
++   * Tokens should be invalidated when user password changes.
++   *
++   * @covers ::entityUpdateHandler
++   */
++  public function testEntityUpdateHandlerPasswordChange() {
++    $user = $this->prophesize(UserInterface::class);
++    $user->getRoles()->willReturn(['role1']);
++    $user->pass = (object) ['value' => 'new_password'];
++    $user->isActive()->willReturn(TRUE);
++
++    $user_original = $this->prophesize(UserInterface::class);
++    $user_original->getRoles()->willReturn(['role1']);
++    $user_original->pass = (object) ['value' => 'password'];
++    $user_original->isActive()->willReturn(TRUE);
++    $user->original = $user_original->reveal();
++
++    $this->updateHandler->handleEntityUpdate($user->reveal());
++    $this->expiredCollector->deleteMultipleTokens([])->shouldBeCalled();
++  }
++
++  /**
++   * Tokens should be invalidated when user status changes.
++   *
++   * @covers ::entityUpdateHandler
++   */
++  public function testEntityUpdateHandlerStatusChange() {
++    $user = $this->prophesize(UserInterface::class);
++    $user->getRoles()->willReturn(['role1']);
++    $user->pass = (object) ['value' => 'password'];
++    $user->isActive()->willReturn(FALSE);
++
++    $user_original = $this->prophesize(UserInterface::class);
++    $user_original->getRoles()->willReturn(['role1']);
++    $user_original->pass = (object) ['value' => 'password'];
++    $user_original->isActive()->willReturn(TRUE);
++    $user->original = $user_original->reveal();
++
++    $this->updateHandler->handleEntityUpdate($user->reveal());
++    $this->expiredCollector->deleteMultipleTokens([])->shouldBeCalled();
++  }
++
++  /**
++   * Tokens should be invalidated when user roles, status and pass are same.
++   *
++   * @covers ::entityUpdateHandler
++   */
++  public function testEntityUpdateHandlerNoChange() {
++    $user = $this->prophesize(UserInterface::class);
++    $user->getRoles()->willReturn(['role1']);
++    $user->pass = (object) ['value' => 'password'];
++    $user->isActive()->willReturn(TRUE);
++
++    $user_original = $this->prophesize(UserInterface::class);
++    $user_original->getRoles()->willReturn(['role1']);
++    $user_original->pass = (object) ['value' => 'password'];
++    $user_original->isActive()->willReturn(TRUE);
++    $user->original = $user_original->reveal();
++
++    $this->updateHandler->handleEntityUpdate($user->reveal());
++    $this->expiredCollector->deleteMultipleTokens([])->shouldBeCalled();
++  }
++
++}

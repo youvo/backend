@@ -4,8 +4,6 @@ description: Configuration profile for initial install of youvo adding developme
 
 core_version_requirement: ^10.3 || ^11
 
-base profile: youvo_platform
-
 install:
   # Development
   - admin_toolbar
