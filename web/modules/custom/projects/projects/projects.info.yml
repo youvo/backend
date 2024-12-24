@@ -1,8 +1,8 @@
 name: Projects
+type: module
 description: 'Defines Project entities and handles business logic.'
 package: Projects
 
-type: module
 core_version_requirement: '^10.3 || ^11'
 
 dependencies:

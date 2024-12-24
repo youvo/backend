@@ -1,7 +1,7 @@
-name: 'Child Entities'
+name: Child Entities
 type: module
-description: 'Introduces Entity Trait to create child entities.'
-core_version_requirement: '^9.3 || ^10'
+description: Introduces Entity Trait to create child entities.
+core_version_requirement: ^10.3 || ^11
 package: Academy
 
 dependencies:

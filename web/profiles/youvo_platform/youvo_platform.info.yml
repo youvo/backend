@@ -1,9 +1,9 @@
 name: Youvo Platform
 type: profile
-description: 'Configuration profile for initial install of youvo.'
+description: Configuration profile for initial install of youvo.
+package: youvo
 
-core_version_requirement: '^9.3 || ^10'
-package: 'youvo'
+core_version_requirement: ^10.3 || ^11
 
 install:
   # Core

@@ -1,6 +1,6 @@
 logo:
   provider: custom
-  path: 'public://navigation-logo/logo_y.png'
+  path: 'assets://logo_y.png'
   max:
     filesize: 1048576
     height: 40

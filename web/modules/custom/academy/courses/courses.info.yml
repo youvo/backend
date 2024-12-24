@@ -1,7 +1,7 @@
 name: Courses
 type: module
-description: 'Provides a course entity.'
-core_version_requirement: '^9.3 || ^10'
+description: Provides a course entity.
+core_version_requirement: ^10.3 || ^11
 package: Academy
 
 dependencies:

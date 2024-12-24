@@ -1,12 +1,13 @@
-name: 'Blocker Mode'
-description: 'Block all incoming traffic with exceptions.'
-package: youvo
-configure: blocker_mode.settings
-
+name: Blocker Mode
 type: module
-core_version_requirement: '^9.3 || ^10'
+description: Block all incoming traffic with exceptions.
+package: youvo
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - youvo:youvo
   - creatives:creatives
   - organizations:organizations
+  - youvo:youvo
+
+configure: blocker_mode.settings

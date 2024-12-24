@@ -1,11 +1,11 @@
-name: 'Youvo Dummy'
-description: 'Custom module which provides dummy content.'
-package: 'youvo'
-
+name: Youvo Dummy
 type: module
-core_version_requirement: '^9.3 || ^10'
+description: Custom module which provides dummy content.
+package: youvo
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - drupal:file (>= 9.3.0)
-  - drupal:user (>= 9.3.0)
+  - drupal:file
+  - drupal:user
   - youvo:youvo

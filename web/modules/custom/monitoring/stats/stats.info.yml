@@ -2,7 +2,9 @@ name: Stats
 type: module
 description: Provides some site-wide stats.
 package: youvo
-core_version_requirement: ^9.3 || ^10
+
+core_version_requirement: ^10.3 || ^11
+
 dependencies:
-  - youvo:youvo
   - logbook:logbook
+  - youvo:youvo

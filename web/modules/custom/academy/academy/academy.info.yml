@@ -1,10 +1,10 @@
 name: Academy
 type: module
 description: Academy base module.
-core_version_requirement: '^9.3 || ^10'
-package: 'Academy'
+core_version_requirement: ^10.3 || ^11
+package: Academy
 
 dependencies:
-  - youvo:youvo
-  - jsonapi_include:jsonapi_include
   - drupal:content_translation
+  - jsonapi_include:jsonapi_include
+  - youvo:youvo

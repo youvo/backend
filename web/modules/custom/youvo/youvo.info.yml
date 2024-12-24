@@ -1,13 +1,14 @@
-name: 'Youvo Base'
-description: 'Custom module which provides base framework for platform.'
-package: 'youvo'
+name: Youvo Base
 type: module
-core_version_requirement: '^10.3 || ^11'
+description: Custom module which provides base framework for platform.
+package: youvo
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - drupal:taxonomy
   - drupal:field
   - drupal:user
+  - drupal:taxonomy
   - filefield_paths:filefield_paths
   - jsonapi_extras:jsonapi_extras
   - jsonapi_include:jsonapi_include

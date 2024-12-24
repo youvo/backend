@@ -40,7 +40,7 @@
         "drupal/subrequests": "^3.0",
         "drupal/upgrade_status": "^4.0",
         "drupal/user_bundle": "^1.2",
-        "drush/drush": "^12",
+        "drush/drush": "^13.3",
         "joachim-n/composer-manifest": "^1.1"
     },
     "conflict": {
@@ -63,7 +63,7 @@
             "tbachert/spi": true
         },
         "platform": {
-            "php": "8.1"
+            "php": "8.3"
         }
     },
     "extra": {
@@ -136,8 +136,6 @@
         "drupal/admin_toolbar": "^3.3",
         "drupal/coder": "^8.3",
         "drupal/core-dev": "^10.4",
-        "drupal/devel": "^5.1",
-        "drupal/devel_mail_logger": "^2.0",
         "drupal/mailsystem": "^4.4",
         "drupal/openapi": "^2.1",
         "drupal/openapi_jsonapi": "^3.0",
