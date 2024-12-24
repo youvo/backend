@@ -10,6 +10,9 @@
             "Custom: Hide meta drupal IDs in JSON:API response": "patches/core/custom-hide-meta-drupal-ids-jsonapi.patch",
             "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/core/custom-page-cache-id-doesnt-compare-cid-subrequests.patch"
         },
+        "drupal/devel_mail_logger": {
+          "Issue #3438288: Drupal 11 Compatibility": "patches/devel_mail_logger/drupal-11-compatibility.patch"
+        },
         "drupal/filefield_paths": {
             "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"
         },

@@ -24,6 +24,8 @@
         "drupal/core-project-message": "^11.1",
         "drupal/core-recommended": "^11.1",
         "drupal/core-vendor-hardening": "^11.1",
+        "drupal/devel": "^5.3",
+        "drupal/devel_mail_logger": "^2.0",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^4.0",
@@ -134,6 +136,7 @@
         },
         "drupal-lenient": {
             "allowed-list": [
+                "drupal/devel_mail_logger",
                 "drupal/jsonapi_boost",
                 "drupal/jsonapi_cross_bundles",
                 "drupal/multivalue_form_element",

@@ -6,6 +6,7 @@ package: Projects
 core_version_requirement: '^10.3 || ^11'
 
 dependencies:
+  - creatives_dummy:creatives_dummy
   - drupal:file
   - drupal:user
   - organizations_dummy:organizations_dummy
