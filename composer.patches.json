@@ -40,8 +40,8 @@
             "Issue #3434213: Drupal 11 Compatibility": "patches/responsive_favicons/drupal-11-compatibility.patch"
         },
         "drupal/simple_oauth": {
-            "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/3082984-d2c39a92.patch",
-            "Issue #2946882: Auth revoke on profile update": "patches/simple_oauth/2946882-c33fa214.patch"
+            "Issue #2946882: Auth revoke on profile update": "patches/simple_oauth/2946882-c33fa214.patch",
+            "Issue #3082984: Reduce logging severity/don't log expired tokens/401s": "patches/simple_oauth/3082984-2a5cb2a8.patch"
         },
         "drupal/warmer": {
             "Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"
