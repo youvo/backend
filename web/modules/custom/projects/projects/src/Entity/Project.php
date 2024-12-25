@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectCreateEvent;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
@@ -175,11 +176,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
    *
    * Overwritten method for type hinting.
    */
-  public function getOwner(): Organization {
+  public function getOwner(): Organization|Creative {
     $key = $this->getEntityType()->getKey('owner');
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $this->get($key)->entity;
-    return $organization;
+    /** @var \Drupal\organizations\Entity\Organization|\Drupal\creatives\Entity\Creative $owner */
+    $owner = $this->get($key)->entity;
+    if (!$owner instanceof Organization && !$owner->hasPermission('administer site')) {
+      throw new \LogicException('The owner of a project should be an organization');
+    }
+    return $owner;
   }
 
   /**
