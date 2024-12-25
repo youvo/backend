@@ -1,10 +1,8 @@
 name: Youvo Development
 type: profile
-description: 'Configuration profile for initial install of youvo adding development modules.'
+description: Configuration profile for initial install of youvo adding development modules.
 
-core_version_requirement: '^9.3 || ^10'
-
-base profile: youvo_platform
+core_version_requirement: ^10.3 || ^11
 
 install:
   # Development

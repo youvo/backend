@@ -12,28 +12,9 @@ use Drupal\Core\Utility\Error;
 use Drupal\paragraphs\Entity\ParagraphType;
 
 /**
- * Implements hook_install().
- */
-function questionnaire_install(): void {
-  // Add questionnaire target bundle to paragraph reference in lecture entity.
-  $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
-  $current_types = $config->get('settings.handler_settings.target_bundles');
-  $current_types['questionnaire'] = 'questionnaire';
-  $config->set('settings.handler_settings.target_bundles', $current_types);
-  $config->save(TRUE);
-}
-
-/**
  * Implements hook_uninstall().
  */
 function questionnaire_uninstall(): void {
-  // Remove questionnaire target bundle to paragraph reference in lecture
-  // entity.
-  $config = \Drupal::configFactory()->getEditable('field.field.lecture.lecture.paragraphs');
-  $current_types = $config->get('settings.handler_settings.target_bundles');
-  unset($current_types['questionnaire']);
-  $config->set('settings.handler_settings.target_bundles', $current_types);
-  $config->save(TRUE);
 
   // Remove config entity for questionnaire paragraph type.
   try {

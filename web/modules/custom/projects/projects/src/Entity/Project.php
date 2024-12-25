@@ -237,6 +237,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
     $tasks = $this->get('field_participants_tasks')->getValue();
     /** @var \Drupal\user\UserInterface $participant */
     foreach ($participants_field->referencedEntities() as $delta => $participant) {
+      // @phpstan-ignore-next-line
       $participant->task = $tasks[$delta]['value'];
       $participants[(int) $participant->id()] = $participant;
     }

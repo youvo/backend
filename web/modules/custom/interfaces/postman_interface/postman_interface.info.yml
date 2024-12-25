@@ -1,16 +1,16 @@
 name: Postman Interface
+type: module
 description: Provides REST resources to exchange data with Postman.
 package: Interfaces
 
-type: module
-core_version_requirement: '^9.3 || ^10'
+core_version_requirement: '^10.3 || ^11'
 
 dependencies:
-  - youvo:youvo
-  - projects:projects
-  - lifecycle:lifecycle
   - academy:academy
   - courses:courses
   - lectures:lectures
+  - lifecycle:lifecycle
   - paragraphs:paragraphs
+  - projects:projects
   - questionnaire:questionnaire
+  - youvo:youvo

@@ -87,7 +87,6 @@ module:
   warmer: 0
   workflows: 0
   youvo: 0
-  youvo_platform: 0
   youvo_dummy: 1
   creatives_dummy: 2
   academy_dummy: 3

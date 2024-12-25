@@ -1,8 +1,10 @@
 name: Consumer Permissions
+type: module
 description: Provides user permissions to authenticate with certain consumers.
 package: Authentication
-type: module
-core_version_requirement: ^9 || ^10
+
+core_version_requirement: ^10.3 || ^11
+
 dependencies:
   - consumers:consumers
   - simple_oauth:simple_oauth

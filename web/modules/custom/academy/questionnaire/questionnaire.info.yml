@@ -1,10 +1,12 @@
 name: Questionnaire
 type: module
-description: 'Provides a questionnaire paragraph type and a question entity.'
-core_version_requirement: '^9.3 || ^10'
+description: Provides a questionnaire paragraph type and a question entity.
+core_version_requirement: ^10.3 || ^11
 package: Academy
+
 dependencies:
   - academy:academy
   - paragraphs:paragraphs
   - drupal:text
+
 configure: entity.question_type.collection

@@ -1,11 +1,11 @@
 name: 'Organizations'
+type: module
 description: 'Custom module which provides base framework for organizations.'
 package: 'youvo'
 
-type: module
-core_version_requirement: '^9.3 || ^10'
+core_version_requirement: '^10.3 || ^11'
 
 dependencies:
-  - youvo:youvo
-  - user_types:user_types
   - projects:projects
+  - user_types:user_types
+  - youvo:youvo

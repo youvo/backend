@@ -1,13 +1,14 @@
-name: 'OAuth Grant'
-description: 'Governs behavior for OAuth2 Authorization Code Grant.'
-package: Interfaces
-configure: oauth_grant.settings
-
+name: OAuth Grant
 type: module
-core_version_requirement: '^9.3 || ^10'
+description: Governs behavior for OAuth2 Authorization Code Grant.
+package: Interfaces
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - youvo:youvo
-  - consumers:consumers
   - consumer_image_styles:consumer_image_styles
+  - consumers:consumers
   - simple_oauth:simple_oauth
+  - youvo:youvo
+
+configure: oauth_grant.settings

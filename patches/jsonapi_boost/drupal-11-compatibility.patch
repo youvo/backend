@@ -1,0 +1,13 @@
+diff --git a/jsonapi_boost.info.yml b/jsonapi_boost.info.yml
+index 542d670bd9f30a80c3588631252cc8c520dec374..1fa8e2e990561b9c1ce30de1fef2ba10b1e78b66 100644
+--- a/jsonapi_boost.info.yml
++++ b/jsonapi_boost.info.yml
+@@ -1,7 +1,7 @@
+ name: 'JSON:API Boost'
+ description: Improve the performance of the JSON:API module with a cache-warming strategy.
+ type: module
+-core_version_requirement: ^9 || ^10
++core_version_requirement: ^9 || ^10 || ^11
+ dependencies:
+   - drupal:jsonapi
+   - jsonapi_extras:jsonapi_extras

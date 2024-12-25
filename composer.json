@@ -19,11 +19,13 @@
         "cweagans/composer-patches": "^1.7",
         "drupal/config_ignore": "^3.3",
         "drupal/consumer_image_styles": "^4.0",
-        "drupal/core": "^10.4",
-        "drupal/core-composer-scaffold": "^10.4",
-        "drupal/core-project-message": "^10.4",
-        "drupal/core-recommended": "^10.4",
-        "drupal/core-vendor-hardening": "^10.4",
+        "drupal/core": "^11.1",
+        "drupal/core-composer-scaffold": "^11.1",
+        "drupal/core-project-message": "^11.1",
+        "drupal/core-recommended": "^11.1",
+        "drupal/core-vendor-hardening": "^11.1",
+        "drupal/devel": "^5.3",
+        "drupal/devel_mail_logger": "^2.0",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^4.0",
@@ -36,12 +38,13 @@
         "drupal/mail_login": "^4.0",
         "drupal/multivalue_form_element": "^1.0@beta",
         "drupal/responsive_favicons": "^2.0",
-        "drupal/simple_oauth": "^5.2",
+        "drupal/simple_oauth": "^6.0@beta",
         "drupal/subrequests": "^3.0",
         "drupal/upgrade_status": "^4.0",
         "drupal/user_bundle": "^1.2",
-        "drush/drush": "^12",
-        "joachim-n/composer-manifest": "^1.1"
+        "drush/drush": "^13.3",
+        "joachim-n/composer-manifest": "^1.1",
+        "mglaman/composer-drupal-lenient": "^1.0"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -60,10 +63,11 @@
             "joachim-n/composer-manifest": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
-            "tbachert/spi": true
+            "tbachert/spi": true,
+            "mglaman/composer-drupal-lenient": true
         },
         "platform": {
-            "php": "8.1"
+            "php": "8.3"
         }
     },
     "extra": {
@@ -129,15 +133,22 @@
   		"enable-patching": true,
   		"patchLevel": {
             "drupal/core": "-p2"
+        },
+        "drupal-lenient": {
+            "allowed-list": [
+                "drupal/devel_mail_logger",
+                "drupal/jsonapi_boost",
+                "drupal/jsonapi_cross_bundles",
+                "drupal/multivalue_form_element",
+                "drupal/responsive_favicons"
+            ]
         }
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
         "drupal/admin_toolbar": "^3.3",
         "drupal/coder": "^8.3",
-        "drupal/core-dev": "^10.4",
-        "drupal/devel": "^5.1",
-        "drupal/devel_mail_logger": "^2.0",
+        "drupal/core-dev": "^11.1",
         "drupal/mailsystem": "^4.4",
         "drupal/openapi": "^2.1",
         "drupal/openapi_jsonapi": "^3.0",

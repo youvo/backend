@@ -53,7 +53,7 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The \u0027restful post project:reset\u0027 permission is required."}', $response->getContent());
+    $this->assertEquals('The \'restful post project:reset\' permission is required.', $response->getContent());
   }
 
 }

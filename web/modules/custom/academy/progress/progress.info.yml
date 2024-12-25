@@ -1,11 +1,12 @@
 name: Progress
 type: module
-description: 'Documents the user progress in academy.'
-core_version_requirement: '^9.3 || ^10'
+description: Documents the user progress in academy.
+core_version_requirement: ^10.3 || ^11
 package: Academy
+
 dependencies:
   - academy:academy
   - courses:courses
   - lectures:lectures
-  - questionnaire:questionnaire
   - paragraphs:paragraphs
+  - questionnaire:questionnaire

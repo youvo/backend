@@ -1,8 +1,8 @@
 name: Academy Log
 type: module
 description: Academy log module.
-core_version_requirement: '^9.3 || ^10'
-package: 'Academy'
+core_version_requirement: ^10.3 || ^11
+package: Academy
 
 dependencies:
   - academy:academy

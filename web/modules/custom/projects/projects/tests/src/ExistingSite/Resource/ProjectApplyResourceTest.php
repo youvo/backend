@@ -75,7 +75,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The applicant conditions for this application are not met. The creative may already applied."}', $response->getContent());
+    $this->assertEquals('The applicant conditions for this application are not met. The creative may already applied.', $response->getContent());
   }
 
   /**
@@ -95,7 +95,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The applicant conditions for this application are not met. The creative may already applied."}', $response->getContent());
+    $this->assertEquals('The applicant conditions for this application are not met. The creative may already applied.', $response->getContent());
   }
 
   /**
@@ -115,7 +115,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this application are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
   }
 
   /**
@@ -137,7 +137,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this application are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
   }
 
   /**
@@ -157,7 +157,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The \u0027restful post project:apply\u0027 permission is required."}', $response->getContent());
+    $this->assertEquals('The \'restful post project:apply\' permission is required.', $response->getContent());
   }
 
 }

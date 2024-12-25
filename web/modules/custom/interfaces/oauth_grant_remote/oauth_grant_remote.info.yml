@@ -1,13 +1,14 @@
-name: 'OAuth Grant Remote'
-description: 'Pings the OAuth Relay for authentication.'
-package: Interfaces
-configure: oauth_grant_remote.settings
-
+name: OAuth Grant Remote
 type: module
-core_version_requirement: '^9.3 || ^10'
+description: Pings the OAuth Relay for authentication.
+package: Interfaces
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - youvo:youvo
   - consumers:consumers
-  - simple_oauth:simple_oauth
   - drupal:rest
+  - simple_oauth:simple_oauth
+  - youvo:youvo
+
+configure: oauth_grant_remote.settings

@@ -1,11 +1,14 @@
 name: Feedback
 type: module
-description: 'Provides a feedback entity.'
+description: Provides a feedback entity.
 package: youvo
-core_version_requirement: ^9.3 || ^10
+
+core_version_requirement: ^10.3 || ^11
+
 dependencies:
-  - youvo:youvo
-  - projects:projects
   - creatives:creatives
   - organizations:organizations
+  - projects:projects
+  - youvo:youvo
+
 configure: entity.feedback_type.collection

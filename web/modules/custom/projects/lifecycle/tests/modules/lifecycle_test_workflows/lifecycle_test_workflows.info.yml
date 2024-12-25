@@ -2,7 +2,7 @@ name: Lifecycle Test Workflows
 type: module
 description: Adds test workflows.
 
-core_version_requirement: ^9.3 || ^10
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
   - lifecycle:lifecycle

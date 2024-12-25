@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\user_types\Unit;
 
-use Drupal\consumers\Entity\ConsumerInterface;
+use Drupal\consumers\Entity\Consumer;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -91,7 +91,7 @@ class ProfileUtilityTest extends UnitTestCase {
       ->method('bundle')
       ->willReturn('organization');
 
-    $consumer = $this->createMock(ConsumerInterface::class);
+    $consumer = $this->createMock(Consumer::class);
     $consumer_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
     $consumer_field->expects($this->any())
       ->method('__get')

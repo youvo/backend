@@ -1,8 +1,9 @@
 name: Academy Dummy
 type: module
-description: 'Generates dummy content for academy entities.'
-core_version_requirement: '^9.3 || ^10'
+description: Generates dummy content for academy entities.
 package: Academy
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
   - academy:academy

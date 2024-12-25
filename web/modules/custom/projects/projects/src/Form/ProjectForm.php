@@ -29,6 +29,7 @@ class ProjectForm extends ContentEntityForm {
     $participants_default = [];
     foreach ($project->getParticipants() as $participant) {
       /** @var string $task */
+      // @phpstan-ignore-next-line
       $task = $participant->task;
       $task_id = match ($task) {
         'Manager' => 7,

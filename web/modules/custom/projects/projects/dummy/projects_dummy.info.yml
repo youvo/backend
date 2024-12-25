@@ -1,14 +1,15 @@
 name: 'Projects Dummy'
+type: module
 description: 'Provides dummy project content.'
 package: Projects
 
-type: module
-core_version_requirement: '^9.3 || ^10'
+core_version_requirement: '^10.3 || ^11'
 
 dependencies:
-  - drupal:file (>= 9.3.0)
-  - drupal:user (>= 9.3.0)
-  - youvo:youvo
-  - youvo_dummy:youvo_dummy
+  - creatives_dummy:creatives_dummy
+  - drupal:file
+  - drupal:user
   - organizations_dummy:organizations_dummy
   - projects:projects
+  - youvo:youvo
+  - youvo_dummy:youvo_dummy

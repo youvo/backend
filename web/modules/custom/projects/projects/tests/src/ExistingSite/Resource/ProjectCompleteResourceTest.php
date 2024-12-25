@@ -151,7 +151,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('{"message":"Project can not be completed."}', $response->getContent());
+    $this->assertEquals('Project can not be completed.', $response->getContent());
   }
 
   /**
@@ -171,7 +171,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
   }
 
   /**
@@ -191,7 +191,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
   }
 
   /**
@@ -211,7 +211,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
   }
 
   /**
@@ -233,7 +233,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The project conditions for this transition are not met."}', $response->getContent());
+    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
   }
 
   /**
@@ -253,7 +253,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('{"message":"The \u0027restful post project:complete\u0027 permission is required."}', $response->getContent());
+    $this->assertEquals('The \'restful post project:complete\' permission is required.', $response->getContent());
   }
 
 }

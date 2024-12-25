@@ -1,7 +1,7 @@
-diff --git a/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php b/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
+diff --git a/core/modules/jsonapi/src/Controller/FileUpload.php b/core/modules/jsonapi/src/Controller/FileUpload.php
 index 945c77f..d9674fc 100644
---- a/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
-+++ b/core/modules/jsonapi/src/Controller/TemporaryJsonapiFileFieldUploader.php
+--- a/core/modules/jsonapi/src/Controller/FileUpload.php
++++ b/core/modules/jsonapi/src/Controller/FileUpload.php
 @@ -328,6 +328,9 @@ public static function checkFileUploadAccess(AccountInterface $account, FieldDef
        ? $entity_access_control_handler->access($entity, 'update', $account, TRUE)
        : $entity_access_control_handler->createAccess($bundle, $account, [], TRUE);

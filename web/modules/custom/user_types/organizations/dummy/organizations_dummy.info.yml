@@ -1,13 +1,13 @@
-name: 'Organizations Dummy'
-description: 'Custom module which provides organizations dummy content.'
-package: 'youvo'
-
+name: Organizations Dummy
 type: module
-core_version_requirement: '^9.3 || ^10'
+description: Custom module which provides organizations dummy content.
+package: youvo
+
+core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - drupal:file (>= 9.3.0)
-  - drupal:user (>= 9.3.0)
+  - drupal:file
+  - drupal:user
+  - organizations:organizations
   - youvo:youvo
   - youvo_dummy:youvo_dummy
-  - organizations:organizations
