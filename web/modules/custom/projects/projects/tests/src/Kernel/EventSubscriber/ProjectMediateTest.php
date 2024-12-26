@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 
 /**
  * Tests for the project mediate event subscriber.
@@ -35,6 +36,10 @@ class ProjectMediateTest extends ProjectEventSubscriberTestBase {
     $this->assertTrue($project->lifecycle()->isOngoing());
     $this->assertTrue($project->hasParticipant());
     $this->assertTrue($project->isParticipant($creative));
+
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
+    $last = $project->lifecycle()->history()->last();
+    $this->assertEquals(ProjectTransition::MEDIATE->value, $last->transition);
   }
 
 }

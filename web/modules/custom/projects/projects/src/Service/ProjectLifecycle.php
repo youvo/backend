@@ -2,7 +2,10 @@
 
 namespace Drupal\projects\Service;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
@@ -15,6 +18,7 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
 
   const WORKFLOW_ID = 'project_lifecycle';
   const LIFECYCLE_FIELD = 'field_lifecycle';
+  const LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
 
   /**
    * The project calling the lifecycle.
@@ -27,7 +31,9 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Constructs a ProjectLifecycle object.
    */
   public function __construct(
+    protected AccountProxyInterface $currentUser,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected TimeInterface $time,
   ) {}
 
   /**
@@ -127,6 +133,13 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function history(): FieldItemListInterface {
+    return $this->project()->get(static::LIFECYCLE_HISTORY_FIELD);
+  }
+
+  /**
    * Abstraction of forward transition flow check.
    */
   protected function hasTransition(ProjectState $from, ProjectState $to): bool {
@@ -152,9 +165,11 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Sets new project state for given transition.
    */
   protected function doTransition(ProjectTransition $transition): bool {
+    $old_state = $this->getState();
     $new_state = $this->getSuccessorFromTransition($transition);
-    if ($this->canTransition($transition, $this->getState(), $new_state)) {
+    if ($this->canTransition($transition, $old_state, $new_state)) {
       $this->project()->set(static::LIFECYCLE_FIELD, $new_state->value);
+      $this->inscribeTransition($transition, $old_state, $new_state);
       return TRUE;
     }
     throw new LifecycleTransitionException($transition->value);
@@ -172,6 +187,19 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
       // All other transitions, including reset, set the project state to draft.
       default => ProjectState::DRAFT,
     };
+  }
+
+  /**
+   * Inscribes transition in lifecycle history.
+   */
+  protected function inscribeTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): void {
+    $this->project()->get(static::LIFECYCLE_HISTORY_FIELD)->appendItem([
+      'transition' => $transition->value,
+      'from' => $from->value,
+      'to' => $to->value,
+      'uid' => $this->currentUser->id(),
+      'timestamp' => $this->time->getCurrentTime(),
+    ]);
   }
 
 }

@@ -22,7 +22,11 @@ use Drupal\Core\TypedData\DataDefinition;
  *   default_widget = NULL,
  * )
  *
- * @property string|null $value
+ * @property string|null $transition
+ * @property string|null $from
+ * @property string $to
+ * @property int $uid
+ * @property int $timestamp
  */
 class LifecycleHistoryItem extends FieldItemBase {
 
@@ -31,20 +35,13 @@ class LifecycleHistoryItem extends FieldItemBase {
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
 
-    $properties['timestamp'] = DataDefinition::create('timestamp')
-      ->setLabel(new TranslatableMarkup('Timestamp'))
-      ->setDescription(new TranslatableMarkup('The time of the transition.'))
-      ->setRequired(TRUE);
-
-    $properties['type'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Type'))
-      ->setDescription(new TranslatableMarkup('The type of the transition.'))
-      ->setRequired(TRUE);
+    $properties['transition'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Transition'))
+      ->setDescription(new TranslatableMarkup('The type of the transition.'));
 
     $properties['from'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('From'))
-      ->setDescription(new TranslatableMarkup('The state that the transition started from.'))
-      ->setRequired(TRUE);
+      ->setDescription(new TranslatableMarkup('The state that the transition started from.'));
 
     $properties['to'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('To'))
@@ -57,6 +54,11 @@ class LifecycleHistoryItem extends FieldItemBase {
       ->setSetting('unsigned', TRUE)
       ->setRequired(TRUE);
 
+    $properties['timestamp'] = DataDefinition::create('timestamp')
+      ->setLabel(new TranslatableMarkup('Timestamp'))
+      ->setDescription(new TranslatableMarkup('The time of the transition.'))
+      ->setRequired(TRUE);
+
     return $properties;
   }
 
@@ -66,12 +68,7 @@ class LifecycleHistoryItem extends FieldItemBase {
   public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
-        'timestamp' => [
-          'description' => 'The time of the transition.',
-          'type' => 'int',
-          'unsigned' => TRUE,
-        ],
-        'type' => [
+        'transition' => [
           'description' => 'The type of the transition.',
           'type' => 'varchar',
           'length' => 64,
@@ -91,9 +88,14 @@ class LifecycleHistoryItem extends FieldItemBase {
           'type' => 'int',
           'unsigned' => TRUE,
         ],
+        'timestamp' => [
+          'description' => 'The time of the transition.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+        ],
       ],
       'indexes' => [
-        'format' => ['type'],
+        'format' => ['transition'],
       ],
     ];
   }

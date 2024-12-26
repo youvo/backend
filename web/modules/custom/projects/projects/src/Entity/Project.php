@@ -20,6 +20,7 @@ use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
+use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
@@ -112,6 +113,23 @@ class Project extends ContentEntityBase implements ProjectInterface {
       Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     }
     parent::delete();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postCreate(EntityStorageInterface $storage): void {
+    // Set first item in lifecycle history.
+    if ($this->hasField('field_lifecycle_history')) {
+      $this->set('field_lifecycle_history', [
+        'transition' => NULL,
+        'from' => NULL,
+        'to' => ProjectState::DRAFT->value,
+        'uid' => \Drupal::currentUser()->id(),
+        'timestamp' => $this->getCreatedTime(),
+      ]);
+    }
+    parent::postCreate($storage);
   }
 
   /**

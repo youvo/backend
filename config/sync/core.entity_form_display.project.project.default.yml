@@ -13,6 +13,7 @@ dependencies:
     - field.field.project.project.field_image
     - field.field.project.project.field_image_copyright
     - field.field.project.project.field_lifecycle
+    - field.field.project.project.field_lifecycle_history
     - field.field.project.project.field_local
     - field.field.project.project.field_material
     - field.field.project.project.field_participants
@@ -92,6 +93,12 @@ content:
   field_lifecycle:
     type: options_select
     weight: 15
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_lifecycle_history:
+    type: null
+    weight: 121
     region: content
     settings: {  }
     third_party_settings: {  }

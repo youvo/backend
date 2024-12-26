@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 
 /**
  * Tests for the project complete event subscriber.
@@ -48,6 +49,10 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
     $this->eventDispatcher->dispatch($event);
 
     $this->assertTrue($project->lifecycle()->isCompleted());
+
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
+    $last = $project->lifecycle()->history()->last();
+    $this->assertEquals(ProjectTransition::COMPLETE->value, $last->transition);
   }
 
 }

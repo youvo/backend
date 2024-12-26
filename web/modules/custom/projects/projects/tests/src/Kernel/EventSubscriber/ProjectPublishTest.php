@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 
 /**
  * Tests for the project publish event subscriber.
@@ -20,11 +21,16 @@ class ProjectPublishTest extends ProjectEventSubscriberTestBase {
    * @covers ::getSubscribedEvents
    */
   public function testProjectPublish(): void {
+
     $project = $this->createProject(ProjectState::PENDING);
     $this->assertTrue($project->lifecycle()->isPending());
     $event = new ProjectPublishEvent($project);
     $this->eventDispatcher->dispatch($event);
     $this->assertTrue($project->lifecycle()->isOpen());
+
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
+    $last = $project->lifecycle()->history()->last();
+    $this->assertEquals(ProjectTransition::PUBLISH->value, $last->transition);
   }
 
 }
