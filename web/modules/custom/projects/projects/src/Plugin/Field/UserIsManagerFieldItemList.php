@@ -4,6 +4,7 @@ namespace Drupal\projects\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
+use Drupal\organizations\ManagerInterface;
 
 /**
  * AppliedFieldItemList class to generate a computed field.
@@ -29,8 +30,11 @@ class UserIsManagerFieldItemList extends FieldItemList {
       $account = \Drupal::currentUser();
 
       // Set manager status.
+      $owner = $project->getOwner();
+      $value = $owner instanceof ManagerInterface ?
+        $project->getOwner()->isManager($account) : FALSE;
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableBooleanItem $item */
-      $item = $this->createItem(0, $project->getOwner()->isManager($account));
+      $item = $this->createItem(0, $value);
       $item->getValueProperty()->mergeCacheMaxAge(0);
       $this->list[] = $item;
     }

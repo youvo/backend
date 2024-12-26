@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\projects\Unit;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\Plugin\WorkflowType\Lifecycle;
 use Drupal\projects\ProjectInterface;
@@ -35,48 +38,35 @@ class ProjectLifecycleTest extends UnitTestCase {
    */
   protected function setUp(): void {
     parent::setUp();
+    $current_user = $this->prophesize(AccountProxyInterface::class);
     $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $this->lifecycle = new ProjectLifecycle($entity_type_manager->reveal());
+    $time = $this->prophesize(TimeInterface::class);
+    $this->lifecycle = new ProjectLifecycle(
+      $current_user->reveal(),
+      $entity_type_manager->reveal(),
+      $time->reveal(),
+    );
   }
 
   /**
-   * Tests the constructor.
+   * Tests the project methods.
    *
    * @covers ::__construct()
-   */
-  public function testConstructor(): void {
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $lifecycle = new ProjectLifecycle($entity_type_manager->reveal());
-    $this->assertInstanceOf(ProjectLifecycle::class, $lifecycle);
-    $this->assertObjectHasProperty('entityTypeManager', $lifecycle);
-  }
-
-  /**
-   * Tests the setProject method.
-   *
    * @covers ::setProject
-   */
-  public function testSetProject(): void {
-    $project = $this->prophesize(ProjectInterface::class)->reveal();
-    $self = $this->lifecycle->setProject($project);
-    $this->assertInstanceOf(ProjectLifecycle::class, $self);
-    $this->assertSame($project, $this->lifecycle->project());
-  }
-
-  /**
-   * Tests the project method.
-   *
    * @covers ::project
    */
   public function testProject(): void {
 
     $project = $this->prophesize(ProjectInterface::class)->reveal();
-    $this->lifecycle->setProject($project);
+    $self = $this->lifecycle->setProject($project);
+    $this->assertInstanceOf(ProjectLifecycle::class, $self);
     $this->assertSame($project, $this->lifecycle->project());
 
     // Test exception when project is not set properly.
-    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
-    $empty_lifecycle = new ProjectLifecycle($entity_type_manager->reveal());
+    $current_user = $this->prophesize(AccountProxyInterface::class)->reveal();
+    $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class)->reveal();
+    $time = $this->prophesize(TimeInterface::class)->reveal();
+    $empty_lifecycle = new ProjectLifecycle($current_user, $entity_type_manager, $time);
     $this->expectException(\UnexpectedValueException::class);
     $empty_lifecycle->project();
   }
@@ -143,6 +133,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @covers ::canTransition
    * @covers ::doTransition
    * @covers ::getSuccessorFromTransition
+   * @covers ::inscribeTransition
    *
    * @dataProvider doTransitionProvider
    */
@@ -213,6 +204,19 @@ class ProjectLifecycleTest extends UnitTestCase {
   }
 
   /**
+   * Tests the history method.
+   *
+   * @covers ::history
+   */
+  public function testHistory(): void {
+    $project = $this->prophesize(ProjectInterface::class);
+    $history = $this->prophesize(FieldItemListInterface::class)->reveal();
+    $project->get(Argument::any())->willReturn($history);
+    $this->lifecycle->setProject($project->reveal());
+    $this->assertSame($history, $this->lifecycle->history());
+  }
+
+  /**
    * Prophesizes a project lifecycle with different workflow conditions.
    */
   protected function prophesizeWorkflow(array $states, array $has_transition, bool $has_participant): void {
@@ -230,13 +234,24 @@ class ProjectLifecycleTest extends UnitTestCase {
     $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
     $entity_type_manager->getStorage('workflow')->willReturn($workflow_storage->reveal());
 
+    $history = $this->prophesize(FieldItemListInterface::class);
+    $history->appendItem(Argument::any())->willReturn(NULL);
+
     $values = array_map(static fn($s) => (object) ['value' => $s->value], $states);
     $project = $this->prophesize(ProjectInterface::class);
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_FIELD))->willReturn(...$values);
+    $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_HISTORY_FIELD))->willReturn($history);
     $project->set(Argument::any(), Argument::any())->willReturn(TRUE);
     $project->hasParticipant(Argument::is('Creative'))->willReturn($has_participant);
 
-    $this->lifecycle = new ProjectLifecycle($entity_type_manager->reveal());
+    $current_user = $this->prophesize(AccountProxyInterface::class);
+    $time = $this->prophesize(TimeInterface::class);
+
+    $this->lifecycle = new ProjectLifecycle(
+      $current_user->reveal(),
+      $entity_type_manager->reveal(),
+      $time->reveal()
+    );
     $this->lifecycle->setProject($project->reveal());
   }
 

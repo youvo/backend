@@ -5,6 +5,7 @@ namespace Drupal\projects;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -176,7 +177,9 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
    * Returns the entity owner's user entity.
    *
    * Overwrite method for type hinting.
+   *
+   * Might be a creative user during administrative tasks.
    */
-  public function getOwner(): Organization;
+  public function getOwner(): Organization|Creative;
 
 }

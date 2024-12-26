@@ -1,0 +1,21 @@
+uuid: 4f801fce-81be-465a-9383-d9a3a9f92137
+langcode: de
+status: true
+dependencies:
+  config:
+    - field.storage.project.field_lifecycle_history
+  module:
+    - lifecycle
+    - projects
+id: project.project.field_lifecycle_history
+field_name: field_lifecycle_history
+entity_type: project
+bundle: project
+label: 'Lifecycle History'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: lifecycle_history_item

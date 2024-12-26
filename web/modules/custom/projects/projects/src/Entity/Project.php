@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectCreateEvent;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
@@ -19,6 +20,7 @@ use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsParticipantFieldItemList;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
+use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\user_types\Utility\Profile;
@@ -116,6 +118,23 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
+  public function postCreate(EntityStorageInterface $storage): void {
+    // Set first item in lifecycle history.
+    if ($this->hasField('field_lifecycle_history')) {
+      $this->set('field_lifecycle_history', [
+        'transition' => NULL,
+        'from' => NULL,
+        'to' => ProjectState::DRAFT->value,
+        'uid' => \Drupal::currentUser()->id(),
+        'timestamp' => $this->getCreatedTime(),
+      ]);
+    }
+    parent::postCreate($storage);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     if ($this->isNew()) {
@@ -175,11 +194,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
    *
    * Overwritten method for type hinting.
    */
-  public function getOwner(): Organization {
+  public function getOwner(): Organization|Creative {
     $key = $this->getEntityType()->getKey('owner');
-    /** @var \Drupal\organizations\Entity\Organization $organization */
-    $organization = $this->get($key)->entity;
-    return $organization;
+    /** @var \Drupal\organizations\Entity\Organization|\Drupal\creatives\Entity\Creative $owner */
+    $owner = $this->get($key)->entity;
+    if (!$owner instanceof Organization && !$owner->hasPermission('administer site')) {
+      throw new \LogicException('The owner of a project should be an organization');
+    }
+    return $owner;
   }
 
   /**

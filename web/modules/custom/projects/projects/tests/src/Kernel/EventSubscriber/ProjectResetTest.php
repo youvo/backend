@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel;
 
 use Drupal\projects\Event\ProjectResetEvent;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
 
 /**
@@ -21,11 +22,16 @@ class ProjectResetTest extends ProjectEventSubscriberTestBase {
    * @covers ::getSubscribedEvents
    */
   public function testProjectReset(): void {
+
     $project = $this->createProject(ProjectState::OPEN);
     $this->assertTrue($project->lifecycle()->isOpen());
     $event = new ProjectResetEvent($project);
     $this->eventDispatcher->dispatch($event);
     $this->assertTrue($project->lifecycle()->isDraft());
+
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
+    $last = $project->lifecycle()->history()->last();
+    $this->assertEquals(ProjectTransition::RESET->value, $last->transition);
   }
 
 }

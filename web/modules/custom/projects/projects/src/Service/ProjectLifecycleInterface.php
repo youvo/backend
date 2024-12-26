@@ -2,6 +2,7 @@
 
 namespace Drupal\projects\Service;
 
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\projects\ProjectInterface;
 
 /**
@@ -68,5 +69,10 @@ interface ProjectLifecycleInterface {
    * Resets the project.
    */
   public function reset(): bool;
+
+  /**
+   * Gets the lifecycle history.
+   */
+  public function history(): FieldItemListInterface;
 
 }

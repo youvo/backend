@@ -16,12 +16,12 @@ use Drupal\workflows\StateInterface;
 use Drupal\workflows\WorkflowInterface;
 
 /**
- * Workflow state field item.
+ * Provides a lifecyle workflow state field item.
  *
  * @FieldType(
  *   id = "lifecycle_item",
- *   label = @Translation("Workflows"),
- *   description = @Translation("Allows you to store a workflow state."),
+ *   label = @Translation("Lifecycle"),
+ *   description = @Translation("Allows you to store a lifecycle workflow state."),
  *   constraints = {"LifecycleConstraint" = {}},
  *   default_formatter = "lifecycle_state_list",
  *   default_widget = "options_select"
