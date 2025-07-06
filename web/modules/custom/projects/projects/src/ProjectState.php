@@ -7,10 +7,10 @@ namespace Drupal\projects;
  */
 enum ProjectState: string {
 
-  case DRAFT = 'draft';
-  case PENDING = 'pending';
-  case OPEN = 'open';
-  case ONGOING = 'ongoing';
-  case COMPLETED = 'completed';
+  case Draft = 'draft';
+  case Pending = 'pending';
+  case Open = 'open';
+  case Ongoing = 'ongoing';
+  case Completed = 'completed';
 
 }

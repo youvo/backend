@@ -51,7 +51,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   /**
    * Creates a minimal project for testing purposes.
    */
-  protected function createProject(ProjectState $state = ProjectState::DRAFT, string $role = 'organization'): ProjectInterface {
+  protected function createProject(ProjectState $state = ProjectState::Draft, string $role = 'organization'): ProjectInterface {
 
     $manager = Creative::create([
       'name' => $this->randomString(),

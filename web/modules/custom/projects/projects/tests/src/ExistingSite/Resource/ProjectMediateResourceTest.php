@@ -24,7 +24,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateGet(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $organization = $project->getOwner();
     $applicant = $this->createCreative();
     $project->appendApplicant($applicant);
@@ -49,7 +49,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediate(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $organization = $project->getOwner();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';
@@ -76,7 +76,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateManager(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';
@@ -97,7 +97,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateSupervisor(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';
@@ -118,7 +118,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateNotOpen(): void {
 
-    $project = $this->createProject(ProjectState::COMPLETED);
+    $project = $this->createProject(ProjectState::Completed);
     $organization = $project->getOwner();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';
@@ -139,7 +139,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateNotOwner(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $other_organization = $this->createOrganization();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';
@@ -159,7 +159,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectMediateNotManager(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $other_manager = $this->createManager();
 
     $path = '/api/projects/' . $project->uuid() . '/mediate';

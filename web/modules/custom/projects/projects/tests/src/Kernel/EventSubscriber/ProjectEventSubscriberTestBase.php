@@ -51,7 +51,7 @@ abstract class ProjectEventSubscriberTestBase extends KernelTestBase {
   /**
    * Creates a minimal project for testing purposes.
    */
-  protected function createProject(ProjectState $state = ProjectState::DRAFT): ProjectInterface {
+  protected function createProject(ProjectState $state = ProjectState::Draft): ProjectInterface {
 
     $manager = Creative::create(['name' => $this->randomString()]);
     $manager->save();

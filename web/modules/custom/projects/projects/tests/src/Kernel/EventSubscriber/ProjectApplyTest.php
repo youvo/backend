@@ -21,7 +21,7 @@ class ProjectApplyTest extends ProjectEventSubscriberTestBase {
    */
   public function testProjectApply(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $this->assertTrue($project->lifecycle()->isOpen());
 
     $creative = $this->createCreative();

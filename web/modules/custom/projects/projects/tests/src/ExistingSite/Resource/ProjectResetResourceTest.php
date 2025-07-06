@@ -23,7 +23,7 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectReset(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/reset';

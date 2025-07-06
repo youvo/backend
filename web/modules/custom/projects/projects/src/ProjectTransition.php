@@ -7,10 +7,10 @@ namespace Drupal\projects;
  */
 enum ProjectTransition: string {
 
-  case SUBMIT = 'submit';
-  case PUBLISH = 'publish';
-  case MEDIATE = 'mediate';
-  case COMPLETE = 'complete';
-  case RESET = 'reset';
+  case Submit = 'submit';
+  case Publish = 'publish';
+  case Mediate = 'mediate';
+  case Complete = 'complete';
+  case Reset = 'reset';
 
 }

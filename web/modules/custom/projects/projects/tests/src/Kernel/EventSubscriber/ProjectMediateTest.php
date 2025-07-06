@@ -22,7 +22,7 @@ class ProjectMediateTest extends ProjectEventSubscriberTestBase {
    */
   public function testProjectMediate(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $this->assertTrue($project->lifecycle()->isOpen());
 
     $creative = $this->createCreative();
@@ -39,7 +39,7 @@ class ProjectMediateTest extends ProjectEventSubscriberTestBase {
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
-    $this->assertEquals(ProjectTransition::MEDIATE->value, $last->transition);
+    $this->assertEquals(ProjectTransition::Mediate->value, $last->transition);
   }
 
 }

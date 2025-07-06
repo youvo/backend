@@ -23,7 +23,7 @@ secondary_toolbar_frontend: true
 high_contrast_mode: false
 accent_color: '#3f78b5'
 focus_color: ''
-layout_density: default
+layout_density: small
 show_description_toggle: true
 show_user_theme_settings: false
 sticky_action_buttons: true

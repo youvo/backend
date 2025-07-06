@@ -160,7 +160,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
-    $config->setValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
+    $config->withValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
 
     // Build the JWT.
     $expiry = $this->config('oauth_grant_remote.settings')->get('jwt_expiration');

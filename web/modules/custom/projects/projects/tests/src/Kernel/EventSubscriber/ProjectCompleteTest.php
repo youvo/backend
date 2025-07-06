@@ -38,7 +38,7 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
    */
   public function testProjectComplete(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $this->assertTrue($project->lifecycle()->isOngoing());
 
     $creative = $this->createCreative();
@@ -52,7 +52,7 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
-    $this->assertEquals(ProjectTransition::COMPLETE->value, $last->transition);
+    $this->assertEquals(ProjectTransition::Complete->value, $last->transition);
   }
 
 }

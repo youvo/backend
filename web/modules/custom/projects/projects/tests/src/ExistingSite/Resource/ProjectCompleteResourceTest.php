@@ -27,7 +27,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectComplete(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $organization = $project->getOwner();
     $participant = $this->createCreative();
     $project->appendParticipant($participant);
@@ -73,7 +73,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteManager(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $manager = $project->getOwner()->getManager();
     $participant = $this->createCreative();
     $project->appendParticipant($participant);
@@ -96,7 +96,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteParticipant(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $participant = $this->createCreative();
     $project->appendParticipant($participant);
     $project->save();
@@ -118,7 +118,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteSupervisor(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $supervisor = $this->createSupervisor();
     $participant = $this->createCreative();
     $project->appendParticipant($participant);
@@ -141,7 +141,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteNotOngoing(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $organization = $project->getOwner();
 
     $path = '/api/projects/' . $project->uuid() . '/complete';
@@ -161,7 +161,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteNotOwner(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $other_organization = $this->createOrganization();
 
     $path = '/api/projects/' . $project->uuid() . '/complete';
@@ -181,7 +181,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteNotManager(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $other_manager = $this->createManager();
 
     $path = '/api/projects/' . $project->uuid() . '/complete';
@@ -201,7 +201,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectCompleteNotParticipant(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $other_participant = $this->createCreative();
 
     $path = '/api/projects/' . $project->uuid() . '/complete';

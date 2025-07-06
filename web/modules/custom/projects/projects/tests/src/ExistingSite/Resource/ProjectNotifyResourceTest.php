@@ -43,7 +43,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectNotifyProspect(): void {
 
-    $project = $this->createProject(ProjectState::DRAFT, 'prospect');
+    $project = $this->createProject(ProjectState::Draft, 'prospect');
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/notify';
@@ -83,7 +83,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectNotifyNotDraft(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/notify';

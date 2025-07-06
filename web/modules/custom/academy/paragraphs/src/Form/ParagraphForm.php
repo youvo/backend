@@ -151,7 +151,7 @@ class ParagraphForm extends ContentEntityForm {
       '#title' => $this->t('Abort'),
       '#url' => $url,
       '#attributes' => [
-        'class' => ['button'],
+        'class' => ['button', 'button--small'],
       ],
       '#weight' => 10,
     ];
