@@ -29,7 +29,7 @@ class ProjectSubmitTest extends ProjectEventSubscriberTestBase {
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
-    $this->assertEquals(ProjectTransition::SUBMIT->value, $last->transition);
+    $this->assertEquals(ProjectTransition::Submit->value, $last->transition);
   }
 
 }

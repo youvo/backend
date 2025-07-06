@@ -23,7 +23,7 @@ class ProjectResetTest extends ProjectEventSubscriberTestBase {
    */
   public function testProjectReset(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $this->assertTrue($project->lifecycle()->isOpen());
     $event = new ProjectResetEvent($project);
     $this->eventDispatcher->dispatch($event);
@@ -31,7 +31,7 @@ class ProjectResetTest extends ProjectEventSubscriberTestBase {
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
-    $this->assertEquals(ProjectTransition::RESET->value, $last->transition);
+    $this->assertEquals(ProjectTransition::Reset->value, $last->transition);
   }
 
 }

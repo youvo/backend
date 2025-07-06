@@ -66,70 +66,70 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * {@inheritdoc}
    */
   public function isDraft(): bool {
-    return $this->getState() === ProjectState::DRAFT;
+    return $this->getState() === ProjectState::Draft;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isPending(): bool {
-    return $this->getState() === ProjectState::PENDING;
+    return $this->getState() === ProjectState::Pending;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isOpen(): bool {
-    return $this->getState() === ProjectState::OPEN;
+    return $this->getState() === ProjectState::Open;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isOngoing(): bool {
-    return $this->getState() === ProjectState::ONGOING;
+    return $this->getState() === ProjectState::Ongoing;
   }
 
   /**
    * {@inheritdoc}
    */
   public function isCompleted(): bool {
-    return $this->getState() === ProjectState::COMPLETED;
+    return $this->getState() === ProjectState::Completed;
   }
 
   /**
    * Submits the project.
    */
   public function submit(): bool {
-    return $this->doTransition(ProjectTransition::SUBMIT);
+    return $this->doTransition(ProjectTransition::Submit);
   }
 
   /**
    * Publishes the project.
    */
   public function publish(): bool {
-    return $this->doTransition(ProjectTransition::PUBLISH);
+    return $this->doTransition(ProjectTransition::Publish);
   }
 
   /**
    * Mediates the project.
    */
   public function mediate(): bool {
-    return $this->doTransition(ProjectTransition::MEDIATE);
+    return $this->doTransition(ProjectTransition::Mediate);
   }
 
   /**
    * Completes the project.
    */
   public function complete(): bool {
-    return $this->doTransition(ProjectTransition::COMPLETE);
+    return $this->doTransition(ProjectTransition::Complete);
   }
 
   /**
    * Resets the project.
    */
   public function reset(): bool {
-    return $this->doTransition(ProjectTransition::RESET);
+    return $this->doTransition(ProjectTransition::Reset);
   }
 
   /**
@@ -155,7 +155,7 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Checks if the project can perform the given transition.
    */
   protected function canTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): bool {
-    if ($transition === ProjectTransition::MEDIATE || $transition === ProjectTransition::COMPLETE) {
+    if ($transition === ProjectTransition::Mediate || $transition === ProjectTransition::Complete) {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
     return $this->hasTransition($from, $to);
@@ -180,12 +180,12 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    */
   protected function getSuccessorFromTransition(ProjectTransition $transition): ProjectState {
     return match ($transition) {
-      ProjectTransition::SUBMIT => ProjectState::PENDING,
-      ProjectTransition::PUBLISH => ProjectState::OPEN,
-      ProjectTransition::MEDIATE => ProjectState::ONGOING,
-      ProjectTransition::COMPLETE => ProjectState::COMPLETED,
+      ProjectTransition::Submit => ProjectState::Pending,
+      ProjectTransition::Publish => ProjectState::Open,
+      ProjectTransition::Mediate => ProjectState::Ongoing,
+      ProjectTransition::Complete => ProjectState::Completed,
       // All other transitions, including reset, set the project state to draft.
-      default => ProjectState::DRAFT,
+      default => ProjectState::Draft,
     };
   }
 

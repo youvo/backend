@@ -54,7 +54,7 @@ class ExpireRefreshTokensController extends ControllerBase {
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
-    $config->setValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
+    $config->withValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
 
     // Get JWT from url parameter.
     $params = $request->getParsedBody();

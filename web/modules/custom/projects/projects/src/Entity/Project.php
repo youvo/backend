@@ -124,7 +124,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       $this->set('field_lifecycle_history', [
         'transition' => NULL,
         'from' => NULL,
-        'to' => ProjectState::DRAFT->value,
+        'to' => ProjectState::Draft->value,
         'uid' => \Drupal::currentUser()->id(),
         'timestamp' => $this->getCreatedTime(),
       ]);

@@ -42,7 +42,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
     }
 
     // The user requires the permission to initiate this transition.
-    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::SUBMIT->value);
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Submit->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
     // The resource should define project-dependent access conditions.

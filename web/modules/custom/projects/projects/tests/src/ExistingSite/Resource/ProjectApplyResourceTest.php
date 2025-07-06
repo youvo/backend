@@ -23,7 +23,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyGet(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $creative = $this->createCreative();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';
@@ -43,7 +43,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApply(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $creative = $this->createCreative();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';
@@ -63,7 +63,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyAlreadyApplied(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $creative = $this->createCreative();
     $project->appendApplicant($creative);
     $project->save();
@@ -85,7 +85,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyManager(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';
@@ -105,7 +105,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyNotOpen(): void {
 
-    $project = $this->createProject(ProjectState::PENDING);
+    $project = $this->createProject(ProjectState::Pending);
     $creative = $this->createCreative();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';
@@ -125,7 +125,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyNotPublished(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $project->setUnpublished();
     $project->save();
     $creative = $this->createCreative();
@@ -147,7 +147,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectApplyNoPermission(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $organization = $this->createOrganization();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';

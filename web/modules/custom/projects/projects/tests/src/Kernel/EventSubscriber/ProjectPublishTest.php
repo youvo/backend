@@ -22,7 +22,7 @@ class ProjectPublishTest extends ProjectEventSubscriberTestBase {
    */
   public function testProjectPublish(): void {
 
-    $project = $this->createProject(ProjectState::PENDING);
+    $project = $this->createProject(ProjectState::Pending);
     $this->assertTrue($project->lifecycle()->isPending());
     $event = new ProjectPublishEvent($project);
     $this->eventDispatcher->dispatch($event);
@@ -30,7 +30,7 @@ class ProjectPublishTest extends ProjectEventSubscriberTestBase {
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
-    $this->assertEquals(ProjectTransition::PUBLISH->value, $last->transition);
+    $this->assertEquals(ProjectTransition::Publish->value, $last->transition);
   }
 
 }

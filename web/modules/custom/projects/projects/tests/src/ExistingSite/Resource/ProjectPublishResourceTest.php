@@ -23,7 +23,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectPublish(): void {
 
-    $project = $this->createProject(ProjectState::PENDING);
+    $project = $this->createProject(ProjectState::Pending);
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';
@@ -43,7 +43,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectPublishSupervisor(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';
@@ -63,7 +63,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectPublishNotPending(): void {
 
-    $project = $this->createProject(ProjectState::ONGOING);
+    $project = $this->createProject(ProjectState::Ongoing);
     $manager = $project->getOwner()->getManager();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';

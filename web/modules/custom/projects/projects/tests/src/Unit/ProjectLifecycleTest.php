@@ -97,7 +97,7 @@ class ProjectLifecycleTest extends UnitTestCase {
   public static function isStateProvider(): array {
     $cases = [];
     foreach (ProjectState::cases() as $state) {
-      $cases[$state->value] = ['test_state' => $state];
+      $cases[$state->value] = ['state' => $state];
     }
     return $cases;
   }
@@ -155,45 +155,45 @@ class ProjectLifecycleTest extends UnitTestCase {
    */
   public static function doTransitionProvider(): array {
 
-    $cases[ProjectTransition::SUBMIT->value] = [
-      'transition' => ProjectTransition::SUBMIT,
-      'allowed_from' => [ProjectState::DRAFT],
+    $cases[ProjectTransition::Submit->value] = [
+      'transition' => ProjectTransition::Submit,
+      'allowed_from' => [ProjectState::Draft],
       'has_transition' => [TRUE, FALSE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];
 
-    $cases[ProjectTransition::PUBLISH->value] = [
-      'transition' => ProjectTransition::PUBLISH,
-      'allowed_from' => [ProjectState::PENDING],
+    $cases[ProjectTransition::Publish->value] = [
+      'transition' => ProjectTransition::Publish,
+      'allowed_from' => [ProjectState::Pending],
       'has_transition' => [FALSE, TRUE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];
 
-    $cases[ProjectTransition::MEDIATE->value . '-without-participant'] = [
-      'transition' => ProjectTransition::MEDIATE,
-      'allowed_from' => [ProjectState::OPEN],
+    $cases[ProjectTransition::Mediate->value . '-without-participant'] = [
+      'transition' => ProjectTransition::Mediate,
+      'allowed_from' => [ProjectState::Open],
       'has_transition' => [FALSE, FALSE, FALSE, FALSE, FALSE],
       'has_participant' => FALSE,
     ];
 
-    $cases[ProjectTransition::MEDIATE->value . '-with-participant'] = [
-      'transition' => ProjectTransition::MEDIATE,
-      'allowed_from' => [ProjectState::OPEN],
+    $cases[ProjectTransition::Mediate->value . '-with-participant'] = [
+      'transition' => ProjectTransition::Mediate,
+      'allowed_from' => [ProjectState::Open],
       'has_transition' => [FALSE, FALSE, TRUE, FALSE, FALSE],
       'has_participant' => TRUE,
     ];
 
-    $cases[ProjectTransition::COMPLETE->value] = [
-      'transition' => ProjectTransition::COMPLETE,
-      'allowed_from' => [ProjectState::ONGOING],
+    $cases[ProjectTransition::Complete->value] = [
+      'transition' => ProjectTransition::Complete,
+      'allowed_from' => [ProjectState::Ongoing],
       'has_transition' => [FALSE, FALSE, FALSE, TRUE, FALSE],
       'has_participant' => TRUE,
     ];
 
-    $cases[ProjectTransition::RESET->value] = [
-      'transition' => ProjectTransition::RESET,
+    $cases[ProjectTransition::Reset->value] = [
+      'transition' => ProjectTransition::Reset,
       'allowed_from' => ProjectState::cases(),
       'has_transition' => [TRUE, TRUE, TRUE, TRUE, TRUE],
       // Not relevant for this case.

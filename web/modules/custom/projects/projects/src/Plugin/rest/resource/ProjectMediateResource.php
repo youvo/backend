@@ -49,7 +49,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     }
 
     // The user requires the permission to initiate this transition.
-    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::MEDIATE->value);
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Mediate->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
     // The resource should define project-dependent access conditions.

@@ -63,7 +63,7 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectSubmitNotDraft(): void {
 
-    $project = $this->createProject(ProjectState::OPEN);
+    $project = $this->createProject(ProjectState::Open);
     $organization = $project->getOwner();
 
     $path = '/api/projects/' . $project->uuid() . '/submit';
