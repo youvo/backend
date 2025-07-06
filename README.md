@@ -5,7 +5,7 @@
 
 ## :wave: &nbsp;Introduction
 
-Backend repository for youvo based on Drupal 10.
+Backend repository for youvo based on Drupal 11.
 
 ### What is happening here?
 
