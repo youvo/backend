@@ -9,7 +9,7 @@ Backend repository for youvo based on Drupal 11.
 
 ### What is happening here?
 
-We are building the new backend for [youvo.org](https://www.youvo.org) - a platform that connects social organizations with creatives for skill-based volunteering projects. The backend of the main platform runs on Drupal 7. We are migrating to a decoupled stack with Drupal 10 and Remix. The current development phase is until the end of June. Most of the features are still in early development and highly unstable. The Academy is running as a beta on [beta.youvo.org](https://beta.youvo.org/academy) (after registration).
+We are building the new backend for [youvo.org](https://www.youvo.org) - a platform that connects social organizations with creatives for skill-based volunteering projects. The backend of the main platform runs on Drupal 7. We are migrating to a decoupled stack with Drupal 11 and Remix. The current development phase is until the end of June. Most of the features are still in early development and highly unstable. The Academy is running as a beta on [beta.youvo.org](https://beta.youvo.org/academy) (after registration).
 
 ### How to contact us?
 
