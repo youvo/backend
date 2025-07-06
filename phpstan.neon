@@ -1,6 +1,7 @@
 parameters:
   level: 6
   reportUnmatchedIgnoredErrors: false
+  treatPhpDocTypesAsCertain: false
   paths:
     - web/modules/custom
   ignoreErrors:

@@ -147,7 +147,7 @@ function projects_dummy_site_install_finished(): void {
     // Set applicants and participants for ongoing or completed projects.
     if ($state === 'ongoing' || $state === 'completed') {
       shuffle($creative_ids);
-      $applicants = array_slice($creative_ids, 0, random_int(1, min(5, count($creative_ids))));
+      $applicants = array_slice($creative_ids, 0, random_int(2, min(5, count($creative_ids))));
       $applicants = array_diff($applicants, [$manager]);
       $project->setApplicants(array_map('intval', $applicants));
       $participants = array_slice($applicants, 0, random_int(1, count($applicants)));

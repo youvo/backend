@@ -139,6 +139,7 @@ class QuestionSubmissionResource extends ResourceBase {
       $valid_value = match($question->bundle()) {
         'radios' => array_key_exists($v, $question->get('options')->getValue()),
         'checkboxes' => !array_diff($v, array_keys($question->get('options')->getValue())),
+        // @phpstan-ignore-next-line
         'task' => empty($v) || (int) $v[0] == 0,
         // @phpstan-ignore-next-line
         default => FALSE,
