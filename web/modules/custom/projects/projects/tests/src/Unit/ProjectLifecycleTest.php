@@ -51,7 +51,7 @@ class ProjectLifecycleTest extends UnitTestCase {
   /**
    * Tests the project methods.
    *
-   * @covers ::__construct()
+   * @covers ::__construct
    * @covers ::setProject
    * @covers ::project
    */

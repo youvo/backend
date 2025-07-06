@@ -41,7 +41,7 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
         $names[] = '<creative' . ($delta + 1) . '>' . $creative->getName() . '</creative' . ($delta + 1) . '>';
       }
       $replacements['%Creatives'] = $this->concatCreativeNames($names);
-      $replacements['%Creative'] = $names[0] ?? 'Anonymous';
+      $replacements['%Creative'] = $names[0];
     }
 
     return $replacements;
