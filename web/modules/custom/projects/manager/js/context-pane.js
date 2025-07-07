@@ -21,14 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Insert loading row
       const loadingRow = document.createElement('tr');
-      loadingRow.className = 'context-pane-row';
+      loadingRow.className = 'context-pane-row loading-row';
       loadingRow.innerHTML = `
         <td colspan="100%">
-          <div class="skeleton-loader">
-            <div class="skeleton-title"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line short"></div>
-          </div>
+          <span class="sliding-bar-loader">
+            <span class="sliding-bar"></span>
+          </span>
         </td>
       `;
       row.insertAdjacentElement('afterend', loadingRow);
