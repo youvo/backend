@@ -45,6 +45,7 @@ module:
   mail_login: 0
   mailer: 0
   mailsystem: 0
+  manager: 0
   menu_link_content: 0
   menu_ui: 0
   multivalue_form_element: 0

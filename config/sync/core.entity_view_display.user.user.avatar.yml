@@ -17,11 +17,12 @@ dependencies:
     - field.field.user.user.field_public_profile
     - field.field.user.user.field_skills
     - field.field.user.user.field_url
+    - image.style.avatar
     - user_bundle.user_type.user
   module:
     - image
     - layout_builder
-    - text
+    - nomarkup
 third_party_settings:
   layout_builder:
     enabled: false
@@ -33,82 +34,44 @@ targetEntityType: user
 bundle: user
 mode: avatar
 content:
-  field_about:
-    type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
-    region: content
   field_avatar:
     type: image
-    label: above
+    label: hidden
     settings:
       image_link: ''
-      image_style: ''
-    third_party_settings: {  }
-    weight: 5
-    region: content
-  field_city:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 6
-    region: content
-  field_education:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 7
+      image_style: avatar
+      image_loading:
+        attribute: lazy
+    third_party_settings:
+      nomarkup:
+        enabled: true
+        separator: '|'
+        referenced_entity: ''
+    weight: 1
     region: content
   field_name:
     type: string
-    label: above
+    label: hidden
     settings:
       link_to_entity: false
-    third_party_settings: {  }
+    third_party_settings:
+      nomarkup:
+        enabled: true
+        separator: '|'
+        referenced_entity: ''
     weight: 0
     region: content
-  field_portfolio:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 2
-    region: content
-  field_position:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 3
-    region: content
-  field_skills:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: false
-    third_party_settings: {  }
-    weight: 4
-    region: content
-  field_url:
-    type: string
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-    weight: 8
-    region: content
 hidden:
+  field_about: true
+  field_city: true
+  field_education: true
   field_jobs: true
   field_newsletter: true
   field_phone: true
+  field_portfolio: true
+  field_position: true
   field_public_profile: true
+  field_skills: true
+  field_url: true
   langcode: true
   member_for: true
