@@ -1,0 +1,5 @@
+core:
+  js:
+    js/context-pane.js: {}
+  dependencies:
+    - core/drupal

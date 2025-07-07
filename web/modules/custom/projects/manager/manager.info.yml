@@ -1,0 +1,8 @@
+name: 'Project Manager'
+type: module
+description: 'Views extensions for the project manager.'
+core_version_requirement: ^11
+package: Custom
+dependencies:
+  - drupal:views
+  - projects:projects

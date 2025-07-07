@@ -36,8 +36,12 @@
 }
 
 // Backward-compatible aliases (to be removed after migration)
-@mixin skill-base { @include icon-base; }
-@mixin skill-size($size) { @include icon-size($size); }
+@mixin skill-base {
+  @include icon-base;
+}
+@mixin skill-size($size) {
+  @include icon-size($size);
+}
 
 // Skill State Mixins
 

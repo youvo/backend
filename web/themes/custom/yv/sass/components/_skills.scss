@@ -23,6 +23,7 @@
 
 .mini-skill {
   @include icon-base;
+
   display: inline-block;
   @include icon-size("mini");
 }

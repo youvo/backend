@@ -1,0 +1,8 @@
+manager.context_pane:
+  path: '/project/context/{project}'
+  defaults:
+    _controller: '\Drupal\manager\Controller\ContextPaneController::renderPane'
+    _title: 'Context Pane'
+  requirements:
+    _permission: 'access content'
+    project: '\d+'

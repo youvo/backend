@@ -1,0 +1,26 @@
+.skeleton-loader {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+.skeleton-title, .skeleton-line {
+  background: #eee;
+  border-radius: 4px;
+  height: 16px;
+  width: 80%;
+  animation: pulse 1.5s infinite;
+}
+.skeleton-title {
+  width: 40%;
+  height: 20px;
+}
+.skeleton-line.short {
+  width: 60%;
+}
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+} 
