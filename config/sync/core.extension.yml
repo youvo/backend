@@ -80,10 +80,13 @@ module:
   system: 0
   taxonomy: 0
   text: 0
+  twig_field_value: 0
+  twig_tweak: 0
   update: 0
   user: 0
   user_bundle: 0
   user_types: 0
+  views_ui: 0
   warmer: 0
   workflows: 0
   youvo: 0
@@ -94,8 +97,10 @@ module:
   projects_dummy: 3
   content_translation: 10
   image_style_warmer: 10
+  views: 10
   youvo_development: 1000
 theme:
   claro: 0
   gin: 0
+  youvo_admin: 0
 profile: youvo_development

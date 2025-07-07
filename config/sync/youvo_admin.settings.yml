@@ -1,0 +1,20 @@
+features:
+  node_user_picture: false
+  comment_user_picture: true
+  comment_user_verification: true
+  favicon: 0
+logo:
+  use_default: 0
+  path: 'assets://logo_y.png'
+favicon:
+  use_default: 1
+enable_darkmode: '0'
+preset_accent_color: custom
+accent_color: '#3f78b5'
+preset_focus_color: gin
+focus_color: ''
+high_contrast_mode: 0
+classic_toolbar: new
+layout_density: small
+show_description_toggle: 1
+show_user_theme_settings: 0

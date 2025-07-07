@@ -1,0 +1,59 @@
+// =============================================================================
+// MIXINS
+// =============================================================================
+
+@use "variables.scss" as *;
+@use "functions.scss" as *;
+
+// Skill Base Mixin
+// Provides the base styling for all skill icons
+
+@mixin skill-base {
+  display: block;
+  border-radius: 50%;
+  background-color: $color-grey;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+// Skill Size Mixins
+
+@mixin skill-size($size) {
+  @if $size == "large" {
+    width: to-rem(80);
+    height: to-rem(80);
+  } @else if $size == "medium" {
+    width: to-rem(48);
+    height: to-rem(48);
+  } @else if $size == "small" {
+    width: to-rem(32);
+    height: to-rem(32);
+  } @else if $size == "mini" {
+    width: to-rem(24);
+    height: to-rem(24);
+  }
+}
+
+// Skill State Mixins
+
+@mixin skill-hover($size: "medium") {
+  @if $size == "large" {
+    box-shadow: 0 0 0 to-rem(12) $color-orange-light;
+  } @else {
+    box-shadow: 0 0 0 to-rem(8) $color-orange-light;
+  }
+}
+
+@mixin skill-active($size: "medium") {
+  @if $size == "large" {
+    box-shadow: 0 0 0 to-rem(12) $color-orange !important;
+  } @else {
+    box-shadow: 0 0 0 to-rem(8) $color-orange !important;
+  }
+}
+
+// Skill Icon Mixin
+
+@mixin skill-icon($type) {
+  background-image: svg-skill($type);
+}

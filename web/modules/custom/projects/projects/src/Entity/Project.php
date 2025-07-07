@@ -51,7 +51,8 @@ use Drupal\user_types\Utility\Profile;
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     }
+ *     },
+ *    "views_data" = "Drupal\views\EntityViewsData"
  *   },
  *   base_table = "project",
  *   data_table = "project_field_data",

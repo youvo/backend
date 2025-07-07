@@ -1,0 +1,32 @@
+uuid: 0e0077ca-5c8b-42e5-85dd-dfa0267542ce
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.taxonomy_term.icon
+    - field.field.taxonomy_term.skills.machine_name
+    - taxonomy.vocabulary.skills
+  module:
+    - layout_builder
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+_core:
+  default_config_hash: 6fhbEW8fzPfZu5Mjx7RUlv8EiE1Lmmw6LrmleLMwkk8
+id: taxonomy_term.skills.icon
+targetEntityType: taxonomy_term
+bundle: skills
+mode: icon
+content:
+  machine_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  description: true
+  langcode: true

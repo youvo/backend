@@ -72,6 +72,8 @@ packages:
     drupal/simple_oauth: 6.0.0
     drupal/sophron: 2.2.1
     drupal/subrequests: 3.0.12
+    drupal/twig_field_value: 2.0.5
+    drupal/twig_tweak: 3.4.1
     drupal/user_bundle: 1.4.0
     drupal/warmer: 2.0.14
     drush/drush: 13.6.0

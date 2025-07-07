@@ -1,0 +1,73 @@
+// =============================================================================
+// SKILLS COMPONENT
+// =============================================================================
+
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+
+.large-skill {
+  @include skill-base;
+
+  @include skill-size("large");
+}
+
+.medium-skill {
+  @include skill-base;
+
+  @include skill-size("medium");
+}
+
+.small-skill {
+  @include skill-base;
+
+  @include skill-size("small");
+}
+
+.mini-skill {
+  @include skill-base;
+
+  display: inline-block;
+  @include skill-size("mini");
+}
+
+.icon-skill-online {
+  @include skill-icon("online");
+}
+
+.icon-skill-concept {
+  @include skill-icon("concept");
+}
+
+.icon-skill-text {
+  @include skill-icon("text");
+}
+
+.icon-skill-design {
+  @include skill-icon("design");
+}
+
+.icon-skill-video {
+  @include skill-icon("video");
+}
+
+.icon-skill-photo {
+  @include skill-icon("photo");
+}
+
+// Skill state classes (if needed for manual use)
+.skill-hover {
+  @include skill-hover;
+}
+
+.skill-active {
+  @include skill-active;
+}
+
+.skill-hover-large {
+  @include skill-hover("large");
+}
+
+.skill-active-large {
+  @include skill-active("large");
+}

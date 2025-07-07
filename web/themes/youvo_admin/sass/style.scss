@@ -1,0 +1,15 @@
+// =============================================================================
+// MAIN STYLESHEET
+// =============================================================================
+
+// Abstracts (variables, functions, mixins)
+
+@use "abstracts/variables.scss";
+
+@use "abstracts/functions.scss";
+
+@use "abstracts/mixins.scss";
+
+// Components (reusable UI components)
+
+@use "components/skills.scss";

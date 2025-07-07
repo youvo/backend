@@ -1,0 +1,27 @@
+{
+  "name": "youvo_admin",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint:scss": "stylelint 'sass/**/*.scss'",
+    "lint:scss:fix": "stylelint 'sass/**/*.scss' --fix",
+    "format:scss": "prettier --write 'sass/**/*.scss'",
+    "scss": "yarn format:scss && yarn lint:scss:fix"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.1.1",
+    "prettier": "^3.2.5",
+    "sass": "^1.89.2",
+    "stylelint": "^16.2.1",
+    "stylelint-config-standard-scss": "^13.1.0",
+    "stylelint-scss": "^6.12.1",
+    "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "sass-svg-uri": "^2.0.0"
+  }
+}

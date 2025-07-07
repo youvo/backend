@@ -1,0 +1,91 @@
+uuid: f73f007e-6b7d-4629-915b-1f3e5796af73
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.user.name
+    - field.field.user.organization.field_about
+    - field.field.user.organization.field_aim
+    - field.field.user.organization.field_avatar
+    - field.field.user.organization.field_budget
+    - field.field.user.organization.field_causes
+    - field.field.user.organization.field_city
+    - field.field.user.organization.field_contact
+    - field.field.user.organization.field_count_fulltime
+    - field.field.user.organization.field_count_volunteer
+    - field.field.user.organization.field_country
+    - field.field.user.organization.field_manager
+    - field.field.user.organization.field_name
+    - field.field.user.organization.field_phone
+    - field.field.user.organization.field_portfolio
+    - field.field.user.organization.field_publicity
+    - field.field.user.organization.field_reachability
+    - field.field.user.organization.field_referral
+    - field.field.user.organization.field_short_name
+    - field.field.user.organization.field_street
+    - field.field.user.organization.field_url
+    - field.field.user.organization.field_zip
+    - image.style.avatar
+    - user_bundle.user_type.organization
+  module:
+    - image
+    - layout_builder
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+_core:
+  default_config_hash: 7BtSMAn9sydhIZvKwrVGudCoByGIU0t6_gnNn96a42Q
+id: user.organization.name
+targetEntityType: user
+bundle: organization
+mode: name
+content:
+  field_avatar:
+    type: image
+    label: hidden
+    settings:
+      image_link: content
+      image_style: avatar
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_short_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_about: true
+  field_aim: true
+  field_budget: true
+  field_causes: true
+  field_city: true
+  field_contact: true
+  field_count_fulltime: true
+  field_count_volunteer: true
+  field_country: true
+  field_manager: true
+  field_phone: true
+  field_portfolio: true
+  field_publicity: true
+  field_reachability: true
+  field_referral: true
+  field_street: true
+  field_url: true
+  field_zip: true
+  langcode: true
+  member_for: true
