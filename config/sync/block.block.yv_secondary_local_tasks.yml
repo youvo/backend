@@ -1,0 +1,20 @@
+uuid: 559178f9-1a51-4097-aef4-69a4288597cb
+langcode: de
+status: true
+dependencies:
+  theme:
+    - yv
+id: yv_secondary_local_tasks
+theme: yv
+region: pre_content
+weight: 0
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Secondary tabs'
+  label_display: '0'
+  provider: core
+  primary: false
+  secondary: true
+visibility: {  }

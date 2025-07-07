@@ -1,0 +1,26 @@
+// =============================================================================
+// USER AVATAR COMPONENT
+// =============================================================================
+
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+
+$user-avatar-size: mini !default;
+
+.user-avatar {
+  @include icon-base;
+  @include icon-size($user-avatar-size);
+
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+}

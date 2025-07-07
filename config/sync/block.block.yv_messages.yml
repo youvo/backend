@@ -1,0 +1,20 @@
+uuid: e3759e9b-ccbd-41c2-a38b-4c37eb7ae795
+langcode: de
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - yv
+id: yv_messages
+theme: yv
+region: highlighted
+weight: 0
+provider: null
+plugin: system_messages_block
+settings:
+  id: system_messages_block
+  label: Messages
+  label_display: '0'
+  provider: system
+visibility: {  }

@@ -61,6 +61,7 @@ packages:
     drupal/mail_login: 4.0.3
     drupal/mailsystem: 4.5.0
     drupal/multivalue_form_element: 1.0.0-beta7
+    drupal/nomarkup: 1.0.6
     drupal/openapi: 2.3.0
     drupal/openapi_jsonapi: 3.0.5
     drupal/openapi_ui: 1.0.0-rc5

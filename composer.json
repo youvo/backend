@@ -38,6 +38,7 @@
         "drupal/jsonapi_include": "^1.6",
         "drupal/mail_login": "^4.0",
         "drupal/multivalue_form_element": "^1.0@beta",
+        "drupal/nomarkup": "^1.0",
         "drupal/responsive_favicons": "^3.0",
         "drupal/simple_oauth": "^6.0@beta",
         "drupal/subrequests": "^3.0",

@@ -1,8 +1,0 @@
-name: youvo Admin
-type: theme
-base theme: gin
-description: 'youvo admin theme to extend Gin.'
-core_version_requirement: ^10 || ^11
-
-libraries:
-  - youvo_admin/admin

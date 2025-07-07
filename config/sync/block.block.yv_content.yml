@@ -1,0 +1,20 @@
+uuid: 7c62ca1b-1b9b-43d6-bda1-f5ce1186aacf
+langcode: de
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - yv
+id: yv_content
+theme: yv
+region: content
+weight: -2
+provider: null
+plugin: system_main_block
+settings:
+  id: system_main_block
+  label: 'Main page content'
+  label_display: visible
+  provider: system
+visibility: {  }

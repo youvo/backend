@@ -7,28 +7,24 @@
 @use "../abstracts/mixins.scss" as *;
 
 .large-skill {
-  @include skill-base;
-
-  @include skill-size("large");
+  @include icon-base;
+  @include icon-size("large");
 }
 
 .medium-skill {
-  @include skill-base;
-
-  @include skill-size("medium");
+  @include icon-base;
+  @include icon-size("medium");
 }
 
 .small-skill {
-  @include skill-base;
-
-  @include skill-size("small");
+  @include icon-base;
+  @include icon-size("small");
 }
 
 .mini-skill {
-  @include skill-base;
-
+  @include icon-base;
   display: inline-block;
-  @include skill-size("mini");
+  @include icon-size("mini");
 }
 
 .icon-skill-online {

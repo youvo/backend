@@ -51,6 +51,7 @@ module:
   mysql: 0
   navigation: 0
   node: 0
+  nomarkup: 0
   oauth_grant: 0
   oauth_grant_remote: 0
   openapi: 0
@@ -102,5 +103,5 @@ module:
 theme:
   claro: 0
   gin: 0
-  youvo_admin: 0
+  yv: 0
 profile: youvo_development

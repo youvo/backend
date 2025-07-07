@@ -5,20 +5,21 @@
 @use "variables.scss" as *;
 @use "functions.scss" as *;
 
-// Skill Base Mixin
-// Provides the base styling for all skill icons
-
-@mixin skill-base {
+// Generalized Icon Base Mixin
+// Provides the base styling for all circular icons (skills, avatars, etc.)
+@mixin icon-base {
   display: block;
   border-radius: 50%;
   background-color: $color-grey;
   background-repeat: no-repeat;
   background-size: contain;
+  vertical-align: middle;
+  overflow: hidden;
+  position: relative;
 }
 
-// Skill Size Mixins
-
-@mixin skill-size($size) {
+// Generalized Icon Size Mixin
+@mixin icon-size($size) {
   @if $size == "large" {
     width: to-rem(80);
     height: to-rem(80);
@@ -33,6 +34,10 @@
     height: to-rem(24);
   }
 }
+
+// Backward-compatible aliases (to be removed after migration)
+@mixin skill-base { @include icon-base; }
+@mixin skill-size($size) { @include icon-size($size); }
 
 // Skill State Mixins
 
