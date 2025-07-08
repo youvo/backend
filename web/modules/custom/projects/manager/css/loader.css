@@ -1,5 +1,6 @@
-.loading-row {
-  height: 125px;
+.loading-row,
+.loading-row--lifecycle {
+  height: 45px;
 }
 .loading-row td {
   padding: 0;

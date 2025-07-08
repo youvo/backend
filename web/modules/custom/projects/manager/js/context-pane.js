@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Show loading row after a given row
   function showLoadingRow(afterRow, type) {
     const loadingRow = document.createElement('tr');
-    loadingRow.className = 'context-pane loading-row js-context-pane-row'; // Added js-context-pane-row for robust detection
+    loadingRow.className = `context-pane loading-row loading-row--${type} js-context-pane-row`;
     loadingRow.dataset.contextType = type;
     loadingRow.innerHTML = `
       <td colspan="100%">
