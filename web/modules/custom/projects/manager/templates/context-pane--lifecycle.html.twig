@@ -1,6 +1,18 @@
 <tr {{ attributes }} class="context-pane context-pane--lifecycle">
   <td colspan="100%">
-    <strong>Lifecycle State:</strong>
-    <span class="lifecycle-state">{{ content.states }}</span>
+    <div class="lifecycle-progress-bar">
+      {% for item in content.progression %}
+        <div class="lifecycle-progress-step{% if not loop.last %} has-segment{% endif %}{% if item.completed %} completed{% endif %}" title="{{ item.info }}">
+          <div class="lifecycle-progress-circle{% if item.completed %} completed{% endif %}">
+            <span class="checkmark">✓</span>
+            <span class="dot"></span>
+          </div>
+          <div class="lifecycle-progress-label">{{ item.label }}</div>
+          {% if item.date %}
+            <div class="lifecycle-progress-date">{{ item.date }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
   </td>
 </tr>

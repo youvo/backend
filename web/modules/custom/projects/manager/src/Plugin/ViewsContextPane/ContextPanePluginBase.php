@@ -3,12 +3,21 @@
 namespace Drupal\manager\Plugin\ViewsContextPane;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\projects\Entity\Project;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  *
  */
-abstract class ContextPanePluginBase extends PluginBase {
+abstract class ContextPanePluginBase extends PluginBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    return new static($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * Returns the render array for the context pane.

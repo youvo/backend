@@ -6,3 +6,4 @@ core:
   css:
     theme:
       css/loader.css: {}
+      css/context-pane.css: {}
