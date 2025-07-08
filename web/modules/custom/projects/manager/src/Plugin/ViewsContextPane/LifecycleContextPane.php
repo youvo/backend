@@ -52,7 +52,7 @@ class LifecycleContextPane extends ContextPanePluginBase implements ContextPaneP
 
     $states = ProjectState::cases();
 
-    // Get the "latest" history.
+    // Get the latest history.
     $history = [];
     foreach ($project->lifecycle()->history() as $item) {
       if (isset($history[$item->to]) && $item->timestamp <= $history[$item->to]->timestamp) {
@@ -76,15 +76,22 @@ class LifecycleContextPane extends ContextPanePluginBase implements ContextPaneP
           ' by ' . ($user instanceof UserInterface ? $user->getDisplayName() : $this->t('Unknown'));
         $date = $this->dateFormatter->format($transition->timestamp, 'html_date');
         $completed = TRUE;
+        if (isset($previous_state)) {
+          $progression[$previous_state]['next_completed'] = TRUE;
+        }
       }
 
-      $progression[] = [
+      $progression[$state->value] = [
         'label' => ucfirst($state->value),
         'completed' => $completed,
+        'next_completed' => FALSE,
         'date' => $date ?? '',
         'info' => $info ?? '',
       ];
+
+      $previous_state = $state->value;
     }
+
     return [
       '#theme' => 'context_pane',
       'content' => [

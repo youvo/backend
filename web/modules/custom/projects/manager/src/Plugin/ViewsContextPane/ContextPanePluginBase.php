@@ -22,7 +22,7 @@ abstract class ContextPanePluginBase extends PluginBase implements ContainerFact
   /**
    * Returns the render array for the context pane.
    *
-   * @param mixed $project
+   * @param \Drupal\projects\Entity\Project $project
    *   The project entity or object.
    *
    * @return array

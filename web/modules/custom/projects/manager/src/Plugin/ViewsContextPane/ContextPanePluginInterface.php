@@ -12,8 +12,8 @@ interface ContextPanePluginInterface {
   /**
    * Returns the render array for the context pane.
    *
-   * @param mixed $project
-   *   The project entity or object.
+   * @param \Drupal\projects\Entity\Project $project
+   *   The project entity.
    *
    * @return array
    *   A render array for the context pane.

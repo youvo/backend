@@ -2,7 +2,6 @@
 
 namespace Drupal\manager\Hook;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Hook\Attribute\Hook;
 
 /**

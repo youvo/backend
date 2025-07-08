@@ -2,10 +2,9 @@
   <td colspan="100%">
     <div class="lifecycle-progress-bar">
       {% for item in content.progression %}
-        <div class="lifecycle-progress-step{% if not loop.last %} has-segment{% endif %}{% if item.completed %} completed{% endif %}" title="{{ item.info }}">
+        <div class="lifecycle-progress-step{% if not loop.last %} has-segment{% endif %}{% if item.completed %} completed{% endif %}{% if not loop.last and item.next_completed %} next-completed{% endif %}" title="{{ item.info }}">
           <div class="lifecycle-progress-circle{% if item.completed %} completed{% endif %}">
             <span class="checkmark">✓</span>
-            <span class="dot"></span>
           </div>
           <div class="lifecycle-progress-label">{{ item.label }}</div>
           {% if item.date %}

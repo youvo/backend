@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>
           </td>
         `;
+        nextRow.className = 'context-pane loading-row loading-row--' + type + ' js-context-pane-row';
         await loadAndReplaceRow(nextRow, id, type);
         return;
       }
