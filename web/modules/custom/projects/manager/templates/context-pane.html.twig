@@ -1,12 +1,5 @@
-{# NOTE: Keep the skeleton loader structure in sync with this context pane layout for best results. #}
-<tr class="context-pane-row">
+<tr {{ attributes }} class="context-pane">
   <td colspan="100%">
-    <div class="context-pane">
-      <strong>Project: {{ project.label }}</strong>
-      <p>Status: {{ project.isPublished() ? 'Published' : 'Draft' }}</p>
-      {% if not project.isPublished %}
-        <button class="js-publish-project" data-id="{{ project.id }}">Publish</button>
-      {% endif %}
-    </div>
+    <strong>{{ 'Empty context pane'|t }}</strong>
   </td>
 </tr>

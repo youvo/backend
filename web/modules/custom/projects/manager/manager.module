@@ -4,7 +4,6 @@
  * @file
  */
 
-use Drupal\views\Plugin\views\cache\CachePluginBase;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -21,23 +20,19 @@ function manager_preprocess_views_view_table(&$variables) {
 }
 
 /**
- * Implements hook_theme().
- */
-function manager_theme(array $existing, $type, $theme, $path): array {
-  return [
-    'context_pane' => [
-      'render element' => 'elements',
-      'template' => 'context-pane',
-      'path' => "$path/templates",
-    ],
-  ];
-}
-
-/**
  * Implements hook_views_pre_render().
  */
 function manager_views_pre_render(ViewExecutable $view): void {
   if ($view->id() === 'project_manager') {
     $view->element['#attached']['library'][] = 'manager/core';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function manager_theme_suggestions_context_pane_alter(&$suggestions, $variables): void {
+  if (!empty($variables['elements']['#type'])) {
+    $suggestions[] = 'context_pane__' . $variables['elements']['#type'];
   }
 }

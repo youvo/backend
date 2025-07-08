@@ -1,0 +1,8 @@
+services:
+
+  plugin.manager.views_context_pane:
+    class: 'Drupal\manager\ViewsContextPaneManager'
+    arguments:
+      - '@container.namespaces'
+      - '@cache.discovery'
+      - '@module_handler'

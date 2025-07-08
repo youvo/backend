@@ -1,0 +1,18 @@
+.context-pane-row {
+  background: #f9f9f9;
+  transition: background 0.2s;
+}
+
+.context-pane {
+  padding: 1.5em 2em;
+  border-left: 4px solid #0074d9;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 0 0 6px 6px;
+  animation: fadeInPane 0.2s;
+}
+
+@keyframes fadeInPane {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+} 

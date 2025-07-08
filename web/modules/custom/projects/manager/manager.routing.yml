@@ -1,8 +1,12 @@
 manager.context_pane:
-  path: '/project/context/{project}'
+  path: '/project/manage/context/{project}'
   defaults:
-    _controller: '\Drupal\manager\Controller\ContextPaneController::renderPane'
-    _title: 'Context Pane'
+    _controller: '\Drupal\manager\Controller\ContextPaneController::contextPane'
+    _format: 'ajax'
   requirements:
     _permission: 'access content'
-    project: '\d+'
+  options:
+    parameters:
+      project:
+        type: entity:project
+    no_cache: 'TRUE'
