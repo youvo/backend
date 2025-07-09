@@ -1,5 +1,10 @@
-<div class="logbook-timeline-date-container">
-  <div class="logbook-timeline-date" title="{{ info }}">{{ created }}</div>
+<div class="logbook-timeline-header-container">
+  <div class="logbook-timeline-label-container">
+    <div class="logbook-timeline-label">{{ label }}</div>
+  </div>
+  <div class="logbook-timeline-date-container">
+    <div class="logbook-timeline-date" title="{{ info }}">{{ created }}</div>
+  </div>
 </div>
 <div class="logbook-timeline-bar-container">
   <div class="logbook-timeline-circle"></div>
@@ -9,7 +14,4 @@
   {% if message %}
     <div class="logbook-timeline-message">{{ message }}</div>
   {% endif %}
-</div>
-<div class="logbook-timeline-label-container">
-  <div class="logbook-timeline-label">{{ label }}</div>
 </div>

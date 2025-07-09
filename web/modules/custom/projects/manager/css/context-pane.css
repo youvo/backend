@@ -104,6 +104,14 @@
    Logbook Timeline (Flex)
    ========================= */
 
+.logbook-timeline-header-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
 .logbook-timeline-flex {
   display: flex;
   flex-direction: column;
@@ -191,7 +199,7 @@
 /* Label column */
 .logbook-timeline-label-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-start;
   min-width: 80px;
   flex: 0 0 80px;
@@ -207,35 +215,16 @@
 
 /* Responsive adjustments */
 @media (max-width: 800px) {
-  .logbook-timeline-date-container,
-  .logbook-timeline-bar-container,
-  .logbook-timeline-label-container {
-    min-width: 50px;
-    max-width: 70px;
-    flex-basis: 70px;
+  .logbook-timeline-label-container,
+  .logbook-timeline-date-container {
+    display: inline-block;
+    width: auto;
+    vertical-align: top;
   }
-  .logbook-timeline-label-container {
-    min-width: 70px;
-    flex-basis: 70px;
-  }
-}
-
-@media (max-width: 600px) {
-  .logbook-timeline-flex-row {
-    flex-direction: column;
-    align-items: stretch;
-    min-height: unset;
-  }
-  .logbook-timeline-date-container,
-  .logbook-timeline-bar-container,
-  .logbook-timeline-label-container {
-    min-width: 0;
-    max-width: unset;
-    flex-basis: unset;
-    justify-content: flex-start;
-  }
-  .logbook-timeline-label-container {
+  .logbook-timeline-content-container {
     margin-top: 0.5em;
-    align-items: flex-end;
+  }
+  .logbook-timeline-flex-row {
+    display: block;
   }
 }
