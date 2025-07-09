@@ -18,7 +18,7 @@ class ProjectPublishSubscriber implements EventSubscriberInterface {
    */
   public function onProjectPublish(ProjectPublishEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->publish();
+    $project->lifecycle()->publish($event->getTimestamp());
     $project->save();
   }
 

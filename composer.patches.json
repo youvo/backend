@@ -2,6 +2,7 @@
     "patches": {
 	      "drupal/core": {
             "Issue #2924549: Invoke hook after a site install is complete": "patches/core/2924549-65.patch",
+            "Issue #3051453: Call to a member function setSyncing() on null when installing a module": "patches/core/3051453-8354-84688e15.patch",
             "Issue #3098935: JSON:API can't handle exceptions thrown during authentication": "patches/core/3098935-16.patch",
             "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request": "patches/core/3181946-29.patch",
             "Custom: Change file upload route for jsonapi extras": "patches/core/custom-change-file-upload-route-for-jsonapi-extras.patch",

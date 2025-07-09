@@ -18,7 +18,7 @@ class ProjectResetSubscriber implements EventSubscriberInterface {
    */
   public function onProjectReset(ProjectResetEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->reset();
+    $project->lifecycle()->reset($event->getTimestamp());
     $project->setPromoted(FALSE);
     $project->save();
   }

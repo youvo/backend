@@ -100,36 +100,36 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Submits the project.
    */
-  public function submit(): bool {
-    return $this->doTransition(ProjectTransition::Submit);
+  public function submit(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Submit, $timestamp);
   }
 
   /**
    * Publishes the project.
    */
-  public function publish(): bool {
-    return $this->doTransition(ProjectTransition::Publish);
+  public function publish(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Publish, $timestamp);
   }
 
   /**
    * Mediates the project.
    */
-  public function mediate(): bool {
-    return $this->doTransition(ProjectTransition::Mediate);
+  public function mediate(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Mediate, $timestamp);
   }
 
   /**
    * Completes the project.
    */
-  public function complete(): bool {
-    return $this->doTransition(ProjectTransition::Complete);
+  public function complete(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Complete, $timestamp);
   }
 
   /**
    * Resets the project.
    */
-  public function reset(): bool {
-    return $this->doTransition(ProjectTransition::Reset);
+  public function reset(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Reset, $timestamp);
   }
 
   /**
@@ -164,12 +164,12 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Sets new project state for given transition.
    */
-  protected function doTransition(ProjectTransition $transition): bool {
+  protected function doTransition(ProjectTransition $transition, ?int $timestamp = NULL): bool {
     $old_state = $this->getState();
     $new_state = $this->getSuccessorFromTransition($transition);
     if ($this->canTransition($transition, $old_state, $new_state)) {
       $this->project()->set(static::LIFECYCLE_FIELD, $new_state->value);
-      $this->inscribeTransition($transition, $old_state, $new_state);
+      $this->inscribeTransition($transition, $old_state, $new_state, $timestamp);
       return TRUE;
     }
     throw new LifecycleTransitionException($transition->value);
@@ -192,13 +192,13 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Inscribes transition in lifecycle history.
    */
-  protected function inscribeTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): void {
+  protected function inscribeTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to, ?int $timestamp = NULL): void {
     $this->project()->get(static::LIFECYCLE_HISTORY_FIELD)->appendItem([
       'transition' => $transition->value,
       'from' => $from->value,
       'to' => $to->value,
       'uid' => $this->currentUser->id(),
-      'timestamp' => $this->time->getCurrentTime(),
+      'timestamp' => $timestamp ?? $this->time->getCurrentTime(),
     ]);
   }
 

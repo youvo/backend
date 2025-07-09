@@ -18,7 +18,7 @@ class ProjectSubmitSubscriber implements EventSubscriberInterface {
    */
   public function onProjectSubmit(ProjectSubmitEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->submit();
+    $project->lifecycle()->submit($event->getTimestamp());
     $project->save();
   }
 

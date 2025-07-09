@@ -17,7 +17,7 @@ class LogbookProjectCompleteSubscriber extends LogbookSubscriberBase {
    * {@inheritdoc}
    */
   public function log(Event $event): void {
-    if (!$log = $this->createLog()) {
+    if (!$log = $this->createLog($event)) {
       return;
     }
     /** @var \Drupal\projects\Event\ProjectCompleteEvent $event */

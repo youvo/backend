@@ -19,7 +19,7 @@ class ProjectCompleteSubscriber implements EventSubscriberInterface {
   public function onProjectComplete(ProjectCompleteEvent $event): void {
 
     $project = $event->getProject();
-    $project->lifecycle()->complete();
+    $project->lifecycle()->complete($event->getTimestamp());
     $project->save();
 
     $result = $project->getResult();

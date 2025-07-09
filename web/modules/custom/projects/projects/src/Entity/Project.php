@@ -169,7 +169,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
       // Dispatch a project create event if this is a proper organization.
       if ($this->getOwner()->hasRoleOrganization()) {
-        $event = new ProjectCreateEvent($this);
+        $event = new ProjectCreateEvent($this, $this->getCreatedTime());
         \Drupal::service('event_dispatcher')->dispatch($event);
       }
 

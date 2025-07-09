@@ -26,7 +26,7 @@ class ProjectMediateSubscriber implements EventSubscriberInterface {
       $project->appendParticipant($manager, 'Manager');
     }
 
-    $project->lifecycle()->mediate();
+    $project->lifecycle()->mediate($event->getTimestamp());
     $project->setPromoted(FALSE);
     $project->save();
   }

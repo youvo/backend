@@ -48,27 +48,27 @@ interface ProjectLifecycleInterface {
   /**
    * Submits the project.
    */
-  public function submit(): bool;
+  public function submit(?int $timestamp = NULL): bool;
 
   /**
    * Publishes the project.
    */
-  public function publish(): bool;
+  public function publish(?int $timestamp = NULL): bool;
 
   /**
    * Mediates the project.
    */
-  public function mediate(): bool;
+  public function mediate(?int $timestamp = NULL): bool;
 
   /**
    * Completes the project.
    */
-  public function complete(): bool;
+  public function complete(?int $timestamp = NULL): bool;
 
   /**
    * Resets the project.
    */
-  public function reset(): bool;
+  public function reset(?int $timestamp = NULL): bool;
 
   /**
    * Gets the lifecycle history.

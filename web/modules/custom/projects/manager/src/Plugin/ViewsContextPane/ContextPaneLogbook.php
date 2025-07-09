@@ -36,19 +36,9 @@ class ContextPaneLogbook extends ContextPaneBase {
    */
   public function build(Project $project): array {
 
-    $log_storage = $this->entityTypeManager->getStorage('log');
-
-    $log_ids = $log_storage->getQuery()
-      ->accessCheck(TRUE)
-      ->condition('project', $project->id())
-      ->range(0, 10)
-      ->sort('created', 'DESC')
-      ->execute();
-    if (empty($log_ids)) {
-      return [];
-    }
-
-    $logs = $log_storage->loadMultiple($log_ids);
+    $logs = array_reverse($this->entityTypeManager
+      ->getStorage('log')
+      ->loadByProperties(['project' => $project->id()]));
 
     $log_builds = [];
     foreach ($logs as $log) {

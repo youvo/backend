@@ -39,7 +39,7 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
     }
 
     // Log reset of project.
-    if (!$log = $this->createLog()) {
+    if (!$log = $this->createLog($event)) {
       return;
     }
     $log->setProject($event->getProject());
