@@ -1,3 +1,7 @@
+/* =========================
+   Lifecycle Progress Bar
+   ========================= */
+
 .context-pane {
   border-inline-start: 4px solid #3f78b5;
 }
@@ -167,14 +171,12 @@
   z-index: 1;
 }
 
-/* Remove old connector class if present */
-.logbook-timeline-connector { display: none !important; }
-
 /* Content column */
 .logbook-timeline-content-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
+  box-sizing: border-box;
 }
 .logbook-timeline-text {
   font-size: 1em;
