@@ -1,6 +1,8 @@
 .context-pane {
-  padding: 5rem;
   border-inline-start: 4px solid #3f78b5;
+}
+.context-column {
+  cursor: pointer;
 }
 
 .lifecycle-progress-bar {
@@ -9,10 +11,10 @@
   justify-content: space-between;
   width: 100%;
   position: relative;
-  gap: 0;
   margin-top: 8px;
   height: 61px;
 }
+
 .lifecycle-progress-step {
   display: flex;
   flex-direction: column;
@@ -21,6 +23,7 @@
   min-width: 60px;
   position: relative;
 }
+
 .lifecycle-progress-step.has-segment::after {
   content: '';
   position: absolute;
@@ -31,9 +34,11 @@
   background: #e8ecf2;
   z-index: 1;
 }
+
 .lifecycle-progress-step.next-completed.has-segment::after {
   background: #3f78b5;
 }
+
 .lifecycle-progress-circle {
   width: 16px;
   height: 16px;
@@ -47,28 +52,34 @@
   box-sizing: border-box;
   z-index: 2;
 }
+
 .lifecycle-progress-circle.completed {
   background: #3f78b5;
   border-color: #3f78b5;
 }
+
 .lifecycle-progress-circle .checkmark {
   display: none;
 }
+
 .lifecycle-progress-circle.completed .checkmark {
   display: block;
   font-size: 0.6em;
 }
+
 .lifecycle-progress-label {
   font-size: 0.85em;
   text-align: center;
   margin-top: 6px;
 }
+
 .lifecycle-progress-date {
   font-size: 0.75em;
   text-align: center;
 }
+
 @media (max-width: 600px) {
-  .lifecycle-progress-bar, .lifecycle-progress-labels {
+  .lifecycle-progress-bar {
     min-width: 320px;
     font-size: 0.8em;
   }
