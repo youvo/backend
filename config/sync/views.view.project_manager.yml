@@ -1055,8 +1055,7 @@ display:
     position: 1
     display_options:
       display_description: ''
-      display_extenders:
-        attributes: {  }
+      display_extenders: {  }
       path: projects/manage
       use_admin_theme: true
     cache_metadata:

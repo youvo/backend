@@ -154,3 +154,14 @@ function youvo_site_install_finished(): void {
   ]);
   $path_alias->save();
 }
+
+/**
+ * Implements hook_install().
+ */
+function youvo_install(): void {
+  // Somehow this configuration is broken after site install. Remove the invalid
+  // configuration.
+  \Drupal::database()->delete('config')
+    ->condition('name', 'views.view.user_admin_people')
+    ->execute();
+}
