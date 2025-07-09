@@ -113,7 +113,7 @@ display:
             external: false
             replace_spaces: false
             path_case: none
-            trim_whitespace: false
+            trim_whitespace: true
             alt: ''
             rel: ''
             link_class: ''
@@ -138,7 +138,7 @@ display:
           element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: false
+          element_default_classes: true
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -202,7 +202,7 @@ display:
           element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: false
+          element_default_classes: true
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -246,8 +246,8 @@ display:
           label: ★
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: '<div data-context-pane="promote" data-project-id="{{ id }}">{{ promote }}</div>'
             make_link: false
             path: ''
             absolute: false
@@ -273,7 +273,7 @@ display:
             preserve_tags: ''
             html: false
           element_type: ''
-          element_class: context-highlight
+          element_class: context-pane-column
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
@@ -337,14 +337,14 @@ display:
             trim: false
             preserve_tags: ''
             html: false
-          element_type: '0'
+          element_type: ''
           element_class: ''
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
-          element_wrapper_type: '0'
+          element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: false
+          element_default_classes: true
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -467,14 +467,14 @@ display:
             trim: false
             preserve_tags: ''
             html: false
-          element_type: '0'
+          element_type: ''
           element_class: ''
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
-          element_wrapper_type: '0'
+          element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: false
+          element_default_classes: true
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -501,7 +501,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Manager
+          label: ''
           exclude: false
           alter:
             alter_text: false
@@ -537,7 +537,7 @@ display:
           element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: false
+          element_default_classes: true
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -967,15 +967,15 @@ display:
             promote:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-center
               separator: ''
               empty_column: false
-              responsive: ''
+              responsive: priority-low
             field_skills:
               align: ''
               separator: ''
               empty_column: false
-              responsive: ''
+              responsive: priority-low
             title:
               sortable: false
               default_sort_order: asc
@@ -989,16 +989,16 @@ display:
               align: ''
               separator: ''
               empty_column: false
-              responsive: ''
+              responsive: priority-medium
             field_manager:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-center
               separator: ''
               empty_column: false
               responsive: ''
             operations:
-              align: ''
+              align: views-align-right
               separator: ''
               empty_column: false
               responsive: ''

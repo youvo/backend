@@ -5,5 +5,6 @@ core:
     - core/drupal
   css:
     theme:
-      css/loader.css: {}
       css/context-pane.css: {}
+      css/loader.css: {}
+      css/manager.css: {}

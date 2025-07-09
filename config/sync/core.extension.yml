@@ -17,8 +17,8 @@ module:
   courses: 0
   creatives: 0
   datetime: 0
-  devel_mail_logger: 0
   dblog: 0
+  devel_mail_logger: 0
   dynamic_page_cache: 0
   entity: 0
   feedback: 0
