@@ -38,6 +38,14 @@ class DashboardController extends ControllerBase {
           '#attributes' => ['class' => ['button', 'button--primary']],
         ];
       }
+      if ($this->moduleHandler()->moduleExists('manager')) {
+        $page['project_manager'] = [
+          '#type' => 'link',
+          '#title' => $this->t('Project Manager'),
+          '#url' => Url::fromRoute('view.project_manager.project_manager'),
+          '#attributes' => ['class' => ['button', 'button--primary']],
+        ];
+      }
     }
 
     // Monitoring.
