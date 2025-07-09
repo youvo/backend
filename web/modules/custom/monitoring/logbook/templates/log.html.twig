@@ -1,12 +1,15 @@
-<article style="
-  {% if color %}{{ 'background-color:' ~ color ~ ';' }}{% endif %}
-  {% if show_hidden %}{% if hidden %}opacity: 0.5;{% endif %}{% endif %}
-">
-  <h3 class="system-status-general-info__item-title">{{ created|date('\\A\\m d.m.Y \\u\\m h:m \\U\\h\\r') }}: {{ label }}</h3>
-  {{ text }}
+<div class="logbook-timeline-date-container">
+  <div class="logbook-timeline-date">{{ created|date('d.m.Y') }}</div>
+</div>
+<div class="logbook-timeline-bar-container">
+  <div class="logbook-timeline-circle"></div>
+</div>
+<div class="logbook-timeline-content-container">
+  <div class="logbook-timeline-text">{{ text }}</div>
   {% if message %}
-    <div class="system-status-general-info__item-details leader">
-      {{ message }}
-    </div>
+    <div class="logbook-timeline-message">{{ message }}</div>
   {% endif %}
-</article>
+</div>
+<div class="logbook-timeline-label-container">
+  <div class="logbook-timeline-label">{{ label }}</div>
+</div>
