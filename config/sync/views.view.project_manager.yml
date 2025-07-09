@@ -105,8 +105,8 @@ display:
           label: Status
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: '<div data-context-pane="lifecycle" data-project-id={{ id }}>{{ field_lifecycle }}</div>'
             make_link: false
             path: ''
             absolute: false
@@ -132,13 +132,13 @@ display:
             preserve_tags: ''
             html: false
           element_type: ''
-          element_class: ''
+          element_class: context-pane-column
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: true
+          element_default_classes: false
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -169,8 +169,8 @@ display:
           label: Changed
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: '<div data-context-pane="logbook" data-project-id="{{ id }}">{{ changed }}</div>'
             make_link: false
             path: ''
             absolute: false
@@ -196,13 +196,13 @@ display:
             preserve_tags: ''
             html: false
           element_type: ''
-          element_class: ''
+          element_class: context-pane-column
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
-          element_default_classes: true
+          element_default_classes: false
           empty: ''
           hide_empty: false
           empty_zero: false
@@ -273,7 +273,7 @@ display:
             preserve_tags: ''
             html: false
           element_type: ''
-          element_class: ''
+          element_class: context-highlight
           element_label_type: ''
           element_label_class: ''
           element_label_colon: false
@@ -929,7 +929,7 @@ display:
         type: table
         options:
           grouping: {  }
-          row_class: 'project-{{ id }}'
+          row_class: ''
           default_row_class: false
           columns:
             id: id
@@ -1055,7 +1055,8 @@ display:
     position: 1
     display_options:
       display_description: ''
-      display_extenders: {  }
+      display_extenders:
+        attributes: {  }
       path: projects/manage
       use_admin_theme: true
     cache_metadata:
