@@ -19,7 +19,7 @@ const SELECTORS = {
  */
 function showLoadingRow(afterRow, type) {
   const loadingRow = document.createElement('tr');
-  loadingRow.className = 'context-pane loading-row loading-row--' + type + ' js-context-pane-row';
+  loadingRow.className = 'loading-pane js-context-pane-row';
   loadingRow.dataset.contextType = type;
   loadingRow.innerHTML = `
     <td colspan="100%">
@@ -92,7 +92,7 @@ function initContextPane() {
             </span>
           </td>
         `;
-        nextRow.className = 'context-pane loading-row loading-row--' + type + ' js-context-pane-row';
+        nextRow.className = 'loading-pane js-context-pane-row';
         await loadAndReplaceRow(nextRow, id, type);
         return;
       }
