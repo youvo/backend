@@ -29,11 +29,17 @@ function logbook_theme(): array {
  * Prepares variables for log templates.
  */
 function template_preprocess_log(array &$variables): void {
+
+  /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+  $date_formatter = \Drupal::service('date.formatter');
+
   /** @var \Drupal\logbook\LogInterface $log */
   $log = $variables['elements']['#log'];
+
   $variables['log'] = $log;
   $variables['color'] = $log->getColor();
-  $variables['created'] = $log->getCreatedTime();
+  $variables['created'] = $date_formatter->format($log->getCreatedTime(), 'html_date');
+  $variables['info'] = $date_formatter->format($log->getCreatedTime(), 'short') . ' by ' . $log->getOwner()->getDisplayName();
   $variables['show_hidden'] = \Drupal::request()->query->get('hidden');
   $variables['label'] = str_replace('Project ', '', $log->getPattern()->label());
   $variables['hidden'] = $log->getPattern()->isHidden();

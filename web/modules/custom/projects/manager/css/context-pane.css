@@ -78,6 +78,7 @@
 }
 
 .lifecycle-progress-date {
+  cursor: pointer;
   font-size: 0.8em;
   text-align: center;
 }
@@ -128,6 +129,7 @@
   flex: 0 0 75px;
 }
 .logbook-timeline-date {
+  cursor: pointer;
   font-size: 0.8em;
   text-align: center;
   margin-top: 0.2em;
