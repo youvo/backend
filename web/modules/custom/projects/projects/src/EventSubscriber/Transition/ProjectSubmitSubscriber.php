@@ -26,7 +26,7 @@ class ProjectSubmitSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectSubmitEvent::class => 'onProjectSubmit'];
+    return [ProjectSubmitEvent::class => ['onProjectSubmit', 1000]];
   }
 
 }

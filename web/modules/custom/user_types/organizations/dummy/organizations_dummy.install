@@ -90,10 +90,9 @@ function organizations_dummy_site_install_finished(): void {
     $organization = Organization::create($values);
 
     if ($i <= 15) {
-      if ($faker->boolean(40)) {
-        $organization->get('field_manager')
-          ->appendItem($faker->randomElement($manager_ids));
-      }
+      // Always assign a manager to non-prospect organizations.
+      $organization->get('field_manager')
+        ->appendItem($faker->randomElement($manager_ids));
       $organization->addRole('organization');
     }
     else {

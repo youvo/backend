@@ -27,7 +27,7 @@ class ProjectResetSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectResetEvent::class => 'onProjectReset'];
+    return [ProjectResetEvent::class => ['onProjectReset', 1000]];
   }
 
 }

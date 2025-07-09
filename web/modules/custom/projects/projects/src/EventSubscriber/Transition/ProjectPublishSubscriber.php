@@ -26,7 +26,7 @@ class ProjectPublishSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectPublishEvent::class => 'onProjectPublish'];
+    return [ProjectPublishEvent::class => ['onProjectPublish', 1000]];
   }
 
 }

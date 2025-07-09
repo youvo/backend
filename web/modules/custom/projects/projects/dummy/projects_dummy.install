@@ -71,6 +71,7 @@ function projects_dummy_site_install_finished(): void {
   $contacts = [];
   $managers = [];
 
+  /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
   $event_dispatcher = \Drupal::service('event_dispatcher');
 
   // Create random content.
@@ -158,11 +159,12 @@ function projects_dummy_site_install_finished(): void {
       if (in_array($final_state, ['open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         $event_dispatcher->dispatch(new ProjectPublishEvent($project, $transition_time));
-        // Add applicants after publish.
+        // Add applicants after publish. Ensure at least one applicant.
         shuffle($creative_ids);
-        $num_applicants = random_int(0, min(5, count($creative_ids)));
+        $num_applicants = random_int(1, min(5, count($creative_ids)));
         $applicants = array_slice($creative_ids, 0, $num_applicants);
         $applicants = array_diff($applicants, [$manager]);
+        $actual_applicants = [];
         foreach ($applicants as $applicant_id) {
           $applicant = Creative::load($applicant_id);
           if ($applicant) {
@@ -170,19 +172,21 @@ function projects_dummy_site_install_finished(): void {
             $apply_event = new ProjectApplyEvent($project, $applicant, $transition_time);
             $apply_event->setMessage($faker->sentence());
             $event_dispatcher->dispatch($apply_event);
+            $actual_applicants[] = $applicant_id;
           }
         }
       }
       if (in_array($final_state, ['ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         // Add participants with 'Creative' task before mediate.
-        shuffle($creative_ids);
-        $num_applicants = random_int(2, min(5, count($creative_ids)));
-        $applicants = array_slice($creative_ids, 0, $num_applicants);
-        $applicants = array_diff($applicants, [$manager]);
-        $participants = array_slice($applicants, 0, random_int(1, count($applicants)));
+        // Only select participants from actual applicants.
+        $participant_ids = [];
+        if (!empty($actual_applicants)) {
+          $num_participants = random_int(1, count($actual_applicants));
+          $participant_ids = array_slice($actual_applicants, 0, $num_participants);
+        }
         $participant_entities = [];
-        foreach ($participants as $pid) {
+        foreach ($participant_ids as $pid) {
           $user = Creative::load($pid);
           if ($user) {
             $participant_entities[] = $user;

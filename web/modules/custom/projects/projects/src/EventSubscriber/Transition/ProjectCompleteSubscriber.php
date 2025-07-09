@@ -32,7 +32,7 @@ class ProjectCompleteSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectCompleteEvent::class => 'onProjectComplete'];
+    return [ProjectCompleteEvent::class => ['onProjectComplete', 1000]];
   }
 
 }
