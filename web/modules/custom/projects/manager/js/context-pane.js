@@ -5,40 +5,11 @@
  * Constants for selectors and actions.
  */
 const SELECTORS = {
-  contextAction: '.js-context-action',
   contextPaneRow: '.js-context-pane-row',
-  contextTrigger: 'td[class*="context-"]',
-  contextTable: '.js-context-table',
+  contextTable: 'table',
   contextPane: '.context-pane',
+  contextTrigger: '[data-context-pane][data-project-id]',
 };
-
-const ACTIONS = {
-  publish: 'publish',
-};
-
-/**
- * Attach event listeners to context action buttons.
- * @param {string|number} projectId
- */
-function attachContextActions(projectId) {
-  document.querySelectorAll(SELECTORS.contextAction).forEach(btn => {
-    btn.removeEventListener('click', btn._contextActionHandler);
-    btn._contextActionHandler = async ev => {
-      ev.stopPropagation();
-      const action = btn.dataset.action;
-      if (action === ACTIONS.publish) {
-        try {
-          const res = await fetch(`/api/project/${projectId}/publish`, { method: 'POST' });
-          if (res.ok) {
-            window.location.reload();
-          }
-        } catch (e) {
-        }
-      }
-    };
-    btn.addEventListener('click', btn._contextActionHandler);
-  });
-}
 
 /**
  * Show a loading row after a given row.
@@ -48,7 +19,7 @@ function attachContextActions(projectId) {
  */
 function showLoadingRow(afterRow, type) {
   const loadingRow = document.createElement('tr');
-  loadingRow.className = `context-pane loading-row loading-row--${type} js-context-pane-row`;
+  loadingRow.className = 'context-pane loading-row loading-row--' + type + ' js-context-pane-row';
   loadingRow.dataset.contextType = type;
   loadingRow.innerHTML = `
     <td colspan="100%">
@@ -78,12 +49,11 @@ async function loadAndReplaceRow(row, id, type) {
       newRow.classList.add('js-context-pane-row');
       newRow.dataset.contextType = type;
       row.replaceWith(newRow);
-      setTimeout(() => attachContextActions(id), 100);
     } else {
       row.outerHTML = html;
-      setTimeout(() => attachContextActions(id), 100);
     }
   } catch (e) {
+    // Optionally show error feedback
   }
 }
 
@@ -95,48 +65,20 @@ function closeContextPane() {
 }
 
 /**
- * Extract project id from a table row.
- * @param {HTMLTableRowElement} row
- * @returns {string|null}
- */
-function getProjectIdFromRow(row) {
-  const projectClass = Array.from(row.classList).find(cls => cls.startsWith('project-'));
-  return projectClass ? projectClass.replace('project-', '') : null;
-}
-
-/**
- * Extract context type from a trigger cell.
- * @param {HTMLElement} trigger
- * @returns {string|null}
- */
-function getContextTypeFromTrigger(trigger) {
-  const contextClass = Array.from(trigger.classList).find(cls => cls.startsWith('context-'));
-  return contextClass ? contextClass.replace('context-', '') : null;
-}
-
-/**
- * Initialize context pane event listeners.
+ * Initialize context pane event listeners using data attributes.
  */
 function initContextPane() {
-  // Mark the table for context triggers
-  const firstTrigger = document.querySelector(SELECTORS.contextTrigger);
-  const contextTable = firstTrigger?.closest('table');
-  if (contextTable) {
-    contextTable.classList.add('js-context-table');
-  }
-
-  // Event delegation for context triggers
-  if (contextTable) {
-    contextTable.addEventListener('click', async e => {
+  // Use event delegation on all tables
+  document.querySelectorAll(SELECTORS.contextTable).forEach(table => {
+    table.addEventListener('click', async e => {
       const trigger = e.target.closest(SELECTORS.contextTrigger);
       if (!trigger) return;
       e.stopPropagation();
+      const id = trigger.getAttribute('data-project-id');
+      const type = trigger.getAttribute('data-context-pane');
+      if (!id || !type) return;
       const row = trigger.closest('tr');
       if (!row) return;
-      const id = getProjectIdFromRow(row);
-      const type = getContextTypeFromTrigger(trigger);
-      if (!id || !type) return;
-
       const nextRow = row.nextElementSibling;
       if (nextRow && nextRow.classList.contains('context-pane')) {
         if (nextRow.dataset.contextType === type) {
@@ -150,7 +92,7 @@ function initContextPane() {
             </span>
           </td>
         `;
-        nextRow.className = `context-pane loading-row loading-row--${type} js-context-pane-row`;
+        nextRow.className = 'context-pane loading-row loading-row--' + type + ' js-context-pane-row';
         await loadAndReplaceRow(nextRow, id, type);
         return;
       }
@@ -158,7 +100,7 @@ function initContextPane() {
       const loadingRow = showLoadingRow(row, type);
       await loadAndReplaceRow(loadingRow, id, type);
     });
-  }
+  });
 
   // Close context pane when clicking outside
   document.body.addEventListener('click', e => {

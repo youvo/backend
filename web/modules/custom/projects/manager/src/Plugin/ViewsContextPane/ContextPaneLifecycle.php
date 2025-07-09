@@ -14,11 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a project lifecycle views context pane.
  */
-#[ViewsContextPane(
-  id: "lifecycle",
-  label: "Lifecycle Context Pane"
-)]
-class LifecycleContextPane extends ContextPanePluginBase implements ContextPanePluginInterface {
+#[ViewsContextPane(id: "lifecycle")]
+class ContextPaneLifecycle extends ContextPaneBase {
 
   use StringTranslationTrait;
 

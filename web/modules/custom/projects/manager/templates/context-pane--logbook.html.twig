@@ -1,0 +1,7 @@
+<tr {{ attributes }} class="context-pane context-pane--logbook">
+  <td colspan="100%">
+    {% for log in content.logs %}
+      {{ log }}
+    {% endfor %}
+  </td>
+</tr>

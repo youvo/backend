@@ -1,7 +1,7 @@
 .context-pane {
   border-inline-start: 4px solid #3f78b5;
 }
-.context-column {
+.context-pane-column {
   cursor: pointer;
 }
 

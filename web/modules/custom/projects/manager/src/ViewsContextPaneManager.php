@@ -6,10 +6,10 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\manager\Attribute\ViewsContextPane;
-use Drupal\manager\Plugin\ViewsContextPane\ContextPanePluginInterface;
+use Drupal\manager\Plugin\ViewsContextPane\ContextPaneInterface;
 
 /**
- *
+ * Provides a views context pane manager.
  */
 class ViewsContextPaneManager extends DefaultPluginManager {
 
@@ -22,7 +22,7 @@ class ViewsContextPaneManager extends DefaultPluginManager {
       'Plugin/ViewsContextPane',
       $namespaces,
       $module_handler,
-      ContextPanePluginInterface::class,
+      ContextPaneInterface::class,
       ViewsContextPane::class
     );
     $this->alterInfo('views_context_pane_info');

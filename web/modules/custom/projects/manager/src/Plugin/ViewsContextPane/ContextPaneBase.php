@@ -8,9 +8,9 @@ use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- *
+ * Provides a base class for context pane plugins.
  */
-abstract class ContextPanePluginBase extends PluginBase implements ContainerFactoryPluginInterface {
+abstract class ContextPaneBase extends PluginBase implements ContainerFactoryPluginInterface, ContextPaneInterface {
 
   /**
    * {@inheritdoc}
