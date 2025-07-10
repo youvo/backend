@@ -6,3 +6,9 @@ services:
       - '@container.namespaces'
       - '@cache.discovery'
       - '@module_handler'
+
+  manager.ajax_response_subscriber:
+    class: Drupal\manager\EventSubscriber\AjaxResponseSubscriber
+    tags:
+      - { name: event_subscriber }
+

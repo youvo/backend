@@ -1,0 +1,22 @@
+uuid: d1664614-a94b-4914-bdc8-7e800c595c63
+langcode: de
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+    - user
+id: project.promote
+plugin_id: 'project:promote'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
+    - cookie

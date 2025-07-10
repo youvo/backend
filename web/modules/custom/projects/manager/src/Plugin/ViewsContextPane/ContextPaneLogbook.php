@@ -3,7 +3,6 @@
 namespace Drupal\manager\Plugin\ViewsContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\manager\Attribute\ViewsContextPane;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -13,8 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 #[ViewsContextPane(id: "logbook")]
 class ContextPaneLogbook extends ContextPaneBase {
-
-  use StringTranslationTrait;
 
   /**
    * The entity type manager.

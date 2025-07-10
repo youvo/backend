@@ -1,9 +1,8 @@
 // Context Pane JS for Project Manager
 // Handles dynamic context panes in project tables
 
-/**
- * Constants for selectors and actions.
- */
+let lastScrollPosition = null;
+
 const SELECTORS = {
   contextPaneRow: '.js-context-pane-row',
   contextTable: 'table',
@@ -11,12 +10,6 @@ const SELECTORS = {
   contextTrigger: '[data-context-pane][data-project-id]',
 };
 
-/**
- * Show a loading row after a given row.
- * @param {HTMLTableRowElement} afterRow
- * @param {string} type
- * @returns {HTMLTableRowElement}
- */
 function showLoadingRow(afterRow, type) {
   const loadingRow = document.createElement('tr');
   loadingRow.className = 'loading-pane js-context-pane-row';
@@ -32,12 +25,6 @@ function showLoadingRow(afterRow, type) {
   return loadingRow;
 }
 
-/**
- * Load context HTML and replace the row.
- * @param {HTMLTableRowElement} row
- * @param {string|number} id
- * @param {string} type
- */
 async function loadAndReplaceRow(row, id, type) {
   try {
     const response = await fetch(`/project/manage/context/${id}?type=${type}`);
@@ -48,6 +35,7 @@ async function loadAndReplaceRow(row, id, type) {
     if (newRow) {
       newRow.classList.add('js-context-pane-row');
       newRow.dataset.contextType = type;
+      newRow.dataset.projectId = id;
       row.replaceWith(newRow);
     } else {
       row.outerHTML = html;
@@ -57,19 +45,12 @@ async function loadAndReplaceRow(row, id, type) {
   }
 }
 
-/**
- * Remove all open context panes.
- */
 function closeContextPane() {
   document.querySelectorAll(SELECTORS.contextPane).forEach(r => r.remove());
 }
 
-/**
- * Initialize context pane event listeners using data attributes.
- */
-function initContextPane() {
-  // Use event delegation on all tables
-  document.querySelectorAll(SELECTORS.contextTable).forEach(table => {
+function initContextPane(context) {
+  (context || document).querySelectorAll(SELECTORS.contextTable).forEach(table => {
     table.addEventListener('click', async e => {
       const trigger = e.target.closest(SELECTORS.contextTrigger);
       if (!trigger) return;
@@ -115,4 +96,63 @@ function initContextPane() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initContextPane);
+async function getCsrfToken() {
+  const response = await fetch('/session/token');
+  if (!response.ok) throw new Error('Failed to fetch CSRF token');
+  return response.text();
+}
+
+function initPromoteButton() {
+  if (window._promoteBtnHandlerAttached) return;
+  window._promoteBtnHandlerAttached = true;
+
+  document.body.addEventListener('click', async function(e) {
+    const btn = e.target.closest('.js-promote-btn');
+    if (!btn) return;
+    const row = btn.closest('.js-context-pane-row');
+    if (!row) return;
+    const projectId = row.getAttribute('data-project-id');
+    if (!projectId) return;
+    btn.disabled = true;
+    try {
+      lastScrollPosition = window.scrollY;
+      const csrfToken = await getCsrfToken();
+      const response = await fetch(`/api/projects/${projectId}/promote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        }
+      });
+      if (response.status === 200) {
+        document.querySelectorAll('.view-project-manager').forEach(function(el) {
+          el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
+        });
+      } else if (response.status === 403) {
+        alert('You do not have permission to promote/demote this project.');
+        btn.disabled = false;
+      }
+    } catch (err) {
+      // Optionally handle other errors
+      btn.disabled = false;
+    }
+  });
+}
+
+(function (Drupal) {
+  Drupal.behaviors.projectManagerContextPane = {
+    attach: function (context, settings) {
+      initContextPane(context);
+      initPromoteButton();
+      // Restore scroll position if needed, after AJAX view update
+      if (lastScrollPosition !== null) {
+        window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });
+        lastScrollPosition = null;
+        // Re-enable any disabled promote buttons after the view is updated
+        document.querySelectorAll('.js-promote-btn:disabled').forEach(btn => {
+          btn.disabled = false;
+        });
+      }
+    }
+  };
+})(Drupal);

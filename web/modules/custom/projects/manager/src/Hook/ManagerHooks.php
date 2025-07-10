@@ -3,6 +3,7 @@
 namespace Drupal\manager\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -24,6 +25,9 @@ class ManagerHooks {
         'base hook' => 'context_pane',
       ],
       'context_pane__logbook' => [
+        'base hook' => 'context_pane',
+      ],
+      'context_pane__promote' => [
         'base hook' => 'context_pane',
       ],
     ];

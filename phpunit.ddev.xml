@@ -6,7 +6,6 @@
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
          failOnWarning="true"
-         printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
          cacheResult="false">
 
   <php>
@@ -43,12 +42,7 @@
     </testsuite>
   </testsuites>
 
-  <listeners>
-    <listener class="\Drupal\Tests\Listeners\DrupalListener">
-    </listener>
-  </listeners>
-
-  <coverage includeUncoveredFiles="false">
+  <source>
     <include>
       <directory>./web/modules/custom</directory>
     </include>
@@ -56,6 +50,9 @@
       <directory>./web/modules/custom/*/tests</directory>
       <directory>./web/modules/custom/*/*/tests</directory>
     </exclude>
+  </source>
+
+  <coverage includeUncoveredFiles="false">
   </coverage>
 
 </phpunit>
