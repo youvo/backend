@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\projects\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;

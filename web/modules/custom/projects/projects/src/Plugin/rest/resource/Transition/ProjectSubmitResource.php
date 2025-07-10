@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\projects\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource\Transition;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
@@ -8,7 +8,7 @@ use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
-use Drupal\projects\Event\ProjectPublishEvent;
+use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
@@ -17,17 +17,17 @@ use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
- * Provides project publish resource.
+ * Provides project submit resource.
  *
  * @RestResource(
- *   id = "project:publish",
- *   label = @Translation("Project Publish Resource"),
+ *   id = "project:submit",
+ *   label = @Translation("Project Submit Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/publish"
+ *     "canonical" = "/api/projects/{project}/submit"
  *   }
  * )
  */
-class ProjectPublishResource extends ProjectTransitionResourceBase {
+class ProjectSubmitResource extends ProjectTransitionResourceBase {
 
   /**
    * {@inheritdoc}
@@ -42,11 +42,11 @@ class ProjectPublishResource extends ProjectTransitionResourceBase {
     }
 
     // The user requires the permission to initiate this transition.
-    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Publish->value);
+    $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Submit->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
     // The resource should define project-dependent access conditions.
-    $project_condition = $project->isPublished() && $project->getOwner()->isManager($account);
+    $project_condition = $project->isPublished() && $project->isAuthor($account);
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project);
     if ($access_project instanceof AccessResultReasonInterface) {
@@ -61,14 +61,14 @@ class ProjectPublishResource extends ProjectTransitionResourceBase {
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
     try {
-      $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
+      $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
     }
     catch (LifecycleTransitionException) {
-      throw new ConflictHttpException('Project can not be published.');
+      throw new ConflictHttpException('Project can not be submitted.');
     }
     catch (\Throwable) {
     }
-    return new ModifiedResourceResponse('Project published.');
+    return new ModifiedResourceResponse('Project submitted.');
   }
 
 }

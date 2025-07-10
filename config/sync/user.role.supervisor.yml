@@ -53,6 +53,7 @@ permissions:
   - 'restful post progress:lecture:access'
   - 'restful post progress:lecture:complete'
   - 'restful post project:complete'
+  - 'restful post project:demote'
   - 'restful post project:mediate'
   - 'restful post project:notify'
   - 'restful post project:promote'

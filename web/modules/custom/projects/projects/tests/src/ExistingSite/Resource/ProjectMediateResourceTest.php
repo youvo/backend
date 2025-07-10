@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Tests for the project mediate resource.
  *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectMediateResource
+ * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectMediateResource
  * @group projects
  */
 class ProjectMediateResourceTest extends ProjectResourceTestBase {

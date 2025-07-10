@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Tests for the project reset resource.
  *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectResetResource
+ * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectResetResource
  * @group projects
  */
 class ProjectResetResourceTest extends ProjectResourceTestBase {

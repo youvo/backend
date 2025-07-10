@@ -1,27 +1,28 @@
 <?php
 
-namespace Drupal\projects\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\projects\Event\ProjectDemoteEvent;
 use Drupal\projects\Event\ProjectPromoteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 
 /**
- * Provides project promote resource.
+ * Provides project demote resource.
  *
  * @RestResource(
- *   id = "project:promote",
- *   label = @Translation("Project Promote Resource"),
+ *   id = "project:demote",
+ *   label = @Translation("Project Demote Resource"),
  *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/promote"
+ *     "canonical" = "/api/projects/{project}/demote"
  *   }
  * )
  */
-class ProjectPromoteResource extends ProjectActionResourceBase {
+class ProjectDemoteResource extends ProjectActionResourceBase {
 
   /**
    * {@inheritdoc}
@@ -35,11 +36,11 @@ class ProjectPromoteResource extends ProjectActionResourceBase {
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
     try {
-      $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
+      $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
     }
     catch (\Throwable) {
     }
-    return new ModifiedResourceResponse('Project promoted.');
+    return new ModifiedResourceResponse('Project demoted.');
   }
 
 }

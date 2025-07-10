@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\projects\Plugin\rest\resource;
+namespace Drupal\projects\Plugin\rest\resource\Action;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Access\AccessResult;

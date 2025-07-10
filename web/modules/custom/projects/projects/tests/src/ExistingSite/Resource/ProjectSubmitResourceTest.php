@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Tests for the project submit resource.
  *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectSubmitResource
+ * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectSubmitResource
  * @group projects
  */
 class ProjectSubmitResourceTest extends ProjectResourceTestBase {

@@ -3,7 +3,6 @@
 namespace Drupal\manager\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
 /**

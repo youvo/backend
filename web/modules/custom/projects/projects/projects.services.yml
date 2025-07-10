@@ -35,6 +35,10 @@ services:
     class: Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber
     tags:
       - { name: event_subscriber }
+  projects.project_demote.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectDemoteSubscriber
+    tags:
+      - { name: event_subscriber }
   projects.project_promote.event_subscriber:
     class: Drupal\projects\EventSubscriber\Action\ProjectPromoteSubscriber
     tags:

@@ -1,4 +1,4 @@
-uuid: d1664614-a94b-4914-bdc8-7e800c595c63
+uuid: ec2ab1a2-3d18-4641-9014-a78dc3c40588
 langcode: de
 status: true
 dependencies:
@@ -7,8 +7,8 @@ dependencies:
     - projects
     - serialization
     - user
-id: project.promote
-plugin_id: 'project:promote'
+id: project.demote
+plugin_id: 'project:demote'
 granularity: resource
 configuration:
   methods:
