@@ -1,0 +1,95 @@
+uuid: dcc99cc7-89ff-4b46-af44-9f1353538b0c
+langcode: de
+status: true
+dependencies:
+  module:
+    - simple_oauth
+id: oauth2_scope--oauth2_scope
+disabled: true
+path: oauth2_scope/oauth2_scope
+resourceType: oauth2_scope--oauth2_scope
+resourceFields:
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  langcode:
+    disabled: false
+    fieldName: langcode
+    publicName: langcode
+    enhancer:
+      id: ''
+  status:
+    disabled: false
+    fieldName: status
+    publicName: status
+    enhancer:
+      id: ''
+  dependencies:
+    disabled: false
+    fieldName: dependencies
+    publicName: dependencies
+    enhancer:
+      id: ''
+  third_party_settings:
+    disabled: false
+    fieldName: third_party_settings
+    publicName: third_party_settings
+    enhancer:
+      id: ''
+  _core:
+    disabled: false
+    fieldName: _core
+    publicName: _core
+    enhancer:
+      id: ''
+  id:
+    disabled: false
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  name:
+    disabled: false
+    fieldName: name
+    publicName: name
+    enhancer:
+      id: ''
+  description:
+    disabled: false
+    fieldName: description
+    publicName: description
+    enhancer:
+      id: ''
+  grant_types:
+    disabled: false
+    fieldName: grant_types
+    publicName: grant_types
+    enhancer:
+      id: ''
+  umbrella:
+    disabled: false
+    fieldName: umbrella
+    publicName: umbrella
+    enhancer:
+      id: ''
+  parent:
+    disabled: false
+    fieldName: parent
+    publicName: parent
+    enhancer:
+      id: ''
+  granularity_id:
+    disabled: false
+    fieldName: granularity_id
+    publicName: granularity_id
+    enhancer:
+      id: ''
+  granularity_configuration:
+    disabled: false
+    fieldName: granularity_configuration
+    publicName: granularity_configuration
+    enhancer:
+      id: ''

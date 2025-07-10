@@ -1,0 +1,22 @@
+uuid: 8cb7e0af-f27c-4c07-a09d-9782c378dfa0
+langcode: de
+status: true
+dependencies: {  }
+id: project_demote
+label: 'Project Demote'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''

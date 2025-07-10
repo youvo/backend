@@ -1031,7 +1031,7 @@ display:
           entity_field: uid
           plugin_id: standard
           required: false
-      use_ajax: false
+      use_ajax: true
       show_admin_links: false
       header: {  }
       footer: {  }

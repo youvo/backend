@@ -4,7 +4,7 @@ services:
   logbook.creative_register.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookCreativeRegisterSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
 
@@ -12,13 +12,13 @@ services:
   logbook.feedback_complete.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookFeedbackCompleteSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.feedback_create.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookFeedbackCreateSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
 
@@ -26,19 +26,19 @@ services:
   logbook.organization_create.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookOrganizationCreateSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.organization_disband.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookOrganizationDisbandSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.organization_manage.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookOrganizationManageSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
 
@@ -46,55 +46,67 @@ services:
   logbook.project_apply.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectApplySubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_complete.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectCompleteSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_create.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectCreateSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_invite.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectInviteSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_mediate.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectMediateSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_notify.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectNotifySubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_publish.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectPublishSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_reset.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectResetSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
   logbook.project_submit.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectSubmitSubscriber
     arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook' ]
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_promote.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectPromoteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_demote.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectDemoteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
 

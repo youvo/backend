@@ -1,0 +1,100 @@
+langcode: de
+status: true
+dependencies:
+  config:
+    - logbook.log_pattern.project_demote
+id: log--project_demote
+disabled: false
+path: logs/project_demote
+resourceType: project_demote
+resourceFields:
+  id:
+    disabled: true
+    fieldName: id
+    publicName: id
+    enhancer:
+      id: ''
+  uuid:
+    disabled: false
+    fieldName: uuid
+    publicName: uuid
+    enhancer:
+      id: ''
+  type:
+    disabled: false
+    fieldName: type
+    publicName: type
+    enhancer:
+      id: ''
+  author:
+    disabled: false
+    fieldName: author
+    publicName: author
+    enhancer:
+      id: ''
+  published:
+    disabled: true
+    fieldName: published
+    publicName: published
+    enhancer:
+      id: ''
+  created:
+    disabled: false
+    fieldName: created
+    publicName: created
+    enhancer:
+      id: ''
+  creatives:
+    disabled: false
+    fieldName: creatives
+    publicName: creatives
+    enhancer:
+      id: ''
+  organization:
+    disabled: false
+    fieldName: organization
+    publicName: organization
+    enhancer:
+      id: ''
+  manager:
+    disabled: false
+    fieldName: manager
+    publicName: manager
+    enhancer:
+      id: ''
+  project:
+    disabled: false
+    fieldName: project
+    publicName: project
+    enhancer:
+      id: ''
+  message:
+    disabled: true
+    fieldName: message
+    publicName: message
+    enhancer:
+      id: ''
+  misc:
+    disabled: true
+    fieldName: misc
+    publicName: misc
+    enhancer:
+      id: ''
+  processed:
+    disabled: false
+    fieldName: processed
+    publicName: processed
+    enhancer:
+      id: ''
+  markup:
+    disabled: true
+    fieldName: markup
+    publicName: markup
+    enhancer:
+      id: ''
+  color:
+    disabled: true
+    fieldName: color
+    publicName: color
+    enhancer:
+      id: ''
