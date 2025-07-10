@@ -117,7 +117,8 @@ function initPromoteButton() {
     try {
       lastScrollPosition = window.scrollY;
       const csrfToken = await getCsrfToken();
-      const response = await fetch(`/api/projects/${projectId}/promote`, {
+      const action = btn.getAttribute('data-action') || 'promote'; // default to promote
+      const response = await fetch(`/api/projects/${projectId}/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

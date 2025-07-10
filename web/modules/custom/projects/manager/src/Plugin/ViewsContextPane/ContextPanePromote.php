@@ -31,6 +31,7 @@ class ContextPanePromote extends ContextPaneBase {
           'button--small',
           'js-promote-btn',
         ],
+        'data-action' => $is_promoted ? 'demote' : 'promote',
       ],
     ];
     return [
