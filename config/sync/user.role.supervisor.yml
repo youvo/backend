@@ -8,10 +8,14 @@ dependencies:
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
     - rest.resource.project.complete
+    - rest.resource.project.demote
+    - rest.resource.project.hide
     - rest.resource.project.mediate
     - rest.resource.project.notify
     - rest.resource.project.publish
+    - rest.resource.project.promote
     - rest.resource.project.reset
+    - rest.resource.project.show
     - rest.resource.project.submit
     - rest.resource.question.submission
   module:
@@ -54,11 +58,13 @@ permissions:
   - 'restful post progress:lecture:complete'
   - 'restful post project:complete'
   - 'restful post project:demote'
+  - 'restful post project:hide'
   - 'restful post project:mediate'
   - 'restful post project:notify'
   - 'restful post project:promote'
   - 'restful post project:publish'
   - 'restful post project:reset'
+  - 'restful post project:show'
   - 'restful post project:submit'
   - 'restful post question:submission'
   - 'update any project'

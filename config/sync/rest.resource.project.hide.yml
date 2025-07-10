@@ -1,0 +1,20 @@
+uuid: 44697a3f-026c-400e-98d0-473d2ec75981
+langcode: de
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - user
+id: project.hide
+plugin_id: 'project:hide'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - cookie

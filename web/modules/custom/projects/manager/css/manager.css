@@ -29,3 +29,7 @@ td.views-field-field-manager {
 td.views-field-operations {
   width: 5%;
 }
+
+.view-filters {
+  display: none;
+}

@@ -43,6 +43,14 @@ services:
     class: Drupal\projects\EventSubscriber\Action\ProjectPromoteSubscriber
     tags:
       - { name: event_subscriber }
+  projects.project_hide.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectHideSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_show.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectShowSubscriber
+    tags:
+      - { name: event_subscriber }
 
   project.organization_create.event_subscriber:
     class: Drupal\projects\EventSubscriber\ProjectOrganizationCreateSubscriber
