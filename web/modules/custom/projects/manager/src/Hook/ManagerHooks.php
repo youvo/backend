@@ -3,6 +3,7 @@
 namespace Drupal\manager\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -15,21 +16,23 @@ class ManagerHooks {
    */
   #[Hook('theme')]
   public function theme(): array {
-    return [
+
+    $hooks = [
       'context_pane' => [
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessContextPane',
       ],
-      'context_pane__lifecycle' => [
-        'base hook' => 'context_pane',
-      ],
-      'context_pane__logbook' => [
-        'base hook' => 'context_pane',
-      ],
-      'context_pane__promote' => [
-        'base hook' => 'context_pane',
-      ],
     ];
+
+    /** @var \Drupal\Component\Plugin\PluginManagerInterface $context_pane_manager */
+    $context_pane_manager = \Drupal::service('plugin.manager.views_context_pane');
+    foreach ($context_pane_manager->getDefinitions() as $definition) {
+      $hooks['context_pane__' . $definition['id']] = [
+        'base hook' => 'context_pane',
+      ];
+    }
+
+    return $hooks;
   }
 
   /**
@@ -49,6 +52,25 @@ class ManagerHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'project_manager') {
       $view->element['#attached']['library'][] = 'manager/core';
+    }
+  }
+
+  /**
+   * Implements hook_views_post_render().
+   */
+  #[Hook('preprocess_views_view_table')]
+  public function preprocessProjectManager(&$variables): void {
+    if ($variables['view']->id() !== 'project_manager') {
+      return;
+    }
+    $result = $variables['view']->result;
+    foreach ($variables['rows'] as $key => &$row) {
+      $project = $result[$key]->_entity;
+      if ($project instanceof ProjectInterface && $project->lifecycle()->isCompleted()) {
+        $action_transition = &$row['columns']['nothing_2'];
+        $action_transition['attributes']->offsetUnset('class');
+        unset($action_transition['content']);
+      }
     }
   }
 

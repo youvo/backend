@@ -1,0 +1,26 @@
+.manager-icon-mail {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/email.svg') no-repeat center/contain;
+  background-size: 16px 16px;
+  vertical-align: middle;
+}
+
+.manager-icon-edit {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/pencil.svg') no-repeat center/contain;
+  background-size: 18px 18px;
+  vertical-align: middle;
+}
+
+.manager-icon-transition {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/step-forward.svg') no-repeat center/contain;
+  background-size: 24px 24px;
+  vertical-align: middle;
+}

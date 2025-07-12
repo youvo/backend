@@ -28,4 +28,5 @@
       <property name="caseSensitive" value="false"/>
     </properties>
   </rule>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
 </ruleset>

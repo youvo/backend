@@ -27,16 +27,18 @@
   height: 4px;
   width: 0;
   background: #3f78b5;
-  animation: sliding-bar-grow 0.75s cubic-bezier(0.4,0,0.2,1) infinite;
+  animation: sliding-bar-grow 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes sliding-bar-grow {
   0% {
     width: 0;
   }
+
   90% {
     width: 100%;
   }
+
   100% {
     width: 100%;
     opacity: 0;

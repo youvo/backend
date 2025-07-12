@@ -1,10 +1,11 @@
 core:
   js:
-    js/context-pane.js: {}
+    build/js/context-pane.js: {}
   dependencies:
     - core/drupal
   css:
     theme:
-      css/context-pane.css: {}
-      css/loader.css: {}
-      css/manager.css: {}
+      build/css/context-pane.css: {}
+      build/css/icons.css: {}
+      build/css/loader.css: {}
+      build/css/manager.css: {}

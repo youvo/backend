@@ -5,6 +5,7 @@
 .context-pane {
   box-shadow: inset 4px 0 #3f78b5;
 }
+
 .context-pane-column {
   cursor: pointer;
 }
@@ -88,13 +89,16 @@
     min-width: 320px;
     font-size: 0.8em;
   }
+
   .lifecycle-progress-step {
     min-width: 40px;
   }
+
   .lifecycle-progress-label {
     max-width: 50px;
     font-size: 0.8em;
   }
+
   .lifecycle-progress-date {
     font-size: 0.8em;
   }
@@ -136,6 +140,7 @@
   min-width: 75px;
   flex: 0 0 75px;
 }
+
 .logbook-timeline-date {
   cursor: pointer;
   font-size: 0.8em;
@@ -168,7 +173,8 @@
 }
 
 /* Connector as ::after, only for non-last rows. Extends into next row. */
-.logbook-timeline-flex-row:not(:last-child) .logbook-timeline-bar-container::after {
+.logbook-timeline-flex-row:not(:last-child)
+  .logbook-timeline-bar-container::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -188,12 +194,14 @@
   flex: 1 1 0;
   box-sizing: border-box;
 }
+
 .logbook-timeline-text {
   font-size: 1em;
 }
+
 .logbook-timeline-message {
   font-size: 0.8em;
-  color: #888;
+  color: #7e98b5;
 }
 
 /* Label column */
@@ -204,6 +212,7 @@
   min-width: 80px;
   flex: 0 0 80px;
 }
+
 .logbook-timeline-label {
   background: #e8ecf2;
   border-radius: 1em;
@@ -221,10 +230,59 @@
     width: auto;
     vertical-align: top;
   }
+
   .logbook-timeline-content-container {
     margin-top: 0.5em;
   }
+
   .logbook-timeline-flex-row {
     display: block;
   }
+}
+
+/* =========================
+   Applicant Checkboxes
+   ========================= */
+
+.transition-checkboxes {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.transition-checkbox {
+  display: flex;
+  gap: 0.5rem;
+  width: 10%;
+  min-width: 80px;
+}
+
+.transition-checkbox input {
+  display: none;
+}
+
+.transition-checkbox-option {
+  display: flex;
+  align-items: top;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.transition-checkbox-option:hover {
+  box-shadow: inset 0 0 0 2px #3f78b5;
+  background-color: #f4f8ff;
+}
+
+.transition-checkbox:checked + .transition-checkbox-option {
+  box-shadow: inset 0 0 0 2px #3f78b5;
+  background-color: #f4f8ff;
+}
+
+.transition-description {
+  font-size: 0.8em;
+  color: #7e98b5;
 }

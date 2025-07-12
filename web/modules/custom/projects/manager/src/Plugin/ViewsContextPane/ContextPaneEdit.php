@@ -7,10 +7,10 @@ use Drupal\manager\Attribute\ViewsContextPane;
 use Drupal\projects\Entity\Project;
 
 /**
- * Provides a project promote views context pane.
+ * Provides a project edit views context pane.
  */
-#[ViewsContextPane(id: "promote")]
-class ContextPanePromote extends ContextPaneBase {
+#[ViewsContextPane(id: "edit")]
+class ContextPaneEdit extends ContextPaneBase {
 
   use StringTranslationTrait;
 
@@ -34,6 +34,7 @@ class ContextPanePromote extends ContextPaneBase {
         'data-action' => $is_promoted ? 'demote' : 'promote',
       ],
     ];
+
     return [
       '#theme' => 'context_pane',
       'content' => [

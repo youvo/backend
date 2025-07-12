@@ -6,28 +6,35 @@ td.views-field-changed {
   width: 10%;
 }
 
-td.views-field-promote {
-  width: 5%;
-}
-
 td.views-field-field-skills {
   width: 10%;
 }
 
 td.views-field-title {
-  width: 30%;
+  width: 29%;
 }
 
 td.views-field-uid {
-  width: 25%;
+  width: 27%;
+}
+
+td.views-action-transition {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
+}
+
+td.views-action-edit {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
+}
+
+td.views-action-mail {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
 }
 
 td.views-field-field-manager {
-  width: 5%;
-}
-
-td.views-field-operations {
-  width: 5%;
+  width: 4%;
 }
 
 .view-filters {

@@ -254,7 +254,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function getParticipants(): array {
+  public function getParticipants(?string $task = NULL): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
     $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
@@ -263,6 +263,9 @@ class Project extends ContentEntityBase implements ProjectInterface {
       // @phpstan-ignore-next-line
       $participant->task = $tasks[$delta]['value'];
       $participants[(int) $participant->id()] = $participant;
+    }
+    if ($task !== NULL) {
+      $participants = array_filter($participants, static fn ($p) => $p->task === $task);
     }
     return $participants ?? [];
   }

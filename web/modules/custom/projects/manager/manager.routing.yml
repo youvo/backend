@@ -10,3 +10,15 @@ manager.context_pane:
       project:
         type: entity:project
     no_cache: 'TRUE'
+
+manager.mediate_form:
+  path: '/project/manage/mediate/{project}'
+  defaults:
+    _form: '\Drupal\manager\Form\ProjectMediateContextPaneForm'
+    _title: 'Mediate Project'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      project:
+        type: entity:project

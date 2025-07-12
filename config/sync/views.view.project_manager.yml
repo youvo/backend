@@ -233,73 +233,6 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        promote:
-          id: promote
-          table: project_field_data
-          field: promote
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: project
-          entity_field: promote
-          plugin_id: field
-          label: ★
-          exclude: false
-          alter:
-            alter_text: true
-            text: '<div data-context-pane="promote" data-project-id="{{ id }}">{{ promote }}</div>'
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: context-pane-column
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: value
-          type: boolean
-          settings:
-            format: unicode-yes-no
-            format_custom_false: ''
-            format_custom_true: ''
-          group_column: value
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
         field_skills:
           id: field_skills
           table: project__field_skills
@@ -369,7 +302,7 @@ display:
           field: title
           relationship: none
           group_type: group
-          admin_label: ''
+          admin_label: 'Project: Project'
           entity_type: null
           entity_field: title
           plugin_id: field
@@ -434,7 +367,7 @@ display:
           field: uid
           relationship: none
           group_type: group
-          admin_label: ''
+          admin_label: 'Project: Organization'
           entity_type: project
           entity_field: uid
           plugin_id: field
@@ -493,13 +426,160 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
+        nothing_2:
+          id: nothing_2
+          table: views
+          field: nothing
+          relationship: none
+          group_type: group
+          admin_label: 'Action: Transition'
+          plugin_id: custom
+          label: ''
+          exclude: false
+          alter:
+            alter_text: true
+            text: '<div data-context-pane="transition" data-project-id="{{ id }}"><span class="manager-icon-transition"></span></div>'
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: 'context-pane-column views-action-transition'
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
+        nothing_3:
+          id: nothing_3
+          table: views
+          field: nothing
+          relationship: none
+          group_type: group
+          admin_label: 'Action: Edit'
+          plugin_id: custom
+          label: ''
+          exclude: false
+          alter:
+            alter_text: true
+            text: '<div data-context-pane="edit" data-project-id="{{ id }}"><span class="manager-icon-edit"></span></div>'
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: 'context-pane-column views-action-edit'
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
+        nothing_1:
+          id: nothing_1
+          table: views
+          field: nothing
+          relationship: none
+          group_type: group
+          admin_label: 'Action: Mail'
+          plugin_id: custom
+          label: ''
+          exclude: false
+          alter:
+            alter_text: true
+            text: '<div data-context-pane="mail" data-project-id="{{ id }}"><span class="manager-icon-mail"></span></div>'
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: 'context-pane-column views-action-mail'
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
         field_manager:
           id: field_manager
           table: user__field_manager
           field: field_manager
           relationship: uid
           group_type: group
-          admin_label: ''
+          admin_label: 'Project: Manager'
           plugin_id: field
           label: ''
           exclude: false
@@ -556,57 +636,6 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        operations:
-          id: operations
-          table: project
-          field: operations
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: project
-          plugin_id: entity_operations
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          destination: false
       pager:
         type: full
         options:
@@ -935,12 +964,13 @@ display:
             id: id
             field_lifecycle: field_lifecycle
             changed: changed
-            promote: promote
             field_skills: field_skills
             title: title
             uid: uid
+            nothing_2: nothing_2
+            nothing_3: nothing_3
+            nothing_1: nothing_1
             field_manager: field_manager
-            operations: operations
           default: '-1'
           info:
             id:
@@ -953,52 +983,55 @@ display:
             field_lifecycle:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-left
               separator: ''
               empty_column: false
               responsive: ''
             changed:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-left
               separator: ''
               empty_column: false
               responsive: ''
-            promote:
-              sortable: false
-              default_sort_order: asc
-              align: views-align-center
-              separator: ''
-              empty_column: false
-              responsive: priority-low
             field_skills:
-              align: ''
+              align: views-align-left
               separator: ''
               empty_column: false
               responsive: priority-low
             title:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-left
               separator: ''
               empty_column: false
               responsive: ''
             uid:
               sortable: false
               default_sort_order: asc
-              align: ''
+              align: views-align-left
               separator: ''
               empty_column: false
               responsive: priority-medium
+            nothing_2:
+              align: views-align-right
+              separator: ''
+              empty_column: false
+              responsive: ''
+            nothing_3:
+              align: views-align-right
+              separator: ''
+              empty_column: false
+              responsive: ''
+            nothing_1:
+              align: views-align-right
+              separator: ''
+              empty_column: false
+              responsive: ''
             field_manager:
               sortable: false
               default_sort_order: asc
               align: views-align-center
-              separator: ''
-              empty_column: false
-              responsive: ''
-            operations:
-              align: views-align-right
               separator: ''
               empty_column: false
               responsive: ''
@@ -1026,7 +1059,7 @@ display:
           field: uid
           relationship: none
           group_type: group
-          admin_label: Manager
+          admin_label: Organization
           entity_type: project
           entity_field: uid
           plugin_id: standard

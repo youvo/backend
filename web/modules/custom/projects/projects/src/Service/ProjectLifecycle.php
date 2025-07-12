@@ -16,9 +16,9 @@ use Drupal\projects\ProjectTransition;
  */
 class ProjectLifecycle implements ProjectLifecycleInterface {
 
-  const WORKFLOW_ID = 'project_lifecycle';
-  const LIFECYCLE_FIELD = 'field_lifecycle';
-  const LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
+  public const string WORKFLOW_ID = 'project_lifecycle';
+  public const string LIFECYCLE_FIELD = 'field_lifecycle';
+  public const string LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
 
   /**
    * The project calling the lifecycle.
@@ -98,35 +98,35 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   }
 
   /**
-   * Submits the project.
+   * {@inheritdoc}
    */
   public function submit(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Submit, $timestamp);
   }
 
   /**
-   * Publishes the project.
+   * {@inheritdoc}
    */
   public function publish(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Publish, $timestamp);
   }
 
   /**
-   * Mediates the project.
+   * {@inheritdoc}
    */
   public function mediate(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Mediate, $timestamp);
   }
 
   /**
-   * Completes the project.
+   * {@inheritdoc}
    */
   public function complete(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Complete, $timestamp);
   }
 
   /**
-   * Resets the project.
+   * {@inheritdoc}
    */
   public function reset(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Reset, $timestamp);
@@ -155,6 +155,10 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Checks if the project can perform the given transition.
    */
   protected function canTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): bool {
+    // Selected participants are set prior to the mediation of a project. This
+    // allows for validation to ensure that eligible participants are present
+    // before the mediation. The participants are only saved if the transition
+    // is successful.
     if ($transition === ProjectTransition::Mediate || $transition === ProjectTransition::Complete) {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }

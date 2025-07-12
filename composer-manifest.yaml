@@ -7,7 +7,7 @@ packages:
     colinodell/psr-testlogger: v1.3.0
     composer/ca-bundle: 1.5.7
     composer/class-map-generator: 1.6.1
-    composer/composer: 2.8.9
+    composer/composer: 2.8.10
     composer/installers: v1.12.0
     composer/metadata-minifier: 1.0.0
     composer/pcre: 3.3.2
@@ -15,7 +15,7 @@ packages:
     composer/spdx-licenses: 1.5.9
     composer/xdebug-handler: 3.0.5
     consolidation/annotated-command: 4.10.1
-    consolidation/config: 3.1.0
+    consolidation/config: 3.1.1
     consolidation/filter-via-dot-access-data: 2.0.2
     consolidation/log: 3.1.0
     consolidation/output-formatters: 4.6.0
@@ -45,10 +45,10 @@ packages:
     drupal/core-project-message: 11.2.2
     drupal/core-recommended: 11.2.2
     drupal/core-vendor-hardening: 11.2.2
-    drupal/devel: 5.3.1
+    drupal/devel: 5.4.0
     drupal/devel_mail_logger: 2.0.1
     drupal/entity: 1.6.0
-    drupal/file_mdm: 3.1.0
+    drupal/file_mdm: 3.2.0
     drupal/filefield_paths: 1.0.0-beta8
     drupal/gin: 5.0.2
     drupal/gin_toolbar: 3.0.1
@@ -58,7 +58,7 @@ packages:
     drupal/jsonapi_cross_bundles: 1.2.0
     drupal/jsonapi_extras: 3.26.0
     drupal/jsonapi_include: 1.8.0
-    drupal/mail_login: 4.0.3
+    drupal/mail_login: 4.2.0
     drupal/mailsystem: 4.5.0
     drupal/multivalue_form_element: 1.0.0-beta7
     drupal/nomarkup: 1.0.6
@@ -82,7 +82,7 @@ packages:
     egulias/email-validator: 4.0.4
     fakerphp/faker: v1.24.1
     fileeye/mimemap: 2.2.2
-    fileeye/pel: 0.10.0
+    fileeye/pel: 0.12.0
     galbar/jsonpath: 1.3.1
     google/protobuf: v4.31.1
     grasmash/expander: 3.0.1
@@ -93,7 +93,7 @@ packages:
     jangregor/phpstan-prophecy: 2.2.0
     joachim-n/composer-manifest: 1.1.7
     justinrainbow/json-schema: 6.4.2
-    laravel/prompts: v0.3.5
+    laravel/prompts: v0.3.6
     lcobucci/clock: 3.3.1
     lcobucci/jwt: 5.5.0
     league/container: 4.2.5
@@ -150,7 +150,7 @@ packages:
     phpunit/php-invoker: 5.0.1
     phpunit/php-text-template: 4.0.1
     phpunit/php-timer: 7.0.1
-    phpunit/phpunit: 11.5.26
+    phpunit/phpunit: 11.5.27
     psr/cache: 3.0.0
     psr/clock: 1.0.0
     psr/container: 2.0.2
@@ -167,7 +167,7 @@ packages:
     ramsey/uuid: 4.9.0
     react/promise: v3.2.0
     revolt/event-loop: v1.0.7
-    roave/security-advisories: 'dev-latest:a76f62e135c8b583602bd99df737b5c20f4d7200'
+    roave/security-advisories: 'dev-latest:b34bea5e19970433575063dd74b68e5e880e10ee'
     sebastian/cli-parser: 3.0.2
     sebastian/code-unit: 3.0.3
     sebastian/code-unit-reverse-lookup: 4.0.1
@@ -236,4 +236,4 @@ packages:
     vipnytt/sitemapparser: v1.3.0
     webflo/drupal-finder: 1.3.1
     webmozart/assert: 1.11.0
-    weitzman/drupal-test-traits: 2.5.0
+    weitzman/drupal-test-traits: 2.6.0

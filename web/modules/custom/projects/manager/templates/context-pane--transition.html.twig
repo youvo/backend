@@ -1,0 +1,26 @@
+<tr class="context-pane" {{ attributes }}>
+  <td colspan="100%">
+    {% if content.options %}
+      <div class="transition-checkboxes">
+        {% for id, option in content.options %}
+          <div class="transition-checkbox">
+            <input type="checkbox"
+                   id="applicant-{{ id }}"
+                   name="applicants[]"
+                   value="{{ id }}"
+                   class="transition-checkbox js-transition-checkbox">
+            <label for="applicant-{{ id }}" class="transition-checkbox-option">
+              {{ option }}
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {{ content.button }}
+    {% if content.description %}
+      <div class="transition-description">
+        {{ content.description }}
+      </div>
+    {% endif %}
+  </td>
+</tr>

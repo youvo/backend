@@ -23,7 +23,7 @@ class LogbookProjectCompleteSubscriber extends LogbookSubscriberBase {
     /** @var \Drupal\projects\Event\ProjectCompleteEvent $event */
     $log->setProject($event->getProject());
     $log->setOrganization($event->getProject()->getOwner());
-    $log->setCreatives($event->getProject()->getParticipants());
+    $log->setCreatives($event->getProject()->getParticipants('Creative'));
     if ($manager = $event->getProject()->getOwner()->getManager()) {
       $log->setManager($manager);
     }

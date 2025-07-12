@@ -6,6 +6,7 @@
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 $user-avatar-size: mini !default;
+$user-option-size: medium !default;
 
 .user-avatar {
   @include icon-base;
@@ -22,4 +23,36 @@ $user-avatar-size: mini !default;
     border-radius: 50%;
     display: block;
   }
+}
+
+.user-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  img {
+    @include icon-base;
+    @include icon-size($user-option-size);
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+  }
+
+  span {
+    font-size: 0.8rem;
+    line-height: 1.2;
+    overflow: hidden;
+    width: 100%;
+    word-break: break-word;
+    text-wrap: balance;
+  }
+}
+
+// Container for multiple user options
+.user-options-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
 }

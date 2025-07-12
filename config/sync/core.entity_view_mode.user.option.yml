@@ -1,0 +1,11 @@
+uuid: 020d900f-6dfa-4f01-af27-d576f1f41f5f
+langcode: de
+status: true
+dependencies:
+  module:
+    - user
+id: user.option
+label: Option
+description: null
+targetEntityType: user
+cache: true

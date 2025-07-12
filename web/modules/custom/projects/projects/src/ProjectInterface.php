@@ -102,10 +102,13 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   /**
    * Gets the participants array keyed by UID.
    *
+   * @param string|null $task
+   *   The task to filter the participants.
+   *
    * @return \Drupal\user\UserInterface[]
    *   The participants.
    */
-  public function getParticipants(): array;
+  public function getParticipants(?string $task = NULL): array;
 
   /**
    * Sets the participants to the project.
