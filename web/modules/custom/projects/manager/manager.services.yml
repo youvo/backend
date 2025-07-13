@@ -8,6 +8,14 @@ services:
       - '@module_handler'
   Drupal\manager\ManagerContextPanes: '@plugin.manager.manager_context_panes'
 
+  plugin.manager.manager_rules:
+    class: 'Drupal\manager\ManagerRules'
+    arguments:
+      - '@container.namespaces'
+      - '@cache.discovery'
+      - '@module_handler'
+  Drupal\manager\ManagerRules: '@plugin.manager.manager_rules'
+
   manager.ajax_response_subscriber:
     class: Drupal\manager\EventSubscriber\AjaxResponseSubscriber
     tags:

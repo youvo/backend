@@ -6,16 +6,17 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\manager\Attribute\ManagerContextPane;
+use Drupal\manager\ManagerRules;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectState;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a project lifecycle manager context pane.
+ * Provides a project status manager context pane.
  */
-#[ManagerContextPane(id: "lifecycle")]
-class ManagerContextPaneLifecycle extends ManagerContextPaneBase {
+#[ManagerContextPane(id: "status")]
+class ManagerContextPaneStatus extends ManagerContextPaneBase {
 
   use StringTranslationTrait;
 
@@ -30,12 +31,18 @@ class ManagerContextPaneLifecycle extends ManagerContextPaneBase {
   protected DateFormatterInterface $dateFormatter;
 
   /**
+   * The manager rules.
+   */
+  protected ManagerRules $managerRules;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
     $instance = parent::create($container, ...$defaults);
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->dateFormatter = $container->get('date.formatter');
+    $instance->managerRules = $container->get('plugin.manager.manager_rules');
     return $instance;
 
   }
@@ -44,9 +51,23 @@ class ManagerContextPaneLifecycle extends ManagerContextPaneBase {
    * {@inheritdoc}
    */
   public function build(Project $project): array {
+    return [
+      '#theme' => 'context_pane',
+      '#type' => 'status',
+      '#project' => $project,
+      'content' => [
+        'progression' => $this->buildProgression($project),
+        'rules' => $this->buildRules($project),
+      ],
+    ];
+  }
+
+  /**
+   * Builds the project lifecycle progression.
+   */
+  protected function buildProgression(Project $project): array {
 
     $user_storage = $this->entityTypeManager->getStorage('user');
-
     $states = ProjectState::cases();
 
     // Get the latest history.
@@ -89,12 +110,21 @@ class ManagerContextPaneLifecycle extends ManagerContextPaneBase {
       $previous_state = $state->value;
     }
 
-    return [
-      '#theme' => 'context_pane',
-      'content' => [
-        'progression' => $progression,
-      ],
-    ];
+    return $progression;
+  }
+
+  /**
+   * Builds the project manager rules.
+   */
+  protected function buildRules(Project $project): array {
+
+    $build = [];
+
+    foreach ($this->managerRules->getRules($project) as $rule) {
+      $build[] = $rule->build($project);
+    }
+
+    return $build;
   }
 
 }

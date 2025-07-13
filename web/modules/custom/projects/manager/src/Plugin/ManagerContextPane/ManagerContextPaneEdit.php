@@ -37,6 +37,8 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase {
 
     return [
       '#theme' => 'context_pane',
+      '#type' => 'edit',
+      '#project' => $project,
       'content' => [
         'button' => $button,
       ],

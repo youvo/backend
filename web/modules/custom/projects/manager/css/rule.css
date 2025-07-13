@@ -1,0 +1,28 @@
+/* Manager Rule Hidden Styles */
+.manager-rule--hidden {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.manager-rule-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manager-rule-icon {
+  flex-shrink: 0;
+}
+
+.manager-rule-icon--inactive {
+  color: #666;
+  opacity: 0.7;
+}
+
+.manager-rule-text {
+  color: #666;
+  font-size: 0.9em;
+}

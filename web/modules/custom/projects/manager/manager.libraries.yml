@@ -9,3 +9,4 @@ core:
       build/css/icons.css: {}
       build/css/loader.css: {}
       build/css/manager.css: {}
+      build/css/rule.css: {}

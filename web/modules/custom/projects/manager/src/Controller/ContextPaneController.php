@@ -45,15 +45,13 @@ class ContextPaneController implements ContainerInjectionInterface {
 
     $type = $request->query->get('type', '');
     if (!$this->managerContextPanes->hasDefinition($type)) {
+      // Builds an empty context pane.
       $build['#theme'] = 'context_pane';
       $content = $this->renderer->render($build);
       return new Response($content, 404);
     }
 
     $build = $this->managerContextPanes->createInstance($type)->build($project);
-    $build['#type'] = $type;
-    $build['#project'] = $project;
-
     $content = $this->renderer->render($build);
 
     return new Response($content);

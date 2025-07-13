@@ -9,9 +9,10 @@ export default {
       input: {
         'js/context-pane': './js/context-pane.js',
         'css/context-pane': './css/context-pane.css',
+        'css/icons': './css/icons.css',
         'css/loader': './css/loader.css',
         'css/manager': './css/manager.css',
-        'css/icons': './css/icons.css',
+        'css/rule': './css/rule.css',
       },
       output: {
         assetFileNames: '[name][extname]',

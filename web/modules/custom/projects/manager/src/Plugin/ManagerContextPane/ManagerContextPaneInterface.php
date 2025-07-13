@@ -5,12 +5,12 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\projects\Entity\Project;
 
 /**
- * Defines an interface for context pane plugins.
+ * Defines an interface for manager context pane plugins.
  */
 interface ManagerContextPaneInterface {
 
   /**
-   * Returns the render array for the context pane.
+   * Builds the render array for the context pane.
    *
    * @param \Drupal\projects\Entity\Project $project
    *   The project entity.

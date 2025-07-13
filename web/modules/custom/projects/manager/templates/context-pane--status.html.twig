@@ -13,5 +13,10 @@
         </div>
       {% endfor %}
     </div>
+    {% if content.rules %}
+      <div class="manager-rules">
+        {{ content.rules }}
+      </div>
+    {% endif %}
   </td>
 </tr>

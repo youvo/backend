@@ -45,6 +45,8 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase {
 
     return [
       '#theme' => 'context_pane',
+      '#type' => 'transition',
+      '#project' => $project,
       'content' => [
         'button' => [
           '#type' => 'button',

@@ -46,6 +46,8 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase {
 
     return [
       '#theme' => 'context_pane',
+      '#type' => 'logbook',
+      '#project' => $project,
       'content' => [
         'logs' => $log_builds,
       ],
