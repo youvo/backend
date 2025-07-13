@@ -105,6 +105,38 @@
 }
 
 /* =========================
+   Status Dot
+   ========================= */
+
+.views-field-field-lifecycle > div::before {
+  content: '';
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  margin-right: 0.5em;
+  vertical-align: middle;
+  background: #1da8a5;
+  margin-top: -2px;
+}
+
+.status-normal.views-field-field-lifecycle > div::before {
+  background: #1da8a5;
+}
+
+.status-critical.views-field-field-lifecycle > div::before {
+  background: #e15554;
+}
+
+.status-warning.views-field-field-lifecycle > div::before {
+  background: #ffb793;
+}
+
+.status-dormant.views-field-field-lifecycle > div::before {
+  background: #e8ecf2;
+}
+
+/* =========================
    Manager Rules
    ========================= */
 

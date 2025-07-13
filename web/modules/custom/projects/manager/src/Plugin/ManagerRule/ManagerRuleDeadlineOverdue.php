@@ -11,14 +11,15 @@ use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides an upcoming deadline manager rule.
+ * Provides an overdue manager rule.
  */
 #[ManagerRule(
-  id: "upcoming_deadline",
+  id: "deadline_overdue",
   category: RuleCategory::Deadline,
-  severity: RuleSeverity::Warning,
+  severity: RuleSeverity::Critical,
+  weight: 80,
 )]
-class ManagerRuleUpcomingDeadline extends ManagerRuleBase {
+class ManagerRuleDeadlineOverdue extends ManagerRuleBase {
 
   use StringTranslationTrait;
 
@@ -40,16 +41,19 @@ class ManagerRuleUpcomingDeadline extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
+    if ($project->lifecycle()->isCompleted() || $project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      return FALSE;
+    }
     $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
-    $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
-    return $current_time > $deadline->sub(new \DateInterval('P14D'));
+    $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value ?? '');
+    return $current_time > $deadline;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function text(ProjectInterface $project): TranslatableMarkup {
-    return $this->t('The project deadline is upcoming.');
+    return $this->t('The project deadline has passed.');
   }
 
 }

@@ -30,6 +30,20 @@ abstract class ManagerRuleBase extends PluginBase implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
+  public function category(): RuleCategory {
+    return $this->getPluginDefinition()['category'] ?? RuleCategory::Other;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function severity(): RuleSeverity {
+    return $this->getPluginDefinition()['severity'] ?? RuleSeverity::Normal;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build(ProjectInterface $project): array {
     $severity = $this->getPluginDefinition()['severity'] ?? RuleSeverity::Normal;
     $category = $this->getPluginDefinition()['category'] ?? RuleCategory::Other;

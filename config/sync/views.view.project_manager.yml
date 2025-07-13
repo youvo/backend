@@ -1000,7 +1000,7 @@ display:
             nothing_3: nothing_3
             nothing_1: nothing_1
             field_manager: field_manager
-          default: '-1'
+          default: changed
           info:
             id:
               sortable: false
@@ -1018,7 +1018,7 @@ display:
               responsive: ''
             changed:
               sortable: false
-              default_sort_order: asc
+              default_sort_order: desc
               align: views-align-left
               separator: ''
               empty_column: false

@@ -21,6 +21,11 @@ interface ManagerRuleInterface {
   public function applies(ProjectInterface $project): bool;
 
   /**
+   * Gets the severity of the rule.
+   */
+  public function severity(): RuleSeverity;
+
+  /**
    * Builds the render array for the rule notification.
    *
    * @param \Drupal\projects\ProjectInterface $project

@@ -1,5 +1,5 @@
 td.views-field-field-lifecycle {
-  width: 10%;
+  width: 12%;
 }
 
 td.views-field-changed {
@@ -11,7 +11,7 @@ td.views-field-field-skills {
 }
 
 td.views-field-title {
-  width: 29%;
+  width: 27%;
 }
 
 td.views-field-uid {
@@ -41,10 +41,10 @@ td.views-field-field-manager {
   display: none;
 }
 
-.view-project-manager a:link {
+.view-project-manager .views-field a:link {
   color: #3f78b5;
 }
 
-.view-project-manager a:visited {
+.view-project-manager .views-field a:visited {
   color: #3f78b5;
 }

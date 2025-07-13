@@ -44,37 +44,45 @@ class ManagerRules extends DefaultPluginManager {
   public function getRules(ProjectInterface $project): array {
 
     foreach ($this->getDefinitions() as $id => $definition) {
+      /** @var \Drupal\manager\Plugin\ManagerRule\ManagerRuleInterface $rule */
       $rule = $this->createInstance($id);
       if ($rule->applies($project)) {
-        if (($definition['category'] ?? NULL) === RuleCategory::Supress) {
-          $surpress_rule = $rule;
+        if ($rule->category() === RuleCategory::Supress) {
+          $surpressing_rule = $rule;
           break;
         }
         $rules[] = $rule;
       }
     }
 
-    if (!empty($surpress_rule)) {
-      return [$surpress_rule];
+    // Only output one rule if it surpresses all others.
+    if (isset($surpressing_rule)) {
+      return [$surpressing_rule];
     }
 
-    $one_rule_per_category = [];
+    if (empty($rules)) {
+      return [];
+    }
+
+    $selected_rules = [];
     foreach (RuleCategory::cases() as $category) {
       $rules_by_category = array_filter($rules, static fn($r) =>
-        $r->getPluginDefinition()['category'] === $category
+        $r->category() === $category
       );
       if (!empty($rules_by_category)) {
+        // Collect all rules in the category "Other".
         if ($category === RuleCategory::Other) {
           foreach ($rules_by_category as $rule) {
-            $one_rule_per_category[] = $rule;
+            $selected_rules[] = $rule;
           }
           continue;
         }
-        $one_rule_per_category[] = array_shift($rules_by_category);
+        // Only collect one rule per category elsewhen.
+        $selected_rules[] = array_shift($rules_by_category);
       }
     }
 
-    return $one_rule_per_category;
+    return $selected_rules;
   }
 
   /**

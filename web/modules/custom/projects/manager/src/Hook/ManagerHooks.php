@@ -5,6 +5,7 @@ namespace Drupal\manager\Hook;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
+use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
 use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
@@ -84,12 +85,27 @@ class ManagerHooks {
     }
     $result = $variables['view']->result;
     foreach ($variables['rows'] as $key => &$row) {
+
       $project = $result[$key]->_entity;
-      if ($project instanceof ProjectInterface && $project->lifecycle()->isCompleted()) {
-        $action_transition = &$row['columns']['nothing_2'];
-        $action_transition['attributes']->offsetUnset('class');
-        unset($action_transition['content']);
+
+      if ($project instanceof ProjectInterface) {
+
+        $rules = $this->managerRules->getRules($project);
+        $status = &$row['columns']['field_lifecycle'];
+        foreach (RuleSeverity::cases() as $severity) {
+          if (array_filter($rules, static fn($r) => $r->severity() === $severity)) {
+            $status['attributes']->addClass('status-' . lcfirst($severity->name));
+            break;
+          }
+        }
+
+        if ($project->lifecycle()->isCompleted()) {
+          $action_transition = &$row['columns']['nothing_2'];
+          $action_transition['attributes']->offsetUnset('class');
+          unset($action_transition['content']);
+        }
       }
+
     }
   }
 
@@ -100,16 +116,6 @@ class ManagerHooks {
   public function themeSuggestionsContextPaneAlter(array &$suggestions, array $variables): void {
     if (!empty($variables['elements']['#type'])) {
       $suggestions[] = 'context_pane__' . $variables['elements']['#type'];
-    }
-  }
-
-  /**
-   * Implements hook_theme_suggestions_HOOK_alter().
-   */
-  #[Hook('theme_suggestions_manager_rule_alter')]
-  public function themeSuggestionsManagerRuleAlter(array &$suggestions, array $variables): void {
-    if (!empty($variables['elements']['#type'])) {
-      $suggestions[] = 'manager_rule__' . $variables['elements']['#type'];
     }
   }
 

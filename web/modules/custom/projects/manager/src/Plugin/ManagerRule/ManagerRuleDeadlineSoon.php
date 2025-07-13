@@ -11,15 +11,14 @@ use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides an passed deadline manager rule.
+ * Provides a deadline soon manager rule.
  */
 #[ManagerRule(
-  id: "passed_deadline",
+  id: "deadline_soon",
   category: RuleCategory::Deadline,
-  severity: RuleSeverity::Critical,
-  weight: 80,
+  severity: RuleSeverity::Warning,
 )]
-class ManagerRulePassedDeadline extends ManagerRuleBase {
+class ManagerRuleDeadlineSoon extends ManagerRuleBase {
 
   use StringTranslationTrait;
 
@@ -41,16 +40,19 @@ class ManagerRulePassedDeadline extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
+    if ($project->lifecycle()->isCompleted() || $project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      return FALSE;
+    }
     $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
     $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
-    return $current_time > $deadline;
+    return $current_time > $deadline->sub(new \DateInterval('P14D'));
   }
 
   /**
    * {@inheritdoc}
    */
   protected function text(ProjectInterface $project): TranslatableMarkup {
-    return $this->t('The project deadline has passed.');
+    return $this->t('The project deadline is upcoming.');
   }
 
 }
