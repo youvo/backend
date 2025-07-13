@@ -46,7 +46,7 @@ function organizations_dummy_site_install_finished(): void {
       $portfolio[] = $faker->url();
     }
     $firstname = $faker->unique()->firstName();
-    $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.org';
+    $mail = str_replace(' ', '_', strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname))) . '@example.org';
     $name_extension = $faker->optional(0.7)
       ->randomElement([' e.V.', ' gUG', ' Verein', ' GbR', ' gGmbH']) ?: '';
     $organization_name = ucwords($faker->words(3, TRUE));

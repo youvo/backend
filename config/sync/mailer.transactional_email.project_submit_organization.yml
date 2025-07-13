@@ -1,0 +1,18 @@
+uuid: e48df8df-f9c5-4146-abb1-928fbcd1ddd0
+langcode: de
+status: true
+dependencies: {  }
+id: project_submit_organization
+label: 'Project Submit Organization'
+subject: 'Dein Projekt %TitleProject wurde eingereicht'
+body: "Hallo %Contact,\r\n\r\ndein Projekt %TitleProject wurde erfolgreich eingereicht und wird jetzt von %Manager überprüft.\r\n\r\nDu wirst benachrichtigt, sobald das Projekt veröffentlicht wurde und für Kreative sichtbar ist.\r\n\r\nVielen Dank für dein Vertrauen!\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%Contact'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0

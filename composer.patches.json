@@ -1,6 +1,6 @@
 {
     "patches": {
-	      "drupal/core": {
+        "drupal/core": {
             "Issue #2924549: Invoke hook after a site install is complete": "patches/core/2924549-65.patch",
             "Issue #3051453: Call to a member function setSyncing() on null when installing a module": "patches/core/3051453-8354-84688e15.patch",
             "Issue #3098935: JSON:API can't handle exceptions thrown during authentication": "patches/core/3098935-16.patch",
@@ -9,7 +9,8 @@
             "Custom: Modify upload user avatar access check": "patches/core/custom-modify-upload-user-avatar-access-check.patch",
             "Custom: Jsonapi Upload route is recognized as jsonapi request": "patches/core/custom-file-upload-route-is-jsonapi-request.patch",
             "Custom: Hide meta drupal IDs in JSON:API response": "patches/core/custom-hide-meta-drupal-ids-jsonapi.patch",
-            "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/core/custom-page-cache-id-doesnt-compare-cid-subrequests.patch"
+            "Custom Issue #3050383: PageCache getCacheId doesnt compare cid of the following subrequests in subrequest queue calls": "patches/core/custom-page-cache-id-doesnt-compare-cid-subrequests.patch",
+            "Custom: Adjust editorconfig": "patches/core/custom-editorconfig-scaffold.patch"
         },
         "drupal/filefield_paths": {
             "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"

@@ -1,13 +1,9 @@
 {
-    "name": "drupal/recommended-project",
-    "description": "Project template for Drupal 9 projects with a relocated document root",
+    "name": "youvo/backend",
+    "description": "The new backend of youvo.org - a platform that connects social organizations with creatives for skill-based volunteering projects.",
     "type": "project",
     "license": "GPL-2.0-or-later",
-    "homepage": "https://www.drupal.org/project/drupal",
-    "support": {
-        "docs": "https://www.drupal.org/docs/user_guide/en/index.html",
-        "chat": "https://www.drupal.org/node/314178"
-    },
+    "homepage": "https://www.youvo.org",
     "repositories": [
         {
             "type": "composer",
@@ -24,8 +20,6 @@
         "drupal/core-project-message": "^11.2",
         "drupal/core-recommended": "^11.2",
         "drupal/core-vendor-hardening": "^11.2",
-        "drupal/devel": "^5.3",
-        "drupal/devel_mail_logger": "^2.0",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^5.0",
@@ -46,8 +40,7 @@
         "drupal/twig_tweak": "^3.4",
         "drupal/user_bundle": "^1.2",
         "drush/drush": "^13.3",
-        "joachim-n/composer-manifest": "^1.1",
-        "mglaman/composer-drupal-lenient": "^1.0"
+        "mglaman/composer-drupal-lenient": "*"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -64,10 +57,10 @@
             "drupal/core-project-message": true,
             "drupal/core-vendor-hardening": true,
             "joachim-n/composer-manifest": true,
+            "mglaman/composer-drupal-lenient": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
-            "tbachert/spi": true,
-            "mglaman/composer-drupal-lenient": true
+            "tbachert/spi": true
         },
         "platform": {
             "php": "8.3"
@@ -111,27 +104,6 @@
                 "type:drupal-custom-theme"
             ]
         },
-        "drupal-core-project-message": {
-            "include-keys": [
-                "homepage",
-                "support"
-            ],
-            "post-create-project-cmd-message": [
-                "<bg=blue;fg=white>                                                         </>",
-                "<bg=blue;fg=white>  Congratulations, you’ve installed the Drupal codebase  </>",
-                "<bg=blue;fg=white>  from the drupal/recommended-project template!          </>",
-                "<bg=blue;fg=white>                                                         </>",
-                "",
-                "<bg=yellow;fg=black>Next steps</>:",
-                "  * Install the site: https://www.drupal.org/docs/8/install",
-                "  * Read the user guide: https://www.drupal.org/docs/user_guide/en/index.html",
-                "  * Get support: https://www.drupal.org/support",
-                "  * Get involved with the Drupal community:",
-                "      https://www.drupal.org/getting-involved",
-                "  * Remove the plugin that prints this message:",
-                "      composer remove drupal/core-project-message"
-            ]
-        },
         "patches-file": "composer.patches.json",
   		"enable-patching": true,
   		"patchLevel": {
@@ -139,11 +111,7 @@
         },
         "drupal-lenient": {
             "allowed-list": [
-                "drupal/devel_mail_logger",
-                "drupal/jsonapi_boost",
-                "drupal/jsonapi_cross_bundles",
-                "drupal/multivalue_form_element",
-                "drupal/responsive_favicons"
+                "drupal/jsonapi_boost"
             ]
         }
     },
@@ -160,6 +128,7 @@
         "drupal/restui": "^1.21",
         "fakerphp/faker": "^1.21",
         "jangregor/phpstan-prophecy": "^2.2",
+        "joachim-n/composer-manifest": "^1.1",
         "mglaman/phpstan-drupal": "^2.0",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpspec/prophecy-phpunit": "^2.4",
