@@ -4,7 +4,8 @@ namespace Drupal\manager\Plugin\ManagerRule;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,27 +23,31 @@ abstract class ManagerRuleBase extends PluginBase implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
-  public function applies(Project $project): bool {
+  public function applies(ProjectInterface $project): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function status(): RuleStatus {
-    return RuleStatus::Warning;
+  public function build(ProjectInterface $project): array {
+    $severity = $this->getPluginDefinition()['severity'] ?? RuleSeverity::Normal;
+    $category = $this->getPluginDefinition()['category'] ?? RuleCategory::Other;
+    return [
+      '#theme' => 'manager_rule',
+      '#type' => $this->getPluginDefinition()['id'] ?? '',
+      '#project' => $project,
+      'content' => [
+        'category' => lcfirst($category->name),
+        'severity' => lcfirst($severity->name),
+        'text' => $this->text($project),
+      ],
+    ];
   }
 
   /**
-   * {@inheritdoc}
+   * Gets the text for the notification.
    */
-  public function priority(Project $project): int {
-    return 0;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  abstract public function build(Project $project): array;
+  abstract protected function text(ProjectInterface $project): TranslatableMarkup;
 
 }

@@ -8,15 +8,15 @@ use Drupal\manager\Attribute\ManagerRule;
 use Drupal\projects\ProjectInterface;
 
 /**
- * Provides a project hidden manager rule.
+ * Provides an passed deadline manager rule.
  */
 #[ManagerRule(
-  id: "hidden",
-  category: RuleCategory::Supress,
-  severity: RuleSeverity::Dormant,
-  weight: 100,
+  id: "applicants",
+  category: RuleCategory::Other,
+  severity: RuleSeverity::Normal,
+  weight: 10,
 )]
-class ManagerRuleHidden extends ManagerRuleBase {
+class ManagerRuleApplicants extends ManagerRuleBase {
 
   use StringTranslationTrait;
 
@@ -24,14 +24,14 @@ class ManagerRuleHidden extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
-    return $project->isPublished() === FALSE;
+    return $project->lifecycle()->isOpen() && $project->hasApplicant();
   }
 
   /**
    * {@inheritdoc}
    */
   protected function text(ProjectInterface $project): TranslatableMarkup {
-    return $this->t('The project is hidden.');
+    return $this->t('The project has @count applicant(s).', ['@count' => count($project->getApplicants())]);
   }
 
 }

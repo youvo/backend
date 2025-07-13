@@ -44,7 +44,6 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
     $instance->dateFormatter = $container->get('date.formatter');
     $instance->managerRules = $container->get('plugin.manager.manager_rules');
     return $instance;
-
   }
 
   /**

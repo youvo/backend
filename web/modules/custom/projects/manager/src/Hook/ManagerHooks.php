@@ -41,12 +41,6 @@ class ManagerHooks {
       ];
     }
 
-    foreach ($this->managerRules->getDefinitions() as $definition) {
-      $hooks['manager_rule__' . $definition['id']] = [
-        'base hook' => 'manager_rule',
-      ];
-    }
-
     return $hooks;
   }
 

@@ -35,6 +35,9 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
    */
   const PROMOTED = 1;
 
+  // @todo Add available fields.
+  public const string FIELD_DEADLINE = 'field_deadline';
+
   /**
    * Calls project workflow manager which holds/manipulates the state.
    *

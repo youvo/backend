@@ -24,3 +24,39 @@
   background-size: 24px 24px;
   vertical-align: middle;
 }
+
+.manager-icon-normal {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/checkmark.svg') no-repeat center/contain;
+  background-size: 18px 18px;
+  vertical-align: middle;
+}
+
+.manager-icon-warning {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/warning.svg') no-repeat center/contain;
+  background-size: 18px 18px;
+  vertical-align: middle;
+}
+
+.manager-icon-critical {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/critical.svg') no-repeat center/contain;
+  background-size: 18px 18px;
+  vertical-align: middle;
+}
+
+.manager-icon-dormant {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/cross.svg') no-repeat center/contain;
+  background-size: 16px 16px;
+  vertical-align: middle;
+}
