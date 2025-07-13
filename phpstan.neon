@@ -4,6 +4,8 @@ parameters:
   treatPhpDocTypesAsCertain: false
   paths:
     - web/modules/custom
+  excludePaths:
+    - /*/node_modules/* (?)
   ignoreErrors:
     - identifier: missingType.generics
     - identifier: missingType.iterableValue

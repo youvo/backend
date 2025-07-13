@@ -264,7 +264,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
       $participant->task = $tasks[$delta]['value'];
       $participants[(int) $participant->id()] = $participant;
     }
-    if ($task !== NULL) {
+    if ($task !== NULL && !empty($participants)) {
+      // @phpstan-ignore-next-line
       $participants = array_filter($participants, static fn ($p) => $p->task === $task);
     }
     return $participants ?? [];

@@ -11,6 +11,30 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
     tags:
       - { name: event_subscriber }
+  mailer.project_publish.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectPublishSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
+  mailer.project_submit.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectSubmitSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
+  mailer.project_mediate.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectMediateSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
+  mailer.project_complete.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectCompleteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    tags:
+      - { name: event_subscriber }
   mailer.project_invite.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectInviteSubscriber
     arguments:

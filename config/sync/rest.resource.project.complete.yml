@@ -7,6 +7,7 @@ dependencies:
     - projects
     - serialization
     - simple_oauth
+    - user
 _core:
   default_config_hash: Dmcoj9BWwTWfQ0bdtzIglN1kwcvUNYpntmvFoy09B9Q
 id: project.complete
@@ -20,3 +21,4 @@ configuration:
   authentication:
     - basic_auth
     - oauth2
+    - cookie

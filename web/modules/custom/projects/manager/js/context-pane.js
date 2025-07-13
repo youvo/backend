@@ -48,8 +48,7 @@ async function loadAndReplaceRow(row, id, type) {
         initCheckboxHandlers(document);
       }
     }
-  } catch (e) {
-  }
+  } catch (e) {}
 }
 
 function closeContextPane() {
@@ -151,7 +150,17 @@ function initPromoteButton() {
 }
 
 function initCheckboxHandlers(context) {
-  const checkboxes = (context || document).querySelectorAll(SELECTORS.transitionCheckbox);
+  const checkboxes = (context || document).querySelectorAll(
+    SELECTORS.transitionCheckbox
+  );
+  if (checkboxes.length === 0) {
+    (context || document)
+      .querySelectorAll('.js-transition-btn[data-action="mediate"]')
+      .forEach(btn => {
+        btn.disabled = true;
+      });
+    return;
+  }
 
   checkboxes.forEach(checkbox => {
     const row = checkbox.closest('.js-context-pane');
@@ -202,10 +211,10 @@ function initTransitionButton() {
 
       // For mediate action, collect selected applicants from checkboxes
       if (action === 'mediate') {
-        const checkboxes = row.querySelectorAll('.js-transition-checkbox:checked');
+        const checkboxes = row.querySelectorAll(
+          '.js-transition-checkbox:checked'
+        );
         const selectedCreatives = Array.from(checkboxes).map(cb => cb.value);
-
-        console.log('Selected creatives:', selectedCreatives); // Debug log
 
         if (selectedCreatives.length === 0) {
           alert('Please select at least one applicant.');
@@ -236,15 +245,14 @@ function initTransitionButton() {
             el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
           });
       } else if (response.status === 403) {
-        alert('You do not have permission to promote/demote this project.');
+        alert('You do not have permission to transition this project.');
       } else if (response.status === 400) {
         const errorData = await response.json();
         alert(
           errorData.message || 'Invalid request. Please check your selection.'
         );
       }
-    } catch (err) {
-    }
+    } catch (err) {}
   });
 }
 

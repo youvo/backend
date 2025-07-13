@@ -1,0 +1,26 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_complete_creative
+label: 'Project Complete Creative'
+subject: 'Projekt %TitleProject ist abgeschlossen - Feedback und Ergebnisse'
+body: "Hallo %NameCreative,\r\n\r\ndas Projekt %TitleProject für %NameOrganization ist erfolgreich abgeschlossen! Vielen Dank für deine tolle Arbeit.\r\n\r\nWir würden uns sehr über dein Feedback freuen:\r\n\r\n%FeedbackLink\r\n\r\nHier kannst du die Ergebnisse des Projekts einsehen:\r\n\r\n%ResultsLink\r\n\r\nDein Feedback hilft uns dabei, zukünftige Projekte noch besser zu gestalten.\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%NameCreative'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%NameOrganization'
+    required: 0
+  -
+    token: '%FeedbackLink'
+    required: 0
+  -
+    token: '%ResultsLink'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0 

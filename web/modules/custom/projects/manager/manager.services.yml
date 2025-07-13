@@ -6,6 +6,7 @@ services:
       - '@container.namespaces'
       - '@cache.discovery'
       - '@module_handler'
+  Drupal\manager\ViewsContextPaneManager: '@plugin.manager.views_context_pane'
 
   manager.ajax_response_subscriber:
     class: Drupal\manager\EventSubscriber\AjaxResponseSubscriber

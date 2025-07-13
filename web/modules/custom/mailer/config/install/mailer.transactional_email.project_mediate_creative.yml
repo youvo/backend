@@ -1,0 +1,32 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_mediate_creative
+label: 'Project Mediate Creative'
+subject: 'Du wurdest für das Projekt %TitleProject ausgewählt'
+body: "Hallo %NameCreative,\r\n\r\ngratulation! Du wurdest für das Projekt %TitleProject der Organisation %NameOrganization ausgewählt.\r\n\r\nDu kannst jetzt direkt mit der Organisation in Kontakt treten:\r\n\r\n%NameOrganization\r\nc/o %ContactOrganization\r\n%AddressOrganization\r\n%EmailOrganization\r\n%PhoneOrganization\r\n\r\nDas Projekt ist jetzt in der Umsetzungsphase. Viel Erfolg bei der Zusammenarbeit!\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%NameCreative'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%NameOrganization'
+    required: 0
+  -
+    token: '%ContactOrganization'
+    required: 0
+  -
+    token: '%AddressOrganization'
+    required: 0
+  -
+    token: '%EmailOrganization'
+    required: 0
+  -
+    token: '%PhoneOrganization'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0 

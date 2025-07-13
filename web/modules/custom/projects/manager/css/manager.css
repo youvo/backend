@@ -40,3 +40,11 @@ td.views-field-field-manager {
 .view-filters {
   display: none;
 }
+
+.view-project-manager a:link {
+  color: #3f78b5;
+}
+
+.view-project-manager a:visited {
+  color: #3f78b5;
+}

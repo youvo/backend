@@ -1,19 +1,28 @@
 <tr class="context-pane" {{ attributes }}>
   <td colspan="100%">
-    {% if content.options %}
+    {% if content.options is not null %}
       <div class="transition-checkboxes">
-        {% for id, option in content.options %}
-          <div class="transition-checkbox">
-            <input type="checkbox"
-                   id="applicant-{{ id }}"
-                   name="applicants[]"
-                   value="{{ id }}"
-                   class="transition-checkbox js-transition-checkbox">
-            <label for="applicant-{{ id }}" class="transition-checkbox-option">
-              {{ option }}
-            </label>
-          </div>
-        {% endfor %}
+        {% if content.options %}
+          {% for id, option in content.options %}
+            <div class="transition-checkbox">
+              <input type="checkbox"
+                     id="applicant-{{ id }}"
+                     name="applicants[]"
+                     value="{{ id }}"
+                     class="transition-checkbox js-transition-checkbox">
+              <label for="applicant-{{ id }}" class="transition-checkbox-option">
+                {{ option }}
+              </label>
+            </div>
+          {% endfor %}
+        {% else %}
+          {{ 'No applicants found.'|t }}
+        {% endif %}
+      </div>
+    {% endif %}
+    {% if content.users %}
+      <div class="transition-users">
+        {{ content.users }}
       </div>
     {% endif %}
     {{ content.button }}

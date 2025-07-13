@@ -241,7 +241,7 @@
 }
 
 /* =========================
-   Applicant Checkboxes
+   Transition Checkboxes
    ========================= */
 
 .transition-checkboxes {
@@ -272,11 +272,7 @@
   flex: 1;
 }
 
-.transition-checkbox-option:hover {
-  box-shadow: inset 0 0 0 2px #3f78b5;
-  background-color: #f4f8ff;
-}
-
+.transition-checkbox-option:hover,
 .transition-checkbox:checked + .transition-checkbox-option {
   box-shadow: inset 0 0 0 2px #3f78b5;
   background-color: #f4f8ff;

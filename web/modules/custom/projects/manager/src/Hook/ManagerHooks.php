@@ -3,6 +3,7 @@
 namespace Drupal\manager\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\manager\ViewsContextPaneManager;
 use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
@@ -10,6 +11,10 @@ use Drupal\views\ViewExecutable;
  * Hook implementations for the manager module.
  */
 class ManagerHooks {
+
+  public function __construct(
+    protected ViewsContextPaneManager $contextPaneManager,
+  ) {}
 
   /**
    * Implements hook_theme().
@@ -24,9 +29,7 @@ class ManagerHooks {
       ],
     ];
 
-    /** @var \Drupal\Component\Plugin\PluginManagerInterface $context_pane_manager */
-    $context_pane_manager = \Drupal::service('plugin.manager.views_context_pane');
-    foreach ($context_pane_manager->getDefinitions() as $definition) {
+    foreach ($this->contextPaneManager->getDefinitions() as $definition) {
       $hooks['context_pane__' . $definition['id']] = [
         'base hook' => 'context_pane',
       ];
@@ -56,10 +59,10 @@ class ManagerHooks {
   }
 
   /**
-   * Implements hook_views_post_render().
+   * Implements hook_preprocess_views_view_table().
    */
   #[Hook('preprocess_views_view_table')]
-  public function preprocessProjectManager(&$variables): void {
+  public function preprocessViewsViewTable(array &$variables): void {
     if ($variables['view']->id() !== 'project_manager') {
       return;
     }
