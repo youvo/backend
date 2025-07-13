@@ -1,17 +1,17 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\manager\Attribute\ViewsContextPane;
+use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a project logbook views context pane.
+ * Provides a project logbook manager context pane.
  */
-#[ViewsContextPane(id: "logbook")]
-class ContextPaneLogbook extends ContextPaneBase {
+#[ManagerContextPane(id: "logbook")]
+class ManagerContextPaneLogbook extends ManagerContextPaneBase {
 
   /**
    * The entity type manager.

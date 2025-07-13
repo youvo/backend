@@ -1,21 +1,21 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\manager\Attribute\ViewsContextPane;
+use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectState;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a project lifecycle views context pane.
+ * Provides a project lifecycle manager context pane.
  */
-#[ViewsContextPane(id: "lifecycle")]
-class ContextPaneLifecycle extends ContextPaneBase {
+#[ManagerContextPane(id: "lifecycle")]
+class ManagerContextPaneLifecycle extends ManagerContextPaneBase {
 
   use StringTranslationTrait;
 

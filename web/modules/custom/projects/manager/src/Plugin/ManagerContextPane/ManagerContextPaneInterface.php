@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\projects\Entity\Project;
 
 /**
  * Defines an interface for context pane plugins.
  */
-interface ContextPaneInterface {
+interface ManagerContextPaneInterface {
 
   /**
    * Returns the render array for the context pane.

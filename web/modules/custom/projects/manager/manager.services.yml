@@ -1,12 +1,12 @@
 services:
 
-  plugin.manager.views_context_pane:
-    class: 'Drupal\manager\ViewsContextPaneManager'
+  plugin.manager.manager_context_panes:
+    class: 'Drupal\manager\ManagerContextPanes'
     arguments:
       - '@container.namespaces'
       - '@cache.discovery'
       - '@module_handler'
-  Drupal\manager\ViewsContextPaneManager: '@plugin.manager.views_context_pane'
+  Drupal\manager\ManagerContextPanes: '@plugin.manager.manager_context_panes'
 
   manager.ajax_response_subscriber:
     class: Drupal\manager\EventSubscriber\AjaxResponseSubscriber

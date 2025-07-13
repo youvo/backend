@@ -4,7 +4,7 @@ namespace Drupal\manager\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\manager\ViewsContextPaneManager;
+use Drupal\manager\ManagerContextPanes;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ContextPaneController implements ContainerInjectionInterface {
 
   public function __construct(
-    protected ViewsContextPaneManager $contextPaneManager,
+    protected ManagerContextPanes $managerContextPanes,
     protected RendererInterface $renderer,
   ) {}
 
@@ -25,7 +25,7 @@ class ContextPaneController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('plugin.manager.views_context_pane'),
+      $container->get('plugin.manager.manager_context_panes'),
       $container->get('renderer')
     );
   }
@@ -44,13 +44,13 @@ class ContextPaneController implements ContainerInjectionInterface {
   public function contextPane(Project $project, Request $request): Response {
 
     $type = $request->query->get('type', '');
-    if (!$this->contextPaneManager->hasDefinition($type)) {
+    if (!$this->managerContextPanes->hasDefinition($type)) {
       $build['#theme'] = 'context_pane';
       $content = $this->renderer->render($build);
       return new Response($content, 404);
     }
 
-    $build = $this->contextPaneManager->createInstance($type)->build($project);
+    $build = $this->managerContextPanes->createInstance($type)->build($project);
     $build['#type'] = $type;
     $build['#project'] = $project;
 

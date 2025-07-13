@@ -1,16 +1,16 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\manager\Attribute\ViewsContextPane;
+use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\projects\Entity\Project;
 
 /**
- * Provides a project edit views context pane.
+ * Provides a project edit manager context pane.
  */
-#[ViewsContextPane(id: "edit")]
-class ContextPaneEdit extends ContextPaneBase {
+#[ManagerContextPane(id: "edit")]
+class ManagerContextPaneEdit extends ManagerContextPaneBase {
 
   use StringTranslationTrait;
 

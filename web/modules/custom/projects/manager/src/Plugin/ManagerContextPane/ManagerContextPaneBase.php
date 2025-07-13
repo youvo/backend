@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a base class for context pane plugins.
  */
-abstract class ContextPaneBase extends PluginBase implements ContainerFactoryPluginInterface, ContextPaneInterface {
+abstract class ManagerContextPaneBase extends PluginBase implements ContainerFactoryPluginInterface, ManagerContextPaneInterface {
 
   /**
    * {@inheritdoc}

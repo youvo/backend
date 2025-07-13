@@ -1,20 +1,20 @@
 <?php
 
-namespace Drupal\manager\Plugin\ViewsContextPane;
+namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\manager\Attribute\ViewsContextPane;
+use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a project transition views context pane.
+ * Provides a project transition manager context pane.
  */
-#[ViewsContextPane(id: "transition")]
-class ContextPaneTransition extends ContextPaneBase {
+#[ManagerContextPane(id: "transition")]
+class ManagerContextPaneTransition extends ManagerContextPaneBase {
 
   use StringTranslationTrait;
 

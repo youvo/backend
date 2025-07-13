@@ -3,7 +3,7 @@
 namespace Drupal\manager\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\manager\ViewsContextPaneManager;
+use Drupal\manager\ManagerContextPanes;
 use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
@@ -13,7 +13,7 @@ use Drupal\views\ViewExecutable;
 class ManagerHooks {
 
   public function __construct(
-    protected ViewsContextPaneManager $contextPaneManager,
+    protected ManagerContextPanes $contextPaneManager,
   ) {}
 
   /**
