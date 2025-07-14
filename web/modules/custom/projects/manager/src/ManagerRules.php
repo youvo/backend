@@ -38,7 +38,7 @@ class ManagerRules extends DefaultPluginManager {
    * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    *
-   * @return \Drupal\manager\Plugin\ManagerContextPane\ManagerRuleInterface[]
+   * @return \Drupal\manager\Plugin\ManagerRule\ManagerRuleInterface[]
    *   An array of manager rules.
    */
   public function getRules(ProjectInterface $project): array {

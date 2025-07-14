@@ -13,6 +13,15 @@
         </div>
       {% endfor %}
     </div>
+    {% if content.overview %}
+      <div class="status-overview">
+        {% for item in content.overview %}
+          <div class="status-overview-item">
+            {{ item }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% if content.rules %}
       <div class="manager-rules">
         {{ content.rules }}

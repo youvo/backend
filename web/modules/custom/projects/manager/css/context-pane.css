@@ -325,3 +325,50 @@
   font-size: 0.8em;
   color: #7e98b5;
 }
+
+/* =========================
+   Status Overview
+   ========================= */
+
+.status-overview {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  align-items: stretch;
+  margin-top: 1em;
+  width: 100%;
+}
+
+.status-overview-item {
+  flex: 1 1 0;
+  text-align: center;
+  align-items: center;
+  text-wrap: balance;
+  font-size: 0.8em;
+  padding: 0.5em 1em;
+  border-right: 1px solid #e8ecf2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.status-overview-item:last-child {
+  border-right: none;
+}
+
+.status-overview-creatives {
+  margin-bottom: 0.5em;
+}
+
+@media (max-width: 800px) {
+  .status-overview {
+    flex-direction: column;
+  }
+  .status-overview-item {
+    border-right: none;
+    border-bottom: 1px solid #e8ecf2;
+  }
+  .status-overview-item:last-child {
+    border-bottom: none;
+  }
+}

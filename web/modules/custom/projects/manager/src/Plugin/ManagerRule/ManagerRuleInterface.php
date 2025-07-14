@@ -21,6 +21,11 @@ interface ManagerRuleInterface {
   public function applies(ProjectInterface $project): bool;
 
   /**
+   * Gets the category of the rule.
+   */
+  public function category(): RuleCategory;
+
+  /**
    * Gets the severity of the rule.
    */
   public function severity(): RuleSeverity;

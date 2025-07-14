@@ -2,13 +2,18 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\manager\ManagerRules;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -36,6 +41,11 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   protected ManagerRules $managerRules;
 
   /**
+   * The time service.
+   */
+  protected TimeInterface $time;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
@@ -43,6 +53,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->dateFormatter = $container->get('date.formatter');
     $instance->managerRules = $container->get('plugin.manager.manager_rules');
+    $instance->time = $container->get('datetime.time');
     return $instance;
   }
 
@@ -56,6 +67,14 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
       '#project' => $project,
       'content' => [
         'progression' => $this->buildProgression($project),
+        'overview' => match(TRUE) {
+          $project->lifecycle()->isDraft() => $this->buildOverviewDraft($project),
+          $project->lifecycle()->isPending() => $this->buildOverviewPending($project),
+          $project->lifecycle()->isOpen() => $this->buildOverviewOpen($project),
+          $project->lifecycle()->isOngoing() => $this->buildOverviewOngoing($project),
+          $project->lifecycle()->isCompleted() => $this->buildOverviewCompleted($project),
+          default => [],
+        },
         'rules' => $this->buildRules($project),
       ],
     ];
@@ -113,17 +132,340 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   }
 
   /**
-   * Builds the project manager rules.
+   * Builds the project overview for draft project.
    */
-  protected function buildRules(Project $project): array {
+  protected function buildOverviewDraft(Project $project): array {
 
-    $build = [];
+    $organization = $project->getOwner();
+    if (!$organization instanceof Organization) {
+      return [];
+    }
 
-    foreach ($this->managerRules->getRules($project) as $rule) {
-      $build[] = $rule->build($project);
+    // Draft information.
+    if ($organization->hasRoleProspect()) {
+      $build['draft'][] = [
+        '#markup' => '<p>' . $this->t('The project belongs to a prospect organization.') . '</p>',
+      ];
+    }
+    else {
+      $projects_by_organization = $this->entityTypeManager
+        ->getStorage('project')
+        ->loadByProperties(['uid' => $organization->id()]);
+      $build['draft'][] = [
+        '#markup' => '<p>' . $this->t('The organization has @count projects on the platform.', ['@count' => count($projects_by_organization)]) . '</p>',
+      ];
+    }
+
+    // Pending information.
+    $build['pending'][] = [];
+
+    // Open information.
+    $build['open'][] = [];
+
+    // Ongoing information.
+    $build['ongoing'][] = [];
+
+    // Completed information.
+    if (!$project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
+      $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
+      $days_left = $current_time->diff($deadline);
+      if ($days_left->invert === 0) {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline is in @days days.', ['@days' => $days_left->days]),
+        ];
+      }
+      else {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline has passed.'),
+        ];
+      }
+    }
+    else {
+      $build['completed'][] = [];
     }
 
     return $build;
+  }
+
+  /**
+   * Builds the project overview for pending project.
+   */
+  protected function buildOverviewPending(Project $project): array {
+
+    $organization = $project->getOwner();
+    if (!$organization instanceof Organization) {
+      return [];
+    }
+
+    // Draft information.
+    $projects_by_organization = $this->entityTypeManager
+      ->getStorage('project')
+      ->loadByProperties(['uid' => $organization->id()]);
+    $build['draft'][] = [
+      '#markup' => '<p>' . $this->t('The organization has @count projects on the platform.', ['@count' => count($projects_by_organization)]) . '</p>',
+    ];
+
+    // Pending information.
+    foreach ($project->lifecycle()->history() as $transition) {
+      if ($transition->transition === ProjectTransition::Submit->value) {
+        $submitted = $transition->timestamp;
+      }
+    }
+    if (isset($submitted)) {
+      $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
+      $submitted = DrupalDateTime::createFromTimestamp($submitted);
+      $days_since = $current_time->diff($submitted)->days;
+      $build['pending'][] = [
+        '#markup' => $this->t('The project was submitted @days days ago.', ['@days' => $days_since]),
+      ];
+    }
+    else {
+      $build['pending'][] = [];
+    }
+
+    // Open information.
+    $build['open'][] = [];
+
+    // Ongoing information.
+    $build['ongoing'][] = [];
+
+    // Completed information.
+    if (!$project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
+      $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
+      $days_left = $current_time->diff($deadline);
+      if ($days_left->invert === 0) {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline is in @days days.', ['@days' => $days_left->days]),
+        ];
+      }
+      else {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline has passed.'),
+        ];
+      }
+    }
+    else {
+      $build['completed'][] = [];
+    }
+
+    return $build;
+  }
+
+  /**
+   * Builds the project overview for open project.
+   */
+  protected function buildOverviewOpen(Project $project): array {
+
+    $organization = $project->getOwner();
+    if (!$organization instanceof Organization) {
+      return [];
+    }
+
+    // Draft information.
+    $projects_by_organization = $this->entityTypeManager
+      ->getStorage('project')
+      ->loadByProperties(['uid' => $organization->id()]);
+    $build['draft'][] = [
+      '#markup' => '<p>' . $this->t('The organization has @count projects on the platform.', ['@count' => count($projects_by_organization)]) . '</p>',
+    ];
+
+    // Pending information.
+    $build['pending'][] = [];
+
+    // Open information.
+    if ($applicants = $project->getApplicants()) {
+      $view_builder = $this->entityTypeManager->getViewBuilder('user');
+      $build['open'][] = [
+        '#markup' => '<div class="status-overview-creatives">',
+      ];
+      foreach ($applicants as $applicant) {
+        $build['open'][] = $view_builder->view($applicant, 'avatar');
+      }
+      $build['open'][] = [
+        '#markup' => '</div>' . $this->t('The project has @count applicant(s).', ['@count' => count($applicants)]),
+      ];
+    }
+    else {
+      $build['open'][] = [];
+    }
+
+    // Ongoing information.
+    $build['ongoing'][] = [];
+
+    // Completed information.
+    if (!$project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
+      $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
+      $days_left = $current_time->diff($deadline);
+      if ($days_left->invert === 0) {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline is in @days days.', ['@days' => $days_left->days]),
+        ];
+      }
+      else {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline has passed.'),
+        ];
+      }
+    }
+    else {
+      $build['completed'][] = [];
+    }
+
+    return $build;
+  }
+
+  /**
+   * Builds the project overview for ongoing project.
+   */
+  protected function buildOverviewOngoing(Project $project): array {
+
+    $organization = $project->getOwner();
+    if (!$organization instanceof Organization) {
+      return [];
+    }
+
+    // Draft information.
+    $projects_by_organization = $this->entityTypeManager
+      ->getStorage('project')
+      ->loadByProperties(['uid' => $organization->id()]);
+    $build['draft'][] = [
+      '#markup' => '<p>' . $this->t('The organization has @count projects on the platform.', ['@count' => count($projects_by_organization)]) . '</p>',
+    ];
+
+    // Pending information.
+    $build['pending'][] = [];
+
+    // Open information.
+    if ($applicants = $project->getApplicants()) {
+      $view_builder = $this->entityTypeManager->getViewBuilder('user');
+      $build['open'][] = [
+        '#markup' => '<div class="status-overview-creatives">',
+      ];
+      foreach ($applicants as $applicant) {
+        $build['open'][] = $view_builder->view($applicant, 'avatar');
+      }
+      $build['open'][] = [
+        '#markup' => '</div>' . $this->t('The project had @count applicant(s).', ['@count' => count($applicants)]),
+      ];
+    }
+    else {
+      $build['open'][] = [];
+    }
+
+    // Ongoing information.
+    if ($participants = $project->getParticipants('Creative')) {
+      $view_builder = $this->entityTypeManager->getViewBuilder('user');
+      $build['ongoing'][] = [
+        '#markup' => '<div class="status-overview-creatives">',
+      ];
+      foreach ($participants as $participant) {
+        $build['ongoing'][] = $view_builder->view($participant, 'avatar');
+      }
+      $build['ongoing'][] = [
+        '#markup' => '</div>' . $this->t('The project has @count participant(s).', ['@count' => count($participants)]),
+      ];
+    }
+    else {
+      $build['ongoing'][] = [];
+    }
+
+    // Completed information.
+    if (!$project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+      $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
+      $deadline = DrupalDateTime::createFromFormat('Y-m-d', $project->get(ProjectInterface::FIELD_DEADLINE)->value);
+      $days_left = $current_time->diff($deadline);
+      if ($days_left->invert === 0) {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline is in @days days.', ['@days' => $days_left->days]),
+        ];
+      }
+      else {
+        $build['completed'][] = [
+          '#markup' => $this->t('The project deadline has passed.'),
+        ];
+      }
+    }
+    else {
+      $build['completed'][] = [];
+    }
+
+    return $build;
+  }
+
+  /**
+   * Builds the project overview for completed project.
+   */
+  protected function buildOverviewCompleted(Project $project): array {
+
+    $organization = $project->getOwner();
+    if (!$organization instanceof Organization) {
+      return [];
+    }
+
+    // Draft information.
+    $projects_by_organization = $this->entityTypeManager
+      ->getStorage('project')
+      ->loadByProperties(['uid' => $organization->id()]);
+    $build['draft'][] = [
+      '#markup' => '<p>' . $this->t('The organization has @count projects on the platform.', ['@count' => count($projects_by_organization)]) . '</p>',
+    ];
+
+    // Pending information.
+    $build['pending'][] = [];
+
+    // Open information.
+    if ($applicants = $project->getApplicants()) {
+      $view_builder = $this->entityTypeManager->getViewBuilder('user');
+      $build['open'][] = [
+        '#markup' => '<div class="status-overview-creatives">',
+      ];
+      foreach ($applicants as $applicant) {
+        $build['open'][] = $view_builder->view($applicant, 'avatar');
+      }
+      $build['open'][] = [
+        '#markup' => '</div>' . $this->t('The project had @count applicant(s).', ['@count' => count($applicants)]),
+      ];
+    }
+    else {
+      $build['open'][] = [];
+    }
+
+    // Ongoing information.
+    if ($participants = $project->getParticipants('Creative')) {
+      $view_builder = $this->entityTypeManager->getViewBuilder('user');
+      $build['ongoing'][] = [
+        '#markup' => '<div class="status-overview-creatives">',
+      ];
+      foreach ($participants as $participant) {
+        $build['ongoing'][] = $view_builder->view($participant, 'avatar');
+      }
+      $build['ongoing'][] = [
+        '#markup' => '</div>' . $this->t('The project had @count participant(s).', ['@count' => count($participants)]),
+      ];
+    }
+    else {
+      $build['ongoing'][] = [];
+    }
+
+    // Completed information.
+    $build['completed'][] = [
+      '#markup' => $this->t('The project is finished.'),
+    ];
+
+    return $build;
+  }
+
+  /**
+   * Builds the project manager rules.
+   */
+  protected function buildRules(Project $project): array {
+    foreach ($this->managerRules->getRules($project) as $rule) {
+      $build[] = $rule->build($project);
+    }
+    return $build ?? [];
   }
 
 }
