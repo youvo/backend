@@ -5,6 +5,7 @@ namespace Drupal\projects\Plugin\rest\resource\Transition;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectResetEvent;
@@ -50,7 +51,9 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
       throw new ConflictHttpException('Project can not be reset.');
     }
     // @codeCoverageIgnoreEnd
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project reset failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
     return new ModifiedResourceResponse('Project reset.');
   }

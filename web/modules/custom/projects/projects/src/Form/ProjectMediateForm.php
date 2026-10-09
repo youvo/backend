@@ -68,7 +68,7 @@ class ProjectMediateForm extends ProjectTransitionFormBase {
     try {
       $event = new ProjectMediateEvent($project);
       $event->setCreatives($selected_creatives);
-      $this->eventDispatcher->dispatch(new ProjectMediateEvent($project));
+      $this->eventDispatcher->dispatch($event);
       $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
     }
     catch (\Throwable $e) {

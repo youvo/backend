@@ -5,6 +5,7 @@ namespace Drupal\projects\Plugin\rest\resource\Action;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectPromoteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -37,7 +38,9 @@ class ProjectPromoteResource extends ProjectActionResourceBase {
     try {
       $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
     }
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project promote failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
     return new ModifiedResourceResponse('Project promoted.');
   }

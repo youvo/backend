@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -88,7 +89,9 @@ class ProjectApplyResource extends ProjectActionResourceBase {
       $event->setPhoneNumber($content['phone'] ?? '');
       $this->eventDispatcher->dispatch($event);
     }
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project apply failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
     return new ModifiedResourceResponse('Application completed.');
