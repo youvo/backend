@@ -7,7 +7,6 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\creatives\Entity\Creative;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -73,16 +72,17 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent());
-    $applicant = $this->currentUser->getAccount();
+    $applicant = Profile::account($this->currentUser);
 
     // Safeguard against a current user that is not a creative.
-    if (!$applicant instanceof Creative) {
+    if (!Profile::isCreative($applicant)) {
       // @codeCoverageIgnoreStart
       return new ModifiedResourceResponse('The application is not possible for the current user.');
       // @codeCoverageIgnoreEnd
     }
 
     try {
+      /** @var \Drupal\creatives\Entity\Creative $applicant */
       $event = new ProjectApplyEvent($project, $applicant);
       $event->setMessage($content['message'] ?? '');
       $event->setPhoneNumber($content['phone'] ?? '');

@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class ChildEntityController.
@@ -32,7 +33,7 @@ class ChildEntityController extends EntityController {
    * @throws \Drupal\Core\Entity\Exception\UnsupportedEntityTypeDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function addPage($entity_type_id): RedirectResponse|array {
+  public function addPage($entity_type_id, ?Request $request = NULL): RedirectResponse|array {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     static::entityImplementsChildEntityInterface($entity_type);
 

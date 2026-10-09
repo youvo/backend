@@ -4,7 +4,7 @@ namespace Drupal\oauth_grant_remote\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Session\SessionManager;
+use Drupal\Core\Session\UserSessionRepositoryInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -16,6 +16,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\InvalidTokenStructure;
 use Lcobucci\JWT\Token\UnsupportedHeaderFound;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -29,13 +30,13 @@ class ExpireRefreshTokensController extends ControllerBase {
   /**
    * ExpireRefreshTokensController constructor.
    */
-  public function __construct(protected SessionManager $sessionManager) {}
+  public function __construct(protected UserSessionRepositoryInterface $userSessionRepository) {}
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('session_manager'));
+    return new static($container->get(UserSessionRepositoryInterface::class));
   }
 
   /**
@@ -54,7 +55,10 @@ class ExpireRefreshTokensController extends ControllerBase {
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
-    $config->withValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
+    $config = $config->withValidationConstraints(
+      new SignedWith($config->signer(), $config->verificationKey()),
+      new LooseValidAt(SystemClock::fromSystemTimezone()),
+    );
 
     // Get JWT from url parameter.
     $params = $request->getParsedBody();
@@ -125,7 +129,7 @@ class ExpireRefreshTokensController extends ControllerBase {
     // logged in from different devices, because if all refresh tokens are
     // invalidated, the user has to authenticate again and consequently will be
     // logged in to the data provider again.
-    $this->sessionManager->delete($remote_account['uid']);
+    $this->userSessionRepository->deleteAll($remote_account['uid']);
 
     return new ModifiedResourceResponse(NULL, 200);
   }

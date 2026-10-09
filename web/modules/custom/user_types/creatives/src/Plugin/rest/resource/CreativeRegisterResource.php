@@ -16,6 +16,7 @@ use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponseInterface;
+use Drupal\user\OneTimeAuthentication;
 use Drupal\youvo\Exception\FieldAwareHttpException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -62,6 +63,11 @@ class CreativeRegisterResource extends ResourceBase {
   protected TimeInterface $time;
 
   /**
+   * The one time authentication service.
+   */
+  protected OneTimeAuthentication $oneTimeAuthentication;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults) {
@@ -71,6 +77,7 @@ class CreativeRegisterResource extends ResourceBase {
     $instance->eventDispatcher = $container->get('event_dispatcher');
     $instance->languageManager = $container->get('language_manager');
     $instance->time = $container->get('datetime.time');
+    $instance->oneTimeAuthentication = $container->get(OneTimeAuthentication::class);
     return $instance;
   }
 
@@ -131,7 +138,7 @@ class CreativeRegisterResource extends ResourceBase {
         [
           'uid' => $creative->id(),
           'timestamp' => $timestamp,
-          'hash' => user_pass_rehash($creative, $timestamp),
+          'hash' => $this->oneTimeAuthentication->generateHmac($creative, $timestamp),
         ],
         [
           'absolute' => TRUE,

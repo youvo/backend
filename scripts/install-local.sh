@@ -71,7 +71,7 @@
   --site-mail="${SITE_MAIL}" \
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
-  --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
+  --account-pass="${ACCOUNT_PASS}"
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."

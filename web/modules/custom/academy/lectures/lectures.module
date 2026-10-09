@@ -6,6 +6,7 @@
  */
 
 use Drupal\child_entities\Plugin\Field\ComputedChildEntityReferenceFieldItemList;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -39,7 +40,7 @@ function lectures_entity_base_field_info(EntityTypeInterface $entity_type): arra
 /**
  * Implements hook_entity_operation_alter().
  */
-function lectures_entity_operation_alter(array &$operations, EntityInterface $entity): void {
+function lectures_entity_operation_alter(array &$operations, EntityInterface $entity, CacheableMetadata $cacheability): void {
   // Overwrite edit and delete to avoid destination.
   if ($entity instanceof Lecture) {
     $operations['edit']['url'] = Url::fromRoute('entity.lecture.edit_form', [

@@ -2,13 +2,14 @@ diff --git a/core/modules/jsonapi/jsonapi.services.yml b/core/modules/jsonapi/js
 index 56e585f..ef90598 100644
 --- a/core/modules/jsonapi/jsonapi.services.yml
 +++ b/core/modules/jsonapi/jsonapi.services.yml
-@@ -1,5 +1,6 @@
+@@ -1,6 +1,7 @@
  parameters:
    jsonapi.base_path: /jsonapi
+   jsonapi.skip_procedural_hook_scan: true
 +  jsonapi.include_drupal_ids: false
 
  services:
-   jsonapi.serializer:
+   _defaults:
 diff --git a/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php b/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php
 index ca8b6e4..4eb59fe 100644
 --- a/core/modules/jsonapi/src/JsonApiResource/ResourceIdentifier.php

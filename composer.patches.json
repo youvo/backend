@@ -2,7 +2,7 @@
     "patches": {
         "drupal/core": {
             "Issue #2924549: Invoke hook after a site install is complete": "patches/core/2924549-65.patch",
-            "Issue #3051453: Call to a member function setSyncing() on null when installing a module": "patches/core/3051453-8354-84688e15.patch",
+            "Issue #3051453: Call to a member function setSyncing() on null when installing a module": "patches/core/3051453-34.patch",
             "Issue #3098935: JSON:API can't handle exceptions thrown during authentication": "patches/core/3098935-16.patch",
             "Issue #3181946: ReplicaKillSwitch unnecessarily starts a session on each request": "patches/core/3181946-29.patch",
             "Custom: Change file upload route for jsonapi extras": "patches/core/custom-change-file-upload-route-for-jsonapi-extras.patch",
@@ -35,8 +35,11 @@
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
         },
-        "drupal/simple_oauth": {
-            "Issue #2946882: Auth revoke on profile update": "patches/simple_oauth/2946882-c33fa214.patch"
+        "drupal/openapi": {
+            "Issue #: PHP 8.4: Implicitly nullable parameter declarations deprecated": "patches/openapi/openapi-mr22.patch"
+        },
+        "drupal/subrequests": {
+            "Issue #3524429: PHP 8.4 deprecation: Implicitly marking parameter as nullable": "patches/subrequests/subrequests-mr33.patch"
         },
         "drupal/warmer": {
             "Custom: Add items list to queue command": "patches/warmer/custom-add-items-limit-to-queue-command.patch"

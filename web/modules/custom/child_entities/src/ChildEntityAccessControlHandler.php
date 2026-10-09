@@ -118,8 +118,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
         $entity_type = $parent_entity_type ?? $this->entityType;
         $parent_key = $entity_type->getKey('parent');
         $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
-        $parent_class = $parent_entity_type->getOriginalClass();
-      } while (in_array(ChildEntityTrait::class, class_uses($parent_class), TRUE));
+      } while ($parent_entity_type->entityClassImplements(ChildEntityInterface::class));
 
       /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
       $access_handler = $this->entityTypeManager

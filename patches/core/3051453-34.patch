@@ -35,17 +35,3 @@ index 82bbb9720b37108fd4568782244e3be27beea6ff..575fcb479c39d00313792b12844869b6
      return TRUE;
    }
 
-diff --git a/core/lib/Drupal/Core/Config/StorageComparer.php b/core/lib/Drupal/Core/Config/StorageComparer.php
-index afdcdde2443709e8eacc9e0e8465401f18af1fee..afa6130b21641fd47a6d1101f1150be38941edfd 100644
---- a/core/lib/Drupal/Core/Config/StorageComparer.php
-+++ b/core/lib/Drupal/Core/Config/StorageComparer.php
-@@ -299,7 +299,7 @@ protected function addChangelistUpdate($collection) {
-       $source_data = $this->getSourceStorage($collection)->read($name);
-       $target_data = $this->getTargetStorage($collection)->read($name);
-       if ($source_data !== $target_data) {
--        if (isset($source_data['uuid']) && $source_data['uuid'] !== $target_data['uuid']) {
-+        if ((isset($target_data['uuid']) && isset($source_data['uuid'])) && $source_data['uuid'] !== $target_data['uuid']) {
-           // The entity has the same file as an existing entity but the UUIDs do
-           // not match. This means that the entity has been recreated so config
-           // synchronization should do the same.
-
