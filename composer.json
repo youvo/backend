@@ -40,6 +40,7 @@
         "drupal/twig_tweak": "^3.4",
         "drupal/user_bundle": "^1.2",
         "drush/drush": "^13.3",
+        "lcobucci/clock": "^3.2",
         "mglaman/composer-drupal-lenient": "*"
     },
     "conflict": {

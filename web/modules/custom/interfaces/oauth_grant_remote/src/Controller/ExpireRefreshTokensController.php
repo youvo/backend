@@ -16,6 +16,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\InvalidTokenStructure;
 use Lcobucci\JWT\Token\UnsupportedHeaderFound;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -54,7 +55,10 @@ class ExpireRefreshTokensController extends ControllerBase {
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
-    $config->withValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
+    $config = $config->withValidationConstraints(
+      new SignedWith($config->signer(), $config->verificationKey()),
+      new LooseValidAt(SystemClock::fromSystemTimezone()),
+    );
 
     // Get JWT from url parameter.
     $params = $request->getParsedBody();

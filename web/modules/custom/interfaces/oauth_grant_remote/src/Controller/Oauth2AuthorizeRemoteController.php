@@ -26,6 +26,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\InvalidTokenStructure;
 use Lcobucci\JWT\Token\UnsupportedHeaderFound;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -160,7 +161,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     $key_path = 'file://' . $path;
     $key = InMemory::file($key_path);
     $config = Configuration::forSymmetricSigner(new Sha512(), $key);
-    $config->withValidationConstraints(new LooseValidAt(new SystemClock(new \DateTimeZone(\date_default_timezone_get()))));
+    $config = $config->withValidationConstraints(
+      new SignedWith($config->signer(), $config->verificationKey()),
+      new LooseValidAt(SystemClock::fromSystemTimezone()),
+    );
 
     // Build the JWT.
     $expiry = $this->config('oauth_grant_remote.settings')->get('jwt_expiration');
