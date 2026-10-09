@@ -1,0 +1,51 @@
+diff --git a/core/lib/Drupal/Core/Config/ConfigImporter.php b/core/lib/Drupal/Core/Config/ConfigImporter.php
+index 806828eb980b0752c5361620f548eb580eeebb75..e729790bcf1f07d6212f90e489f88b06cf2a1944 100644
+--- a/core/lib/Drupal/Core/Config/ConfigImporter.php
++++ b/core/lib/Drupal/Core/Config/ConfigImporter.php
+@@ -952,8 +952,11 @@ protected function checkOp($collection, $op, $name) {
+             $entity_storage = $this->configManager->getEntityTypeManager()->getStorage($entity_type_id);
+             $entity_type = $this->configManager->getEntityTypeManager()->getDefinition($entity_type_id);
+             $entity = $entity_storage->load($entity_storage->getIDFromConfigName($name, $entity_type->getConfigPrefix()));
+-            $entity->delete();
+-            $this->logError($this->t('Deleted and replaced configuration entity "@name"', ['@name' => $name]));
++
++            if ($entity) {
++              $entity->delete();
++              $this->logError($this->t('Deleted and replaced configuration entity "@name"', ['@name' => $name]));
++            }
+           }
+           else {
+             $this->storageComparer->getTargetStorage($collection)->delete($name);
+diff --git a/core/lib/Drupal/Core/Config/Entity/ConfigEntityStorage.php b/core/lib/Drupal/Core/Config/Entity/ConfigEntityStorage.php
+index 82bbb9720b37108fd4568782244e3be27beea6ff..575fcb479c39d00313792b12844869b6d3edda38 100644
+--- a/core/lib/Drupal/Core/Config/Entity/ConfigEntityStorage.php
++++ b/core/lib/Drupal/Core/Config/Entity/ConfigEntityStorage.php
+@@ -362,8 +362,12 @@ public function importUpdate($name, Config $new_config, Config $old_config) {
+   public function importDelete($name, Config $new_config, Config $old_config) {
+     $id = static::getIDFromConfigName($name, $this->entityType->getConfigPrefix());
+     $entity = $this->load($id);
+-    $entity->setSyncing(TRUE);
+-    $entity->delete();
++
++    if ($entity) {
++      $entity->setSyncing(TRUE);
++      $entity->delete();
++    }
++
+     return TRUE;
+   }
+
+diff --git a/core/lib/Drupal/Core/Config/StorageComparer.php b/core/lib/Drupal/Core/Config/StorageComparer.php
+index afdcdde2443709e8eacc9e0e8465401f18af1fee..afa6130b21641fd47a6d1101f1150be38941edfd 100644
+--- a/core/lib/Drupal/Core/Config/StorageComparer.php
++++ b/core/lib/Drupal/Core/Config/StorageComparer.php
+@@ -299,7 +299,7 @@ protected function addChangelistUpdate($collection) {
+       $source_data = $this->getSourceStorage($collection)->read($name);
+       $target_data = $this->getTargetStorage($collection)->read($name);
+       if ($source_data !== $target_data) {
+-        if (isset($source_data['uuid']) && $source_data['uuid'] !== $target_data['uuid']) {
++        if ((isset($target_data['uuid']) && isset($source_data['uuid'])) && $source_data['uuid'] !== $target_data['uuid']) {
+           // The entity has the same file as an existing entity but the UUIDs do
+           // not match. This means that the entity has been recreated so config
+           // synchronization should do the same.
+

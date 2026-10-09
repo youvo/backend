@@ -1,0 +1,18 @@
+uuid: f5c3178b-5e04-45aa-aafc-5dada7472d3e
+langcode: de
+status: true
+dependencies:
+  theme:
+    - yv
+id: yv_page_title
+theme: yv
+region: header
+weight: 0
+provider: null
+plugin: page_title_block
+settings:
+  id: page_title_block
+  label: 'Page title'
+  label_display: '0'
+  provider: core
+visibility: {  }

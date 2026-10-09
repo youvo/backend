@@ -1,0 +1,24 @@
+uuid: b8ab2a6b-1e38-4c86-92a3-8954c82a0f15
+langcode: de
+status: true
+dependencies: {  }
+id: project_complete_organization
+label: 'Project Complete Organization'
+subject: 'Projekt %TitleProject ist abgeschlossen - Feedback erwünscht'
+body: "Hallo %Contact,\r\n\r\ndein Projekt %TitleProject ist erfolgreich abgeschlossen! Vielen Dank für die Zusammenarbeit mit %Participants.\r\n\r\nWir würden uns sehr über dein Feedback freuen, um unsere Plattform weiter zu verbessern:\r\n\r\n%FeedbackLink\r\n\r\nDein Feedback hilft uns dabei, zukünftige Projekte noch besser zu gestalten.\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%Contact'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%Participants'
+    required: 0
+  -
+    token: '%FeedbackLink'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0

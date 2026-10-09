@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+
+# Lock files
+yarn.lock
+
+# Drupal & config files
+*.yml
+*.yaml
+*.theme
+*.install
+*.module
+
+# Templates
+templates/

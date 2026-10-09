@@ -16,9 +16,9 @@ use Drupal\projects\ProjectTransition;
  */
 class ProjectLifecycle implements ProjectLifecycleInterface {
 
-  const WORKFLOW_ID = 'project_lifecycle';
-  const LIFECYCLE_FIELD = 'field_lifecycle';
-  const LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
+  public const string WORKFLOW_ID = 'project_lifecycle';
+  public const string LIFECYCLE_FIELD = 'field_lifecycle';
+  public const string LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
 
   /**
    * The project calling the lifecycle.
@@ -98,38 +98,38 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   }
 
   /**
-   * Submits the project.
+   * {@inheritdoc}
    */
-  public function submit(): bool {
-    return $this->doTransition(ProjectTransition::Submit);
+  public function submit(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Submit, $timestamp);
   }
 
   /**
-   * Publishes the project.
+   * {@inheritdoc}
    */
-  public function publish(): bool {
-    return $this->doTransition(ProjectTransition::Publish);
+  public function publish(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Publish, $timestamp);
   }
 
   /**
-   * Mediates the project.
+   * {@inheritdoc}
    */
-  public function mediate(): bool {
-    return $this->doTransition(ProjectTransition::Mediate);
+  public function mediate(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Mediate, $timestamp);
   }
 
   /**
-   * Completes the project.
+   * {@inheritdoc}
    */
-  public function complete(): bool {
-    return $this->doTransition(ProjectTransition::Complete);
+  public function complete(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Complete, $timestamp);
   }
 
   /**
-   * Resets the project.
+   * {@inheritdoc}
    */
-  public function reset(): bool {
-    return $this->doTransition(ProjectTransition::Reset);
+  public function reset(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Reset, $timestamp);
   }
 
   /**
@@ -155,6 +155,10 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Checks if the project can perform the given transition.
    */
   protected function canTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): bool {
+    // Selected participants are set prior to the mediation of a project. This
+    // allows for validation to ensure that eligible participants are present
+    // before the mediation. The participants are only saved if the transition
+    // is successful.
     if ($transition === ProjectTransition::Mediate || $transition === ProjectTransition::Complete) {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
@@ -164,12 +168,12 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Sets new project state for given transition.
    */
-  protected function doTransition(ProjectTransition $transition): bool {
+  protected function doTransition(ProjectTransition $transition, ?int $timestamp = NULL): bool {
     $old_state = $this->getState();
     $new_state = $this->getSuccessorFromTransition($transition);
     if ($this->canTransition($transition, $old_state, $new_state)) {
       $this->project()->set(static::LIFECYCLE_FIELD, $new_state->value);
-      $this->inscribeTransition($transition, $old_state, $new_state);
+      $this->inscribeTransition($transition, $old_state, $new_state, $timestamp);
       return TRUE;
     }
     throw new LifecycleTransitionException($transition->value);
@@ -192,13 +196,13 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * Inscribes transition in lifecycle history.
    */
-  protected function inscribeTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): void {
+  protected function inscribeTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to, ?int $timestamp = NULL): void {
     $this->project()->get(static::LIFECYCLE_HISTORY_FIELD)->appendItem([
       'transition' => $transition->value,
       'from' => $from->value,
       'to' => $to->value,
       'uid' => $this->currentUser->id(),
-      'timestamp' => $this->time->getCurrentTime(),
+      'timestamp' => $timestamp ?? $this->time->getCurrentTime(),
     ]);
   }
 

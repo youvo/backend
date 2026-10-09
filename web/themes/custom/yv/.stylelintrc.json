@@ -1,0 +1,52 @@
+{
+  "extends": [
+    "stylelint-config-standard-scss"
+  ],
+  "plugins": [
+    "stylelint-scss"
+  ],
+  "rules": {
+    "scss/load-partial-extension": null,
+    "scss/at-import-partial-extension-disallowed-list": ["scss"],
+    "scss/at-rule-no-unknown": true,
+    "scss/comment-no-empty": true,
+    "scss/dollar-variable-colon-space-after": "always",
+    "scss/dollar-variable-colon-space-before": "never",
+    "scss/dollar-variable-no-missing-interpolation": true,
+    "scss/double-slash-comment-whitespace-inside": "always",
+    "scss/no-global-function-names": true,
+    "scss/operator-no-newline-after": null,
+    "scss/operator-no-newline-before": null,
+    "scss/operator-no-unspaced": true,
+    "scss/selector-no-redundant-nesting-selector": true,
+    "scss/at-if-closing-brace-newline-after": null,
+    "scss/at-if-closing-brace-space-after": null,
+    "scss/at-else-empty-line-before": null,
+    "scss/at-else-closing-brace-newline-after": null,
+    "scss/at-else-closing-brace-space-after": null,
+    "at-rule-no-unknown": null,
+    "at-rule-empty-line-before": null,
+    "color-function-notation": "modern",
+    "declaration-block-no-redundant-longhand-properties": true,
+    "function-url-quotes": "always",
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": true,
+    "property-no-vendor-prefix": true,
+    "selector-no-vendor-prefix": true,
+    "value-no-vendor-prefix": true,
+    "max-nesting-depth": 3,
+    "selector-max-compound-selectors": 4,
+    "selector-max-id": 0,
+    "selector-max-type": 2,
+    "selector-max-universal": 1,
+    "unit-allowed-list": ["em", "rem", "%", "px", "deg", "ms", "s", "vh", "vw", "fr", "auto", "inherit", "initial", "unset"],
+    "color-hex-length": "short",
+    "value-keyword-case": "lower",
+    "media-feature-range-notation": "prefix",
+    "scss/dollar-variable-empty-line-before": "never"
+  },
+  "ignoreFiles": [
+    "node_modules/**/*",
+    "css/**/*"
+  ]
+}

@@ -52,7 +52,7 @@ function creatives_dummy_site_install_finished(): void {
     }
     else {
       $firstname = $faker->unique()->firstName();
-      $mail = strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname)) . '@example.com';
+      $mail = str_replace(' ', '_', strtolower(iconv("utf-8", "ascii//TRANSLIT", $firstname))) . '@example.com';
       $roles[] = 'creative';
       if (rand(1, 100) < 20) {
         $roles[] = 'manager';

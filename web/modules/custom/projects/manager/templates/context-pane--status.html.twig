@@ -1,0 +1,31 @@
+<tr {{ attributes }} class="context-pane">
+  <td colspan="100%">
+    <div class="lifecycle-progress-bar">
+      {% for item in content.progression %}
+        <div class="lifecycle-progress-step{% if not loop.last %} has-segment{% endif %}{% if item.completed %} completed{% endif %}{% if not loop.last and item.next_completed %} next-completed{% endif %}" title="{{ item.info }}">
+          <div class="lifecycle-progress-circle{% if item.completed %} completed{% endif %}">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="lifecycle-progress-label">{{ item.label }}</div>
+          {% if item.date %}
+            <div class="lifecycle-progress-date">{{ item.date }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    {% if content.overview %}
+      <div class="status-overview">
+        {% for item in content.overview %}
+          <div class="status-overview-item">
+            {{ item }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if content.rules %}
+      <div class="manager-rules">
+        {{ content.rules }}
+      </div>
+    {% endif %}
+  </td>
+</tr>

@@ -1,0 +1,20 @@
+uuid: ec2ab1a2-3d18-4641-9014-a78dc3c40588
+langcode: de
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - user
+id: project.demote
+plugin_id: 'project:demote'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - cookie

@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Tests for the project complete resource.
  *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\ProjectCompleteResource
+ * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectCompleteResource
  * @group projects
  */
 class ProjectCompleteResourceTest extends ProjectResourceTestBase {

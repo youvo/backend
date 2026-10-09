@@ -1,0 +1,21 @@
+uuid: 08191e67-ed5c-4671-bc2a-0bcb331bf931
+langcode: de
+status: true
+dependencies: {  }
+id: project_mediate_organization
+label: 'Project Mediate Organization'
+subject: 'Projekt %TitleProject wurde vermittelt'
+body: "Hallo %Contact,\r\n\r\ndein Projekt %TitleProject wurde erfolgreich vermittelt an:\r\n%SelectedCreatives\r\n\r\nDas Projekt ist jetzt in der Umsetzungsphase und wird nicht mehr in Suchen angezeigt. Du kannst direkt mit den ausgewählten Kreativen kommunizieren.\r\n\r\nViel Erfolg bei der Umsetzung!\r\n\r\nLiebe Grüße\r\n%Manager"
+tokens:
+  -
+    token: '%Contact'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%SelectedCreatives'
+    required: 0
+  -
+    token: '%Manager'
+    required: 0

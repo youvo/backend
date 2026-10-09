@@ -1,0 +1,50 @@
+td.views-field-field-lifecycle {
+  width: 12%;
+}
+
+td.views-field-changed {
+  width: 10%;
+}
+
+td.views-field-field-skills {
+  width: 10%;
+}
+
+td.views-field-title {
+  width: 27%;
+}
+
+td.views-field-uid {
+  width: 27%;
+}
+
+td.views-action-transition {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
+}
+
+td.views-action-edit {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
+}
+
+td.views-action-mail {
+  width: 1%;
+  padding: var(--gin-spacing-density-m) 0;
+}
+
+td.views-field-field-manager {
+  width: 4%;
+}
+
+.view-filters {
+  display: none;
+}
+
+.view-project-manager .views-field a:link {
+  color: #3f78b5;
+}
+
+.view-project-manager .views-field a:visited {
+  color: #3f78b5;
+}

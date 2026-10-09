@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "stylelint-config-standard"
+  ],
+  "rules": {
+    "color-function-notation": "modern",
+    "declaration-block-no-redundant-longhand-properties": true,
+    "function-url-quotes": "always",
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": true,
+    "property-no-vendor-prefix": true,
+    "selector-no-vendor-prefix": true,
+    "value-no-vendor-prefix": true,
+    "max-nesting-depth": 3,
+    "selector-max-compound-selectors": 4,
+    "selector-max-id": 0,
+    "selector-max-type": 2,
+    "selector-max-universal": 1,
+    "unit-allowed-list": ["em", "rem", "%", "px", "deg", "ms", "s", "vh", "vw", "fr", "auto", "inherit", "initial", "unset"],
+    "color-hex-length": "short",
+    "value-keyword-case": "lower",
+    "media-feature-range-notation": "prefix"
+  },
+  "ignoreFiles": [
+    "node_modules/**/*",
+    "build/**/*"
+  ]
+} 

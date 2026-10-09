@@ -1,0 +1,22 @@
+uuid: ac58e5e2-ce9a-497d-b466-56784f91f9c0
+langcode: de
+status: true
+dependencies: {  }
+id: project_promote
+label: 'Project Promote'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''

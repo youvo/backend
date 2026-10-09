@@ -1,0 +1,4 @@
+id: project_demote
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole als nicht öffentlich sichtbar gesetzt.'
+public_text: 'Das Projekt %Project wurde von %Author als nicht öffentlich sichtbar gesetzt.'

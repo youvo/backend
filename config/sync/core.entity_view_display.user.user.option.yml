@@ -1,0 +1,77 @@
+uuid: 5360a5c5-4950-4172-b4a6-ebf363f8025f
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.user.option
+    - field.field.user.user.field_about
+    - field.field.user.user.field_avatar
+    - field.field.user.user.field_city
+    - field.field.user.user.field_education
+    - field.field.user.user.field_jobs
+    - field.field.user.user.field_name
+    - field.field.user.user.field_newsletter
+    - field.field.user.user.field_phone
+    - field.field.user.user.field_portfolio
+    - field.field.user.user.field_position
+    - field.field.user.user.field_public_profile
+    - field.field.user.user.field_skills
+    - field.field.user.user.field_url
+    - image.style.thumbnail
+    - user_bundle.user_type.user
+  module:
+    - image
+    - layout_builder
+    - nomarkup
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+_core:
+  default_config_hash: wwrEzWVRmpChx5JlhHx5pTrYPbNa0wXVf_pHQ0_XRfU
+id: user.user.option
+targetEntityType: user
+bundle: user
+mode: option
+content:
+  field_avatar:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: thumbnail
+      image_loading:
+        attribute: eager
+    third_party_settings:
+      nomarkup:
+        enabled: true
+        separator: '|'
+        referenced_entity: ''
+    weight: 1
+    region: content
+  field_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings:
+      nomarkup:
+        enabled: true
+        separator: '|'
+        referenced_entity: ''
+    weight: 0
+    region: content
+hidden:
+  field_about: true
+  field_city: true
+  field_education: true
+  field_jobs: true
+  field_newsletter: true
+  field_phone: true
+  field_portfolio: true
+  field_position: true
+  field_public_profile: true
+  field_skills: true
+  field_url: true
+  langcode: true
+  member_for: true

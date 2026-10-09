@@ -1,0 +1,20 @@
+uuid: 45ade043-4bb8-48f4-878c-f0465fda326d
+langcode: de
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - user
+id: project.show
+plugin_id: 'project:show'
+granularity: resource
+configuration:
+  methods:
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - cookie

@@ -1,0 +1,11 @@
+uuid: fd28124e-ed51-44d6-a052-bb31d1741cf0
+langcode: de
+status: true
+dependencies:
+  module:
+    - user
+id: user.name
+label: Name
+description: null
+targetEntityType: user
+cache: true

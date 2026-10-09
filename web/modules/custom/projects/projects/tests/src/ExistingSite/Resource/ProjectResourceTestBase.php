@@ -9,6 +9,7 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
+use Drupal\projects\Event\ProjectPromoteEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectResetEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
@@ -162,7 +163,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
    * @throws \LogicException
    */
   public function onProjectEvent(Event $event): void {
-    throw new \LogicException();
+    throw new \LogicException('Exception thrown for testing purposes.');
   }
 
   /**
@@ -174,6 +175,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
       ProjectCompleteEvent::class => 'onProjectEvent',
       ProjectMediateEvent::class => 'onProjectEvent',
       ProjectPublishEvent::class => 'onProjectEvent',
+      ProjectPromoteEvent::class => 'onProjectEvent',
       ProjectResetEvent::class => 'onProjectEvent',
       ProjectSubmitEvent::class => 'onProjectEvent',
     ];

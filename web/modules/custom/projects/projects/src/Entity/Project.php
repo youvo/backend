@@ -51,7 +51,8 @@ use Drupal\user_types\Utility\Profile;
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     }
+ *     },
+ *    "views_data" = "Drupal\views\EntityViewsData"
  *   },
  *   base_table = "project",
  *   data_table = "project_field_data",
@@ -168,7 +169,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
 
       // Dispatch a project create event if this is a proper organization.
       if ($this->getOwner()->hasRoleOrganization()) {
-        $event = new ProjectCreateEvent($this);
+        $event = new ProjectCreateEvent($this, $this->getCreatedTime());
         \Drupal::service('event_dispatcher')->dispatch($event);
       }
 
@@ -253,7 +254,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
-  public function getParticipants(): array {
+  public function getParticipants(?string $task = NULL): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $participants_field */
     $participants_field = $this->get('field_participants');
     $tasks = $this->get('field_participants_tasks')->getValue();
@@ -262,6 +263,10 @@ class Project extends ContentEntityBase implements ProjectInterface {
       // @phpstan-ignore-next-line
       $participant->task = $tasks[$delta]['value'];
       $participants[(int) $participant->id()] = $participant;
+    }
+    if ($task !== NULL && !empty($participants)) {
+      // @phpstan-ignore-next-line
+      $participants = array_filter($participants, static fn ($p) => $p->task === $task);
     }
     return $participants ?? [];
   }

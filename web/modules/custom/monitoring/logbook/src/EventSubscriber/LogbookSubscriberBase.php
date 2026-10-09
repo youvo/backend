@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\EventSubscriber;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -31,12 +32,13 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
     protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface $logger,
+    protected TimeInterface $time,
   ) {}
 
   /**
    * Creates log with log pattern.
    */
-  public function createLog(): ?LogInterface {
+  public function createLog(Event $event): ?LogInterface {
     if (static::LOG_PATTERN === NULL) {
       $this->logger->error('Logbook event subscriber does not define log pattern.');
       return NULL;
@@ -59,6 +61,8 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
     }
     return Log::create([
       'type' => static::LOG_PATTERN,
+      // @phpstan-ignore-next-line Need to add proper interface.
+      'created' => $event->getTimestamp() ?? $this->time->getCurrentTime(),
     ]);
   }
 

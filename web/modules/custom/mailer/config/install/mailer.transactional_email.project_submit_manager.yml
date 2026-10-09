@@ -1,0 +1,23 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_submit_manager
+label: 'Project Submit Manager'
+subject: 'Neues Projekt %TitleProject wurde eingereicht'
+body: "Hallo %Manager,\r\n\r\ndie Organisation %NameOrganization hat ein neues Projekt eingereicht:\r\n\r\nProjekt: %TitleProject\r\nKontakt: %ContactOrganization\r\nE-Mail: %EmailOrganization\r\n\r\nDas Projekt ist jetzt zur Überprüfung bereit und kann bei Bedarf veröffentlicht werden.\r\n\r\nLiebe Grüße\r\nDein youvo-Team"
+tokens:
+  -
+    token: '%Manager'
+    required: 0
+  -
+    token: '%TitleProject'
+    required: 0
+  -
+    token: '%NameOrganization'
+    required: 0
+  -
+    token: '%ContactOrganization'
+    required: 0
+  -
+    token: '%EmailOrganization'
+    required: 0 

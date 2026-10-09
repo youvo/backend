@@ -1,0 +1,10 @@
+diff --git a/core/assets/scaffold/files/editorconfig b/core/assets/scaffold/files/editorconfig
+--- a/core/assets/scaffold/files/editorconfig	(revision 6c6a742c00d0fd8e45259251520b75428a125f3d)
++++ b/core/assets/scaffold/files/editorconfig	(revision 817445c638142322cc36dbac1231faca3d05f065)
+@@ -13,5 +13,5 @@
+ trim_trailing_whitespace = true
+ insert_final_newline = true
+
+-[composer.{json,lock}]
++[composer.{json,lock,patches.json}]
+ indent_size = 4

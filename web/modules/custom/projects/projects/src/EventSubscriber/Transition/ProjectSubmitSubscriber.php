@@ -18,7 +18,7 @@ class ProjectSubmitSubscriber implements EventSubscriberInterface {
    */
   public function onProjectSubmit(ProjectSubmitEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->submit();
+    $project->lifecycle()->submit($event->getTimestamp());
     $project->save();
   }
 
@@ -26,7 +26,7 @@ class ProjectSubmitSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectSubmitEvent::class => 'onProjectSubmit'];
+    return [ProjectSubmitEvent::class => ['onProjectSubmit', 1000]];
   }
 
 }

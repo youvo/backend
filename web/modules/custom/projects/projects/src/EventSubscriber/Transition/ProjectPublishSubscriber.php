@@ -18,7 +18,7 @@ class ProjectPublishSubscriber implements EventSubscriberInterface {
    */
   public function onProjectPublish(ProjectPublishEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->publish();
+    $project->lifecycle()->publish($event->getTimestamp());
     $project->save();
   }
 
@@ -26,7 +26,7 @@ class ProjectPublishSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectPublishEvent::class => 'onProjectPublish'];
+    return [ProjectPublishEvent::class => ['onProjectPublish', 1000]];
   }
 
 }

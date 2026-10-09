@@ -7,6 +7,7 @@ dependencies:
     - projects
     - serialization
     - simple_oauth
+    - user
 _core:
   default_config_hash: jSCS7BBJ1-d_DZKzYkQOlF9iG6WyeGYdkmjhpbpf66w
 id: project.mediate
@@ -21,3 +22,4 @@ configuration:
   authentication:
     - basic_auth
     - oauth2
+    - cookie

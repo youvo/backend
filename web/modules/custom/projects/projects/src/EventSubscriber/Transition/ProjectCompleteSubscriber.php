@@ -19,7 +19,7 @@ class ProjectCompleteSubscriber implements EventSubscriberInterface {
   public function onProjectComplete(ProjectCompleteEvent $event): void {
 
     $project = $event->getProject();
-    $project->lifecycle()->complete();
+    $project->lifecycle()->complete($event->getTimestamp());
     $project->save();
 
     $result = $project->getResult();
@@ -32,7 +32,7 @@ class ProjectCompleteSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectCompleteEvent::class => 'onProjectComplete'];
+    return [ProjectCompleteEvent::class => ['onProjectComplete', 1000]];
   }
 
 }

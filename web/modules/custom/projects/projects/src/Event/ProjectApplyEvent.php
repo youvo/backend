@@ -26,8 +26,9 @@ class ProjectApplyEvent extends ProjectEventBase {
   public function __construct(
     ProjectInterface $project,
     protected Creative $applicant,
+    ?int $timestamp = NULL,
   ) {
-    parent::__construct($project);
+    parent::__construct($project, $timestamp);
   }
 
   /**

@@ -1,0 +1,374 @@
+.context-pane {
+  box-shadow: inset 4px 0 #3f78b5;
+}
+
+.context-pane-column {
+  cursor: pointer;
+}
+
+/* =========================
+   Lifecycle Progress Bar
+   ========================= */
+
+.lifecycle-progress-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  margin-top: 8px;
+  height: 61px;
+}
+
+.lifecycle-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 60px;
+  position: relative;
+}
+
+.lifecycle-progress-step.has-segment::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 52%;
+  width: 96%;
+  height: 4px;
+  background: #e8ecf2;
+  z-index: 1;
+}
+
+.lifecycle-progress-step.next-completed.has-segment::after {
+  background: #3f78b5;
+}
+
+.lifecycle-progress-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: transparent;
+  border: 5px solid #e8ecf2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.lifecycle-progress-circle.completed {
+  background: #3f78b5;
+  border-color: #3f78b5;
+}
+
+.lifecycle-progress-circle .checkmark {
+  display: none;
+}
+
+.lifecycle-progress-circle.completed .checkmark {
+  display: block;
+  font-size: 0.6em;
+}
+
+.lifecycle-progress-label {
+  font-size: 0.8em;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.lifecycle-progress-date {
+  cursor: pointer;
+  font-size: 0.8em;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .lifecycle-progress-bar {
+    min-width: 320px;
+    font-size: 0.8em;
+  }
+
+  .lifecycle-progress-step {
+    min-width: 40px;
+  }
+
+  .lifecycle-progress-label {
+    max-width: 50px;
+    font-size: 0.8em;
+  }
+
+  .lifecycle-progress-date {
+    font-size: 0.8em;
+  }
+}
+
+/* =========================
+   Status Dot
+   ========================= */
+
+.views-field-field-lifecycle > div::before {
+  content: '';
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  margin-right: 0.5em;
+  vertical-align: middle;
+  background: #1da8a5;
+  margin-top: -2px;
+}
+
+.status-normal.views-field-field-lifecycle > div::before {
+  background: #1da8a5;
+}
+
+.status-critical.views-field-field-lifecycle > div::before {
+  background: #e15554;
+}
+
+.status-warning.views-field-field-lifecycle > div::before {
+  background: #ffb793;
+}
+
+.status-dormant.views-field-field-lifecycle > div::before {
+  background: #e8ecf2;
+}
+
+/* =========================
+   Manager Rules
+   ========================= */
+
+.manager-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin-top: 1em;
+}
+
+/* =========================
+   Logbook Timeline (Flex)
+   ========================= */
+
+.logbook-timeline-header-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.logbook-timeline-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  width: 100%;
+}
+
+.logbook-timeline-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  position: relative;
+  margin: 8px 0;
+}
+
+/* Date column */
+.logbook-timeline-date-container {
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
+  min-width: 75px;
+  flex: 0 0 75px;
+}
+
+.logbook-timeline-date {
+  cursor: pointer;
+  font-size: 0.8em;
+  text-align: center;
+  margin-top: 0.2em;
+}
+
+/* Progress bar column */
+.logbook-timeline-bar-container {
+  position: relative;
+  min-width: 40px;
+  max-width: 56px;
+  flex: 0 0 56px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.logbook-timeline-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 5px solid #e8ecf2;
+  background: transparent;
+  z-index: 2;
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  box-sizing: border-box;
+  transform: translateX(-50%);
+}
+
+/* Connector as ::after, only for non-last rows. Extends into next row. */
+.logbook-timeline-flex-row:not(:last-child)
+  .logbook-timeline-bar-container::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: calc(100% + 16px);
+  background: #e8ecf2;
+  border-radius: 2px;
+  z-index: 1;
+}
+
+/* Content column */
+.logbook-timeline-content-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  box-sizing: border-box;
+}
+
+.logbook-timeline-text {
+  font-size: 1em;
+}
+
+.logbook-timeline-message {
+  font-size: 0.8em;
+  color: #7e98b5;
+}
+
+/* Label column */
+.logbook-timeline-label-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-width: 80px;
+  flex: 0 0 80px;
+}
+
+.logbook-timeline-label {
+  background: #e8ecf2;
+  border-radius: 1em;
+  padding: 0.2em 0.8em;
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 800px) {
+  .logbook-timeline-label-container,
+  .logbook-timeline-date-container {
+    display: inline-block;
+    width: auto;
+    vertical-align: top;
+  }
+
+  .logbook-timeline-content-container {
+    margin-top: 0.5em;
+  }
+
+  .logbook-timeline-flex-row {
+    display: block;
+  }
+}
+
+/* =========================
+   Transition Checkboxes
+   ========================= */
+
+.transition-checkboxes {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.transition-checkbox {
+  display: flex;
+  gap: 0.5rem;
+  width: 10%;
+  min-width: 80px;
+}
+
+.transition-checkbox input {
+  display: none;
+}
+
+.transition-checkbox-option {
+  display: flex;
+  align-items: top;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.transition-checkbox-option:hover,
+.transition-checkbox:checked + .transition-checkbox-option {
+  box-shadow: inset 0 0 0 2px #3f78b5;
+  background-color: #f4f8ff;
+}
+
+.transition-description {
+  font-size: 0.8em;
+  color: #7e98b5;
+}
+
+/* =========================
+   Status Overview
+   ========================= */
+
+.status-overview {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  align-items: stretch;
+  margin-top: 1em;
+  width: 100%;
+}
+
+.status-overview-item {
+  flex: 1 1 0;
+  text-align: center;
+  align-items: center;
+  text-wrap: balance;
+  font-size: 0.8em;
+  padding: 0.5em 1em;
+  border-right: 1px solid #e8ecf2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.status-overview-item:last-child {
+  border-right: none;
+}
+
+.status-overview-creatives {
+  margin-bottom: 0.5em;
+}
+
+@media (max-width: 800px) {
+  .status-overview {
+    flex-direction: column;
+  }
+  .status-overview-item {
+    border-right: none;
+    border-bottom: 1px solid #e8ecf2;
+  }
+  .status-overview-item:last-child {
+    border-bottom: none;
+  }
+}

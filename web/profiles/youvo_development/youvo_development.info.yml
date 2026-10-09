@@ -7,8 +7,6 @@ core_version_requirement: ^10.3 || ^11
 install:
   # Development
   - admin_toolbar
-  - devel
-  - devel_mail_logger
   - field_ui
   - mailsystem
   - menu_ui

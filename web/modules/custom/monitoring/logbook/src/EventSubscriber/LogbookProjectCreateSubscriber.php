@@ -5,7 +5,7 @@ namespace Drupal\logbook\EventSubscriber;
 use Drupal\projects\Event\ProjectCreateEvent;
 
 /**
- * Logbook project publish event subscriber.
+ * Logbook project create event subscriber.
  */
 class LogbookProjectCreateSubscriber extends LogbookProjectNotifySubscriber {
 
