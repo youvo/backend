@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectSubmitEvent;
@@ -66,7 +67,9 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
     catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be submitted.');
     }
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project submit failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
     return new ModifiedResourceResponse('Project submitted.');
   }

@@ -10,6 +10,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\file\FileInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -80,12 +81,14 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       $event = new ProjectCompleteEvent($project);
       $event->setFiles($result_files);
       $event->setLinks($result_links);
-      $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
+      $this->eventDispatcher->dispatch($event);
     }
     catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
       throw new ConflictHttpException('Project can not be completed.');
     }
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project complete failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
     return new ModifiedResourceResponse('Project completed.');

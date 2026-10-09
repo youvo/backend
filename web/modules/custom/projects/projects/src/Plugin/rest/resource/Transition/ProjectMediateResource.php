@@ -10,6 +10,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\creatives\Entity\Creative;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -120,7 +121,9 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
       throw new ConflictHttpException('Project can not be mediated.');
     }
-    catch (\Throwable) {
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project mediate failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
     return new ResourceResponse('Project mediated.');
