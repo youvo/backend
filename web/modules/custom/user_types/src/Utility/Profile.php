@@ -6,7 +6,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
-use Drupal\simple_oauth\Authentication\TokenAuthUser;
+use Drupal\simple_oauth\Authentication\TokenAuthUserInterface;
 
 /**
  * Utility class to determine account types by different account objects.
@@ -21,34 +21,35 @@ final class Profile {
   }
 
   /**
+   * Gets the actual account object.
+   *
+   * With different authorization methods the account object may be an
+   * AccountProxy or a TokenAuthUser, which decorates the user entity. Use this
+   * helper to get the underlying account object, for example a Creative or an
+   * Organization entity.
+   */
+  public static function account(AccountInterface $account): AccountInterface {
+    if ($account instanceof AccountProxyInterface) {
+      $account = $account->getAccount();
+    }
+    if ($account instanceof TokenAuthUserInterface) {
+      $account = $account->getSubject();
+    }
+    return $account;
+  }
+
+  /**
    * Determines if account is creative.
    */
   public static function isCreative(AccountInterface $account): bool {
-    return self::isUserType($account, 'user', Creative::class);
+    return static::account($account) instanceof Creative;
   }
 
   /**
    * Determines if account is organization.
    */
   public static function isOrganization(AccountInterface $account): bool {
-    return self::isUserType($account, 'organization', Organization::class);
-  }
-
-  /**
-   * Determines if account is of a user type.
-   *
-   * With different authorization methods the account object may be a
-   * AccountProxy or a TokenAuthUser. Use this helper to determine whether
-   * the account is of a specific user type.
-   */
-  protected static function isUserType(AccountInterface $account, string $type, string $class): bool {
-    if ($account instanceof AccountProxyInterface) {
-      $account = $account->getAccount();
-    }
-    if (class_exists(TokenAuthUser::class) && get_class($account) === TokenAuthUser::class) {
-      return $account->bundle() === $type;
-    }
-    return class_exists($class) && $account instanceof $class;
+    return static::account($account) instanceof Organization;
   }
 
 }

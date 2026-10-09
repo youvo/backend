@@ -2,15 +2,11 @@
 
 namespace Drupal\Tests\user_types\Unit;
 
-use Drupal\consumers\Entity\Consumer;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
-use Drupal\simple_oauth\Authentication\TokenAuthUser;
 use Drupal\simple_oauth\Authentication\TokenAuthUserInterface;
-use Drupal\simple_oauth\Entity\Oauth2TokenInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\user_types\Utility\Profile;
 
@@ -35,12 +31,12 @@ class ProfileUtilityTest extends UnitTestCase {
   /**
    * The mock creative.
    */
-  protected Creative $creative;
+  protected AccountInterface $creative;
 
   /**
    * The mock organization.
    */
-  protected Organization $organization;
+  protected AccountInterface $organization;
 
   /**
    * The mock creative auth user.
@@ -60,65 +56,28 @@ class ProfileUtilityTest extends UnitTestCase {
     parent::setUp();
 
     $this->account = $this->createMock(AccountInterface::class);
-    $this->account->expects($this->any())
-      ->method('id')
-      ->willReturn(1);
+    $this->account->method('id')->willReturn(1);
 
     $this->creative = $this->createMock(Creative::class);
-    $this->creative->expects($this->any())
-      ->method('id')
-      ->willReturn(3);
-    // The creative user has the bundle "user" to ensure better compatibility
-    // with the user_bundle contrib module.
-    $this->creative->expects($this->any())
-      ->method('bundle')
-      ->willReturn('user');
+    $this->creative->method('id')->willReturn(3);
 
     $this->accountProxy = $this->createMock(AccountProxyInterface::class);
-    $this->accountProxy->expects($this->any())
-      ->method('id')
-      ->willReturn(2);
+    $this->accountProxy->method('id')->willReturn(2);
     // For testing, we will proxy the creative.
-    $this->accountProxy->expects($this->any())
-      ->method('getAccount')
-      ->willReturn($this->creative);
+    $this->accountProxy->method('getAccount')->willReturn($this->creative);
 
     $this->organization = $this->createMock(Organization::class);
-    $this->organization->expects($this->any())
-      ->method('id')
-      ->willReturn(4);
-    $this->organization->expects($this->any())
-      ->method('bundle')
-      ->willReturn('organization');
+    $this->organization->method('id')->willReturn(4);
 
-    $consumer = $this->createMock(Consumer::class);
-    $consumer_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
-    $consumer_field->expects($this->any())
-      ->method('__get')
-      ->with('entity')
-      ->willReturn($consumer);
+    // The token auth user decorates the user entity. We mock the interface
+    // because the implementation is internal to the simple_oauth module.
+    $this->creativeAuthUser = $this->createMock(TokenAuthUserInterface::class);
+    $this->creativeAuthUser->method('id')->willReturn(3);
+    $this->creativeAuthUser->method('getSubject')->willReturn($this->creative);
 
-    $creative_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
-    $creative_field->expects($this->any())
-      ->method('__get')
-      ->with('entity')
-      ->willReturn($this->creative);
-    $creative_token = $this->createMock(Oauth2TokenInterface::class);
-    $creative_token->expects($this->any())
-      ->method('get')
-      ->willReturnOnConsecutiveCalls($consumer_field, $creative_field);
-    $this->creativeAuthUser = new TokenAuthUser($creative_token);
-
-    $organization_field = $this->createMock(EntityReferenceFieldItemListInterface::class);
-    $organization_field->expects($this->any())
-      ->method('__get')
-      ->with('entity')
-      ->willReturn($this->organization);
-    $organization_token = $this->createMock(Oauth2TokenInterface::class);
-    $organization_token->expects($this->any())
-      ->method('get')
-      ->willReturnOnConsecutiveCalls($consumer_field, $organization_field);
-    $this->organizationAuthUser = new TokenAuthUser($organization_token);
+    $this->organizationAuthUser = $this->createMock(TokenAuthUserInterface::class);
+    $this->organizationAuthUser->method('id')->willReturn(4);
+    $this->organizationAuthUser->method('getSubject')->willReturn($this->organization);
   }
 
   /**
@@ -138,10 +97,24 @@ class ProfileUtilityTest extends UnitTestCase {
   }
 
   /**
+   * Tests the account method.
+   *
+   * @covers ::account
+   */
+  public function testAccount(): void {
+    $this->assertSame($this->account, Profile::account($this->account));
+    $this->assertSame($this->creative, Profile::account($this->creative));
+    $this->assertSame($this->creative, Profile::account($this->accountProxy));
+    $this->assertSame($this->creative, Profile::account($this->creativeAuthUser));
+    $this->assertSame($this->organization, Profile::account($this->organization));
+    $this->assertSame($this->organization, Profile::account($this->organizationAuthUser));
+  }
+
+  /**
    * Tests the isCreative method.
    *
    * @covers ::isCreative
-   * @covers ::isUserType
+   * @covers ::account
    */
   public function testIsCreative(): void {
     $this->assertTrue(Profile::isCreative($this->accountProxy));
@@ -155,7 +128,7 @@ class ProfileUtilityTest extends UnitTestCase {
    * Tests the isOrganization method.
    *
    * @covers ::isOrganization
-   * @covers ::isUserType
+   * @covers ::account
    */
   public function testIsOrganization(): void {
     $this->assertFalse(Profile::isOrganization($this->accountProxy));

@@ -72,7 +72,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent());
-    $applicant = $this->currentUser->getAccount();
+    $applicant = Profile::account($this->currentUser);
 
     // Safeguard against a current user that is not a creative.
     if (!Profile::isCreative($applicant)) {
@@ -82,6 +82,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     }
 
     try {
+      /** @var \Drupal\creatives\Entity\Creative $applicant */
       $event = new ProjectApplyEvent($project, $applicant);
       $event->setMessage($content['message'] ?? '');
       $event->setPhoneNumber($content['phone'] ?? '');
