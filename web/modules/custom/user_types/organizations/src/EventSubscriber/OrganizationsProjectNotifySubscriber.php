@@ -8,6 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Url;
 use Drupal\projects\Event\ProjectNotifyEvent;
+use Drupal\user\OneTimeAuthentication;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -22,6 +23,7 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
     protected ConfigFactoryInterface $config,
     protected LanguageManagerInterface $languageManager,
     protected TimeInterface $time,
+    protected OneTimeAuthentication $oneTimeAuthentication,
   ) {}
 
   /**
@@ -41,7 +43,7 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
         [
           'uid' => $organization->id(),
           'timestamp' => $timestamp,
-          'hash' => user_pass_rehash($organization, $timestamp),
+          'hash' => $this->oneTimeAuthentication->generateHmac($organization, $timestamp),
         ],
         [
           'absolute' => TRUE,

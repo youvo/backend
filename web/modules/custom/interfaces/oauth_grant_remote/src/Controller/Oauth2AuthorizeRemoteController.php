@@ -96,7 +96,7 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
 
     // Allow organizations to login on development environment.
     if ($this->config('oauth_grant_remote.settings')->get('development')) {
-      $client_uuid = $request->get('client_id');
+      $client_uuid = $request->query->get('client_id');
       $consumer_storage = $this->entityTypeManager()->getStorage('consumer');
       $consumers = $consumer_storage->loadByProperties(['client_id' => $client_uuid]);
       if (empty($consumers)) {

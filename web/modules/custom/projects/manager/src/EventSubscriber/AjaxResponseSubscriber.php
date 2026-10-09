@@ -40,7 +40,8 @@ class AjaxResponseSubscriber implements EventSubscriberInterface {
     }
 
     // Keep scroll top behavior when changing page.
-    if (!empty($event->getRequest()->get('page'))) {
+    $request = $event->getRequest();
+    if (!empty($request->query->get('page', $request->request->get('page')))) {
       return;
     }
 

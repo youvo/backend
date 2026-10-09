@@ -13,6 +13,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\organizations\Entity\Organization;
+use Drupal\user\OneTimeAuthentication;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -41,6 +42,7 @@ final class OrganizationInviteForm extends FormBase {
     protected SessionInterface $session,
     protected TimeInterface $time,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected OneTimeAuthentication $oneTimeAuthentication,
   ) {}
 
   /**
@@ -54,7 +56,8 @@ final class OrganizationInviteForm extends FormBase {
       $container->get('module_handler'),
       $container->get('session'),
       $container->get('datetime.time'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get(OneTimeAuthentication::class),
     );
   }
 
@@ -166,7 +169,7 @@ final class OrganizationInviteForm extends FormBase {
       !empty($password) &&
       $organization->isAuthenticated() &&
       $timestamp <= $this->time->getCurrentTime() &&
-      hash_equals($hash, user_pass_rehash($organization, $timestamp))
+      hash_equals($hash, $this->oneTimeAuthentication->generateHmac($organization, $timestamp))
     ) {
       $organization->promoteProspect();
       $organization->setPassword($password);

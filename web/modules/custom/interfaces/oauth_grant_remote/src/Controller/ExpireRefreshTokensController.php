@@ -4,7 +4,7 @@ namespace Drupal\oauth_grant_remote\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Session\SessionManager;
+use Drupal\Core\Session\UserSessionRepositoryInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -30,13 +30,13 @@ class ExpireRefreshTokensController extends ControllerBase {
   /**
    * ExpireRefreshTokensController constructor.
    */
-  public function __construct(protected SessionManager $sessionManager) {}
+  public function __construct(protected UserSessionRepositoryInterface $userSessionRepository) {}
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('session_manager'));
+    return new static($container->get(UserSessionRepositoryInterface::class));
   }
 
   /**
@@ -129,7 +129,7 @@ class ExpireRefreshTokensController extends ControllerBase {
     // logged in from different devices, because if all refresh tokens are
     // invalidated, the user has to authenticate again and consequently will be
     // logged in to the data provider again.
-    $this->sessionManager->delete($remote_account['uid']);
+    $this->userSessionRepository->deleteAll($remote_account['uid']);
 
     return new ModifiedResourceResponse(NULL, 200);
   }
