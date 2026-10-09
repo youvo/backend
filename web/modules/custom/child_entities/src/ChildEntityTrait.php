@@ -61,11 +61,7 @@ trait ChildEntityTrait {
    * Checks whether entity is child entity.
    */
   private function isChildEntity(EntityTypeInterface $entity_type): bool {
-    $original_class = $entity_type->getOriginalClass();
-    if (in_array(ChildEntityTrait::class, class_uses($original_class), TRUE)) {
-      return TRUE;
-    }
-    return FALSE;
+    return $entity_type->entityClassImplements(ChildEntityInterface::class);
   }
 
   /**

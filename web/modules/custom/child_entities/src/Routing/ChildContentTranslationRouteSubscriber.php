@@ -2,7 +2,7 @@
 
 namespace Drupal\child_entities\Routing;
 
-use Drupal\child_entities\ChildEntityTrait;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\content_translation\ContentTranslationManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
@@ -33,8 +33,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
     foreach ($this->contentTranslationManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
 
       // Concern about child entities.
-      $original_class = $entity_type->getOriginalClass();
-      if (in_array(ChildEntityTrait::class, class_uses($original_class), TRUE)) {
+      if ($entity_type->entityClassImplements(ChildEntityInterface::class)) {
 
         // Get routes for content translation.
         $routes = [
@@ -62,8 +61,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
               ],
             ];
             $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
-            $parent_class = $parent_entity_type->getOriginalClass();
-          } while (in_array(ChildEntityTrait::class, class_uses($parent_class), TRUE));
+          } while ($parent_entity_type->entityClassImplements(ChildEntityInterface::class));
 
           // Add augmented parameters to route.
           $route->setOption('parameters', $parameters);
