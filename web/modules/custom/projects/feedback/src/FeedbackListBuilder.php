@@ -2,6 +2,7 @@
 
 namespace Drupal\feedback;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -66,8 +67,8 @@ class FeedbackListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity): array {
-    $operations = parent::getDefaultOperations($entity);
+  protected function getDefaultOperations(EntityInterface $entity, ?CacheableMetadata $cacheability = NULL): array {
+    $operations = parent::getDefaultOperations($entity, $cacheability);
     $destination = $this->getDestinationArray();
     foreach ($operations as $key => $operation) {
       $operations[$key]['query'] = $destination;

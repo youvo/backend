@@ -7,6 +7,7 @@ use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -45,11 +46,11 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
   protected LanguageManagerInterface $languageManager;
 
   /**
-   * The paragraph type storage.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected EntityStorageInterface $paragraphTypeStorage;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Constructs a new LectureListBuilder object.
@@ -60,8 +61,8 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
    *   The entity storage class.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The child entity route match.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $paragraph_type_storage
-   *   The paragraph type storage.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -73,12 +74,12 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
     EntityTypeInterface $entity_type,
     EntityStorageInterface $storage,
     RouteMatchInterface $route_match,
-    EntityStorageInterface $paragraph_type_storage,
+    EntityTypeManagerInterface $entity_type_manager,
     FormBuilderInterface $form_builder,
     LanguageManagerInterface $language_manager,
   ) {
     parent::__construct($entity_type, $storage, $route_match);
-    $this->paragraphTypeStorage = $paragraph_type_storage;
+    $this->entityTypeManager = $entity_type_manager;
     $this->formBuilder = $form_builder;
     $this->languageManager = $language_manager;
   }
@@ -94,7 +95,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('current_route_match'),
-      $container->get('entity_type.manager')->getStorage('paragraph_type'),
+      $container->get('entity_type.manager'),
       $container->get('form_builder'),
       $container->get('language_manager')
     );
@@ -132,7 +133,7 @@ final class ParagraphListBuilder extends ChildEntityListBuilder implements FormI
 
     // Get bundle for paragraph entity.
     /** @var \Drupal\paragraphs\Entity\Paragraph $entity */
-    $bundle = $this->paragraphTypeStorage->load($entity->bundle());
+    $bundle = $this->entityTypeManager->getStorage('paragraph_type')->load($entity->bundle());
 
     if (!($bundle instanceof ParagraphType)) {
       return [];
