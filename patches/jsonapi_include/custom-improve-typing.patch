@@ -1,26 +1,31 @@
 diff --git a/src/JsonapiParse.php b/src/JsonapiParse.php
---- a/src/JsonapiParse.php	(revision 72bebc5a96543ca9a7f7f6dd78c91a74e29b3a02)
-+++ b/src/JsonapiParse.php	(revision 40c8f1a95b01f3a26959dafe371da4007578ccb2)
-@@ -58,14 +58,10 @@
-   /**
-    * {@inheritdoc}
+--- a/src/JsonapiParse.php
++++ b/src/JsonapiParse.php
+@@ -47,7 +47,9 @@
     */
--  public function parse($response) {
--    // @todo Remove in the release 2.0 with removed the deprecated strings input.
--    if (!$response instanceof Response) {
--      @trigger_error('Parsing strings is deprecated in jsonapi_include:8.x-1.7 and is removed from jsonapi_include:8.x-2.0. Pass the full Response object instead. See https://www.drupal.org/project/jsonapi_include/issues/3374410', E_USER_DEPRECATED);
--      $content = $this->parseJsonContent($response);
--      return Json::encode($content);
--    }
+   #[\Override]
+   public function parse(Response $response): Response {
 -    $this->parseJsonContent($response);
-+  public function parse(Response $response): Response {
-+    $content = Json::decode($response->getContent() ?: []);
++    $content = Json::decode($response->getContent() ?: '') ?? [];
 +    $content = $this->parseJsonContent($content);
 +    $response->setContent(Json::encode($content));
      return $response;
    }
-
-@@ -254,34 +250,22 @@
+ 
+@@ -177,10 +179,10 @@
+    * @param string $key
+    *   Relationship key.
+    *
+-   * @return array
++   * @return array|null
+    *   Result.
+    */
+-  protected function resolveRelationshipData(mixed $links, string $key): array {
++  protected function resolveRelationshipData(mixed $links, string $key): ?array {
+     if (empty($links['data'])) {
+       return $links;
+     }
+@@ -236,24 +238,18 @@
    /**
     * Integrates includes into the content of a Response.
     *
@@ -30,100 +35,55 @@ diff --git a/src/JsonapiParse.php b/src/JsonapiParse.php
 +   *   An array with JSON:API response content.
     *
 -   * @return \Symfony\Component\HttpFoundation\Response|array
--   *   Returns
 -   *   Returns an array with the response content, if the input is string or
 -   *   array, or void if input is a Response.
 +   * @return array
 +   *   The parsed array with the JSON:API response content.
     */
--  protected function parseJsonContent($response) {
--    if ($response instanceof Response) {
--      $content = $response->getContent();
--      if (is_string($content)) {
--        $content = Json::decode($content);
--      }
+-  protected function parseJsonContent(Response $response): Response|array {
+-    $content = $response->getContent();
+-    if (is_string($content)) {
+-      $content = Json::decode($content);
 -    }
--    // @todo Remove in the release 2.0 with removed the deprecated string input.
--    elseif (is_array($response)) {
--      $content = $response;
--    }
--    elseif (is_string($response)) {
--      $content = Json::decode($response);
--    }
+-
 +  protected function parseJsonContent(array $content): array {
-+
      if (NestedArray::getValue($content, ['jsonapi', 'parsed'])) {
 -      return $response;
 +      return $content;
      }
-+
      if (isset($content['errors']) || empty($content['data'])) {
 -      return $response;
 +      return $content;
      }
-+
      $this->included = $this->groupIncludes($content);
      $include_parameter = $this->requestStack->getCurrentRequest()->query->get('include');
-     $this->allowed = array_map('trim', explode(',', $include_parameter ?? ''));
-@@ -294,19 +278,14 @@
-     else {
-       $data = $this->parseResource($content['data']);
-     }
-+
-     if (isset($content['included'])) {
-       unset($content['included']);
+@@ -272,8 +268,7 @@
      }
      $content['jsonapi']['parsed'] = TRUE;
      $content['data'] = $data;
--    if ($response instanceof Response) {
--      $response->setContent(Json::encode($content));
--      return $response;
--    }
--    // @todo Remove in the release 2.0 with removed the deprecated strings input.
--    else {
--      return $content;
--    }
-+
+-    $response->setContent(Json::encode($content));
+-    return $response;
 +    return $content;
    }
-
+ 
  }
-
 diff --git a/src/JsonapiParseInterface.php b/src/JsonapiParseInterface.php
---- a/src/JsonapiParseInterface.php	(revision 72bebc5a96543ca9a7f7f6dd78c91a74e29b3a02)
-+++ b/src/JsonapiParseInterface.php	(revision 40c8f1a95b01f3a26959dafe371da4007578ccb2)
-@@ -2,6 +2,8 @@
-
- namespace Drupal\jsonapi_include;
-
-+use Symfony\Component\HttpFoundation\Response;
-+
- /**
-  * The interface for parsing the JSON:API Response.
-  *
-@@ -10,19 +12,14 @@
+--- a/src/JsonapiParseInterface.php
++++ b/src/JsonapiParseInterface.php
+@@ -12,13 +12,13 @@
  interface JsonapiParseInterface {
-
+ 
    /**
 -   * Parses the JSON:API Response with integrating includes inside the fields.
 +   * Parses the JSON:API response with integrating includes inside the fields.
     *
--   * @param \Symfony\Component\HttpFoundation\Response|string $response
+    * @param \Symfony\Component\HttpFoundation\Response $response
 -   *   A Response object with JSON:API response.
--   *   Or string with a Response body (deprecated).
-+   * @param \Symfony\Component\HttpFoundation\Response $response
 +   *   A response object with JSON:API content.
     *
--   * @return \Symfony\Component\HttpFoundation\Response|string
--   *   Returns the Response object, if the input is a Response object.
--   *   Or return a string, if the input is in the string format (deprecated).
--   *
--   * @todo With 2.0 release remove the string format and explicitly set the
--   *   Response as the argument and the return value.
-+   * @return \Symfony\Component\HttpFoundation\Response
+    * @return \Symfony\Component\HttpFoundation\Response
+-   *   Returns the Response object.
 +   *   The altered response.
     */
--  public function parse($response);
-+  public function parse(Response $response): Response;
-
- }
+   public function parse(Response $response): Response;
+ 

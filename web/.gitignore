@@ -71,3 +71,4 @@ sites/simpletest
 
 # Ignore SimpleTest multi-site environment.
 # simpletest
+/autoload_runtime.php
