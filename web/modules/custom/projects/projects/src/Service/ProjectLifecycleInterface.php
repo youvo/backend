@@ -72,6 +72,9 @@ interface ProjectLifecycleInterface {
 
   /**
    * Gets the lifecycle history.
+   *
+   * @return \Drupal\Core\Field\FieldItemListInterface<\Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem>
+   *   The list of lifecycle history items.
    */
   public function history(): FieldItemListInterface;
 

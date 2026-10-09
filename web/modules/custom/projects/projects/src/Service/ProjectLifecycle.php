@@ -136,7 +136,9 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * {@inheritdoc}
    */
   public function history(): FieldItemListInterface {
-    return $this->project()->get(static::LIFECYCLE_HISTORY_FIELD);
+    /** @var \Drupal\Core\Field\FieldItemListInterface<\Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem> $history */
+    $history = $this->project()->get(static::LIFECYCLE_HISTORY_FIELD);
+    return $history;
   }
 
   /**
