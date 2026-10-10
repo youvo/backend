@@ -24,6 +24,9 @@ class CorrespondenceRecorderTest extends ProjectEventSubscriberTestBase {
     'text',
     'correspondence',
     'youvo',
+    'symfony_mailer',
+    'mailer_policy',
+    'mailer_transport',
     'mailer',
   ];
 

@@ -13,8 +13,7 @@ services:
       - { name: event_subscriber }
   mailer.project_publish.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectPublishSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_submit.event_subscriber:
@@ -50,6 +49,15 @@ services:
   mailer.correspondence_recorder:
     class: Drupal\mailer\CorrespondenceRecorder
     arguments: ['@entity_type.manager', '@logger.channel.mailer', '@datetime.time']
+  mailer.variables:
+    class: Drupal\mailer\MailVariables
+  Drupal\mailer\Mailer\ProjectTransitionMailerInterface:
+    class: Drupal\mailer\Mailer\ProjectTransitionMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $mailVariables: '@mailer.variables'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]
