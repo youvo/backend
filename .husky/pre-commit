@@ -1,0 +1,11 @@
+if [ -x "vendor/bin/grumphp" ]; then
+  echo "Running GrumPHP checks..."
+  vendor/bin/grumphp git:pre-commit --ansi
+  grumphp_status=$?
+
+  if [ $grumphp_status -ne 0 ]; then
+    echo "❌ GrumPHP checks failed."
+    echo "💡 Tip: Run 'composer install' if dependencies are missing."
+    exit $grumphp_status
+  fi
+fi

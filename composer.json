@@ -62,7 +62,8 @@
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
             "symfony/runtime": true,
-            "tbachert/spi": true
+            "tbachert/spi": true,
+            "phpro/grumphp-shim": true
         },
         "platform": {
             "php": "8.3"
@@ -132,7 +133,9 @@
         "jangregor/phpstan-prophecy": "^2.2",
         "joachim-n/composer-manifest": "^1.1",
         "mglaman/phpstan-drupal": "^2.0",
+        "php-parallel-lint/php-parallel-lint": "^1.4",
         "phpcompatibility/php-compatibility": "^9.3",
+        "phpro/grumphp-shim": "^2.21",
         "phpspec/prophecy-phpunit": "^2.4",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",

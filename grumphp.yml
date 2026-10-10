@@ -1,0 +1,22 @@
+grumphp:
+  parallel:
+    enabled: true
+    max_workers: 32
+  fixer:
+    enabled: true
+    fix_by_default: false
+  tasks:
+    phplint:
+      ignore_patterns:
+        - /^web\/deploy\.php$/
+    yamllint: ~
+    composer: ~
+    jsonlint: ~
+    phpstan:
+      triggered_by: [php, theme, module, install, inc]
+      memory_limit: "-1"
+      use_grumphp_paths: false
+    phpcs:
+      triggered_by: [php, theme, module, install, inc]
+      ignore_patterns:
+        - /^(?!web\/modules\/custom\/)/
