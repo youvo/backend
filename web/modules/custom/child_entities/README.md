@@ -14,28 +14,34 @@ A general overview of the entity structure can be found here: [Entities Chart](h
 
 ## Basic usage
 
-A child entity should extend the `ChildEntityInterface`, define the entity keys `parent` and `weight` in the annotations and include the `ChildEntityTrait`. The base field definitions should initialise the child entity base fields. Also, one needs to assure that the parent is provided on creation. This can be accomplished by resolving the route context explained below in the `preCreate` hook.
+A child entity should extend the `ChildEntityInterface`, define the entity keys `parent` and `weight` in the annotations and include the `ChildEntityTrait`. The base field definitions should initialise the child entity base fields. The `parent` key must equal the parent's entity type ID, which is also the name of the route parameter.
 
 ```php
-
-class ChildEntity extends EntityBase implements ChildEntityInterface {
+/**
+ * @ContentEntityType(
+ *   id = "child",
+ *   handlers = {
+ *     "form" = {"add" = "Drupal\child_entities\Form\ChildEntityForm"},
+ *     "route_provider" = {"html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider"},
+ *   },
+ *   cascade_delete = TRUE,
+ *   entity_keys = {"parent" = "parent_type", "weight" = "weight", ...},
+ * )
+ */
+class ChildEntity extends ContentEntityBase implements ChildEntityInterface {
 
   use ChildEntityTrait;
-
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
-    parent::preCreate($storage, $values);
-    if (!isset($values['parent_key']) // parent_key from annotation
-      && $route_match = \Drupal::service('current_route_match')->getParameter('parent_key')) {
-      $values['parent_key'] = $route_match;
-    }
-  }
 
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::childBaseFieldDefinitions($entity_type);
     return $fields;
+  }
+
 }
 ```
+
+The trait appends new children after their siblings (weight) and invalidates the parent's cache tag on save and delete. Forms should extend `ChildEntityForm`, which fills the parent of a new entity from the route. Setting `cascade_delete = TRUE` in the annotation deletes the children when their parent is deleted. The ancestor chain of child entity types is resolved by the `child_entities.hierarchy` service.
 
 ## Tasks
 

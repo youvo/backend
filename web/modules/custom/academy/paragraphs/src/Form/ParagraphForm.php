@@ -2,7 +2,7 @@
 
 namespace Drupal\paragraphs\Form;
 
-use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\child_entities\Form\ChildEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\multivalue_form_element\Element\MultiValue;
@@ -11,7 +11,7 @@ use Drupal\youvo\TranslationFormButtonsTrait;
 /**
  * Form controller for the paragraph entity edit forms.
  */
-class ParagraphForm extends ContentEntityForm {
+class ParagraphForm extends ChildEntityForm {
 
   use TranslationFormButtonsTrait;
 

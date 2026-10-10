@@ -32,6 +32,41 @@ trait ChildEntityTrait {
   }
 
   /**
+   * {@inheritdoc}
+   *
+   * Appends new children after their siblings.
+   */
+  public function preSave(EntityStorageInterface $storage): void {
+
+    parent::preSave($storage);
+
+    $weight_key = $this->getEntityType()->getKey('weight');
+    if ($weight_key && $this->isNew() && $this->getParentId() !== NULL) {
+      $result = $storage->getAggregateQuery()
+        ->accessCheck(FALSE)
+        ->condition($this->getEntityType()->getKey('parent'), $this->getParentId())
+        ->aggregate($weight_key, 'MAX')
+        ->execute();
+      $max_weight = $result[0][$weight_key . '_max'] ?? NULL;
+      if ($max_weight !== NULL) {
+        $this->set($weight_key, (int) $max_weight + 1);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
+    parent::postDelete($storage, $entities);
+    // Invalidate parent caches to update the computed children field.
+    /** @var \Drupal\child_entities\ChildEntityInterface[] $entities */
+    foreach ($entities as $entity) {
+      $entity->invalidateParentCache();
+    }
+  }
+
+  /**
    * Returns an array of base field definitions for the parent and weight.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -173,11 +208,14 @@ trait ChildEntityTrait {
 
   /**
    * Invalidates the cache of the parent.
+   *
+   * The parent is not loaded, because it may already be deleted.
    */
   protected function invalidateParentCache(): void {
-    $parent = $this->getParentEntity();
-    $invalidate_tags[] = $parent->getEntityTypeId() . ':' . $parent->id();
-    Cache::invalidateTags($invalidate_tags);
+    $parent_id = $this->getParentId();
+    if ($parent_id !== NULL) {
+      Cache::invalidateTags([$this->getParentEntityTypeId() . ':' . $parent_id]);
+    }
   }
 
 }

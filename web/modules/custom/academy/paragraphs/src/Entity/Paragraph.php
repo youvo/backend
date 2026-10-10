@@ -36,6 +36,7 @@ use Drupal\user\EntityOwnerTrait;
  *   translatable = TRUE,
  *   fieldable = TRUE,
  *   admin_permission = "administer courses",
+ *   cascade_delete = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -76,45 +77,6 @@ class Paragraph extends ContentEntityBase implements ChildEntityInterface {
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
     }
-    if (!isset($values['lecture']) && $route_match = \Drupal::service('current_route_match')->getParameter('lecture')) {
-      $values['lecture'] = $route_match;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-
-    // Adjust weight depending on existing children.
-    if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
-      /** @var \Drupal\lectures\Entity\Lecture $parent */
-      $parent = $this->getParentEntity();
-      $children = $parent->getParagraphs();
-      if (!empty($children)) {
-        $max_weight = max(array_map(fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', intval($max_weight) + 1);
-      }
-    }
-
-    // Add a cache tag for evaluation paragraphs in order to easily identify
-    // and invalidate all cached evaluations in a course.
-    if ($this->isNew() && $this->bundle() === 'evaluation') {
-      $course = $this->getOriginEntity();
-      $cache_tags[] = $course->getEntityTypeId() . ':' . $course->id() . ':' . $this->bundle();
-      $this->addCacheTags($cache_tags);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    if (!$this->isNew()) {
-      // Invalidate parent cache to update the computed children field.
-      $this->invalidateParentCache();
-    }
-    parent::delete();
   }
 
   /**

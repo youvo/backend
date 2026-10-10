@@ -2,14 +2,14 @@
 
 namespace Drupal\lectures\Form;
 
-use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\child_entities\Form\ChildEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\youvo\TranslationFormButtonsTrait;
 
 /**
  * Form controller for the lecture entity edit forms.
  */
-class LectureForm extends ContentEntityForm {
+class LectureForm extends ChildEntityForm {
 
   use TranslationFormButtonsTrait;
 

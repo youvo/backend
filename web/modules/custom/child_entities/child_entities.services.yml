@@ -9,6 +9,7 @@ services:
   child_entities.hierarchy:
     class: Drupal\child_entities\ChildEntityHierarchy
     arguments: [ '@entity_type.manager' ]
+  Drupal\child_entities\ChildEntityHierarchy: '@child_entities.hierarchy'
 
   child_entities.translation_subscriber:
     class: Drupal\child_entities\Routing\ChildContentTranslationRouteSubscriber

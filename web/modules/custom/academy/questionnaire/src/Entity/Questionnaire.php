@@ -54,18 +54,4 @@ class Questionnaire extends Paragraph {
     Cache::invalidateTags($tags);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    if (!$this->isNew()) {
-      // Remove question references in questionnaire paragraph entity.
-      $questions = $this->getQuestions();
-      foreach ($questions as $question) {
-        $question->delete();
-      }
-    }
-    parent::delete();
-  }
-
 }

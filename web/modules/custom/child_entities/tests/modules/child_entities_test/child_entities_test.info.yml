@@ -1,0 +1,7 @@
+name: Child Entities Test
+type: module
+description: Provides a chain of child entity types for testing.
+package: Testing
+core_version_requirement: ^11
+dependencies:
+  - child_entities:child_entities
