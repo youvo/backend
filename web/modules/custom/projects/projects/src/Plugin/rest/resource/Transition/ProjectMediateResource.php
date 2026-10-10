@@ -58,7 +58,8 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     $project_condition = $project->isPublished() && ($project->isAuthor($account) || $organization->isManager($account));
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project)
-      ->addCacheableDependency($organization);
+      ->addCacheableDependency($organization)
+      ->cachePerUser();
     if ($access_project instanceof AccessResultReasonInterface) {
       $access_project->setReason('The project conditions for this transition are not met.');
     }

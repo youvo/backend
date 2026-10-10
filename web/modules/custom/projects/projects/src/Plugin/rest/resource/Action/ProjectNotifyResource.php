@@ -46,7 +46,8 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
     $project_condition = $project->isPublished() && $project->lifecycle()->isDraft() && $organization->isManager($account);
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($organization)
-      ->addCacheableDependency($project);
+      ->addCacheableDependency($project)
+      ->cachePerUser();
     if ($access_project instanceof AccessResultReasonInterface) {
       $access_project->setReason('The project conditions for this action are not met.');
     }
