@@ -55,7 +55,7 @@ class OrganizationsInviteLinkTest extends ProjectEventSubscriberTestBase {
     $organization = $this->createProspectProject();
     $event = new ProjectInviteEvent($this->project);
     $this->eventDispatcher->dispatch($event);
-    $this->assertStringContainsString('/invite/' . $organization->id() . '/', $event->getLink());
+    $this->assertMatchesRegularExpression('#/invite/' . $organization->id() . '/\d+/[\w-]+#', $event->getLink());
   }
 
   /**
@@ -65,7 +65,7 @@ class OrganizationsInviteLinkTest extends ProjectEventSubscriberTestBase {
     $organization = $this->createProspectProject();
     $event = new ProjectNotifyEvent($this->project);
     $this->eventDispatcher->dispatch($event);
-    $this->assertStringContainsString('/invite/' . $organization->id() . '/', $event->getLink());
+    $this->assertMatchesRegularExpression('#/invite/' . $organization->id() . '/\d+/[\w-]+#', $event->getLink());
   }
 
   /**

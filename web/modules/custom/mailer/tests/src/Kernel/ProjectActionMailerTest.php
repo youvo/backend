@@ -33,11 +33,12 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
     $creative = $this->createMailableCreative('a');
     $mailer = $this->mailer();
     $this->captureMails($mailer);
-    $this->assertTrue($mailer->apply($project, $creative, "<script>alert(1)</script> & {{ 1+1 }}\nZeile", ''));
+    $this->assertTrue($mailer->apply($project, $creative, "<script>alert(1)</script> & {{ 1+1 }}\nZeile", '<1> & 2'));
     $html = $this->capturedMails[0]['html'];
     $this->assertStringNotContainsString('<script>', $html);
     $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt; &amp; {{ 1+1 }}<br', $html);
     $this->assertStringContainsString('Zeile', $html);
+    $this->assertStringContainsString('&lt;1&gt; &amp; 2', $html);
   }
 
   /**
@@ -164,10 +165,13 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
    */
   public function testSubscriberSendsOnNotify(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
+    $this->captureMails($this->mailer());
     $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
     $entries = $this->loadEntriesBySubtype($project->id());
     $this->assertCount(1, $entries['mailer.project_action.notify_organization']);
-    $this->assertStringContainsString('/draft/' . $project->uuid(), $entries['mailer.project_action.notify_organization'][0]->get('body')->value);
+    // The sent mail has the link, the recorded one has it removed.
+    $this->assertStringContainsString('/draft/' . $project->uuid(), $this->capturedMails[0]['html']);
+    $this->assertStringContainsString('[Link entfernt]', $entries['mailer.project_action.notify_organization'][0]->get('body')->value);
   }
 
   /**
@@ -178,10 +182,57 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
     $organization = $project->getOwner();
     Role::create(['id' => Organization::ROLE_PROSPECT, 'label' => 'Prospect'])->save();
     $organization->addRole(Organization::ROLE_PROSPECT)->save();
+    $this->captureMails($this->mailer());
     $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
     $entries = $this->loadEntriesBySubtype($project->id());
     $this->assertCount(1, $entries['mailer.project_action.invite_organization']);
-    $this->assertStringContainsString('/invite/' . $organization->id() . '/', $entries['mailer.project_action.invite_organization'][0]->get('body')->value);
+    $this->assertStringContainsString('/invite/' . $organization->id() . '/', $this->capturedMails[0]['html']);
+    $body = $entries['mailer.project_action.invite_organization'][0]->get('body')->value;
+    $this->assertStringNotContainsString('/invite/', $body);
+    $this->assertStringContainsString('[Link entfernt]', $body);
+  }
+
+  /**
+   * Asserts that the sent mail has the link and the recorded one does not.
+   */
+  protected function assertLinkIsNotRecorded(callable $send, string $link, string $subtype): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertTrue($send($mailer, $project, $link));
+    // The sent mail keeps the real link.
+    $this->assertStringContainsString(htmlspecialchars($link), $this->capturedMails[0]['html']);
+
+    $entry = $this->loadEntriesBySubtype($project->id())[$subtype][0];
+    foreach (['body' => $entry->get('body')->value, 'subject' => $entry->get('subject')->value] as $field => $stored) {
+      foreach ([$link, htmlspecialchars($link), htmlspecialchars($link, ENT_QUOTES), rawurlencode($link)] as $form) {
+        $this->assertStringNotContainsString($form, $stored, "The $field has the link as $form.");
+      }
+      $this->assertStringNotContainsString('abc-123', $stored);
+    }
+    $this->assertStringContainsString('[Link entfernt]', $entry->get('body')->value);
+  }
+
+  /**
+   * The one-time link of the invite mail is not stored as correspondence.
+   */
+  public function testInviteLinkIsNotRecorded(): void {
+    $this->assertLinkIsNotRecorded(
+      static fn ($mailer, $project, $link) => $mailer->invite($project, $link),
+      'https://hub.youvo.org/invite/5/1700000000/abc-123?next=/a&b=c#frag',
+      'mailer.project_action.invite_organization',
+    );
+  }
+
+  /**
+   * The link of the notify mail is not stored as correspondence.
+   */
+  public function testNotifyLinkIsNotRecorded(): void {
+    $this->assertLinkIsNotRecorded(
+      static fn ($mailer, $project, $link) => $mailer->notify($project, $link),
+      'https://hub.youvo.org/invite/5/1700000000/abc-123?next=/a&b=c#frag',
+      'mailer.project_action.notify_organization',
+    );
   }
 
 }

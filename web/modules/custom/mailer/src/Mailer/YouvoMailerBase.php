@@ -71,8 +71,25 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    * Never throws: a failed send returns FALSE. Without a recipient address
    * nothing is sent or recorded and FALSE is returned. Nothing is recorded when
    * nothing was rendered, which is the case when the mail was skipped.
+   *
+   * The sent mail keeps the secrets (such as one-time login links); they are
+   * redacted from the subject and body that are recorded as correspondence.
+   *
+   * @param \Drupal\symfony_mailer\EmailInterface $email
+   *   The email.
+   * @param \Drupal\projects\ProjectInterface|null $project
+   *   The project the correspondence belongs to.
+   * @param string $subtype
+   *   The subtype without the base tag.
+   * @param string|null $to
+   *   The recipient address.
+   * @param string[] $secrets
+   *   Strings that must not be stored.
+   *
+   * @return bool
+   *   TRUE if the mail was sent.
    */
-  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, ?string $to): bool {
+  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, ?string $to, array $secrets = []): bool {
     if ($to === NULL || $to === '') {
       $this->logger->error('Unable to send mail %tag for project @project: no recipient address.', [
         '%tag' => $this->getBaseTag() . '.' . $subtype,
@@ -98,9 +115,41 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     }
 
     if ($captured['subject'] !== '' || $captured['body'] !== '') {
-      $this->recorder->recordMail($project, $this->getBaseTag() . '.' . $subtype, [$to], $captured['subject'], $captured['body'], $success);
+      $this->recorder->recordMail($project, $this->getBaseTag() . '.' . $subtype, [$to], self::redactSecrets($captured['subject'], $secrets), self::redactSecrets($captured['body'], $secrets), $success);
     }
     return $success;
+  }
+
+  /**
+   * Replaces secrets in rendered text by a visible marker.
+   *
+   * Each secret is replaced in its plain, HTML-escaped and URL-encoded form,
+   * because the body is rendered HTML. Empty secrets are ignored.
+   *
+   * @param string $text
+   *   The rendered subject or body.
+   * @param string[] $secrets
+   *   The secrets to remove.
+   */
+  public static function redactSecrets(string $text, array $secrets): string {
+    $forms = [];
+    foreach ($secrets as $secret) {
+      if ($secret === '') {
+        continue;
+      }
+      array_push(
+        $forms,
+        $secret,
+        htmlspecialchars($secret),
+        htmlspecialchars($secret, ENT_QUOTES | ENT_SUBSTITUTE),
+        htmlspecialchars($secret, ENT_QUOTES | ENT_HTML5),
+        rawurlencode($secret),
+      );
+    }
+    // Longest first, so that no form is broken by a shorter one.
+    $forms = array_unique($forms);
+    usort($forms, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
+    return $forms === [] ? $text : str_replace($forms, '[Link entfernt]', $text);
   }
 
 }

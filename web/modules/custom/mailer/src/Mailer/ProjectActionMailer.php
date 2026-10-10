@@ -109,7 +109,8 @@ class ProjectActionMailer extends YouvoMailerBase implements ProjectActionMailer
    */
   protected function sendWithLink(ProjectInterface $project, string $subtype, string $link): bool {
     $email = $this->projectEmail($subtype, $project, $this->mailVariables->project($project) + ['link' => $link]);
-    return $this->deliver($email, $project, $subtype, $project->getOwner()->getEmail());
+    // The link can be a one-time login link: it is never stored.
+    return $this->deliver($email, $project, $subtype, $project->getOwner()->getEmail(), [$link]);
   }
 
 }
