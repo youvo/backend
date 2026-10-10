@@ -52,7 +52,8 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     $applicant_condition = Profile::isCreative($account) && !$organization->isManager($account) && !$project->isApplicant($account);
     $access_applicant = AccessResult::allowedIf($applicant_condition)
       ->addCacheableDependency($organization)
-      ->addCacheableDependency($project);
+      ->addCacheableDependency($project)
+      ->cachePerUser();
     if ($access_applicant instanceof AccessResultReasonInterface) {
       $access_applicant->setReason('The applicant conditions for this application are not met. The creative may already applied.');
     }

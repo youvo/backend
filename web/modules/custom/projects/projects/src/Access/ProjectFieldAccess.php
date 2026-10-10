@@ -78,18 +78,19 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral()->cachePerPermissions();
     }
 
-    // Viewing public fields is handled downstream.
+    // Viewing public fields is handled downstream. Note that all results from
+    // here on depend on the permissions of the account.
     if ($operation === 'view' &&
       self::isFieldOfGroup($field, array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
     ) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Editing unrestricted fields is handled downstream.
     if ($operation === 'edit' &&
       self::isFieldOfGroup($field, self::UNRESTRICTED_FIELDS)
     ) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // A manager can determine the organization when creating a project.
@@ -99,6 +100,7 @@ class ProjectFieldAccess extends FieldAccess {
       $entity->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
+        ->cachePerPermissions()
         ->cachePerUser();
     }
 
@@ -115,7 +117,9 @@ class ProjectFieldAccess extends FieldAccess {
       self::isFieldOfGroup($field, self::RESULT_FIELDS) &&
       $entity->lifecycle()->isCompleted()
     ) {
-      return AccessResult::neutral()->addCacheableDependency($entity);
+      return AccessResult::neutral()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
     }
 
     // Authors and managers may view applicants for open projects.
@@ -127,6 +131,7 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())
+        ->cachePerPermissions()
         ->cachePerUser();
     }
 
@@ -140,12 +145,21 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral()
         ->addCacheableDependency($entity)
         ->addCacheableDependency($entity->getOwner())
+        ->cachePerPermissions()
         ->cachePerUser();
     }
 
-    return AccessResult::forbidden()
+    // Only these fields may be granted depending on the identity of the
+    // account, e.g. the author or manager status. All other fields are denied
+    // for any account that does not administer projects.
+    $access_result = AccessResult::forbidden()
       ->addCacheableDependency($entity)
-      ->addCacheableDependency($entity->getOwner());
+      ->addCacheableDependency($entity->getOwner())
+      ->cachePerPermissions();
+    if (in_array($field->getName(), [self::APPLICANTS_FIELD, self::PARTICIPANTS_FIELD, self::OWNER_FIELD], TRUE)) {
+      $access_result->cachePerUser();
+    }
+    return $access_result;
   }
 
 }

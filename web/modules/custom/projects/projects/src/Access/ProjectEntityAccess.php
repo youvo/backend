@@ -6,7 +6,6 @@ use Drupal\child_entities\ChildEntityInterface;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -19,6 +18,14 @@ use Drupal\projects\ProjectInterface;
  *   dust has settled.
  */
 class ProjectEntityAccess extends EntityAccessControlHandler {
+
+  /**
+   * The cache contexts for the roles that skip the access checks.
+   */
+  private const array BYPASS_ROLE_CONTEXTS = [
+    'user.roles:supervisor',
+    'user.roles:administrator',
+  ];
 
   /**
    * {@inheritdoc}
@@ -40,20 +47,24 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       in_array('supervisor', $account->getRoles(), TRUE) ||
       in_array('administrator', $account->getRoles(), TRUE)
     ) {
-      return AccessResult::allowed()->cachePerUser();
+      return AccessResult::allowed()->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
     }
 
     // Unpublished projects are not accessible.
     // @todo Negotiate access handling in relation to hidden field.
     if (!$entity->isPublished()) {
-      return AccessResult::forbidden()->addCacheableDependency($entity);
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
     }
 
     // @todo Respect permissions when dust has settled.
     // Note that the access is governed by the related permissions. Therefore,
     // one should check the permissions first that are handled in the parent
     // method. Then, we revoke access depending on the status of the project.
-    $access_result = new AccessResultNeutral();
+    $access_result = AccessResult::neutral()
+      ->addCacheableDependency($entity)
+      ->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
 
     // Check access for edit action.
     if ($operation === 'view') {
@@ -99,12 +110,15 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($organization)
+        ->addCacheableDependency($project)
         ->cachePerUser();
     }
 
     // The organization can view the project in any state.
     if ($project->isAuthor($account)) {
-      return AccessResult::allowed()->cachePerUser();
+      return AccessResult::allowed()
+        ->addCacheableDependency($project)
+        ->cachePerUser();
     }
 
     // Others can only view open, mediated or completed projects.
@@ -116,7 +130,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       return AccessResult::allowed()->addCacheableDependency($project);
     }
 
-    return AccessResult::neutral();
+    return AccessResult::neutral()
+      ->addCacheableDependency($organization)
+      ->addCacheableDependency($project)
+      ->cachePerUser();
   }
 
   /**
@@ -131,6 +148,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())
+        ->addCacheableDependency($project)
         ->cachePerUser();
     }
 
@@ -146,7 +164,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
         ->cachePerUser();
     }
 
-    return AccessResult::neutral();
+    return AccessResult::neutral()
+      ->addCacheableDependency($project->getOwner())
+      ->addCacheableDependency($project)
+      ->cachePerUser();
   }
 
   /**
@@ -161,6 +182,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($project->getOwner())
+        ->addCacheableDependency($project)
         ->cachePerUser();
     }
 
@@ -175,7 +197,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
         ->cachePerUser();
     }
 
-    return AccessResult::neutral();
+    return AccessResult::neutral()
+      ->addCacheableDependency($project->getOwner())
+      ->addCacheableDependency($project)
+      ->cachePerUser();
   }
 
   /**
@@ -191,10 +216,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       in_array('supervisor', $account->getRoles(), TRUE) ||
       in_array('administrator', $account->getRoles(), TRUE)
     ) {
-      return AccessResult::allowed()->cachePerUser();
+      return AccessResult::allowed()->addCacheContexts(['user.roles']);
     }
 
-    return AccessResult::neutral();
+    return AccessResult::neutral()->addCacheContexts(['user.roles']);
   }
 
 }
