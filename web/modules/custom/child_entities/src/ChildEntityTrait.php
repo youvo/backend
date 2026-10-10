@@ -134,7 +134,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getParentEntityType(): ?EntityTypeInterface {
+  public function getParentEntityType(): EntityTypeInterface {
     return $this->entityTypeManager()
       ->getDefinition($this->getParentEntityTypeId());
   }
@@ -171,7 +171,16 @@ trait ChildEntityTrait {
    */
   public function getParentEntity(): EntityInterface {
     $key = $this->getEntityType()->getKey('parent');
-    return $this->get($key)->entity;
+    $parent = $this->get($key)->entity;
+    if (!$parent instanceof EntityInterface) {
+      throw new \RuntimeException(sprintf(
+        'The parent %s of %s %s does not exist.',
+        $key,
+        $this->getEntityTypeId(),
+        $this->id() ?? '(new)',
+      ));
+    }
+    return $parent;
   }
 
   /**

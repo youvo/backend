@@ -2,7 +2,7 @@ name: Child Entities
 type: module
 description: Introduces Entity Trait to create child entities.
 core_version_requirement: ^10.3 || ^11
-package: Academy
+package: youvo
 
 dependencies:
   - drupal:content_translation

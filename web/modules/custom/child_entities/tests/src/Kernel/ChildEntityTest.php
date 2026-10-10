@@ -212,4 +212,22 @@ class ChildEntityTest extends KernelTestBase {
     return $user;
   }
 
+  /**
+   * Tests that a missing parent is reported with a meaningful exception.
+   */
+  public function testMissingParentThrows(): void {
+
+    $origin = TestOrigin::create(['name' => 'origin']);
+    $origin->save();
+    $loose = TestLoose::create(['child_test_origin' => $origin->id()]);
+    $loose->save();
+    // The loose child does not cascade, so it is orphaned.
+    $origin->delete();
+
+    $loose = TestLoose::load($loose->id());
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage('child_test_origin');
+    $loose->getParentEntity();
+  }
+
 }
