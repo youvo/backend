@@ -37,6 +37,7 @@
         "drupal/responsive_favicons": "^4.0",
         "drupal/simple_oauth": "^6.1",
         "drupal/subrequests": "^3.0",
+        "drupal/symfony_mailer": "^2.0",
         "drupal/twig_field_value": "^2.0",
         "drupal/twig_tweak": "^3.4",
         "drupal/user_bundle": "^1.2",
