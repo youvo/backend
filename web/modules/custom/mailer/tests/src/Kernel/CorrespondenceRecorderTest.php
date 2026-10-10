@@ -61,4 +61,18 @@ class CorrespondenceRecorderTest extends ProjectEventSubscriberTestBase {
     $this->assertNull($recorder->recordMail(NULL, 'mailer.user.register_creative', ['a@example.com'], 'S', 'B', TRUE));
   }
 
+  /**
+   * A subject that is too long for the field is truncated, not lost.
+   */
+  public function testLongSubjectIsTruncated(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $project->save();
+    $recorder = $this->container->get('mailer.correspondence_recorder');
+    $entry = $recorder->recordMail($project, 'mailer.project_transition.publish_organization', ['a@example.com'], str_repeat('Betreff ', 50), '<p>Text</p>', TRUE);
+    $this->assertNotNull($entry);
+    $subject = (string) Correspondence::load($entry->id())->get('subject')->value;
+    $this->assertLessThanOrEqual(255, mb_strlen($subject));
+    $this->assertStringStartsWith('Betreff Betreff', $subject);
+  }
+
 }

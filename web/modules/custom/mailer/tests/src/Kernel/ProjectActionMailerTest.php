@@ -2,11 +2,13 @@
 
 namespace Drupal\Tests\mailer\Kernel;
 
+use Drupal\mailer\EventSubscriber\MailerProjectApplySubscriber;
 use Drupal\mailer\Mailer\ProjectActionMailerInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
+use Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber;
 use Drupal\projects\ProjectState;
 use Drupal\symfony_mailer\EmailInterface;
 use Drupal\user\Entity\Role;
@@ -158,6 +160,23 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
     $event->setMessage('Hallo')->setPhoneNumber('0123');
     $this->eventDispatcher->dispatch($event);
     $this->assertCount(2, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * The mails are sent after the application is handled.
+   *
+   * Otherwise the correspondence could record an application that failed.
+   */
+  public function testApplyMailRunsAfterApplicationIsHandled(): void {
+    $priorities = [];
+    foreach ($this->eventDispatcher->getListeners(ProjectApplyEvent::class) as $listener) {
+      if (is_array($listener)) {
+        $priorities[get_class($listener[0])] = $this->eventDispatcher->getListenerPriority(ProjectApplyEvent::class, $listener);
+      }
+    }
+    $this->assertArrayHasKey(MailerProjectApplySubscriber::class, $priorities);
+    $this->assertArrayHasKey(ProjectApplySubscriber::class, $priorities);
+    $this->assertLessThan($priorities[ProjectApplySubscriber::class], $priorities[MailerProjectApplySubscriber::class]);
   }
 
   /**

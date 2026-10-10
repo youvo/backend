@@ -2,10 +2,12 @@
 
 namespace Drupal\Tests\mailer\Kernel;
 
+use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\symfony_mailer\EmailInterface;
 
@@ -328,6 +330,38 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $this->assertFalse($mailer->publish($project));
     $this->assertCount(0, $this->capturedMails);
     $this->assertCount(0, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * An organization without mail address ends in FALSE and no exception.
+   */
+  public function testMissingRecipientDoesNotThrow(): void {
+    // The organization and its manager have no mail address.
+    $project = $this->createProject(ProjectState::Draft);
+    $project->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+
+    $this->assertFalse($mailer->publish($project));
+    $this->assertFalse($mailer->submit($project));
+    $this->assertCount(0, $this->capturedMails);
+    $this->assertCount(0, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * An owner that is no organization does not make the mailer throw.
+   */
+  public function testOwnerWithoutOrganizationDoesNotThrow(): void {
+    $owner = Creative::create(['name' => 'Admin', 'field_name' => 'Admin']);
+    $owner->save();
+    $project = $this->createMock(ProjectInterface::class);
+    $project->method('getOwner')->willReturn($owner);
+    $project->method('getTitle')->willReturn('Title');
+    $project->method('id')->willReturn(1);
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+
+    $this->assertFalse($mailer->publish($project));
+    $this->assertFalse($mailer->submit($project));
   }
 
 }

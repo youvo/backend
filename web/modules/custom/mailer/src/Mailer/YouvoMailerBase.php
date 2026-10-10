@@ -66,6 +66,22 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
   }
 
   /**
+   * Gets the mail address of the owner of a project.
+   *
+   * Returns NULL instead of throwing when the project has no usable owner, so
+   * that deliver() can refuse the missing recipient.
+   */
+  protected function ownerEmail(ProjectInterface $project): ?string {
+    try {
+      $owner = $project->getOwner();
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
+    return $owner->getEmail() ?: NULL;
+  }
+
+  /**
    * Sends the email and records it as correspondence.
    *
    * Never throws: a failed send returns FALSE. Without a recipient address
@@ -98,10 +114,12 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
       return FALSE;
     }
     $captured = ['subject' => '', 'body' => ''];
+    // Capture after the URLs are made absolute (700) and before the layout
+    // wraps the body (800): the record holds the text without the layout.
     $email->addCallback(static function (EmailInterface $e) use (&$captured): void {
       $captured['subject'] = (string) $e->getSubject();
       $captured['body'] = (string) $e->getHtmlBody();
-    }, EmailInterface::PHASE_POST_RENDER, 960, 'correspondence_capture');
+    }, EmailInterface::PHASE_POST_RENDER, 750, 'correspondence_capture');
 
     try {
       $success = $email->setTo($to)->send();

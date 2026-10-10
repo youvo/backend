@@ -40,7 +40,7 @@ class MailVariables {
       // organization is the neutral choice.
       'organization_contact' => $contact ?: $organization_name,
       'organization_address' => $organization instanceof Organization ? $organization->getAddress() : '',
-      'organization_email' => $organization->getEmail() ?? '',
+      'organization_email' => $organization instanceof Organization ? ($organization->getEmail() ?? '') : '',
       'organization_phone' => $organization instanceof Organization ? $organization->getPhoneNumber() : '',
     ];
   }

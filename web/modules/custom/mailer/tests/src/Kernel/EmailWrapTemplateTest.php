@@ -62,6 +62,36 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
   }
 
   /**
+   * The recorded body is the policy body without the wrapper.
+   *
+   * The sent mail carries the full wrapped document.
+   */
+  public function testRecordedBodyHasNoWrapper(): void {
+    $this->container->get('theme_installer')->install(['gin', 'yv']);
+    $this->config('system.theme')->set('default', 'yv')->save();
+
+    $project = $this->createMailableProject();
+    $project->setTitle('Wrapper check')->save();
+
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->publish($project));
+
+    $sent = strtolower($this->capturedMails[0]['html']);
+    $this->assertStringContainsString('<!doctype html>', $sent);
+    $this->assertStringContainsString('mj-column', $sent);
+
+    $entries = $this->loadEntries($project->id());
+    $this->assertCount(1, $entries);
+    $body = (string) reset($entries)->get('body')->value;
+    $this->assertStringContainsString('Wrapper check', $body);
+    $this->assertStringNotContainsString('<!doctype', strtolower($body));
+    $this->assertStringNotContainsString('<html', strtolower($body));
+    $this->assertStringNotContainsString('<style', strtolower($body));
+    $this->assertStringNotContainsString('mj-column', $body);
+  }
+
+  /**
    * The plain-text branch outputs only the body.
    */
   public function testPlainBranch(): void {

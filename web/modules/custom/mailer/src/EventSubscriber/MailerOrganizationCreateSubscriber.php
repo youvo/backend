@@ -27,7 +27,7 @@ class MailerOrganizationCreateSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [OrganizationCreateEvent::class => 'mail'];
+    return [OrganizationCreateEvent::class => ['mail', -100]];
   }
 
 }

@@ -27,7 +27,7 @@ class MailerCreativeRegisterSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [CreativeRegisterEvent::class => 'mail'];
+    return [CreativeRegisterEvent::class => ['mail', -100]];
   }
 
 }

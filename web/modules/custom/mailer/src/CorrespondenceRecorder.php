@@ -3,6 +3,7 @@
 namespace Drupal\mailer;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\projects\ProjectInterface;
@@ -39,7 +40,7 @@ class CorrespondenceRecorder {
         'project' => $project->id(),
         'sender' => $sender,
         'recipients' => json_encode(array_values($recipients)),
-        'subject' => $subject,
+        'subject' => Unicode::truncate($subject, 255, FALSE, TRUE),
         'body' => ['value' => $body, 'format' => 'email_html'],
         'subtype' => $subtype,
         'origin' => $origin,

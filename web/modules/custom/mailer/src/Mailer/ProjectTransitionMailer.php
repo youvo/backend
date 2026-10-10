@@ -7,6 +7,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
 use Drupal\mailer\MailVariables;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\symfony_mailer\Attribute\MailerInfo;
 use Drupal\symfony_mailer\EmailInterface;
@@ -92,7 +93,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
   public function submit(ProjectInterface $project): bool {
     $variables = $this->mailVariables->project($project);
     $organization = $project->getOwner();
-    $manager = $organization->getManager();
+    $manager = $organization instanceof Organization ? $organization->getManager() : NULL;
     $success = TRUE;
 
     // The manager is the recipient: replies go to the site mail address.
@@ -102,7 +103,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     }
 
     $email = $this->projectEmail('submit_organization', $project, $variables);
-    return $this->deliver($email, $project, 'submit_organization', $organization->getEmail()) && $success;
+    return $this->deliver($email, $project, 'submit_organization', $this->ownerEmail($project)) && $success;
   }
 
   /**
@@ -110,7 +111,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
    */
   public function publish(ProjectInterface $project): bool {
     $email = $this->projectEmail('publish_organization', $project, $this->mailVariables->project($project));
-    return $this->deliver($email, $project, 'publish_organization', $project->getOwner()->getEmail());
+    return $this->deliver($email, $project, 'publish_organization', $this->ownerEmail($project));
   }
 
   /**
@@ -122,7 +123,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     ];
 
     $email = $this->projectEmail('mediate_organization', $project, $base);
-    $success = $this->deliver($email, $project, 'mediate_organization', $project->getOwner()->getEmail());
+    $success = $this->deliver($email, $project, 'mediate_organization', $this->ownerEmail($project));
 
     foreach ($creatives as $creative) {
       if (!$creative instanceof Creative) {
@@ -149,7 +150,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
       'participants' => $this->names($participants),
       'feedback_link' => 'https://youvo.org/feedback/organization/' . $project->uuid(),
     ]);
-    $success = $this->deliver($email, $project, 'complete_organization', $project->getOwner()->getEmail());
+    $success = $this->deliver($email, $project, 'complete_organization', $this->ownerEmail($project));
 
     foreach ($participants as $participant) {
       if (!$participant instanceof Creative) {

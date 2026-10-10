@@ -27,7 +27,7 @@ class MailerProjectMediateSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectMediateEvent::class => 'mail'];
+    return [ProjectMediateEvent::class => ['mail', -100]];
   }
 
 }

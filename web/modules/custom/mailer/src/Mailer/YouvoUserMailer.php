@@ -39,8 +39,9 @@ class YouvoUserMailer extends YouvoMailerBase implements YouvoUserMailerInterfac
       'name' => $creative->getName() ?: (string) $this->t('Kreative'),
       'link' => $link,
     ]);
-    // No project: the mail is not recorded, so the one-time link is not stored.
-    return $this->deliver($email, NULL, 'register_creative', $creative->getEmail());
+    // The one-time link is never stored. Without a project the mail is not
+    // recorded anyway; the secret keeps that true if this ever changes.
+    return $this->deliver($email, NULL, 'register_creative', $creative->getEmail(), [$link]);
   }
 
   /**
