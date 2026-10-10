@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.mediate_staff
+configuration:
+  email_subject:
+    value: 'Projekt {{ project_title }} wurde vermittelt'
+  email_body:
+    content:
+      value: '<p>Hallo youvo-Team,</p><p>das Projekt {{ project_title }} von {{ organization_name }} wurde vermittelt an:</p><p>{{ selected_creatives }}</p><p>Zuständig: {{ manager }}</p>'
+      format: email_html

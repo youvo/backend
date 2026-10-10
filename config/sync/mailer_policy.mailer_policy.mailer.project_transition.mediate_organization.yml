@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.mediate_organization
+configuration:
+  email_subject:
+    value: 'Projekt {{ project_title }} wurde vermittelt'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>dein Projekt {{ project_title }} wurde erfolgreich vermittelt an:<br>{{ selected_creatives }}</p><p>Das Projekt ist jetzt in der Umsetzungsphase und wird nicht mehr in Suchen angezeigt. Du kannst direkt mit den ausgewählten Kreativen kommunizieren.</p><p>Viel Erfolg bei der Umsetzung!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html
