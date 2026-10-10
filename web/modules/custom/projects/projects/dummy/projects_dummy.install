@@ -79,7 +79,6 @@ function projects_dummy_site_install_finished(): void {
 
     // Get field values.
     $skills = youvo_dummy_get_random_skills();
-    $image_file = projects_dummy_get_stock_image($i);
 
     // Set random time in last year.
     $rnd_time = random_int($created, $created + 1209600);
@@ -137,10 +136,6 @@ function projects_dummy_site_install_finished(): void {
       'field_material' => $faker->text(100),
       'field_appreciation' => $faker->text(100),
       'field_skills' => $skills,
-      'field_image' => [
-        'target_id' => $image_file->id(),
-        'alt' => $faker->text(50),
-      ],
       'field_image_copyright' => $faker->optional()->name(),
       'field_lifecycle' => 'draft',
       'field_local' => $faker->boolean(),
@@ -201,6 +196,14 @@ function projects_dummy_site_install_finished(): void {
         $event_dispatcher->dispatch(new ProjectCompleteEvent($project, $transition_time));
         // @todo Add project results if needed.
       }
+      // Attach the image with the final save only. File paths moves the file
+      // when it is attached, and every further save of the project would
+      // log a notice about the already attached file.
+      $image_file = projects_dummy_get_stock_image($i);
+      $project->set('field_image', [
+        'target_id' => $image_file->id(),
+        'alt' => $faker->text(50),
+      ]);
       // Set the changed value to the last event timestamp and save.
       $project->set('changed', $transition_time);
       $project->save();
