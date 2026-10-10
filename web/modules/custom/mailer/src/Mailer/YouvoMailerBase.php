@@ -15,6 +15,11 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Base class for the youvo mailers.
+ *
+ * Subclasses that override build() must call parent::build(), which sets the
+ * reply-to address. An exception during build or render is logged and makes
+ * deliver() return FALSE, but is not recorded as correspondence because
+ * nothing was rendered.
  */
 abstract class YouvoMailerBase extends ComponentMailerBase {
 
@@ -59,10 +64,18 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
   /**
    * Sends the email and records it as correspondence.
    *
-   * Never throws: a failed send returns FALSE. Nothing is recorded when
+   * Never throws: a failed send returns FALSE. Without a recipient address
+   * nothing is sent or recorded and FALSE is returned. Nothing is recorded when
    * nothing was rendered, which is the case when the mail was skipped.
    */
-  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, string $to): bool {
+  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, ?string $to): bool {
+    if ($to === NULL || $to === '') {
+      $this->logger->error('Unable to send mail %tag for project @project: no recipient address.', [
+        '%tag' => $this->getBaseTag() . '.' . $subtype,
+        '@project' => $project?->id() ?? '-',
+      ]);
+      return FALSE;
+    }
     $captured = ['subject' => '', 'body' => ''];
     $email->addCallback(static function (EmailInterface $e) use (&$captured): void {
       $captured['subject'] = (string) $e->getSubject();

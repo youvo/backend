@@ -123,4 +123,36 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $this->assertCount(1, $entries);
   }
 
+  /**
+   * Entity data is escaped in the body, plain in the subject, never evaluated.
+   */
+  public function testEntityDataIsEscapedAndNotEvaluated(): void {
+    $project = $this->createMailableProject();
+    $project->set('title', 'A & <b>x</b> {{ 1+1 }}')->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->publish($project));
+    $html = $this->capturedMails[0]['html'];
+    $this->assertStringContainsString('A &amp; &lt;b&gt;x&lt;/b&gt;', $html);
+    $this->assertStringNotContainsString('<b>x</b>', $html);
+    $this->assertStringContainsString('{{ 1+1 }}', $html);
+    $subject = $this->capturedMails[0]['subject'];
+    $this->assertStringContainsString('A & <b>x</b> {{ 1+1 }}', $subject);
+    $this->assertStringNotContainsString('&amp;', $subject);
+  }
+
+  /**
+   * An organization without a mail address does not throw and sends nothing.
+   */
+  public function testMissingRecipientAddress(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $project->save();
+    $this->assertEmpty($project->getOwner()->getEmail());
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+    $this->assertFalse($mailer->publish($project));
+    $this->assertCount(0, $this->capturedMails);
+    $this->assertCount(0, $this->loadEntries($project->id()));
+  }
+
 }

@@ -25,11 +25,11 @@ class MailVariables {
       'contact' => $organization instanceof Organization ? $organization->getContact() : '',
       'manager' => $manager?->getName() ?? (string) $this->t('Dein youvo-Team'),
       'manager_email' => $manager?->getEmail() ?? '',
-      'organization_name' => $organization->getName(),
+      'organization_name' => $organization instanceof Organization ? $organization->getName() : '',
       'organization_contact' => $organization instanceof Organization ? $organization->getContact() : '',
       'organization_address' => $organization instanceof Organization ? $organization->getAddress() : '',
       'organization_email' => $organization->getEmail() ?? '',
-      'organization_phone' => $organization->getPhoneNumber(),
+      'organization_phone' => $organization instanceof Organization ? $organization->getPhoneNumber() : '',
     ];
   }
 
