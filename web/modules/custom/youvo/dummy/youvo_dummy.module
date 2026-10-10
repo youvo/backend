@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for youvo_dummy module.
+ */
+
+use Drupal\Core\Installer\InstallerKernel;
+
+/**
+ * Implements hook_mail_alter().
+ *
+ * Dummy content triggers transactional emails to fake addresses. Suppress them
+ * while the site is being installed.
+ */
+function youvo_dummy_mail_alter(array &$message): void {
+  if (InstallerKernel::installationAttempted()) {
+    $message['send'] = FALSE;
+  }
+}
