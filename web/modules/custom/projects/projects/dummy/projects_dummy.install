@@ -12,10 +12,12 @@ use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
+use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
+use Drupal\projects\ProjectArchiveReason;
 use Drupal\user\Entity\User;
 use Faker\Factory;
 
@@ -95,8 +97,15 @@ function projects_dummy_site_install_finished(): void {
       'open',
       'ongoing',
       'completed',
+      'archived',
     ];
     $final_state = $faker->randomElement($lifecycle_states);
+
+    // Archived projects follow the path up to a random state first.
+    $path_state = $final_state;
+    if ($final_state === 'archived') {
+      $path_state = $faker->randomElement(['draft', 'pending', 'open', 'ongoing']);
+    }
 
     // Get organization with contact and manager.
     $oid = youvo_dummy_get_random_organization($organization_ids);
@@ -147,11 +156,11 @@ function projects_dummy_site_install_finished(): void {
       $transition_increment = random_int(86400, 7 * 86400);
       // Always start in draft. Now transition up to the random final state
       // using events.
-      if (in_array($final_state, ['pending', 'open', 'ongoing', 'completed'])) {
+      if (in_array($path_state, ['pending', 'open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         $event_dispatcher->dispatch(new ProjectSubmitEvent($project, $transition_time));
       }
-      if (in_array($final_state, ['open', 'ongoing', 'completed'])) {
+      if (in_array($path_state, ['open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         $event_dispatcher->dispatch(new ProjectPublishEvent($project, $transition_time));
         // Add applicants after publish. Ensure at least one applicant.
@@ -174,7 +183,7 @@ function projects_dummy_site_install_finished(): void {
           }
         }
       }
-      if (in_array($final_state, ['ongoing', 'completed'])) {
+      if (in_array($path_state, ['ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         // Add participants with 'Creative' task before mediate.
         // Only select participants from actual applicants.
@@ -198,6 +207,13 @@ function projects_dummy_site_install_finished(): void {
         $transition_time += $transition_increment;
         $event_dispatcher->dispatch(new ProjectCompleteEvent($project, $transition_time));
         // @todo Add project results if needed.
+      }
+      if ($final_state === 'archived') {
+        $transition_time += $transition_increment;
+        $archive_event = new ProjectArchiveEvent($project, $transition_time);
+        $archive_event->setReason($faker->randomElement(ProjectArchiveReason::cases()));
+        $archive_event->setMessage($faker->sentence());
+        $event_dispatcher->dispatch($archive_event);
       }
       // Attach the image with the final save only. File paths moves the file
       // when it is attached, and every further save of the project would
