@@ -3,9 +3,13 @@
 namespace Drupal\child_entities\Routing;
 
 use Drupal\child_entities\ChildEntityEnsureTrait;
+use Drupal\child_entities\ChildEntityHierarchy;
 use Drupal\child_entities\Controller\ChildEntityController;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -18,6 +22,28 @@ use Symfony\Component\Routing\RouteCollection;
 class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
 
   use ChildEntityEnsureTrait;
+
+  /**
+   * Constructs a ChildContentEntityHtmlRouteProvider object.
+   */
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityFieldManagerInterface $entity_field_manager,
+    protected ChildEntityHierarchy $hierarchy,
+  ) {
+    parent::__construct($entity_type_manager, $entity_field_manager);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('entity_field.manager'),
+      $container->get('child_entities.hierarchy'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -41,6 +67,7 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
   public function getRoutes(EntityTypeInterface $entity_type): RouteCollection|array {
     static::entityImplementsChildEntityInterface($entity_type);
     $collection = parent::getRoutes($entity_type);
+    $ancestor_ids = $this->hierarchy->getAncestorEntityTypeIds($entity_type);
     foreach ($collection as $key => $route) {
       if (strpos($key, 'edit_form')) {
         $route->setDefault('_title_callback', ChildEntityController::class . '::editTitle');
@@ -49,34 +76,13 @@ class ChildContentEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
       if (!is_array($option_parameters)) {
         $option_parameters = [];
       }
-      $this->appendParentOptionParameters($option_parameters, $entity_type);
+      foreach ($ancestor_ids as $ancestor_id) {
+        $option_parameters[$ancestor_id] = ['type' => 'entity:' . $ancestor_id];
+      }
       $route->setOption('parameters', $option_parameters);
       $collection->add($key, $route);
     }
     return $collection;
-  }
-
-  /**
-   * Appends the option parameters with parent entities.
-   *
-   * @param array $option_parameters
-   *   The option parameters.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The child entity type.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  private function appendParentOptionParameters(array &$option_parameters, EntityTypeInterface $entity_type): void {
-    // Add entity option parameters.
-    $option_parameters[$entity_type->getKey('parent')] = [
-      'type' => 'entity:' . $entity_type->getKey('parent'),
-    ];
-
-    // If parent is another child append its parents.
-    $parent_type = $this->entityTypeManager->getDefinition($entity_type->getKey('parent'));
-    if ($parent_type->hasKey('parent')) {
-      $this->appendParentOptionParameters($option_parameters, $parent_type);
-    }
   }
 
 }

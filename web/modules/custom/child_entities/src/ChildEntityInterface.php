@@ -6,7 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Provides an interface for access to an entity's published state.
+ * Provides an interface for entities that are children of a parent entity.
  */
 interface ChildEntityInterface extends EntityInterface {
 
@@ -18,7 +18,7 @@ interface ChildEntityInterface extends EntityInterface {
   /**
    * Returns the parent entity type.
    */
-  public function getParentEntityType(): ?EntityTypeInterface;
+  public function getParentEntityType(): EntityTypeInterface;
 
   /**
    * Checks if the parent is also a child entity.
@@ -27,6 +27,9 @@ interface ChildEntityInterface extends EntityInterface {
 
   /**
    * Returns the entity parent's entity.
+   *
+   * @throws \RuntimeException
+   *   Thrown when the parent is not set or does not exist anymore.
    */
   public function getParentEntity(): EntityInterface;
 
@@ -51,6 +54,11 @@ interface ChildEntityInterface extends EntityInterface {
 
   /**
    * Gets origin entity of descendant tree.
+   *
+   * The origin is the first ancestor that is not a child entity itself.
+   *
+   * @throws \RuntimeException
+   *   Thrown when a parent in the chain does not exist.
    */
   public function getOriginEntity(): EntityInterface;
 

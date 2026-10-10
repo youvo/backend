@@ -12,7 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines a class to build a listing of Committee meeting entities.
+ * Builds a listing of the children of the parent entity from the route.
  *
  * @ingroup child_entity
  */

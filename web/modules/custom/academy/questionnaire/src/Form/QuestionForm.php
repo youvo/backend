@@ -2,7 +2,7 @@
 
 namespace Drupal\questionnaire\Form;
 
-use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\child_entities\Form\ChildEntityForm;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -14,7 +14,7 @@ use Drupal\youvo\TranslationFormButtonsTrait;
  *
  * @todo Issue #11: Note administrators about revisions of questions (soft edit).
  */
-class QuestionForm extends ContentEntityForm {
+class QuestionForm extends ChildEntityForm {
 
   use QuestionProcessTrait;
   use TranslationFormButtonsTrait;

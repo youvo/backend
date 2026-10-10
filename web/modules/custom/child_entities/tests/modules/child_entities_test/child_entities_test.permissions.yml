@@ -1,0 +1,8 @@
+administer child test:
+  title: 'Administer child test entities'
+view child test origin:
+  title: 'View test origin'
+update child test origin:
+  title: 'Update test origin'
+create child test origin:
+  title: 'Create test origin'

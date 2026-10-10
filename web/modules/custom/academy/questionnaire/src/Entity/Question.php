@@ -43,6 +43,7 @@ use Drupal\user\EntityOwnerTrait;
  *   fieldable = TRUE,
  *   translatable = TRUE,
  *   admin_permission = "administer courses",
+ *   cascade_delete = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -76,44 +77,24 @@ class Question extends ContentEntityBase implements ChildEntityInterface, Entity
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
     }
-    if (!isset($values['paragraph']) && $route_match = \Drupal::service('current_route_match')->getParameter('paragraph')) {
-      $values['paragraph'] = $route_match;
-    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage): void {
-    // Adjust weight depending on existing children.
-    if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
-      /** @var \Drupal\questionnaire\Entity\Questionnaire $parent */
-      $parent = $this->getParentEntity();
-      $children = $parent->getQuestions();
-      if (!empty($children)) {
-        $max_weight = max(array_map(static fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', (int) $max_weight + 1);
-      }
-    }
-  }
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    if (!$this->isNew()) {
-      // Remove all submissions made for this question.
-      // @todo Maybe has to be moved to cron bulk delete in the future.
-      $submissions = $this->entityTypeManager()
-        ->getStorage('question_submission')
-        ->loadByProperties(['question' => $this->id()]);
+    parent::preDelete($storage, $entities);
+
+    // Remove all submissions made for the questions.
+    // @todo Maybe has to be moved to cron bulk delete in the future.
+    $submission_storage = \Drupal::entityTypeManager()->getStorage('question_submission');
+    foreach ($entities as $question) {
+      $submissions = $submission_storage->loadByProperties(['question' => $question->id()]);
       foreach ($submissions as $submission) {
         $submission->delete();
       }
-      // Invalidate parent cache to update the computed children field.
-      $this->invalidateParentCache();
     }
-    parent::delete();
   }
 
   /**

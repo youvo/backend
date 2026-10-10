@@ -18,7 +18,7 @@ class TransactionalEmailAccessControlHandler extends EntityAccessControlHandler 
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     if (!$entity instanceof TransactionalEmailInterface) {
       throw new AccessException('The TransactionalEmailAccessControlHandler was called by an entity that is not a TransactionalEmail.');

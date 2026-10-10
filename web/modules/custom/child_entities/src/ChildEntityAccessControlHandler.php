@@ -33,6 +33,7 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EventDispatcherInterface $eventDispatcher,
     protected LoggerInterface $logger,
+    protected ChildEntityHierarchy $hierarchy,
   ) {
     parent::__construct($entity_type);
   }
@@ -45,7 +46,8 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
       $entity_type,
       $container->get('entity_type.manager'),
       $container->get('event_dispatcher'),
-      $container->get('logger.factory')->get('child_entities')
+      $container->get('logger.factory')->get('child_entities'),
+      $container->get('child_entities.hierarchy'),
     );
   }
 
@@ -69,10 +71,9 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     // First check if user has permission to access the origin entity.
     try {
       $origin = $entity->getOriginEntity();
-      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
-      $access_handler = $this->entityTypeManager
-        ->getAccessControlHandler($origin->getEntityTypeId());
-      $access = $access_handler->checkAccess($entity, $operation, $account);
+      $access = $this->entityTypeManager
+        ->getAccessControlHandler($origin->getEntityTypeId())
+        ->access($entity, $operation, $account, TRUE);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -111,19 +112,12 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     }
 
     // Get the creation access control handler from the origin entity. We might
-    // encounter a child of a child entity. Therefore, loop until the parent
-    // entity is not a child entity.
+    // encounter a child of a child entity, so resolve the top of the chain.
     try {
-      do {
-        $entity_type = $parent_entity_type ?? $this->entityType;
-        $parent_key = $entity_type->getKey('parent');
-        $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
-      } while ($parent_entity_type->entityClassImplements(ChildEntityInterface::class));
-
-      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
-      $access_handler = $this->entityTypeManager
-        ->getAccessControlHandler($parent_key);
-      return $access_handler->checkCreateAccess($account, $context, $entity_bundle);
+      $origin_type_id = $this->hierarchy->getOriginEntityType($this->entityType)->id();
+      return $this->entityTypeManager
+        ->getAccessControlHandler($origin_type_id)
+        ->createAccess($entity_bundle, $account, $context, TRUE);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);

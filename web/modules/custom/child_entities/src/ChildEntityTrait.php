@@ -32,10 +32,45 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Returns an array of base field definitions for publishing status.
+   * {@inheritdoc}
+   *
+   * Appends new children after their siblings.
+   */
+  public function preSave(EntityStorageInterface $storage): void {
+
+    parent::preSave($storage);
+
+    $weight_key = $this->getEntityType()->getKey('weight');
+    if ($weight_key && $this->isNew() && $this->getParentId() !== NULL) {
+      $result = $storage->getAggregateQuery()
+        ->accessCheck(FALSE)
+        ->condition($this->getEntityType()->getKey('parent'), $this->getParentId())
+        ->aggregate($weight_key, 'MAX')
+        ->execute();
+      $max_weight = $result[0][$weight_key . '_max'] ?? NULL;
+      if ($max_weight !== NULL) {
+        $this->set($weight_key, (int) $max_weight + 1);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
+    parent::postDelete($storage, $entities);
+    // Invalidate parent caches to update the computed children field.
+    /** @var static[] $entities */
+    foreach ($entities as $entity) {
+      $entity->invalidateParentCache();
+    }
+  }
+
+  /**
+   * Returns an array of base field definitions for the parent and weight.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type to add the publishing status field to.
+   *   The child entity type to add the fields to.
    *
    * @return \Drupal\Core\Field\BaseFieldDefinition[]
    *   The base field definitions.
@@ -52,7 +87,7 @@ trait ChildEntityTrait {
         ->setReadOnly(TRUE),
       $entity_type->getKey('weight') => BaseFieldDefinition::create('integer')
         ->setLabel(t('Weight'))
-        ->setDescription(t('The weight of this term in relation to other terms.'))
+        ->setDescription(t('The weight of this entity in relation to its siblings.'))
         ->setDefaultValue(0),
     ];
   }
@@ -65,33 +100,9 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Builds the route parameters.
-   *
-   * @param array $uri_route_parameters
-   *   The child entity route parameters.
-   * @param \Drupal\child_entities\ChildEntityInterface $parent_entity
-   *   The parent entity.
-   *
-   * @return array
-   *   The parent entity route parameters.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function buildParentParams(array $uri_route_parameters, ChildEntityInterface $parent_entity): array {
-
-    $uri_route_parameters[$parent_entity->getParentEntityTypeId()] = $parent_entity->getParentId();
-
-    if ($parent_entity->isParentAnotherChildEntity()) {
-      /** @var \Drupal\child_entities\ChildEntityInterface $grandparent_entity */
-      $grandparent_entity = $parent_entity->getParentEntity();
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $grandparent_entity);
-    }
-
-    return $uri_route_parameters;
-  }
-
-  /**
    * {@inheritdoc}
+   *
+   * Adds the IDs of all ancestors as route parameters.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -100,10 +111,11 @@ trait ChildEntityTrait {
       $this->getParentEntityTypeId() => $this->getParentId(),
     ];
 
-    if ($this->isParentAnotherChildEntity()) {
-      /** @var \Drupal\child_entities\ChildEntityInterface $parent */
-      $parent = $this->getParentEntity();
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $parent);
+    $child = $this;
+    while ($child->isParentAnotherChildEntity()) {
+      /** @var \Drupal\child_entities\ChildEntityInterface $child */
+      $child = $child->getParentEntity();
+      $uri_route_parameters += [$child->getParentEntityTypeId() => $child->getParentId()];
     }
 
     return $uri_route_parameters;
@@ -122,7 +134,7 @@ trait ChildEntityTrait {
   /**
    * {@inheritdoc}
    */
-  public function getParentEntityType(): ?EntityTypeInterface {
+  public function getParentEntityType(): EntityTypeInterface {
     return $this->entityTypeManager()
       ->getDefinition($this->getParentEntityTypeId());
   }
@@ -159,7 +171,16 @@ trait ChildEntityTrait {
    */
   public function getParentEntity(): EntityInterface {
     $key = $this->getEntityType()->getKey('parent');
-    return $this->get($key)->entity;
+    $parent = $this->get($key)->entity;
+    if (!$parent instanceof EntityInterface) {
+      throw new \RuntimeException(sprintf(
+        'The parent %s of %s %s does not exist.',
+        $key,
+        $this->getEntityTypeId(),
+        $this->id() ?? '(new)',
+      ));
+    }
+    return $parent;
   }
 
   /**
@@ -196,11 +217,14 @@ trait ChildEntityTrait {
 
   /**
    * Invalidates the cache of the parent.
+   *
+   * The parent is not loaded, because it may already be deleted.
    */
   protected function invalidateParentCache(): void {
-    $parent = $this->getParentEntity();
-    $invalidate_tags[] = $parent->getEntityTypeId() . ':' . $parent->id();
-    Cache::invalidateTags($invalidate_tags);
+    $parent_id = $this->getParentId();
+    if ($parent_id !== NULL) {
+      Cache::invalidateTags([$this->getParentEntityTypeId() . ':' . $parent_id]);
+    }
   }
 
 }

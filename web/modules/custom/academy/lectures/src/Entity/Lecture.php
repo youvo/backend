@@ -38,6 +38,7 @@ use Drupal\user\EntityOwnerTrait;
  *   translatable = TRUE,
  *   fieldable = FALSE,
  *   admin_permission = "administer courses",
+ *   cascade_delete = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "langcode" = "langcode",
@@ -76,41 +77,6 @@ class Lecture extends ContentEntityBase implements ChildEntityInterface, Academi
     if (!isset($values['uid'])) {
       $values['uid'] = \Drupal::currentUser()->id();
     }
-    if (!isset($values['course']) && $route_match = \Drupal::service('current_route_match')->getParameter('course')) {
-      $values['course'] = $route_match;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-    // Adjust weight depending on existing children.
-    if ($this->isNew() && $this->getEntityType()->hasKey('weight')) {
-      /** @var \Drupal\courses\Entity\Course $parent */
-      $parent = $this->getParentEntity();
-      $children = $parent->getLectures();
-      if (!empty($children)) {
-        $max_weight = max(array_map(static fn($c) => $c->get('weight')->value, $children));
-        $this->set('weight', (int) $max_weight + 1);
-      }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(): void {
-    if (!$this->isNew()) {
-      // Delete all referenced paragraphs.
-      $paragraphs = $this->getParagraphs();
-      foreach ($paragraphs as $paragraph) {
-        $paragraph->delete();
-      }
-      // Invalidate parent cache to update the computed children field.
-      $this->invalidateParentCache();
-    }
-    parent::delete();
   }
 
   /**
