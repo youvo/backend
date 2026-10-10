@@ -1,0 +1,37 @@
+/**
+ * @file
+ * Gin-aligned styling for the youvo dashboard blocks.
+ */
+
+.dashboard .layout .block .youvo-dashboard-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-s);
+  margin: 0;
+  padding: var(--gin-spacing-m) var(--gin-spacing-l) var(--gin-spacing-l);
+  list-style: none;
+}
+
+.dashboard .layout .block .youvo-dashboard-links li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Keep the Gin button colors; the dashboard styles every block link. */
+.dashboard .layout .block .youvo-dashboard-links a.button {
+  margin: 0;
+  color: var(--gin-color-button-text);
+  text-decoration: none;
+}
+
+.dashboard .layout .block .youvo-dashboard-links a.button:hover {
+  text-decoration: none;
+}
+
+.dashboard .layout .block .youvo-dashboard-greeting {
+  margin: 0;
+  padding: var(--gin-spacing-m) var(--gin-spacing-l);
+  color: var(--gin-color-title);
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-bold);
+}

@@ -1,0 +1,5 @@
+lectures.dashboard.academy_administration:
+  title: Academy Administration
+  route_name: entity.lecture.collection
+  menu_name: dashboard-moderation
+  weight: 0

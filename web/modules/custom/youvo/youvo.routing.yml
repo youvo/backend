@@ -1,9 +1,0 @@
-youvo.dashboard:
-  path: '/dashboard'
-  defaults:
-    _controller: '\Drupal\youvo\Controller\DashboardController::dashboard'
-    _title: 'Dashboard'
-  requirements:
-    _role: 'editor+administrator'
-  options:
-    no_cache: TRUE

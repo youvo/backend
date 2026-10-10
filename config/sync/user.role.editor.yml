@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - dashboard.dashboard.youvo
     - rest.resource.progress.course.access
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
@@ -12,6 +13,7 @@ dependencies:
     - content_translation
     - contextual
     - courses
+    - dashboard
     - lectures
     - navigation
     - paragraphs
@@ -44,3 +46,4 @@ permissions:
   - 'translate paragraph'
   - 'translate question'
   - 'view courses'
+  - 'view youvo dashboard'

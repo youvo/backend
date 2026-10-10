@@ -20,7 +20,7 @@ function youvo_form_user_login_form_alter(array &$form, FormStateInterface $form
  * Custom submit handler for the login form.
  */
 function youvo_user_login_form_submit(array $form, FormStateInterface $form_state): void {
-  $url = Url::fromRoute('youvo.dashboard');
+  $url = Url::fromRoute('dashboard');
   $form_state->setRedirectUrl($url);
 }
 
@@ -77,16 +77,4 @@ function youvo_entity_type_alter(array &$entity_types): void {
   if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
     $entity_types['taxonomy_term']->setHandlerClass('translation', AcademyTranslationHandler::class);
   }
-}
-
-/**
- * Implements hook_theme().
- */
-function youvo_theme(array $existing, string $type, string $theme, string $path): array {
-  return [
-    'dashboard' => [
-      'template' => 'content--dashboard',
-      'variables' => ['page' => NULL],
-    ],
-  ];
 }

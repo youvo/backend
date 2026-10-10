@@ -1,0 +1,7 @@
+youvo.dashboard.skills:
+  title: Skills
+  route_name: entity.taxonomy_vocabulary.overview_form
+  route_parameters:
+    taxonomy_vocabulary: skills
+  menu_name: dashboard-configuration
+  weight: 2

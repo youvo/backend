@@ -1,0 +1,5 @@
+academy_log.dashboard.participants:
+  title: Academy Participants
+  route_name: academy_log.overview
+  menu_name: dashboard-monitoring
+  weight: 2

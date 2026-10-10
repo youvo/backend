@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: dashboard-monitoring
+label: 'Dashboard Monitoring'
+description: 'Links shown in the Monitoring block of the dashboard.'
+locked: false

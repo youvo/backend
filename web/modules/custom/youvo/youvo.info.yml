@@ -9,6 +9,7 @@ dependencies:
   - drupal:field
   - drupal:user
   - drupal:taxonomy
+  - dashboard:dashboard
   - filefield_paths:filefield_paths
   - jsonapi_extras:jsonapi_extras
   - jsonapi_include:jsonapi_include

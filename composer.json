@@ -20,6 +20,7 @@
         "drupal/core-project-message": "^11.2",
         "drupal/core-recommended": "^11.2",
         "drupal/core-vendor-hardening": "^11.2",
+        "drupal/dashboard": "^2.2",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^5.0",

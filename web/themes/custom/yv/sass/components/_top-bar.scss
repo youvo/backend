@@ -1,0 +1,4 @@
+// stylelint-disable-next-line selector-class-pattern
+header.gin--navigation-top-bar--offset {
+  margin-block-start: calc(54px + var(--gin-spacing-s));
+}

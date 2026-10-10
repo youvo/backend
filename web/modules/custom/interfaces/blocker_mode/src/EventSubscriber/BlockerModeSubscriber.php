@@ -52,7 +52,7 @@ class BlockerModeSubscriber implements EventSubscriberInterface {
       // tries to access /user/login which redirects to user canonical.
       if ($this->account->hasPermission('access site') &&
         RouteMatch::createFromRequest($event->getRequest())->getRouteName() === 'entity.user.canonical') {
-        $redirect_url = Url::fromRoute('youvo.dashboard');
+        $redirect_url = Url::fromRoute('dashboard');
         $event->setResponse(new RedirectResponse($redirect_url->toString()));
       }
       // Access forbidden.

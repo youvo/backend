@@ -1,0 +1,17 @@
+{#
+/**
+ * @file
+ * Theme override to display a dashboard menu as a row of buttons.
+ *
+ * Available variables:
+ * - items: A flat list of menu items with title and url.
+ */
+#}
+{{ attach_library('youvo/dashboard') }}
+{% if items %}
+  <ul class="youvo-dashboard-links">
+    {% for item in items %}
+      <li>{{ link(item.title, item.url, {'class': ['button', 'button--primary']}) }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
