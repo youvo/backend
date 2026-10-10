@@ -1,0 +1,5 @@
+manager.dashboard.project_manager:
+  title: Project Manager
+  route_name: view.project_manager.project_manager
+  menu_name: dashboard-moderation
+  weight: 1

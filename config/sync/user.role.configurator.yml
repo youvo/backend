@@ -3,10 +3,12 @@ langcode: en
 status: true
 dependencies:
   config:
+    - dashboard.dashboard.youvo
     - taxonomy.vocabulary.skills
   module:
     - content_translation
     - contextual
+    - dashboard
     - logbook
     - mailer
     - navigation
@@ -29,3 +31,4 @@ permissions:
   - 'edit transactional emails'
   - 'translate log_text'
   - 'translate skills taxonomy_term'
+  - 'view youvo dashboard'

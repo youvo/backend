@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: dashboard-configuration
+label: 'Dashboard Configuration'
+description: 'Links shown in the Configuration block of the dashboard.'
+locked: false

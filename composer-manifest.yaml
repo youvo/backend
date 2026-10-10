@@ -41,6 +41,7 @@ packages:
     drupal/core-project-message: 11.4.9
     drupal/core-recommended: 11.4.9
     drupal/core-vendor-hardening: 11.4.9
+    drupal/dashboard: 2.2.1
     drupal/entity: 1.8.0
     drupal/file_mdm: 3.2.0
     drupal/filefield_paths: 1.0.0

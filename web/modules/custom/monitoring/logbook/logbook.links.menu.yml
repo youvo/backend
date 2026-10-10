@@ -3,3 +3,15 @@ entity.log_pattern.overview:
   parent: system.admin_structure
   description: 'List of log patterns to extend site functionality.'
   route_name: entity.log_pattern.collection
+
+logbook.dashboard.logbook:
+  title: Logbook
+  route_name: entity.log.collection
+  menu_name: dashboard-monitoring
+  weight: 0
+
+logbook.dashboard.log_patterns:
+  title: Log Patterns
+  route_name: entity.log_pattern.collection
+  menu_name: dashboard-configuration
+  weight: 1

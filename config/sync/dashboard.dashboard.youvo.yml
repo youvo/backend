@@ -1,0 +1,84 @@
+uuid: abb2b025-94f5-42a8-ba7e-368f1b684326
+langcode: en
+status: true
+dependencies:
+  config:
+    - system.menu.dashboard-configuration
+    - system.menu.dashboard-moderation
+    - system.menu.dashboard-monitoring
+  module:
+    - system
+    - youvo
+id: youvo
+label: Youvo
+description: 'Landing page for editors, observers, configurators and administrators.'
+layout:
+  -
+    layout_id: layout_onecol
+    layout_settings:
+      label: ''
+      context_mapping: {  }
+    components:
+      5d8f5b41-a75e-44a5-a29a-130e2bdb2c38:
+        uuid: 5d8f5b41-a75e-44a5-a29a-130e2bdb2c38
+        region: content
+        configuration:
+          id: youvo_dashboard_greeting
+          label: Greeting
+          label_display: '0'
+          provider: youvo
+          context_mapping: {  }
+        weight: 0
+        additional: {  }
+    third_party_settings: {  }
+  -
+    layout_id: layout_threecol_section
+    layout_settings:
+      label: ''
+      context_mapping: {  }
+      column_widths: 33-34-33
+    components:
+      7f448a17-8e35-4af4-9c13-6ccd4b99b8c2:
+        uuid: 7f448a17-8e35-4af4-9c13-6ccd4b99b8c2
+        region: first
+        configuration:
+          id: 'system_menu_block:dashboard-monitoring'
+          label: Monitoring
+          label_display: visible
+          provider: system
+          context_mapping: {  }
+          level: 1
+          depth: null
+          expand_all_items: false
+        weight: 0
+        additional: {  }
+      1b9bc2c5-33bb-48a1-8780-8a02c56b1bf3:
+        uuid: 1b9bc2c5-33bb-48a1-8780-8a02c56b1bf3
+        region: second
+        configuration:
+          id: 'system_menu_block:dashboard-moderation'
+          label: 'Content Moderation'
+          label_display: visible
+          provider: system
+          context_mapping: {  }
+          level: 1
+          depth: null
+          expand_all_items: false
+        weight: 0
+        additional: {  }
+      974cf20a-0ff9-4505-b3d7-5b893e9603c0:
+        uuid: 974cf20a-0ff9-4505-b3d7-5b893e9603c0
+        region: third
+        configuration:
+          id: 'system_menu_block:dashboard-configuration'
+          label: Configuration
+          label_display: visible
+          provider: system
+          context_mapping: {  }
+          level: 1
+          depth: null
+          expand_all_items: false
+        weight: 0
+        additional: {  }
+    third_party_settings: {  }
+weight: 0

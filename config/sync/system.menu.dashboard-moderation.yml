@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: dashboard-moderation
+label: 'Dashboard Content Moderation'
+description: 'Links shown in the Content Moderation block of the dashboard.'
+locked: false

@@ -26,3 +26,12 @@ function yv_theme_suggestions_user_alter(array &$suggestions, array $variables):
   $view_mode = $variables['elements']['#view_mode'];
   $suggestions[] = 'user__' . $user_type . '__' . $view_mode;
 }
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables): void {
+  if (str_starts_with($variables['menu_name'] ?? '', 'dashboard-')) {
+    $suggestions[] = 'menu__dashboard';
+  }
+}
