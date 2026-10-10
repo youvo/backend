@@ -43,6 +43,8 @@ jobs:
         uses: ramsey/composer-install@v3
       - name: Setup Environment
         run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends imagemagick
           sudo systemctl start mysql.service
           mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
           sudo systemctl start apache2.service
