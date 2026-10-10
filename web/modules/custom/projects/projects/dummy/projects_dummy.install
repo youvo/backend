@@ -82,11 +82,6 @@ function projects_dummy_site_install_finished(): void {
     // Get field values.
     $skills = youvo_dummy_get_random_skills();
 
-    // Set random time in last year.
-    $rnd_time = random_int($created, $created + 1209600);
-    $deadline = \Drupal::service('date.formatter')
-      ->format($rnd_time, 'custom', 'Y-m-d');
-
     // Increase created time randomly.
     $created += random_int(min(86400, $max_created_increment), $max_created_increment);
 
@@ -106,6 +101,26 @@ function projects_dummy_site_install_finished(): void {
     if ($final_state === 'archived') {
       $path_state = $faker->randomElement(['draft', 'pending', 'open', 'ongoing']);
     }
+
+    // Completed and archived projects have a deadline in the past, since the
+    // manager rules ignore them. The deadline of all other projects is mostly
+    // comfortable, so that only a few are upcoming or overdue.
+    if (in_array($final_state, ['completed', 'archived'])) {
+      $rnd_time = random_int($created, $created + 1209600);
+    }
+    else {
+      $deadline_roll = random_int(1, 100);
+      $rnd_time = match (TRUE) {
+        // Overdue (critical).
+        $deadline_roll <= 5 => $current_time - random_int(1, 30) * 86400,
+        // Upcoming within two weeks (warning).
+        $deadline_roll <= 20 => $current_time + random_int(1, 13) * 86400,
+        // No deadline problems.
+        default => $current_time + random_int(21, 120) * 86400,
+      };
+    }
+    $deadline = \Drupal::service('date.formatter')
+      ->format($rnd_time, 'custom', 'Y-m-d');
 
     // Get organization with contact and manager.
     $oid = youvo_dummy_get_random_organization($organization_ids);
