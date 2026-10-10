@@ -108,6 +108,24 @@ We have four different testsuites: `unit`, `kernel`, `functional` and `existing-
 vendor/bin/phpunit --testsuite unit --configuration phpunit.ddev.xml
 ```
 
+### Pre-commit hooks
+
+Commits are checked by [GrumPHP](https://github.com/phpro/grumphp), which is triggered by a [Husky](https://typicode.github.io/husky/) pre-commit hook (`.husky/pre-commit`). The tasks are configured in `grumphp.yml`:
+
+- `phplint`, `yamllint`, `jsonlint` and `composer` validate syntax.
+- `phpstan` analyses `web/modules/custom` using `phpstan.neon`.
+- `phpcs` checks the coding standard of `web/modules/custom` using `phpcs.xml`.
+
+The hooks are installed on the host (not inside DDEV) and require Node.js. Run the following once after cloning, in addition to `ddev composer install`. The `prepare` script activates Husky.
+
+```bash
+npm install
+```
+
+The hook runs `vendor/bin/grumphp` on the host, so the Composer dependencies and a local PHP CLI are required. If `vendor/bin/grumphp` does not exist, the hook is skipped.
+
+You can run all checks manually with `npm run grumphp`. To skip the hook in an emergency, use `git commit --no-verify`.
+
 ### PHPStorm CodeSniffer configuration
 
 * https://www.drupal.org/node/1419988
