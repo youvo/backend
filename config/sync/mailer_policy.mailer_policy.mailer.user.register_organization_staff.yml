@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.user.register_organization_staff
+configuration:
+  email_subject:
+    value: 'Neue Organisation registriert: {{ organization_name }}'
+  email_body:
+    content:
+      value: '<p>Hallo youvo-Team,</p><p>eine neue Organisation hat sich registriert:</p><p>{{ organization_name }}<br>Kontakt: {{ organization_contact }}<br>E-Mail: {{ organization_email }}</p>'
+      format: email_html

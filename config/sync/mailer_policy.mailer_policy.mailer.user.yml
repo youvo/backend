@@ -1,0 +1,12 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.user
+configuration:
+  email_from:
+    addresses:
+      -
+        value: '<site>'
+        display: ''

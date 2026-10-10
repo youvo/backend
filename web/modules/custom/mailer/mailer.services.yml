@@ -36,8 +36,12 @@ services:
       - { name: event_subscriber }
   mailer.creative_register.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerCreativeRegisterSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\YouvoUserMailerInterface']
+    tags:
+      - { name: event_subscriber }
+  mailer.organization_create.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerOrganizationCreateSubscriber
+    arguments: ['@Drupal\mailer\Mailer\YouvoUserMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.correspondence_recorder:
@@ -62,6 +66,13 @@ services:
       $logger: '@logger.channel.mailer'
       $configFactory: '@config.factory'
       $mailVariables: '@mailer.variables'
+  Drupal\mailer\Mailer\YouvoUserMailerInterface:
+    class: Drupal\mailer\Mailer\YouvoUserMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $configFactory: '@config.factory'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]
