@@ -18,7 +18,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
 
   /**
-   * Constructs a MailerSubscriberBase object.
+   * Constructs an OrganizationsProjectNotifySubscriber object.
    */
   public function __construct(
     protected ConfigFactoryInterface $config,

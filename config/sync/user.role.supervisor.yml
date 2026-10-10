@@ -24,7 +24,6 @@ dependencies:
     - courses
     - lifecycle
     - logbook
-    - mailer
     - navigation
     - projects
     - rest
@@ -44,7 +43,6 @@ permissions:
   - 'bypass project_lifecycle transition access'
   - 'create project'
   - 'delete any project'
-  - 'edit transactional emails'
   - 'general manager access'
   - 'restful delete organization:manage'
   - 'restful get organization:manage'
