@@ -1,0 +1,187 @@
+<?php
+
+namespace Drupal\Tests\mailer\Kernel;
+
+use Drupal\mailer\Mailer\ProjectActionMailerInterface;
+use Drupal\organizations\Entity\Organization;
+use Drupal\projects\Event\ProjectApplyEvent;
+use Drupal\projects\Event\ProjectInviteEvent;
+use Drupal\projects\Event\ProjectNotifyEvent;
+use Drupal\projects\ProjectState;
+use Drupal\symfony_mailer\EmailInterface;
+use Drupal\user\Entity\Role;
+
+/**
+ * Tests the project action mailer.
+ *
+ * @group mailer
+ */
+class ProjectActionMailerTest extends MailerKernelTestBase {
+
+  /**
+   * Gets the mailer under test.
+   */
+  protected function mailer(): ProjectActionMailerInterface {
+    return $this->container->get(ProjectActionMailerInterface::class);
+  }
+
+  /**
+   * Applicant text is HTML-escaped and never evaluated.
+   */
+  public function testApplyEscapesUserText(): void {
+    $project = $this->createMailableProject();
+    $creative = $this->createMailableCreative('a');
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->apply($project, $creative, "<script>alert(1)</script> & {{ 1+1 }}\nZeile", ''));
+    $html = $this->capturedMails[0]['html'];
+    $this->assertStringNotContainsString('<script>', $html);
+    $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt; &amp; {{ 1+1 }}<br', $html);
+    $this->assertStringContainsString('Zeile', $html);
+  }
+
+  /**
+   * Apply sends one mail to the organization and one to the creative.
+   */
+  public function testApplySendsTwoMails(): void {
+    $project = $this->createMailableProject();
+    $creative = $this->createMailableCreative('Kim');
+    $this->assertTrue($this->mailer()->apply($project, $creative, 'Hallo', '0123 456'));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(2, $this->loadEntries($project->id()));
+
+    $organization = $entries['mailer.project_action.apply_organization'][0];
+    $this->assertSame('["organization@example.com"]', $organization->get('recipients')->value);
+    $body = $organization->get('body')->value;
+    $this->assertStringContainsString('Hallo', $body);
+    $this->assertStringContainsString('Kim@example.com', $body);
+    $this->assertStringContainsString('0123 456', $body);
+    $this->assertStringContainsString('https://hub.youvo.org/users/' . $creative->uuid(), $body);
+    $this->assertStringContainsString('Manu Manager', $body);
+    $this->assertStringContainsString($creative->getName(), $organization->get('subject')->value);
+    $this->assertStringContainsString($project->getTitle(), $organization->get('subject')->value);
+
+    $creative_entry = $entries['mailer.project_action.apply_creative'][0];
+    $this->assertSame('["Kim@example.com"]', $creative_entry->get('recipients')->value);
+    $creative_body = $creative_entry->get('body')->value;
+    $this->assertStringContainsString('organization@example.com', $creative_body);
+    $this->assertStringContainsString('Olga Org', $creative_body);
+    $this->assertStringContainsString('manager@example.com', $creative_body);
+    $this->assertStringNotContainsString('0123 456', $creative_body);
+  }
+
+  /**
+   * Without a manager the mails name the team and point to the site mail.
+   */
+  public function testApplyWithoutManager(): void {
+    $project = $this->createMailableProject();
+    $project->getOwner()->set('field_manager', NULL)->save();
+    $creative = $this->createMailableCreative('Kim');
+    $this->assertTrue($this->mailer()->apply($project, $creative, 'Hallo', ''));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertStringContainsString('Dein youvo-Team', $entries['mailer.project_action.apply_organization'][0]->get('body')->value);
+    $creative_body = $entries['mailer.project_action.apply_creative'][0]->get('body')->value;
+    $this->assertStringContainsString('Dein youvo-Team', $creative_body);
+    $this->assertStringContainsString('noreply@youvo.org', $creative_body);
+  }
+
+  /**
+   * The apply mails have the site From and the manager or site mail reply-to.
+   */
+  public function testApplyHeaders(): void {
+    $project = $this->createMailableProject();
+    $creative = $this->createMailableCreative('Kim');
+    $headers = [];
+    $mailer = $this->mailer();
+    $mailer->addCallback(static function (EmailInterface $email) use (&$headers): void {
+      $headers[] = [
+        'from' => array_map(static fn ($a) => $a->getEmail(), $email->getFrom()),
+        'reply_to' => array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo()),
+      ];
+    }, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
+    $this->assertTrue($mailer->apply($project, $creative, 'Hallo', ''));
+    $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
+    $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
+
+    $headers = [];
+    $project->getOwner()->set('field_manager', NULL)->save();
+    $mailer = $this->mailer();
+    $mailer->addCallback(static function (EmailInterface $email) use (&$headers): void {
+      $headers[] = array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo());
+    }, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
+    $this->assertTrue($mailer->apply($project, $creative, 'Hallo', ''));
+    $this->assertSame(['noreply@youvo.org'], $headers[0]);
+  }
+
+  /**
+   * Notify includes the link in the body.
+   */
+  public function testNotifyIncludesLink(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->notify($project, 'https://hub.youvo.org/draft/abc'));
+    $this->assertSame(['organization@example.com'], $this->capturedMails[0]['to']);
+    $this->assertStringContainsString('Olga Org', $this->capturedMails[0]['html']);
+    $this->assertStringContainsString('https://hub.youvo.org/draft/abc', $this->capturedMails[0]['html']);
+  }
+
+  /**
+   * The invite mail includes the link it is given.
+   */
+  public function testInviteIncludesLink(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->invite($project, 'https://hub.youvo.org/invite/abc'));
+    $this->assertStringContainsString('https://hub.youvo.org/invite/abc', $this->capturedMails[0]['html']);
+    $this->assertStringContainsString('30 Tage', $this->capturedMails[0]['html']);
+  }
+
+  /**
+   * A mail without recipient is not sent.
+   */
+  public function testMissingRecipientAddress(): void {
+    $project = $this->createProject(ProjectState::Draft);
+    $project->save();
+    $this->assertFalse($this->mailer()->notify($project, 'https://example.com'));
+    $this->assertCount(0, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * The apply event triggers both apply mails.
+   */
+  public function testSubscriberSendsOnApply(): void {
+    $project = $this->createMailableProject();
+    $event = new ProjectApplyEvent($project, $this->createMailableCreative('Kim'));
+    $event->setMessage('Hallo')->setPhoneNumber('0123');
+    $this->eventDispatcher->dispatch($event);
+    $this->assertCount(2, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * The notify event mails the link that the organizations module sets.
+   */
+  public function testSubscriberSendsOnNotify(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(1, $entries['mailer.project_action.notify_organization']);
+    $this->assertStringContainsString('/draft/' . $project->uuid(), $entries['mailer.project_action.notify_organization'][0]->get('body')->value);
+  }
+
+  /**
+   * The invite event mails the one-time link of the prospect.
+   */
+  public function testSubscriberSendsOnInvite(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $organization = $project->getOwner();
+    Role::create(['id' => Organization::ROLE_PROSPECT, 'label' => 'Prospect'])->save();
+    $organization->addRole(Organization::ROLE_PROSPECT)->save();
+    $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(1, $entries['mailer.project_action.invite_organization']);
+    $this->assertStringContainsString('/invite/' . $organization->id() . '/', $entries['mailer.project_action.invite_organization'][0]->get('body')->value);
+  }
+
+}

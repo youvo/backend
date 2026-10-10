@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_action.notify_organization
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>es wurde ein neues Projekt für Deine Organisation erstellt! Du kannst über folgenden Link Dein Projekt vervollständigen:</p><p><a href="{{ link }}">{{ link }}</a></p><p>Wenn Du Fragen hast, melde Dich gern.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

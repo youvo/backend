@@ -2,45 +2,25 @@
 
 namespace Drupal\mailer\EventSubscriber;
 
-use Drupal\Component\EventDispatcher\Event;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\mailer\Entity\TransactionalEmail;
+use Drupal\mailer\Mailer\ProjectActionMailerInterface;
 use Drupal\projects\Event\ProjectNotifyEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Mailer project notify event subscriber.
+ * Sends mail on project notify.
  */
-class MailerProjectNotifySubscriber extends MailerSubscriberBase {
-
-  use StringTranslationTrait;
-
-  const EMAIL_ID = 'project_notify_organization';
+class MailerProjectNotifySubscriber implements EventSubscriberInterface {
 
   /**
-   * Sends mail during project notify event.
+   * Constructs the subscriber.
    */
-  public function mail(Event $event): void {
+  public function __construct(protected ProjectActionMailerInterface $mailer) {}
 
-    $email = $this->loadTransactionalEmail(self::EMAIL_ID);
-    if (!$email instanceof TransactionalEmail) {
-      return;
-    }
-
-    /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
-    $organization = $event->getProject()->getOwner();
-    $manager = $organization->getManager();
-    $replacements = [
-      '%Contact' => $organization->getContact(),
-      '%Link' => $event->getLink(),
-      '%Manager' => isset($manager) ? $manager->getName() : $this->t('Dein youvo-Team'),
-    ];
-
-    $this->sendMail(
-      $organization->getEmail(),
-      $this->handleTokensSubject($email, $replacements),
-      $this->handleTokensBody($email, $replacements),
-      $manager?->getEmail()
-    );
+  /**
+   * Sends the notify mail with the link set by the event subscribers before.
+   */
+  public function mail(ProjectNotifyEvent $event): void {
+    $this->mailer->notify($event->getProject(), $event->getLink());
   }
 
   /**

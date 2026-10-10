@@ -1,0 +1,12 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_action
+configuration:
+  email_from:
+    addresses:
+      -
+        value: '<site>'
+        display: ''
