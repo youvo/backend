@@ -99,7 +99,7 @@ class ManagerHooks {
           }
         }
 
-        if ($project->lifecycle()->isCompleted()) {
+        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isArchived()) {
           $action_transition = &$row['columns']['nothing_2'];
           $action_transition['attributes']->offsetUnset('class');
           unset($action_transition['content']);

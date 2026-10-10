@@ -86,7 +86,10 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   protected function buildProgression(Project $project): array {
 
     $user_storage = $this->entityTypeManager->getStorage('user');
-    $states = ProjectState::cases();
+    $states = array_filter(
+      ProjectState::cases(),
+      fn (ProjectState $state) => $state !== ProjectState::Archived,
+    );
 
     // Get the latest history.
     $history = [];

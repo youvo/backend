@@ -12,5 +12,6 @@ enum ProjectState: string {
   case Open = 'open';
   case Ongoing = 'ongoing';
   case Completed = 'completed';
+  case Archived = 'archived';
 
 }

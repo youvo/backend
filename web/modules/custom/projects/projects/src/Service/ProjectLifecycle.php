@@ -100,6 +100,13 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * {@inheritdoc}
    */
+  public function isArchived(): bool {
+    return $this->getState() === ProjectState::Archived;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submit(?int $timestamp = NULL): bool {
     return $this->doTransition(ProjectTransition::Submit, $timestamp);
   }
@@ -135,6 +142,13 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * {@inheritdoc}
    */
+  public function archive(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Archive, $timestamp);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function history(): FieldItemListInterface {
     /** @var \Drupal\Core\Field\FieldItemListInterface<\Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem> $history */
     $history = $this->project()->get(static::LIFECYCLE_HISTORY_FIELD);
@@ -164,6 +178,12 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
     if ($transition === ProjectTransition::Mediate || $transition === ProjectTransition::Complete) {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
+    // The remain transition of the archived state satisfies the state check.
+    // Archived projects must not be archived again.
+    if ($transition === ProjectTransition::Archive && $from === ProjectState::Archived) {
+      return FALSE;
+    }
+
     return $this->hasTransition($from, $to);
   }
 
@@ -190,6 +210,7 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
       ProjectTransition::Publish => ProjectState::Open,
       ProjectTransition::Mediate => ProjectState::Ongoing,
       ProjectTransition::Complete => ProjectState::Completed,
+      ProjectTransition::Archive => ProjectState::Archived,
       // All other transitions, including reset, set the project state to draft.
       default => ProjectState::Draft,
     };

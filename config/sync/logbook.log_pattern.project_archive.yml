@@ -1,0 +1,22 @@
+uuid: 5e748b80-2d85-4f51-949e-6b7f70747e42
+langcode: de
+status: true
+dependencies: {  }
+id: project_archive
+label: 'Project Archive'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: false
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''

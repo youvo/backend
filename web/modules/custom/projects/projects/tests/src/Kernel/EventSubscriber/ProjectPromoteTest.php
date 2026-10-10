@@ -32,4 +32,16 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
     $this->assertTrue($project->isPromoted());
   }
 
+  /**
+   * Tests that archived projects can not be promoted.
+   */
+  public function testProjectPromoteArchived(): void {
+
+    $project = $this->createProject(ProjectState::Archived);
+    $project->setPromoted(FALSE);
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
+  }
+
 }

@@ -54,4 +54,22 @@ class ProjectPromoteResourceTest extends ProjectResourceTestBase {
     $this->assertEquals('The \'restful post project:promote\' permission is required.', $response->getContent());
   }
 
+  /**
+   * Tests the for the project promote resource - archived project.
+   */
+  public function testProjectPromoteArchived(): void {
+
+    $project = $this->createProject(ProjectState::Archived);
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/promote';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(409, $response->getStatusCode());
+    $this->assertEquals('Project can not be promoted.', $response->getContent());
+  }
+
 }

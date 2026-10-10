@@ -49,6 +49,12 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
+  logbook.project_archive.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectArchiveSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
   logbook.project_complete.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectCompleteSubscriber
     arguments:
