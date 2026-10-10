@@ -9,6 +9,8 @@ use Drupal\child_entities_test\Entity\TestOrigin;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\user\Entity\Role;
+use Drupal\user\Entity\User;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -35,6 +37,9 @@ class ChildEntityTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+    $this->installEntitySchema('user');
+    // Occupy uid 1, which bypasses all access checks.
+    User::create(['name' => 'root'])->save();
     $this->installEntitySchema('child_test_origin');
     $this->installEntitySchema('child_test_child');
     $this->installEntitySchema('child_test_grandchild');
@@ -159,6 +164,52 @@ class ChildEntityTest extends KernelTestBase {
     $this->assertSame(['child_test_child', 'child_test_origin'], $hierarchy->getAncestorEntityTypeIds($type));
     $this->assertSame('child_test_origin', $hierarchy->getOriginEntityType($type)->id());
     $this->assertSame('child_test_origin', $hierarchy->getChildEntityTypes()['child_test_loose']);
+  }
+
+  /**
+   * Tests that children inherit access from their origin entity.
+   */
+  public function testAccessIsInheritedFromOrigin(): void {
+
+    $origin = TestOrigin::create(['name' => 'origin']);
+    $origin->save();
+    $child = TestChild::create(['child_test_origin' => $origin->id()]);
+    $child->save();
+    $grandchild = TestGrandchild::create(['child_test_child' => $child->id()]);
+    $grandchild->save();
+
+    $viewer = $this->createAccount(['view child test origin']);
+    $creator = $this->createAccount(['create child test origin']);
+    $admin = $this->createAccount(['administer child test']);
+    $nobody = $this->createAccount([]);
+
+    $this->assertTrue($child->access('view', $viewer));
+    $this->assertTrue($grandchild->access('view', $viewer));
+    $this->assertFalse($child->access('update', $viewer));
+    $this->assertFalse($child->access('view', $nobody));
+    $this->assertTrue($child->access('delete', $admin));
+
+    $storage = $this->container->get('entity_type.manager');
+    $this->assertTrue($storage->getAccessControlHandler('child_test_child')->createAccess(NULL, $creator));
+    $this->assertTrue($storage->getAccessControlHandler('child_test_grandchild')->createAccess(NULL, $creator));
+    $this->assertTrue($storage->getAccessControlHandler('child_test_child')->createAccess(NULL, $admin));
+    $this->assertFalse($storage->getAccessControlHandler('child_test_child')->createAccess(NULL, $nobody));
+  }
+
+  /**
+   * Creates a user with the given permissions.
+   */
+  protected function createAccount(array $permissions): User {
+    static $uid = 1;
+    $role = Role::create(['id' => 'role_' . $uid, 'label' => 'Role ' . $uid]);
+    foreach ($permissions as $permission) {
+      $role->grantPermission($permission);
+    }
+    $role->save();
+    $user = User::create(['name' => 'user_' . $uid, 'roles' => [$role->id()]]);
+    $user->save();
+    $uid++;
+    return $user;
   }
 
 }

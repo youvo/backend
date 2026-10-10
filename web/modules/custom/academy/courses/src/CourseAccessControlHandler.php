@@ -28,11 +28,12 @@ class CourseAccessControlHandler extends EntityAccessControlHandler {
    * Link the activities to the permissions. checkAccess() is called with the
    * $operation as defined in the Course entity annotation.
    *
-   * This access handler is called by the children of Course.
+   * The children of Course resolve their access through the public access()
+   * method of this handler.
    *
    * @see \Drupal\child_entities\ChildEntityAccessControlHandler
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Check if access handler suits Course descendants logic.
     if (!($entity instanceof Course || $entity instanceof ChildEntityInterface)) {

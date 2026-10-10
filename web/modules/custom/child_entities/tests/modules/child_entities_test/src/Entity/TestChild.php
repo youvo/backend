@@ -15,11 +15,13 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   id = "child_test_child",
  *   label = @Translation("TestChild"),
  *   handlers = {
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
  *     "form" = {
  *       "default" = "Drupal\child_entities\Form\ChildEntityForm"
  *     }
  *   },
  *   base_table = "child_test_child",
+ *   admin_permission = "administer child test",
  *   cascade_delete = TRUE,
  *   entity_keys = {
  *     "id" = "id",

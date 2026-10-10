@@ -12,6 +12,9 @@ use Drupal\Core\Field\BaseFieldDefinition;
  * @ContentEntityType(
  *   id = "child_test_origin",
  *   label = @Translation("Test origin"),
+ *   handlers = {
+ *     "access" = "Drupal\child_entities_test\TestOriginAccessControlHandler"
+ *   },
  *   base_table = "child_test_origin",
  *   entity_keys = {
  *     "id" = "id",

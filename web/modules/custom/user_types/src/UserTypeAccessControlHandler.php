@@ -21,7 +21,7 @@ class UserTypeAccessControlHandler extends UserAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Prevent deletion when entity is new.
     if ($operation === 'delete' && $entity->isNew()) {

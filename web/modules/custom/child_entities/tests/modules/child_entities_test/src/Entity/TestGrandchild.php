@@ -14,6 +14,10 @@ use Drupal\Core\Field\BaseFieldDefinition;
  * @ContentEntityType(
  *   id = "child_test_grandchild",
  *   label = @Translation("TestGrandchild"),
+ *   handlers = {
+ *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler"
+ *   },
+ *   admin_permission = "administer child test",
  *   base_table = "child_test_grandchild",
  *   cascade_delete = TRUE,
  *   entity_keys = {

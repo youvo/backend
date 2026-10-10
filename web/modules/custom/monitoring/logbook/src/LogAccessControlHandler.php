@@ -18,7 +18,7 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Only projects should be handled by this access controller.
     if (!$entity instanceof LogInterface) {

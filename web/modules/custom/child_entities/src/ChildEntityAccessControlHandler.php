@@ -71,9 +71,9 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     // First check if user has permission to access the origin entity.
     try {
       $origin = $entity->getOriginEntity();
-      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
-      $access_handler = $this->entityTypeManager->getAccessControlHandler($origin->getEntityTypeId());
-      $access = $access_handler->checkAccess($entity, $operation, $account);
+      $access = $this->entityTypeManager
+        ->getAccessControlHandler($origin->getEntityTypeId())
+        ->access($entity, $operation, $account, TRUE);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);
@@ -115,9 +115,9 @@ class ChildEntityAccessControlHandler extends EntityAccessControlHandler impleme
     // encounter a child of a child entity, so resolve the top of the chain.
     try {
       $origin_type_id = $this->hierarchy->getOriginEntityType($this->entityType)->id();
-      /** @var \Drupal\Core\Entity\EntityAccessControlHandler $access_handler */
-      $access_handler = $this->entityTypeManager->getAccessControlHandler($origin_type_id);
-      return $access_handler->checkCreateAccess($account, $context, $entity_bundle);
+      return $this->entityTypeManager
+        ->getAccessControlHandler($origin_type_id)
+        ->createAccess($entity_bundle, $account, $context, TRUE);
     }
     catch (PluginNotFoundException $e) {
       $variables = Error::decodeException($e);

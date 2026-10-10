@@ -23,7 +23,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
     // Get project for child entities.
     if ($entity instanceof ChildEntityInterface) {
