@@ -1,0 +1,86 @@
+<?php
+
+namespace Drupal\Tests\mailer\Kernel;
+
+use Drupal\Core\Render\Markup;
+use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
+use Drupal\projects\ProjectState;
+
+/**
+ * Tests the compiled MJML wrapper and that it is applied to mailer mails.
+ *
+ * @group mailer
+ */
+class EmailWrapTemplateTest extends MailerKernelTestBase {
+
+  /**
+   * Returns the path of the compiled wrapper template.
+   */
+  protected function templatePath(): string {
+    return DRUPAL_ROOT . '/themes/custom/yv/templates/email-wrap--mailer.html.twig';
+  }
+
+  /**
+   * The compiled template keeps the body slot, doctype and html branch.
+   */
+  public function testCompiledTemplate(): void {
+    $this->assertFileExists($this->templatePath());
+    $source = file_get_contents($this->templatePath());
+    $this->assertStringContainsString('{% if is_html %}', $source);
+    $this->assertStringContainsString('{{ body }}', $source);
+    $this->assertStringContainsString('<!doctype html>', strtolower($source));
+    $this->assertStringNotContainsString('{{ body|raw }}', $source);
+    $this->assertStringContainsString('{% else %}', $source);
+  }
+
+  /**
+   * The yv wrapper is rendered around the policy body of a real mail.
+   */
+  public function testWrapperAppliedToMail(): void {
+    $this->container->get('theme_installer')->install(['gin', 'yv']);
+    $this->config('system.theme')->set('default', 'yv')->save();
+
+    $project = $this->createProject(ProjectState::Open);
+    $organization = $project->getOwner();
+    $organization->set('mail', 'organization@example.com')->save();
+    $organization->getManager()->set('mail', 'manager@example.com')->save();
+    $project->setTitle('Wrapper check')->save();
+
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->publish($project));
+    $this->assertCount(1, $this->capturedMails);
+
+    $html = $this->capturedMails[0]['html'];
+    $this->assertStringContainsString('<!doctype html>', strtolower($html));
+    $this->assertStringContainsString('mj-column', $html);
+    $this->assertStringContainsString('>youvo<', $html);
+    $this->assertStringContainsString('Wrapper check', $html);
+    // The policy text also appears after the header, inside the wrapper body.
+    $header = strpos($html, '>youvo<');
+    $this->assertNotFalse(strpos($html, 'Wrapper check', $header));
+  }
+
+  /**
+   * The plain-text branch outputs only the body.
+   */
+  public function testPlainBranch(): void {
+    $this->container->get('theme_installer')->install(['gin', 'yv']);
+    $source = file_get_contents($this->templatePath());
+    $twig = $this->container->get('twig');
+    $template = $twig->createTemplate($source);
+    $output = $template->render([
+      'is_html' => FALSE,
+      'body' => 'Plain body',
+      'subject' => 'Subject',
+    ]);
+    $this->assertSame('Plain body', trim($output));
+    $html = $template->render([
+      'is_html' => TRUE,
+      'body' => Markup::create('<p>Html body</p>'),
+      'subject' => 'Subject',
+    ]);
+    $this->assertStringContainsString('<p>Html body</p>', $html);
+  }
+
+}

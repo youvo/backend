@@ -1,0 +1,11 @@
+{
+  "name": "yv-mail",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p build && mjml src/layout.mjml -o build/layout.html && node build.mjs"
+  },
+  "devDependencies": {
+    "mjml": "^5.4.1"
+  }
+}
