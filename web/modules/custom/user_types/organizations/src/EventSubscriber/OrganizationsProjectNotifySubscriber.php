@@ -7,6 +7,7 @@ use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Url;
+use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\user\OneTimeAuthentication;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,11 +28,11 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
   ) {}
 
   /**
-   * Processes project notify event.
+   * Processes project notify and project invite events.
    */
   public function process(Event $event): void {
 
-    /** @var \Drupal\projects\Event\ProjectNotifyEvent $event */
+    /** @var \Drupal\projects\Event\ProjectNotifyEvent|\Drupal\projects\Event\ProjectInviteEvent $event */
     $organization = $event->getProject()->getOwner();
     $timestamp = $this->time->getCurrentTime();
 
@@ -68,7 +69,10 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectNotifyEvent::class => ['process', 100]];
+    return [
+      ProjectNotifyEvent::class => ['process', 100],
+      ProjectInviteEvent::class => ['process', 100],
+    ];
   }
 
 }
