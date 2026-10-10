@@ -34,6 +34,30 @@ class SkipMailTest extends MailerKernelTestBase {
   }
 
   /**
+   * The mailer skips mails itself while the installer is running.
+   *
+   * The installer state is set only around the send, so the setup and the
+   * creation of the project are not affected.
+   */
+  public function testInstallerSkipsMail(): void {
+    $project = $this->createMailableProject();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+
+    $GLOBALS['install_state'] = [];
+    try {
+      $result = $mailer->publish($project);
+    }
+    finally {
+      unset($GLOBALS['install_state']);
+    }
+
+    $this->assertTrue($result);
+    $this->assertCount(0, $this->capturedMails);
+    $this->assertCount(0, $this->loadEntries($project->id()));
+  }
+
+  /**
    * Without the skip callback the same mail is sent and recorded.
    */
   public function testMailIsSentWithoutSkip(): void {
