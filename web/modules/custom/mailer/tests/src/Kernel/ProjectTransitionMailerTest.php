@@ -2,8 +2,11 @@
 
 namespace Drupal\Tests\mailer\Kernel;
 
+use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
+use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
+use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\symfony_mailer\EmailInterface;
@@ -18,22 +21,54 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   /**
    * Creates a saved project whose owner has a mail address.
    */
-  protected function createMailableProject(): ProjectInterface {
-    $project = $this->createProject(ProjectState::Open);
+  protected function createMailableProject(ProjectState $state = ProjectState::Open): ProjectInterface {
+    $project = $this->createProject($state);
     $organization = $project->getOwner();
-    $organization->set('mail', 'organization@example.com')->save();
-    $organization->getManager()->set('mail', 'manager@example.com')->save();
+    $organization->set('mail', 'organization@example.com')->set('field_contact', 'Olga Org')->save();
+    $organization->getManager()->set('mail', 'manager@example.com')->set('field_name', 'Manu Manager')->save();
     $project->save();
     return $project;
   }
 
   /**
    * Loads the recorded correspondence of a project.
+   *
+   * @return array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>
+   *   The entries.
    */
   protected function loadEntries(int|string $project_id): array {
-    return $this->container->get('entity_type.manager')
+    /** @var array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface> $entries */
+    $entries = $this->container->get('entity_type.manager')
       ->getStorage('correspondence')
       ->loadByProperties(['project' => $project_id]);
+    return $entries;
+  }
+
+  /**
+   * Creates a creative with a mail address.
+   */
+  protected function createMailableCreative(string $name, ?string $mail = NULL): Creative {
+    $creative = Creative::create([
+      'name' => $name,
+      'field_name' => $name,
+      'mail' => $mail ?? $name . '@example.com',
+    ]);
+    $creative->save();
+    return $creative;
+  }
+
+  /**
+   * Loads the recorded correspondence of a project grouped by subtype.
+   *
+   * @return array<string, array<int, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>>
+   *   The entries, keyed by the full subtype.
+   */
+  protected function loadEntriesBySubtype(int|string $project_id): array {
+    $grouped = [];
+    foreach ($this->loadEntries($project_id) as $entry) {
+      $grouped[$entry->getSubtype()][] = $entry;
+    }
+    return $grouped;
   }
 
   /**
@@ -121,6 +156,164 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
     $entries = $this->loadEntries($project->id());
     $this->assertCount(1, $entries);
+  }
+
+  /**
+   * Submit sends a mail to the manager and one to the organization.
+   */
+  public function testSubmitSendsTwoMails(): void {
+    $project = $this->createMailableProject();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertTrue($mailer->submit($project));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(2, $this->loadEntries($project->id()));
+    $manager = $entries['mailer.project_transition.submit_manager'][0];
+    $this->assertSame('["manager@example.com"]', $manager->get('recipients')->value);
+    $this->assertStringContainsString($project->getTitle(), $manager->get('subject')->value);
+    $organization = $entries['mailer.project_transition.submit_organization'][0];
+    $this->assertSame('["organization@example.com"]', $organization->get('recipients')->value);
+  }
+
+  /**
+   * Submit without a manager only sends the organization mail.
+   */
+  public function testSubmitWithoutManager(): void {
+    $project = $this->createMailableProject();
+    $project->getOwner()->set('field_manager', NULL)->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertTrue($mailer->submit($project));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertSame(['mailer.project_transition.submit_organization'], array_keys($entries));
+    $this->assertStringContainsString('Dein youvo-Team', $entries['mailer.project_transition.submit_organization'][0]->get('body')->value);
+  }
+
+  /**
+   * The submit event triggers the submit mails.
+   */
+  public function testSubscriberSendsOnSubmit(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
+    $this->assertCount(2, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * Mediate mails the organization, each creative and the staff.
+   */
+  public function testMediateFansOut(): void {
+    $project = $this->createMailableProject();
+    $creatives = [$this->createMailableCreative('a'), $this->createMailableCreative('b')];
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertTrue($mailer->mediate($project, $creatives));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(4, $this->loadEntries($project->id()));
+    $this->assertCount(1, $entries['mailer.project_transition.mediate_organization']);
+    $this->assertCount(2, $entries['mailer.project_transition.mediate_creative']);
+    $this->assertCount(1, $entries['mailer.project_transition.mediate_staff']);
+    $organization_body = $entries['mailer.project_transition.mediate_organization'][0]->get('body')->value;
+    $this->assertStringContainsString('a, b', $organization_body);
+  }
+
+  /**
+   * The staff mail goes to the site mail address and names the creatives.
+   */
+  public function testMediateNotifiesStaff(): void {
+    $this->config('system.site')->set('mail', 'team@example.com')->save();
+    $project = $this->createMailableProject();
+    $creatives = [$this->createMailableCreative('a')];
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertTrue($mailer->mediate($project, $creatives));
+    $staff = $this->loadEntriesBySubtype($project->id())['mailer.project_transition.mediate_staff'][0];
+    $this->assertSame('["team@example.com"]', $staff->get('recipients')->value);
+    $this->assertStringContainsString($creatives[0]->getName(), $staff->get('body')->value);
+    $this->assertStringContainsString($project->getTitle(), $staff->get('subject')->value);
+  }
+
+  /**
+   * The creative mail carries the organization contact data.
+   */
+  public function testMediateCreativeMail(): void {
+    $project = $this->createMailableProject();
+    $creative = $this->createMailableCreative('Kim');
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->captureMails($mailer);
+    // Only the first mail of a mailer is captured: the organization mail.
+    $this->assertTrue($mailer->mediate($project, [$creative]));
+    $this->assertSame(['organization@example.com'], $this->capturedMails[0]['to']);
+    $creative_entry = $this->loadEntriesBySubtype($project->id())['mailer.project_transition.mediate_creative'][0];
+    $this->assertSame('["Kim@example.com"]', $creative_entry->get('recipients')->value);
+    $this->assertStringContainsString('Kim', $creative_entry->get('body')->value);
+    $this->assertStringContainsString('organization@example.com', $creative_entry->get('body')->value);
+  }
+
+  /**
+   * One failing recipient does not stop the others.
+   *
+   * A creative without a mail address makes deliver() return FALSE without
+   * rendering, so nothing is recorded for it, while the other mails go out.
+   */
+  public function testMediateContinuesAfterFailure(): void {
+    $project = $this->createMailableProject();
+    $creatives = [$this->createCreative(), $this->createMailableCreative('b')];
+    $this->assertEmpty($creatives[0]->getEmail());
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertFalse($mailer->mediate($project, $creatives));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    // Organization, the second creative and the staff; none for the first.
+    $this->assertCount(3, $this->loadEntries($project->id()));
+    $this->assertCount(1, $entries['mailer.project_transition.mediate_creative']);
+    $this->assertSame('["b@example.com"]', $entries['mailer.project_transition.mediate_creative'][0]->get('recipients')->value);
+    $this->assertCount(1, $entries['mailer.project_transition.mediate_staff']);
+  }
+
+  /**
+   * A failing transport is recorded for every mail of a fan-out.
+   */
+  public function testMediateWithFailingTransport(): void {
+    $project = $this->createMailableProject();
+    $creatives = [$this->createMailableCreative('a'), $this->createMailableCreative('b')];
+    $this->useFailingTransport();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertFalse($mailer->mediate($project, $creatives));
+    $entries = $this->loadEntries($project->id());
+    $this->assertCount(4, $entries);
+    foreach ($entries as $entry) {
+      $this->assertFalse($entry->isSent());
+    }
+  }
+
+  /**
+   * The mediate event triggers the mediate mails.
+   */
+  public function testSubscriberSendsOnMediate(): void {
+    $project = $this->createMailableProject();
+    $event = new ProjectMediateEvent($project);
+    $event->setCreatives([$this->createMailableCreative('a')]);
+    $this->eventDispatcher->dispatch($event);
+    $this->assertCount(3, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * Complete sends one mail to the organization and one per participant.
+   */
+  public function testCompleteFansOut(): void {
+    $project = $this->createMailableProject();
+    $a = $this->createMailableCreative('a');
+    $b = $this->createMailableCreative('b');
+    $project->appendParticipant($a)->appendParticipant($b)->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $this->assertTrue($mailer->complete($project));
+    $entries = $this->loadEntriesBySubtype($project->id());
+    $this->assertCount(3, $this->loadEntries($project->id()));
+    $this->assertCount(2, $entries['mailer.project_transition.complete_creative']);
+
+    $organization_body = $entries['mailer.project_transition.complete_organization'][0]->get('body')->value;
+    $this->assertStringContainsString('a, b', $organization_body);
+    $this->assertStringContainsString('feedback/organization/' . $project->uuid(), $organization_body);
+    foreach ($entries['mailer.project_transition.complete_creative'] as $entry) {
+      $body = $entry->get('body')->value;
+      $this->assertStringContainsString('feedback/creative/' . $project->uuid(), $body);
+      $this->assertStringContainsString('results/' . $project->uuid(), $body);
+    }
   }
 
   /**

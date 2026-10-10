@@ -18,20 +18,17 @@ services:
       - { name: event_subscriber }
   mailer.project_submit.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectSubmitSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_mediate.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectMediateSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_complete.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectCompleteSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_invite.event_subscriber:
@@ -58,6 +55,7 @@ services:
       $recorder: '@mailer.correspondence_recorder'
       $logger: '@logger.channel.mailer'
       $mailVariables: '@mailer.variables'
+      $configFactory: '@config.factory'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]
