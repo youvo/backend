@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\projects\Kernel;
 
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
@@ -27,7 +29,7 @@ class ProjectAccessCacheabilityTest extends ProjectEventSubscriberTestBase {
     foreach (['view', 'update', 'delete'] as $operation) {
       $result = $project->access($operation, $creative, TRUE);
       $this->assertFalse($result->isAllowed());
-      $this->assertContains('user', $result->getCacheContexts(), "The $operation result does not vary per user.");
+      $this->assertContains('user', $this->cacheContexts($result), "The $operation result does not vary per user.");
     }
   }
 
@@ -44,8 +46,8 @@ class ProjectAccessCacheabilityTest extends ProjectEventSubscriberTestBase {
 
     $result = $project->access('view', $creative, TRUE);
     $this->assertTrue($result->isForbidden());
-    $this->assertContains('user.roles:supervisor', $result->getCacheContexts());
-    $this->assertNotContains('user', $result->getCacheContexts());
+    $this->assertContains('user.roles:supervisor', $this->cacheContexts($result));
+    $this->assertNotContains('user', $this->cacheContexts($result));
   }
 
   /**
@@ -61,15 +63,26 @@ class ProjectAccessCacheabilityTest extends ProjectEventSubscriberTestBase {
 
     $result = ProjectFieldAccess::checkFieldAccess($project, 'view', $field, $creative);
     $this->assertTrue($result->isForbidden());
-    $this->assertContains('user', $result->getCacheContexts());
-    $this->assertContains('user.permissions', $result->getCacheContexts());
+    $this->assertContains('user', $this->cacheContexts($result));
+    $this->assertContains('user.permissions', $this->cacheContexts($result));
 
     // Fields that are not granted by identity only vary per permissions.
     $field = $project->getFieldDefinition('field_lifecycle_history');
     $result = ProjectFieldAccess::checkFieldAccess($project, 'view', $field, $creative);
     $this->assertTrue($result->isForbidden());
-    $this->assertContains('user.permissions', $result->getCacheContexts());
-    $this->assertNotContains('user', $result->getCacheContexts());
+    $this->assertContains('user.permissions', $this->cacheContexts($result));
+    $this->assertNotContains('user', $this->cacheContexts($result));
+  }
+
+  /**
+   * Returns the cache contexts of an access result.
+   *
+   * @return string[]
+   *   The cache contexts.
+   */
+  protected function cacheContexts(AccessResultInterface $result): array {
+    $this->assertInstanceOf(CacheableDependencyInterface::class, $result);
+    return $result->getCacheContexts();
   }
 
 }
