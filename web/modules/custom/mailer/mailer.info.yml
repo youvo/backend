@@ -6,6 +6,8 @@ package: youvo
 core_version_requirement: ^10.3 || ^11
 
 dependencies:
+  - correspondence:correspondence
+  - symfony_mailer:symfony_mailer
   - youvo:youvo
 
 configure: entity.transactional_email.collection

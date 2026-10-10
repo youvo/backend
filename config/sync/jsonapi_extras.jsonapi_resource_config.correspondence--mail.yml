@@ -1,0 +1,11 @@
+uuid: 34a8a1ab-ac87-4a17-b3be-2557c01d696f
+langcode: de
+status: true
+dependencies:
+  config:
+    - correspondence.correspondence_type.mail
+id: correspondence--mail
+disabled: true
+path: correspondence/mail
+resourceType: correspondence--mail
+resourceFields: {  }

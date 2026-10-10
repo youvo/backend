@@ -1,0 +1,5 @@
+administer correspondence:
+  title: 'Administer correspondence'
+  restrict access: true
+view correspondence:
+  title: 'View correspondence'

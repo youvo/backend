@@ -47,6 +47,9 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
     tags:
       - { name: event_subscriber }
+  mailer.correspondence_recorder:
+    class: Drupal\mailer\CorrespondenceRecorder
+    arguments: ['@entity_type.manager', '@logger.channel.mailer', '@datetime.time']
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]

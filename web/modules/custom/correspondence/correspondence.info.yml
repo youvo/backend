@@ -1,0 +1,10 @@
+name: Correspondence
+type: module
+description: Records mails and manager notes for projects.
+package: youvo
+core_version_requirement: ^11
+dependencies:
+  - child_entities:child_entities
+  - drupal:options
+  - drupal:text
+  - projects:projects
