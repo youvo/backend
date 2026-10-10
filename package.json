@@ -1,0 +1,11 @@
+{
+  "name": "@youvo/backend",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "grumphp": "vendor/bin/grumphp run"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
