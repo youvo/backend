@@ -79,6 +79,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @covers ::isOpen
    * @covers ::isOngoing
    * @covers ::isCompleted
+   * @covers ::isArchived
    * @covers ::getState
    *
    * @dataProvider isStateProvider
@@ -129,6 +130,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @covers ::mediate
    * @covers ::complete
    * @covers ::reset
+   * @covers ::archive
    * @covers ::hasTransition
    * @covers ::canTransition
    * @covers ::doTransition
@@ -158,7 +160,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $cases[ProjectTransition::Submit->value] = [
       'transition' => ProjectTransition::Submit,
       'allowed_from' => [ProjectState::Draft],
-      'has_transition' => [TRUE, FALSE, FALSE, FALSE, FALSE],
+      'has_transition' => [TRUE, FALSE, FALSE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];
@@ -166,7 +168,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $cases[ProjectTransition::Publish->value] = [
       'transition' => ProjectTransition::Publish,
       'allowed_from' => [ProjectState::Pending],
-      'has_transition' => [FALSE, TRUE, FALSE, FALSE, FALSE],
+      'has_transition' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];
@@ -174,28 +176,41 @@ class ProjectLifecycleTest extends UnitTestCase {
     $cases[ProjectTransition::Mediate->value . '-without-participant'] = [
       'transition' => ProjectTransition::Mediate,
       'allowed_from' => [ProjectState::Open],
-      'has_transition' => [FALSE, FALSE, FALSE, FALSE, FALSE],
+      'has_transition' => [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
       'has_participant' => FALSE,
     ];
 
     $cases[ProjectTransition::Mediate->value . '-with-participant'] = [
       'transition' => ProjectTransition::Mediate,
       'allowed_from' => [ProjectState::Open],
-      'has_transition' => [FALSE, FALSE, TRUE, FALSE, FALSE],
+      'has_transition' => [FALSE, FALSE, TRUE, FALSE, FALSE, FALSE],
       'has_participant' => TRUE,
     ];
 
     $cases[ProjectTransition::Complete->value] = [
       'transition' => ProjectTransition::Complete,
       'allowed_from' => [ProjectState::Ongoing],
-      'has_transition' => [FALSE, FALSE, FALSE, TRUE, FALSE],
+      'has_transition' => [FALSE, FALSE, FALSE, TRUE, FALSE, FALSE],
       'has_participant' => TRUE,
     ];
 
     $cases[ProjectTransition::Reset->value] = [
       'transition' => ProjectTransition::Reset,
       'allowed_from' => ProjectState::cases(),
-      'has_transition' => [TRUE, TRUE, TRUE, TRUE, TRUE],
+      'has_transition' => [TRUE, TRUE, TRUE, TRUE, TRUE, TRUE],
+      // Not relevant for this case.
+      'has_participant' => FALSE,
+    ];
+
+    $cases[ProjectTransition::Archive->value] = [
+      'transition' => ProjectTransition::Archive,
+      'allowed_from' => [
+        ProjectState::Draft,
+        ProjectState::Pending,
+        ProjectState::Open,
+        ProjectState::Ongoing,
+      ],
+      'has_transition' => [TRUE, TRUE, TRUE, TRUE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];

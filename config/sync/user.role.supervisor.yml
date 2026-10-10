@@ -7,6 +7,7 @@ dependencies:
     - rest.resource.progress.course.access
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
+    - rest.resource.project.archive
     - rest.resource.project.complete
     - rest.resource.project.demote
     - rest.resource.project.hide
@@ -56,6 +57,7 @@ permissions:
   - 'restful post progress:course:access'
   - 'restful post progress:lecture:access'
   - 'restful post progress:lecture:complete'
+  - 'restful post project:archive'
   - 'restful post project:complete'
   - 'restful post project:demote'
   - 'restful post project:hide'

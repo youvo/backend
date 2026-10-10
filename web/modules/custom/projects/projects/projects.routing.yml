@@ -81,3 +81,18 @@ project.reset:
     parameters:
       project:
         type: entity:project
+
+project.archive:
+  path: '/projects/{project}/archive'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectArchiveForm'
+    _title: 'Archive Project'
+    transition: 'archive'
+  requirements:
+    _permission: 'administer projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project

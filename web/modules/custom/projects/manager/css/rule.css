@@ -25,6 +25,11 @@
   color: #526079;
 }
 
+.manager-rule--archived {
+  background-color: #eef0f3;
+  color: #5f6877;
+}
+
 .manager-rule-content {
   display: flex;
   align-items: center;

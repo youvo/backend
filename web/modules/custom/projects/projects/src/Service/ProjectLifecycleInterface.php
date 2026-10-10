@@ -46,6 +46,11 @@ interface ProjectLifecycleInterface {
   public function isCompleted(): bool;
 
   /**
+   * Checks if the project is archived.
+   */
+  public function isArchived(): bool;
+
+  /**
    * Submits the project.
    */
   public function submit(?int $timestamp = NULL): bool;
@@ -69,6 +74,11 @@ interface ProjectLifecycleInterface {
    * Resets the project.
    */
   public function reset(?int $timestamp = NULL): bool;
+
+  /**
+   * Archives the project.
+   */
+  public function archive(?int $timestamp = NULL): bool;
 
   /**
    * Gets the lifecycle history.

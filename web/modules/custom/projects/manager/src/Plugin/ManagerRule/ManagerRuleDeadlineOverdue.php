@@ -41,7 +41,7 @@ class ManagerRuleDeadlineOverdue extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
-    if ($project->lifecycle()->isCompleted() || $project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
+    if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isArchived() || $project->get(ProjectInterface::FIELD_DEADLINE)->isEmpty()) {
       return FALSE;
     }
     $current_time = DrupalDateTime::createFromTimestamp($this->time->getCurrentTime());
