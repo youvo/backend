@@ -6,7 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Provides an interface for access to an entity's published state.
+ * Provides an interface for entities that are children of a parent entity.
  */
 interface ChildEntityInterface extends EntityInterface {
 

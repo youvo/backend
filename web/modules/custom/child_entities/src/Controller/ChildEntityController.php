@@ -3,13 +3,14 @@
 namespace Drupal\child_entities\Controller;
 
 use Drupal\child_entities\ChildEntityEnsureTrait;
+use Drupal\child_entities\ChildEntityHierarchy;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\Context\ChildEntityRouteContextTrait;
 use Drupal\Core\Entity\Controller\EntityController;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -22,6 +23,20 @@ class ChildEntityController extends EntityController {
 
   use ChildEntityRouteContextTrait;
   use ChildEntityEnsureTrait;
+
+  /**
+   * The child entity hierarchy.
+   */
+  protected ChildEntityHierarchy $hierarchy;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container): static {
+    $instance = parent::create($container);
+    $instance->hierarchy = $container->get('child_entities.hierarchy');
+    return $instance;
+  }
 
   /**
    * {@inheritdoc}
@@ -78,7 +93,9 @@ class ChildEntityController extends EntityController {
 
     // Add parents to route arguments.
     $route_arguments = [];
-    $this->addParentRouteArguments($route_arguments, $entity_type);
+    foreach ($this->hierarchy->getAncestorEntityTypeIds($entity_type) as $ancestor_id) {
+      $route_arguments[$ancestor_id] = $this->getParentEntityFromRoute($ancestor_id)->id();
+    }
 
     $form_route_name = 'entity.' . $entity_type_id . '.add_form';
     // Redirect if there's only one bundle available.
@@ -100,28 +117,6 @@ class ChildEntityController extends EntityController {
     }
 
     return $build;
-  }
-
-  /**
-   * Appends the parent arguments.
-   *
-   * @param array $route_arguments
-   *   The option parameters.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The child entity type.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  private function addParentRouteArguments(array &$route_arguments, EntityTypeInterface $entity_type): void {
-    // Add entity route arguments.
-    $parent_argument = $entity_type->getKey('parent');
-    $route_arguments[$parent_argument] = $this->getParentEntityFromRoute($parent_argument)->id();
-
-    // If parent is another child append its parents.
-    $parent_type = $this->entityTypeManager->getDefinition($entity_type->getKey('parent'));
-    if ($parent_type->hasKey('parent')) {
-      $this->addParentRouteArguments($route_arguments, $parent_type);
-    }
   }
 
   /**

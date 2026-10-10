@@ -1,15 +1,21 @@
 services:
-  academy.child_entity_route_context:
+
+  child_entities.route_context:
     class: 'Drupal\child_entities\Context\ChildEntityRouteContext'
-    arguments: ['@current_route_match', '@entity_type.manager']
+    arguments: ['@current_route_match', '@entity_type.manager', '@child_entities.hierarchy']
     tags:
       - { name: 'context_provider' }
 
-  child_entities.subscriber:
+  child_entities.hierarchy:
+    class: Drupal\child_entities\ChildEntityHierarchy
+    arguments: [ '@entity_type.manager' ]
+
+  child_entities.translation_subscriber:
     class: Drupal\child_entities\Routing\ChildContentTranslationRouteSubscriber
-    arguments: [ '@content_translation.manager' , '@entity_type.manager' ]
+    arguments: ['@content_translation.manager', '@child_entities.hierarchy']
     tags:
       - { name: event_subscriber }
+
   logger.channel.child_entities:
     parent: logger.channel_base
-    arguments: [ 'child_entities' ]
+    arguments: ['child_entities']

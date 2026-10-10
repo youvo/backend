@@ -7,6 +7,7 @@
 
 use Drupal\academy\AcademicFormatInterface;
 use Drupal\academy\AcademyTranslationHandler;
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\content_translation\ContentTranslationMetadataWrapper;
 use Drupal\content_translation\Form\ContentTranslationDeleteForm;
 
@@ -25,10 +26,7 @@ function academy_entity_type_alter(array &$entity_types): void {
 
     // Check whether child entities are implemented and used by this entity
     // type.
-    $is_child_entity = FALSE;
-    if (interface_exists('\Drupal\child_entities\ChildEntityInterface')) {
-      $is_child_entity = $entity_type->entityClassImplements('\Drupal\child_entities\ChildEntityInterface');
-    }
+    $is_child_entity = $entity_type->entityClassImplements(ChildEntityInterface::class);
 
     // Rely on ChildEntityInterface and AcademyFormatInterface to identify
     // academy entities.

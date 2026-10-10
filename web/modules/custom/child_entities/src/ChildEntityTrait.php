@@ -32,10 +32,10 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Returns an array of base field definitions for publishing status.
+   * Returns an array of base field definitions for the parent and weight.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type to add the publishing status field to.
+   *   The child entity type to add the fields to.
    *
    * @return \Drupal\Core\Field\BaseFieldDefinition[]
    *   The base field definitions.
@@ -52,7 +52,7 @@ trait ChildEntityTrait {
         ->setReadOnly(TRUE),
       $entity_type->getKey('weight') => BaseFieldDefinition::create('integer')
         ->setLabel(t('Weight'))
-        ->setDescription(t('The weight of this term in relation to other terms.'))
+        ->setDescription(t('The weight of this entity in relation to its siblings.'))
         ->setDefaultValue(0),
     ];
   }
@@ -65,33 +65,9 @@ trait ChildEntityTrait {
   }
 
   /**
-   * Builds the route parameters.
-   *
-   * @param array $uri_route_parameters
-   *   The child entity route parameters.
-   * @param \Drupal\child_entities\ChildEntityInterface $parent_entity
-   *   The parent entity.
-   *
-   * @return array
-   *   The parent entity route parameters.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function buildParentParams(array $uri_route_parameters, ChildEntityInterface $parent_entity): array {
-
-    $uri_route_parameters[$parent_entity->getParentEntityTypeId()] = $parent_entity->getParentId();
-
-    if ($parent_entity->isParentAnotherChildEntity()) {
-      /** @var \Drupal\child_entities\ChildEntityInterface $grandparent_entity */
-      $grandparent_entity = $parent_entity->getParentEntity();
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $grandparent_entity);
-    }
-
-    return $uri_route_parameters;
-  }
-
-  /**
    * {@inheritdoc}
+   *
+   * Adds the IDs of all ancestors as route parameters.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -100,10 +76,11 @@ trait ChildEntityTrait {
       $this->getParentEntityTypeId() => $this->getParentId(),
     ];
 
-    if ($this->isParentAnotherChildEntity()) {
-      /** @var \Drupal\child_entities\ChildEntityInterface $parent */
-      $parent = $this->getParentEntity();
-      $uri_route_parameters = $this->buildParentParams($uri_route_parameters, $parent);
+    $child = $this;
+    while ($child->isParentAnotherChildEntity()) {
+      /** @var \Drupal\child_entities\ChildEntityInterface $child */
+      $child = $child->getParentEntity();
+      $uri_route_parameters += [$child->getParentEntityTypeId() => $child->getParentId()];
     }
 
     return $uri_route_parameters;

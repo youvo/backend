@@ -2,9 +2,8 @@
 
 namespace Drupal\child_entities\Routing;
 
-use Drupal\child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityHierarchy;
 use Drupal\content_translation\ContentTranslationManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
 use Symfony\Component\Routing\RouteCollection;
@@ -19,7 +18,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
    */
   public function __construct(
     protected ContentTranslationManagerInterface $contentTranslationManager,
-    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ChildEntityHierarchy $hierarchy,
   ) {}
 
   /**
@@ -33,7 +32,7 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
     foreach ($this->contentTranslationManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
 
       // Concern about child entities.
-      if ($entity_type->entityClassImplements(ChildEntityInterface::class)) {
+      if ($this->hierarchy->isChildEntityType($entity_type)) {
 
         // Get routes for content translation.
         $routes = [
@@ -47,21 +46,11 @@ class ChildContentTranslationRouteSubscriber extends RouteSubscriberBase {
         // Manipulate each route.
         foreach ($routes as $route) {
 
-          // Reset parent entity type and get current route parameters.
-          $parent_entity_type = NULL;
-          $parameters = $route->getOption('parameters');
-
           // Setup route parameters for all parents and grandparents.
-          do {
-            $child_entity_type = $parent_entity_type ?? $entity_type;
-            $parent_key = $child_entity_type->getKey('parent');
-            $parameters += [
-              $parent_key => [
-                'type' => 'entity:' . $parent_key,
-              ],
-            ];
-            $parent_entity_type = $this->entityTypeManager->getDefinition($parent_key);
-          } while ($parent_entity_type->entityClassImplements(ChildEntityInterface::class));
+          $parameters = $route->getOption('parameters') ?? [];
+          foreach ($this->hierarchy->getAncestorEntityTypeIds($entity_type) as $ancestor_id) {
+            $parameters += [$ancestor_id => ['type' => 'entity:' . $ancestor_id]];
+          }
 
           // Add augmented parameters to route.
           $route->setOption('parameters', $parameters);

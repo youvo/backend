@@ -39,9 +39,8 @@ trait ChildEntityRouteContextTrait {
   /**
    * Retrieves the parent entity from the current route.
    *
-   * This will try to load the parent entity from the route if present. If we
-   * are on the group add form, it will return a new group entity with the group
-   * type set.
+   * This returns the parent entity if the route has a parameter for the given
+   * parent entity type.
    *
    * @param string $parent_entity_type
    *   The parent entity type machine name.
@@ -50,9 +49,10 @@ trait ChildEntityRouteContextTrait {
    *   The parent entity if one could be found, NULL otherwise.
    */
   public function getParentEntityFromRoute(string $parent_entity_type): ?EntityInterface {
+
     $route_match = $this->getCurrentRouteMatch();
 
-    // See if the route has a group parameter and try to retrieve it.
+    // See if the route has a parameter for the parent and retrieve it.
     if ($parent_entity = $route_match->getParameter($parent_entity_type)) {
       return $parent_entity;
     }

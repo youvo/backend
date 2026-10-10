@@ -2,7 +2,7 @@
 
 namespace Drupal\child_entities\Context;
 
-use Drupal\child_entities\ChildEntityInterface;
+use Drupal\child_entities\ChildEntityHierarchy;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Context\Context;
@@ -26,6 +26,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
   public function __construct(
     protected RouteMatchInterface $currentRouteMatch,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected ChildEntityHierarchy $hierarchy,
   ) {}
 
   /**
@@ -35,7 +36,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
     // Create an optional context definition for child entities.
     $contexts = [];
 
-    $child_entity_types = $this->getChildEntityTypes();
+    $child_entity_types = $this->hierarchy->getChildEntityTypes();
 
     foreach ($unqualified_context_ids as $unqualified_context_id) {
       if (array_key_exists($unqualified_context_id, $child_entity_types)) {
@@ -63,7 +64,7 @@ class ChildEntityRouteContext implements ContextProviderInterface {
    */
   public function getAvailableContexts(): array {
     $contexts = [];
-    foreach ($this->getChildEntityTypes() as $parent_entity_type_id) {
+    foreach ($this->hierarchy->getChildEntityTypes() as $parent_entity_type_id) {
       $parent_entity_type = $this->entityTypeManager->getDefinition($parent_entity_type_id);
       $contexts[$parent_entity_type_id] = EntityContext::fromEntityTypeId(
         $parent_entity_type_id,
@@ -71,23 +72,6 @@ class ChildEntityRouteContext implements ContextProviderInterface {
     }
 
     return $contexts;
-  }
-
-  /**
-   * Gets all the entity types that implement ChildEntityTrait.
-   *
-   * @return array
-   *   The entity types that implement the ChildEntityTrait.
-   */
-  private function getChildEntityTypes(): array {
-    $child_entity_types = [];
-
-    foreach ($this->entityTypeManager->getDefinitions() as $definition) {
-      if ($definition->entityClassImplements(ChildEntityInterface::class)) {
-        $child_entity_types[$definition->id()] = $definition->getKey('parent');
-      }
-    }
-    return $child_entity_types;
   }
 
 }
