@@ -60,7 +60,7 @@ trait ChildEntityTrait {
   public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
     // Invalidate parent caches to update the computed children field.
-    /** @var \Drupal\child_entities\ChildEntityInterface[] $entities */
+    /** @var static[] $entities */
     foreach ($entities as $entity) {
       $entity->invalidateParentCache();
     }

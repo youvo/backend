@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\child_entities\Kernel;
 
+use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities_test\Entity\TestChild;
 use Drupal\child_entities_test\Entity\TestGrandchild;
 use Drupal\child_entities_test\Entity\TestLoose;
@@ -149,6 +150,7 @@ class ChildEntityTest extends KernelTestBase {
       ->getFormObject('child_test_child', 'default');
     $entity = $form->getEntityFromRouteMatch($route_match, 'child_test_child');
 
+    $this->assertInstanceOf(ChildEntityInterface::class, $entity);
     $this->assertTrue($entity->isNew());
     $this->assertEquals($origin->id(), $entity->getParentId());
   }
