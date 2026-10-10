@@ -53,6 +53,7 @@ abstract class MailerKernelTestBase extends ProjectEventSubscriberTestBase {
       'mailer_policy',
       'mailer_transport',
       'correspondence',
+      'mailer',
     ]);
     // The site identity is used for the sender and the From address.
     $this->config('system.site')->set('name', 'youvo')->set('mail', 'noreply@youvo.org')->save();
