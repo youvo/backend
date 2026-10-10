@@ -86,6 +86,10 @@ function convert_tokens(string $text, bool $html): string {
  * Converts plain text to paragraphs and line breaks.
  */
 function to_html(string $text): string {
+  // The old bodies are plain text: escape them before the tokens are turned
+  // into Twig variables. Tokens start with "%" and are not affected; quotes and
+  // umlauts stay as they are.
+  $text = htmlspecialchars($text, ENT_NOQUOTES);
   $text = str_replace("\r\n", "\n", $text);
   $paragraphs = preg_split("/\n{2,}/", trim($text));
   $out = '';

@@ -2,6 +2,7 @@
 
 namespace Drupal\mailer\Mailer;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\mailer\CorrespondenceRecorder;
 use Drupal\organizations\Entity\Organization;
@@ -17,9 +18,9 @@ use Psr\Log\LoggerInterface;
  * Base class for the youvo mailers.
  *
  * Subclasses that override build() must call parent::build(), which sets the
- * reply-to address. An exception during build or render is logged and makes
- * deliver() return FALSE, but is not recorded as correspondence because
- * nothing was rendered.
+ * reply-to address: the manager of the project, or the site mail address. An
+ * exception during build or render is logged and makes deliver() return FALSE,
+ * but is not recorded as correspondence because nothing was rendered.
  */
 abstract class YouvoMailerBase extends ComponentMailerBase {
 
@@ -32,6 +33,7 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     string $baseTag,
     protected CorrespondenceRecorder $recorder,
     protected LoggerInterface $logger,
+    protected ConfigFactoryInterface $configFactory,
   ) {
     parent::__construct($mailer, $mailerLookup, $baseTag);
   }
@@ -49,15 +51,17 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
   /**
    * {@inheritdoc}
    *
-   * Sets the manager of the project as reply-to address when there is one.
+   * Sets the manager of the project as reply-to address when there is one and
+   * the site mail address otherwise, as the replaced mail code did.
    * Addresses other than the recipient can only be set during the build phase.
    */
   public function build(EmailInterface $email): void {
     $project = $email->getParam('project');
     $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
     $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
-    if ($manager !== NULL && $manager->getEmail()) {
-      $email->setReplyTo($manager->getEmail());
+    $reply_to = $manager?->getEmail() ?: (string) $this->configFactory->get('system.site')->get('mail');
+    if ($reply_to !== '') {
+      $email->setReplyTo($reply_to);
     }
   }
 

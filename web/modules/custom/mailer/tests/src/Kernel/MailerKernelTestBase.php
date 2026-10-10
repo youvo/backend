@@ -3,10 +3,13 @@
 namespace Drupal\Tests\mailer\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\creatives\Entity\Creative;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\mailer_policy\Entity\MailerPolicy;
 use Drupal\mailer_transport\Entity\Transport;
+use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Traits\MailCaptureTrait;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
 
@@ -127,6 +130,59 @@ abstract class MailerKernelTestBase extends ProjectEventSubscriberTestBase {
       'configuration' => ['dsn' => 'smtp://127.0.0.1:1'],
     ])->save();
     $this->config('mailer_transport.settings')->set('default_transport', 'broken')->save();
+  }
+
+  /**
+   * Creates a saved project whose owner has a mail address.
+   */
+  protected function createMailableProject(ProjectState $state = ProjectState::Open): ProjectInterface {
+    $project = $this->createProject($state);
+    $organization = $project->getOwner();
+    $organization->set('mail', 'organization@example.com')->set('field_contact', 'Olga Org')->save();
+    $organization->getManager()->set('mail', 'manager@example.com')->set('field_name', 'Manu Manager')->save();
+    $project->save();
+    return $project;
+  }
+
+  /**
+   * Loads the recorded correspondence of a project.
+   *
+   * @return array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>
+   *   The entries.
+   */
+  protected function loadEntries(int|string $project_id): array {
+    /** @var array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface> $entries */
+    $entries = $this->container->get('entity_type.manager')
+      ->getStorage('correspondence')
+      ->loadByProperties(['project' => $project_id]);
+    return $entries;
+  }
+
+  /**
+   * Creates a creative with a mail address.
+   */
+  protected function createMailableCreative(string $name, ?string $mail = NULL): Creative {
+    $creative = Creative::create([
+      'name' => $name,
+      'field_name' => $name,
+      'mail' => $mail ?? $name . '@example.com',
+    ]);
+    $creative->save();
+    return $creative;
+  }
+
+  /**
+   * Loads the recorded correspondence of a project grouped by subtype.
+   *
+   * @return array<string, array<int, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>>
+   *   The entries, keyed by the full subtype.
+   */
+  protected function loadEntriesBySubtype(int|string $project_id): array {
+    $grouped = [];
+    foreach ($this->loadEntries($project_id) as $entry) {
+      $grouped[$entry->getSubtype()][] = $entry;
+    }
+    return $grouped;
   }
 
 }

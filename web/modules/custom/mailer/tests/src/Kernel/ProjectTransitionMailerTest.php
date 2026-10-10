@@ -2,12 +2,10 @@
 
 namespace Drupal\Tests\mailer\Kernel;
 
-use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
-use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\symfony_mailer\EmailInterface;
 
@@ -17,59 +15,6 @@ use Drupal\symfony_mailer\EmailInterface;
  * @group mailer
  */
 class ProjectTransitionMailerTest extends MailerKernelTestBase {
-
-  /**
-   * Creates a saved project whose owner has a mail address.
-   */
-  protected function createMailableProject(ProjectState $state = ProjectState::Open): ProjectInterface {
-    $project = $this->createProject($state);
-    $organization = $project->getOwner();
-    $organization->set('mail', 'organization@example.com')->set('field_contact', 'Olga Org')->save();
-    $organization->getManager()->set('mail', 'manager@example.com')->set('field_name', 'Manu Manager')->save();
-    $project->save();
-    return $project;
-  }
-
-  /**
-   * Loads the recorded correspondence of a project.
-   *
-   * @return array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>
-   *   The entries.
-   */
-  protected function loadEntries(int|string $project_id): array {
-    /** @var array<int|string, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface> $entries */
-    $entries = $this->container->get('entity_type.manager')
-      ->getStorage('correspondence')
-      ->loadByProperties(['project' => $project_id]);
-    return $entries;
-  }
-
-  /**
-   * Creates a creative with a mail address.
-   */
-  protected function createMailableCreative(string $name, ?string $mail = NULL): Creative {
-    $creative = Creative::create([
-      'name' => $name,
-      'field_name' => $name,
-      'mail' => $mail ?? $name . '@example.com',
-    ]);
-    $creative->save();
-    return $creative;
-  }
-
-  /**
-   * Loads the recorded correspondence of a project grouped by subtype.
-   *
-   * @return array<string, array<int, \Drupal\correspondence\CorrespondenceInterface&\Drupal\Core\Entity\ContentEntityInterface>>
-   *   The entries, keyed by the full subtype.
-   */
-  protected function loadEntriesBySubtype(int|string $project_id): array {
-    $grouped = [];
-    foreach ($this->loadEntries($project_id) as $entry) {
-      $grouped[$entry->getSubtype()][] = $entry;
-    }
-    return $grouped;
-  }
 
   /**
    * The publish mail is rendered from the policy and recorded.
@@ -92,19 +37,56 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   }
 
   /**
+   * Captures the From and Reply-To addresses of the mails of a mailer.
+   *
+   * @return array<int, array{from: string[], reply_to: string[]}>
+   *   The addresses, one entry per sent mail.
+   */
+  protected function captureHeaders(ProjectTransitionMailerInterface $mailer, callable $send): array {
+    $headers = [];
+    $mailer->addCallback(static function (EmailInterface $email) use (&$headers): void {
+      $headers[] = [
+        'from' => array_map(static fn ($a) => $a->getEmail(), $email->getFrom()),
+        'reply_to' => array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo()),
+      ];
+    }, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
+    $send($mailer);
+    return $headers;
+  }
+
+  /**
    * The mail carries a valid From address and the manager as reply-to.
    */
   public function testHeaders(): void {
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
-    $headers = [];
-    $mailer->addCallback(static function (EmailInterface $email) use (&$headers): void {
-      $headers['from'] = array_map(static fn ($a) => $a->getEmail(), $email->getFrom());
-      $headers['reply_to'] = array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo());
-    }, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
-    $this->assertTrue($mailer->publish($project));
-    $this->assertSame(['noreply@youvo.org'], $headers['from']);
-    $this->assertSame(['manager@example.com'], $headers['reply_to']);
+    $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
+    $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
+    $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
+  }
+
+  /**
+   * Without a manager the reply-to address is the site mail address.
+   */
+  public function testReplyToFallsBackToSiteMail(): void {
+    $project = $this->createMailableProject();
+    $project->getOwner()->set('field_manager', NULL)->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
+    $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
+    $this->assertSame(['noreply@youvo.org'], $headers[0]['reply_to']);
+  }
+
+  /**
+   * The mail to the manager itself has the site mail address as reply-to.
+   */
+  public function testSubmitManagerMailReplyToSiteMail(): void {
+    $this->config('system.site')->set('mail', 'team@example.com')->save();
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $headers = $this->captureHeaders($mailer, static fn ($m) => $m->submit($project));
+    // Only the first mail of a mailer is captured: the manager mail.
+    $this->assertSame(['team@example.com'], $headers[0]['reply_to']);
   }
 
   /**

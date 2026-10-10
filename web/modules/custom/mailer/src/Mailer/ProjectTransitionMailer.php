@@ -62,16 +62,17 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     string $baseTag,
     CorrespondenceRecorder $recorder,
     LoggerInterface $logger,
+    ConfigFactoryInterface $configFactory,
     protected MailVariables $mailVariables,
-    protected ConfigFactoryInterface $configFactory,
   ) {
-    parent::__construct($mailer, $mailerLookup, $baseTag, $recorder, $logger);
+    parent::__construct($mailer, $mailerLookup, $baseTag, $recorder, $logger, $configFactory);
   }
 
   /**
    * Creates an email with the project as parameter and the variables set.
    *
    * The project parameter makes the base class set the manager as reply-to.
+   * Without it the reply-to is the site mail address.
    */
   protected function projectEmail(string $subtype, ProjectInterface $project, array $variables, bool $replyTo = TRUE): EmailInterface {
     $email = $this->newEmail($subtype)->setVariables($variables);
@@ -94,7 +95,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     $manager = $organization->getManager();
     $success = TRUE;
 
-    // The manager mail has no reply-to address.
+    // The manager is the recipient: replies go to the site mail address.
     if ($manager instanceof Creative) {
       $email = $this->projectEmail('submit_manager', $project, $variables, FALSE);
       $success = $this->deliver($email, $project, 'submit_manager', $manager->getEmail());
@@ -131,7 +132,7 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
       $success = $this->deliver($email, $project, 'mediate_creative', $creative->getEmail()) && $success;
     }
 
-    // Notify the staff at the site mail address.
+    // Notify the staff at the site mail address (replies go there as well).
     $staff = (string) $this->configFactory->get('system.site')->get('mail');
     $email = $this->projectEmail('mediate_staff', $project, $base, FALSE);
     return $this->deliver($email, $project, 'mediate_staff', $staff) && $success;
