@@ -368,10 +368,12 @@
   .status-overview {
     flex-direction: column;
   }
+
   .status-overview-item {
     border-right: none;
     border-bottom: 1px solid #e8ecf2;
   }
+
   .status-overview-item:last-child {
     border-bottom: none;
   }
