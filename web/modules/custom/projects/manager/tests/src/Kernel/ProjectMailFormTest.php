@@ -162,7 +162,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   public function testLaterValidatorFailureSendsNothing(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
-    $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens')) extends ProjectMailForm {
+    $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens'), $this->container->get('mailer.manager_mail_access'), $this->container->get('entity_type.manager'), $this->container->get('manager.form_once')) extends ProjectMailForm {
 
       /**
        * {@inheritdoc}
@@ -175,6 +175,53 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     };
     $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
     $this->assertTrue($form_state->hasAnyErrors());
+    $this->assertSame([], $this->loadEntries($project->id()));
+  }
+
+  /**
+   * The restored project is reloaded and access is checked on actual values.
+   *
+   * A POST with a form_build_id restores the build info of the earlier GET.
+   * If the project changed state meanwhile, the stale serialized project must
+   * not be mailed.
+   */
+  public function testStaleProjectSendsNothing(): void {
+    // User 1 bypasses all permission checks: use it up.
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
+    $this->container->get('current_user')->setAccount($manager);
+    $form_object = ProjectMailForm::create($this->container);
+
+    // The allowed case sends.
+    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
+    $this->assertTrue($form_state->get('sent'));
+    $this->assertCount(1, $this->loadEntries($project->id()));
+
+    // The project moves on in storage; the form still holds the old object.
+    $fresh = $this->container->get('entity_type.manager')->getStorage('project')->load($project->id());
+    $fresh->set('field_lifecycle', ProjectState::Open->value)->save();
+    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
+    $this->assertTrue($form_state->hasAnyErrors());
+    $this->assertNull($form_state->get('sent'));
+    $this->assertCount(1, $this->loadEntries($project->id()), 'Nothing more was sent.');
+  }
+
+  /**
+   * The send fails closed when the account may not mail the project.
+   */
+  public function testSubmitWithoutAccessSendsNothing(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $other = $this->accountWith($this->createMailableCreative('Other'), ['send project mails']);
+    $this->container->get('current_user')->setAccount($other);
+    $form_object = ProjectMailForm::create($this->container);
+    $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+    $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
+    $form = [];
+    // Even a direct submit (validation skipped) does not send.
+    $form_object->submitForm($form, $form_state);
+    $this->assertTrue($form_state->get('send_denied'));
     $this->assertSame([], $this->loadEntries($project->id()));
   }
 

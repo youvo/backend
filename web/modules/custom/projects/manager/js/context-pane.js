@@ -55,20 +55,36 @@ async function loadAndReplaceRow(row, id, type) {
 /**
  * Swaps a pane row with the first row of the given HTML.
  *
- * @return {boolean}
- *   TRUE if the HTML contained a row and the row was swapped.
+ * @return {?Element}
+ *   The new row, or NULL if the HTML contained no row (nothing swapped).
  */
 function swapPaneRow(row, html, id, type) {
   const temp = document.createElement('tbody');
   temp.innerHTML = html;
   const newRow = temp.querySelector('tr');
-  if (!newRow) return false;
+  if (!newRow) return null;
   newRow.classList.add('js-context-pane');
   newRow.dataset.contextType = type;
   newRow.dataset.projectId = id;
   row.replaceWith(newRow);
   Drupal.attachBehaviors(newRow);
-  return true;
+  return newRow;
+}
+
+/**
+ * Moves focus into a freshly swapped pane row (after in-pane navigation and
+ * submits only): to the error message if there is one, else to the first
+ * form control.
+ */
+function focusPaneRow(row) {
+  const target =
+    row.querySelector('.messages--error, [role="alert"]') ||
+    row.querySelector('input:not([type="hidden"]), textarea, select');
+  if (!target) return;
+  if (!target.matches('input, textarea, select, button, a[href]')) {
+    target.setAttribute('tabindex', '-1');
+  }
+  target.focus();
 }
 
 function showPaneError(row, message) {
@@ -107,7 +123,10 @@ async function loadPaneView(row, view, params) {
       `/project/manage/context/${encodeURIComponent(id)}?${query}`
     );
     const html = await response.text();
-    if (!response.ok || !swapPaneRow(row, html, id, type)) {
+    const newRow = response.ok ? swapPaneRow(row, html, id, type) : null;
+    if (newRow) {
+      focusPaneRow(newRow);
+    } else {
       delete row.dataset.paneBusy;
       showPaneError(row, paneErrorText(`HTTP ${response.status}`));
     }
@@ -146,7 +165,10 @@ async function submitPaneForm(form, submitter) {
   try {
     const response = await fetch(form.action, { method: 'POST', body });
     const html = await response.text();
-    if (!response.ok || !swapPaneRow(row, html, id, type)) {
+    const newRow = response.ok ? swapPaneRow(row, html, id, type) : null;
+    if (newRow) {
+      focusPaneRow(newRow);
+    } else {
       fail(`HTTP ${response.status}`);
     }
   } catch (e) {

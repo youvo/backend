@@ -4,6 +4,7 @@ namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\manager\Controller\ContextPaneController;
+use Drupal\manager\Form\ProjectMailForm;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
@@ -76,12 +77,15 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    *   Query parameters besides the pane type.
    * @param array<string, string>|null $post
    *   POST values, or NULL for a GET request.
+   * @param \Drupal\projects\Entity\Project|null $project
+   *   The project of the pane URL, defaults to the project under test.
    *
    * @return string
    *   The response body.
    */
-  protected function pane(array $query = [], ?array $post = NULL): string {
-    $uri = '/project/manage/context/' . $this->project->id() . '?' . http_build_query(['type' => 'mail'] + $query);
+  protected function pane(array $query = [], ?array $post = NULL, ?Project $project = NULL): string {
+    $project ??= $this->project;
+    $uri = '/project/manage/context/' . $project->id() . '?' . http_build_query(['type' => 'mail'] + $query);
     $request = Request::create($uri, $post === NULL ? 'GET' : 'POST', $post ?? []);
     $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
     // The form builder and validator keep per-request state (the validator
@@ -95,12 +99,37 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $stack->push($request);
     try {
       $controller = ContextPaneController::create($this->container);
-      $response = $controller->contextPane($this->project, $request);
+      $response = $controller->contextPane($project, $request);
     }
     finally {
       $stack->pop();
     }
     return (string) $response->getContent();
+  }
+
+  /**
+   * Builds a form for a project and subtype with a form cache entry.
+   *
+   * Plain GET-built forms are not cached, but a cached build info (a form
+   * state that was cached, as ajax or other modules do) is restored on a POST
+   * with its form_build_id: the build info of that earlier build must not be
+   * trusted.
+   *
+   * @return string
+   *   The form_build_id of the cached form.
+   */
+  protected function cachedBuildId(Project $project, string $subtype): string {
+    // Caching a form state is only allowed on non-GET requests.
+    $request = Request::create('/', 'POST');
+    $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
+    $this->container->get('request_stack')->push($request);
+    $form_state = new FormState();
+    $form_state->setRequestMethod('POST');
+    $form_state->disableRedirect()->setCached();
+    $form_state->addBuildInfo('args', [$project, $subtype]);
+    $form = $this->container->get('form_builder')->buildForm(ProjectMailForm::class, $form_state);
+    $this->container->get('request_stack')->pop();
+    return $form['#build_id'];
   }
 
   /**
@@ -178,6 +207,9 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $this->assertTrue($entries[0]->isSent());
     $this->assertSame('Edited subject', $entries[0]->get('subject')->value);
     $this->assertStringContainsString('organization@example.com', (string) $entries[0]->get('recipients')->value);
+    // The sent text is the POSTed one, not a fresh preview.
+    $this->assertStringContainsString('Hello', (string) $entries[0]->get('body')->value);
+    $this->assertStringNotContainsString('Du hast auf youvo ein Projekt angelegt', (string) $entries[0]->get('body')->value);
   }
 
   /**
@@ -311,6 +343,62 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
     $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
     $this->assertSame([], $this->loadEntries($this->project->id()));
+  }
+
+  /**
+   * A form built while the state allowed it cannot be POSTed afterwards.
+   */
+  public function testStaleFormBuildIdSendsNothingAfterStateChange(): void {
+    $this->actAsManager();
+    $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
+    $post = ['subject' => 'S', 'body' => 'B', 'form_build_id' => $this->cachedBuildId($this->project, 'reminder_draft')] + $this->hiddenValues($this->pane($query));
+    $fresh = $this->container->get('entity_type.manager')->getStorage('project')->load($this->project->id());
+    $fresh->set('field_lifecycle', ProjectState::Open->value)->save();
+    $html = $this->pane($query, $post, $fresh);
+    $this->assertStringNotContainsString('The mail was sent.', $html);
+    $this->assertStringNotContainsString('Edited', $html);
+    $this->assertMessengerEmpty();
+    $this->assertSame([], $this->loadEntries($this->project->id()));
+  }
+
+  /**
+   * A form_build_id of project X posted to the pane of project Y is denied.
+   */
+  public function testBuildIdOfOtherProjectIsDenied(): void {
+    $this->actAsManager();
+    $x = $this->project;
+    $y = $this->createMailableProject(ProjectState::Draft);
+    $this->assertInstanceOf(Project::class, $y);
+    $admin = $this->accountWith($this->manager, [
+      'general manager access',
+      'send project mails',
+      'administer projects',
+    ]);
+    $this->container->get('current_user')->setAccount($admin);
+    $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
+    $post = ['subject' => 'S', 'body' => 'B', 'form_build_id' => $this->cachedBuildId($x, 'reminder_draft')] + $this->hiddenValues($this->pane($query, NULL, $x));
+    $html = $this->pane($query, $post, $y);
+    $this->assertStringNotContainsString('The mail was sent.', $html);
+    $this->assertSame([], $this->loadEntries($x->id()));
+    $this->assertSame([], $this->loadEntries($y->id()));
+    $this->assertMessengerEmpty();
+  }
+
+  /**
+   * Replaying a successful POST (same form_build_id) sends nothing more.
+   */
+  public function testReplayedPostSendsOnlyOnce(): void {
+    $this->actAsManager();
+    $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
+    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($query));
+    $this->assertStringContainsString('The mail was sent.', $this->pane($query, $post));
+    $this->assertCount(1, $this->loadEntries($this->project->id()));
+
+    $html = $this->pane($query, $post);
+    $this->assertStringContainsString('This form was already submitted.', $html);
+    $this->assertStringNotContainsString('The mail was sent.', $html);
+    $this->assertCount(1, $this->loadEntries($this->project->id()));
+    $this->assertMessengerEmpty();
   }
 
 }

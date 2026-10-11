@@ -2,11 +2,13 @@
 
 namespace Drupal\manager\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\mailer\Manager\LateTokens;
+use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -25,6 +27,9 @@ class ProjectMailForm extends FormBase {
   public function __construct(
     protected ManagerMailerInterface $mailer,
     protected LateTokens $lateTokens,
+    protected ManagerMailAccess $access,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected FormOnceGuard $once,
   ) {}
 
   /**
@@ -34,6 +39,9 @@ class ProjectMailForm extends FormBase {
     return new static(
       $container->get(ManagerMailerInterface::class),
       $container->get('mailer.late_tokens'),
+      $container->get('mailer.manager_mail_access'),
+      $container->get('entity_type.manager'),
+      $container->get('manager.form_once'),
     );
   }
 
@@ -110,6 +118,10 @@ class ProjectMailForm extends FormBase {
       $form_state->setErrorByName('', $this->t('This mail cannot be sent for this project.'));
       return;
     }
+    if ($this->authorizedProject($form_state) === NULL) {
+      $form_state->setErrorByName('', $this->t('This mail cannot be sent for this project.'));
+      return;
+    }
     $subject = (string) $form_state->getValue('subject');
     if (preg_match('/[\r\n]/', $subject)) {
       $form_state->setErrorByName('subject', $this->t('The subject must not contain line breaks.'));
@@ -126,18 +138,73 @@ class ProjectMailForm extends FormBase {
   }
 
   /**
+   * Gets the project to mail if the current user may send this mail now.
+   *
+   * A POST that carries a form_build_id restores the build info (the project
+   * and subtype) of the earlier GET, so neither the serialized project nor
+   * the cached subtype can be trusted: the project is reloaded from storage,
+   * access is checked again on these actual values, and, if the pane put the
+   * project id and subtype of the current request on the request, they must
+   * match the cached ones.
+   *
+   * @return \Drupal\projects\ProjectInterface|null
+   *   The freshly loaded project, or NULL if the mail must not be sent.
+   */
+  protected function authorizedProject(FormStateInterface $form_state): ?ProjectInterface {
+    $args = $form_state->getBuildInfo()['args'] ?? [];
+    $cached = $args[0] ?? NULL;
+    $subtype = $args[1] ?? NULL;
+    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '') {
+      return NULL;
+    }
+    $expected = $this->getRequest()->attributes->get('manager_pane_mail');
+    if (is_array($expected) && ($expected !== [(string) $cached->id(), $subtype])) {
+      return NULL;
+    }
+    $project = $this->entityTypeManager->getStorage('project')->load($cached->id());
+    if (!$project instanceof ProjectInterface) {
+      return NULL;
+    }
+    if (!$this->access->access($this->currentUser(), $project, $subtype)->isAllowed()) {
+      return NULL;
+    }
+    return $project;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Only guards against a repeated submitForm() call on this one in-memory
-    // form state. Replays of a request are rejected by Drupal's form cache.
+    // Guard 1: only covers a repeated submitForm() call on this one in-memory
+    // form state.
     if ($form_state->get('sent')) {
       return;
     }
     $form_state->set('send_failed', FALSE);
-    [$project, $subtype] = $form_state->getBuildInfo()['args'];
+    // Never trust the restored build info: check access again on the actual
+    // project and subtype, fail closed.
+    $project = $this->authorizedProject($form_state);
+    if ($project === NULL) {
+      $form_state->set('send_denied', TRUE);
+      return;
+    }
+    $subtype = $form_state->getBuildInfo()['args'][1];
+    // Guard 2: a replayed POST (same form_build_id, still a valid token)
+    // rebuilds the form and would send again. Claim the build id first.
+    // The posted id counts: without a cache entry the form API builds the form
+    // with a new random #build_id.
+    $input = $form_state->getUserInput();
+    $build_id = (string) (is_string($input['form_build_id'] ?? NULL) ? $input['form_build_id'] : ($form['#build_id'] ?? ''));
+    if ($build_id !== '' && !$this->once->claim($build_id)) {
+      $form_state->set('already_submitted', TRUE);
+      return;
+    }
     $sent = $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser());
     if (!$sent) {
+      // Release the claim so that a retry with this form works.
+      if ($build_id !== '') {
+        $this->once->release($build_id);
+      }
       // Errors cannot be set during submit: rebuild the form with the input.
       // The pane shows the error message when it sees this flag.
       $form_state->set('send_failed', TRUE);

@@ -52,21 +52,22 @@ class ContextPaneController implements ContainerInjectionInterface {
       // Builds an empty context pane.
       $build['#theme'] = 'context_pane';
       $content = $this->renderer->renderInIsolation($build);
-      $this->messenger->deleteAll();
       return new Response($content, 404);
     }
 
     $pane = $this->managerContextPanes->createInstance($type);
-    $build = $pane instanceof ManagerContextPaneViewInterface
-      ? $pane->buildView($project, $request)
-      : $pane->build($project);
+    $has_views = $pane instanceof ManagerContextPaneViewInterface;
+    $build = $has_views ? $pane->buildView($project, $request) : $pane->build($project);
     // The response is a bare Response that never runs the placeholder
     // processor, so render in isolation to get the form action and token.
     $content = $this->renderer->renderInIsolation($build);
-    // The pane renders its messages itself (status_messages clears them).
-    // Whatever is left (denied or empty panes, form API errors that nobody
-    // rendered) must not leak into the next full page of the session.
-    $this->messenger->deleteAll();
+    // Panes with views render their messages themselves (status_messages
+    // clears them). Whatever is left (denied or empty panes, form API errors
+    // that nobody rendered) must not leak into the next full page of the
+    // session. The other panes behave as before.
+    if ($has_views) {
+      $this->messenger->deleteAll();
+    }
 
     return new Response($content);
   }

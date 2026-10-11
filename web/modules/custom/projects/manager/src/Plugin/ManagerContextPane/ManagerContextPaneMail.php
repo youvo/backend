@@ -89,7 +89,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    */
   public function buildView(Project $project, Request $request): array {
     if ($request->query->get('view') === 'mail') {
-      return $this->buildMailView($project, (string) $request->query->get('subtype', ''));
+      return $this->buildMailView($project, (string) $request->query->get('subtype', ''), $request);
     }
     return $this->buildIndex($project);
   }
@@ -107,7 +107,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * A valid POST sends the mail in the form's submit handler and returns the
    * index view with a confirmation; a failed send returns the form again.
    */
-  protected function buildMailView(Project $project, string $subtype): array {
+  protected function buildMailView(Project $project, string $subtype, Request $request): array {
     if ($subtype === '' || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
       return $this->emptyPane($project);
     }
@@ -115,15 +115,31 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
     // Without this the form API would try to produce a redirect response.
     $form_state->disableRedirect();
     $form_state->addBuildInfo('args', [$project, $subtype]);
+    // A POST with a form_build_id restores the build info of the earlier GET:
+    // tell the form which project and subtype this request is for.
+    $request->attributes->set('manager_pane_mail', [(string) $project->id(), $subtype]);
     $form = $this->formBuilder->buildForm(ProjectMailForm::class, $form_state);
+    $args = $form_state->getBuildInfo()['args'] ?? [];
+    $built_for = ($args[0] ?? NULL) instanceof Project ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;
+    if ($built_for !== NULL && $built_for !== [(string) $project->id(), $subtype]) {
+      return $this->emptyPane($project);
+    }
+    if ($form_state->get('send_denied')) {
+      return $this->emptyPane($project);
+    }
+    if ($form_state->get('already_submitted')) {
+      $this->messenger->addStatus($this->t('This form was already submitted.'));
+      return $this->buildIndex($project);
+    }
     if ($form_state->get('sent')) {
       $this->messenger->addStatus($this->t('The mail was sent.'));
       return $this->buildIndex($project);
     }
     if ($form_state->get('send_failed')) {
       // symfony_mailer reports the transport error (host, port) on the
-      // messenger: show the manager only our own message.
+      // messenger as error or warning: show the manager only our own message.
       $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
+      $this->messenger->deleteByType(MessengerInterface::TYPE_WARNING);
       $this->messenger->addError($this->t('The mail could not be sent. Please try again later.'));
     }
     $build = $this->emptyPane($project);
