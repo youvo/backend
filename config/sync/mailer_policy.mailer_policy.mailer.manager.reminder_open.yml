@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.reminder_open
+configuration:
+  email_subject:
+    value: 'Kreative interessieren sich für {{ project_title }}'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>für Dein Projekt {{ project_title }} haben sich {{ applicants_count }} Kreative beworben. Bitte schau Dir die Bewerbungen an und melde Dich bei den Kreativen, die Dir gefallen.</p><p>{{ project_link }}</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

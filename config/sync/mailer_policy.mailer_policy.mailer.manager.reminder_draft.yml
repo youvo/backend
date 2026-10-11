@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.reminder_draft
+configuration:
+  email_subject:
+    value: 'Dein Projekt {{ project_title }} wartet auf Dich'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>Du hast auf youvo ein Projekt angelegt, es aber noch nicht eingereicht. Sobald Du es eingereicht hast, prüfen wir es und schalten es für Kreative frei.</p><p>{{ project_link }}</p><p>Wenn Du Fragen hast, melde Dich gern.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

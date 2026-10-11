@@ -76,6 +76,18 @@ services:
       $recorder: '@mailer.correspondence_recorder'
       $logger: '@logger.channel.mailer'
       $configFactory: '@config.factory'
+  Drupal\mailer\Mailer\ManagerMailerInterface:
+    class: Drupal\mailer\Mailer\ManagerMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $configFactory: '@config.factory'
+      $mailVariables: '@mailer.variables'
+      $hubUrls: '@mailer.hub_urls'
+      $registry: '@mailer.manager_mail_registry'
+      $lateTokens: '@mailer.late_tokens'
+      $plainText: '@mailer.plain_text_body'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]
