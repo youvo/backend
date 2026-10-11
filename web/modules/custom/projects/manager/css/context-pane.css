@@ -245,8 +245,8 @@
   transform: translateX(-50%);
 }
 
-/* Connector as ::after, only for non-last rows. Extends into next row. */
-.logbook-timeline-flex-row:not(:last-child)
+/* Connector as ::after, only for non-last visible rows. Extends into next row. */
+.logbook-timeline-flex-row:not(:last-child):not(.is-last-visible)
   .logbook-timeline-bar-container::after {
   content: '';
   position: absolute;

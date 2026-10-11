@@ -338,12 +338,19 @@ function initTimelineFilter() {
       other.classList.toggle('is-active', other === btn);
       other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
     });
-    pane
-      .querySelectorAll('.logbook-timeline-flex-row[data-timeline-type]')
-      .forEach(row => {
-        row.hidden =
-          filter !== 'all' && row.getAttribute('data-timeline-type') !== filter;
-      });
+    const rows = pane.querySelectorAll(
+      '.logbook-timeline-flex-row[data-timeline-type]'
+    );
+    rows.forEach(row => {
+      row.hidden =
+        filter !== 'all' && row.getAttribute('data-timeline-type') !== filter;
+      row.classList.remove('is-last-visible');
+    });
+    // The connector must end at the last visible row, not the last row.
+    const visible = Array.from(rows).filter(row => !row.hidden);
+    if (visible.length) {
+      visible[visible.length - 1].classList.add('is-last-visible');
+    }
   });
 }
 
