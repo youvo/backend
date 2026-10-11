@@ -80,7 +80,10 @@ class TimelineBuilder {
   }
 
   /**
-   * Builds the modal links to edit and delete a note for the account.
+   * Builds the in-pane links to edit and delete a note for the account.
+   *
+   * The links open the note views of the logbook pane (data-pane-view with the
+   * note id as parameter); the pane checks the access again.
    *
    * @return array<string, array>
    *   The link render arrays keyed by operation, without the not permitted.
@@ -90,25 +93,24 @@ class TimelineBuilder {
       return [];
     }
     $operations = [
-      'edit' => ['update', 'manager.note_edit', $this->t('Edit note')],
-      'delete' => ['delete', 'manager.note_delete', $this->t('Delete note')],
+      'edit' => ['update', 'note_edit', $this->t('Edit note')],
+      'delete' => ['delete', 'note_delete', $this->t('Delete note')],
     ];
     $actions = [];
-    foreach ($operations as $key => [$operation, $route, $title]) {
+    foreach ($operations as $key => [$operation, $view, $title]) {
       if (!$note->access($operation, $account)) {
         continue;
       }
       $actions[$key] = [
         '#type' => 'link',
         '#title' => $title,
-        '#url' => Url::fromRoute($route, ['correspondence' => $note->id()]),
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $note->get('project')->target_id], [
+          'query' => ['type' => 'logbook', 'view' => $view, 'id' => $note->id()],
+        ]),
         '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $title,
-          ]),
+          'class' => ['button', 'button--small'],
+          'data-pane-view' => $view,
+          'data-pane-params' => http_build_query(['id' => $note->id()]),
         ],
       ];
     }

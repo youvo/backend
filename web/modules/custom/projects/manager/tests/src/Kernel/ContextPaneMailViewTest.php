@@ -401,4 +401,25 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $this->assertMessengerEmpty();
   }
 
+  /**
+   * A POST without (or with a malformed) form_build_id sends nothing.
+   */
+  public function testMissingFormBuildIdSendsNothing(): void {
+    $this->actAsManager();
+    $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
+    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($query));
+    $missing = $post;
+    unset($missing['form_build_id']);
+    foreach ([$missing, ['form_build_id' => ''] + $post, ['form_build_id' => 'junk'] + $post] as $body) {
+      $html = $this->pane($query, $body);
+      $this->assertStringContainsString('This form was already submitted.', $html);
+      $this->assertStringNotContainsString('The mail was sent.', $html);
+      $this->assertMessengerEmpty();
+    }
+    $this->assertSame([], $this->loadEntries($this->project->id()));
+    // The untouched POST still sends: nothing was claimed by the failures.
+    $this->assertStringContainsString('The mail was sent.', $this->pane($query, $post));
+    $this->assertCount(1, $this->loadEntries($this->project->id()));
+  }
+
 }

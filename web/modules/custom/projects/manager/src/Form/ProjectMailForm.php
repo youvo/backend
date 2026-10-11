@@ -190,21 +190,15 @@ class ProjectMailForm extends FormBase {
     }
     $subtype = $form_state->getBuildInfo()['args'][1];
     // Guard 2: a replayed POST (same form_build_id, still a valid token)
-    // rebuilds the form and would send again. Claim the build id first.
-    // The posted id counts: without a cache entry the form API builds the form
-    // with a new random #build_id.
-    $input = $form_state->getUserInput();
-    $build_id = (string) (is_string($input['form_build_id'] ?? NULL) ? $input['form_build_id'] : ($form['#build_id'] ?? ''));
-    if ($build_id !== '' && !$this->once->claim($build_id)) {
+    // rebuilds the form and would send again; a POST without a usable
+    // form_build_id is refused as well (fail closed). The build id is claimed
+    // before sending and released again if the send fails or throws.
+    $sent = $this->once->runOnce($form_state, fn (): bool => $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser()));
+    if ($sent === NULL) {
       $form_state->set('already_submitted', TRUE);
       return;
     }
-    $sent = $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser());
     if (!$sent) {
-      // Release the claim so that a retry with this form works.
-      if ($build_id !== '') {
-        $this->once->release($build_id);
-      }
       // Errors cannot be set during submit: rebuild the form with the input.
       // The pane shows the error message when it sees this flag.
       $form_state->set('send_failed', TRUE);

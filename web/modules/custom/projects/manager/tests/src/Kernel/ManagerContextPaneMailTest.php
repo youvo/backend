@@ -121,9 +121,10 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
     $this->container->get('current_user')->setAccount($manager);
     $build = $this->pane()->build($project);
     $link = $build['content']['notes'];
-    $this->assertSame('modal', $link['#attributes']['data-dialog-type']);
-    $this->assertContains('use-ajax', $link['#attributes']['class']);
-    $this->assertStringContainsString('/project/manage/note/' . $project->id(), $link['#url']->toString());
+    $this->assertSame('note', $link['#attributes']['data-pane-view']);
+    $this->assertNotContains('use-ajax', $link['#attributes']['class']);
+    $this->assertSame('manager.context_pane', $link['#url']->getRouteName());
+    $this->assertEquals(['type' => 'mail', 'view' => 'note'], $link['#url']->getOption('query'));
     // Without the mail permission there is no mail text and no last line.
     $this->assertArrayNotHasKey('empty', $build['content']);
     $this->assertArrayNotHasKey('last', $build['content']);

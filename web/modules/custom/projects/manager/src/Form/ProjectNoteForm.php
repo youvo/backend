@@ -2,32 +2,30 @@
 
 namespace Drupal\manager\Form;
 
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\mailer\Manager\ManagerMailAccess;
-use Drupal\manager\Ajax\ManagerRefreshCommand;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Lets a manager add or edit a note on a project.
  *
- * The mode is determined by the route parameter: a project adds a note, a
- * correspondence entry edits it. Everything is plain text.
+ * A plain form that is built and processed inside a manager context pane: the
+ * mail pane adds a note (arguments: the project), the logbook pane edits one
+ * (arguments: the project and the entry). The pane reads the outcome from the
+ * form state flags 'saved', 'save_failed', 'save_denied' and
+ * 'already_submitted' and renders the messages itself. Everything is plain
+ * text.
  */
 class ProjectNoteForm extends FormBase {
 
-  /**
-   * The id of the wrapper that the ajax callback replaces.
-   */
-  protected const WRAPPER_ID = 'manager-note-form-wrapper';
+  use NoteFormAuthorizationTrait;
 
   /**
    * The earliest accepted time (1970-01-02), so the value is positive.
@@ -45,6 +43,7 @@ class ProjectNoteForm extends FormBase {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ManagerMailAccess $access,
+    protected FormOnceGuard $once,
   ) {}
 
   /**
@@ -54,6 +53,7 @@ class ProjectNoteForm extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('mailer.manager_mail_access'),
+      $container->get('manager.form_once'),
     );
   }
 
@@ -68,9 +68,7 @@ class ProjectNoteForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, ?CorrespondenceInterface $correspondence = NULL): array {
-    $form['#prefix'] = '<div id="' . self::WRAPPER_ID . '">';
-    $form['#suffix'] = '</div>';
-    $form['status_messages'] = ['#type' => 'status_messages'];
+    $form['#attributes']['class'][] = 'manager-pane-form';
 
     $timezone = $this->siteTimezone();
     $occurred = $correspondence instanceof CorrespondenceInterface
@@ -102,11 +100,20 @@ class ProjectNoteForm extends FormBase {
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),
-      '#ajax' => [
-        'callback' => '::ajaxSubmit',
-        'wrapper' => self::WRAPPER_ID,
-      ],
     ];
+    $project_id = $project?->id() ?? $correspondence?->get('project')->target_id;
+    if ($project_id !== NULL) {
+      // The add form lives in the mail pane, the edit form in the logbook.
+      $pane = $correspondence instanceof CorrespondenceInterface ? 'logbook' : 'mail';
+      $form['actions']['cancel'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Cancel'),
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project_id], [
+          'query' => ['type' => $pane, 'view' => 'index'],
+        ]),
+        '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
+      ];
+    }
     return $form;
   }
 
@@ -114,6 +121,12 @@ class ProjectNoteForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
+    [, $cached_entry] = $this->buildArguments($form_state);
+    if ($this->authorizedNote($form_state, $cached_entry ? 'update' : 'create') === NULL) {
+      $form_state->set('save_denied', TRUE);
+      $form_state->setErrorByName('', $this->t('The note could not be saved.'));
+      return;
+    }
     if (trim((string) $form_state->getValue('subject')) === '') {
       $form_state->setErrorByName('subject', $this->t('The title is required.'));
     }
@@ -136,96 +149,65 @@ class ProjectNoteForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Only guards against a repeated submitForm() call on this one in-memory
-    // form state. Replays of a request are rejected by Drupal's form cache.
+    // Guard 1: only covers a repeated submitForm() call on this one in-memory
+    // form state.
     if ($form_state->get('saved')) {
       return;
     }
     $form_state->set('save_failed', FALSE);
-    [$project, $correspondence] = $this->arguments($form_state);
-    $saved = FALSE;
+    // Never trust the restored build info: check access again on the actual
+    // project and note, fail closed.
+    [, $cached_entry] = $this->buildArguments($form_state);
+    $authorized = $this->authorizedNote($form_state, $cached_entry ? 'update' : 'create');
+    if ($authorized === NULL) {
+      $form_state->set('save_denied', TRUE);
+      return;
+    }
+    [$project, $correspondence] = $authorized;
     $values = [
       'subject' => trim((string) $form_state->getValue('subject')),
       'body' => ['value' => (string) $form_state->getValue('body'), 'format' => 'plain_text'],
       'occurred' => $this->occurredTimestamp($form_state),
     ];
-    try {
-      if ($correspondence instanceof CorrespondenceInterface) {
-        // A note can only be edited together with its own project.
-        $matches = !$project instanceof ProjectInterface
-          || (string) $correspondence->get('project')->target_id === (string) $project->id();
-        if ($matches && $correspondence->isNote() && $correspondence->access('update', $this->currentUser())) {
+    // Guard 2: a replayed POST (same form_build_id, still a valid token)
+    // rebuilds the form and would save again; a POST without a usable
+    // form_build_id is refused as well (fail closed). The build id is claimed
+    // before saving and released again if the save fails or throws.
+    $saved = $this->once->runOnce($form_state, function () use ($project, $correspondence, $values): bool {
+      try {
+        if ($correspondence instanceof CorrespondenceInterface) {
           foreach ($values as $name => $value) {
             $correspondence->set($name, $value);
           }
           $correspondence->save();
-          $saved = TRUE;
         }
-      }
-      elseif ($project instanceof ProjectInterface) {
-        // The create access is permission-based, so check the project here.
-        if (
-          $this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser())
-          && $this->access->noteAccess($this->currentUser(), $project)->isAllowed()
-        ) {
+        else {
           $this->entityTypeManager->getStorage('correspondence')->create($values + [
             'type' => 'note',
             'project' => $project->id(),
             'sender' => $this->currentUser()->id(),
           ])->save();
-          $saved = TRUE;
         }
+        return TRUE;
       }
-    }
-    catch (EntityStorageException $exception) {
-      $this->getLogger('manager')->error('A note could not be saved: @message', ['@message' => $exception->getMessage()]);
+      catch (EntityStorageException $exception) {
+        $this->getLogger('manager')->error('A note could not be saved: @message', ['@message' => $exception->getMessage()]);
+        return FALSE;
+      }
+    });
+    if ($saved === NULL) {
+      $form_state->set('already_submitted', TRUE);
+      return;
     }
     if (!$saved) {
       // Errors cannot be set during submit: rebuild the form with the input.
+      // The pane shows the error message when it sees this flag.
       $form_state->set('save_failed', TRUE);
       $form_state->setRebuild();
-      $this->messenger()->addError($this->t('The note could not be saved.'));
       return;
     }
+    // The pane shows the confirmation when it sees this flag.
     $form_state->set('saved', TRUE);
-    // The ajax response closes the dialog and refreshes the pane instead.
-    $request = $this->getRequest();
-    if (!$request->query->has('ajax_form') && !$request->request->has('_drupal_ajax')) {
-      $this->messenger()->addStatus($this->t('The note was saved.'));
-    }
-  }
-
-  /**
-   * Ajax callback: closes the dialog on success, shows errors otherwise.
-   */
-  public function ajaxSubmit(array &$form, FormStateInterface $form_state): AjaxResponse {
-    $response = new AjaxResponse();
-    if ($form_state->get('save_failed') || $form_state->hasAnyErrors()) {
-      return $response->addCommand(new ReplaceCommand('#' . self::WRAPPER_ID, $form));
-    }
-    [$project, $correspondence] = $this->arguments($form_state);
-    $project_id = $correspondence instanceof CorrespondenceInterface
-      ? $correspondence->get('project')->target_id
-      : $project?->id();
-    return $response
-      ->addCommand(new CloseModalDialogCommand())
-      ->addCommand(new ManagerRefreshCommand($project_id));
-  }
-
-  /**
-   * Gets the project and the entry from the build arguments.
-   *
-   * @return array{0: \Drupal\projects\ProjectInterface|null, 1: \Drupal\correspondence\CorrespondenceInterface|null}
-   *   The project (add mode) and the entry (edit mode).
-   */
-  protected function arguments(FormStateInterface $form_state): array {
-    $args = $form_state->getBuildInfo()['args'] ?? [];
-    $project = $args[0] ?? NULL;
-    $correspondence = $args[1] ?? NULL;
-    return [
-      $project instanceof ProjectInterface ? $project : NULL,
-      $correspondence instanceof CorrespondenceInterface ? $correspondence : NULL,
-    ];
   }
 
   /**

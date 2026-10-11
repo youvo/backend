@@ -106,7 +106,8 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $this->useFailingTransport();
     $form_object = ProjectMailForm::create($this->container);
-    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $values = ['subject' => 'Edited subject', 'body' => 'Edited body', 'form_build_id' => 'form-retry'];
+    $form_state = $this->submit($form_object, $project, $values);
     $this->assertTrue($form_state->get('send_failed'));
     $this->assertTrue($form_state->isRebuilding());
     $this->assertFalse($form_state->hasAnyErrors());
@@ -123,7 +124,8 @@ class ProjectMailFormTest extends MailerKernelTestBase {
 
     // Retry with a working transport.
     $this->config('mailer_transport.settings')->set('default_transport', 'null')->save();
-    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $values = ['subject' => 'Edited subject', 'body' => 'Edited body', 'form_build_id' => 'form-retry'];
+    $form_state = $this->submit($form_object, $project, $values);
     $this->assertFalse($form_state->get('send_failed'));
     $this->assertFalse($form_state->isRebuilding());
     $sent = array_filter($this->loadEntries($project->id()), static fn ($e) => $e->isSent());
@@ -143,6 +145,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $form_object = ProjectMailForm::create($this->container);
 
     $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+    $form_state->setUserInput(['form_build_id' => 'form-once-in-submit']);
     $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
     $form_state->set('preview', TRUE);
     $form = [];
@@ -277,6 +280,53 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   }
 
   /**
+   * A submit without a usable form_build_id sends nothing (fail closed).
+   */
+  public function testMissingOrInvalidFormBuildIdSendsNothing(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    foreach ([NULL, '', ['form-a'], 123, 'not-a-build-id', 'form-' . str_repeat('a', 300)] as $id) {
+      $form_object = ProjectMailForm::create($this->container);
+      $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+      $form_state->setUserInput(['subject' => 'S', 'body' => 'x'] + ($id === NULL ? [] : ['form_build_id' => $id]));
+      $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
+      $this->container->get('form_builder')->submitForm($form_object, $form_state);
+      $this->assertTrue($form_state->get('already_submitted'), json_encode($id));
+      $this->assertNull($form_state->get('sent'));
+    }
+    $this->assertSame([], $this->loadEntries($project->id()));
+  }
+
+  /**
+   * An exception while sending releases the claim, so a retry can send.
+   */
+  public function testExceptionDuringSendReleasesTheClaim(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    $real = $this->container->get(ManagerMailerInterface::class);
+    $throwing = $this->createMock(ManagerMailerInterface::class);
+    $throwing->method('preview')->willReturnCallback(static fn (ProjectInterface $project, string $subtype) => $real->preview($project, $subtype));
+    $throwing->method('send')->willThrowException(new \RuntimeException('boom'));
+    $form_object = new ProjectMailForm($throwing, $this->container->get('mailer.late_tokens'), $this->container->get('mailer.manager_mail_access'), $this->container->get('entity_type.manager'), $this->container->get('manager.form_once'));
+    $values = ['subject' => 'S', 'body' => 'x', 'form_build_id' => 'form-boom'];
+    try {
+      $this->submit($form_object, $project, $values);
+      $this->fail('The exception must propagate.');
+    }
+    catch (\RuntimeException) {
+    }
+    $this->assertSame([], $this->loadEntries($project->id()));
+    $form_state = $this->submit(ProjectMailForm::create($this->container), $project, $values);
+    $this->assertTrue($form_state->get('sent'), 'The claim was released by the exception.');
+    $this->assertCount(1, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * Counts the submits to give each a form_build_id.
+   */
+  protected int $submits = 0;
+
+  /**
    * Builds the form (form builder arguments travel in the build info).
    */
   protected function build(ProjectMailForm $form_object, ProjectInterface $project, string $subtype = 'reminder_draft'): array {
@@ -289,6 +339,8 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * Submits the form programmatically.
    */
   protected function submit(ProjectMailForm $form_object, ProjectInterface $project, array $values, string $subtype = 'reminder_draft'): FormStateInterface {
+    // Every submit is a new browser form unless the test posts an id itself.
+    $values += ['form_build_id' => 'form-test-' . ++$this->submits];
     $form_state = (new FormState())->setValues($values)->setProgrammed();
     $form_state->addBuildInfo('args', [$project, $subtype]);
     $this->container->get('form_builder')->submitForm($form_object, $form_state);

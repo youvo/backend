@@ -15,6 +15,7 @@ use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\manager\Form\ProjectMailForm;
+use Drupal\manager\Form\ProjectNoteForm;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 #[ManagerContextPane(id: "mail")]
 class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
+  use NotePaneFormTrait;
   use StringTranslationTrait;
 
   /**
@@ -88,8 +90,12 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * {@inheritdoc}
    */
   public function buildView(Project $project, Request $request): array {
-    if ($request->query->get('view') === 'mail') {
+    $view = $request->query->get('view');
+    if ($view === 'mail') {
       return $this->buildMailView($project, (string) $request->query->get('subtype', ''), $request);
+    }
+    if ($view === 'note') {
+      return $this->buildNoteView($project, $request);
     }
     return $this->buildIndex($project);
   }
@@ -149,6 +155,38 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
   }
 
   /**
+   * Builds the add note view; access is checked on every request.
+   *
+   * A valid POST saves the note in the form's submit handler and returns the
+   * index view with a confirmation; a failed save returns the form again.
+   */
+  protected function buildNoteView(Project $project, Request $request): array {
+    $may_create = $this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser);
+    if (!$may_create || !$this->access->noteAccess($this->currentUser, $project)->isAllowed()) {
+      return $this->emptyPane($project);
+    }
+    [$outcome, $form] = $this->processNoteForm($this->formBuilder, ProjectNoteForm::class, $project, NULL, $request, 'saved', 'save_failed', 'save_denied');
+    if ($outcome === 'denied') {
+      return $this->emptyPane($project);
+    }
+    if ($outcome === 'already') {
+      $this->messenger->addStatus($this->t('This form was already submitted.'));
+      return $this->buildIndex($project);
+    }
+    if ($outcome === 'done') {
+      $this->messenger->addStatus($this->t('The note was saved.'));
+      return $this->buildIndex($project);
+    }
+    if ($outcome === 'failed') {
+      $this->messenger->addError($this->t('The note could not be saved.'));
+    }
+    $build = $this->emptyPane($project);
+    $build['content']['messages'] = ['#type' => 'status_messages'];
+    $build['content']['form'] = $form;
+    return $build;
+  }
+
+  /**
    * Builds the index view: the mails of the state, the note link, last sent.
    */
   protected function buildIndex(Project $project): array {
@@ -166,14 +204,12 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
       $build['content']['notes'] = [
         '#type' => 'link',
         '#title' => $this->t('Add note'),
-        '#url' => Url::fromRoute('manager.note_add', ['project' => $project->id()]),
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
+          'query' => ['type' => 'mail', 'view' => 'note'],
+        ]),
         '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $this->t('Add note'),
-          ]),
+          'class' => ['button', 'button--small'],
+          'data-pane-view' => 'note',
         ],
       ];
     }

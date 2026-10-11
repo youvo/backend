@@ -3,6 +3,8 @@
 namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
@@ -117,13 +119,13 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $this->submit($form_object, [$project, NULL], $this->values('Alt', 'Alter Text'));
     $note = $this->notes($project)[0];
 
-    $form = $this->build($form_object, [NULL, $note]);
+    $form = $this->build($form_object, [$project, $note]);
     $this->assertSame('Alt', $form['subject']['#default_value']);
     $this->assertSame('Alter Text', $form['body']['#default_value']);
     $this->assertSame($this->timestamp(self::OCCURRED), $form['occurred']['#default_value']->getTimestamp());
 
     $occurred = ['date' => '2026-04-05', 'time' => '08:15:00'];
-    $form_state = $this->submit($form_object, [NULL, $note], $this->values('Neu', 'Neuer Text', $occurred));
+    $form_state = $this->submit($form_object, [$project, $note], $this->values('Neu', 'Neuer Text', $occurred));
     $this->assertFalse($form_state->hasAnyErrors());
     $notes = $this->notes($project);
     $this->assertCount(1, $notes);
@@ -142,16 +144,14 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'B'));
     $note = $this->notes($project)[0];
     $form_object = ProjectNoteDeleteForm::create($this->container);
-    $form = $this->build($form_object, [$note]);
+    $form = $this->build($form_object, [$project, $note]);
     $this->assertArrayHasKey('submit', $form['actions']);
     $this->assertArrayHasKey('cancel', $form['actions']);
 
-    $form_state = $this->submit($form_object, [$note], []);
+    $form_state = $this->submit($form_object, [$project, $note], []);
     $this->assertFalse($form_state->hasAnyErrors());
     $this->assertSame([], $this->notes($project));
-    $commands = $form_object->ajaxSubmit($form, $form_state)->getCommands();
-    $this->assertSame(['closeDialog', 'managerRefresh'], array_column($commands, 'command'));
-    $this->assertSame((string) $project->id(), $commands[1]['projectId']);
+    $this->assertTrue($form_state->get('deleted'));
   }
 
   /**
@@ -164,16 +164,16 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $viewer = $this->accountWith($this->createMailableCreative('Viewer'), ['view correspondence']);
     $this->container->get('current_user')->setAccount($viewer);
 
-    $form_state = $this->submit(ProjectNoteForm::create($this->container), [NULL, $note], $this->values('Hacked', 'B'));
-    $this->assertTrue($form_state->get('save_failed'));
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Hacked', 'B'));
+    $this->assertTrue($form_state->get('save_denied'));
     $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
 
     $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('New', 'B'));
-    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertTrue($form_state->get('save_denied'));
     $this->assertCount(1, $this->notes($project));
 
-    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$note], []);
-    $this->assertTrue($form_state->get('delete_failed'));
+    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], []);
+    $this->assertTrue($form_state->get('delete_denied'));
     $this->assertCount(1, $this->notes($project));
   }
 
@@ -213,7 +213,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $this->assertSame('plain_text', $note->get('body')->format);
     $this->assertSame('<b>Titel</b>', $note->get('subject')->value);
     // The form never offers a text format or markup for the note.
-    $form = $this->build($form_object, [NULL, $note]);
+    $form = $this->build($form_object, [$project, $note]);
     $this->assertSame('textarea', $form['body']['#type']);
     $this->assertArrayNotHasKey('#format', $form['body']);
     $this->assertSame('<script>x</script>', $form['body']['#default_value']);
@@ -229,10 +229,12 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $project = $this->projectWithManager();
     $form_object = ProjectNoteForm::create($this->container);
     $form_state = (new FormState())->setValues([
+      'form_build_id' => 'form-once-in-submit',
       'subject' => 'S',
       'body' => 'x',
       'occurred' => new DrupalDateTime('2026-03-04 10:30:00'),
     ])->setProgrammed();
+    $form_state->setUserInput(['form_build_id' => 'form-once-in-submit']);
     $form_state->addBuildInfo('args', [$project, NULL]);
     $form = [];
     $form_object->validateForm($form, $form_state);
@@ -250,7 +252,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    */
   public function testLaterValidatorFailureSavesNothing(): void {
     $project = $this->projectWithManager();
-    $form_object = new class($this->container->get('entity_type.manager'), $this->container->get('mailer.manager_mail_access')) extends ProjectNoteForm {
+    $form_object = new class($this->container->get('entity_type.manager'), $this->container->get('mailer.manager_mail_access'), $this->container->get('manager.form_once')) extends ProjectNoteForm {
 
       /**
        * {@inheritdoc}
@@ -264,31 +266,6 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $form_state = $this->submit($form_object, [$project, NULL], $this->values('S', 'x'));
     $this->assertTrue($form_state->hasAnyErrors());
     $this->assertSame([], $this->notes($project));
-  }
-
-  /**
-   * The ajax callback closes and refreshes, or keeps the form on failure.
-   */
-  public function testAjaxCommands(): void {
-    $project = $this->projectWithManager();
-    $form_object = ProjectNoteForm::create($this->container);
-    $values = $this->values('S', 'x');
-    $form = $this->build($form_object, [$project, NULL]);
-    $form_state = $this->submit($form_object, [$project, NULL], $values);
-    $commands = $form_object->ajaxSubmit($form, $form_state)->getCommands();
-    $this->assertSame(['closeDialog', 'managerRefresh'], array_column($commands, 'command'));
-    $this->assertSame((string) $project->id(), $commands[1]['projectId']);
-
-    // Edit mode refreshes the entry's project.
-    $form_state = $this->submit($form_object, [NULL, $this->notes($project)[0]], $values);
-    $commands = $form_object->ajaxSubmit($form, $form_state)->getCommands();
-    $this->assertSame((string) $project->id(), $commands[1]['projectId']);
-
-    $form_state = $this->submit($form_object, [$project, NULL], $this->values('', 'x'));
-    $names = array_column($form_object->ajaxSubmit($form, $form_state)->getCommands(), 'command');
-    $this->assertContains('insert', $names);
-    $this->assertNotContains('closeDialog', $names);
-    $this->assertNotContains('managerRefresh', $names);
   }
 
   /**
@@ -345,12 +322,12 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $other = $this->accountWith($other_project->getOwner()->getManager(), self::NOTE_PERMISSIONS);
     $this->container->get('current_user')->setAccount($other);
 
-    $form_state = $this->submit(ProjectNoteForm::create($this->container), [NULL, $note], $this->values('Hacked', 'Hacked'));
-    $this->assertTrue($form_state->get('save_failed'));
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Hacked', 'Hacked'));
+    $this->assertTrue($form_state->get('save_denied'));
     $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
 
-    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$note], []);
-    $this->assertTrue($form_state->get('delete_failed'));
+    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], []);
+    $this->assertTrue($form_state->get('delete_denied'));
     $this->assertCount(1, $this->notes($project));
   }
 
@@ -363,7 +340,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $other = $this->accountWith($other_project->getOwner()->getManager(), self::NOTE_PERMISSIONS);
     $this->container->get('current_user')->setAccount($other);
     $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
-    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertTrue($form_state->get('save_denied'));
     $this->assertSame([], $this->notes($project));
   }
 
@@ -377,13 +354,13 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $admin = $this->accountWith($this->createMailableCreative('Admin'), $permissions);
     $this->container->get('current_user')->setAccount($admin);
 
-    $form_state = $this->submit(ProjectNoteForm::create($this->container), [NULL, $note], $this->values('Admin edit', 'y'));
-    $this->assertFalse($form_state->get('save_failed'));
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Admin edit', 'y'));
+    $this->assertEmpty($form_state->get('save_denied'));
     $this->assertSame('Admin edit', $this->notes($project)[0]->get('subject')->value);
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('Admin add', 'y'));
     $this->assertCount(2, $this->notes($project));
-    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$note], []);
-    $this->assertFalse($form_state->get('delete_failed'));
+    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], []);
+    $this->assertEmpty($form_state->get('delete_denied'));
     $this->assertCount(1, $this->notes($project));
   }
 
@@ -395,11 +372,11 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $note = $this->createNoteOf($project);
     $other_project = $this->createMailableProject(ProjectState::Open);
     $form_state = $this->submit(ProjectNoteForm::create($this->container), [$other_project, $note], $this->values('Changed', 'y'));
-    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertTrue($form_state->get('save_denied'));
     $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
     // The matching pair is accepted.
     $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Changed', 'y'));
-    $this->assertFalse($form_state->get('save_failed'));
+    $this->assertEmpty($form_state->get('save_denied'));
     $this->assertSame('Changed', $this->notes($project)[0]->get('subject')->value);
   }
 
@@ -472,6 +449,148 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
   }
 
   /**
+   * A submit without a usable form_build_id changes nothing (fail closed).
+   */
+  public function testMissingOrInvalidFormBuildIdChangesNothing(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    foreach ([NULL, '', ['form-a'], 123, 'not-a-build-id', 'form-' . str_repeat('a', 300)] as $id) {
+      $input = $this->values('Changed', 'y') + ($id === NULL ? [] : ['form_build_id' => $id]);
+      foreach ([
+        [ProjectNoteForm::class, [$project, NULL]],
+        [ProjectNoteForm::class, [$project, $note]],
+        [ProjectNoteDeleteForm::class, [$project, $note]],
+      ] as [$class, $args]) {
+        $form_state = (new FormState())->setValues($input)->setProgrammed();
+        $form_state->setUserInput($input);
+        $form_state->addBuildInfo('args', $args);
+        $this->container->get('form_builder')->submitForm($class::create($this->container), $form_state);
+        $this->assertTrue($form_state->get('already_submitted'), $class . ' ' . json_encode($id));
+        $this->assertNull($form_state->get('saved'));
+        $this->assertNull($form_state->get('deleted'));
+      }
+    }
+    $notes = $this->notes($project);
+    $this->assertCount(1, $notes);
+    $this->assertSame('S', $notes[0]->get('subject')->value);
+  }
+
+  /**
+   * Replaying a submit (same form_build_id) saves and deletes only once.
+   */
+  public function testReplayedSubmitActsOnlyOnce(): void {
+    $project = $this->projectWithManager();
+    $add = ['form_build_id' => 'form-replay-add'] + $this->values('S', 'x');
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $add)->get('saved'));
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $add)->get('already_submitted'));
+    $this->assertCount(1, $this->notes($project));
+
+    $note = $this->notes($project)[0];
+    $edit = ['form_build_id' => 'form-replay-edit'] + $this->values('E', 'x');
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $edit)->get('saved'));
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $edit)->get('already_submitted'));
+
+    $delete = ['form_build_id' => 'form-replay-delete'];
+    $this->assertTrue($this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], $delete)->get('deleted'));
+    $this->assertSame([], $this->notes($project));
+  }
+
+  /**
+   * A failed save releases the claim, an exception does as well.
+   */
+  public function testFailedSaveAndExceptionReleaseTheClaim(): void {
+    $project = $this->projectWithManager();
+    $values = ['form_build_id' => 'form-throw'] + $this->values('S', 'x');
+    $real = $this->container->get('entity_type.manager');
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('create')->willThrowException(new \RuntimeException('boom'));
+    $manager = $this->createMock(EntityTypeManagerInterface::class);
+    $manager->method('getStorage')->willReturnCallback(static fn (string $type) => $type === 'correspondence' ? $storage : $real->getStorage($type));
+    $manager->method('getAccessControlHandler')->willReturnCallback(static fn (string $type) => $real->getAccessControlHandler($type));
+    $throwing = new ProjectNoteForm($manager, $this->container->get('mailer.manager_mail_access'), $this->container->get('manager.form_once'));
+    $form_state = (new FormState())->setValues($values)->setProgrammed();
+    $form_state->setUserInput($values);
+    $form_state->addBuildInfo('args', [$project, NULL]);
+    try {
+      $this->container->get('form_builder')->submitForm($throwing, $form_state);
+      $this->fail('The exception must propagate.');
+    }
+    catch (\RuntimeException) {
+    }
+    $this->assertSame([], $this->notes($project));
+    $retry = $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $values);
+    $this->assertTrue($retry->get('saved'), 'The claim was released by the exception.');
+    $this->assertCount(1, $this->notes($project));
+  }
+
+  /**
+   * A note that was deleted meanwhile cannot be edited or deleted again.
+   */
+  public function testDeletedNoteIsDenied(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $stale = clone $note;
+    $note->delete();
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $stale], $this->values('Ghost', 'x'))->get('save_denied'));
+    $this->assertTrue($this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $stale], [])->get('delete_denied'));
+    $this->assertSame([], $this->notes($project));
+  }
+
+  /**
+   * Build arguments that differ from the pane request are refused.
+   */
+  public function testPaneRequestMustMatchTheBuildArguments(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $other = $this->createMailableProject(ProjectState::Open);
+    $request = $this->container->get('request_stack')->getCurrentRequest();
+    $this->assertNotNull($request);
+    // The pane claims the request is for another project.
+    $request->attributes->set('manager_pane_note', [(string) $other->id(), (string) $note->id()]);
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('X', 'x'))->get('save_denied'));
+    $this->assertTrue($this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], [])->get('delete_denied'));
+    // The pane claims the add form, but the build info holds a note.
+    $request->attributes->set('manager_pane_note', [(string) $project->id(), '']);
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('X', 'x'))->get('save_denied'));
+    $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
+    // Matching arguments are accepted.
+    $request->attributes->set('manager_pane_note', [(string) $project->id(), (string) $note->id()]);
+    $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Y', 'x'))->get('saved'));
+  }
+
+  /**
+   * The forms are plain forms with a Cancel link back to the pane.
+   */
+  public function testFormsArePlainWithCancelLinks(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $cases = [
+      [ProjectNoteForm::class, [$project, NULL], 'mail'],
+      [ProjectNoteForm::class, [$project, $note], 'logbook'],
+      [ProjectNoteDeleteForm::class, [$project, $note], 'logbook'],
+    ];
+    foreach ($cases as [$class, $args, $pane]) {
+      $form = $this->build($class::create($this->container), $args);
+      $this->assertArrayNotHasKey('#ajax', $form['actions']['submit']);
+      $this->assertContains('manager-pane-form', $form['#attributes']['class']);
+      $this->assertArrayNotHasKey('status_messages', $form);
+      $cancel = $form['actions']['cancel'];
+      $this->assertSame('index', $cancel['#attributes']['data-pane-view']);
+      $this->assertSame(['type' => $pane, 'view' => 'index'], $cancel['#url']->getOption('query'));
+      $this->assertSame('manager.context_pane', $cancel['#url']->getRouteName());
+    }
+    // The messenger stays untouched by the forms.
+    $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('', 'x'));
+    $this->assertSame([], array_diff_key($this->container->get('messenger')->all(), ['error' => 1]));
+    $this->assertArrayNotHasKey('status', $this->container->get('messenger')->all());
+  }
+
+  /**
+   * Counts the submits to give each a form_build_id.
+   */
+  protected int $submits = 0;
+
+  /**
    * Builds the form (form builder arguments travel in the build info).
    */
   protected function build(FormInterface $form_object, array $args): array {
@@ -484,6 +603,8 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Submits the form programmatically.
    */
   protected function submit(FormInterface $form_object, array $args, array $values): FormStateInterface {
+    // Every submit is a new browser form unless the test posts an id itself.
+    $values += ['form_build_id' => 'form-test-' . ++$this->submits];
     $form_state = (new FormState())->setValues($values)->setProgrammed();
     $form_state->addBuildInfo('args', $args);
     $this->container->get('form_builder')->submitForm($form_object, $form_state);
