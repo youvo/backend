@@ -12,6 +12,8 @@ use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Traits\MailCaptureTrait;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
+use Drupal\user\Entity\Role;
+use Drupal\user\UserInterface;
 
 /**
  * Provides a test base for mailer kernel tests.
@@ -184,6 +186,31 @@ abstract class MailerKernelTestBase extends ProjectEventSubscriberTestBase {
       $grouped[$entry->getSubtype()][] = $entry;
     }
     return $grouped;
+  }
+
+  /**
+   * Gives a user a new role with exactly the given permissions.
+   *
+   * Roles assigned earlier are replaced.
+   *
+   * @param \Drupal\user\UserInterface $user
+   *   The user, saved with the new role.
+   * @param string[] $permissions
+   *   The permissions of the role.
+   *
+   * @return \Drupal\user\UserInterface
+   *   The user.
+   */
+  protected function accountWith(UserInterface $user, array $permissions): UserInterface {
+    $role = Role::create(['id' => $this->randomMachineName(), 'label' => $this->randomString()]);
+    foreach ($permissions as $permission) {
+      $role->grantPermission($permission);
+    }
+    $role->save();
+    // Replace earlier roles so that the user has exactly these permissions.
+    $user->set('roles', [$role->id()]);
+    $user->save();
+    return $user;
   }
 
 }

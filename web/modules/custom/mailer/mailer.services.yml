@@ -79,3 +79,12 @@ services:
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]
+  mailer.manager_mail_registry:
+    class: Drupal\mailer\Manager\ManagerMailRegistry
+  mailer.late_tokens:
+    class: Drupal\mailer\Manager\LateTokens
+  mailer.plain_text_body:
+    class: Drupal\mailer\Manager\PlainTextBody
+  mailer.manager_mail_access:
+    class: Drupal\mailer\Manager\ManagerMailAccess
+    arguments: ['@mailer.manager_mail_registry']
