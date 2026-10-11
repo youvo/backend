@@ -4,7 +4,9 @@ description: 'Views extensions for the project manager.'
 core_version_requirement: ^11
 package: Custom
 dependencies:
+  - correspondence:correspondence
   - drupal:user
   - drupal:views
   - logbook:logbook
+  - mailer:mailer
   - projects:projects

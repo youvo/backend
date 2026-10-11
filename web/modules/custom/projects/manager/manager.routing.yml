@@ -22,3 +22,15 @@ manager.mediate_form:
     parameters:
       project:
         type: entity:project
+
+manager.mail_form:
+  path: '/project/manage/mail/{project}/{subtype}'
+  defaults:
+    _form: '\Drupal\manager\Form\ProjectMailForm'
+    _title: 'Mail senden'
+  requirements:
+    _custom_access: 'mailer.manager_mail_access:access'
+  options:
+    parameters:
+      project:
+        type: entity:project
