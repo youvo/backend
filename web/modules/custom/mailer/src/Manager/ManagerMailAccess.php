@@ -36,6 +36,7 @@ class ManagerMailAccess {
     $result = AccessResult::allowedIfHasPermission($account, 'send project mails')
       ->andIf(AccessResult::allowedIf($this->canManage($account, $project)))
       ->addCacheableDependency($project)
+      ->addCacheableDependency($project->getOwner())
       ->cachePerUser()
       ->cachePerPermissions();
     if ($subtype !== '') {

@@ -35,4 +35,11 @@ class LateTokensTest extends UnitTestCase {
     $this->assertSame(['project_link'], (new LateTokens())->names());
   }
 
+  /**
+   * Unknown tokens with digits or dashes are removed as well.
+   */
+  public function testUnknownTokenShapesAreRemoved(): void {
+    $this->assertSame('a  b  c', (new LateTokens())->replace('a [mail:foo-bar] b [mail:x2] c', []));
+  }
+
 }

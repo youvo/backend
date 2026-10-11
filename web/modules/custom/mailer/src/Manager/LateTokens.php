@@ -41,7 +41,7 @@ class LateTokens {
    *   Replacement values keyed by token name.
    */
   public function replace(string $text, array $values): string {
-    return (string) preg_replace_callback('/\[mail:([a-z_]+)\]/i', static function (array $m) use ($values): string {
+    return (string) preg_replace_callback('/\[mail:([a-z0-9_-]+)\]/i', static function (array $m) use ($values): string {
       $name = strtolower($m[1]);
       return in_array($name, self::NAMES, TRUE) ? (string) ($values[$name] ?? '') : '';
     }, $text);

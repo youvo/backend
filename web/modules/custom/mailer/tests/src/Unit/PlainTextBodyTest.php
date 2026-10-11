@@ -38,4 +38,45 @@ class PlainTextBodyTest extends UnitTestCase {
     $this->assertStringContainsString('{{ 1+1 }}', $html);
   }
 
+  /**
+   * Scripts and styles are dropped, list items become dashes.
+   */
+  public function testFromHtmlDropsScriptsAndStyles(): void {
+    $html = '<style>p { color: red; }</style><p>Hallo</p><script>alert(1)</script><ul><li>Eins</li><li>Zwei</li></ul>';
+    $this->assertSame("Hallo\n\n- Eins\n- Zwei", (new PlainTextBody())->fromHtml($html));
+  }
+
+  /**
+   * Provides inputs and the expected HTML.
+   */
+  public static function linkProvider(): array {
+    $a = static fn (string $u): string => '<a href="' . $u . '">' . $u . '</a>';
+    return [
+      'double quotes' => ['"https://x.org"', '<p>&quot;' . $a('https://x.org') . '&quot;</p>'],
+      'angle brackets' => ['<https://x.org>', '<p>&lt;' . $a('https://x.org') . '&gt;</p>'],
+      'parentheses' => ['(siehe https://x.org/a)', '<p>(siehe ' . $a('https://x.org/a') . ')</p>'],
+      'trailing dot' => ['https://x.org/a.', '<p>' . $a('https://x.org/a') . '.</p>'],
+      'trailing comma' => ['https://x.org/a,', '<p>' . $a('https://x.org/a') . ',</p>'],
+      'query' => ['https://x.org/?a=1&b=2', '<p>' . $a('https://x.org/?a=1&amp;b=2') . '</p>'],
+      'injection' => ['https://x"onmouseover="x', '<p>' . $a('https://x') . '&quot;onmouseover=&quot;x</p>'],
+      'entity text' => ['a &lt; b', '<p>a &amp;lt; b</p>'],
+      'leading newline' => ["\nHallo", '<p>Hallo</p>'],
+      'blank line with spaces' => ["a\n \nb", '<p>a</p><p>b</p>'],
+      'empty' => ['', ''],
+      'whitespace only' => ["  \n ", ''],
+    ];
+  }
+
+  /**
+   * Links are delimited before escaping and nothing else is raw HTML.
+   *
+   * @dataProvider linkProvider
+   */
+  public function testToHtmlLinks(string $text, string $expected): void {
+    $html = (new PlainTextBody())->toHtml($text);
+    $this->assertSame($expected, $html);
+    $bare = preg_replace(['#</?p>#', '#<br>#', '#<a href="[^"<>]*">#', '#</a>#'], '', $html);
+    $this->assertDoesNotMatchRegularExpression('/[<>"]/', $bare);
+  }
+
 }
