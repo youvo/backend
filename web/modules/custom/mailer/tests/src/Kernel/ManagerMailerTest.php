@@ -24,8 +24,12 @@ class ManagerMailerTest extends MailerKernelTestBase {
    */
   public function testPreview(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
-    $preview = $this->mailer()->preview($project, 'reminder_draft');
+    $mailer = $this->mailer();
+    // The capture at 950 would run if the preview did not stop at 751.
+    $this->captureMails($mailer);
+    $preview = $mailer->preview($project, 'reminder_draft');
     $this->assertNotNull($preview);
+    $this->assertCount(0, $this->capturedMails, 'The pipeline stops after the render.');
     $this->assertStringContainsString($project->getTitle(), $preview->subject);
     $this->assertStringContainsString('Olga Org', $preview->body);
     $this->assertStringContainsString('Manu Manager', $preview->body);
@@ -41,12 +45,48 @@ class ManagerMailerTest extends MailerKernelTestBase {
   public function testPreviewNeverReachesTransport(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->useFailingTransport();
-    $preview = $this->mailer()->preview($project, 'reminder_draft');
-    $this->assertNotNull($preview, 'With a failing transport the preview still renders: the transport is never reached.');
+    $mailer = $this->mailer();
+    \Drupal::messenger()->deleteAll();
+    // The capture at 950 runs after the stop at 751 and the transport would
+    // fail after it: both prove the pipeline was not continued.
+    $this->captureMails($mailer);
+    $preview = $mailer->preview($project, 'reminder_draft');
+    $this->assertNotNull($preview);
+    $this->assertCount(0, $this->capturedMails, 'The pipeline stops before the transport.');
+    $this->assertSame([], \Drupal::messenger()->messagesByType('error'), 'The transport was not reached.');
     $this->assertSame([], $this->loadEntries($project->id()));
     // A real send reaches the failing transport.
     $this->assertFalse($this->mailer()->send($project, 'reminder_draft', 'S', 'Text', $project->getOwner()->getManager()));
     $this->assertCount(1, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * A preview leaves no message behind for a user who administers mailer.
+   */
+  public function testPreviewAddsNoMessage(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $admin = $this->accountWith($project->getOwner()->getManager(), ['administer mailer']);
+    $this->container->get('current_user')->setAccount($admin);
+    \Drupal::messenger()->deleteAll();
+    $preview = $this->mailer()->preview($project, 'reminder_draft');
+    $this->assertNotNull($preview);
+    $this->assertNotSame('', $preview->subject);
+    $this->assertNotSame('', $preview->body);
+    $this->assertSame([], \Drupal::messenger()->all());
+  }
+
+  /**
+   * An empty subject or body is not sent.
+   */
+  public function testEmptySubjectOrBodyIsNotSent(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $manager = $project->getOwner()->getManager();
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertFalse($mailer->send($project, 'reminder_draft', " \r\n ", 'Text', $manager));
+    $this->assertFalse($mailer->send($project, 'reminder_draft', 'Betreff', " \n ", $manager));
+    $this->assertCount(0, $this->capturedMails);
+    $this->assertSame([], $this->loadEntries($project->id()));
   }
 
   /**

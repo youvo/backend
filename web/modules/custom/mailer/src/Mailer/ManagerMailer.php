@@ -12,10 +12,10 @@ use Drupal\mailer\Manager\LateTokens;
 use Drupal\mailer\Manager\ManagerMailPreview;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\mailer\Manager\PlainTextBody;
+use Drupal\mailer\Manager\PreviewStop;
 use Drupal\projects\ProjectInterface;
 use Drupal\symfony_mailer\Attribute\MailerInfo;
 use Drupal\symfony_mailer\EmailInterface;
-use Drupal\symfony_mailer\Exception\SkipMailException;
 use Drupal\symfony_mailer\MailerLookupInterface;
 use Drupal\symfony_mailer\MailerPlusInterface;
 use Psr\Log\LoggerInterface;
@@ -35,11 +35,11 @@ use Psr\Log\LoggerInterface;
   required_config: ["email_subject", "email_body"],
   variables: [
     'project_title' => new TranslatableMarkup("Project title"),
-    'contact' => new TranslatableMarkup("Organization contact"),
+    'contact' => new TranslatableMarkup("Contact salutation name"),
     'manager' => new TranslatableMarkup("Manager name"),
     'manager_email' => new TranslatableMarkup("Manager email"),
     'organization_name' => new TranslatableMarkup("Organization name"),
-    'organization_contact' => new TranslatableMarkup("Organization contact"),
+    'organization_contact' => new TranslatableMarkup("Organization contact person"),
     'organization_address' => new TranslatableMarkup("Organization address"),
     'organization_email' => new TranslatableMarkup("Organization email"),
     'organization_phone' => new TranslatableMarkup("Organization phone"),
@@ -106,17 +106,21 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
     $captured = NULL;
     $email = $this->projectEmail($subtype, $project, TRUE);
     // Capture after the policy was rendered and URLs made absolute (700),
-    // before the wrapper (800), then stop before the transport. The skip
-    // exception ends the pipeline before the transport and the post-send
-    // phase, and nothing is recorded because deliver() is not used.
+    // before the wrapper (800), then stop before the transport. PreviewStop is
+    // not caught by MailerPlus::send(), so it ends the pipeline before the
+    // transport and the post-send phase without a skip message. Nothing is
+    // recorded because deliver() is not used.
     $email->addCallback(static function (EmailInterface $e) use (&$captured): void {
       $captured = [(string) $e->getSubject(), (string) $e->getHtmlBody()];
     }, EmailInterface::PHASE_POST_RENDER, 750, 'manager_preview_capture');
     $email->addCallback(static function (): void {
-      throw new SkipMailException('Preview only.');
+      throw new PreviewStop('Preview only.');
     }, EmailInterface::PHASE_POST_RENDER, 751, 'manager_preview_stop');
     try {
       $email->setTo($to)->send();
+    }
+    catch (PreviewStop) {
+      // Expected: the pipeline was stopped after the render.
     }
     catch (\Throwable $e) {
       $this->logger->error('Manager mail preview failed for %subtype: @message', [
@@ -140,6 +144,13 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
       return FALSE;
     }
     $subject = trim(preg_replace('/\s+/', ' ', $subject) ?? '');
+    if ($subject === '' || trim($bodyText) === '') {
+      $this->logger->warning('Manager mail %subtype for project @id has an empty subject or body.', [
+        '%subtype' => $subtype,
+        '@id' => $project->id(),
+      ]);
+      return FALSE;
+    }
     $values = ['project_link' => $this->hubUrls->project($project)];
     $success = TRUE;
     foreach ([$this->ownerEmail($project)] as $to) {
