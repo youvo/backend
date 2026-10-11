@@ -34,6 +34,7 @@ permissions:
   - 'create project'
   - 'delete any project'
   - 'general manager access'
+  - 'manage correspondence notes'
   - 'restful delete organization:manage'
   - 'restful get organization:manage'
   - 'restful get progress:course:access'

@@ -3,3 +3,6 @@ administer correspondence:
   restrict access: true
 view correspondence:
   title: 'View correspondence'
+manage correspondence notes:
+  title: 'Manage correspondence notes'
+  description: 'Create, edit and delete manager notes on projects.'

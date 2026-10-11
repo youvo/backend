@@ -3,9 +3,8 @@
     <div class="manager-mail-pane">
       {% for link in content.mails %}
         <div class="manager-mail-pane-item">{{ link }}</div>
-      {% else %}
-        <p class="manager-mail-pane-empty">{{ 'No mail to send in this status.'|t }}</p>
       {% endfor %}
+      {{ content.empty }}
       {{ content.notes }}
       {{ content.last }}
     </div>

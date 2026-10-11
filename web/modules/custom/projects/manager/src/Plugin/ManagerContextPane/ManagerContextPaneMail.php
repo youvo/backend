@@ -65,9 +65,46 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
    */
   public function build(Project $project): array {
     $build = ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
-    if (!$this->access->access($this->currentUser, $project)->isAllowed()) {
+    $may_mail = $this->access->access($this->currentUser, $project)->isAllowed();
+    $may_note = $this->access->noteAccess($this->currentUser, $project)->isAllowed();
+    if (!$may_mail && !$may_note) {
       return $build;
     }
+    if ($may_mail) {
+      $this->buildMails($build, $project);
+    }
+    if ($may_note) {
+      $build['content']['notes'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Notiz hinzufügen'),
+        '#url' => Url::fromRoute('manager.note_add', ['project' => $project->id()]),
+        '#attributes' => [
+          'class' => ['use-ajax', 'button', 'button--small'],
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => json_encode([
+            'width' => 760,
+            'title' => (string) $this->t('Notiz hinzufügen'),
+          ]),
+        ],
+      ];
+    }
+    if ($may_mail && $last = $this->lastSent($project)) {
+      $build['content']['last'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#attributes' => ['class' => ['manager-mail-pane-last']],
+        '#value' => $this->t('Last manager mail sent @time ago.', [
+          '@time' => $this->dateFormatter->formatTimeDiffSince($last),
+        ]),
+      ];
+    }
+    return $build;
+  }
+
+  /**
+   * Adds the links of the mails that can be sent in the project state.
+   */
+  protected function buildMails(array &$build, Project $project): void {
     foreach ($this->registry->available($project) as $definition) {
       $build['content']['mails'][$definition->subtype] = [
         '#type' => 'link',
@@ -86,17 +123,14 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
         ],
       ];
     }
-    if ($last = $this->lastSent($project)) {
-      $build['content']['last'] = [
+    if (!isset($build['content']['mails'])) {
+      $build['content']['empty'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#attributes' => ['class' => ['manager-mail-pane-last']],
-        '#value' => $this->t('Last manager mail sent @time ago.', [
-          '@time' => $this->dateFormatter->formatTimeDiffSince($last),
-        ]),
+        '#attributes' => ['class' => ['manager-mail-pane-empty']],
+        '#value' => $this->t('No mail to send in this status.'),
       ];
     }
-    return $build;
   }
 
   /**

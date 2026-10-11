@@ -5,6 +5,7 @@ namespace Drupal\mailer\Manager;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 
@@ -43,6 +44,38 @@ class ManagerMailAccess {
       $result = $result->andIf(AccessResult::allowedIf($this->registry->find($project, $subtype) !== NULL));
     }
     return $result;
+  }
+
+  /**
+   * Checks access to add a note to the project.
+   */
+  public function noteAccess(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+    return AccessResult::allowedIfHasPermission($account, 'manage correspondence notes')
+      ->andIf(AccessResult::allowedIf($this->canManage($account, $project)))
+      ->addCacheableDependency($project)
+      ->addCacheableDependency($project->getOwner())
+      ->cachePerUser()
+      ->cachePerPermissions();
+  }
+
+  /**
+   * Checks access to edit or delete a note of a project.
+   */
+  public function noteEntryAccess(AccountInterface $account, CorrespondenceInterface $correspondence): AccessResultInterface {
+    try {
+      $project = $correspondence->getParentEntity();
+    }
+    catch (\RuntimeException) {
+      $project = NULL;
+    }
+    if (!$project instanceof ProjectInterface) {
+      return AccessResult::forbidden('The parent project does not exist.')
+        ->addCacheableDependency($correspondence)
+        ->cachePerPermissions();
+    }
+    return AccessResult::allowedIf($correspondence->isNote())
+      ->addCacheableDependency($correspondence)
+      ->andIf($this->noteAccess($account, $project));
   }
 
 }

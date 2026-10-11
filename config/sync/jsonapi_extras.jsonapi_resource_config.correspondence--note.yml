@@ -1,0 +1,11 @@
+uuid: 274b191c-8b62-4e00-bb33-ca9c01d33e51
+langcode: de
+status: true
+dependencies:
+  config:
+    - correspondence.correspondence_type.note
+id: correspondence--note
+disabled: true
+path: correspondence/note
+resourceType: correspondence--note
+resourceFields: {  }

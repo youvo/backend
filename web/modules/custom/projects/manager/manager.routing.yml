@@ -34,3 +34,39 @@ manager.mail_form:
     parameters:
       project:
         type: entity:project
+
+manager.note_add:
+  path: '/project/manage/note/{project}'
+  defaults:
+    _form: '\Drupal\manager\Form\ProjectNoteForm'
+    _title: 'Notiz hinzufügen'
+  requirements:
+    _custom_access: 'mailer.manager_mail_access:noteAccess'
+  options:
+    parameters:
+      project:
+        type: entity:project
+
+manager.note_edit:
+  path: '/project/manage/note/{correspondence}/edit'
+  defaults:
+    _form: '\Drupal\manager\Form\ProjectNoteForm'
+    _title: 'Notiz bearbeiten'
+  requirements:
+    _custom_access: 'mailer.manager_mail_access:noteEntryAccess'
+  options:
+    parameters:
+      correspondence:
+        type: entity:correspondence
+
+manager.note_delete:
+  path: '/project/manage/note/{correspondence}/delete'
+  defaults:
+    _form: '\Drupal\manager\Form\ProjectNoteDeleteForm'
+    _title: 'Notiz löschen'
+  requirements:
+    _custom_access: 'mailer.manager_mail_access:noteEntryAccess'
+  options:
+    parameters:
+      correspondence:
+        type: entity:correspondence

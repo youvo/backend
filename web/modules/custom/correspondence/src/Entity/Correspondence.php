@@ -88,4 +88,18 @@ class Correspondence extends ContentEntityBase implements CorrespondenceInterfac
     return $this->get('result')->value === 'sent';
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function isNote(): bool {
+    return $this->bundle() === 'note';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOccurredTime(): int {
+    return (int) ($this->get('occurred')->value ?: $this->get('created')->value);
+  }
+
 }

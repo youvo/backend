@@ -73,6 +73,49 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
   }
 
   /**
+   * The empty text shows for an account with access only.
+   */
+  public function testEmptyTextOnlyWithAccess(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Completed);
+    $this->assertInstanceOf(Project::class, $project);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
+    $this->container->get('current_user')->setAccount($manager);
+    $build = $this->pane()->build($project);
+    $this->assertArrayNotHasKey('mails', $build['content']);
+    $this->assertArrayHasKey('empty', $build['content']);
+    $this->assertArrayNotHasKey('notes', $build['content']);
+
+    $this->container->get('current_user')->setAccount($this->createMailableCreative('Other'));
+    $build = $this->pane()->build($project);
+    $this->assertArrayNotHasKey('empty', $build['content']);
+    $this->assertSame([], $build['content']);
+  }
+
+  /**
+   * The note link is offered with the note permission for the manager only.
+   */
+  public function testNoteLink(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['manage correspondence notes']);
+    $this->container->get('current_user')->setAccount($manager);
+    $build = $this->pane()->build($project);
+    $link = $build['content']['notes'];
+    $this->assertSame('modal', $link['#attributes']['data-dialog-type']);
+    $this->assertContains('use-ajax', $link['#attributes']['class']);
+    $this->assertStringContainsString('/project/manage/note/' . $project->id(), $link['#url']->toString());
+    // Without the mail permission there is no mail text and no last line.
+    $this->assertArrayNotHasKey('empty', $build['content']);
+    $this->assertArrayNotHasKey('last', $build['content']);
+
+    $other = $this->accountWith($this->createMailableCreative('Other'), ['manage correspondence notes']);
+    $this->container->get('current_user')->setAccount($other);
+    $this->assertSame([], $this->pane()->build($project)['content']);
+  }
+
+  /**
    * Gets the pane plugin.
    */
   protected function pane(): ManagerContextPaneMail {
