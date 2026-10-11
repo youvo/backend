@@ -93,22 +93,25 @@ class TimelineBuilder {
       return [];
     }
     $operations = [
-      'edit' => ['update', 'note_edit', $this->t('Edit note')],
-      'delete' => ['delete', 'note_delete', $this->t('Delete note')],
+      'edit' => ['update', 'note_edit', $this->t('Edit note'), 'manager-icon-edit'],
+      'delete' => ['delete', 'note_delete', $this->t('Delete note'), 'manager-icon-delete'],
     ];
     $actions = [];
-    foreach ($operations as $key => [$operation, $view, $title]) {
+    foreach ($operations as $key => [$operation, $view, $title, $icon]) {
       if (!$note->access($operation, $account)) {
         continue;
       }
       $actions[$key] = [
         '#type' => 'link',
-        '#title' => $title,
+        '#title' => [
+          '#markup' => '<span class="' . $icon . '" aria-hidden="true"></span><span class="visually-hidden">' . $title . '</span>',
+        ],
         '#url' => Url::fromRoute('manager.context_pane', ['project' => $note->get('project')->target_id], [
           'query' => ['type' => 'logbook', 'view' => $view, 'id' => $note->id()],
         ]),
         '#attributes' => [
-          'class' => ['button', 'button--small'],
+          'class' => ['logbook-timeline-action'],
+          'title' => $title,
           'data-pane-view' => $view,
           'data-pane-params' => http_build_query(['id' => $note->id()]),
         ],
