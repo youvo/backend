@@ -4,7 +4,7 @@ manager.context_pane:
     _controller: '\Drupal\manager\Controller\ContextPaneController::contextPane'
     _format: 'ajax'
   requirements:
-    _permission: 'access content'
+    _permission: 'general manager access'
   options:
     parameters:
       project:
@@ -27,7 +27,7 @@ manager.mail_form:
   path: '/project/manage/mail/{project}/{subtype}'
   defaults:
     _form: '\Drupal\manager\Form\ProjectMailForm'
-    _title: 'Mail senden'
+    _title: 'Send mail'
   requirements:
     _custom_access: 'mailer.manager_mail_access:access'
   options:
@@ -39,7 +39,7 @@ manager.note_add:
   path: '/project/manage/note/{project}'
   defaults:
     _form: '\Drupal\manager\Form\ProjectNoteForm'
-    _title: 'Notiz hinzufügen'
+    _title: 'Add note'
   requirements:
     _custom_access: 'mailer.manager_mail_access:noteAccess'
   options:
@@ -51,7 +51,7 @@ manager.note_edit:
   path: '/project/manage/note/{correspondence}/edit'
   defaults:
     _form: '\Drupal\manager\Form\ProjectNoteForm'
-    _title: 'Notiz bearbeiten'
+    _title: 'Edit note'
   requirements:
     _custom_access: 'mailer.manager_mail_access:noteEntryAccess'
   options:
@@ -63,7 +63,7 @@ manager.note_delete:
   path: '/project/manage/note/{correspondence}/delete'
   defaults:
     _form: '\Drupal\manager\Form\ProjectNoteDeleteForm'
-    _title: 'Notiz löschen'
+    _title: 'Delete note'
   requirements:
     _custom_access: 'mailer.manager_mail_access:noteEntryAccess'
   options:
