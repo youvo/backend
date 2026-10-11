@@ -76,14 +76,14 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
     if ($may_note) {
       $build['content']['notes'] = [
         '#type' => 'link',
-        '#title' => $this->t('Notiz hinzufügen'),
+        '#title' => $this->t('Add note'),
         '#url' => Url::fromRoute('manager.note_add', ['project' => $project->id()]),
         '#attributes' => [
           'class' => ['use-ajax', 'button', 'button--small'],
           'data-dialog-type' => 'modal',
           'data-dialog-options' => json_encode([
             'width' => 760,
-            'title' => (string) $this->t('Notiz hinzufügen'),
+            'title' => (string) $this->t('Add note'),
           ]),
         ],
       ];

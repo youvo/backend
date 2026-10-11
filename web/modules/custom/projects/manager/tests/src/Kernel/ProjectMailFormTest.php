@@ -122,7 +122,10 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * Validation alone sends nothing; a second submit does not send again.
+   * Validation alone sends nothing; submit sends once per form state.
+   *
+   * The guard only covers a repeated submitForm() call on one in-memory form
+   * state; replayed requests are rejected by Drupal's form cache.
    */
   public function testSendHappensOnceInSubmit(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -140,7 +143,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $form_object->submitForm($form, $form_state);
     $this->assertCount(1, $this->loadEntries($project->id()));
     $form_object->submitForm($form, $form_state);
-    $this->assertCount(1, $this->loadEntries($project->id()), 'A second submit of the same form state does not send again.');
+    $this->assertCount(1, $this->loadEntries($project->id()), 'A repeated submitForm() on the same form state does not send again.');
   }
 
   /**

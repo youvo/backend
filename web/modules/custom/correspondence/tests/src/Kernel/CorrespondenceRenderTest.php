@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\correspondence\Kernel;
 
+use Drupal\Core\Render\RenderContext;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
@@ -159,6 +160,19 @@ class CorrespondenceRenderTest extends ProjectEventSubscriberTestBase {
     $this->assertStringContainsString('<p>p</p>', $html);
     $this->assertStringContainsString('<strong>s</strong>', $html);
     $this->assertStringContainsString('<li>li</li>', $html);
+  }
+
+  /**
+   * The rendered entry varies by time zone, as the date follows the user.
+   */
+  public function testRenderVariesByTimezone(): void {
+    $mail = $this->createMail('<p>x</p>');
+    $build = $this->container->get('entity_type.manager')->getViewBuilder('correspondence')->view($mail);
+    $renderer = $this->container->get('renderer');
+    $context = new RenderContext();
+    $renderer->executeInRenderContext($context, static fn () => $renderer->render($build));
+    $metadata = $context->pop();
+    $this->assertContains('timezone', $metadata->getCacheContexts());
   }
 
 }

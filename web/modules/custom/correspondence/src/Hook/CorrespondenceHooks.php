@@ -40,6 +40,8 @@ class CorrespondenceHooks {
     $entry = $variables['elements']['#correspondence'];
     assert($entry instanceof CorrespondenceInterface);
     $time = $entry->getOccurredTime();
+    // The formatted dates follow the time zone of the user.
+    $variables['#cache']['contexts'][] = 'timezone';
     $is_note = $entry->isNote();
 
     $variables['type'] = $is_note ? 'note' : 'mail';

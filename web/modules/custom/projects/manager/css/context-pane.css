@@ -196,6 +196,15 @@
   box-shadow: inset 0 -2px 0 currentcolor;
 }
 
+/* Edit and delete links of a note row. */
+.logbook-timeline-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.25em;
+  margin-left: 1em;
+}
+
 /* Date column */
 .logbook-timeline-date-container {
   display: flex;

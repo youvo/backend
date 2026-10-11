@@ -10,6 +10,12 @@
       {% for row in content.rows %}
         <div class="logbook-timeline-flex-row" data-timeline-type="{{ row.type }}">
           {{ row.build }}
+          {% if row.actions %}
+            <div class="logbook-timeline-actions">
+              {{ row.actions.edit }}
+              {{ row.actions.delete }}
+            </div>
+          {% endif %}
         </div>
       {% endfor %}
     </div>

@@ -130,6 +130,8 @@ class ProjectMailForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
+    // Only guards against a repeated submitForm() call on this one in-memory
+    // form state. Replays of a request are rejected by Drupal's form cache.
     if ($form_state->get('sent')) {
       return;
     }

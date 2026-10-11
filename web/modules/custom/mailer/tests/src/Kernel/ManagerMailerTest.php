@@ -181,6 +181,21 @@ class ManagerMailerTest extends MailerKernelTestBase {
   }
 
   /**
+   * Core token syntax in the manager text stays literal.
+   */
+  public function testCoreTokensStayLiteral(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $tokens = '[site:mail] [current-user:mail] [node:title]';
+    $this->assertTrue($mailer->send($project, 'reminder_draft', 'Betreff ' . $tokens, 'Text ' . $tokens, $project->getOwner()->getManager()));
+    $html = $this->capturedMails[0]['html'];
+    $this->assertStringContainsString($tokens, $html);
+    $this->assertStringContainsString($tokens, $this->capturedMails[0]['subject']);
+    $this->assertStringNotContainsString('noreply@youvo.org Text', $html);
+  }
+
+  /**
    * A very long subject is recorded truncated.
    */
   public function testLongSubjectIsRecordedTruncated(): void {

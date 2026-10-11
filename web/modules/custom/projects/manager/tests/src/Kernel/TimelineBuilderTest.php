@@ -206,4 +206,67 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $this->assertContains('log', $types);
   }
 
+  /**
+   * Notes get edit and delete links for those who may manage them.
+   */
+  public function testNoteActions(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $mail = $this->createEntry($project, 'mail', 2000, 'M');
+    $note = $this->createEntry($project, 'note', 3000, 'N');
+    $builder = $this->container->get('manager.timeline_builder');
+    $permissions = ['view correspondence', 'manage correspondence notes'];
+
+    $manager = $this->accountWith($project->getOwner()->getManager(), $permissions);
+    $rows = $builder->build($project, $manager);
+    $this->assertSame(['note', 'mail'], array_column($rows, 'type'));
+    $actions = $rows[0]['actions'];
+    $this->assertSame(['edit', 'delete'], array_keys($actions));
+    foreach (['edit' => 'manager.note_edit', 'delete' => 'manager.note_delete'] as $key => $route) {
+      $link = $actions[$key];
+      $this->assertSame('link', $link['#type']);
+      $this->assertSame($route, $link['#url']->getRouteName());
+      $this->assertSame(['correspondence' => $note->id()], $link['#url']->getRouteParameters());
+      $this->assertContains('use-ajax', $link['#attributes']['class']);
+      $this->assertSame('modal', $link['#attributes']['data-dialog-type']);
+      $this->assertJson($link['#attributes']['data-dialog-options']);
+    }
+    // Mails have no links.
+    $this->assertSame([], $rows[1]['actions'] ?? []);
+    $this->assertNotSame($mail->id(), $note->id());
+
+    // View permission only: the note is listed without links.
+    $viewer = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
+    $rows = $builder->build($project, $viewer);
+    $this->assertSame('note', $rows[0]['type']);
+    $this->assertSame([], $rows[0]['actions'] ?? []);
+
+    // A manager of another organization does not even see the note.
+    $other_project = $this->createMailableProject(ProjectState::Open);
+    $other = $this->accountWith($other_project->getOwner()->getManager(), $permissions);
+    $this->assertSame([], $builder->build($project, $other));
+  }
+
+  /**
+   * The logbook pane renders the links of notes.
+   */
+  public function testPaneRendersNoteActions(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $note = $this->createEntry($project, 'note', 3000, 'N');
+    $this->createEntry($project, 'mail', 2000, 'M');
+    $permissions = ['view correspondence', 'manage correspondence notes'];
+    $manager = $this->accountWith($project->getOwner()->getManager(), $permissions);
+    $this->container->get('current_user')->setAccount($manager);
+    $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('logbook');
+    $build = $pane->build($project);
+    $html = (string) $this->container->get('renderer')->renderInIsolation($build);
+    $this->assertStringContainsString('/project/manage/note/' . $note->id() . '/edit', $html);
+    $this->assertStringContainsString('/project/manage/note/' . $note->id() . '/delete', $html);
+    $this->assertSame(1, substr_count($html, 'logbook-timeline-actions'), 'Only the note row has actions.');
+    $this->assertStringContainsString('data-dialog-type="modal"', $html);
+  }
+
 }

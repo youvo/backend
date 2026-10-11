@@ -220,7 +220,10 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * Validation alone saves nothing; a second submit does not save again.
+   * Validation alone saves nothing; submit saves once per form state.
+   *
+   * The guard only covers a repeated submitForm() call on one in-memory form
+   * state; replayed requests are rejected by Drupal's form cache.
    */
   public function testSaveHappensOnceInSubmit(): void {
     $project = $this->projectWithManager();
@@ -239,7 +242,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $form_object->submitForm($form, $form_state);
     $this->assertCount(1, $this->notes($project));
     $form_object->submitForm($form, $form_state);
-    $this->assertCount(1, $this->notes($project), 'A second submit of the same form state does not save again.');
+    $this->assertCount(1, $this->notes($project), 'A repeated submitForm() on the same form state does not save again.');
   }
 
   /**
