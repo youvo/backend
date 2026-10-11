@@ -73,6 +73,22 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
   }
 
   /**
+   * The last sent line shows for the assigned manager of unpublished projects.
+   */
+  public function testLastSentLineOnUnpublishedProjects(): void {
+    $this->createMailableCreative('Root');
+    foreach ([ProjectState::Draft, ProjectState::Pending] as $state) {
+      $project = $this->createMailableProject($state);
+      $this->assertInstanceOf(Project::class, $project);
+      $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails', 'view correspondence']);
+      $this->container->get('current_user')->setAccount($manager);
+      $this->container->get('mailer.correspondence_recorder')
+        ->recordMail($project, 'reminder_draft', ['a@example.com'], 'S', 'B', TRUE, 'manager', (int) $manager->id());
+      $this->assertArrayHasKey('last', $this->pane()->build($project)['content'], $state->name);
+    }
+  }
+
+  /**
    * The empty text shows for an account with access only.
    */
   public function testEmptyTextOnlyWithAccess(): void {

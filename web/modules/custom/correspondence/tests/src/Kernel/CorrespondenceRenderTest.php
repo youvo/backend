@@ -77,7 +77,7 @@ class CorrespondenceRenderTest extends ProjectEventSubscriberTestBase {
     $this->assertStringContainsString('logbook-timeline--mail', $html);
     $this->assertStringContainsString('<details', $html);
     $this->assertStringContainsString('S &lt;i&gt;x&lt;/i&gt;', $html);
-    $this->assertStringNotContainsString('not delivered', $html);
+    $this->assertStringNotContainsString('Not delivered', $html);
 
     $project = $this->createProject(ProjectState::Draft);
     $project->save();
@@ -117,8 +117,8 @@ class CorrespondenceRenderTest extends ProjectEventSubscriberTestBase {
         $this->assertStringNotContainsStringIgnoringCase($needle, $html, $body);
       }
     }
-    $html = $this->renderEntry($this->createMail('<p>Hallo<br>Welt <strong>fett</strong> <a href="https://example.com/x">Link</a></p>'));
-    $this->assertStringContainsString('<p>Hallo<br>Welt <strong>fett</strong> <a href="https://example.com/x">Link</a></p>', $html);
+    $html = $this->renderEntry($this->createMail('<p>Hallo<br>Welt <strong>fett</strong> <a href="https://example.com/x" rel="noopener noreferrer">Link</a></p>'));
+    $this->assertStringContainsString('<p>Hallo<br>Welt <strong>fett</strong> <a href="https://example.com/x" rel="noopener noreferrer">Link</a></p>', $html);
   }
 
   /**
@@ -127,6 +127,38 @@ class CorrespondenceRenderTest extends ProjectEventSubscriberTestBase {
   public function testFailedMailIsMarked(): void {
     $html = $this->renderEntry($this->createMail('<p>x</p>', 'failed'));
     $this->assertStringContainsString('logbook-timeline-failed', $html);
+  }
+
+  /**
+   * An unclosed element of a body cannot wrap the following timeline row.
+   */
+  public function testUnclosedMarkupDoesNotLeak(): void {
+    $first = $this->renderEntry($this->createMail('<p>one <a href="https://x.example">y'));
+    $second = $this->renderEntry($this->createMail('<p>two</p>'));
+    $dom = new \DOMDocument();
+    $dom->loadHTML('<?xml encoding="utf-8"?><div id="timeline"><div class="row">' . $first . '</div><div class="row">' . $second . '</div></div>', LIBXML_NOERROR);
+    $rows = (new \DOMXPath($dom))->query('//div[@class="row"]');
+    $this->assertSame(2, $rows->length);
+    $this->assertSame(1, (new \DOMXPath($dom))->query('.//a', $rows->item(0))->length);
+    $this->assertSame(0, (new \DOMXPath($dom))->query('.//a', $rows->item(1))->length);
+    $this->assertStringNotContainsString('<a', substr($second, 0, strlen($second)));
+    // The markup of each row is balanced on its own.
+    $this->assertSame(substr_count($first, '<a '), substr_count($first, '</a>'));
+    $this->assertSame(substr_count($first, '<p>'), substr_count($first, '</p>'));
+  }
+
+  /**
+   * Links keep only href plus rel; other tags keep no attributes.
+   */
+  public function testAttributesAreStripped(): void {
+    $html = $this->renderEntry($this->createMail('<a href="https://x" class="js-timeline-filter" id="i" target="_blank" style="color:red" data-x="1" onclick="x()">l</a><p class="c" id="d" style="x">p</p><strong class="c">s</strong><ul class="c"><li id="e">li</li></ul>'));
+    $this->assertStringContainsString('<a href="https://x" rel="noopener noreferrer">l</a>', $html);
+    foreach (['js-timeline-filter', 'target', 'style', 'data-x', 'onclick', 'class="c"', 'id="d"', 'id="e"', 'id="i"'] as $needle) {
+      $this->assertStringNotContainsString($needle, $html);
+    }
+    $this->assertStringContainsString('<p>p</p>', $html);
+    $this->assertStringContainsString('<strong>s</strong>', $html);
+    $this->assertStringContainsString('<li>li</li>', $html);
   }
 
 }

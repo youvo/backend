@@ -2,7 +2,6 @@
 
 namespace Drupal\correspondence\Hook;
 
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Render\Markup;
@@ -43,9 +42,8 @@ class CorrespondenceHooks {
     $time = $entry->getOccurredTime();
     $is_note = $entry->isNote();
 
-    $variables['entry'] = $entry;
     $variables['type'] = $is_note ? 'note' : 'mail';
-    $variables['label'] = $is_note ? $this->t('Notiz') : $this->t('Mail');
+    $variables['label'] = $is_note ? $this->t('Note') : $this->t('Mail');
     $variables['date'] = $this->dateFormatter->format($time, 'html_date');
     $variables['info'] = $this->dateFormatter->format($time, 'short');
     $variables['subject'] = (string) $entry->get('subject')->value;
@@ -60,9 +58,10 @@ class CorrespondenceHooks {
     else {
       $variables['body_text'] = '';
       // The only place where stored HTML is marked as safe markup: the body is
-      // filtered against a strict tag allowlist (no scripts, styles, event
-      // handlers or unsafe protocols) right before.
-      $variables['body_html'] = Markup::create(Xss::filter($body, CorrespondenceBodyFilter::ALLOWED_TAGS));
+      // filtered right before: a strict tag allowlist, balanced markup, no
+      // attributes except the href of links (no scripts, styles, event
+      // handlers or unsafe protocols).
+      $variables['body_html'] = Markup::create(CorrespondenceBodyFilter::filter($body));
     }
   }
 

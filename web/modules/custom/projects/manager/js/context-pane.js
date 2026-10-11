@@ -167,6 +167,7 @@ function initTimelineFilter() {
     const filter = btn.getAttribute('data-filter') || 'all';
     pane.querySelectorAll('.js-timeline-filter').forEach(other => {
       other.classList.toggle('is-active', other === btn);
+      other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
     });
     pane
       .querySelectorAll('.logbook-timeline-flex-row[data-timeline-type]')

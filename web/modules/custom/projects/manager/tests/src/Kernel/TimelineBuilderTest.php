@@ -108,19 +108,42 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   }
 
   /**
-   * Equal times keep the newest entry first.
+   * Equal times sort by type (note, mail, log) and then by newest id first.
    */
-  public function testStableForEqualTimes(): void {
+  public function testDeterministicTieBreak(): void {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
+    $this->createLog($project, 5000);
+    $mail = $this->createEntry($project, 'mail', 5000, 'mail');
     $first = $this->createEntry($project, 'note', 5000, 'first');
     $second = $this->createEntry($project, 'note', 5000, 'second');
     $rows = $this->container->get('manager.timeline_builder')->build($project, $manager);
-    $notes = array_values(array_filter($rows, static fn (array $row) => $row['type'] === 'note'));
-    $this->assertSame($second->id(), $notes[0]['build']['#correspondence']->id());
-    $this->assertSame($first->id(), $notes[1]['build']['#correspondence']->id());
+    $order = array_map(static fn (array $row) => $row['type'] . ($row['type'] === 'log' ? '' : ':' . $row['build']['#correspondence']->id()), $rows);
+    $this->assertSame(
+      ['note:' . $second->id(), 'note:' . $first->id(), 'mail:' . $mail->id(), 'log'],
+      $order
+    );
+  }
+
+  /**
+   * The assigned manager sees mails and notes of unpublished projects.
+   */
+  public function testManagerSeesEntriesOfUnpublishedProjects(): void {
+    $this->createMailableCreative('Root');
+    foreach ([ProjectState::Draft, ProjectState::Pending] as $state) {
+      $project = $this->createMailableProject($state);
+      $this->assertInstanceOf(Project::class, $project);
+      $this->createEntry($project, 'mail', 2000, 'M');
+      $this->createEntry($project, 'note', 3000, 'N');
+      $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
+      $types = array_column($this->container->get('manager.timeline_builder')->build($project, $manager), 'type');
+      $this->assertSame(['note', 'mail'], $types, $state->name);
+      $other_project = $this->createMailableProject(ProjectState::Open);
+      $other = $this->accountWith($other_project->getOwner()->getManager(), ['view correspondence']);
+      $this->assertSame([], $this->container->get('manager.timeline_builder')->build($project, $other), $state->name);
+    }
   }
 
   /**

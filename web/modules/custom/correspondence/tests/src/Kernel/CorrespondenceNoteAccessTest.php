@@ -187,14 +187,31 @@ class CorrespondenceNoteAccessTest extends ProjectEventSubscriberTestBase {
   }
 
   /**
-   * Editing a note requires access to its project.
+   * Access does not depend on the project being viewable (unpublished states).
    */
-  public function testNoteRequiresProjectAccess(): void {
-    $note = $this->createNote(ProjectState::Draft);
-    $project = $this->projectOf($note);
-    $user = $this->createUser(['view correspondence', 'manage correspondence notes', 'access content']);
-    $this->assertFalse($project->access('view', $user));
-    $this->assertFalse($note->access('update', $user));
+  public function testManagerAccessOnUnpublishedProjects(): void {
+    $permissions = ['view correspondence', 'manage correspondence notes', 'access content'];
+    foreach ([ProjectState::Draft, ProjectState::Pending, ProjectState::Open] as $state) {
+      $name = $state->name;
+      $note = $this->createNote($state);
+      $mail = $this->createMail($note);
+      $manager = $this->managerOf($note, $permissions);
+      $other = $this->otherManager($permissions);
+      $admin = $this->createUser([...$permissions, 'administer projects']);
+      $stranger = $this->createUser($permissions);
+
+      foreach (['view', 'update', 'delete'] as $operation) {
+        $this->assertTrue($note->access($operation, $manager), "$name: manager $operation note");
+        $this->assertTrue($note->access($operation, $admin), "$name: admin $operation note");
+        $this->assertFalse($note->access($operation, $other), "$name: other manager $operation note");
+        $this->assertFalse($note->access($operation, $stranger), "$name: stranger $operation note");
+      }
+      $this->assertTrue($mail->access('view', $manager), "$name: manager views mail");
+      $this->assertTrue($mail->access('view', $admin), "$name: admin views mail");
+      $this->assertFalse($mail->access('view', $other), "$name: other manager views mail");
+      $this->assertFalse($mail->access('view', $stranger), "$name: stranger views mail");
+      $this->assertFalse($mail->access('update', $manager), "$name: manager updates mail");
+    }
   }
 
   /**

@@ -91,7 +91,7 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
   }
 
   /**
-   * Viewing requires the view permission and access to the project.
+   * Viewing requires the view permission and the assigned manager.
    */
   public function testViewAccess(): void {
     $entry = $this->createEntry();
@@ -107,10 +107,15 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
     $manager->addRole($this->createRole(['view correspondence']))->save();
     $this->assertTrue($entry->access('view', $manager));
 
-    // The permission alone does not help without access to the project.
-    $draft_entry = $this->createEntry(ProjectState::Draft);
-    $this->assertFalse($draft_entry->getParentEntity()->access('view', $viewer));
-    $this->assertFalse($draft_entry->access('view', $viewer));
+    // The assigned manager sees the entries of unpublished projects, others
+    // do not.
+    foreach ([ProjectState::Draft, ProjectState::Pending] as $state) {
+      $unpublished = $this->createEntry($state);
+      $this->assertFalse($unpublished->access('view', $viewer));
+      $unpublished_manager = $this->projectOf($unpublished)->getOwner()->getManager();
+      $unpublished_manager->addRole($this->createRole(['view correspondence']))->save();
+      $this->assertTrue($unpublished->access('view', $unpublished_manager), $state->name);
+    }
 
     $this->assertFalse($entry->access('view', new AnonymousUserSession()));
   }

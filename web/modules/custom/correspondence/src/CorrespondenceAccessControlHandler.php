@@ -14,9 +14,10 @@ use Drupal\projects\ProjectInterface;
 /**
  * Access controller for correspondence entities, which are manager-only.
  *
- * Viewing, and updating or deleting notes, requires the permission, view
- * access to the project and that the account is the assigned manager of the
- * project's organization (or has the permission to administer projects).
+ * Viewing, and updating or deleting notes, requires the permission and that
+ * the account is the assigned manager of the project's organization (or has
+ * the permission to administer projects). The view access to the project is
+ * not required, as it is denied for managers on unpublished projects.
  * Creating a note is permission-based only, as the create access cannot know
  * the project: the routes and the manager mail access service check that the
  * account manages the project. Mails are updated, deleted and created with the
@@ -43,9 +44,14 @@ class CorrespondenceAccessControlHandler extends ChildEntityAccessControlHandler
             ->addCacheableDependency($entity)
             ->cachePerPermissions();
         }
-        $result = $result->andIf($this->entityTypeManager
-          ->getAccessControlHandler($entity->getParentEntityTypeId())
-          ->access($parent, 'view', $account, TRUE));
+        if (!$parent instanceof ProjectInterface) {
+          return AccessResult::forbidden('The parent entity is not a project.')
+            ->addCacheableDependency($entity)
+            ->cachePerPermissions();
+        }
+        // The project's own view access is deliberately not required: it is
+        // denied for the assigned manager on unpublished (draft, pending)
+        // projects, whose correspondence the manager must still see.
         $result = $result->andIf($this->managerAccess($parent, $account));
       }
       return $result->addCacheableDependency($entity);
@@ -65,9 +71,9 @@ class CorrespondenceAccessControlHandler extends ChildEntityAccessControlHandler
    * The same rule as for the manager mail access: administrators of projects
    * and the assigned manager of the project's organization.
    */
-  protected function managerAccess(EntityInterface $parent, AccountInterface $account): AccessResultInterface {
+  protected function managerAccess(ProjectInterface $parent, AccountInterface $account): AccessResultInterface {
     $result = AccessResult::allowedIfHasPermission($account, 'administer projects');
-    if ($result->isAllowed() || !$parent instanceof ProjectInterface) {
+    if ($result->isAllowed()) {
       return $result->cachePerUser();
     }
     $owner = $parent->getOwner();

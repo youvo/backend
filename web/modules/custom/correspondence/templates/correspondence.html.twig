@@ -27,7 +27,7 @@
 </div>
 <div class="logbook-timeline-content-container">
   {% if type == 'mail' %}
-    <div class="logbook-timeline-text">{{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'not delivered'|t }}</span>{% endif %}</div>
+    <div class="logbook-timeline-text">{{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'Not delivered'|t }}</span>{% endif %}</div>
     <details class="logbook-timeline-message">
       <summary>{{ 'Show message'|t }}</summary>
       {{ body_html }}
