@@ -4,6 +4,7 @@ namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\manager\Form\ProjectMailForm;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
@@ -89,16 +90,90 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * A failed send keeps the form (error shown) and records a failed entry.
+   * A failed send rebuilds the form with the edited text and records it.
+   *
+   * A retry with a working transport sends and records a sent entry.
    */
-  public function testFailedSendShowsError(): void {
+  public function testFailedSendKeepsTextAndAllowsRetry(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $this->useFailingTransport();
     $form_object = ProjectMailForm::create($this->container);
+    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $this->assertTrue($form_state->get('send_failed'));
+    $this->assertTrue($form_state->isRebuilding());
+    $this->assertFalse($form_state->hasAnyErrors());
+    $form = $form_state->getCompleteForm();
+    $this->assertSame('Edited subject', $form['subject']['#value']);
+    $this->assertSame('Edited body', $form['body']['#value']);
+    $entries = array_values($this->loadEntries($project->id()));
+    $this->assertCount(1, $entries);
+    $this->assertFalse($entries[0]->isSent());
+    $this->container->get('messenger')->deleteAll();
+
+    // Retry with a working transport.
+    $this->config('mailer_transport.settings')->set('default_transport', 'null')->save();
+    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $this->assertFalse($form_state->get('send_failed'));
+    $this->assertFalse($form_state->isRebuilding());
+    $sent = array_filter($this->loadEntries($project->id()), static fn ($e) => $e->isSent());
+    $this->assertCount(1, $sent);
+    $this->assertCount(2, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * Validation alone sends nothing; a second submit does not send again.
+   */
+  public function testSendHappensOnceInSubmit(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    $form_object = ProjectMailForm::create($this->container);
+
+    $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+    $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
+    $form_state->set('preview', TRUE);
+    $form = [];
+    $form_object->validateForm($form, $form_state);
+    $this->assertFalse($form_state->hasAnyErrors());
+    $this->assertSame([], $this->loadEntries($project->id()));
+
+    $form_object->submitForm($form, $form_state);
+    $this->assertCount(1, $this->loadEntries($project->id()));
+    $form_object->submitForm($form, $form_state);
+    $this->assertCount(1, $this->loadEntries($project->id()), 'A second submit of the same form state does not send again.');
+  }
+
+  /**
+   * A later validator that fails prevents the send.
+   */
+  public function testLaterValidatorFailureSendsNothing(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens')) extends ProjectMailForm {
+
+      /**
+       * {@inheritdoc}
+       */
+      public function validateForm(array &$form, FormStateInterface $form_state): void {
+        parent::validateForm($form, $form_state);
+        $form_state->setErrorByName('', 'Captcha failed.');
+      }
+
+    };
     $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
     $this->assertTrue($form_state->hasAnyErrors());
-    $this->assertFalse(array_values($this->loadEntries($project->id()))[0]->isSent());
+    $this->assertSame([], $this->loadEntries($project->id()));
+  }
+
+  /**
+   * A whitespace-only subject is rejected.
+   */
+  public function testWhitespaceSubjectRejected(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    $form_state = $this->submit(ProjectMailForm::create($this->container), $project, ['subject' => '   ', 'body' => 'x']);
+    $this->assertTrue($form_state->hasAnyErrors());
+    $this->assertSame([], $this->loadEntries($project->id()));
   }
 
   /**
@@ -134,6 +209,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
 
     $this->useFailingTransport();
     $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
+    $this->assertTrue($form_state->get('send_failed'));
     $response = $form_object->ajaxSubmit($form, $form_state);
     $names = array_column($response->getCommands(), 'command');
     $this->assertContains('insert', $names);
@@ -158,6 +234,11 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $manager));
     $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $other));
     $this->assertFalse($access->checkNamedRoute('manager.mail_form', ['subtype' => 'reminder_ongoing'] + $parameters, $manager));
+    // The assigned manager without the permission is denied.
+    $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $this->accountWith($manager, [])));
+    // An administrator with the permission who is not the manager is allowed.
+    $admin = $this->accountWith($other, ['send project mails', 'administer projects']);
+    $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $admin));
   }
 
   /**

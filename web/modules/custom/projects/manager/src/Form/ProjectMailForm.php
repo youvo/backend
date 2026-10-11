@@ -105,10 +105,6 @@ class ProjectMailForm extends FormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * The send happens here, after the field checks, because Drupal does not
-   * allow errors to be set in the submit handler and a failed send must keep
-   * the dialog open with the text intact.
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     if (!$form_state->get('preview')) {
@@ -128,22 +124,31 @@ class ProjectMailForm extends FormBase {
     if (trim((string) $form_state->getValue('body')) === '') {
       $form_state->setErrorByName('body', $this->t('The message is required.'));
     }
-    if ($form_state->hasAnyErrors()) {
-      return;
-    }
-
-    [$project, $subtype] = $form_state->getBuildInfo()['args'];
-    $sent = $this->mailer->send($project, $subtype, $subject, (string) $form_state->getValue('body'), $this->currentUser());
-    if (!$sent) {
-      $form_state->setErrorByName('', $this->t('The mail could not be sent. It was recorded as failed; please try again later.'));
-    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // The mail was sent in validateForm(); nothing is left to do.
+    if ($form_state->get('sent')) {
+      return;
+    }
+    $form_state->set('send_failed', FALSE);
+    [$project, $subtype] = $form_state->getBuildInfo()['args'];
+    $sent = $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser());
+    if (!$sent) {
+      // Errors cannot be set during submit: rebuild the form with the input.
+      $form_state->set('send_failed', TRUE);
+      $form_state->setRebuild();
+      $this->messenger()->addError($this->t('The mail could not be sent. Please try again later.'));
+      return;
+    }
+    $form_state->set('sent', TRUE);
+    // The ajax response closes the dialog and refreshes the pane instead.
+    $request = $this->getRequest();
+    if (!$request->query->has('ajax_form') && !$request->request->has('_drupal_ajax')) {
+      $this->messenger()->addStatus($this->t('The mail was sent.'));
+    }
   }
 
   /**
@@ -151,7 +156,7 @@ class ProjectMailForm extends FormBase {
    */
   public function ajaxSubmit(array &$form, FormStateInterface $form_state): AjaxResponse {
     $response = new AjaxResponse();
-    if ($form_state->hasAnyErrors()) {
+    if ($form_state->get('send_failed') || $form_state->hasAnyErrors()) {
       return $response->addCommand(new ReplaceCommand('#' . self::WRAPPER_ID, $form));
     }
     [$project] = $form_state->getBuildInfo()['args'];
