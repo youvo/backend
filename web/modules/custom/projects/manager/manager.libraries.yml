@@ -3,6 +3,7 @@ core:
     build/js/context-pane.js: {}
   dependencies:
     - core/drupal
+    - core/once
   css:
     theme:
       build/css/context-pane.css: {}

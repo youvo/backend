@@ -378,3 +378,20 @@
     border-bottom: none;
   }
 }
+
+/* =========================
+   Mail Pane
+   ========================= */
+
+.manager-mail-pane {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 0.5em 1em;
+}
+
+.manager-mail-pane-last {
+  margin: 0;
+  font-size: 0.8em;
+  color: #7e98b5;
+}
