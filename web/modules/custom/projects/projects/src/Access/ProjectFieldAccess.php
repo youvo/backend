@@ -42,6 +42,21 @@ class ProjectFieldAccess extends FieldAccess {
     'uid',
   ];
 
+  /**
+   * Fields the project manager page reads that are denied by default.
+   *
+   * These may be viewed by accounts with the permission 'view project manager
+   * fields'. The list is derived from the view project_manager: 'id' is used
+   * in all row triggers (data-project-id) and 'changed' is the logbook
+   * trigger. Do not add fields that the page does not read.
+   */
+  const MANAGER_FIELDS = [
+    'changed',
+    'id',
+  ];
+
+  const MANAGER_FIELDS_PERMISSION = 'view project manager fields';
+
   const RESULT_FIELDS = [
     'project_result',
     'field_participants',
@@ -75,6 +90,15 @@ class ProjectFieldAccess extends FieldAccess {
 
     // Administrators pass through.
     if ($account->hasPermission('administer projects')) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Accounts with the manager permission may view the fields that the project
+    // manager page reads. Never grants editing and never other fields.
+    if ($operation === 'view' &&
+      self::isFieldOfGroup($field, self::MANAGER_FIELDS) &&
+      $account->hasPermission(self::MANAGER_FIELDS_PERMISSION)
+    ) {
       return AccessResult::neutral()->cachePerPermissions();
     }
 
