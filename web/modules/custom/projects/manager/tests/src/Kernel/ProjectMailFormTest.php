@@ -257,26 +257,24 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * The route is granted to the assigned manager in an offered state only.
+   * Mail access goes to the assigned manager in an offered state only.
    */
-  public function testRouteAccess(): void {
+  public function testMailAccess(): void {
     // User 1 bypasses all permission checks, so do not let the manager be it.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
     $other = $this->accountWith($this->createMailableCreative('Other'), ['send project mails']);
-    $this->container->get('router.builder')->rebuild();
-    $access = $this->container->get('access_manager');
-    $parameters = ['project' => $project->id(), 'subtype' => 'reminder_draft'];
+    $access = $this->container->get('mailer.manager_mail_access');
 
-    $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $manager));
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $other));
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', ['subtype' => 'reminder_ongoing'] + $parameters, $manager));
+    $this->assertTrue($access->access($manager, $project, 'reminder_draft')->isAllowed());
+    $this->assertFalse($access->access($other, $project, 'reminder_draft')->isAllowed());
+    $this->assertFalse($access->access($manager, $project, 'reminder_ongoing')->isAllowed());
     // The assigned manager without the permission is denied.
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $this->accountWith($manager, [])));
+    $this->assertFalse($access->access($this->accountWith($manager, []), $project, 'reminder_draft')->isAllowed());
     // An administrator with the permission who is not the manager is allowed.
     $admin = $this->accountWith($other, ['send project mails', 'administer projects']);
-    $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $admin));
+    $this->assertTrue($access->access($admin, $project, 'reminder_draft')->isAllowed());
   }
 
   /**

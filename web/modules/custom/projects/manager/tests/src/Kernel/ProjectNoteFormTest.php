@@ -429,23 +429,20 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * The routes check access before the form is built.
+   * The note access checks the panes rely on.
    */
-  public function testRouteAccess(): void {
+  public function testNoteAccess(): void {
     $project = $this->projectWithManager();
     $manager = $project->getOwner()->getManager();
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
     $note = $this->notes($project)[0];
     $other = $this->accountWith($this->createMailableCreative('Other'), self::NOTE_PERMISSIONS);
-    $this->container->get('router.builder')->rebuild();
-    $access = $this->container->get('access_manager');
+    $access = $this->container->get('mailer.manager_mail_access');
 
-    $this->assertTrue($access->checkNamedRoute('manager.note_add', ['project' => $project->id()], $manager));
-    $this->assertFalse($access->checkNamedRoute('manager.note_add', ['project' => $project->id()], $other));
-    foreach (['manager.note_edit', 'manager.note_delete'] as $route) {
-      $this->assertTrue($access->checkNamedRoute($route, ['correspondence' => $note->id()], $manager), $route);
-      $this->assertFalse($access->checkNamedRoute($route, ['correspondence' => $note->id()], $other), $route);
-    }
+    $this->assertTrue($access->noteAccess($manager, $project)->isAllowed());
+    $this->assertFalse($access->noteAccess($other, $project)->isAllowed());
+    $this->assertTrue($access->noteEntryAccess($manager, $note)->isAllowed());
+    $this->assertFalse($access->noteEntryAccess($other, $note)->isAllowed());
   }
 
   /**
@@ -546,15 +543,15 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $request = $this->container->get('request_stack')->getCurrentRequest();
     $this->assertNotNull($request);
     // The pane claims the request is for another project.
-    $request->attributes->set('manager_pane_note', [(string) $other->id(), (string) $note->id()]);
+    $request->attributes->set(ProjectNoteForm::PANE_ATTRIBUTE, [(string) $other->id(), (string) $note->id()]);
     $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('X', 'x'))->get('save_denied'));
     $this->assertTrue($this->submit(ProjectNoteDeleteForm::create($this->container), [$project, $note], [])->get('delete_denied'));
     // The pane claims the add form, but the build info holds a note.
-    $request->attributes->set('manager_pane_note', [(string) $project->id(), '']);
+    $request->attributes->set(ProjectNoteForm::PANE_ATTRIBUTE, [(string) $project->id(), '']);
     $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('X', 'x'))->get('save_denied'));
     $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
     // Matching arguments are accepted.
-    $request->attributes->set('manager_pane_note', [(string) $project->id(), (string) $note->id()]);
+    $request->attributes->set(ProjectNoteForm::PANE_ATTRIBUTE, [(string) $project->id(), (string) $note->id()]);
     $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Y', 'x'))->get('saved'));
   }
 

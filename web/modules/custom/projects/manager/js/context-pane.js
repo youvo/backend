@@ -74,12 +74,16 @@ function swapPaneRow(row, html, id, type) {
 /**
  * Moves focus into a freshly swapped pane row (after in-pane navigation and
  * submits only): to the error message if there is one, else to the first
- * form control.
+ * form control, else (no form, e.g. after a successful send, save or delete)
+ * to the status message or the pane container.
  */
 function focusPaneRow(row) {
   const target =
     row.querySelector('.messages--error, [role="alert"]') ||
-    row.querySelector('input:not([type="hidden"]), textarea, select');
+    row.querySelector('input:not([type="hidden"]), textarea, select') ||
+    row.querySelector('.messages, [role="status"]') ||
+    row.querySelector('td > div') ||
+    row.querySelector('td');
   if (!target) return;
   if (!target.matches('input, textarea, select, button, a[href]')) {
     target.setAttribute('tabindex', '-1');
@@ -250,7 +254,6 @@ function initContextPane(context) {
   window._managerBodyClickAttached = true;
   document.body.addEventListener('click', e => {
     if (
-      e.target.closest('.ui-dialog, .ui-widget-overlay') ||
       e.target.closest(SELECTORS.contextPane) ||
       e.target.closest(SELECTORS.contextTrigger) ||
       e.target.closest(SELECTORS.contextTable)
@@ -436,28 +439,9 @@ function initTransitionButton() {
   });
 }
 
-function defineManagerRefreshCommand(Drupal) {
-  if (!Drupal.AjaxCommands) return;
-  Drupal.AjaxCommands.prototype.managerRefresh = function (ajax, response) {
-    const row = document.querySelector(
-      `.js-context-pane[data-project-id="${response.projectId}"]`
-    );
-    if (row) {
-      loadAndReplaceRow(row, response.projectId, row.dataset.contextType);
-    }
-    document.querySelectorAll('.view-project-manager').forEach(view => {
-      view.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
-    });
-  };
-}
-
 (function (Drupal) {
-  defineManagerRefreshCommand(Drupal);
-
   Drupal.behaviors.projectManagerContextPane = {
     attach: function (context, settings) {
-      // Drupal.AjaxCommands may only exist after this script was evaluated.
-      defineManagerRefreshCommand(Drupal);
       initContextPane(context);
       initPaneForms();
       initPromoteButton();

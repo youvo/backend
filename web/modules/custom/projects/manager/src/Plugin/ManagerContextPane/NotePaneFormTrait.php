@@ -5,6 +5,7 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\correspondence\CorrespondenceInterface;
+use Drupal\manager\Form\ProjectNoteForm;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -50,7 +51,7 @@ trait NotePaneFormTrait {
     $expected = [(string) $project->id(), (string) $entry?->id()];
     // A POST with a form_build_id restores the build info of an earlier
     // build: tell the form which project and note this request is for.
-    $request->attributes->set('manager_pane_note', $expected);
+    $request->attributes->set(ProjectNoteForm::PANE_ATTRIBUTE, $expected);
     $form = $form_builder->buildForm($form_class, $form_state);
     $args = $form_state->getBuildInfo()['args'] ?? [];
     $built = [

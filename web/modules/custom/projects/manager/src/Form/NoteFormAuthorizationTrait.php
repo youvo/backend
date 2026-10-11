@@ -19,7 +19,7 @@ trait NoteFormAuthorizationTrait {
   /**
    * The name of the request attribute the pane puts its arguments in.
    */
-  protected const PANE_ATTRIBUTE = 'manager_pane_note';
+  public const PANE_ATTRIBUTE = 'manager_pane_note';
 
   /**
    * Gets the project and the note from the (cached) build arguments.
