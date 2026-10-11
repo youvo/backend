@@ -3,6 +3,7 @@
 namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Lock\DatabaseLockBackend;
 use Drupal\manager\Form\FormOnceGuard;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 
@@ -19,10 +20,17 @@ class FormOnceGuardTest extends MailerKernelTestBase {
   protected static $modules = ['user', 'views', 'logbook', 'manager'];
 
   /**
+   * Gets a lock backend (kernel tests replace the lock service by a null one).
+   */
+  protected function lock(): DatabaseLockBackend {
+    return new DatabaseLockBackend($this->container->get('database'));
+  }
+
+  /**
    * Gets a guard (a new instance shares the store, like a new request).
    */
   protected function guard(): FormOnceGuard {
-    return new FormOnceGuard($this->container->get('keyvalue.expirable'));
+    return new FormOnceGuard($this->container->get('keyvalue.expirable'), $this->lock());
   }
 
   /**
@@ -34,6 +42,21 @@ class FormOnceGuardTest extends MailerKernelTestBase {
     $this->assertFalse($this->guard()->claim('form-a'));
     // Other ids are independent.
     $this->assertTrue($this->guard()->claim('form-b'));
+  }
+
+  /**
+   * The claim runs under a lock on the build id and fails closed if it is held.
+   */
+  public function testClaimFailsWhileAnotherRequestHoldsTheLock(): void {
+    // A second backend instance stands for another request.
+    $other = $this->lock();
+    $this->assertTrue($other->acquire('manager_form_once:form-a'));
+    $this->assertFalse($this->guard()->claim('form-a'));
+    $other->release('manager_form_once:form-a');
+    // Nothing was stored by the failed claim; the lock is released after use.
+    $this->assertTrue($this->guard()->claim('form-a'));
+    $this->assertFalse($this->guard()->claim('form-a'));
+    $this->assertTrue($other->acquire('manager_form_once:form-a'));
   }
 
   /**

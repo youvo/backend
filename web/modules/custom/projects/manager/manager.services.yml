@@ -31,3 +31,4 @@ services:
     class: Drupal\manager\Form\FormOnceGuard
     arguments:
       - '@keyvalue.expirable'
+      - '@lock'

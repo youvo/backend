@@ -5,6 +5,7 @@ namespace Drupal\manager\Form;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
+use Drupal\Core\Lock\LockBackendInterface;
 
 /**
  * Server-side once-only guard for form submissions, keyed on form_build_id.
@@ -23,6 +24,14 @@ class FormOnceGuard {
 
   /**
    * How long a consumed build id is remembered, in seconds.
+   *
+   * One hour is a deliberate choice: the form API keeps a cached form (and so
+   * a replayable form_build_id) for 6 hours, but a form_token only protects
+   * the session and never expires by itself, so the TTL does not follow either
+   * lifetime. A replay after the claim has expired still passes this guard,
+   * but the form API rejects it once the cached form is gone, and the pane
+   * re-checks access and state on every request anyway. The TTL only needs to
+   * cover double submits, second tabs and retries after a lost response.
    */
   protected const TTL = 3600;
 
@@ -34,19 +43,37 @@ class FormOnceGuard {
   /**
    * Constructs the guard.
    */
-  public function __construct(KeyValueExpirableFactoryInterface $factory) {
+  public function __construct(KeyValueExpirableFactoryInterface $factory, protected LockBackendInterface $lock) {
     $this->store = $factory->get('manager_form_once');
   }
 
   /**
-   * Claims a form build id (atomic set-if-not-exists).
+   * Claims a form build id.
+   *
+   * The expirable store's setWithExpireIfNotExists() is not atomic (it checks
+   * with has() and then writes), so the check and the write run under a lock
+   * on the build id. If the lock cannot be acquired another request is
+   * claiming the same id right now: the claim fails (fail closed).
    *
    * @return bool
    *   TRUE if the caller got the claim and may act, FALSE if the id was
    *   already claimed by an earlier submission.
    */
   public function claim(string $form_build_id): bool {
-    return $this->store->setWithExpireIfNotExists($form_build_id, TRUE, self::TTL);
+    $name = 'manager_form_once:' . $form_build_id;
+    if (!$this->lock->acquire($name)) {
+      return FALSE;
+    }
+    try {
+      if ($this->store->has($form_build_id)) {
+        return FALSE;
+      }
+      $this->store->setWithExpire($form_build_id, TRUE, self::TTL);
+      return TRUE;
+    }
+    finally {
+      $this->lock->release($name);
+    }
   }
 
   /**

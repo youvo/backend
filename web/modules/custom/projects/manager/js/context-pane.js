@@ -27,19 +27,51 @@ function showLoadingRow(afterRow, type) {
   return loadingRow;
 }
 
+/**
+ * Swaps a pane row with the first row of the given HTML.
+ *
+ * If the row was removed from the page while the request was in flight (the
+ * pane was closed), the current pane row of the same project and type is
+ * swapped instead, so the result of the request is still shown.
+ *
+ * @return {?Element}
+ *   The new row, or NULL if the HTML contained no row or there is no row to
+ *   swap (nothing swapped).
+ */
+function swapPaneRow(row, html, id, type) {
+  const temp = document.createElement('tbody');
+  temp.innerHTML = html;
+  const newRow = temp.querySelector('tr');
+  if (!newRow) return null;
+  const target = row.isConnected
+    ? row
+    : document.querySelector(
+        `.js-context-pane[data-project-id="${id}"][data-context-type="${type}"]`
+      );
+  if (!target) return null;
+  newRow.classList.add('js-context-pane');
+  newRow.dataset.contextType = type;
+  newRow.dataset.projectId = id;
+  target.replaceWith(newRow);
+  Drupal.attachBehaviors(newRow);
+  return newRow;
+}
+
+/**
+ * Whether a pane request (navigation or submit) is in flight.
+ */
+function paneRequestPending() {
+  return !!document.querySelector(
+    '.js-context-pane[data-pane-busy], .js-context-pane form[data-pane-busy]'
+  );
+}
+
 async function loadAndReplaceRow(row, id, type) {
   try {
     const response = await fetch(`/project/manage/context/${id}?type=${type}`);
     const html = await response.text();
-    const temp = document.createElement('tbody');
-    temp.innerHTML = html;
-    const newRow = temp.querySelector('tr');
+    const newRow = swapPaneRow(row, html, id, type);
     if (newRow) {
-      newRow.classList.add('js-context-pane');
-      newRow.dataset.contextType = type;
-      newRow.dataset.projectId = id;
-      row.replaceWith(newRow);
-      Drupal.attachBehaviors(newRow);
       if (type === 'transition') {
         initCheckboxHandlers(newRow);
       }
@@ -50,25 +82,6 @@ async function loadAndReplaceRow(row, id, type) {
       }
     }
   } catch (e) {}
-}
-
-/**
- * Swaps a pane row with the first row of the given HTML.
- *
- * @return {?Element}
- *   The new row, or NULL if the HTML contained no row (nothing swapped).
- */
-function swapPaneRow(row, html, id, type) {
-  const temp = document.createElement('tbody');
-  temp.innerHTML = html;
-  const newRow = temp.querySelector('tr');
-  if (!newRow) return null;
-  newRow.classList.add('js-context-pane');
-  newRow.dataset.contextType = type;
-  newRow.dataset.projectId = id;
-  row.replaceWith(newRow);
-  Drupal.attachBehaviors(newRow);
-  return newRow;
 }
 
 /**
@@ -105,9 +118,8 @@ function showPaneError(row, message) {
 }
 
 function paneErrorText(detail) {
-  return Drupal.t('The request failed (@detail). Please try again.', {
-    '@detail': detail,
-  });
+  // Plain text: the box is filled via textContent, so no placeholder escaping.
+  return `${Drupal.t('The request failed. Please try again.')} (${detail})`;
 }
 
 /**
@@ -156,11 +168,13 @@ async function submitPaneForm(form, submitter) {
   }
   const buttons = form.querySelectorAll('[type="submit"]');
   form.dataset.paneBusy = '1';
+  row.dataset.paneBusy = '1';
   buttons.forEach(button => {
     button.disabled = true;
   });
   const fail = detail => {
     delete form.dataset.paneBusy;
+    delete row.dataset.paneBusy;
     buttons.forEach(button => {
       button.disabled = false;
     });
@@ -223,7 +237,7 @@ function initContextPane(context) {
       e.stopPropagation();
       const id = trigger.getAttribute('data-project-id');
       const type = trigger.getAttribute('data-context-pane');
-      if (!id || !type) return;
+      if (!id || !type || paneRequestPending()) return;
       const row = trigger.closest('tr');
       if (!row) return;
       const nextRow = row.nextElementSibling;
@@ -254,6 +268,7 @@ function initContextPane(context) {
   window._managerBodyClickAttached = true;
   document.body.addEventListener('click', e => {
     if (
+      paneRequestPending() ||
       e.target.closest(SELECTORS.contextPane) ||
       e.target.closest(SELECTORS.contextTrigger) ||
       e.target.closest(SELECTORS.contextTable)
