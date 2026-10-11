@@ -1,0 +1,3 @@
+send project mails:
+  title: 'Send project mails'
+  description: 'Send reminder mails to the organization of a project the user manages.'

@@ -24,6 +24,7 @@ dependencies:
     - courses
     - lifecycle
     - logbook
+    - mailer
     - navigation
     - projects
     - rest
@@ -67,6 +68,7 @@ permissions:
   - 'restful post project:show'
   - 'restful post project:submit'
   - 'restful post question:submission'
+  - 'send project mails'
   - 'update any project'
   - 'view courses'
   - 'view detectable log'

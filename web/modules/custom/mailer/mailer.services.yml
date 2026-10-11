@@ -47,6 +47,9 @@ services:
   mailer.correspondence_recorder:
     class: Drupal\mailer\CorrespondenceRecorder
     arguments: ['@entity_type.manager', '@logger.channel.mailer', '@datetime.time']
+  mailer.hub_urls:
+    class: Drupal\mailer\HubUrls
+    arguments: ['@config.factory']
   mailer.variables:
     class: Drupal\mailer\MailVariables
     arguments: ['@config.factory']
