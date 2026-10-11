@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a correspondence entry in the timeline.
+ *
+ * Available variables:
+ * - type: "mail" or "note".
+ * - label: The type label.
+ * - date: The formatted date.
+ * - info: The date tooltip.
+ * - subject: The subject or note title (escaped plain text).
+ * - failed: Whether the mail was not delivered.
+ * - body_html: The filtered mail body (safe markup).
+ * - body_text: The plain text note body.
+ */
+#}
+<div class="logbook-timeline-header-container logbook-timeline--{{ type }}" data-timeline-type="{{ type }}">
+  <div class="logbook-timeline-label-container">
+    <div class="logbook-timeline-label">{{ label }}</div>
+  </div>
+  <div class="logbook-timeline-date-container">
+    <div class="logbook-timeline-date" title="{{ info }}">{{ date }}</div>
+  </div>
+</div>
+<div class="logbook-timeline-bar-container">
+  <div class="logbook-timeline-circle"></div>
+</div>
+<div class="logbook-timeline-content-container">
+  {% if type == 'mail' %}
+    <div class="logbook-timeline-text">{{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'not delivered'|t }}</span>{% endif %}</div>
+    <details class="logbook-timeline-message">
+      <summary>{{ 'Show message'|t }}</summary>
+      {{ body_html }}
+    </details>
+  {% else %}
+    <div class="logbook-timeline-text">{{ subject }}</div>
+    <div class="logbook-timeline-message">{{ body_text|nl2br }}</div>
+  {% endif %}
+</div>

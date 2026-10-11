@@ -2,8 +2,9 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\manager\Attribute\ManagerContextPane;
+use Drupal\manager\Timeline\TimelineBuilder;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -14,42 +15,35 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ManagerContextPaneLogbook extends ManagerContextPaneBase {
 
   /**
-   * The entity type manager.
+   * The timeline builder.
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected TimelineBuilder $timelineBuilder;
+
+  /**
+   * The current user.
+   */
+  protected AccountProxyInterface $currentUser;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
     $instance = parent::create($container, ...$defaults);
-    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->timelineBuilder = $container->get('manager.timeline_builder');
+    $instance->currentUser = $container->get('current_user');
     return $instance;
-
   }
 
   /**
    * {@inheritdoc}
    */
   public function build(Project $project): array {
-
-    $logs = array_reverse($this->entityTypeManager
-      ->getStorage('log')
-      ->loadByProperties(['project' => $project->id()]));
-
-    $log_builds = [];
-    foreach ($logs as $log) {
-      $log_builds[] = $this->entityTypeManager
-        ->getViewBuilder('log')
-        ->view($log);
-    }
-
     return [
       '#theme' => 'context_pane',
       '#type' => 'logbook',
       '#project' => $project,
       'content' => [
-        'logs' => $log_builds,
+        'rows' => $this->timelineBuilder->build($project, $this->currentUser),
       ],
     ];
   }

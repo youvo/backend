@@ -1,9 +1,15 @@
 <tr {{ attributes }} class="context-pane">
   <td colspan="100%">
+    <div class="logbook-timeline-filters" role="group" aria-label="{{ 'Filter'|t }}">
+      <button type="button" class="button button--small js-timeline-filter is-active" data-filter="all">{{ 'All'|t }}</button>
+      <button type="button" class="button button--small js-timeline-filter" data-filter="log">{{ 'Events'|t }}</button>
+      <button type="button" class="button button--small js-timeline-filter" data-filter="mail">{{ 'Mails'|t }}</button>
+      <button type="button" class="button button--small js-timeline-filter" data-filter="note">{{ 'Notes'|t }}</button>
+    </div>
     <div class="logbook-timeline-flex">
-      {% for log in content.logs %}
-        <div class="logbook-timeline-flex-row">
-          {{ log }}
+      {% for row in content.rows %}
+        <div class="logbook-timeline-flex-row" data-timeline-type="{{ row.type }}">
+          {{ row.build }}
         </div>
       {% endfor %}
     </div>

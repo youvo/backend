@@ -155,6 +155,28 @@ function initPromoteButton() {
   });
 }
 
+function initTimelineFilter() {
+  if (window._timelineFilterHandlerAttached) return;
+  window._timelineFilterHandlerAttached = true;
+
+  document.body.addEventListener('click', function (e) {
+    const btn = e.target.closest('.js-timeline-filter');
+    if (!btn) return;
+    const pane = btn.closest('.js-context-pane, .context-pane');
+    if (!pane) return;
+    const filter = btn.getAttribute('data-filter') || 'all';
+    pane.querySelectorAll('.js-timeline-filter').forEach(other => {
+      other.classList.toggle('is-active', other === btn);
+    });
+    pane
+      .querySelectorAll('.logbook-timeline-flex-row[data-timeline-type]')
+      .forEach(row => {
+        row.hidden =
+          filter !== 'all' && row.getAttribute('data-timeline-type') !== filter;
+      });
+  });
+}
+
 function initCheckboxHandlers(context) {
   const checkboxes = (context || document).querySelectorAll(
     SELECTORS.transitionCheckbox
@@ -287,6 +309,7 @@ function defineManagerRefreshCommand(Drupal) {
       initContextPane(context);
       initPromoteButton();
       initTransitionButton();
+      initTimelineFilter();
 
       if (lastScrollPosition !== null) {
         window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });
