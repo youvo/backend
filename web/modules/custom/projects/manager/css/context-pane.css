@@ -290,12 +290,40 @@
   font-weight: 600;
 }
 
-.logbook-timeline-message summary {
+/* Mail subject as summary; the chevron toggles the grey message body. */
+.logbook-timeline-details > .logbook-timeline-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  list-style: none;
   cursor: pointer;
 }
 
-.logbook-timeline-message details,
-details.logbook-timeline-message {
+.logbook-timeline-summary::-webkit-details-marker {
+  display: none;
+}
+
+.logbook-timeline-toggle {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  background: url('../assets/chevron-down.svg') no-repeat center/contain;
+  transition: transform 0.15s ease-in-out;
+}
+
+.logbook-timeline-details[open] .logbook-timeline-toggle {
+  transform: rotate(180deg);
+}
+
+.logbook-timeline-details .logbook-timeline-message {
   margin-top: 0.25em;
 }
 
