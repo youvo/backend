@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\correspondence\CorrespondenceInterface;
+use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\manager\Ajax\ManagerRefreshCommand;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,15 +30,31 @@ class ProjectNoteForm extends FormBase {
   protected const WRAPPER_ID = 'manager-note-form-wrapper';
 
   /**
+   * The earliest accepted time (1970-01-02), so the value is positive.
+   */
+  protected const MIN_TIMESTAMP = 86400;
+
+  /**
+   * The latest accepted time (2037-12-31), within a 32 bit integer column.
+   */
+  protected const MAX_TIMESTAMP = 2145916799;
+
+  /**
    * Constructs the form.
    */
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ManagerMailAccess $access,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container): static {
-    return new static($container->get('entity_type.manager'));
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('mailer.manager_mail_access'),
+    );
   }
 
   /**
@@ -106,8 +123,12 @@ class ProjectNoteForm extends FormBase {
     if (trim((string) $form_state->getValue('body')) === '') {
       $form_state->setErrorByName('body', $this->t('The note is required.'));
     }
-    if ($this->occurredTimestamp($form_state) === NULL) {
+    $occurred = $this->occurredTimestamp($form_state);
+    if ($occurred === NULL) {
       $form_state->setErrorByName('occurred', $this->t('The date and time are required.'));
+    }
+    elseif ($occurred < self::MIN_TIMESTAMP || $occurred > self::MAX_TIMESTAMP) {
+      $form_state->setErrorByName('occurred', $this->t('The date must be between 1970 and 2037.'));
     }
   }
 
@@ -128,7 +149,10 @@ class ProjectNoteForm extends FormBase {
     ];
     try {
       if ($correspondence instanceof CorrespondenceInterface) {
-        if ($correspondence->isNote() && $correspondence->access('update', $this->currentUser())) {
+        // A note can only be edited together with its own project.
+        $matches = !$project instanceof ProjectInterface
+          || (string) $correspondence->get('project')->target_id === (string) $project->id();
+        if ($matches && $correspondence->isNote() && $correspondence->access('update', $this->currentUser())) {
           foreach ($values as $name => $value) {
             $correspondence->set($name, $value);
           }
@@ -137,7 +161,11 @@ class ProjectNoteForm extends FormBase {
         }
       }
       elseif ($project instanceof ProjectInterface) {
-        if ($this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser())) {
+        // The create access is permission-based, so check the project here.
+        if (
+          $this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser())
+          && $this->access->noteAccess($this->currentUser(), $project)->isAllowed()
+        ) {
           $this->entityTypeManager->getStorage('correspondence')->create($values + [
             'type' => 'note',
             'project' => $project->id(),

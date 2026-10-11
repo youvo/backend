@@ -5,6 +5,7 @@ namespace Drupal\Tests\correspondence\Kernel;
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\correspondence\Entity\Correspondence;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
@@ -38,6 +39,8 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
     parent::setUp();
     $this->installEntitySchema('correspondence');
     $this->installConfig(['correspondence']);
+    // User 1 bypasses all permission checks: use it up.
+    $this->createCreative();
   }
 
   /**
@@ -60,6 +63,15 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
     $this->assertSame($project->id(), $entry->getParentEntity()->id());
     $project->delete();
     $this->assertNull(Correspondence::load($entry->id()));
+  }
+
+  /**
+   * Gets the project of an entry.
+   */
+  protected function projectOf(Correspondence $entry): ProjectInterface {
+    $project = $entry->getParentEntity();
+    $this->assertInstanceOf(ProjectInterface::class, $project);
+    return $project;
   }
 
   /**
@@ -88,8 +100,12 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
     $this->assertTrue($entry->getParentEntity()->access('view', $project_only));
     $this->assertFalse($entry->access('view', $project_only));
 
+    // The permission alone does not help for a user who is not the manager.
     $viewer = $this->createUser(['view correspondence']);
-    $this->assertTrue($entry->access('view', $viewer));
+    $this->assertFalse($entry->access('view', $viewer));
+    $manager = $this->projectOf($entry)->getOwner()->getManager();
+    $manager->addRole($this->createRole(['view correspondence']))->save();
+    $this->assertTrue($entry->access('view', $manager));
 
     // The permission alone does not help without access to the project.
     $draft_entry = $this->createEntry(ProjectState::Draft);
@@ -122,7 +138,9 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
    */
   public function testAccessCacheContexts(): void {
     $entry = $this->createEntry();
-    $result = $entry->access('view', $this->createUser(['view correspondence']), TRUE);
+    $manager = $this->projectOf($entry)->getOwner()->getManager();
+    $manager->addRole($this->createRole(['view correspondence']))->save();
+    $result = $entry->access('view', $manager, TRUE);
     $this->assertInstanceOf(CacheableDependencyInterface::class, $result);
     $this->assertContains('user.permissions', $result->getCacheContexts());
     $this->assertContains('correspondence:' . $entry->id(), $result->getCacheTags());

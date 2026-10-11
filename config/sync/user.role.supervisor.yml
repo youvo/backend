@@ -72,6 +72,7 @@ permissions:
   - 'restful post question:submission'
   - 'send project mails'
   - 'update any project'
+  - 'view correspondence'
   - 'view courses'
   - 'view detectable log'
   - 'view observable log'

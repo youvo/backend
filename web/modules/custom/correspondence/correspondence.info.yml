@@ -7,4 +7,5 @@ dependencies:
   - child_entities:child_entities
   - drupal:options
   - drupal:text
+  - organizations:organizations
   - projects:projects

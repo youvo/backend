@@ -247,7 +247,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    */
   public function testLaterValidatorFailureSavesNothing(): void {
     $project = $this->projectWithManager();
-    $form_object = new class($this->container->get('entity_type.manager')) extends ProjectNoteForm {
+    $form_object = new class($this->container->get('entity_type.manager'), $this->container->get('mailer.manager_mail_access')) extends ProjectNoteForm {
 
       /**
        * {@inheritdoc}
@@ -319,6 +319,104 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
       'administer projects',
     ]);
     $this->assertTrue($access->noteAccess($admin, $project)->isAllowed());
+  }
+
+  /**
+   * Creates a note on the project through the form as its manager.
+   */
+  protected function createNoteOf(ProjectInterface $project): CorrespondenceInterface {
+    $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
+    return $this->notes($project)[0];
+  }
+
+  /**
+   * The manager of another organization cannot change notes through the forms.
+   *
+   * A direct form submit bypasses the route access, so the entity access
+   * checks in the forms are the protection under test.
+   */
+  public function testFormsDenyManagerOfAnotherOrganization(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $other_project = $this->createMailableProject(ProjectState::Open);
+    $other = $this->accountWith($other_project->getOwner()->getManager(), self::NOTE_PERMISSIONS);
+    $this->container->get('current_user')->setAccount($other);
+
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [NULL, $note], $this->values('Hacked', 'Hacked'));
+    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
+
+    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$note], []);
+    $this->assertTrue($form_state->get('delete_failed'));
+    $this->assertCount(1, $this->notes($project));
+  }
+
+  /**
+   * The manager of another organization cannot add a note to the project.
+   */
+  public function testAddFormDeniesManagerOfAnotherOrganization(): void {
+    $project = $this->projectWithManager();
+    $other_project = $this->createMailableProject(ProjectState::Open);
+    $other = $this->accountWith($other_project->getOwner()->getManager(), self::NOTE_PERMISSIONS);
+    $this->container->get('current_user')->setAccount($other);
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
+    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertSame([], $this->notes($project));
+  }
+
+  /**
+   * An administrator of projects can add, edit and delete notes.
+   */
+  public function testAdministratorCanManageNotes(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $permissions = [...self::NOTE_PERMISSIONS, 'administer projects'];
+    $admin = $this->accountWith($this->createMailableCreative('Admin'), $permissions);
+    $this->container->get('current_user')->setAccount($admin);
+
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [NULL, $note], $this->values('Admin edit', 'y'));
+    $this->assertFalse($form_state->get('save_failed'));
+    $this->assertSame('Admin edit', $this->notes($project)[0]->get('subject')->value);
+    $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('Admin add', 'y'));
+    $this->assertCount(2, $this->notes($project));
+    $form_state = $this->submit(ProjectNoteDeleteForm::create($this->container), [$note], []);
+    $this->assertFalse($form_state->get('delete_failed'));
+    $this->assertCount(1, $this->notes($project));
+  }
+
+  /**
+   * A note cannot be edited through another project's route parameter.
+   */
+  public function testMismatchingProjectAndNoteIsRejected(): void {
+    $project = $this->projectWithManager();
+    $note = $this->createNoteOf($project);
+    $other_project = $this->createMailableProject(ProjectState::Open);
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$other_project, $note], $this->values('Changed', 'y'));
+    $this->assertTrue($form_state->get('save_failed'));
+    $this->assertSame('S', $this->notes($project)[0]->get('subject')->value);
+    // The matching pair is accepted.
+    $form_state = $this->submit(ProjectNoteForm::create($this->container), [$project, $note], $this->values('Changed', 'y'));
+    $this->assertFalse($form_state->get('save_failed'));
+    $this->assertSame('Changed', $this->notes($project)[0]->get('subject')->value);
+  }
+
+  /**
+   * Dates outside a sane range are rejected.
+   */
+  public function testDateRange(): void {
+    $project = $this->projectWithManager();
+    $form_object = ProjectNoteForm::create($this->container);
+    foreach (['1969-12-31', '1970-01-01', '2038-01-01', '9999-12-31'] as $date) {
+      $values = $this->values('S', 'x', ['date' => $date, 'time' => '12:00:00']);
+      $form_state = $this->submit($form_object, [$project, NULL], $values);
+      $this->assertTrue($form_state->hasAnyErrors(), $date);
+    }
+    $this->assertSame([], $this->notes($project));
+    foreach (['1970-01-02', '2037-12-31'] as $date) {
+      $values = $this->values('S', 'x', ['date' => $date, 'time' => '12:00:00']);
+      $form_state = $this->submit($form_object, [$project, NULL], $values);
+      $this->assertFalse($form_state->hasAnyErrors(), $date);
+    }
   }
 
   /**
