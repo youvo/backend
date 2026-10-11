@@ -2,26 +2,22 @@
 
 namespace Drupal\manager\Form;
 
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\mailer\Manager\LateTokens;
-use Drupal\manager\Ajax\ManagerRefreshCommand;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Lets a manager edit and send a reminder mail for a project.
+ *
+ * A plain form that is built and processed inside the manager context pane
+ * (see ManagerContextPaneMail): the pane reads the outcome from the form
+ * state (the 'sent' and 'send_failed' flags) and renders the messages itself.
  */
 class ProjectMailForm extends FormBase {
-
-  /**
-   * The id of the wrapper that the ajax callback replaces.
-   */
-  protected const WRAPPER_ID = 'manager-mail-form-wrapper';
 
   /**
    * Constructs the form.
@@ -52,11 +48,10 @@ class ProjectMailForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, string $subtype = ''): array {
-    $form['#prefix'] = '<div id="' . self::WRAPPER_ID . '">';
-    $form['#suffix'] = '</div>';
-    $form['status_messages'] = ['#type' => 'status_messages'];
+    $form['#attributes']['class'][] = 'manager-pane-form';
 
-    // Render the preview once; later builds (ajax rebuilds) reuse it.
+    // Render the preview once; later builds (rebuilds after a failed send or
+    // an error) reuse it.
     if (!$form_state->has('preview')) {
       $preview = $project instanceof ProjectInterface ? $this->mailer->preview($project, $subtype) : NULL;
       $form_state->set('preview', $preview ?? FALSE);
@@ -95,10 +90,14 @@ class ProjectMailForm extends FormBase {
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Send'),
-      '#ajax' => [
-        'callback' => '::ajaxSubmit',
-        'wrapper' => self::WRAPPER_ID,
-      ],
+    ];
+    $form['actions']['cancel'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Cancel'),
+      '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
+        'query' => ['type' => 'mail', 'view' => 'index'],
+      ]),
+      '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
     ];
     return $form;
   }
@@ -140,31 +139,13 @@ class ProjectMailForm extends FormBase {
     $sent = $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser());
     if (!$sent) {
       // Errors cannot be set during submit: rebuild the form with the input.
+      // The pane shows the error message when it sees this flag.
       $form_state->set('send_failed', TRUE);
       $form_state->setRebuild();
-      $this->messenger()->addError($this->t('The mail could not be sent. Please try again later.'));
       return;
     }
+    // The pane shows the confirmation when it sees this flag.
     $form_state->set('sent', TRUE);
-    // The ajax response closes the dialog and refreshes the pane instead.
-    $request = $this->getRequest();
-    if (!$request->query->has('ajax_form') && !$request->request->has('_drupal_ajax')) {
-      $this->messenger()->addStatus($this->t('The mail was sent.'));
-    }
-  }
-
-  /**
-   * Ajax callback: closes the dialog on success, shows errors otherwise.
-   */
-  public function ajaxSubmit(array &$form, FormStateInterface $form_state): AjaxResponse {
-    $response = new AjaxResponse();
-    if ($form_state->get('send_failed') || $form_state->hasAnyErrors()) {
-      return $response->addCommand(new ReplaceCommand('#' . self::WRAPPER_ID, $form));
-    }
-    [$project] = $form_state->getBuildInfo()['args'];
-    return $response
-      ->addCommand(new CloseModalDialogCommand())
-      ->addCommand(new ManagerRefreshCommand($project->id()));
   }
 
 }

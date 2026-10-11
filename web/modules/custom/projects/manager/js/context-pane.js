@@ -52,6 +52,135 @@ async function loadAndReplaceRow(row, id, type) {
   } catch (e) {}
 }
 
+/**
+ * Swaps a pane row with the first row of the given HTML.
+ *
+ * @return {boolean}
+ *   TRUE if the HTML contained a row and the row was swapped.
+ */
+function swapPaneRow(row, html, id, type) {
+  const temp = document.createElement('tbody');
+  temp.innerHTML = html;
+  const newRow = temp.querySelector('tr');
+  if (!newRow) return false;
+  newRow.classList.add('js-context-pane');
+  newRow.dataset.contextType = type;
+  newRow.dataset.projectId = id;
+  row.replaceWith(newRow);
+  Drupal.attachBehaviors(newRow);
+  return true;
+}
+
+function showPaneError(row, message) {
+  let box = row.querySelector('.js-pane-error');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'js-pane-error messages messages--error';
+    box.setAttribute('role', 'alert');
+    const container = row.querySelector('td > div') || row.querySelector('td');
+    if (!container) return;
+    container.prepend(box);
+  }
+  box.textContent = message;
+}
+
+function paneErrorText(detail) {
+  return Drupal.t('The request failed (@detail). Please try again.', {
+    '@detail': detail,
+  });
+}
+
+/**
+ * Loads a pane view into its row (in-pane navigation).
+ */
+async function loadPaneView(row, view, params) {
+  const id = row.dataset.projectId;
+  const type = row.dataset.contextType;
+  if (!id || !type || row.dataset.paneBusy) return;
+  const query = new URLSearchParams({ type, view });
+  new URLSearchParams(params || '').forEach((value, key) => {
+    query.append(key, value);
+  });
+  row.dataset.paneBusy = '1';
+  try {
+    const response = await fetch(
+      `/project/manage/context/${encodeURIComponent(id)}?${query}`
+    );
+    const html = await response.text();
+    if (!response.ok || !swapPaneRow(row, html, id, type)) {
+      delete row.dataset.paneBusy;
+      showPaneError(row, paneErrorText(`HTTP ${response.status}`));
+    }
+  } catch (e) {
+    delete row.dataset.paneBusy;
+    showPaneError(row, paneErrorText(e.message));
+  }
+}
+
+/**
+ * Posts a pane form with fetch and swaps the row with the response.
+ */
+async function submitPaneForm(form, submitter) {
+  const row = form.closest('.js-context-pane');
+  if (!row || form.dataset.paneBusy) return;
+  const id = row.dataset.projectId;
+  const type = row.dataset.contextType;
+  const body = new FormData(form);
+  // FormData does not include the clicked submit button; the form API needs
+  // its name/value ('op') to find the triggering element.
+  if (submitter && submitter.name) {
+    body.append(submitter.name, submitter.value);
+  }
+  const buttons = form.querySelectorAll('[type="submit"]');
+  form.dataset.paneBusy = '1';
+  buttons.forEach(button => {
+    button.disabled = true;
+  });
+  const fail = detail => {
+    delete form.dataset.paneBusy;
+    buttons.forEach(button => {
+      button.disabled = false;
+    });
+    showPaneError(row, paneErrorText(detail));
+  };
+  try {
+    const response = await fetch(form.action, { method: 'POST', body });
+    const html = await response.text();
+    if (!response.ok || !swapPaneRow(row, html, id, type)) {
+      fail(`HTTP ${response.status}`);
+    }
+  } catch (e) {
+    fail(e.message);
+  }
+}
+
+function initPaneForms() {
+  if (window._paneFormHandlersAttached) return;
+  window._paneFormHandlersAttached = true;
+
+  document.body.addEventListener('submit', e => {
+    const form = e.target.closest
+      ? e.target.closest('form.manager-pane-form')
+      : null;
+    if (!form || !form.closest('.js-context-pane')) return;
+    e.preventDefault();
+    submitPaneForm(form, e.submitter);
+  });
+
+  document.body.addEventListener('click', e => {
+    const link = e.target.closest('[data-pane-view]');
+    if (!link) return;
+    const row = link.closest('.js-context-pane');
+    if (!row) return;
+    e.preventDefault();
+    loadPaneView(
+      row,
+      link.getAttribute('data-pane-view'),
+      link.getAttribute('data-pane-params')
+    );
+  });
+}
+
 function closeContextPane() {
   document.querySelectorAll(SELECTORS.contextPane).forEach(r => r.remove());
 }
@@ -308,6 +437,7 @@ function defineManagerRefreshCommand(Drupal) {
       // Drupal.AjaxCommands may only exist after this script was evaluated.
       defineManagerRefreshCommand(Drupal);
       initContextPane(context);
+      initPaneForms();
       initPromoteButton();
       initTransitionButton();
       initTimelineFilter();

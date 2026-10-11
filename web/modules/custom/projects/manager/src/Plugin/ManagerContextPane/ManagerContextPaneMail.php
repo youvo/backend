@@ -5,20 +5,25 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Attribute\ManagerContextPane;
+use Drupal\manager\Form\ProjectMailForm;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides the mail manager context pane.
  */
 #[ManagerContextPane(id: "mail")]
-class ManagerContextPaneMail extends ManagerContextPaneBase {
+class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
   use StringTranslationTrait;
 
@@ -48,6 +53,16 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
   protected DateFormatterInterface $dateFormatter;
 
   /**
+   * The form builder.
+   */
+  protected FormBuilderInterface $formBuilder;
+
+  /**
+   * The messenger.
+   */
+  protected MessengerInterface $messenger;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
@@ -57,6 +72,8 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
     $instance->access = $container->get('mailer.manager_mail_access');
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->dateFormatter = $container->get('date.formatter');
+    $instance->formBuilder = $container->get('form_builder');
+    $instance->messenger = $container->get('messenger');
     return $instance;
   }
 
@@ -64,12 +81,68 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
    * {@inheritdoc}
    */
   public function build(Project $project): array {
-    $build = ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
+    return $this->buildIndex($project);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildView(Project $project, Request $request): array {
+    if ($request->query->get('view') === 'mail') {
+      return $this->buildMailView($project, (string) $request->query->get('subtype', ''));
+    }
+    return $this->buildIndex($project);
+  }
+
+  /**
+   * Builds the empty pane.
+   */
+  protected function emptyPane(Project $project): array {
+    return ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
+  }
+
+  /**
+   * Builds the mail form view; access is checked on every request.
+   *
+   * A valid POST sends the mail in the form's submit handler and returns the
+   * index view with a confirmation; a failed send returns the form again.
+   */
+  protected function buildMailView(Project $project, string $subtype): array {
+    if ($subtype === '' || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
+      return $this->emptyPane($project);
+    }
+    $form_state = new FormState();
+    // Without this the form API would try to produce a redirect response.
+    $form_state->disableRedirect();
+    $form_state->addBuildInfo('args', [$project, $subtype]);
+    $form = $this->formBuilder->buildForm(ProjectMailForm::class, $form_state);
+    if ($form_state->get('sent')) {
+      $this->messenger->addStatus($this->t('The mail was sent.'));
+      return $this->buildIndex($project);
+    }
+    if ($form_state->get('send_failed')) {
+      // symfony_mailer reports the transport error (host, port) on the
+      // messenger: show the manager only our own message.
+      $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
+      $this->messenger->addError($this->t('The mail could not be sent. Please try again later.'));
+    }
+    $build = $this->emptyPane($project);
+    $build['content']['messages'] = ['#type' => 'status_messages'];
+    $build['content']['form'] = $form;
+    return $build;
+  }
+
+  /**
+   * Builds the index view: the mails of the state, the note link, last sent.
+   */
+  protected function buildIndex(Project $project): array {
+    $build = $this->emptyPane($project);
     $may_mail = $this->access->access($this->currentUser, $project)->isAllowed();
     $may_note = $this->access->noteAccess($this->currentUser, $project)->isAllowed();
     if (!$may_mail && !$may_note) {
       return $build;
     }
+    $build['content']['messages'] = ['#type' => 'status_messages'];
     if ($may_mail) {
       $this->buildMails($build, $project);
     }
@@ -109,17 +182,13 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
       $build['content']['mails'][$definition->subtype] = [
         '#type' => 'link',
         '#title' => $definition->label,
-        '#url' => Url::fromRoute('manager.mail_form', [
-          'project' => $project->id(),
-          'subtype' => $definition->subtype,
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
+          'query' => ['type' => 'mail', 'view' => 'mail', 'subtype' => $definition->subtype],
         ]),
         '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $definition->label,
-          ]),
+          'class' => ['button', 'button--small'],
+          'data-pane-view' => 'mail',
+          'data-pane-params' => http_build_query(['subtype' => $definition->subtype]),
         ],
       ];
     }

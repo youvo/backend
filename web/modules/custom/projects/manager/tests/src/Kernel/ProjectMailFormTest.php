@@ -40,12 +40,19 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->assertStringContainsString($project->getTitle(), $form['subject']['#default_value']);
     $this->assertStringContainsString('[mail:project_link]', $form['body']['#default_value']);
     $this->assertSame('textarea', $form['body']['#type']);
+    // A plain form for the pane: no ajax, a Cancel link back to the pane list.
+    $this->assertArrayNotHasKey('#ajax', $form['actions']['submit']);
+    $this->assertContains('manager-pane-form', $form['#attributes']['class']);
+    $this->assertSame('index', $form['actions']['cancel']['#attributes']['data-pane-view']);
 
     $form_state = $this->submit($form_object, $project, [
       'subject' => 'Betreff',
       'body' => "Hallo\n\n[mail:project_link]",
     ]);
     $this->assertFalse($form_state->hasAnyErrors());
+    $this->assertTrue($form_state->get('sent'));
+    // The form does not use the messenger; the pane renders the messages.
+    $this->assertSame([], $this->container->get('messenger')->all());
     $entries = array_values($this->loadEntries($project->id()));
     $this->assertCount(1, $entries);
     $this->assertSame('manager', $entries[0]->get('origin')->value);
@@ -103,13 +110,16 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->assertTrue($form_state->get('send_failed'));
     $this->assertTrue($form_state->isRebuilding());
     $this->assertFalse($form_state->hasAnyErrors());
+    // The form adds no message itself (the pane does). The transport error of
+    // symfony_mailer is on the messenger; the pane discards it.
+    $this->assertArrayNotHasKey('status', $this->container->get('messenger')->all());
+    $this->container->get('messenger')->deleteAll();
     $form = $form_state->getCompleteForm();
     $this->assertSame('Edited subject', $form['subject']['#value']);
     $this->assertSame('Edited body', $form['body']['#value']);
     $entries = array_values($this->loadEntries($project->id()));
     $this->assertCount(1, $entries);
     $this->assertFalse($entries[0]->isSent());
-    $this->container->get('messenger')->deleteAll();
 
     // Retry with a working transport.
     $this->config('mailer_transport.settings')->set('default_transport', 'null')->save();
@@ -194,31 +204,6 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x'], 'reminder_ongoing');
     $this->assertTrue($form_state->hasAnyErrors());
     $this->assertSame([], $this->loadEntries($project->id()));
-  }
-
-  /**
-   * The ajax callback closes the dialog and refreshes, or keeps the form.
-   */
-  public function testAjaxCommands(): void {
-    $project = $this->createMailableProject(ProjectState::Draft);
-    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
-    $form_object = ProjectMailForm::create($this->container);
-
-    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
-    $form = $this->build($form_object, $project);
-    $commands = $form_object->ajaxSubmit($form, $form_state)->getCommands();
-    $this->assertSame(['closeDialog', 'managerRefresh'], array_column($commands, 'command'));
-    $this->assertSame((string) $project->id(), $commands[1]['projectId']);
-
-    $this->useFailingTransport();
-    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
-    $this->assertTrue($form_state->get('send_failed'));
-    $response = $form_object->ajaxSubmit($form, $form_state);
-    $names = array_column($response->getCommands(), 'command');
-    $this->assertContains('insert', $names);
-    $this->assertNotContains('closeDialog', $names);
-    $this->assertNotContains('managerRefresh', $names);
-    $this->assertSame('replaceWith', $response->getCommands()[0]['method']);
   }
 
   /**

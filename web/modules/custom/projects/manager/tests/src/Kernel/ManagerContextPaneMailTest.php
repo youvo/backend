@@ -26,7 +26,7 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
   ];
 
   /**
-   * The pane lists only the mails of the project's state, as modal links.
+   * The pane lists only the mails of the project's state, as in-pane links.
    */
   public function testListsMailsForState(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -37,9 +37,11 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
     $links = $build['content']['mails'];
     $this->assertCount(1, $links);
     $first = reset($links);
-    $this->assertSame('modal', $first['#attributes']['data-dialog-type']);
-    $this->assertContains('use-ajax', $first['#attributes']['class']);
-    $this->assertStringContainsString('/project/manage/mail/' . $project->id() . '/reminder_draft', $first['#url']->toString());
+    $this->assertSame('mail', $first['#attributes']['data-pane-view']);
+    $this->assertSame('subtype=reminder_draft', $first['#attributes']['data-pane-params']);
+    $this->assertNotContains('use-ajax', $first['#attributes']['class']);
+    $this->assertStringContainsString('/project/manage/context/' . $project->id(), $first['#url']->toString());
+    $this->assertStringContainsString('view=mail', $first['#url']->toString());
     $this->assertArrayNotHasKey('last', $build['content']);
   }
 
