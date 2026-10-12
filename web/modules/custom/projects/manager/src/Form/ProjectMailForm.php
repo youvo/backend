@@ -82,6 +82,7 @@ class ProjectMailForm extends FormBase {
       '#default_value' => $preview->subject,
       '#maxlength' => 255,
       '#required' => TRUE,
+      '#attributes' => ['placeholder' => $this->t('Subject')],
     ];
     $form['body'] = [
       '#type' => 'textarea',
@@ -89,13 +90,33 @@ class ProjectMailForm extends FormBase {
       '#default_value' => $preview->body,
       '#rows' => 14,
       '#required' => TRUE,
+      '#attributes' => ['placeholder' => $this->t('Write a message…')],
     ];
+    // The placeholders insert themselves into the message (see the script).
     $form['tokens'] = [
-      '#type' => 'item',
-      '#title' => $this->t('Placeholders (resolved when sending)'),
-      '#markup' => implode(' ', array_map(static fn ($n) => '<code>' . LateTokens::token($n) . '</code>', $this->lateTokens->names())),
-      '#description' => $this->t('Plain text. Web addresses become links.'),
+      '#type' => 'container',
+      '#attributes' => ['class' => ['manager-mail-tokens']],
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['manager-mail-tokens-label']],
+        '#value' => $this->t('Insert placeholder'),
+      ],
     ];
+    foreach ($this->lateTokens->names() as $name) {
+      $form['tokens'][$name] = [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#attributes' => [
+          'type' => 'button',
+          'class' => ['manager-mail-token'],
+          // Active while the cursor is in the message (see the script).
+          'aria-disabled' => 'true',
+          'data-token' => LateTokens::token($name),
+        ],
+        '#value' => LateTokens::token($name),
+      ];
+    }
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Send'),
