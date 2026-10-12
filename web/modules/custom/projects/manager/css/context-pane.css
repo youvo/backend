@@ -200,8 +200,9 @@
   display: flex;
   justify-content: left;
   align-items: flex-start;
-  min-width: 75px;
-  flex: 0 0 75px;
+  min-width: 85px;
+  flex: 0 0 85px;
+  white-space: nowrap;
 }
 
 .logbook-timeline-date {
@@ -256,6 +257,8 @@
   flex-direction: column;
   flex: 1 1 0;
   box-sizing: border-box;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .logbook-timeline-text {
@@ -337,24 +340,6 @@
   font-size: 0.8em;
   font-weight: 600;
   white-space: nowrap;
-}
-
-/* Responsive adjustments */
-@media (max-width: 800px) {
-  .logbook-timeline-label-container,
-  .logbook-timeline-date-container {
-    display: inline-block;
-    width: auto;
-    vertical-align: top;
-  }
-
-  .logbook-timeline-content-container {
-    margin-top: 0.5em;
-  }
-
-  .logbook-timeline-flex-row {
-    display: block;
-  }
 }
 
 /* =========================
@@ -464,4 +449,745 @@
   margin: 0;
   font-size: 0.8em;
   color: #7e98b5;
+}
+
+/* =========================
+   Add note row (timeline)
+   ========================= */
+
+/* Ghost row: an entry that is not there yet. Quiet until hovered. */
+a.logbook-timeline-add {
+  color: #5a7390;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease-in-out;
+}
+
+a.logbook-timeline-add .logbook-timeline-label {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #c5d1df;
+  color: inherit;
+  transition: all 0.15s ease-in-out;
+}
+
+a.logbook-timeline-add .logbook-timeline-circle {
+  background: #f4f7fb;
+  border-color: #dfe6ef;
+}
+
+a.logbook-timeline-add .logbook-timeline-text {
+  color: inherit;
+}
+
+a.logbook-timeline-add:hover,
+a.logbook-timeline-add:focus-visible {
+  color: #3f78b5;
+  text-decoration: none;
+}
+
+a.logbook-timeline-add:focus,
+a.logbook-timeline-add:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+a.logbook-timeline-add:active .logbook-timeline-label {
+  transform: scale(0.96);
+}
+
+a.logbook-timeline-add:hover .logbook-timeline-label,
+a.logbook-timeline-add:focus-visible .logbook-timeline-label {
+  background: #fdf0c8;
+  box-shadow: none;
+  color: #5c4a10;
+}
+
+/* The add form is written straight into the timeline: no boxes, no labels. */
+.logbook-timeline-add-form .logbook-timeline-content-container {
+  padding: 0 0.5em 0.5em 0;
+}
+
+.logbook-timeline-add-form .manager-pane-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.75em;
+}
+
+.logbook-timeline-add-form .manager-pane-form .form-item,
+.logbook-timeline-add-form .manager-pane-form .form-wrapper {
+  margin: 0;
+}
+
+.logbook-timeline-add-form .manager-pane-form .js-form-item-subject,
+.logbook-timeline-add-form .manager-pane-form .js-form-item-body {
+  flex: 1 1 100%;
+}
+
+/* Labels are replaced by placeholders. */
+.logbook-timeline-add-form .manager-pane-form .js-form-item-subject > label,
+.logbook-timeline-add-form .manager-pane-form .js-form-item-body > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.logbook-timeline-add-form .manager-pane-form input.form-text,
+.logbook-timeline-add-form .manager-pane-form textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-bottom: 1px solid #e3e9f1;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease-in-out;
+}
+
+/* Title: one 24px line that sits level with the pill and the dot. */
+.logbook-timeline-add-form .manager-pane-form input.form-text {
+  height: auto;
+  padding: 0 0 4px;
+  line-height: 24px;
+}
+
+.logbook-timeline-add-form .manager-pane-form textarea {
+  padding: 12px 0;
+  field-sizing: content;
+  overflow: hidden;
+  resize: none;
+  font-size: 0.8em;
+  line-height: 1.6;
+  color: #4d6580;
+}
+
+.logbook-timeline-add-form .manager-pane-form input.form-text::placeholder,
+.logbook-timeline-add-form .manager-pane-form textarea::placeholder {
+  color: #5a7390;
+}
+
+.logbook-timeline-add-form .manager-pane-form input.form-text:hover,
+.logbook-timeline-add-form .manager-pane-form textarea:hover {
+  border-bottom-color: #b8c7d9;
+}
+
+.logbook-timeline-add-form .manager-pane-form input.form-text:focus,
+.logbook-timeline-add-form .manager-pane-form textarea:focus {
+  border-bottom-color: #3f78b5;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Date and time: small, muted, one line. */
+.logbook-timeline-add-form .manager-pane-form [class*='form-datetime-wrapper'] {
+  flex: 0 0 auto;
+  margin-top: 1em;
+  font-size: 0.8em;
+  color: #4d6580;
+}
+
+.logbook-timeline-add-form
+  .manager-pane-form
+  [class*='form-datetime-wrapper']
+  > h4,
+.logbook-timeline-add-form .manager-pane-form .form-datetime-wrapper legend {
+  display: none;
+}
+
+.logbook-timeline-add-form
+  .manager-pane-form
+  [class*='form-datetime-wrapper']
+  input:is([type='date'], [type='time']) {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.2em 0.5em;
+  border: 1px solid transparent;
+  border-radius: 0.5em;
+  background: #e8ecf2;
+  font: inherit;
+  color: inherit;
+}
+
+.logbook-timeline-add-form
+  .manager-pane-form
+  [class*='form-datetime-wrapper']
+  input:is([type='date'], [type='time']):focus {
+  border-color: #3f78b5;
+  outline: none;
+}
+
+/* Actions: a flat primary pill and a quiet cancel. Gin forces a 2px border
+   on every .button, so border and shadow are reset with !important here. */
+.logbook-timeline-add-form .manager-pane-form > .button {
+  min-height: 0;
+  margin: 1em 0 0;
+  padding: 0.3em 1em;
+  border: 0 !important;
+  border-radius: 1em;
+  box-shadow: none !important;
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.logbook-timeline-add-form .manager-pane-form > input.button {
+  background: #3f78b5;
+  color: #fff;
+}
+
+.logbook-timeline-add-form .manager-pane-form > input.button:hover {
+  background: #2f6199;
+}
+
+.logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+  background: transparent;
+  color: #4d6580;
+}
+
+.logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view]:hover {
+  background: #e8ecf2;
+  color: #3f78b5;
+}
+
+.logbook-timeline-add-form .manager-pane-form > .button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(63 120 181 / 30%) !important;
+}
+
+/* Containers and messages that get focus from the script (after a pane swap)
+   are read out, not highlighted: no ring around the timeline or message. */
+.context-pane [tabindex='-1']:focus,
+.context-pane .messages:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* After the hover rules, so the keyboard ring is not reset by them. */
+a.logbook-timeline-add:focus-visible .logbook-timeline-label {
+  box-shadow: 0 0 0 2px #3f78b5;
+}
+
+/* Field errors: marked at the field, not in a banner above the form. */
+.manager-pane-form .manager-pane-field-error {
+  margin-top: 0.25em;
+  color: #b3261e;
+  font-size: 0.8em;
+}
+
+.logbook-timeline-add-form
+  .manager-pane-form
+  input.form-text[aria-invalid='true'],
+.logbook-timeline-add-form
+  .manager-pane-form
+  input.form-text[aria-invalid='true']:hover,
+.logbook-timeline-add-form
+  .manager-pane-form
+  input.form-text[aria-invalid='true']:focus,
+.logbook-timeline-add-form .manager-pane-form textarea[aria-invalid='true'],
+.logbook-timeline-add-form
+  .manager-pane-form
+  textarea[aria-invalid='true']:hover,
+.logbook-timeline-add-form
+  .manager-pane-form
+  textarea[aria-invalid='true']:focus {
+  border-bottom-color: #b3261e;
+}
+
+.logbook-timeline-add-form .manager-pane-form .manager-pane-field-error {
+  flex: 1 1 100%;
+}
+
+/* Cancel asks before it throws away a written note. */
+.logbook-timeline-add-form
+  .manager-pane-form
+  > a.button[data-pane-view].is-armed {
+  background: #fbe9e7;
+  color: #b3261e;
+}
+
+/* =========================
+   Pane notices
+   ========================= */
+
+/* Compact notices instead of the full width Drupal status messages. */
+.pane-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4em;
+  margin: 0 0 0.75em;
+}
+
+.pane-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.25em 0.4em 0.25em 0.5em;
+  border-radius: 1em;
+  background: #e3f2ea;
+  color: #1e5a3c;
+  font-size: 0.8em;
+  font-weight: 500;
+  line-height: 1.5;
+  animation: pane-message-in 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+.pane-message-warning {
+  background: #fdf0c8;
+  color: #5c4a10;
+}
+
+.pane-message-error {
+  background: #fbe9e7;
+  color: #b3261e;
+}
+
+.pane-message.is-leaving {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.pane-message-icon {
+  flex: 0 0 auto;
+  width: 1.2em;
+  height: 1.2em;
+  border-radius: 50%;
+  background: currentcolor;
+  mask:
+    center / 70% no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  mask-composite: exclude;
+}
+
+.pane-message-warning .pane-message-icon,
+.pane-message-error .pane-message-icon {
+  mask:
+    center / 70% no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v5.5M8 12v.5' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  mask-composite: exclude;
+}
+
+.pane-message-text {
+  min-width: 0;
+}
+
+.pane-message-close {
+  flex: 0 0 auto;
+  width: 1.6em;
+  height: 1.6em;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none !important;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.pane-message-close:hover,
+.pane-message-close:focus-visible {
+  background: rgb(0 0 0 / 8%);
+  opacity: 1;
+}
+
+.pane-message-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px currentcolor !important;
+}
+
+@keyframes pane-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* The note that was just saved pulses once in the timeline. */
+.logbook-timeline-flex-row.is-new {
+  animation: logbook-row-new 2.4s ease-out;
+}
+
+@keyframes logbook-row-new {
+  0%,
+  35% {
+    box-shadow: 0 0 0 6px #fdf0c8;
+    background: #fdf0c8;
+  }
+
+  100% {
+    box-shadow: 0 0 0 6px transparent;
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pane-message,
+  .logbook-timeline-flex-row.is-new {
+    animation: none;
+  }
+}
+
+/* =========================
+   Narrow screens
+   ========================= */
+
+/* The pane stays as wide as the visible part of the (scrolling) table and
+   keeps its place when the table is scrolled sideways; the width comes from
+   the script. */
+.context-pane > td > * {
+  position: sticky;
+  left: var(--pane-left, 0);
+  box-sizing: border-box;
+  width: var(--pane-width, auto);
+}
+
+@media (max-width: 800px) {
+  /* The date and time are shown as fields here, not behind a button. */
+  .note-when,
+  .note-when-editor {
+    display: none;
+  }
+
+  /* Timeline: a rail on the left, the pill and date above the text. */
+  .logbook-timeline-flex-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'head actions'
+      'content content';
+    align-items: start;
+    column-gap: 0.5em;
+    margin: 6px 0 14px;
+  }
+
+  .logbook-timeline-header-container {
+    grid-area: head;
+    justify-content: flex-start;
+  }
+
+  /* No rail with circles on a phone: the pill and date are enough. */
+  .logbook-timeline-bar-container {
+    display: none;
+  }
+
+  .logbook-timeline-content-container {
+    grid-area: content;
+    margin-top: 0.25em;
+  }
+
+  .logbook-timeline-actions {
+    grid-area: actions;
+    margin-left: 0;
+  }
+
+  .logbook-timeline-label-container {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .logbook-timeline-date-container {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  /* Edit and delete: a 44px touch area around the 16px icons. */
+  .logbook-timeline-action {
+    margin: -10px -6px;
+    padding: 10px;
+  }
+
+  /* Add row: pill and text on one line, 44px high. */
+  a.logbook-timeline-add {
+    grid-template-areas: 'head content';
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    min-height: 44px;
+    margin: 0;
+  }
+
+  a.logbook-timeline-add .logbook-timeline-content-container {
+    margin-top: 0;
+    font-size: 1rem;
+  }
+
+  /* Add form: 16px fields (smaller ones make iOS zoom in on focus) and 44px
+     touch targets. */
+  .logbook-timeline-add-form .manager-pane-form {
+    gap: 0 0.5em;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form textarea,
+  .logbook-timeline-add-form .manager-pane-form input.form-text {
+    font-size: 1rem;
+  }
+
+  /* The title is a 44px touch target. */
+  .logbook-timeline-add-form .manager-pane-form input.form-text {
+    padding: 10px 0;
+  }
+
+  .logbook-timeline-add-form
+    .manager-pane-form
+    [class*='form-datetime-wrapper'] {
+    flex: 1 1 100%;
+    margin-left: 0;
+    font-size: 1rem;
+  }
+
+  /* Date and time share the row; on very narrow screens they stack instead of
+     being cut off. */
+  .logbook-timeline-add-form .form-items-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+  }
+
+  .logbook-timeline-add-form .form-items-inline .form-item {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .logbook-timeline-add-form
+    .manager-pane-form
+    [class*='form-datetime-wrapper']
+    input:is([type='date'], [type='time']) {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form > .button {
+    min-height: 44px;
+    padding: 0 0.75em;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  /* Save and Cancel share the row; the Cancel link centres its text like the
+     Save input does. */
+  .logbook-timeline-add-form .manager-pane-form > input.button,
+  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+    flex: 1 1 0;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Notices: readable size, and a 44px dismiss target that does not make the
+     pill taller. */
+  .pane-message {
+    font-size: 1rem;
+  }
+
+  .pane-message-close {
+    width: 44px;
+    height: 44px;
+    margin: -12px -10px -12px 0;
+  }
+}
+
+/* Tablets in the narrow layout: the buttons keep their natural width. */
+@media (min-width: 561px) and (max-width: 800px) {
+  .logbook-timeline-add-form .manager-pane-form > input.button,
+  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+    flex: 0 0 auto;
+    min-width: 7em;
+  }
+}
+
+/* Wide screens: the date and time sit in the date column of the timeline, in
+   line with the dates of the other entries (date column and rail are 85px and
+   56px wide). The wrapper is 6px wider than the column, the padding of the
+   chips, so the text of the date lines up with the other dates. At rest the
+   script shows the date and time as text, like the other dates (the button);
+   a click opens the real, native fields at full size, picker icons included,
+   over the free space of the rail. Without the script the fields stay as they
+   are. */
+@media (min-width: 801px) {
+  .logbook-timeline-add-form .manager-pane-form {
+    position: relative;
+  }
+
+  .logbook-timeline-add-form
+    .manager-pane-form
+    [class*='form-datetime-wrapper'] {
+    position: absolute;
+    top: -2px;
+    left: -147px;
+    width: max-content;
+    margin: 0;
+    z-index: 3;
+  }
+
+  /* The enhanced field is closed until the button opens it. */
+  .logbook-timeline-add-form
+    .manager-pane-form
+    .form-datetime-wrapper.is-editor:not(.is-open) {
+    display: none;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form .note-when {
+    position: absolute;
+    top: -2px;
+    left: -147px;
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: #4d6580;
+    font: inherit;
+    font-size: 0.8em;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form .note-when > span {
+    padding: 2.56px 6.4px;
+    border-radius: 0.5em;
+    background: #e8ecf2;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form .note-when:hover > span {
+    background: #dfe6ef;
+  }
+
+  .logbook-timeline-add-form .manager-pane-form .note-when:focus-visible {
+    outline: none;
+  }
+
+  .logbook-timeline-add-form
+    .manager-pane-form
+    .note-when:focus-visible
+    > span {
+    box-shadow: 0 0 0 3px rgb(63 120 181 / 30%);
+  }
+
+  /* The real fields stay in the form, rendered but not visible: the system
+     pickers open at them. */
+  .logbook-timeline-add-form
+    .form-datetime-wrapper.is-editor
+    .form-items-inline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The compact editor: dd.mm.yy and hh:mm, each with a picker button. */
+  .note-when-editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .note-when-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2.56px 4px 2.56px 6.4px;
+    border-radius: 0.5em;
+    background: #e8ecf2;
+    color: #4d6580;
+  }
+
+  .note-when-field:focus-within {
+    box-shadow: 0 0 0 3px rgb(63 120 181 / 30%);
+  }
+
+  .note-when-input {
+    width: 4.7em;
+    margin: 0;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+  }
+
+  .note-when-input:focus {
+    outline: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .note-when-input[aria-invalid='true'] {
+    color: #b3261e;
+  }
+
+  .note-when-time .note-when-input {
+    width: 3em;
+  }
+
+  .note-when-picker {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background: currentcolor;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+    mask: center / contain no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='3' width='12' height='11' rx='2' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M2 7h12M5 1.5v3M11 1.5v3' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  .note-when-time .note-when-picker {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3Cpath d='M8 4.5V8l2.5 1.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  .note-when-picker:hover,
+  .note-when-picker:focus-visible {
+    opacity: 1;
+  }
+
+  .note-when-picker:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #3f78b5;
+  }
 }
