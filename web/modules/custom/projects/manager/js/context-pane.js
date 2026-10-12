@@ -984,10 +984,13 @@ function initPaneForms() {
     true
   );
 
-  // Inside the inline add form: Esc cancels, Cmd/Ctrl+Enter saves.
+  // Inside the note forms: Esc cancels, Cmd/Ctrl+Enter saves (or sends, in
+  // the mail form).
   document.body.addEventListener('keydown', e => {
     const form = e.target.closest
-      ? e.target.closest('.logbook-timeline-form form.manager-pane-form')
+      ? e.target.closest(
+          '.logbook-timeline-form form.manager-pane-form, .manager-mail-main form.manager-pane-form'
+        )
       : null;
     if (!form) return;
     if (e.key === 'Escape') {

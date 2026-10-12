@@ -439,16 +439,241 @@
    ========================= */
 
 .manager-mail-pane {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: center;
-  gap: 0.5em 1em;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15em;
+  gap: 0 2em;
+  align-items: start;
+  padding: 0.5em 0;
 }
 
-.manager-mail-pane-last {
+.manager-mail-pane > .pane-messages {
+  grid-column: 1 / -1;
+}
+
+/* The form is written in place, in the look of the note form: underlined
+   fields without boxes. */
+.manager-mail-main .manager-pane-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.75em;
+}
+
+.manager-mail-main .manager-pane-form .form-item,
+.manager-mail-main .manager-pane-form .form-wrapper {
   margin: 0;
+}
+
+.manager-mail-main .manager-pane-form .form-item {
+  flex: 1 1 100%;
+}
+
+.manager-mail-main .manager-pane-form .form-item > label {
+  display: block;
+  margin: 0 0 0.15em;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #5a7390;
+}
+
+.manager-mail-main .manager-pane-form .js-form-item-recipients {
+  padding-bottom: 0.75em;
+  font-size: 0.85em;
+  color: #4d6580;
+}
+
+.manager-mail-main .manager-pane-form .js-form-item-recipients > label {
+  display: inline;
+  margin-right: 0.5em;
+}
+
+.manager-mail-main .manager-pane-form input.form-text,
+.manager-mail-main .manager-pane-form textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-bottom: 1px solid #e3e9f1;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.manager-mail-main .manager-pane-form input.form-text {
+  height: auto;
+  padding: 0.25em 0;
+  font-weight: 600;
+}
+
+.manager-mail-main .manager-pane-form textarea {
+  padding: 0.75em 0;
+  field-sizing: content;
+  min-height: 8em;
+  overflow: hidden;
+  resize: none;
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: #4d6580;
+}
+
+.manager-mail-main .manager-pane-form .js-form-item-body {
+  margin-top: 0.75em;
+}
+
+.manager-mail-main .manager-pane-form input.form-text:hover,
+.manager-mail-main .manager-pane-form textarea:hover {
+  border-bottom-color: #b8c7d9;
+}
+
+.manager-mail-main .manager-pane-form input.form-text:focus,
+.manager-mail-main .manager-pane-form textarea:focus {
+  border-bottom-color: #3f78b5;
+  outline: none;
+  box-shadow: none;
+}
+
+.manager-mail-main
+  .manager-pane-form
+  :is(input.form-text, textarea)[aria-invalid='true'] {
+  border-bottom-color: #b3261e;
+}
+
+/* Placeholders: small, muted, one line. */
+.manager-mail-main .manager-pane-form .js-form-item-tokens {
+  margin-top: 0.75em;
+  font-size: 0.75em;
+  color: #5a7390;
+}
+
+.manager-mail-main .manager-pane-form .js-form-item-tokens code {
+  margin-right: 0.25em;
+  padding: 0.1em 0.5em;
+  border-radius: 0.5em;
+  background: #e8ecf2;
+  font-size: 1em;
+  color: #4d6580;
+}
+
+.manager-mail-main .manager-pane-form .js-form-item-tokens > div {
+  font-size: 1em;
+  color: #5a7390;
+  margin-top: 0.35em;
+}
+
+.manager-mail-main .manager-pane-form > .button {
+  min-height: 0;
+  margin: 1em 0 0;
+  padding: 0.3em 1em;
+  border: 0 !important;
+  border-radius: 1em;
+  background: #3f78b5;
+  box-shadow: none !important;
+  color: #fff;
   font-size: 0.8em;
-  color: #7e98b5;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.manager-mail-main .manager-pane-form > .button:hover {
+  background: #2f6199;
+}
+
+.manager-mail-main .manager-pane-form > .button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(63 120 181 / 30%) !important;
+}
+
+.manager-mail-main .manager-pane-form .manager-pane-field-error {
+  flex: 1 1 100%;
+}
+
+/* Right column: the mail types (more may follow) and the last mail. */
+.manager-mail-side {
+  padding-left: 1.25em;
+  border-left: 1px solid #e3e9f1;
+}
+
+.manager-mail-side-title {
+  margin: 0 0 0.5em;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #5a7390;
+}
+
+.manager-mail-types {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+a.manager-mail-type {
+  display: block;
+  padding: 0.35em 0.75em;
+  border-radius: 0.5em;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: #4d6580;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+}
+
+a.manager-mail-type:hover {
+  background: #e8ecf2;
+  color: #3f78b5;
+}
+
+a.manager-mail-type.is-active {
+  background: #e3edf8;
+  color: #2f6199;
+  font-weight: 600;
+}
+
+a.manager-mail-type:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #3f78b5;
+}
+
+.manager-mail-last,
+.manager-mail-pane-last {
+  margin: 1em 0 0;
+  font-size: 0.8em;
+  color: #5a7390;
+}
+
+@media (max-width: 800px) {
+  .manager-mail-pane {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .manager-mail-side {
+    margin-top: 1.5em;
+    padding: 1em 0 0;
+    border-top: 1px solid #e3e9f1;
+    border-left: 0;
+  }
+
+  .manager-mail-main .manager-pane-form input.form-text,
+  .manager-mail-main .manager-pane-form textarea {
+    font-size: 16px;
+  }
+
+  .manager-mail-main .manager-pane-form > .button {
+    min-height: 44px;
+    padding: 0 1.5em;
+  }
+
+  a.manager-mail-type {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
 }
 
 /* =========================
@@ -843,10 +1068,11 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
    Narrow screens
    ========================= */
 
-/* The pane stays as wide as the visible part of the (scrolling) table and
+/* The timeline and mail panes stay as wide as the visible part of the (scrolling) table and
    keeps its place when the table is scrolled sideways; the width comes from
    the script. */
-.context-pane > td > * {
+.context-pane[data-context-type='logbook'] > td > *,
+.context-pane[data-context-type='mail'] > td > * {
   position: sticky;
   left: var(--pane-left, 0);
   box-sizing: border-box;
