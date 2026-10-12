@@ -890,6 +890,75 @@ function initNoteDrafts(context) {
   }
 }
 
+/**
+ * The placeholder pills of the mail form: active while the cursor is in the
+ * message (or on a pill), where a click inserts the token at the cursor.
+ */
+function initMailTokens(context) {
+  // The message grows with its text. Browsers without field-sizing get the
+  // height from the script.
+  const growing = !CSS.supports('field-sizing', 'content');
+  const grow = field => {
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight}px`;
+  };
+  if (growing && context && context.querySelectorAll) {
+    context.querySelectorAll('.manager-mail-main textarea').forEach(grow);
+  }
+
+  if (window._mailTokensAttached) return;
+  window._mailTokensAttached = true;
+
+  if (growing) {
+    document.addEventListener('input', e => {
+      if (e.target.matches('.manager-mail-main textarea')) grow(e.target);
+    });
+    window.addEventListener('resize', () =>
+      document.querySelectorAll('.manager-mail-main textarea').forEach(grow)
+    );
+  }
+
+  const syncPills = () => {
+    const active = document.activeElement;
+    const usable =
+      active &&
+      active.closest &&
+      (active.matches('.manager-mail-main textarea[name="body"]') ||
+        active.closest('.manager-mail-token'));
+    document.querySelectorAll('.manager-mail-token').forEach(pill => {
+      pill.setAttribute('aria-disabled', usable ? 'false' : 'true');
+    });
+  };
+  document.addEventListener('focusin', syncPills);
+  document.addEventListener('focusout', () => setTimeout(syncPills, 0));
+
+  // Keep the cursor (and the focus) in the message while a pill is pressed.
+  document.body.addEventListener('mousedown', e => {
+    if (e.target.closest && e.target.closest('.manager-mail-token')) {
+      e.preventDefault();
+    }
+  });
+  document.body.addEventListener('click', e => {
+    const pill = e.target.closest && e.target.closest('.manager-mail-token');
+    if (!pill || pill.getAttribute('aria-disabled') === 'true') return;
+    const field = pill.closest('form').querySelector('textarea[name="body"]');
+    if (!field) return;
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    field.focus();
+    // A space keeps the token apart from the words next to it; punctuation and
+    // line breaks need none.
+    const before = field.value.slice(0, start).slice(-1);
+    const after = field.value.slice(end, end + 1);
+    const token =
+      (before && !/[\s([{"'„«]/.test(before) ? ' ' : '') +
+      pill.getAttribute('data-token') +
+      (after && !/[\s.,;:!?)\]}"'“»]/.test(after) ? ' ' : '');
+    field.setRangeText(token, start, end, 'end');
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
 function initPaneForms() {
   if (window._paneFormHandlersAttached) return;
   window._paneFormHandlersAttached = true;
@@ -1254,6 +1323,7 @@ function initTransitionButton() {
       initNoteDrafts(context);
       revealNewRow(context);
       initPaneForms();
+      initMailTokens(context);
       initPromoteButton();
       initTransitionButton();
 
