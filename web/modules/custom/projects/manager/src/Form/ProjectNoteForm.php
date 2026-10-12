@@ -2,11 +2,13 @@
 
 namespace Drupal\manager\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\Core\Url;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\mailer\Manager\ManagerMailAccess;
@@ -16,14 +18,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Lets a manager add or edit a note on a project.
  *
- * A plain form that is built and processed inside a manager context pane: the
- * mail pane adds a note (arguments: the project), the logbook pane edits one
- * (arguments: the project and the entry). The pane reads the outcome from the
+ * A plain form that is built and processed inside the logbook context pane: it
+ * adds a note (arguments: the project) or edits one (arguments: the project and
+ * the entry). The pane reads the outcome from the
  * form state flags 'saved', 'save_failed', 'save_denied' and
  * 'already_submitted' and renders the messages itself. Everything is plain
  * text.
  */
-class ProjectNoteForm extends FormBase {
+class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
 
   use NoteFormAuthorizationTrait;
 
@@ -31,6 +33,11 @@ class ProjectNoteForm extends FormBase {
    * The earliest accepted time (1970-01-02), so the value is positive.
    */
   protected const MIN_TIMESTAMP = 86400;
+
+  /**
+   * The name of the request attribute that gets the id of the saved note.
+   */
+  public const SAVED_ATTRIBUTE = 'manager_pane_saved_note';
 
   /**
    * The latest accepted time (2037-12-31), within a 32 bit integer column.
@@ -60,6 +67,25 @@ class ProjectNoteForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public static function trustedCallbacks(): array {
+    return ['hideSeconds'];
+  }
+
+  /**
+   * Cuts the seconds from the value of the time input (date_time_callbacks).
+   *
+   * The core element always renders HH:MM:SS, which makes some browsers show
+   * the seconds even with a one minute step. A posted HH:MM is accepted.
+   */
+  public static function hideSeconds(array &$element): void {
+    if (isset($element['time']['#value']) && is_string($element['time']['#value'])) {
+      $element['time']['#value'] = substr($element['time']['#value'], 0, 5);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId(): string {
     return 'manager_project_note_form';
   }
@@ -74,6 +100,8 @@ class ProjectNoteForm extends FormBase {
     $occurred = $correspondence instanceof CorrespondenceInterface
       ? DrupalDateTime::createFromTimestamp($correspondence->getOccurredTime(), $timezone)
       : new DrupalDateTime('now', $timezone);
+    // The time input shows hours and minutes only, so drop the seconds.
+    $occurred->setTime((int) $occurred->format('H'), (int) $occurred->format('i'), 0);
 
     $form['subject'] = [
       '#type' => 'textfield',
@@ -81,20 +109,27 @@ class ProjectNoteForm extends FormBase {
       '#default_value' => $correspondence?->get('subject')->value ?? '',
       '#maxlength' => 255,
       '#required' => TRUE,
+      '#attributes' => ['placeholder' => $this->t('Title')],
     ];
     $form['body'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Note'),
       '#default_value' => $correspondence?->get('body')->value ?? '',
-      '#rows' => 6,
+      '#rows' => 1,
       '#required' => TRUE,
-      '#description' => $this->t('Plain text.'),
+      '#attributes' => ['placeholder' => $this->t('Write a note…')],
     ];
+    // The date and time come before the buttons, so the tab order is the
+    // order of the fields. In the timeline they sit in the date column.
     $form['occurred'] = [
       '#type' => 'datetime',
       '#title' => $this->t('Date and time'),
       '#default_value' => $occurred,
       '#date_timezone' => $timezone,
+      // Hours and minutes only: the increment makes the time input step by a
+      // minute and the callback keeps the seconds out of its value.
+      '#date_increment' => 60,
+      '#date_time_callbacks' => [[static::class, 'hideSeconds']],
       '#required' => TRUE,
     ];
     $form['actions']['submit'] = [
@@ -103,13 +138,11 @@ class ProjectNoteForm extends FormBase {
     ];
     $project_id = $project?->id() ?? $correspondence?->get('project')->target_id;
     if ($project_id !== NULL) {
-      // The add form lives in the mail pane, the edit form in the logbook.
-      $pane = $correspondence instanceof CorrespondenceInterface ? 'logbook' : 'mail';
       $form['actions']['cancel'] = [
         '#type' => 'link',
         '#title' => $this->t('Cancel'),
         '#url' => Url::fromRoute('manager.context_pane', ['project' => $project_id], [
-          'query' => ['type' => $pane, 'view' => 'index'],
+          'query' => ['type' => 'logbook', 'view' => 'index'],
         ]),
         '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
       ];
@@ -142,6 +175,30 @@ class ProjectNoteForm extends FormBase {
     }
     elseif ($occurred < self::MIN_TIMESTAMP || $occurred > self::MAX_TIMESTAMP) {
       $form_state->setErrorByName('occurred', $this->t('The date must be between 1970 and 2037.'));
+    }
+    $this->showFieldErrors($form, $form_state);
+  }
+
+  /**
+   * Shows the error of each invalid field right below it.
+   *
+   * The pane renders the form without the inline form errors module, so the
+   * messages would only reach the status message banner far above the field.
+   * This covers the core required errors as well as the ones set here.
+   */
+  protected function showFieldErrors(array &$form, FormStateInterface $form_state): void {
+    $done = [];
+    foreach ($form_state->getErrors() as $name => $message) {
+      $field = explode('][', (string) $name)[0];
+      if (!in_array($field, ['subject', 'body', 'occurred'], TRUE) || isset($done[$field]) || !isset($form[$field])) {
+        continue;
+      }
+      $done[$field] = TRUE;
+      $id = 'manager-note-' . $field . '-error';
+      $form[$field]['#suffix'] = '<div class="manager-pane-field-error" id="' . $id . '" role="alert">' . Html::escape((string) $message) . '</div>';
+      if ($field !== 'occurred') {
+        $form[$field]['#attributes']['aria-describedby'] = $id;
+      }
     }
   }
 
@@ -179,15 +236,18 @@ class ProjectNoteForm extends FormBase {
           foreach ($values as $name => $value) {
             $correspondence->set($name, $value);
           }
-          $correspondence->save();
+          $note = $correspondence;
         }
         else {
-          $this->entityTypeManager->getStorage('correspondence')->create($values + [
+          $note = $this->entityTypeManager->getStorage('correspondence')->create($values + [
             'type' => 'note',
             'project' => $project->id(),
             'sender' => $this->currentUser()->id(),
-          ])->save();
+          ]);
         }
+        $note->save();
+        // The pane highlights the saved note in the timeline.
+        $this->getRequest()->attributes->set(self::SAVED_ATTRIBUTE, (int) $note->id());
         return TRUE;
       }
       catch (EntityStorageException $exception) {

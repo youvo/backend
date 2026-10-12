@@ -5,8 +5,25 @@
       {{ content.form }}
     {% elseif content.rows is defined %}
       <div class="logbook-timeline-flex">
+        {{ content.add }}
+        {% if content.add_form %}
+          <div class="logbook-timeline-flex-row logbook-timeline-add-form">
+            <div class="logbook-timeline-header-container logbook-timeline--note" data-timeline-type="note">
+              <div class="logbook-timeline-label-container">
+                <div class="logbook-timeline-label">{{ 'Note'|t }}</div>
+              </div>
+              <div class="logbook-timeline-date-container"></div>
+            </div>
+            <div class="logbook-timeline-bar-container">
+              <div class="logbook-timeline-circle"></div>
+            </div>
+            <div class="logbook-timeline-content-container">
+              {{ content.add_form }}
+            </div>
+          </div>
+        {% endif %}
         {% for row in content.rows %}
-          <div class="logbook-timeline-flex-row" data-timeline-type="{{ row.type }}">
+          <div class="logbook-timeline-flex-row{{ row.highlight ? ' is-new' : '' }}" data-timeline-type="{{ row.type }}">
             {{ row.build }}
             {% if row.actions %}
               <div class="logbook-timeline-actions">

@@ -30,6 +30,10 @@ class ManagerHooks {
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessContextPane',
       ],
+      'manager_pane_messages' => [
+        'variables' => ['messages' => []],
+        'template' => 'manager-pane-messages',
+      ],
       'manager_rule' => [
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessManagerRule',

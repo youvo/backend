@@ -28,7 +28,7 @@ class TimelineBuilder {
   /**
    * Builds the rows, newest first.
    *
-   * @return array<int, array{type: string, time: int, build: array, actions?: array}>
+   * @return array<int, array{type: string, id: int, time: int, build: array, actions?: array}>
    *   The rows.
    */
   public function build(ProjectInterface $project, AccountInterface $account): array {
@@ -73,10 +73,7 @@ class TimelineBuilder {
     $type_order = ['note' => 0, 'mail' => 1, 'log' => 2];
     usort($rows, static fn (array $a, array $b): int => [$b['time'], $type_order[$a['type']], $b['id']]
       <=> [$a['time'], $type_order[$b['type']], $a['id']]);
-    return array_map(static function (array $row): array {
-      unset($row['id']);
-      return $row;
-    }, $rows);
+    return $rows;
   }
 
   /**

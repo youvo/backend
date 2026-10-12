@@ -562,7 +562,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
     $project = $this->projectWithManager();
     $note = $this->createNoteOf($project);
     $cases = [
-      [ProjectNoteForm::class, [$project, NULL], 'mail'],
+      [ProjectNoteForm::class, [$project, NULL], 'logbook'],
       [ProjectNoteForm::class, [$project, $note], 'logbook'],
       [ProjectNoteDeleteForm::class, [$project, $note], 'logbook'],
     ];

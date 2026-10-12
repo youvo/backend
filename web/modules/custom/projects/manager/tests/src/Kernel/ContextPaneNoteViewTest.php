@@ -245,9 +245,9 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * The mail pane index offers an in-pane link to the add form.
    */
   public function testIndexOffersInPaneAddLink(): void {
-    $html = $this->pane('mail');
-    $this->assertStringContainsString('data-pane-view="note"', $html);
-    $this->assertStringContainsString('view=note', $html);
+    $html = $this->pane('logbook');
+    $this->assertStringContainsString('data-pane-view="note_add"', $html);
+    $this->assertStringContainsString('view=note_add', $html);
     $this->assertStringNotContainsString('use-ajax', $html);
     $this->assertMessengerEmpty();
   }
@@ -256,8 +256,11 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * The add view renders the form with real action and token, saving nothing.
    */
   public function testAddViewRendersForm(): void {
-    $html = $this->pane('mail', ['view' => 'note']);
+    $html = $this->pane('logbook', ['view' => 'note_add']);
     $this->assertStringContainsString('manager-pane-form', $html);
+    // The form sits inside the timeline, in place of the add row.
+    $this->assertStringContainsString('logbook-timeline-add-form', $html);
+    $this->assertStringNotContainsString('logbook-timeline-add"', $html);
     $this->assertStringContainsString('name="subject"', $html);
     $this->assertStringContainsString('name="body"', $html);
     $this->assertStringContainsString('name="occurred[date]"', $html);
@@ -273,12 +276,17 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A valid add POST saves one note as plain text and returns to the index.
    */
   public function testAddPostSavesNote(): void {
-    $query = ['view' => 'note'];
-    $post = $this->notePost($this->pane('mail', $query), 'Anruf <b>1</b>', "Rückruf <script>x</script>\nzweite Zeile");
-    $html = $this->pane('mail', $query, $post);
+    $query = ['view' => 'note_add'];
+    $post = $this->notePost($this->pane('logbook', $query), 'Anruf <b>1</b>', "Rückruf <script>x</script>\nzweite Zeile");
+    $html = $this->pane('logbook', $query, $post);
     $this->assertStringContainsString('The note was saved.', $html);
+    // A compact notice instead of the Drupal status message, and the saved
+    // note is the one row marked for the highlight.
+    $this->assertStringContainsString('pane-message-status', $html);
+    $this->assertStringNotContainsString('class="messages', $html);
+    $this->assertSame(1, substr_count($html, 'logbook-timeline-flex-row is-new'));
     $this->assertStringNotContainsString('<form', $html);
-    $this->assertStringContainsString('data-pane-view="note"', $html);
+    $this->assertStringContainsString('data-pane-view="note_add"', $html);
     $this->assertMessengerEmpty();
 
     $notes = $this->notes();
@@ -294,18 +302,22 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * An invalid add POST keeps the text, shows errors and saves nothing.
    */
   public function testInvalidAddKeepsTextAndEscapesIt(): void {
-    $query = ['view' => 'note'];
+    $query = ['view' => 'note_add'];
     $hostile = '"><script>alert(1)</script>';
-    $form = $this->pane('mail', $query);
+    $form = $this->pane('logbook', $query);
     foreach ([
       $this->notePost($form, '', 'My typed note'),
       $this->notePost($form, $hostile, ''),
       $this->notePost($form, 'T', 'B', '1969-12-31'),
       $this->notePost($form, 'T', 'B', '2038-01-02'),
     ] as $post) {
-      $html = $this->pane('mail', $query, $post);
+      $html = $this->pane('logbook', $query, $post);
       $this->assertStringContainsString('<form', $html);
       $this->assertStringContainsString('error', $html);
+      // The error is shown at the field, not in a banner above the form.
+      $this->assertStringContainsString('manager-pane-field-error', $html);
+      $this->assertStringNotContainsString('pane-message-error', $html);
+      $this->assertStringContainsString('aria-invalid="true"', $html);
       $this->assertStringNotContainsString('The note was saved.', $html);
       $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
       $this->assertMessengerEmpty();
@@ -323,12 +335,12 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * Accounts that may not manage the notes get nothing and save nothing.
    */
   public function testAddDeniedForOthers(): void {
-    $query = ['view' => 'note'];
-    $post = $this->notePost($this->pane('mail', $query), 'S', 'B');
+    $query = ['view' => 'note_add'];
+    $post = $this->notePost($this->pane('logbook', $query), 'S', 'B');
     foreach ($this->deniedAccounts() as $label => $account) {
       $this->actAs($account);
       foreach ([NULL, $post] as $body) {
-        $html = $this->pane('mail', $query, $body);
+        $html = $this->pane('logbook', $query, $body);
         $this->assertStringNotContainsString('<form', $html, $label);
         $this->assertStringNotContainsString('data-pane-view', $html, $label);
         $this->assertStringNotContainsString('The note was saved.', $html, $label);
@@ -342,13 +354,13 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A POST without a valid form token is rejected by the form API.
    */
   public function testAddWithoutValidTokenSavesNothing(): void {
-    $query = ['view' => 'note'];
-    $post = $this->notePost($this->pane('mail', $query), 'S', 'B');
+    $query = ['view' => 'note_add'];
+    $post = $this->notePost($this->pane('logbook', $query), 'S', 'B');
     $missing = $post;
     unset($missing['form_token']);
     $wrong = ['form_token' => 'xxxx'] + $post;
     foreach ([$missing, $wrong] as $body) {
-      $html = $this->pane('mail', $query, $body);
+      $html = $this->pane('logbook', $query, $body);
       $this->assertStringContainsString('<form', $html);
       $this->assertStringNotContainsString('The note was saved.', $html);
       $this->assertMessengerEmpty();
@@ -360,10 +372,10 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A replayed or double add POST creates exactly one note.
    */
   public function testDoubleAddSubmitCreatesOneNote(): void {
-    $query = ['view' => 'note'];
-    $post = $this->notePost($this->pane('mail', $query), 'S', 'B');
-    $this->assertStringContainsString('The note was saved.', $this->pane('mail', $query, $post));
-    $html = $this->pane('mail', $query, $post);
+    $query = ['view' => 'note_add'];
+    $post = $this->notePost($this->pane('logbook', $query), 'S', 'B');
+    $this->assertStringContainsString('The note was saved.', $this->pane('logbook', $query, $post));
+    $html = $this->pane('logbook', $query, $post);
     $this->assertStringContainsString('This form was already submitted.', $html);
     $this->assertStringNotContainsString('The note was saved.', $html);
     $this->assertCount(1, $this->notes());
@@ -374,19 +386,19 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A POST without (or with a malformed) form_build_id saves nothing.
    */
   public function testMissingFormBuildIdSavesNothing(): void {
-    $query = ['view' => 'note'];
-    $post = $this->notePost($this->pane('mail', $query), 'S', 'B');
+    $query = ['view' => 'note_add'];
+    $post = $this->notePost($this->pane('logbook', $query), 'S', 'B');
     $missing = $post;
     unset($missing['form_build_id']);
     foreach ([$missing, ['form_build_id' => ''] + $post, ['form_build_id' => 'junk'] + $post] as $body) {
-      $html = $this->pane('mail', $query, $body);
+      $html = $this->pane('logbook', $query, $body);
       $this->assertStringContainsString('This form was already submitted.', $html);
       $this->assertStringNotContainsString('The note was saved.', $html);
       $this->assertMessengerEmpty();
     }
     $this->assertSame([], $this->notes());
     // The untouched POST still works: nothing was claimed by the failures.
-    $this->assertStringContainsString('The note was saved.', $this->pane('mail', $query, $post));
+    $this->assertStringContainsString('The note was saved.', $this->pane('logbook', $query, $post));
   }
 
   /**
@@ -398,9 +410,9 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $this->assertInstanceOf(Project::class, $y);
     $admin = $this->accountWith($this->manager, [...self::PERMISSIONS, 'administer projects']);
     $this->actAs($admin);
-    $query = ['view' => 'note'];
-    $post = ['form_build_id' => $this->cachedBuildId($x, NULL)] + $this->notePost($this->pane('mail', $query, NULL, $x), 'S', 'B');
-    $html = $this->pane('mail', $query, $post, $y);
+    $query = ['view' => 'note_add'];
+    $post = ['form_build_id' => $this->cachedBuildId($x, NULL)] + $this->notePost($this->pane('logbook', $query, NULL, $x), 'S', 'B');
+    $html = $this->pane('logbook', $query, $post, $y);
     $this->assertStringNotContainsString('The note was saved.', $html);
     $this->assertSame([], $this->notes($x));
     $this->assertSame([], $this->notes($y));

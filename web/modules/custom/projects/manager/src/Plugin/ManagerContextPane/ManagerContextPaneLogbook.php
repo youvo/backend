@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\manager\Attribute\ManagerContextPane;
@@ -20,13 +21,16 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Provides a project logbook manager context pane.
  *
- * Views: 'index' (the merged timeline), 'note_edit' and 'note_delete' (the
- * note forms; the 'id' query parameter is the id of the correspondence note).
+ * Views: 'index' (the merged timeline with the add row), 'note_add' (the
+ * timeline with the add form in place of the add row), 'note_edit' and
+ * 'note_delete' (the note forms; the 'id' query parameter is the id of the
+ * correspondence note).
  */
 #[ManagerContextPane(id: "logbook")]
 class ManagerContextPaneLogbook extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
   use NotePaneFormTrait;
+  use PaneMessagesTrait;
   use StringTranslationTrait;
 
   /**
@@ -85,6 +89,9 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    */
   public function buildView(Project $project, Request $request): array {
     $view = $request->query->get('view');
+    if ($view === 'note_add') {
+      return $this->buildAddView($project, $request);
+    }
     if ($view === 'note_edit' || $view === 'note_delete') {
       return $this->buildNoteView($project, $request, $view);
     }
@@ -105,14 +112,105 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    *   The project.
    * @param bool $messages
    *   TRUE to render the status messages above the timeline.
+   * @param array|null $add_form
+   *   The add note form to show in place of the add row, if any.
+   * @param int|null $highlight
+   *   The id of the note to highlight, the one that was just saved.
    */
-  protected function buildIndex(Project $project, bool $messages = FALSE): array {
+  protected function buildIndex(Project $project, bool $messages = FALSE, ?array $add_form = NULL, ?int $highlight = NULL): array {
     $build = $this->emptyPane($project);
     if ($messages) {
-      $build['content']['messages'] = ['#type' => 'status_messages'];
+      $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     }
-    $build['content']['rows'] = $this->timelineBuilder->build($project, $this->currentUser);
+    if ($this->mayAdd($project)) {
+      if ($add_form !== NULL) {
+        $build['content']['add_form'] = $add_form;
+      }
+      else {
+        $build['content']['add'] = $this->buildAddRow($project);
+      }
+    }
+    $rows = $this->timelineBuilder->build($project, $this->currentUser);
+    foreach ($rows as &$row) {
+      $row['highlight'] = $highlight !== NULL && $row['type'] === 'note' && $row['id'] === $highlight;
+    }
+    unset($row);
+    $build['content']['rows'] = $rows;
     return $build;
+  }
+
+  /**
+   * Gets the id of the note the form saved during this request.
+   */
+  protected function savedNote(Request $request): ?int {
+    $id = $request->attributes->get(ProjectNoteForm::SAVED_ATTRIBUTE);
+    return is_int($id) ? $id : NULL;
+  }
+
+  /**
+   * Checks if the current user may add a note to the project.
+   */
+  protected function mayAdd(Project $project): bool {
+    return $this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser)
+      && $this->access->noteAccess($this->currentUser, $project)->isAllowed();
+  }
+
+  /**
+   * Builds the ghost row that opens the add note form in place.
+   */
+  protected function buildAddRow(Project $project): array {
+    $label = $this->t('Add note');
+    return [
+      '#type' => 'link',
+      '#title' => [
+        '#markup' => '<span class="logbook-timeline-header-container"><span class="logbook-timeline-label-container"><span class="logbook-timeline-label">+ ' . $this->t('Note') . '</span></span>'
+        . '<span class="logbook-timeline-date-container"></span></span>'
+        . '<span class="logbook-timeline-bar-container"><span class="logbook-timeline-circle"></span></span>'
+        . '<span class="logbook-timeline-content-container logbook-timeline-text">' . $label . '…</span>',
+      ],
+      '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
+        'query' => ['type' => 'logbook', 'view' => 'note_add'],
+      ]),
+      '#attributes' => [
+        'class' => ['logbook-timeline-flex-row', 'logbook-timeline-add'],
+        'data-pane-view' => 'note_add',
+        'data-pane-autofocus' => '',
+        'title' => $label,
+      ],
+    ];
+  }
+
+  /**
+   * Builds the add note view; access is checked on every request.
+   *
+   * A valid POST saves the note in the form's submit handler and returns the
+   * timeline with a confirmation; a failed save returns the timeline with the
+   * form again.
+   */
+  protected function buildAddView(Project $project, Request $request): array {
+    if (!$this->mayAdd($project)) {
+      return $this->emptyPane($project);
+    }
+    [$outcome, $form] = $this->processNoteForm($this->formBuilder, ProjectNoteForm::class, $project, NULL, $request, 'saved', 'save_failed', 'save_denied');
+    if ($outcome === 'denied') {
+      return $this->emptyPane($project);
+    }
+    if ($outcome === 'already') {
+      $this->messenger->addStatus($this->t('This form was already submitted.'));
+      return $this->buildIndex($project, TRUE);
+    }
+    if ($outcome === 'done') {
+      $this->messenger->addStatus($this->t('The note was saved.'));
+      return $this->buildIndex($project, TRUE, NULL, $this->savedNote($request));
+    }
+    if ($outcome === 'form') {
+      // The form shows its errors at the fields.
+      $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
+    }
+    if ($outcome === 'failed') {
+      $this->messenger->addError($this->t('The note could not be saved.'));
+    }
+    return $this->buildIndex($project, TRUE, $form);
   }
 
   /**
@@ -172,13 +270,17 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
     }
     if ($outcome === 'done') {
       $this->messenger->addStatus($delete ? $this->t('The note was deleted.') : $this->t('The note was saved.'));
-      return $this->buildIndex($project, TRUE);
+      return $this->buildIndex($project, TRUE, NULL, $delete ? NULL : $this->savedNote($request));
+    }
+    if ($outcome === 'form' && !$delete) {
+      // The form shows its errors at the fields.
+      $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
     }
     if ($outcome === 'failed') {
       $this->messenger->addError($delete ? $this->t('The note could not be deleted.') : $this->t('The note could not be saved.'));
     }
     $build = $this->emptyPane($project);
-    $build['content']['messages'] = ['#type' => 'status_messages'];
+    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     $build['content']['form'] = $form;
     return $build;
   }
