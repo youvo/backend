@@ -259,7 +259,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $html = $this->pane('logbook', ['view' => 'note_add']);
     $this->assertStringContainsString('manager-pane-form', $html);
     // The form sits inside the timeline, in place of the add row.
-    $this->assertStringContainsString('logbook-timeline-add-form', $html);
+    $this->assertStringContainsString('logbook-timeline-form', $html);
     $this->assertStringNotContainsString('logbook-timeline-add"', $html);
     $this->assertStringContainsString('name="subject"', $html);
     $this->assertStringContainsString('name="body"', $html);
@@ -420,7 +420,10 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   }
 
   /**
-   * The edit view renders the form with the stored values.
+   * The edit view is the timeline with the form in the row of the note.
+   *
+   * The script takes only that row from the response, so other forms stay as
+   * they are; the form tells the script the stored values (for the drafts).
    */
   public function testEditViewRendersPrefilledForm(): void {
     $note = $this->createNote();
@@ -429,7 +432,12 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $this->assertStringContainsString('value="Anruf"', $html);
     $this->assertStringContainsString('Rückruf vereinbart', $html);
     $this->assertStringContainsString('data-pane-view="index"', $html);
-    $this->assertStringNotContainsString('logbook-timeline-flex', $html);
+    $this->assertStringContainsString('data-pane-row="note-' . $note->id() . '"', $html);
+    // The form is in the row of the note, in the whole timeline.
+    $this->assertStringContainsString('logbook-timeline-flex', $html);
+    $this->assertStringContainsString('logbook-timeline-form" data-row-key="note-' . $note->id() . '"', $html);
+    $this->assertSame(1, substr_count($html, '<form'));
+    $this->assertStringContainsString('data-initial=', $html);
     $this->hiddenValues($html, 'Save');
     $this->assertMessengerEmpty();
   }
@@ -601,14 +609,17 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   }
 
   /**
-   * The delete view asks for confirmation and deletes nothing on GET.
+   * The delete view asks for confirmation in the row and deletes nothing.
    */
   public function testDeleteViewIsConfirmationStep(): void {
     $note = $this->createNote('Titel <i>x</i>');
     $html = $this->pane('logbook', ['view' => 'note_delete', 'id' => $note->id()]);
-    $this->assertStringContainsString('Do you really want to delete the note', $html);
+    $this->assertStringContainsString('Delete this note?', $html);
+    // The row keeps the text of the note, so it is clear which one it is.
+    $this->assertStringContainsString('is-deleting', $html);
     $this->assertStringContainsString('Titel &lt;i&gt;x&lt;/i&gt;', $html);
     $this->assertStringNotContainsString('<i>x</i>', $html);
+    $this->assertStringContainsString('data-pane-row="note-' . $note->id() . '"', $html);
     $this->assertStringContainsString('data-pane-view="index"', $html);
     $this->assertStringContainsString('value="Delete"', $html);
     $this->assertNotNull($this->reload($note));

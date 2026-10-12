@@ -23,8 +23,10 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * Views: 'index' (the merged timeline with the add row), 'note_add' (the
  * timeline with the add form in place of the add row), 'note_edit' and
- * 'note_delete' (the note forms; the 'id' query parameter is the id of the
- * correspondence note).
+ * 'note_delete' (the timeline with the edit form, or the delete confirmation,
+ * in the row of the note; the 'id' query parameter is the id of the
+ * correspondence note). Every view is the whole timeline: the script takes the
+ * row it needs from it, so several forms can be open at once.
  */
 #[ManagerContextPane(id: "logbook")]
 class ManagerContextPaneLogbook extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
@@ -116,8 +118,11 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    *   The add note form to show in place of the add row, if any.
    * @param int|null $highlight
    *   The id of the note to highlight, the one that was just saved.
+   * @param array<int, array{0: string, 1: array}> $note_forms
+   *   The form to show in the row of a note, keyed by the note id: 'edit' or
+   *   'delete' and the form.
    */
-  protected function buildIndex(Project $project, bool $messages = FALSE, ?array $add_form = NULL, ?int $highlight = NULL): array {
+  protected function buildIndex(Project $project, bool $messages = FALSE, ?array $add_form = NULL, ?int $highlight = NULL, array $note_forms = []): array {
     $build = $this->emptyPane($project);
     if ($messages) {
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
@@ -132,7 +137,12 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
     }
     $rows = $this->timelineBuilder->build($project, $this->currentUser);
     foreach ($rows as &$row) {
+      $row['key'] = $row['type'] . '-' . $row['id'];
       $row['highlight'] = $highlight !== NULL && $row['type'] === 'note' && $row['id'] === $highlight;
+      if ($row['type'] === 'note' && isset($note_forms[$row['id']])) {
+        [$kind, $form] = $note_forms[$row['id']];
+        $row[$kind === 'edit' ? 'form' : 'delete_form'] = $form;
+      }
     }
     unset($row);
     $build['content']['rows'] = $rows;
@@ -173,7 +183,9 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
       ]),
       '#attributes' => [
         'class' => ['logbook-timeline-flex-row', 'logbook-timeline-add'],
+        'data-row-key' => 'add',
         'data-pane-view' => 'note_add',
+        'data-pane-row' => 'add',
         'data-pane-autofocus' => '',
         'title' => $label,
       ],
@@ -279,10 +291,10 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
     if ($outcome === 'failed') {
       $this->messenger->addError($delete ? $this->t('The note could not be deleted.') : $this->t('The note could not be saved.'));
     }
-    $build = $this->emptyPane($project);
-    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-    $build['content']['form'] = $form;
-    return $build;
+    // The form in the row of its note, in the whole timeline.
+    return $this->buildIndex($project, TRUE, NULL, NULL, [
+      (int) $entry->id() => [$delete ? 'delete' : 'edit', $form],
+    ]);
   }
 
 }

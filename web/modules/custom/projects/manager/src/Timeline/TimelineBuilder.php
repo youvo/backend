@@ -110,6 +110,7 @@ class TimelineBuilder {
           'class' => ['logbook-timeline-action'],
           'title' => $title,
           'data-pane-view' => $view,
+          'data-pane-row' => 'note-' . $note->id(),
           'data-pane-params' => http_build_query(['id' => $note->id()]),
         ],
       ];

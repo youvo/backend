@@ -15,10 +15,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Asks a manager to confirm the deletion of a note.
  *
- * A plain form that is built and processed inside the logbook context pane
- * (arguments: the project and the entry). The pane reads the outcome from the
- * form state flags 'deleted', 'delete_failed', 'delete_denied' and
- * 'already_submitted' and renders the messages itself.
+ * A plain form that is built and processed inside the logbook context pane,
+ * in the row of the note (arguments: the project and the entry). The pane
+ * reads the outcome from the form state flags 'deleted', 'delete_failed',
+ * 'delete_denied' and 'already_submitted' and renders the messages itself.
  */
 class ProjectNoteDeleteForm extends FormBase {
 
@@ -56,12 +56,13 @@ class ProjectNoteDeleteForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, ?CorrespondenceInterface $correspondence = NULL): array {
     $form['#attributes']['class'][] = 'manager-pane-form';
+    // The confirmation sits in the row of the note, next to its text: a short
+    // question, the title is right there.
     $form['question'] = [
       '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#value' => $this->t('Do you really want to delete the note "@title"? This cannot be undone.', [
-        '@title' => $correspondence?->label() ?? '',
-      ]),
+      '#tag' => 'span',
+      '#attributes' => ['class' => ['logbook-confirm-question']],
+      '#value' => $this->t('Delete this note? This cannot be undone.'),
     ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
@@ -75,7 +76,11 @@ class ProjectNoteDeleteForm extends FormBase {
         '#url' => Url::fromRoute('manager.context_pane', ['project' => $project_id], [
           'query' => ['type' => 'logbook', 'view' => 'index'],
         ]),
-        '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
+        '#attributes' => [
+          'data-pane-view' => 'index',
+          'data-pane-row' => 'note-' . ($correspondence?->id() ?? ''),
+          'class' => ['button'],
+        ],
       ];
     }
     return $form;

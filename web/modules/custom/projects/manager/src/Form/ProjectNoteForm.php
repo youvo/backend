@@ -103,6 +103,15 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
     // The time input shows hours and minutes only, so drop the seconds.
     $occurred->setTime((int) $occurred->format('H'), (int) $occurred->format('i'), 0);
 
+    // The stored values: the script compares the fields with them to see if a
+    // note has unsaved changes (and keeps a draft).
+    $form['#attributes']['data-initial'] = json_encode([
+      'subject' => $correspondence?->get('subject')->value ?? '',
+      'body' => $correspondence?->get('body')->value ?? '',
+      'date' => $correspondence instanceof CorrespondenceInterface ? $occurred->format('Y-m-d') : '',
+      'time' => $correspondence instanceof CorrespondenceInterface ? $occurred->format('H:i') : '',
+    ], JSON_THROW_ON_ERROR);
+
     $form['subject'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Title'),
@@ -144,7 +153,11 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
         '#url' => Url::fromRoute('manager.context_pane', ['project' => $project_id], [
           'query' => ['type' => 'logbook', 'view' => 'index'],
         ]),
-        '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
+        '#attributes' => [
+          'data-pane-view' => 'index',
+          'data-pane-row' => $correspondence instanceof CorrespondenceInterface ? 'note-' . $correspondence->id() : 'add',
+          'class' => ['button'],
+        ],
       ];
     }
     return $form;
