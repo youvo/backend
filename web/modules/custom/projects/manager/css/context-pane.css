@@ -179,23 +179,6 @@
   margin: 8px 0;
 }
 
-/* Hidden rows (type filter) must not be shown by the flex display. */
-.logbook-timeline-flex-row[hidden] {
-  display: none;
-}
-
-.logbook-timeline-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5em;
-  margin-bottom: 0.5em;
-}
-
-.js-timeline-filter.is-active {
-  font-weight: 700;
-  box-shadow: inset 0 -2px 0 currentcolor;
-}
-
 /* Edit and delete links of a note row. */
 .logbook-timeline-actions {
   display: flex;
@@ -253,7 +236,7 @@
 }
 
 /* Connector as ::after, only for non-last visible rows. Extends into next row. */
-.logbook-timeline-flex-row:not(:last-child):not(.is-last-visible)
+.logbook-timeline-flex-row:not(:last-child)
   .logbook-timeline-bar-container::after {
   content: '';
   position: absolute;

@@ -417,7 +417,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $this->assertStringContainsString('value="Anruf"', $html);
     $this->assertStringContainsString('Rückruf vereinbart', $html);
     $this->assertStringContainsString('data-pane-view="index"', $html);
-    $this->assertStringNotContainsString('logbook-timeline-filters', $html);
+    $this->assertStringNotContainsString('logbook-timeline-flex', $html);
     $this->hiddenValues($html, 'Save');
     $this->assertMessengerEmpty();
   }
@@ -431,7 +431,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $post = $this->notePost($this->pane('logbook', $query), 'Neu <b>', '<script>y</script>', '2026-04-05');
     $html = $this->pane('logbook', $query, $post);
     $this->assertStringContainsString('The note was saved.', $html);
-    $this->assertStringContainsString('logbook-timeline-filters', $html);
+    $this->assertStringContainsString('logbook-timeline-flex', $html);
     $this->assertStringNotContainsString('<form', $html);
     $this->assertStringContainsString('Neu &lt;b&gt;', $html);
     $this->assertStringNotContainsString('<script>y</script>', $html);
@@ -487,7 +487,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
           foreach ([NULL, $this->notePost($own_form, 'Hacked', 'Hacked', '2026-03-04', $op)] as $body) {
             $html = $this->pane('logbook', $query, $body);
             $this->assertStringNotContainsString('<form', $html, "$view $id");
-            $this->assertStringNotContainsString('logbook-timeline-filters', $html, "$view $id");
+            $this->assertStringNotContainsString('logbook-timeline-flex', $html, "$view $id");
             $this->assertMessengerEmpty();
           }
         }
@@ -613,7 +613,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $post = $this->hiddenValues($this->pane('logbook', $query), 'Delete');
     $html = $this->pane('logbook', $query, $post);
     $this->assertStringContainsString('The note was deleted.', $html);
-    $this->assertStringContainsString('logbook-timeline-filters', $html);
+    $this->assertStringContainsString('logbook-timeline-flex', $html);
     $this->assertStringNotContainsString('<form', $html);
     $this->assertStringNotContainsString('Weg damit', $html);
     $this->assertStringContainsString('Bleibt', $html);
@@ -649,7 +649,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     $note = $this->createNote();
     Correspondence::create(['type' => 'mail', 'project' => $this->project->id(), 'subject' => 'M'])->save();
     $html = $this->pane('logbook');
-    $this->assertStringContainsString('logbook-timeline-filters', $html);
+    $this->assertStringContainsString('logbook-timeline-flex', $html);
     $this->assertStringNotContainsString('use-ajax', $html);
     $this->assertStringNotContainsString('data-dialog-type', $html);
     foreach (['note_edit', 'note_delete'] as $view) {
@@ -662,7 +662,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
 
     $this->actAs($this->accountWith($this->manager, ['general manager access', 'view correspondence']));
     $html = $this->pane('logbook');
-    $this->assertStringContainsString('logbook-timeline-filters', $html);
+    $this->assertStringContainsString('logbook-timeline-flex', $html);
     $this->assertStringNotContainsString('data-pane-view', $html);
     $this->assertStringNotContainsString('logbook-timeline-actions', $html);
   }

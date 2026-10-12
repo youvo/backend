@@ -324,36 +324,6 @@ function initPromoteButton() {
   });
 }
 
-function initTimelineFilter() {
-  if (window._timelineFilterHandlerAttached) return;
-  window._timelineFilterHandlerAttached = true;
-
-  document.body.addEventListener('click', function (e) {
-    const btn = e.target.closest('.js-timeline-filter');
-    if (!btn) return;
-    const pane = btn.closest('.js-context-pane, .context-pane');
-    if (!pane) return;
-    const filter = btn.getAttribute('data-filter') || 'all';
-    pane.querySelectorAll('.js-timeline-filter').forEach(other => {
-      other.classList.toggle('is-active', other === btn);
-      other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
-    });
-    const rows = pane.querySelectorAll(
-      '.logbook-timeline-flex-row[data-timeline-type]'
-    );
-    rows.forEach(row => {
-      row.hidden =
-        filter !== 'all' && row.getAttribute('data-timeline-type') !== filter;
-      row.classList.remove('is-last-visible');
-    });
-    // The connector must end at the last visible row, not the last row.
-    const visible = Array.from(rows).filter(row => !row.hidden);
-    if (visible.length) {
-      visible[visible.length - 1].classList.add('is-last-visible');
-    }
-  });
-}
-
 function initCheckboxHandlers(context) {
   const checkboxes = (context || document).querySelectorAll(
     SELECTORS.transitionCheckbox
@@ -468,7 +438,6 @@ function initTransitionButton() {
       initPaneForms();
       initPromoteButton();
       initTransitionButton();
-      initTimelineFilter();
 
       if (lastScrollPosition !== null) {
         window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });
