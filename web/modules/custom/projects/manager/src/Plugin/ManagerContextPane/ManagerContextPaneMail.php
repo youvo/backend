@@ -89,11 +89,19 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * {@inheritdoc}
    */
   public function buildView(Project $project, Request $request): array {
-    $view = $request->query->get('view');
-    if ($view === 'mail') {
-      return $this->buildMailView($project, (string) $request->query->get('subtype', ''), $request);
+    // The pane opens straight into the form of a mail; the index (the mail
+    // types without a form) only follows a sent mail.
+    if ($request->query->get('view') === 'index') {
+      return $this->buildIndex($project);
     }
-    return $this->buildIndex($project);
+    $subtype = (string) $request->query->get('subtype', '');
+    if ($subtype === '' && $this->access->access($this->currentUser, $project)->isAllowed()) {
+      $subtype = $this->registry->available($project)[0]->subtype ?? '';
+    }
+    if ($subtype === '') {
+      return $this->buildIndex($project);
+    }
+    return $this->buildMailView($project, $subtype, $request);
   }
 
   /**
@@ -147,6 +155,8 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
     $build = $this->emptyPane($project);
     $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     $build['content']['form'] = $form;
+    $this->buildMails($build, $project, $subtype);
+    $this->buildLastSent($build, $project);
     return $build;
   }
 
@@ -161,6 +171,14 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
     }
     $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     $this->buildMails($build, $project);
+    $this->buildLastSent($build, $project);
+    return $build;
+  }
+
+  /**
+   * Adds the line with the time of the latest sent mail.
+   */
+  protected function buildLastSent(array &$build, Project $project): void {
     if ($last = $this->lastSent($project)) {
       $build['content']['last'] = [
         '#type' => 'html_tag',
@@ -171,14 +189,21 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
         ]),
       ];
     }
-    return $build;
   }
 
   /**
    * Adds the links of the mails that can be sent in the project state.
+   *
+   * @param array $build
+   *   The pane build.
+   * @param \Drupal\projects\Entity\Project $project
+   *   The project.
+   * @param string|null $active
+   *   The subtype whose form is open, which is marked as current.
    */
-  protected function buildMails(array &$build, Project $project): void {
+  protected function buildMails(array &$build, Project $project, ?string $active = NULL): void {
     foreach ($this->registry->available($project) as $definition) {
+      $is_active = $definition->subtype === $active;
       $build['content']['mails'][$definition->subtype] = [
         '#type' => 'link',
         '#title' => $definition->label,
@@ -186,10 +211,10 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
           'query' => ['type' => 'mail', 'view' => 'mail', 'subtype' => $definition->subtype],
         ]),
         '#attributes' => [
-          'class' => ['button', 'button--small'],
+          'class' => $is_active ? ['manager-mail-type', 'is-active'] : ['manager-mail-type'],
           'data-pane-view' => 'mail',
           'data-pane-params' => http_build_query(['subtype' => $definition->subtype]),
-        ],
+        ] + ($is_active ? ['aria-current' => 'true'] : []),
       ];
     }
     if (!isset($build['content']['mails'])) {

@@ -43,7 +43,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     // A plain form for the pane: no ajax, a Cancel link back to the pane list.
     $this->assertArrayNotHasKey('#ajax', $form['actions']['submit']);
     $this->assertContains('manager-pane-form', $form['#attributes']['class']);
-    $this->assertSame('index', $form['actions']['cancel']['#attributes']['data-pane-view']);
+    $this->assertArrayNotHasKey('cancel', $form['actions']);
 
     $form_state = $this->submit($form_object, $project, [
       'subject' => 'Betreff',

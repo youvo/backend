@@ -2,7 +2,6 @@
 
 namespace Drupal\manager\Form;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -28,6 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
 
   use NoteFormAuthorizationTrait;
+  use FieldErrorsTrait;
 
   /**
    * The earliest accepted time (1970-01-02), so the value is positive.
@@ -189,30 +189,7 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
     elseif ($occurred < self::MIN_TIMESTAMP || $occurred > self::MAX_TIMESTAMP) {
       $form_state->setErrorByName('occurred', $this->t('The date must be between 1970 and 2037.'));
     }
-    $this->showFieldErrors($form, $form_state);
-  }
-
-  /**
-   * Shows the error of each invalid field right below it.
-   *
-   * The pane renders the form without the inline form errors module, so the
-   * messages would only reach the status message banner far above the field.
-   * This covers the core required errors as well as the ones set here.
-   */
-  protected function showFieldErrors(array &$form, FormStateInterface $form_state): void {
-    $done = [];
-    foreach ($form_state->getErrors() as $name => $message) {
-      $field = explode('][', (string) $name)[0];
-      if (!in_array($field, ['subject', 'body', 'occurred'], TRUE) || isset($done[$field]) || !isset($form[$field])) {
-        continue;
-      }
-      $done[$field] = TRUE;
-      $id = 'manager-note-' . $field . '-error';
-      $form[$field]['#suffix'] = '<div class="manager-pane-field-error" id="' . $id . '" role="alert">' . Html::escape((string) $message) . '</div>';
-      if ($field !== 'occurred') {
-        $form[$field]['#attributes']['aria-describedby'] = $id;
-      }
-    }
+    $this->showFieldErrors($form, $form_state, ['subject', 'body', 'occurred']);
   }
 
   /**

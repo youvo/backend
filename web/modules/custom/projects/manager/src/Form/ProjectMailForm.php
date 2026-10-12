@@ -5,7 +5,6 @@ namespace Drupal\manager\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\mailer\Manager\LateTokens;
 use Drupal\mailer\Manager\ManagerMailAccess;
@@ -20,6 +19,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * state (the 'sent' and 'send_failed' flags) and renders the messages itself.
  */
 class ProjectMailForm extends FormBase {
+
+  use FieldErrorsTrait;
 
   /**
    * Constructs the form.
@@ -99,14 +100,6 @@ class ProjectMailForm extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Send'),
     ];
-    $form['actions']['cancel'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Cancel'),
-      '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
-        'query' => ['type' => 'mail', 'view' => 'index'],
-      ]),
-      '#attributes' => ['data-pane-view' => 'index', 'class' => ['button']],
-    ];
     return $form;
   }
 
@@ -135,6 +128,7 @@ class ProjectMailForm extends FormBase {
     if (trim((string) $form_state->getValue('body')) === '') {
       $form_state->setErrorByName('body', $this->t('The message is required.'));
     }
+    $this->showFieldErrors($form, $form_state, ['subject', 'body']);
   }
 
   /**

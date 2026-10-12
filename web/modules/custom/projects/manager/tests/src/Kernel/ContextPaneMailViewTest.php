@@ -159,7 +159,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    */
   public function testIndexListsReminders(): void {
     $this->actAsManager();
-    $html = $this->pane();
+    $html = $this->pane(['view' => 'index']);
     $this->assertStringContainsString('data-pane-view="mail"', $html);
     $this->assertStringContainsString('data-pane-params="subtype=reminder_draft"', $html);
     $this->assertStringNotContainsString('data-pane-params="subtype=reminder_ongoing"', $html);
@@ -177,12 +177,26 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $html = $this->pane(['view' => 'mail', 'subtype' => 'reminder_draft']);
     $this->assertStringContainsString('manager-pane-form', $html);
     $this->assertStringContainsString('[mail:project_link]', $html);
-    $this->assertStringContainsString('data-pane-view="index"', $html);
+    // The type of the open form is marked in the list of types.
+    $this->assertMatchesRegularExpression('/<a[^>]*aria-current="true"[^>]*data-pane-params="subtype=reminder_draft"|<a[^>]*data-pane-params="subtype=reminder_draft"[^>]*aria-current="true"/', $html);
+    $this->assertStringNotContainsString('data-pane-view="index"', $html);
     // Placeholders are replaced by the isolated render.
     $this->assertStringNotContainsString('form_token_placeholder', $html);
     $this->assertStringNotContainsString('form_action_p_', $html);
     $this->hiddenValues($html);
     $this->assertMessengerEmpty();
+    $this->assertSame([], $this->loadEntries($this->project->id()));
+  }
+
+  /**
+   * Without a view the pane opens the form of the first available mail.
+   */
+  public function testPaneOpensTheFormOfTheFirstMail(): void {
+    $this->actAsManager();
+    $html = $this->pane();
+    $this->assertStringContainsString('<form', $html);
+    $this->assertStringContainsString('name="subject"', $html);
+    $this->assertStringContainsString('aria-current="true"', $html);
     $this->assertSame([], $this->loadEntries($this->project->id()));
   }
 

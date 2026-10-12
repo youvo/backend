@@ -2,12 +2,23 @@
   <td colspan="100%">
     <div class="manager-mail-pane">
       {{ content.messages }}
-      {{ content.form }}
-      {% for link in content.mails %}
-        <div class="manager-mail-pane-item">{{ link }}</div>
-      {% endfor %}
-      {{ content.empty }}
-      {{ content.last }}
+      <div class="manager-mail-main">
+        {{ content.form }}
+        {{ content.empty }}
+      </div>
+      {% if content.mails or content.last %}
+        <aside class="manager-mail-side">
+          {% if content.mails %}
+            <h4 class="manager-mail-side-title">{{ 'Mail type'|t }}</h4>
+            <div class="manager-mail-types">
+              {% for link in content.mails %}
+                {{ link }}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {{ content.last }}
+        </aside>
+      {% endif %}
     </div>
   </td>
 </tr>
