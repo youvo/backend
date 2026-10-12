@@ -481,14 +481,14 @@
 .manager-mail-main .manager-pane-form .js-form-item-recipients {
   padding-bottom: 0.75em;
   font-size: 0.8em;
-  color: #4d6580;
+  color: #222330;
 }
 
 .manager-mail-main .manager-pane-form .js-form-item-recipients > label {
   display: inline;
   margin-right: 0.5em;
   font-weight: 600;
-  color: #5a7390;
+  color: #4d6580;
 }
 
 .manager-mail-main .manager-pane-form input.form-text,
@@ -514,7 +514,7 @@
   height: auto;
   padding: 0 0 4px;
   line-height: 24px;
-  color: #4d6580;
+  color: #222330;
 }
 
 .manager-mail-main .manager-pane-form textarea {
@@ -525,12 +525,12 @@
   resize: none;
   font-size: 0.8em;
   line-height: 1.6;
-  color: #4d6580;
+  color: #222330;
 }
 
 .manager-mail-main .manager-pane-form input.form-text::placeholder,
 .manager-mail-main .manager-pane-form textarea::placeholder {
-  color: #5a7390;
+  color: #4d6580;
 }
 
 .manager-mail-main .manager-pane-form input.form-text:hover,
@@ -574,7 +574,7 @@
   border-radius: 0.5em;
   background: #e8ecf2;
   box-shadow: none;
-  color: #2f6199;
+  color: #222330;
   font: inherit;
   font-family: ui-monospace, monospace;
   font-size: 0.95em;
@@ -644,7 +644,7 @@
   margin: 0 0 0.5em;
   font-size: 0.75em;
   font-weight: 600;
-  color: #5a7390;
+  color: #4d6580;
 }
 
 .manager-mail-types {
@@ -659,7 +659,7 @@ a.manager-mail-type {
   border-radius: 0.5em;
   font-size: 0.85em;
   line-height: 1.4;
-  color: #4d6580;
+  color: #222330;
   text-decoration: none;
   transition:
     background-color 0.15s ease-in-out,
@@ -668,12 +668,12 @@ a.manager-mail-type {
 
 a.manager-mail-type:hover {
   background: #e8ecf2;
-  color: #3f78b5;
+  color: #222330;
 }
 
 a.manager-mail-type.is-active {
   background: #e3edf8;
-  color: #2f6199;
+  color: #222330;
   font-weight: 600;
 }
 
@@ -686,7 +686,7 @@ a.manager-mail-type:focus-visible {
 .manager-mail-pane-last {
   margin: 1em 0 0;
   font-size: 0.8em;
-  color: #5a7390;
+  color: #4d6580;
 }
 
 @media (max-width: 800px) {
@@ -729,7 +729,7 @@ a.manager-mail-type:focus-visible {
 
 /* Ghost row: an entry that is not there yet. Quiet until hovered. */
 a.logbook-timeline-add {
-  color: #5a7390;
+  color: #222330;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.15s ease-in-out;
@@ -753,7 +753,7 @@ a.logbook-timeline-add .logbook-timeline-text {
 
 a.logbook-timeline-add:hover,
 a.logbook-timeline-add:focus-visible {
-  color: #3f78b5;
+  color: #222330;
   text-decoration: none;
 }
 
@@ -771,7 +771,7 @@ a.logbook-timeline-add:hover .logbook-timeline-label,
 a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   background: #fdf0c8;
   box-shadow: none;
-  color: #5c4a10;
+  color: #222330;
 }
 
 /* The add form is written straight into the timeline: no boxes, no labels. */
@@ -837,12 +837,12 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   resize: none;
   font-size: 0.8em;
   line-height: 1.6;
-  color: #4d6580;
+  color: #222330;
 }
 
 .logbook-timeline-form .manager-pane-form input.form-text::placeholder,
 .logbook-timeline-form .manager-pane-form textarea::placeholder {
-  color: #5a7390;
+  color: #4d6580;
 }
 
 .logbook-timeline-form .manager-pane-form input.form-text:hover,
@@ -862,7 +862,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   flex: 0 0 auto;
   margin-top: 1em;
   font-size: 0.8em;
-  color: #4d6580;
+  color: #222330;
 }
 
 .logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] > h4,
@@ -922,12 +922,12 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
 .logbook-timeline-form .manager-pane-form > a.button[data-pane-view] {
   background: transparent;
-  color: #4d6580;
+  color: #222330;
 }
 
 .logbook-timeline-form .manager-pane-form > a.button[data-pane-view]:hover {
   background: #e8ecf2;
-  color: #3f78b5;
+  color: #222330;
 }
 
 .logbook-timeline-form .manager-pane-form > .button:focus-visible {
@@ -1323,7 +1323,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     border: 0;
     background: none;
     box-shadow: none;
-    color: #4d6580;
+    color: #222330;
     font: inherit;
     font-size: 0.8em;
     line-height: 1.5;
@@ -1379,7 +1379,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     padding: 2.56px 4px 2.56px 6.4px;
     border-radius: 0.5em;
     background: #e8ecf2;
-    color: #4d6580;
+    color: #222330;
   }
 
   .note-when-field:focus-within {
@@ -1495,7 +1495,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
 .logbook-timeline-confirm .manager-pane-form > a.button[data-pane-view] {
   background: transparent;
-  color: #4d6580;
+  color: #222330;
 }
 
 .logbook-timeline-confirm .manager-pane-form > a.button[data-pane-view]:hover {
