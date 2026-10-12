@@ -503,30 +503,30 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 }
 
 /* The add form is written straight into the timeline: no boxes, no labels. */
-.logbook-timeline-add-form .logbook-timeline-content-container {
+.logbook-timeline-form .logbook-timeline-content-container {
   padding: 0 0.5em 0.5em 0;
 }
 
-.logbook-timeline-add-form .manager-pane-form {
+.logbook-timeline-form .manager-pane-form {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0 0.75em;
 }
 
-.logbook-timeline-add-form .manager-pane-form .form-item,
-.logbook-timeline-add-form .manager-pane-form .form-wrapper {
+.logbook-timeline-form .manager-pane-form .form-item,
+.logbook-timeline-form .manager-pane-form .form-wrapper {
   margin: 0;
 }
 
-.logbook-timeline-add-form .manager-pane-form .js-form-item-subject,
-.logbook-timeline-add-form .manager-pane-form .js-form-item-body {
+.logbook-timeline-form .manager-pane-form .js-form-item-subject,
+.logbook-timeline-form .manager-pane-form .js-form-item-body {
   flex: 1 1 100%;
 }
 
 /* Labels are replaced by placeholders. */
-.logbook-timeline-add-form .manager-pane-form .js-form-item-subject > label,
-.logbook-timeline-add-form .manager-pane-form .js-form-item-body > label {
+.logbook-timeline-form .manager-pane-form .js-form-item-subject > label,
+.logbook-timeline-form .manager-pane-form .js-form-item-body > label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -534,8 +534,8 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   clip-path: inset(50%);
 }
 
-.logbook-timeline-add-form .manager-pane-form input.form-text,
-.logbook-timeline-add-form .manager-pane-form textarea {
+.logbook-timeline-form .manager-pane-form input.form-text,
+.logbook-timeline-form .manager-pane-form textarea {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -552,13 +552,13 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 }
 
 /* Title: one 24px line that sits level with the pill and the dot. */
-.logbook-timeline-add-form .manager-pane-form input.form-text {
+.logbook-timeline-form .manager-pane-form input.form-text {
   height: auto;
   padding: 0 0 4px;
   line-height: 24px;
 }
 
-.logbook-timeline-add-form .manager-pane-form textarea {
+.logbook-timeline-form .manager-pane-form textarea {
   padding: 12px 0;
   field-sizing: content;
   overflow: hidden;
@@ -568,40 +568,37 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   color: #4d6580;
 }
 
-.logbook-timeline-add-form .manager-pane-form input.form-text::placeholder,
-.logbook-timeline-add-form .manager-pane-form textarea::placeholder {
+.logbook-timeline-form .manager-pane-form input.form-text::placeholder,
+.logbook-timeline-form .manager-pane-form textarea::placeholder {
   color: #5a7390;
 }
 
-.logbook-timeline-add-form .manager-pane-form input.form-text:hover,
-.logbook-timeline-add-form .manager-pane-form textarea:hover {
+.logbook-timeline-form .manager-pane-form input.form-text:hover,
+.logbook-timeline-form .manager-pane-form textarea:hover {
   border-bottom-color: #b8c7d9;
 }
 
-.logbook-timeline-add-form .manager-pane-form input.form-text:focus,
-.logbook-timeline-add-form .manager-pane-form textarea:focus {
+.logbook-timeline-form .manager-pane-form input.form-text:focus,
+.logbook-timeline-form .manager-pane-form textarea:focus {
   border-bottom-color: #3f78b5;
   outline: none;
   box-shadow: none;
 }
 
 /* Date and time: small, muted, one line. */
-.logbook-timeline-add-form .manager-pane-form [class*='form-datetime-wrapper'] {
+.logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] {
   flex: 0 0 auto;
   margin-top: 1em;
   font-size: 0.8em;
   color: #4d6580;
 }
 
-.logbook-timeline-add-form
-  .manager-pane-form
-  [class*='form-datetime-wrapper']
-  > h4,
-.logbook-timeline-add-form .manager-pane-form .form-datetime-wrapper legend {
+.logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] > h4,
+.logbook-timeline-form .manager-pane-form .form-datetime-wrapper legend {
   display: none;
 }
 
-.logbook-timeline-add-form
+.logbook-timeline-form
   .manager-pane-form
   [class*='form-datetime-wrapper']
   input:is([type='date'], [type='time']) {
@@ -616,7 +613,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   color: inherit;
 }
 
-.logbook-timeline-add-form
+.logbook-timeline-form
   .manager-pane-form
   [class*='form-datetime-wrapper']
   input:is([type='date'], [type='time']):focus {
@@ -626,7 +623,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
 /* Actions: a flat primary pill and a quiet cancel. Gin forces a 2px border
    on every .button, so border and shadow are reset with !important here. */
-.logbook-timeline-add-form .manager-pane-form > .button {
+.logbook-timeline-form .manager-pane-form > .button {
   min-height: 0;
   margin: 1em 0 0;
   padding: 0.3em 1em;
@@ -642,26 +639,26 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     box-shadow 0.15s ease-in-out;
 }
 
-.logbook-timeline-add-form .manager-pane-form > input.button {
+.logbook-timeline-form .manager-pane-form > input.button {
   background: #3f78b5;
   color: #fff;
 }
 
-.logbook-timeline-add-form .manager-pane-form > input.button:hover {
+.logbook-timeline-form .manager-pane-form > input.button:hover {
   background: #2f6199;
 }
 
-.logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+.logbook-timeline-form .manager-pane-form > a.button[data-pane-view] {
   background: transparent;
   color: #4d6580;
 }
 
-.logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view]:hover {
+.logbook-timeline-form .manager-pane-form > a.button[data-pane-view]:hover {
   background: #e8ecf2;
   color: #3f78b5;
 }
 
-.logbook-timeline-add-form .manager-pane-form > .button:focus-visible {
+.logbook-timeline-form .manager-pane-form > .button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgb(63 120 181 / 30%) !important;
 }
@@ -686,33 +683,25 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   font-size: 0.8em;
 }
 
-.logbook-timeline-add-form
-  .manager-pane-form
-  input.form-text[aria-invalid='true'],
-.logbook-timeline-add-form
+.logbook-timeline-form .manager-pane-form input.form-text[aria-invalid='true'],
+.logbook-timeline-form
   .manager-pane-form
   input.form-text[aria-invalid='true']:hover,
-.logbook-timeline-add-form
+.logbook-timeline-form
   .manager-pane-form
   input.form-text[aria-invalid='true']:focus,
-.logbook-timeline-add-form .manager-pane-form textarea[aria-invalid='true'],
-.logbook-timeline-add-form
-  .manager-pane-form
-  textarea[aria-invalid='true']:hover,
-.logbook-timeline-add-form
-  .manager-pane-form
-  textarea[aria-invalid='true']:focus {
+.logbook-timeline-form .manager-pane-form textarea[aria-invalid='true'],
+.logbook-timeline-form .manager-pane-form textarea[aria-invalid='true']:hover,
+.logbook-timeline-form .manager-pane-form textarea[aria-invalid='true']:focus {
   border-bottom-color: #b3261e;
 }
 
-.logbook-timeline-add-form .manager-pane-form .manager-pane-field-error {
+.logbook-timeline-form .manager-pane-form .manager-pane-field-error {
   flex: 1 1 100%;
 }
 
 /* Cancel asks before it throws away a written note. */
-.logbook-timeline-add-form
-  .manager-pane-form
-  > a.button[data-pane-view].is-armed {
+.logbook-timeline-form .manager-pane-form > a.button[data-pane-view].is-armed {
   background: #fbe9e7;
   color: #b3261e;
 }
@@ -935,23 +924,21 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
   /* Add form: 16px fields (smaller ones make iOS zoom in on focus) and 44px
      touch targets. */
-  .logbook-timeline-add-form .manager-pane-form {
+  .logbook-timeline-form .manager-pane-form {
     gap: 0 0.5em;
   }
 
-  .logbook-timeline-add-form .manager-pane-form textarea,
-  .logbook-timeline-add-form .manager-pane-form input.form-text {
+  .logbook-timeline-form .manager-pane-form textarea,
+  .logbook-timeline-form .manager-pane-form input.form-text {
     font-size: 1rem;
   }
 
   /* The title is a 44px touch target. */
-  .logbook-timeline-add-form .manager-pane-form input.form-text {
+  .logbook-timeline-form .manager-pane-form input.form-text {
     padding: 10px 0;
   }
 
-  .logbook-timeline-add-form
-    .manager-pane-form
-    [class*='form-datetime-wrapper'] {
+  .logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] {
     flex: 1 1 100%;
     margin-left: 0;
     font-size: 1rem;
@@ -959,18 +946,18 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
   /* Date and time share the row; on very narrow screens they stack instead of
      being cut off. */
-  .logbook-timeline-add-form .form-items-inline {
+  .logbook-timeline-form .form-items-inline {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5em;
   }
 
-  .logbook-timeline-add-form .form-items-inline .form-item {
+  .logbook-timeline-form .form-items-inline .form-item {
     flex: 0 1 auto;
     min-width: 0;
   }
 
-  .logbook-timeline-add-form
+  .logbook-timeline-form
     .manager-pane-form
     [class*='form-datetime-wrapper']
     input:is([type='date'], [type='time']) {
@@ -978,7 +965,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     font-size: 1rem;
   }
 
-  .logbook-timeline-add-form .manager-pane-form > .button {
+  .logbook-timeline-form .manager-pane-form > .button {
     min-height: 44px;
     padding: 0 0.75em;
     font-size: 1rem;
@@ -987,12 +974,12 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
   /* Save and Cancel share the row; the Cancel link centres its text like the
      Save input does. */
-  .logbook-timeline-add-form .manager-pane-form > input.button,
-  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+  .logbook-timeline-form .manager-pane-form > input.button,
+  .logbook-timeline-form .manager-pane-form > a.button[data-pane-view] {
     flex: 1 1 0;
   }
 
-  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+  .logbook-timeline-form .manager-pane-form > a.button[data-pane-view] {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1013,8 +1000,8 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
 
 /* Tablets in the narrow layout: the buttons keep their natural width. */
 @media (min-width: 561px) and (max-width: 800px) {
-  .logbook-timeline-add-form .manager-pane-form > input.button,
-  .logbook-timeline-add-form .manager-pane-form > a.button[data-pane-view] {
+  .logbook-timeline-form .manager-pane-form > input.button,
+  .logbook-timeline-form .manager-pane-form > a.button[data-pane-view] {
     flex: 0 0 auto;
     min-width: 7em;
   }
@@ -1029,13 +1016,11 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
    over the free space of the rail. Without the script the fields stay as they
    are. */
 @media (min-width: 801px) {
-  .logbook-timeline-add-form .manager-pane-form {
+  .logbook-timeline-form .manager-pane-form {
     position: relative;
   }
 
-  .logbook-timeline-add-form
-    .manager-pane-form
-    [class*='form-datetime-wrapper'] {
+  .logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] {
     position: absolute;
     top: -2px;
     left: -147px;
@@ -1045,13 +1030,13 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   }
 
   /* The enhanced field is closed until the button opens it. */
-  .logbook-timeline-add-form
+  .logbook-timeline-form
     .manager-pane-form
     .form-datetime-wrapper.is-editor:not(.is-open) {
     display: none;
   }
 
-  .logbook-timeline-add-form .manager-pane-form .note-when {
+  .logbook-timeline-form .manager-pane-form .note-when {
     position: absolute;
     top: -2px;
     left: -147px;
@@ -1072,7 +1057,7 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     cursor: pointer;
   }
 
-  .logbook-timeline-add-form .manager-pane-form .note-when > span {
+  .logbook-timeline-form .manager-pane-form .note-when > span {
     padding: 2.56px 6.4px;
     border-radius: 0.5em;
     background: #e8ecf2;
@@ -1080,26 +1065,21 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
     transition: background-color 0.15s ease-in-out;
   }
 
-  .logbook-timeline-add-form .manager-pane-form .note-when:hover > span {
+  .logbook-timeline-form .manager-pane-form .note-when:hover > span {
     background: #dfe6ef;
   }
 
-  .logbook-timeline-add-form .manager-pane-form .note-when:focus-visible {
+  .logbook-timeline-form .manager-pane-form .note-when:focus-visible {
     outline: none;
   }
 
-  .logbook-timeline-add-form
-    .manager-pane-form
-    .note-when:focus-visible
-    > span {
+  .logbook-timeline-form .manager-pane-form .note-when:focus-visible > span {
     box-shadow: 0 0 0 3px rgb(63 120 181 / 30%);
   }
 
   /* The real fields stay in the form, rendered but not visible: the system
      pickers open at them. */
-  .logbook-timeline-add-form
-    .form-datetime-wrapper.is-editor
-    .form-items-inline {
+  .logbook-timeline-form .form-datetime-wrapper.is-editor .form-items-inline {
     position: absolute;
     top: 0;
     left: 0;
@@ -1189,5 +1169,121 @@ a.logbook-timeline-add:focus-visible .logbook-timeline-label {
   .note-when-picker:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px #3f78b5;
+  }
+}
+
+/* =========================
+   Delete a note in its row
+   ========================= */
+
+/* The row keeps its text, so it is clear which note it is; a soft red wash
+   and the question with its buttons take the place of the edit and delete
+   icons. */
+.logbook-timeline-flex-row.is-deleting {
+  background: #fbefed;
+  box-shadow: 0 0 0 6px #fbefed;
+}
+
+.logbook-timeline-confirm .manager-pane-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25em 0.75em;
+  margin: 0;
+}
+
+.logbook-timeline-confirm .logbook-confirm-question {
+  color: #b3261e;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.logbook-timeline-confirm .manager-pane-form > .button {
+  min-height: 0;
+  margin: 0;
+  padding: 0.3em 1em;
+  border: 0 !important;
+  border-radius: 1em;
+  box-shadow: none !important;
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.logbook-timeline-confirm .manager-pane-form > input.button {
+  background: #b3261e;
+  color: #fff;
+}
+
+.logbook-timeline-confirm .manager-pane-form > input.button:hover {
+  background: #8c1d18;
+}
+
+.logbook-timeline-confirm .manager-pane-form > a.button[data-pane-view] {
+  background: transparent;
+  color: #4d6580;
+}
+
+.logbook-timeline-confirm .manager-pane-form > a.button[data-pane-view]:hover {
+  background: #f4dcd9;
+  color: #b3261e;
+}
+
+.logbook-timeline-confirm .manager-pane-form > .button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(63 120 181 / 30%) !important;
+}
+
+/* A project with a written note that is not saved yet: a dot at its logbook
+   button. */
+[data-context-pane='logbook'].has-draft {
+  position: relative;
+}
+
+[data-context-pane='logbook'].has-draft::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e0a800;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 800px) {
+  /* The confirmation gets a row of its own, buttons in equal halves. */
+  .logbook-timeline-flex-row.is-deleting {
+    grid-template-areas:
+      'head head'
+      'content content'
+      'confirm confirm';
+  }
+
+  .logbook-timeline-confirm {
+    grid-area: confirm;
+    margin: 0.5em 0 0;
+  }
+
+  .logbook-timeline-confirm .manager-pane-form {
+    justify-content: stretch;
+  }
+
+  .logbook-timeline-confirm .logbook-confirm-question {
+    flex: 1 1 100%;
+    font-size: 1rem;
+  }
+
+  .logbook-timeline-confirm .manager-pane-form > .button {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 0.75em;
+    font-size: 1rem;
+    white-space: nowrap;
   }
 }

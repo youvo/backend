@@ -52,6 +52,7 @@ function swapPaneRow(row, html, id, type) {
   newRow.classList.add('js-context-pane');
   newRow.dataset.contextType = type;
   newRow.dataset.projectId = id;
+  flushNoteDrafts();
   target.replaceWith(newRow);
   Drupal.attachBehaviors(newRow);
   return newRow;
@@ -106,23 +107,39 @@ function focusPaneRow(row) {
   target.focus();
 }
 
-function showPaneError(row, message) {
-  let box = row.querySelector('.js-pane-error');
+/**
+ * Shows a compact notice at the top of a pane (a script made one: the server
+ * renders its own with the response).
+ *
+ * @param {Element} row
+ *   The pane row.
+ * @param {string} message
+ *   The plain text.
+ * @param {string} type
+ *   'error' (stays until dismissed) or 'status' (fades out by itself).
+ */
+function showPaneNotice(row, message, type = 'error') {
+  let box = type === 'error' ? row.querySelector('.js-pane-error') : null;
   if (!box) {
     const container = row.querySelector('td > div') || row.querySelector('td');
     if (!container) return;
     const wrap = document.createElement('div');
     wrap.className = 'pane-messages';
     wrap.innerHTML = `
-      <div class="js-pane-error pane-message pane-message-error" role="alert" data-pane-message>
+      <div class="${type === 'error' ? 'js-pane-error ' : ''}pane-message pane-message-${type}" role="${type === 'error' ? 'alert' : 'status'}" data-pane-message>
         <span class="pane-message-icon" aria-hidden="true"></span>
         <span class="pane-message-text"></span>
         <button type="button" class="pane-message-close" aria-label="${Drupal.t('Dismiss')}"><span aria-hidden="true">&times;</span></button>
       </div>`;
     box = wrap.firstElementChild;
     container.prepend(wrap);
+    if (type === 'status') initPaneMessages(wrap);
   }
   box.querySelector('.pane-message-text').textContent = message;
+}
+
+function showPaneError(row, message) {
+  showPaneNotice(row, message, 'error');
 }
 
 /**
@@ -224,7 +241,7 @@ function parseNoteTime(text, strict = false) {
 function initNoteWhen(context) {
   once(
     'note-when',
-    '.logbook-timeline-add-form .form-datetime-wrapper',
+    '.logbook-timeline-form .form-datetime-wrapper',
     context
   ).forEach(wrapper => {
     const date = wrapper.querySelector('input[type="date"]');
@@ -476,6 +493,7 @@ async function submitPaneForm(form, submitter) {
   if (!row || form.dataset.paneBusy) return;
   const id = row.dataset.projectId;
   const type = row.dataset.contextType;
+  const noteRow = form.closest('[data-row-key]');
   const body = new FormData(form);
   // FormData does not include the clicked submit button; the form API needs
   // its name/value ('op') to find the triggering element.
@@ -499,6 +517,32 @@ async function submitPaneForm(form, submitter) {
   try {
     const response = await fetch(form.action, { method: 'POST', body });
     const html = await response.text();
+    if (noteRow && response.ok) {
+      // A note form: the timeline is merged, other open forms stay as they are.
+      flushNoteDrafts();
+      const outcome = mergeTimeline(row, html, noteRow.dataset.rowKey);
+      delete row.dataset.paneBusy;
+      if (!outcome) {
+        delete form.dataset.paneBusy;
+        buttons.forEach(button => {
+          button.disabled = false;
+        });
+        showPaneError(row, Drupal.t('This note is not available any more.'));
+        return;
+      }
+      if (outcome.saved) {
+        clearDraft(id, noteRow.dataset.rowKey);
+        const added = row.querySelector('.is-new a[data-pane-row]');
+        const target = added || row.querySelector('[data-pane-autofocus]');
+        if (target) target.focus();
+      } else {
+        const bad = row.querySelector(
+          `[data-row-key="${noteRow.dataset.rowKey}"] [aria-invalid="true"]`
+        );
+        if (bad) bad.focus();
+      }
+      return;
+    }
     const newRow = response.ok ? swapPaneRow(row, html, id, type) : null;
     if (newRow) {
       focusPaneRow(newRow);
@@ -507,6 +551,342 @@ async function submitPaneForm(form, submitter) {
     }
   } catch (e) {
     fail(e.message);
+  }
+}
+
+/* =========================
+   Note forms in the timeline
+   ========================= */
+
+// Several note forms can be open in the timeline at once (a new note, any
+// number of edits, delete confirmations). They are loaded and saved row by
+// row: the server answers with the whole timeline, the script takes only the
+// row it needs from it. What is written in a form is kept as a draft in the
+// browser, so closing the pane (or opening another one) loses nothing.
+
+const NOTE_FORM = '.logbook-timeline-form form.manager-pane-form';
+const OPEN_ROW = '.logbook-timeline-form, .is-deleting';
+const DRAFT_STORE = 'manager.noteDrafts';
+const DRAFT_MAX_AGE = 14 * 24 * 60 * 60 * 1000;
+
+function draftUser() {
+  const settings = window.drupalSettings;
+  return String((settings && settings.user && settings.user.uid) || 0);
+}
+
+// All drafts of this browser and user: { projectId: { rowKey: {...} } }.
+function readDrafts() {
+  try {
+    const all = JSON.parse(localStorage.getItem(DRAFT_STORE) || '{}');
+    const mine = all[draftUser()] || {};
+    const now = Date.now();
+    Object.keys(mine).forEach(project => {
+      Object.keys(mine[project]).forEach(key => {
+        if (now - (mine[project][key].savedAt || 0) > DRAFT_MAX_AGE) {
+          delete mine[project][key];
+        }
+      });
+      if (!Object.keys(mine[project]).length) delete mine[project];
+    });
+    return mine;
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeDrafts(mine) {
+  try {
+    const all = JSON.parse(localStorage.getItem(DRAFT_STORE) || '{}');
+    if (Object.keys(mine).length) {
+      all[draftUser()] = mine;
+    } else {
+      delete all[draftUser()];
+    }
+    if (Object.keys(all).length) {
+      localStorage.setItem(DRAFT_STORE, JSON.stringify(all));
+    } else {
+      localStorage.removeItem(DRAFT_STORE);
+    }
+  } catch (e) {
+    // No storage (private mode, full): the forms still work, only without
+    // drafts.
+  }
+  updateDraftIndicators();
+}
+
+function setDraft(project, key, values) {
+  const mine = readDrafts();
+  mine[project] = mine[project] || {};
+  mine[project][key] = { ...values, savedAt: Date.now() };
+  writeDrafts(mine);
+}
+
+function clearDraft(project, key) {
+  const mine = readDrafts();
+  if (!mine[project] || !mine[project][key]) return;
+  delete mine[project][key];
+  if (!Object.keys(mine[project]).length) delete mine[project];
+  writeDrafts(mine);
+}
+
+// A dot at the logbook button of each project that has a draft.
+function updateDraftIndicators() {
+  const mine = readDrafts();
+  document
+    .querySelectorAll('[data-context-pane="logbook"][data-project-id]')
+    .forEach(trigger => {
+      trigger.classList.toggle(
+        'has-draft',
+        !!mine[trigger.getAttribute('data-project-id')]
+      );
+    });
+}
+
+function noteValues(form) {
+  const value = name => (form.elements[name] ? form.elements[name].value : '');
+  return {
+    subject: value('subject'),
+    body: value('body'),
+    date: value('occurred[date]'),
+    time: value('occurred[time]'),
+  };
+}
+
+// A new note has unsaved text once it has a title or a note; a note that is
+// edited, as soon as a field differs from what is stored.
+function isNoteDirty(form) {
+  const now = noteValues(form);
+  const row = form.closest('[data-row-key]');
+  if (!row || row.dataset.rowKey === 'add') {
+    return now.subject.trim() !== '' || now.body.trim() !== '';
+  }
+  let stored = {};
+  try {
+    stored = JSON.parse(form.dataset.initial || '{}');
+  } catch (e) {
+    stored = {};
+  }
+  return Object.keys(now).some(name => (stored[name] || '') !== now[name]);
+}
+
+function noteFormContext(form) {
+  const row = form.closest('[data-row-key]');
+  const pane = form.closest('.js-context-pane');
+  return row && pane
+    ? { project: pane.dataset.projectId, key: row.dataset.rowKey }
+    : null;
+}
+
+function saveNoteDraft(form) {
+  const where = noteFormContext(form);
+  if (!where) return;
+  if (isNoteDirty(form)) {
+    setDraft(where.project, where.key, noteValues(form));
+  } else {
+    clearDraft(where.project, where.key);
+  }
+}
+
+// Writes what is still waiting for its delay (before a pane goes away).
+function flushNoteDrafts() {
+  document.querySelectorAll(NOTE_FORM).forEach(form => {
+    if (form.draftTimer) {
+      window.clearTimeout(form.draftTimer);
+      form.draftTimer = null;
+      saveNoteDraft(form);
+    }
+  });
+}
+
+function fillNoteForm(form, values) {
+  const fields = {
+    subject: values.subject,
+    body: values.body,
+    'occurred[date]': values.date,
+    'occurred[time]': values.time,
+  };
+  Object.keys(fields).forEach(name => {
+    const field = form.elements[name];
+    if (!field || fields[name] === undefined || fields[name] === '') return;
+    field.value = fields[name];
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+function parsePaneHtml(html) {
+  const temp = document.createElement('tbody');
+  temp.innerHTML = html;
+  return temp;
+}
+
+/**
+ * Puts the row with the given key of a response in place of the row on the
+ * page.
+ *
+ * @return {?Element}
+ *   The new row, or NULL if the response has no such row (any more).
+ */
+function graftRow(pane, html, key) {
+  const fresh = parsePaneHtml(html).querySelector(`[data-row-key="${key}"]`);
+  const local = pane.querySelector(`[data-row-key="${key}"]`);
+  if (!local) return null;
+  if (!fresh) {
+    if (key !== 'add') local.remove();
+    return null;
+  }
+  local.replaceWith(fresh);
+  Drupal.attachBehaviors(fresh);
+  return fresh;
+}
+
+/**
+ * Loads a view of the timeline and takes one row from it.
+ *
+ * @return {Promise<?Element>}
+ *   The new row, or NULL (an error is shown).
+ */
+async function fetchRowView(pane, key, view, params) {
+  const query = new URLSearchParams({ type: pane.dataset.contextType, view });
+  new URLSearchParams(params || '').forEach((value, name) => {
+    query.append(name, value);
+  });
+  pane.dataset.paneBusy = '1';
+  try {
+    const response = await fetch(
+      `/project/manage/context/${encodeURIComponent(pane.dataset.projectId)}?${query}`
+    );
+    const html = await response.text();
+    if (!response.ok) {
+      showPaneError(pane, paneErrorText(`HTTP ${response.status}`));
+      return null;
+    }
+    const fresh = graftRow(pane, html, key);
+    if (!fresh && view !== 'index') {
+      showPaneError(pane, Drupal.t('This note is not available any more.'));
+    }
+    return fresh;
+  } catch (e) {
+    showPaneError(pane, paneErrorText(e.message));
+    return null;
+  } finally {
+    delete pane.dataset.paneBusy;
+  }
+}
+
+function focusRowView(pane, fresh, key, view) {
+  let target = null;
+  if (view === 'index') {
+    // Back where the form was opened from.
+    target = pane.querySelector(
+      `a[data-pane-row="${key}"][data-pane-view="note_edit"], a[data-pane-row="${key}"][data-pane-view="note_add"]`
+    );
+  } else if (view === 'note_delete') {
+    // Not the destructive button.
+    target = fresh.querySelector('a[data-pane-view="index"]');
+  } else {
+    target = fresh.querySelector('input:not([type="hidden"]), textarea');
+  }
+  if (target) target.focus();
+}
+
+// A link of a note (edit, delete, cancel, add): only its row changes.
+async function loadRowView(link) {
+  const pane = link.closest('.js-context-pane');
+  if (!pane || pane.dataset.paneBusy) return;
+  const key = link.getAttribute('data-pane-row');
+  const view = link.getAttribute('data-pane-view');
+  const local = pane.querySelector(`[data-row-key="${key}"]`);
+  if (view !== 'index' && local && local.matches(OPEN_ROW)) {
+    const open = local.querySelector('input:not([type="hidden"]), textarea, a');
+    if (open) open.focus();
+    return;
+  }
+  const fresh = await fetchRowView(
+    pane,
+    key,
+    view,
+    link.getAttribute('data-pane-params')
+  );
+  if (fresh) focusRowView(pane, fresh, key, view);
+}
+
+/**
+ * Takes the timeline of a response after a submit: only the rows that have no
+ * form open are replaced, so the other forms keep what is written in them.
+ *
+ * @return {?{saved: boolean}}
+ *   NULL if the response has no timeline; else whether the submitted form is
+ *   gone (the note was saved or deleted).
+ */
+function mergeTimeline(pane, html, submittedKey) {
+  const freshPane = parsePaneHtml(html).querySelector('tr');
+  const freshFlex =
+    freshPane && freshPane.querySelector('.logbook-timeline-flex');
+  const flex = pane.querySelector('.logbook-timeline-flex');
+  if (!freshFlex || !flex) return null;
+
+  const cell = pane.firstElementChild;
+  cell.querySelectorAll(':scope > .pane-messages').forEach(n => n.remove());
+  const messages = freshPane.querySelector('td > .pane-messages');
+  if (messages) cell.prepend(messages);
+
+  const local = new Map(
+    [...flex.children].map(row => [row.dataset.rowKey, row])
+  );
+  const next = [...freshFlex.children].map(row => {
+    const key = row.dataset.rowKey;
+    const open = local.get(key);
+    return key !== submittedKey && open && open.matches(OPEN_ROW) ? open : row;
+  });
+  flex.replaceChildren(...next);
+  Drupal.attachBehaviors(pane);
+
+  const submitted = next.find(row => row.dataset.rowKey === submittedKey);
+  return { saved: !submitted || !submitted.matches(OPEN_ROW) };
+}
+
+// The drafts of a project come back as forms when its logbook is opened.
+async function restoreNoteDrafts(pane) {
+  const project = pane.dataset.projectId;
+  const drafts = readDrafts()[project] || {};
+  let restored = 0;
+  for (const key of Object.keys(drafts)) {
+    if (!pane.isConnected) return;
+    if (pane.querySelector(`.logbook-timeline-form[data-row-key="${key}"]`)) {
+      continue;
+    }
+    const edit = key !== 'add';
+    const fresh = await fetchRowView(
+      pane,
+      key,
+      edit ? 'note_edit' : 'note_add',
+      edit ? `id=${key.replace('note-', '')}` : ''
+    );
+    const form = fresh && fresh.querySelector('form');
+    if (!form) {
+      // The note is gone, or may not be changed any more.
+      clearDraft(project, key);
+      continue;
+    }
+    fillNoteForm(form, drafts[key]);
+    restored += 1;
+  }
+  if (restored) {
+    showPaneNotice(pane, Drupal.t('Draft restored'), 'status');
+  }
+}
+
+function initNoteDrafts(context) {
+  updateDraftIndicators();
+  const pane =
+    context && context.closest && context.closest('.js-context-pane');
+  if (
+    pane &&
+    pane.dataset.contextType === 'logbook' &&
+    once('note-drafts', pane).length
+  ) {
+    restoreNoteDrafts(pane);
   }
 }
 
@@ -523,11 +903,25 @@ function initPaneForms() {
     submitPaneForm(form, e.submitter);
   });
 
+  // What is written in a note form is kept as a draft.
+  ['input', 'change'].forEach(type => {
+    document.body.addEventListener(type, e => {
+      const form = e.target.closest ? e.target.closest(NOTE_FORM) : null;
+      if (!form) return;
+      window.clearTimeout(form.draftTimer);
+      form.draftTimer = window.setTimeout(() => {
+        form.draftTimer = null;
+        saveNoteDraft(form);
+      }, 250);
+    });
+  });
+  window.addEventListener('pagehide', flushNoteDrafts);
+
   // Browsers without field-sizing: grow the note field with its text.
   if (!(window.CSS && CSS.supports('field-sizing', 'content'))) {
     document.body.addEventListener('input', e => {
       const area = e.target;
-      if (!area.matches || !area.matches('.logbook-timeline-add-form textarea'))
+      if (!area.matches || !area.matches('.logbook-timeline-form textarea'))
         return;
       area.style.height = 'auto';
       area.style.height = `${area.scrollHeight + 1}px`;
@@ -536,7 +930,6 @@ function initPaneForms() {
 
   // Closing the inline add form never throws away a written note by accident:
   // with text in it, the first Esc or Cancel only asks, the second one closes.
-  const NOTE_FORM = '.logbook-timeline-add-form form.manager-pane-form';
   const discardArmed = form => form.dataset.discardArmed === '1';
   const disarmDiscard = form => {
     const cancel = form.querySelector('a[data-pane-view]');
@@ -548,11 +941,7 @@ function initPaneForms() {
   };
   // Returns TRUE if the form may be closed now.
   const mayClose = form => {
-    const written = ['subject', 'body'].some(name => {
-      const field = form.elements[name];
-      return field && field.value.trim() !== '';
-    });
-    if (!written || discardArmed(form)) return true;
+    if (!isNoteDirty(form) || discardArmed(form)) return true;
     const cancel = form.querySelector('a[data-pane-view]');
     form.dataset.discardArmed = '1';
     if (cancel) {
@@ -583,6 +972,13 @@ function initPaneForms() {
       if (cancel && !mayClose(cancel.closest('form'))) {
         e.preventDefault();
         e.stopPropagation();
+      } else if (cancel) {
+        // Closed on purpose (or nothing was written): the draft goes with it.
+        const form = cancel.closest('form');
+        const where = noteFormContext(form);
+        if (form.draftTimer) window.clearTimeout(form.draftTimer);
+        form.draftTimer = null;
+        if (where) clearDraft(where.project, where.key);
       }
     },
     true
@@ -591,7 +987,7 @@ function initPaneForms() {
   // Inside the inline add form: Esc cancels, Cmd/Ctrl+Enter saves.
   document.body.addEventListener('keydown', e => {
     const form = e.target.closest
-      ? e.target.closest('.logbook-timeline-add-form form.manager-pane-form')
+      ? e.target.closest('.logbook-timeline-form form.manager-pane-form')
       : null;
     if (!form) return;
     if (e.key === 'Escape') {
@@ -617,6 +1013,10 @@ function initPaneForms() {
     const row = link.closest('.js-context-pane');
     if (!row) return;
     e.preventDefault();
+    if (link.hasAttribute('data-pane-row')) {
+      loadRowView(link);
+      return;
+    }
     loadPaneView(
       row,
       link.getAttribute('data-pane-view'),
@@ -626,6 +1026,7 @@ function initPaneForms() {
 }
 
 function closeContextPane() {
+  flushNoteDrafts();
   document.querySelectorAll(SELECTORS.contextPane).forEach(r => r.remove());
 }
 
@@ -646,6 +1047,7 @@ function initContextPane(context) {
       if (!row) return;
       const nextRow = row.nextElementSibling;
       if (nextRow && nextRow.classList.contains('js-context-pane')) {
+        flushNoteDrafts();
         if (nextRow.dataset.contextType === type) {
           nextRow.remove();
           return;
@@ -846,6 +1248,7 @@ function initTransitionButton() {
       }
       initPaneMessages(context);
       initNoteWhen(context);
+      initNoteDrafts(context);
       revealNewRow(context);
       initPaneForms();
       initPromoteButton();
