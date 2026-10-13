@@ -25,7 +25,6 @@
   --pane-surface: var(--gin-bg-layer, #fff);
   --pane-ring: 0 0 0 2px var(--pane-surface), 0 0 0 4px var(--pane-accent);
   --pane-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
-  --pane-line-hover: var(--gin-border-color, #d4d4d8);
   --pane-outline: var(--gin-border-color, #d4d4d8);
   --pane-chip: color-mix(in srgb, var(--pane-accent) 15%, var(--pane-surface));
   --pane-track: var(--pane-chip);
@@ -51,6 +50,9 @@
   --pane-mail: var(--pane-chip-hover);
   --pane-radius-s: var(--gin-border-s, 0.375rem);
   --pane-radius-m: var(--gin-border-m, 0.5rem);
+  --pane-text-s: var(--gin-font-size-s, 0.875rem);
+  --pane-text-xs: var(--gin-font-size-xs, small);
+  --pane-field-line: var(--gin-border-color-form-element, #8e929c);
   --pane-fast: var(--gin-transition-fast, 0.3s ease);
   --pane-tap: 44px;
 }
@@ -82,7 +84,7 @@ tr.context-pane .button {
   background: var(--pane-accent);
   box-shadow: none !important;
   color: #fff;
-  font-size: 0.8em;
+  font-size: var(--pane-text-s);
   font-weight: 600;
   line-height: 1.5;
   text-decoration: none;
@@ -181,7 +183,7 @@ tr.context-pane
   margin: 0;
   min-height: 0;
   border: 0;
-  border-bottom: 1px solid var(--pane-line);
+  border-bottom: 1px solid var(--pane-field-line);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -203,7 +205,7 @@ tr.context-pane
   field-sizing: content;
   overflow: hidden;
   resize: none;
-  font-size: 0.8em;
+  font-size: var(--pane-text-s);
   line-height: 1.6;
 }
 
@@ -215,7 +217,7 @@ tr.context-pane
 /* Gin draws a dark inset outline around a hovered field: only the underline
    reacts here. */
 .manager-pane-form :is(input.form-text, textarea):hover:not(:focus) {
-  border-bottom-color: var(--pane-line-hover);
+  border-bottom-color: var(--pane-ink);
   box-shadow: none !important;
 }
 
@@ -240,7 +242,7 @@ tr.context-pane
   flex: 1 1 100%;
   margin-top: 0.25em;
   color: var(--pane-danger);
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
 }
 
 /* =========================
@@ -319,8 +321,8 @@ tr.context-pane
     var(--gin-color-green, #26a769) 18%,
     var(--pane-surface)
   );
-  color: #1e5a3c;
-  font-size: 0.8em;
+  color: var(--gin-color-green, #058260);
+  font-size: var(--pane-text-s);
   font-weight: 500;
   line-height: 1.5;
   animation: pane-message-in 0.2s ease-out;
@@ -331,7 +333,7 @@ tr.context-pane
 
 .pane-message-warning {
   background: var(--pane-note);
-  color: #5c4a10;
+  color: var(--pane-ink);
 }
 
 .pane-message-error {

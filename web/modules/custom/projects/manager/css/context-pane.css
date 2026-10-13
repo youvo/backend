@@ -73,14 +73,14 @@
 }
 
 .lifecycle-progress-label {
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
   margin-top: 6px;
 }
 
 .lifecycle-progress-date {
   cursor: pointer;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
 }
 
@@ -204,7 +204,7 @@
 
 .logbook-timeline-date {
   cursor: pointer;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
   margin-top: 0.2em;
 }
@@ -263,13 +263,13 @@
 }
 
 .logbook-timeline-message {
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
 .logbook-timeline-failed {
   color: var(--pane-danger);
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
 }
 
@@ -334,7 +334,7 @@
   background: var(--pane-chip);
   border-radius: var(--pane-radius-m);
   padding: 0.2em 0.8em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -409,7 +409,7 @@
 
 .transition-description {
   margin-top: 0.75em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -431,7 +431,7 @@
   text-align: center;
   align-items: center;
   text-wrap: balance;
-  font-size: 0.8em;
+  font-size: var(--pane-text-s);
   padding: 0.5em 1em;
   border-right: 1px solid var(--pane-line);
   display: flex;
@@ -488,7 +488,7 @@
 
 .manager-mail-main .manager-pane-form .js-form-item-recipients {
   padding-bottom: 0.75em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
 }
 
 /* "To" is a description: grey, the address is the ink color. */
@@ -511,7 +511,7 @@
   align-items: center;
   gap: 0.4em 0.5em;
   margin-top: 1em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -533,7 +533,7 @@
 
 .manager-mail-side-title {
   margin: 0 0 0.5em;
-  font-size: 0.75em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
   color: var(--pane-muted);
 }
@@ -548,7 +548,7 @@ a.manager-mail-type {
   display: block;
   padding: 0.35em 0.75em;
   border-radius: var(--pane-radius-m);
-  font-size: 0.85em;
+  font-size: var(--pane-text-s);
   line-height: 1.4;
   color: var(--pane-ink);
   text-decoration: none;
@@ -567,7 +567,7 @@ a.manager-mail-type.is-active {
 
 .manager-mail-pane-last {
   margin: 1em 0 0;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -656,7 +656,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 .logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] {
   flex: 0 0 auto;
   margin-top: 1em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-ink);
 }
 
@@ -877,7 +877,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
     box-shadow: none;
     color: var(--pane-ink);
     font: inherit;
-    font-size: 0.8em;
+    font-size: var(--pane-text-xs);
     line-height: 1.5;
     cursor: pointer;
   }
@@ -1002,7 +1002,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 
 .logbook-timeline-confirm .logbook-confirm-question {
   color: var(--pane-danger);
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 500;
 }
 
@@ -1024,7 +1024,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e0a800;
+  background: var(--gin-color-warning, #d8b234);
   transform: translateY(-50%);
 }
 
