@@ -990,8 +990,8 @@ a.logbook-timeline-add:active .logbook-timeline-label {
    and the question with its buttons take the place of the edit and delete
    icons. */
 .logbook-timeline-flex-row.is-deleting {
-  background: var(--pane-danger-wash);
-  box-shadow: 0 0 0 6px var(--pane-danger-wash);
+  background: var(--pane-danger-soft);
+  box-shadow: 0 0 0 6px var(--pane-danger-soft);
 }
 
 .logbook-timeline-confirm .manager-pane-form {

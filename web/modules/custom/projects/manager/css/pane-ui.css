@@ -38,6 +38,11 @@
   --pane-danger: var(--gin-color-danger, #cc3d3d);
   --pane-danger-strong: color-mix(in srgb, var(--pane-danger), #000 25%);
   --pane-danger-wash: var(--gin-color-danger-lightest, #fdd9d9);
+  --pane-danger-soft: color-mix(
+    in srgb,
+    var(--pane-danger) 8%,
+    var(--pane-surface)
+  );
   --pane-note: color-mix(
     in srgb,
     var(--gin-color-warning, #d8b234) 30%,
