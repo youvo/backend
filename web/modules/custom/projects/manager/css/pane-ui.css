@@ -218,6 +218,11 @@ tr.context-pane
   line-height: 24px;
 }
 
+/* A title that is too long ends in an ellipsis until the field is used. */
+.manager-pane-form input.form-text:not(:focus) {
+  text-overflow: ellipsis;
+}
+
 /* A text: grows with its content. */
 .manager-pane-form textarea {
   padding: 1em 0 0.75em;
