@@ -2,6 +2,7 @@
 
 namespace Drupal\manager\Timeline;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -26,13 +27,35 @@ class TimelineBuilder {
   ) {}
 
   /**
+   * Gets the cache tag of the timeline of a project.
+   *
+   * Entries and logs are added and removed without the project being saved, so
+   * the list tags of the entity types would be the only alternative, which
+   * invalidate the timelines of all projects.
+   */
+  public static function cacheTag(int|string $project_id): string {
+    return 'manager_timeline:' . $project_id;
+  }
+
+  /**
    * Builds the rows, newest first.
+   *
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The project.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account the access is checked for.
+   * @param \Drupal\Core\Cache\CacheableMetadata|null $metadata
+   *   If given, receives the cacheability of the access checks, so that the
+   *   caller can cache the rendered rows per user.
    *
    * @return array<int, array{type: string, id: int, time: int, build: array, actions?: array}>
    *   The rows.
    */
-  public function build(ProjectInterface $project, AccountInterface $account): array {
+  public function build(ProjectInterface $project, AccountInterface $account, ?CacheableMetadata $metadata = NULL): array {
     $rows = [];
+    if ($metadata) {
+      $this->addAccountCacheability($account, $metadata);
+    }
 
     $log_builder = $this->entityTypeManager->getViewBuilder('log');
     $logs = $this->entityTypeManager->getStorage('log')
@@ -51,7 +74,12 @@ class TimelineBuilder {
     $entries = $this->entityTypeManager->getStorage('correspondence')
       ->loadByProperties(['project' => $project->id()]);
     foreach ($entries as $entry) {
-      if (!$entry instanceof CorrespondenceInterface || !$entry->access('view', $account)) {
+      if (!$entry instanceof CorrespondenceInterface) {
+        continue;
+      }
+      $view_access = $entry->access('view', $account, TRUE);
+      $metadata?->addCacheableDependency($view_access);
+      if (!$view_access->isAllowed()) {
         continue;
       }
       $row = [
@@ -62,7 +90,7 @@ class TimelineBuilder {
       ];
       // The links depend on the user: they are not part of the entry build,
       // which is render cached per entity without a user cache context.
-      if ($entry->isNote() && $actions = $this->noteActions($entry, $account)) {
+      if ($entry->isNote() && $actions = $this->noteActions($entry, $account, $metadata)) {
         $row['actions'] = $actions;
       }
       $rows[] = $row;
@@ -77,6 +105,24 @@ class TimelineBuilder {
   }
 
   /**
+   * Adds the cacheability of the permissions of the account.
+   *
+   * The cache context 'user' only varies by the user id and makes the
+   * 'user.permissions' context redundant, so a changed role or permission of
+   * the same user would not show. The user and its roles are tags instead.
+   */
+  protected function addAccountCacheability(AccountInterface $account, CacheableMetadata $metadata): void {
+    $metadata->addCacheContexts(['user']);
+    $user = $this->entityTypeManager->getStorage('user')->load($account->id());
+    if ($user) {
+      $metadata->addCacheableDependency($user);
+    }
+    foreach ($this->entityTypeManager->getStorage('user_role')->loadMultiple($account->getRoles()) as $role) {
+      $metadata->addCacheableDependency($role);
+    }
+  }
+
+  /**
    * Builds the in-pane links to edit and delete a note for the account.
    *
    * The links open the note views of the logbook pane (data-pane-view with the
@@ -85,8 +131,10 @@ class TimelineBuilder {
    * @return array<string, array>
    *   The link render arrays keyed by operation, without the not permitted.
    */
-  protected function noteActions(CorrespondenceInterface $note, AccountInterface $account): array {
-    if (!$this->access->noteEntryAccess($account, $note)->isAllowed()) {
+  protected function noteActions(CorrespondenceInterface $note, AccountInterface $account, ?CacheableMetadata $metadata = NULL): array {
+    $note_access = $this->access->noteEntryAccess($account, $note);
+    $metadata?->addCacheableDependency($note_access);
+    if (!$note_access->isAllowed()) {
       return [];
     }
     $operations = [
@@ -95,7 +143,9 @@ class TimelineBuilder {
     ];
     $actions = [];
     foreach ($operations as $key => [$operation, $view, $title, $icon]) {
-      if (!$note->access($operation, $account)) {
+      $operation_access = $note->access($operation, $account, TRUE);
+      $metadata?->addCacheableDependency($operation_access);
+      if (!$operation_access->isAllowed()) {
         continue;
       }
       $actions[$key] = [

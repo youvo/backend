@@ -2,6 +2,7 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -127,15 +128,12 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
     if ($messages) {
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     }
-    if ($this->mayAdd($project)) {
-      if ($add_form !== NULL) {
-        $build['content']['add_form'] = $add_form;
-      }
-      else {
-        $build['content']['add'] = $this->buildAddRow($project);
-      }
+    $may_add = $this->mayAdd($project);
+    if ($may_add && $add_form === NULL) {
+      $build['content']['add'] = $this->buildAddRow($project);
     }
-    $rows = $this->timelineBuilder->build($project, $this->currentUser);
+    $metadata = new CacheableMetadata();
+    $rows = $this->timelineBuilder->build($project, $this->currentUser, $metadata);
     foreach ($rows as &$row) {
       $row['key'] = $row['type'] . '-' . $row['id'];
       $row['highlight'] = $highlight !== NULL && $row['type'] === 'note' && $row['id'] === $highlight;
@@ -145,7 +143,23 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
       }
     }
     unset($row);
-    $build['content']['rows'] = $rows;
+    $timeline = [
+      '#theme' => 'manager_timeline',
+      '#rows' => $rows,
+      '#add_form' => $may_add ? $add_form : NULL,
+    ];
+    // Rendering the rows is the expensive part (a long timeline has some
+    // hundred entries), so the plain timeline is render cached. The access
+    // and the links depend on the user. A timeline with a form, or a row that
+    // is highlighted, is rendered once after a submit and not cached.
+    if (!($may_add && $add_form !== NULL) && $highlight === NULL && $note_forms === []) {
+      $metadata->addCacheContexts(['user'])
+        ->addCacheTags([TimelineBuilder::cacheTag($project->id())])
+        ->addCacheableDependency($project)
+        ->applyTo($timeline);
+      $timeline['#cache']['keys'] = ['manager', 'timeline', $project->id()];
+    }
+    $build['content']['timeline'] = $timeline;
     return $build;
   }
 

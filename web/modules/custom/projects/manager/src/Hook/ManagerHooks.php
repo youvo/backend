@@ -2,10 +2,13 @@
 
 namespace Drupal\manager\Hook;
 
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
+use Drupal\manager\Timeline\TimelineBuilder;
 use Drupal\projects\ProjectInterface;
 use Drupal\views\ViewExecutable;
 
@@ -51,6 +54,10 @@ class ManagerHooks {
         'variables' => ['messages' => []],
         'template' => 'manager-pane-messages',
       ],
+      'manager_timeline' => [
+        'variables' => ['rows' => [], 'add_form' => NULL],
+        'template' => 'manager-timeline',
+      ],
       'manager_rule' => [
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessManagerRule',
@@ -64,6 +71,25 @@ class ManagerHooks {
     }
 
     return $hooks;
+  }
+
+  /**
+   * Invalidates the cached timeline of the project of a log or an entry.
+   *
+   * The timeline of a project lists its logs and correspondence entries. Both
+   * are added and removed without the project being saved.
+   */
+  #[Hook('log_insert')]
+  #[Hook('log_update')]
+  #[Hook('log_delete')]
+  #[Hook('correspondence_insert')]
+  #[Hook('correspondence_update')]
+  #[Hook('correspondence_delete')]
+  public function invalidateTimeline(ContentEntityInterface $entity): void {
+    $project_id = $entity->get('project')->target_id ?? NULL;
+    if ($project_id !== NULL) {
+      Cache::invalidateTags([TimelineBuilder::cacheTag($project_id)]);
+    }
   }
 
   /**

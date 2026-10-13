@@ -1,0 +1,49 @@
+{#
+/**
+ * @file
+ * The rows of the timeline in the logbook pane.
+ *
+ * Available variables:
+ * - rows: The rows, newest first.
+ * - add_form: The form of a new note, shown above the rows.
+ */
+#}
+{% macro form_row(form, key) %}
+  <div class="logbook-timeline-flex-row logbook-timeline-form" data-row-key="{{ key }}">
+    <div class="logbook-timeline-header-container logbook-timeline--note" data-timeline-type="note">
+      <div class="logbook-timeline-label-container">
+        <div class="logbook-timeline-label">{{ 'Note'|t }}</div>
+      </div>
+      <div class="logbook-timeline-date-container"></div>
+    </div>
+    <div class="logbook-timeline-bar-container">
+      <div class="logbook-timeline-circle"></div>
+    </div>
+    <div class="logbook-timeline-content-container">
+      {{ form }}
+    </div>
+  </div>
+{% endmacro %}
+{% import _self as rows_macros %}
+{% if add_form %}
+  {{ rows_macros.form_row(add_form, 'add') }}
+{% endif %}
+{% for row in rows %}
+  {% if row.form %}
+    {{ rows_macros.form_row(row.form, row.key) }}
+  {% else %}
+    <div class="logbook-timeline-flex-row{{ row.highlight ? ' is-new' : '' }}{{ row.delete_form ? ' is-deleting' : '' }}" data-row-key="{{ row.key }}" data-timeline-type="{{ row.type }}">
+      {{ row.build }}
+      {% if row.delete_form %}
+        <div class="logbook-timeline-actions logbook-timeline-confirm">
+          {{ row.delete_form }}
+        </div>
+      {% elseif row.actions %}
+        <div class="logbook-timeline-actions">
+          {{ row.actions.edit }}
+          {{ row.actions.delete }}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endfor %}
