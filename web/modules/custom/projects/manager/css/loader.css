@@ -35,7 +35,7 @@
   left: 0;
   width: 4px;
   height: 4px;
-  background: var(--pane-accent, #3f78b5);
+  background: var(--gin-color-primary, #3f78b5);
 }
 
 .sliding-bar {
@@ -44,7 +44,7 @@
   top: 0;
   height: 4px;
   width: 0;
-  background: #3f78b5;
+  background: var(--gin-color-primary, #3f78b5);
   animation: sliding-bar-grow 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 

@@ -42,9 +42,9 @@ td.views-field-field-manager {
 }
 
 .view-project-manager .views-field a:link {
-  color: #3f78b5;
+  color: var(--gin-color-primary, #3f78b5);
 }
 
 .view-project-manager .views-field a:visited {
-  color: #3f78b5;
+  color: var(--gin-color-primary, #3f78b5);
 }

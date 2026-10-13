@@ -21,8 +21,14 @@
       </div>
     {% endif %}
     {% if content.users %}
-      <div class="transition-users">
-        {{ content.users }}
+      <div class="transition-checkboxes transition-users">
+        {% for user in content.users %}
+          <div class="transition-checkbox">
+            <div class="transition-checkbox-option">
+              {{ user }}
+            </div>
+          </div>
+        {% endfor %}
       </div>
     {% endif %}
     {{ content.button }}

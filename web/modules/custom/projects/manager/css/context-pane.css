@@ -36,12 +36,12 @@
   left: 52%;
   width: 96%;
   height: 4px;
-  background: #e8ecf2;
+  background: var(--pane-track);
   z-index: 1;
 }
 
 .lifecycle-progress-step.next-completed.has-segment::after {
-  background: #3f78b5;
+  background: var(--pane-accent);
 }
 
 .lifecycle-progress-circle {
@@ -49,18 +49,18 @@
   height: 16px;
   border-radius: 50%;
   background: transparent;
-  border: 5px solid #e8ecf2;
+  border: 5px solid var(--pane-track);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--pane-on-accent);
   box-sizing: border-box;
   z-index: 2;
 }
 
 .lifecycle-progress-circle.completed {
-  background: #3f78b5;
-  border-color: #3f78b5;
+  background: var(--pane-accent);
+  border-color: var(--pane-accent);
 }
 
 .lifecycle-progress-circle .checkmark {
@@ -73,29 +73,27 @@
 }
 
 .lifecycle-progress-label {
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
   margin-top: 6px;
 }
 
 .lifecycle-progress-date {
   cursor: pointer;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
 }
 
 @media (max-width: 600px) {
   .lifecycle-progress-bar {
-    min-width: 320px;
     font-size: 0.8em;
   }
 
   .lifecycle-progress-step {
-    min-width: 40px;
+    min-width: 0;
   }
 
   .lifecycle-progress-label {
-    max-width: 50px;
     font-size: 0.8em;
   }
 
@@ -133,7 +131,7 @@
 }
 
 .status-dormant.views-field-field-lifecycle > div::before {
-  background: #e8ecf2;
+  background: var(--gin-border-color, #d4d4d8);
 }
 
 .status-archived.views-field-field-lifecycle > div::before {
@@ -206,7 +204,7 @@
 
 .logbook-timeline-date {
   cursor: pointer;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   text-align: center;
   margin-top: 0.2em;
 }
@@ -225,7 +223,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 5px solid #e8ecf2;
+  border: 5px solid var(--pane-track);
   background: transparent;
   z-index: 2;
   position: absolute;
@@ -245,7 +243,7 @@
   transform: translateX(-50%);
   width: 4px;
   height: calc(100% + 16px);
-  background: #e8ecf2;
+  background: var(--pane-track);
   border-radius: 2px;
   z-index: 1;
 }
@@ -265,13 +263,13 @@
 }
 
 .logbook-timeline-message {
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
 .logbook-timeline-failed {
   color: var(--pane-danger);
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
 }
 
@@ -300,8 +298,9 @@
   flex: 0 0 auto;
   width: 16px;
   height: 16px;
-  background: url('../assets/chevron-down.svg') no-repeat center/contain;
-  transition: transform 0.15s ease-in-out;
+  background: var(--pane-muted);
+  mask: url('../assets/chevron-down.svg') no-repeat center / contain;
+  transition: transform var(--pane-fast);
 }
 
 .logbook-timeline-details[open] .logbook-timeline-toggle {
@@ -333,10 +332,10 @@
 }
 
 .logbook-timeline-label {
-  background: #e8ecf2;
-  border-radius: 1em;
+  background: var(--pane-chip);
+  border-radius: var(--pane-radius-m);
   padding: 0.2em 0.8em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -348,17 +347,17 @@
 .transition-checkboxes {
   display: flex;
   flex-flow: row wrap;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-density-xs, 0.5rem);
   align-items: stretch;
-  margin-bottom: 1em;
+  margin-bottom: var(--gin-spacing-density-m, 1rem);
 }
 
 .transition-checkbox {
   position: relative;
   display: flex;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-density-xs, 0.5rem);
   width: 10%;
-  min-width: 80px;
+  min-width: 96px;
 }
 
 /* Hidden but still focusable, so the options work with the keyboard. */
@@ -374,21 +373,28 @@
   align-items: flex-start;
   justify-content: center;
   flex: 1;
-  padding: 0.5rem;
-  border-radius: 0.5em;
+  padding: var(--gin-spacing-density-xs, 0.5rem);
+  border-radius: var(--pane-radius-m);
   color: var(--pane-ink);
   cursor: pointer;
+  hyphens: manual;
+  overflow-wrap: normal;
   transition:
-    background-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
+    background-color var(--pane-fast),
+    box-shadow var(--pane-fast);
 }
 
-.transition-checkbox-option:hover {
+/* Participants of a completion are shown like options, but are not chosen. */
+.transition-users .transition-checkbox-option {
+  cursor: default;
+}
+
+.transition-checkbox input + .transition-checkbox-option:hover {
   background: var(--pane-hover);
 }
 
 .transition-checkbox input:checked + .transition-checkbox-option {
-  background: #f4f8ff;
+  background: var(--pane-chip);
   box-shadow: inset 0 0 0 2px var(--pane-accent);
 }
 
@@ -404,7 +410,7 @@
 
 .transition-description {
   margin-top: 0.75em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -426,9 +432,9 @@
   text-align: center;
   align-items: center;
   text-wrap: balance;
-  font-size: 0.8em;
+  font-size: var(--pane-text-s);
   padding: 0.5em 1em;
-  border-right: 1px solid #e8ecf2;
+  border-right: 1px solid var(--pane-line);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -449,7 +455,7 @@
 
   .status-overview-item {
     border-right: none;
-    border-bottom: 1px solid #e8ecf2;
+    border-bottom: 1px solid var(--pane-line);
   }
 
   .status-overview-item:last-child {
@@ -483,7 +489,7 @@
 
 .manager-mail-main .manager-pane-form .js-form-item-recipients {
   padding-bottom: 0.75em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
 }
 
 /* "To" is a description: grey, the address is the ink color. */
@@ -506,7 +512,7 @@
   align-items: center;
   gap: 0.4em 0.5em;
   margin-top: 1em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -528,7 +534,7 @@
 
 .manager-mail-side-title {
   margin: 0 0 0.5em;
-  font-size: 0.75em;
+  font-size: var(--pane-text-xs);
   font-weight: 600;
   color: var(--pane-muted);
 }
@@ -542,17 +548,21 @@
 a.manager-mail-type {
   display: block;
   padding: 0.35em 0.75em;
-  border-radius: 0.5em;
-  font-size: 0.85em;
+  border-radius: var(--pane-radius-m);
+  font-size: var(--pane-text-s);
   line-height: 1.4;
   color: var(--pane-ink);
   text-decoration: none;
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color var(--pane-fast);
 }
 
 a.manager-mail-type:hover {
   background: var(--pane-hover);
   color: var(--pane-ink);
+}
+
+a.manager-mail-type:active {
+  background: var(--pane-pressed);
 }
 
 a.manager-mail-type.is-active {
@@ -562,7 +572,7 @@ a.manager-mail-type.is-active {
 
 .manager-mail-pane-last {
   margin: 1em 0 0;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-muted);
 }
 
@@ -601,13 +611,13 @@ a.logbook-timeline-add .logbook-timeline-label {
   box-shadow: inset 0 0 0 1px var(--pane-outline);
   color: inherit;
   transition:
-    background-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out,
-    transform 0.15s ease-in-out;
+    background-color var(--pane-fast),
+    box-shadow var(--pane-fast),
+    transform var(--pane-fast);
 }
 
 a.logbook-timeline-add .logbook-timeline-circle {
-  background: #f4f7fb;
+  background: var(--pane-surface);
   border-color: var(--pane-chip-hover);
 }
 
@@ -651,7 +661,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 .logbook-timeline-form .manager-pane-form [class*='form-datetime-wrapper'] {
   flex: 0 0 auto;
   margin-top: 1em;
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   color: var(--pane-ink);
 }
 
@@ -708,14 +718,18 @@ a.logbook-timeline-add:active .logbook-timeline-label {
    Narrow screens
    ========================= */
 
-/* The timeline and mail panes stay as wide as the visible part of the
-   (scrolling) table and keep their place when it is scrolled sideways; the
-   width comes from the script. The loading bar spans the whole cell. */
-.context-pane[data-context-type='logbook'] > td > :not(.sliding-bar-loader),
-.context-pane[data-context-type='mail'] > td > :not(.sliding-bar-loader) {
+/* Every pane keeps its place when the (scrolling) table is scrolled sideways
+   and is never wider than its visible part; the width comes from the script.
+   The timeline and mail panes fill it. The loading bar spans the whole cell. */
+.context-pane > td > :not(.sliding-bar-loader) {
   position: sticky;
   left: var(--pane-left, 0);
   box-sizing: border-box;
+  max-width: var(--pane-width, none);
+}
+
+.context-pane[data-context-type='logbook'] > td > :not(.sliding-bar-loader),
+.context-pane[data-context-type='mail'] > td > :not(.sliding-bar-loader) {
   width: var(--pane-width, auto);
 }
 
@@ -868,7 +882,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
     box-shadow: none;
     color: var(--pane-ink);
     font: inherit;
-    font-size: 0.8em;
+    font-size: var(--pane-text-xs);
     line-height: 1.5;
     cursor: pointer;
   }
@@ -876,7 +890,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
   /* One ring around both chips of the button. */
   .logbook-timeline-form .manager-pane-form .note-when:focus-visible {
     outline: none;
-    border-radius: 0.5em;
+    border-radius: var(--pane-radius-s);
     box-shadow: var(--pane-ring);
   }
 
@@ -981,8 +995,8 @@ a.logbook-timeline-add:active .logbook-timeline-label {
    and the question with its buttons take the place of the edit and delete
    icons. */
 .logbook-timeline-flex-row.is-deleting {
-  background: #fbefed;
-  box-shadow: 0 0 0 6px #fbefed;
+  background: var(--pane-danger-soft);
+  box-shadow: 0 0 0 6px var(--pane-danger-soft);
 }
 
 .logbook-timeline-confirm .manager-pane-form {
@@ -993,7 +1007,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 
 .logbook-timeline-confirm .logbook-confirm-question {
   color: var(--pane-danger);
-  font-size: 0.8em;
+  font-size: var(--pane-text-xs);
   font-weight: 500;
 }
 
@@ -1015,7 +1029,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e0a800;
+  background: var(--gin-color-warning, #d8b234);
   transform: translateY(-50%);
 }
 

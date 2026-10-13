@@ -1,80 +1,92 @@
+/* The icons are masks painted with the text color of the element, so they
+   follow the theme (light and dark) like the text does. */
+
 .manager-icon-mail {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/email.svg') no-repeat center/contain;
-  background-size: 16px 16px;
+  background: currentcolor;
+  color: var(--gin-color-primary, #3f78b5);
+  mask: url('../assets/email.svg') no-repeat center / 16px 16px;
   vertical-align: middle;
 }
 
 .manager-icon-edit {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/pencil.svg') no-repeat center/contain;
-  background-size: 18px 18px;
+  background: currentcolor;
+  color: var(--gin-color-primary, #3f78b5);
+  mask: url('../assets/pencil.svg') no-repeat center / 18px 18px;
   vertical-align: middle;
 }
 
 .manager-icon-delete {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/trash.svg') no-repeat center/contain;
-  background-size: 18px 18px;
+  background: currentcolor;
+  color: var(--gin-color-primary, #3f78b5);
+  mask: url('../assets/trash.svg') no-repeat center / 18px 18px;
   vertical-align: middle;
 }
 
 .manager-icon-transition {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/step-forward.svg') no-repeat center/contain;
-  background-size: 24px 24px;
+  background: currentcolor;
+  color: var(--gin-color-primary, #3f78b5);
+  mask: url('../assets/step-forward.svg') no-repeat center / 24px 24px;
   vertical-align: middle;
 }
 
 .manager-icon-normal {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/checkmark.svg') no-repeat center/contain;
-  background-size: 18px 18px;
+  background: currentcolor;
+  color: var(--gin-color-green, #058260);
+  mask: url('../assets/checkmark.svg') no-repeat center / 18px 18px;
   vertical-align: middle;
 }
 
 .manager-icon-warning {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/warning.svg') no-repeat center/contain;
-  background-size: 18px 18px;
+  background: currentcolor;
+  color: var(--gin-color-warning, #d17645);
+  mask: url('../assets/warning.svg') no-repeat center / 18px 18px;
   vertical-align: middle;
 }
 
 .manager-icon-critical {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/critical.svg') no-repeat center/contain;
-  background-size: 18px 18px;
+  background: currentcolor;
+  color: var(--gin-color-danger, #ad2626);
+  mask: url('../assets/critical.svg') no-repeat center / 18px 18px;
   vertical-align: middle;
 }
 
 .manager-icon-dormant {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/cross.svg') no-repeat center/contain;
-  background-size: 16px 16px;
+  background: currentcolor;
+  color: var(--gin-color-text-light, #526079);
+  mask: url('../assets/cross.svg') no-repeat center / 16px 16px;
   vertical-align: middle;
 }
 
 .manager-icon-archived {
+  display: inline-block;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  background: url('../assets/archive.svg') no-repeat center/contain;
-  background-size: 16px 16px;
+  background: currentcolor;
+  color: var(--gin-color-text-light, #5f6877);
+  mask: url('../assets/archive.svg') no-repeat center / 16px 16px;
   vertical-align: middle;
 }

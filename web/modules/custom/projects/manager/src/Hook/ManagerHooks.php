@@ -5,6 +5,8 @@ namespace Drupal\manager\Hook;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Routing\AdminContext;
+use Drupal\Core\Site\Settings;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
@@ -20,6 +22,7 @@ class ManagerHooks {
   public function __construct(
     protected ManagerContextPanes $managerContextPanes,
     protected ManagerRules $managerRules,
+    protected AdminContext $adminContext,
   ) {}
 
   /**
@@ -37,6 +40,20 @@ class ManagerHooks {
       'manager_project_note_form',
       'manager_project_mail_form',
     ];
+  }
+
+  /**
+   * Implements hook_page_attachments().
+   *
+   * Adds the dark mode switch to the admin toolbar while developing: on DDEV,
+   * or where $settings['manager_dev_tools'] is TRUE. Never in production.
+   */
+  #[Hook('page_attachments')]
+  public function pageAttachments(array &$attachments): void {
+    $enabled = Settings::get('manager_dev_tools', getenv('IS_DDEV_PROJECT') === 'true');
+    if ($enabled && $this->adminContext->isAdminRoute()) {
+      $attachments['#attached']['library'][] = 'manager/dev_dark_mode';
+    }
   }
 
   /**
