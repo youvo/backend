@@ -29,11 +29,11 @@ function projects_dummy_install(): void {
 }
 
 /**
- * Implements hook_site_install_finished().
+ * Generates the dummy content.
  *
- * @see https://www.drupal.org/project/drupal/issues/2924549
+ * Called by youvo_dummy_site_install_finished() to guarantee the order.
  */
-function projects_dummy_site_install_finished(): void {
+function projects_dummy_generate_content(): void {
 
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')

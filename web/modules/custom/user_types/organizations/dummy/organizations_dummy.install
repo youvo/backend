@@ -18,11 +18,11 @@ function organizations_dummy_install(): void {
 }
 
 /**
- * Implements hook_site_install_finished().
+ * Generates the dummy content.
  *
- * @see https://www.drupal.org/project/drupal/issues/2924549
+ * Called by youvo_dummy_site_install_finished() to guarantee the order.
  */
-function organizations_dummy_site_install_finished(): void {
+function organizations_dummy_generate_content(): void {
 
   // Object for random content.
   $faker = Factory::create('de_DE');
