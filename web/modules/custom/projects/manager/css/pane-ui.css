@@ -23,9 +23,7 @@
   --pane-accent: var(--gin-color-primary, #3f78b5);
   --pane-accent-strong: var(--gin-color-primary-hover, #2f6199);
   --pane-surface: var(--gin-bg-layer, #fff);
-  --pane-ring:
-    0 0 0 2px var(--pane-surface),
-    0 0 0 4px var(--gin-color-focus, var(--pane-accent));
+  --pane-ring: 0 0 0 2px var(--pane-surface), 0 0 0 4px var(--pane-accent);
   --pane-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
   --pane-line-hover: var(--gin-border-color, #d4d4d8);
   --pane-outline: var(--gin-border-color, #d4d4d8);
