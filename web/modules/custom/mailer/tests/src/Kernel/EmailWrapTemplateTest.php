@@ -3,6 +3,7 @@
 namespace Drupal\Tests\mailer\Kernel;
 
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Render\RenderContext;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
 use Drupal\projects\ProjectState;
 
@@ -54,10 +55,12 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
     $html = $this->capturedMails[0]['html'];
     $this->assertStringContainsString('<!doctype html>', strtolower($html));
     $this->assertStringContainsString('mj-column', $html);
-    $this->assertStringContainsString('>youvo<', $html);
+    $this->assertStringContainsString('alt="youvo', $html);
+    $this->assertMatchesRegularExpression('#src="https?://[^"]+/assets/logo_email\.png"#', $html);
+    $this->assertStringContainsString('lang="de"', $html);
     $this->assertStringContainsString('Wrapper check', $html);
     // The policy text also appears after the header, inside the wrapper body.
-    $header = strpos($html, '>youvo<');
+    $header = strpos($html, 'alt="youvo');
     $this->assertNotFalse(strpos($html, 'Wrapper check', $header));
   }
 
@@ -99,17 +102,18 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
     $source = file_get_contents($this->templatePath());
     $twig = $this->container->get('twig');
     $template = $twig->createTemplate($source);
-    $output = $template->render([
+    $renderer = $this->container->get('renderer');
+    $output = $renderer->executeInRenderContext(new RenderContext(), fn () => $template->render([
       'is_html' => FALSE,
       'body' => 'Plain body',
       'subject' => 'Subject',
-    ]);
+    ]));
     $this->assertSame('Plain body', trim($output));
-    $html = $template->render([
+    $html = $renderer->executeInRenderContext(new RenderContext(), fn () => $template->render([
       'is_html' => TRUE,
       'body' => Markup::create('<p>Html body</p>'),
       'subject' => 'Subject',
-    ]);
+    ]));
     $this->assertStringContainsString('<p>Html body</p>', $html);
   }
 
