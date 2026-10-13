@@ -22,6 +22,7 @@
   --pane-muted: var(--gin-color-text-light, #545560);
   --pane-accent: var(--gin-color-primary, #3f78b5);
   --pane-accent-strong: var(--gin-color-primary-hover, #2f6199);
+  --pane-on-accent: var(--gin-color-button-text, #fff);
   --pane-surface: var(--gin-bg-layer, #fff);
   --pane-ring: 0 0 0 2px var(--pane-surface), 0 0 0 4px var(--pane-accent);
   --pane-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
@@ -90,7 +91,7 @@ tr.context-pane .button {
   border-radius: var(--pane-radius-m);
   background: var(--pane-accent);
   box-shadow: none !important;
-  color: #fff;
+  color: var(--pane-on-accent);
   font-size: var(--pane-text-s);
   font-weight: 600;
   line-height: 1.5;
@@ -104,7 +105,7 @@ tr.context-pane .button {
 
 tr.context-pane .button:hover {
   background: var(--pane-accent-strong);
-  color: #fff;
+  color: var(--pane-on-accent);
 }
 
 tr.context-pane .button:active {
@@ -136,7 +137,7 @@ tr.context-pane a.button:active {
 
 tr.context-pane .button.pane-button-danger {
   background: var(--pane-danger);
-  color: #fff;
+  color: var(--pane-on-accent);
 }
 
 tr.context-pane .button.pane-button-danger:hover,

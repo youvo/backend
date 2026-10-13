@@ -53,7 +53,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--pane-on-accent);
   box-sizing: border-box;
   z-index: 2;
 }
@@ -298,7 +298,8 @@
   flex: 0 0 auto;
   width: 16px;
   height: 16px;
-  background: url('../assets/chevron-down.svg') no-repeat center/contain;
+  background: var(--pane-muted);
+  mask: url('../assets/chevron-down.svg') no-repeat center / contain;
   transition: transform var(--pane-fast);
 }
 

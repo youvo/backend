@@ -12,3 +12,16 @@ core:
       build/css/loader.css: {}
       build/css/manager.css: {}
       build/css/rule.css: {}
+
+# Development only (see ManagerHooks::pageAttachments): a switch for Gin's dark
+# mode in the toolbar. Plain files, not part of the build.
+dev_dark_mode:
+  header: true
+  js:
+    js/dev-dark-mode.js: {}
+  css:
+    theme:
+      css/dev-dark-mode.css: {}
+  dependencies:
+    - core/drupal
+    - core/once

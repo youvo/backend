@@ -1,0 +1,27 @@
+/* Development only: the dark mode switch in the top bar. */
+
+.dev-dark-mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--gin-border-color, #d4d4d8);
+  border-radius: var(--gin-border-s, 0.375rem);
+  background: transparent;
+  color: var(--gin-color-text, #222330);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dev-dark-mode-switch:hover {
+  background: var(--gin-bg-item-hover, rgb(63 120 181 / 8%));
+}
+
+.dev-dark-mode-switch:focus-visible {
+  outline: 2px solid var(--gin-color-focus, #3f78b5);
+  outline-offset: 2px;
+}
