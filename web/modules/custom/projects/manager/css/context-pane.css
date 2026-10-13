@@ -560,6 +560,10 @@ a.manager-mail-type:hover {
   color: var(--pane-ink);
 }
 
+a.manager-mail-type:active {
+  background: var(--pane-pressed);
+}
+
 a.manager-mail-type.is-active {
   background: var(--pane-mail);
   font-weight: 600;

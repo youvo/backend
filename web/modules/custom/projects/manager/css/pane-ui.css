@@ -33,6 +33,8 @@
     var(--pane-accent) 22%,
     var(--pane-surface)
   );
+  --pane-accent-active: var(--gin-color-primary-active, #23529c);
+  --pane-pressed: var(--gin-color-primary-light-active, rgb(63 120 181 / 25%));
   --pane-hover: var(--gin-bg-item-hover, rgb(63 120 181 / 8%));
   --pane-danger: var(--gin-color-danger, #cc3d3d);
   --pane-danger-strong: color-mix(in srgb, var(--pane-danger), #000 25%);
@@ -45,6 +47,11 @@
   --pane-note: color-mix(
     in srgb,
     var(--gin-color-warning, #d8b234) 30%,
+    var(--pane-surface)
+  );
+  --pane-chip-active: color-mix(
+    in srgb,
+    var(--pane-accent) 30%,
     var(--pane-surface)
   );
   --pane-mail: var(--pane-chip-hover);
@@ -100,8 +107,15 @@ tr.context-pane .button:hover {
   color: #fff;
 }
 
-tr.context-pane .button:disabled {
-  opacity: 0.6;
+tr.context-pane .button:active {
+  background: var(--pane-accent-active);
+}
+
+/* Disabled like Gin: a flat grey instead of a faded accent. */
+tr.context-pane .button:disabled,
+tr.context-pane .button:disabled:hover {
+  background: var(--gin-color-disabled-bg, #eaeaea);
+  color: var(--gin-color-disabled, #919191);
   cursor: default;
 }
 
@@ -116,12 +130,17 @@ tr.context-pane a.button:hover {
   color: var(--pane-ink);
 }
 
+tr.context-pane a.button:active {
+  background: var(--pane-pressed);
+}
+
 tr.context-pane .button.pane-button-danger {
   background: var(--pane-danger);
   color: #fff;
 }
 
-tr.context-pane .button.pane-button-danger:hover {
+tr.context-pane .button.pane-button-danger:hover,
+tr.context-pane .button.pane-button-danger:active {
   background: var(--pane-danger-strong);
 }
 
@@ -268,6 +287,11 @@ tr.context-pane
   background: var(--pane-chip-hover);
 }
 
+.note-when:active > span,
+.manager-mail-token:active {
+  background: var(--pane-chip-active);
+}
+
 .note-when-field:focus-within {
   outline: none;
   box-shadow: var(--pane-ring);
@@ -293,6 +317,10 @@ tr.context-pane
 
 .pane-icon-button:hover {
   background: var(--pane-hover);
+}
+
+.pane-icon-button:active {
+  background: var(--pane-pressed);
 }
 
 /* =========================
