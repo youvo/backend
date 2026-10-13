@@ -99,7 +99,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase {
   protected function buildCompleteUsers(ProjectInterface $project): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('user');
     foreach ($project->getParticipants('Creative') as $applicant) {
-      $users[$applicant->uuid()] = $view_builder->view($applicant, 'avatar');
+      $users[$applicant->uuid()] = $view_builder->view($applicant, 'option');
     }
     return $users ?? [];
   }

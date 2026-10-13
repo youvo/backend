@@ -86,16 +86,14 @@
 
 @media (max-width: 600px) {
   .lifecycle-progress-bar {
-    min-width: 320px;
     font-size: 0.8em;
   }
 
   .lifecycle-progress-step {
-    min-width: 40px;
+    min-width: 0;
   }
 
   .lifecycle-progress-label {
-    max-width: 50px;
     font-size: 0.8em;
   }
 
@@ -358,7 +356,7 @@
   display: flex;
   gap: 0.5rem;
   width: 10%;
-  min-width: 80px;
+  min-width: 96px;
 }
 
 /* Hidden but still focusable, so the options work with the keyboard. */
@@ -378,12 +376,19 @@
   border-radius: 0.5em;
   color: var(--pane-ink);
   cursor: pointer;
+  hyphens: manual;
+  overflow-wrap: normal;
   transition:
     background-color 0.15s ease-in-out,
     box-shadow 0.15s ease-in-out;
 }
 
-.transition-checkbox-option:hover {
+/* Participants of a completion are shown like options, but are not chosen. */
+.transition-users .transition-checkbox-option {
+  cursor: default;
+}
+
+.transition-checkbox input + .transition-checkbox-option:hover {
   background: var(--pane-hover);
 }
 
@@ -708,14 +713,18 @@ a.logbook-timeline-add:active .logbook-timeline-label {
    Narrow screens
    ========================= */
 
-/* The timeline and mail panes stay as wide as the visible part of the
-   (scrolling) table and keep their place when it is scrolled sideways; the
-   width comes from the script. The loading bar spans the whole cell. */
-.context-pane[data-context-type='logbook'] > td > :not(.sliding-bar-loader),
-.context-pane[data-context-type='mail'] > td > :not(.sliding-bar-loader) {
+/* Every pane keeps its place when the (scrolling) table is scrolled sideways
+   and is never wider than its visible part; the width comes from the script.
+   The timeline and mail panes fill it. The loading bar spans the whole cell. */
+.context-pane > td > :not(.sliding-bar-loader) {
   position: sticky;
   left: var(--pane-left, 0);
   box-sizing: border-box;
+  max-width: var(--pane-width, none);
+}
+
+.context-pane[data-context-type='logbook'] > td > :not(.sliding-bar-loader),
+.context-pane[data-context-type='mail'] > td > :not(.sliding-bar-loader) {
   width: var(--pane-width, auto);
 }
 
