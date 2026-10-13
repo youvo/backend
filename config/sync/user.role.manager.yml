@@ -67,3 +67,4 @@ permissions:
   - 'view correspondence'
   - 'view courses'
   - 'view observable log'
+  - 'view project manager fields'

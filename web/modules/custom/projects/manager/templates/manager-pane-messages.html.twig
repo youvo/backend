@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * Compact notices of a manager context pane.
+ *
+ * Available variables:
+ * - messages: The messages, keyed by type ("status", "warning" or "error").
+ */
+#}
+{% if messages %}
+  <div class="pane-messages">
+    {% for type, items in messages %}
+      {% for item in items %}
+        <div class="pane-message pane-message-{{ type }}" role="{{ type == 'error' ? 'alert' : 'status' }}" data-pane-message>
+          <span class="pane-message-icon" aria-hidden="true"></span>
+          <span class="pane-message-text">{{ item }}</span>
+          <button type="button" class="pane-message-close" aria-label="{{ 'Dismiss'|t }}"><span aria-hidden="true">&times;</span></button>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+{% endif %}

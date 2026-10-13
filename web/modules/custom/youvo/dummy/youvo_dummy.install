@@ -20,6 +20,23 @@ function youvo_dummy_install(): void {
 }
 
 /**
+ * Implements hook_site_install_finished().
+ *
+ * The order of the hook implementations does not follow the module weights
+ * during the installation. Therefore, the dummy content is generated here in
+ * an explicit order: Projects depend on creatives and organizations.
+ *
+ * @see https://www.drupal.org/project/drupal/issues/2924549
+ */
+function youvo_dummy_site_install_finished(): void {
+  $module_handler = \Drupal::moduleHandler();
+  foreach (['creatives', 'organizations', 'academy', 'projects'] as $name) {
+    $module_handler->loadInclude($name . '_dummy', 'install');
+    ($name . '_dummy_generate_content')();
+  }
+}
+
+/**
  * Returns skills array.
  */
 function youvo_dummy_get_random_skills(): array {

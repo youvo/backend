@@ -6,6 +6,7 @@ core:
     - core/once
   css:
     theme:
+      build/css/pane-ui.css: {}
       build/css/context-pane.css: {}
       build/css/icons.css: {}
       build/css/loader.css: {}

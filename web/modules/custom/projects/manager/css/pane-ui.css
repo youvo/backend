@@ -1,0 +1,432 @@
+/* =========================
+   Pane design system
+   =========================
+
+   Shared look of everything a manager touches inside a context pane: the
+   tokens, buttons, text fields, chips, icon buttons and notices. The panes
+   (context-pane.css) only add layout. A new pane gets this look by using the
+   markup classes below; it should not set colors, radii or focus rings itself.
+
+   Buttons   .button in a pane: a flat pill. input/button = primary (filled),
+             a.button = quiet (text only), .pane-button-danger = destructive.
+   Fields    .manager-pane-form: text input and textarea with a hairline
+             underline, placeholders instead of labels.
+   Chips     small rounded values and actions (dates, placeholders).
+   Icons     .pane-icon-button: an icon link with a hover and focus state.
+   Notices   .pane-message-*: compact status, warning and error pills.
+*/
+
+.context-pane {
+  --pane-ink: #222330;
+  --pane-muted: #4d6580;
+  --pane-accent: #3f78b5;
+  --pane-accent-strong: #2f6199;
+  --pane-ring: 0 0 0 2px #fff, 0 0 0 4px var(--pane-accent);
+  --pane-line: #e3e9f1;
+  --pane-line-hover: #b8c7d9;
+  --pane-outline: #c5d1df;
+  --pane-chip: #e8ecf2;
+  --pane-chip-hover: #dfe6ef;
+  --pane-hover: rgb(34 35 48 / 7%);
+  --pane-danger: #b3261e;
+  --pane-danger-strong: #8c1d18;
+  --pane-danger-wash: #fbe9e7;
+  --pane-note: #fdf0c8;
+  --pane-mail: #d6e6f7;
+  --pane-tap: 44px;
+}
+
+/* Elements that get focus from the script (after a pane swap) are read out,
+   not highlighted. */
+.context-pane [tabindex='-1']:focus,
+.context-pane .messages:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+/* Gin styles every .button with the same specificity and loads later: the
+   tr in the selector wins over it. It also forces a 2px border and a shadow,
+   which are reset with !important. */
+tr.context-pane .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: 0;
+  padding: 0.3em 1em;
+  border: 0 !important;
+  border-radius: 1em;
+  background: var(--pane-accent);
+  box-shadow: none !important;
+  color: #fff;
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+tr.context-pane .button:hover {
+  background: var(--pane-accent-strong);
+  color: #fff;
+}
+
+tr.context-pane .button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Quiet: a link that looks like text until hovered. */
+tr.context-pane a.button {
+  background: transparent;
+  color: var(--pane-ink);
+}
+
+tr.context-pane a.button:hover {
+  background: var(--pane-hover);
+  color: var(--pane-ink);
+}
+
+tr.context-pane .button.pane-button-danger {
+  background: var(--pane-danger);
+  color: #fff;
+}
+
+tr.context-pane .button.pane-button-danger:hover {
+  background: var(--pane-danger-strong);
+}
+
+/* Cancel asks before it throws away a written note. */
+tr.context-pane a.button.is-armed {
+  background: var(--pane-danger-wash);
+  color: var(--pane-danger);
+}
+
+/* One focus ring for every control of a pane (Gin sets its own on links and
+   buttons, which is replaced here). */
+tr.context-pane
+  :is(
+    .button,
+    .manager-mail-token,
+    .pane-icon-button,
+    .manager-mail-type
+  ):focus-visible {
+  outline: none;
+  box-shadow: var(--pane-ring) !important;
+}
+
+/* =========================
+   Text fields
+   ========================= */
+
+.manager-pane-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.75em;
+}
+
+.manager-pane-form .form-item,
+.manager-pane-form .form-wrapper {
+  margin: 0;
+}
+
+.manager-pane-form .js-form-item-subject,
+.manager-pane-form .js-form-item-body {
+  flex: 1 1 100%;
+}
+
+/* Labels are replaced by placeholders and stay for screen readers. */
+.manager-pane-form .js-form-item-subject > label,
+.manager-pane-form .js-form-item-body > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.manager-pane-form input.form-text,
+.manager-pane-form textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-bottom: 1px solid var(--pane-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--pane-ink);
+  font: inherit;
+  transition: border-color 0.15s ease-in-out;
+}
+
+/* A title: one 24px line, level with the pill and the dot of the timeline. */
+.manager-pane-form input.form-text {
+  height: auto;
+  padding: 0 0 4px;
+  line-height: 24px;
+}
+
+/* A text: grows with its content. */
+.manager-pane-form textarea {
+  padding: 1em 0 0.75em;
+  field-sizing: content;
+  overflow: hidden;
+  resize: none;
+  font-size: 0.8em;
+  line-height: 1.6;
+}
+
+.manager-pane-form input.form-text::placeholder,
+.manager-pane-form textarea::placeholder {
+  color: var(--pane-muted);
+}
+
+/* Gin draws a dark inset outline around a hovered field: only the underline
+   reacts here. */
+.manager-pane-form :is(input.form-text, textarea):hover:not(:focus) {
+  border-bottom-color: var(--pane-line-hover);
+  box-shadow: none !important;
+}
+
+/* The focused underline is 2px: the border and a shadow below it (no layout
+   shift). */
+.manager-pane-form input.form-text:focus,
+.manager-pane-form textarea:focus {
+  border-bottom-color: var(--pane-accent);
+  outline: none;
+  box-shadow: 0 1px 0 0 var(--pane-accent) !important;
+}
+
+.manager-pane-form :is(input.form-text, textarea)[aria-invalid='true'],
+.manager-pane-form :is(input.form-text, textarea)[aria-invalid='true']:hover,
+.manager-pane-form :is(input.form-text, textarea)[aria-invalid='true']:focus {
+  border-bottom-color: var(--pane-danger);
+  box-shadow: 0 1px 0 0 var(--pane-danger) !important;
+}
+
+/* Field errors: marked at the field, not in a banner above the form. */
+.manager-pane-form .manager-pane-field-error {
+  flex: 1 1 100%;
+  margin-top: 0.25em;
+  color: var(--pane-danger);
+  font-size: 0.8em;
+}
+
+/* =========================
+   Chips
+   ========================= */
+
+/* Small rounded values and actions: the date and time of a note, the
+   placeholders of a mail. */
+.note-when > span,
+.note-when-field,
+.manager-mail-token,
+.manager-pane-form
+  [class*='form-datetime-wrapper']
+  input:is([type='date'], [type='time']) {
+  border-radius: 0.5em;
+  background: var(--pane-chip);
+  color: var(--pane-ink);
+  transition: background-color 0.15s ease-in-out;
+}
+
+.note-when:hover > span,
+.manager-mail-token:hover {
+  background: var(--pane-chip-hover);
+}
+
+.note-when-field:focus-within {
+  outline: none;
+  box-shadow: var(--pane-ring);
+}
+
+/* A chip that is an action but cannot be used right now. */
+.manager-mail-token[aria-disabled='true'],
+.manager-mail-token[aria-disabled='true']:hover {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--pane-outline);
+  color: var(--pane-muted);
+  cursor: default;
+}
+
+/* =========================
+   Icon buttons
+   ========================= */
+
+.pane-icon-button {
+  border-radius: 0.5em;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.pane-icon-button:hover {
+  background: var(--pane-hover);
+}
+
+/* =========================
+   Notices
+   ========================= */
+
+/* Compact notices instead of the full width Drupal status messages. */
+.pane-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4em;
+  margin: 0 0 0.75em;
+}
+
+.pane-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.25em 0.4em 0.25em 0.5em;
+  border-radius: 1em;
+  background: #e3f2ea;
+  color: #1e5a3c;
+  font-size: 0.8em;
+  font-weight: 500;
+  line-height: 1.5;
+  animation: pane-message-in 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+.pane-message-warning {
+  background: var(--pane-note);
+  color: #5c4a10;
+}
+
+.pane-message-error {
+  background: var(--pane-danger-wash);
+  color: var(--pane-danger);
+}
+
+.pane-message.is-leaving {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.pane-message-icon {
+  flex: 0 0 auto;
+  width: 1.2em;
+  height: 1.2em;
+  border-radius: 50%;
+  background: currentcolor;
+  mask:
+    center / 70% no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  mask-composite: exclude;
+}
+
+.pane-message-warning .pane-message-icon,
+.pane-message-error .pane-message-icon {
+  mask:
+    center / 70% no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v5.5M8 12v.5' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"),
+    linear-gradient(#000, #000);
+  mask-composite: exclude;
+}
+
+.pane-message-text {
+  min-width: 0;
+}
+
+.pane-message-close {
+  flex: 0 0 auto;
+  width: 1.6em;
+  height: 1.6em;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none !important;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.pane-message-close:hover,
+.pane-message-close:focus-visible {
+  background: rgb(0 0 0 / 8%);
+  opacity: 1;
+}
+
+.pane-message-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px currentcolor !important;
+}
+
+@keyframes pane-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pane-message {
+    animation: none;
+  }
+}
+
+/* =========================
+   Touch devices
+   ========================= */
+
+/* 44px targets and 16px text (smaller fields make iOS zoom in on focus). */
+@media (max-width: 800px) {
+  tr.context-pane .button {
+    min-height: var(--pane-tap);
+    padding: 0 0.75em;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  .manager-pane-form textarea,
+  .manager-pane-form input.form-text {
+    font-size: 1rem;
+  }
+
+  .manager-pane-form input.form-text {
+    padding: 10px 0;
+  }
+
+  .manager-mail-token {
+    min-height: var(--pane-tap);
+    padding: 0 0.9em;
+  }
+
+  .pane-icon-button {
+    margin: -10px -6px;
+    padding: 10px;
+  }
+
+  .pane-message {
+    font-size: 1rem;
+  }
+
+  .pane-message-close {
+    width: var(--pane-tap);
+    height: var(--pane-tap);
+    margin: -12px -10px -12px 0;
+  }
+}

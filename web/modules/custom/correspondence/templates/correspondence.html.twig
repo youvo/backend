@@ -27,10 +27,12 @@
 </div>
 <div class="logbook-timeline-content-container">
   {% if type == 'mail' %}
-    <div class="logbook-timeline-text">{{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'Not delivered'|t }}</span>{% endif %}</div>
-    <details class="logbook-timeline-message">
-      <summary>{{ 'Show message'|t }}</summary>
-      {{ body_html }}
+    <details class="logbook-timeline-details">
+      <summary class="logbook-timeline-text logbook-timeline-summary">
+        {{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'Not delivered'|t }}</span>{% endif %}
+        <span class="logbook-timeline-toggle" role="img" aria-label="{{ 'Show message'|t }}" title="{{ 'Show message'|t }}"></span>
+      </summary>
+      <div class="logbook-timeline-message">{{ body_html }}</div>
     </details>
   {% else %}
     <div class="logbook-timeline-text">{{ subject }}</div>

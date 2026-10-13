@@ -1,23 +1,51 @@
+{% macro form_row(form, key) %}
+  <div class="logbook-timeline-flex-row logbook-timeline-form" data-row-key="{{ key }}">
+    <div class="logbook-timeline-header-container logbook-timeline--note" data-timeline-type="note">
+      <div class="logbook-timeline-label-container">
+        <div class="logbook-timeline-label">{{ 'Note'|t }}</div>
+      </div>
+      <div class="logbook-timeline-date-container"></div>
+    </div>
+    <div class="logbook-timeline-bar-container">
+      <div class="logbook-timeline-circle"></div>
+    </div>
+    <div class="logbook-timeline-content-container">
+      {{ form }}
+    </div>
+  </div>
+{% endmacro %}
+{% import _self as rows %}
 <tr {{ attributes }} class="context-pane">
   <td colspan="100%">
-    <div class="logbook-timeline-filters" role="group" aria-label="{{ 'Filter'|t }}">
-      <button type="button" class="button button--small js-timeline-filter is-active" data-filter="all" aria-pressed="true">{{ 'All'|t }}</button>
-      <button type="button" class="button button--small js-timeline-filter" data-filter="log" aria-pressed="false">{{ 'Events'|t }}</button>
-      <button type="button" class="button button--small js-timeline-filter" data-filter="mail" aria-pressed="false">{{ 'Mails'|t }}</button>
-      <button type="button" class="button button--small js-timeline-filter" data-filter="note" aria-pressed="false">{{ 'Notes'|t }}</button>
-    </div>
-    <div class="logbook-timeline-flex">
-      {% for row in content.rows %}
-        <div class="logbook-timeline-flex-row" data-timeline-type="{{ row.type }}">
-          {{ row.build }}
-          {% if row.actions %}
-            <div class="logbook-timeline-actions">
-              {{ row.actions.edit }}
-              {{ row.actions.delete }}
+    {{ content.messages }}
+    {% if content.form %}
+      {{ content.form }}
+    {% elseif content.rows is defined %}
+      <div class="logbook-timeline-flex">
+        {{ content.add }}
+        {% if content.add_form %}
+          {{ rows.form_row(content.add_form, 'add') }}
+        {% endif %}
+        {% for row in content.rows %}
+          {% if row.form %}
+            {{ rows.form_row(row.form, row.key) }}
+          {% else %}
+            <div class="logbook-timeline-flex-row{{ row.highlight ? ' is-new' : '' }}{{ row.delete_form ? ' is-deleting' : '' }}" data-row-key="{{ row.key }}" data-timeline-type="{{ row.type }}">
+              {{ row.build }}
+              {% if row.delete_form %}
+                <div class="logbook-timeline-actions logbook-timeline-confirm">
+                  {{ row.delete_form }}
+                </div>
+              {% elseif row.actions %}
+                <div class="logbook-timeline-actions">
+                  {{ row.actions.edit }}
+                  {{ row.actions.delete }}
+                </div>
+              {% endif %}
             </div>
           {% endif %}
-        </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
+    {% endif %}
   </td>
 </tr>

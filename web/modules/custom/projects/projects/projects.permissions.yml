@@ -1,3 +1,6 @@
 administer projects:
   title: 'Administer projects'
   restrict access: true
+view project manager fields:
+  title: 'View project fields used by the project manager'
+  description: 'Grants read access to the project fields that the project manager page displays.'

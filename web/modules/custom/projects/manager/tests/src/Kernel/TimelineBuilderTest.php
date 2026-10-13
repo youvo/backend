@@ -223,14 +223,16 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $this->assertSame(['note', 'mail'], array_column($rows, 'type'));
     $actions = $rows[0]['actions'];
     $this->assertSame(['edit', 'delete'], array_keys($actions));
-    foreach (['edit' => 'manager.note_edit', 'delete' => 'manager.note_delete'] as $key => $route) {
+    foreach (['edit' => 'note_edit', 'delete' => 'note_delete'] as $key => $view) {
       $link = $actions[$key];
       $this->assertSame('link', $link['#type']);
-      $this->assertSame($route, $link['#url']->getRouteName());
-      $this->assertSame(['correspondence' => $note->id()], $link['#url']->getRouteParameters());
-      $this->assertContains('use-ajax', $link['#attributes']['class']);
-      $this->assertSame('modal', $link['#attributes']['data-dialog-type']);
-      $this->assertJson($link['#attributes']['data-dialog-options']);
+      $this->assertSame('manager.context_pane', $link['#url']->getRouteName());
+      $this->assertSame(['project' => $project->id()], $link['#url']->getRouteParameters());
+      $this->assertEquals(['type' => 'logbook', 'view' => $view, 'id' => $note->id()], $link['#url']->getOption('query'));
+      $this->assertNotContains('use-ajax', $link['#attributes']['class']);
+      $this->assertArrayNotHasKey('data-dialog-type', $link['#attributes']);
+      $this->assertSame($view, $link['#attributes']['data-pane-view']);
+      $this->assertSame('id=' . $note->id(), $link['#attributes']['data-pane-params']);
     }
     // Mails have no links.
     $this->assertSame([], $rows[1]['actions'] ?? []);
@@ -263,10 +265,13 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('logbook');
     $build = $pane->build($project);
     $html = (string) $this->container->get('renderer')->renderInIsolation($build);
-    $this->assertStringContainsString('/project/manage/note/' . $note->id() . '/edit', $html);
-    $this->assertStringContainsString('/project/manage/note/' . $note->id() . '/delete', $html);
+    foreach (['note_edit', 'note_delete'] as $view) {
+      $this->assertStringContainsString('data-pane-view="' . $view . '"', $html);
+      $this->assertStringContainsString('data-pane-params="id=' . $note->id() . '"', $html);
+    }
     $this->assertSame(1, substr_count($html, 'logbook-timeline-actions'), 'Only the note row has actions.');
-    $this->assertStringContainsString('data-dialog-type="modal"', $html);
+    $this->assertStringNotContainsString('data-dialog-type', $html);
+    $this->assertStringNotContainsString('use-ajax', $html);
   }
 
 }

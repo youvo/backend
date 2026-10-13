@@ -5,21 +5,27 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Attribute\ManagerContextPane;
+use Drupal\manager\Form\ProjectMailForm;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides the mail manager context pane.
  */
 #[ManagerContextPane(id: "mail")]
-class ManagerContextPaneMail extends ManagerContextPaneBase {
+class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
+  use PaneMessagesTrait;
   use StringTranslationTrait;
 
   /**
@@ -48,6 +54,16 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
   protected DateFormatterInterface $dateFormatter;
 
   /**
+   * The form builder.
+   */
+  protected FormBuilderInterface $formBuilder;
+
+  /**
+   * The messenger.
+   */
+  protected MessengerInterface $messenger;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
@@ -57,6 +73,8 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
     $instance->access = $container->get('mailer.manager_mail_access');
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->dateFormatter = $container->get('date.formatter');
+    $instance->formBuilder = $container->get('form_builder');
+    $instance->messenger = $container->get('messenger');
     return $instance;
   }
 
@@ -64,31 +82,104 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
    * {@inheritdoc}
    */
   public function build(Project $project): array {
-    $build = ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
+    return $this->buildIndex($project);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildView(Project $project, Request $request): array {
+    // The pane opens straight into the form of a mail; the index (the mail
+    // types without a form) only follows a sent mail.
+    if ($request->query->get('view') === 'index') {
+      return $this->buildIndex($project);
+    }
+    $subtype = (string) $request->query->get('subtype', '');
+    if ($subtype === '' && $this->access->access($this->currentUser, $project)->isAllowed()) {
+      $subtype = $this->registry->available($project)[0]->subtype ?? '';
+    }
+    if ($subtype === '') {
+      return $this->buildIndex($project);
+    }
+    return $this->buildMailView($project, $subtype, $request);
+  }
+
+  /**
+   * Builds the empty pane.
+   */
+  protected function emptyPane(Project $project): array {
+    return ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
+  }
+
+  /**
+   * Builds the mail form view; access is checked on every request.
+   *
+   * A valid POST sends the mail in the form's submit handler and returns the
+   * index view with a confirmation; a failed send returns the form again.
+   */
+  protected function buildMailView(Project $project, string $subtype, Request $request): array {
+    if ($subtype === '' || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
+      return $this->emptyPane($project);
+    }
+    $form_state = new FormState();
+    // Without this the form API would try to produce a redirect response.
+    $form_state->disableRedirect();
+    $form_state->addBuildInfo('args', [$project, $subtype]);
+    // A POST with a form_build_id restores the build info of the earlier GET:
+    // tell the form which project and subtype this request is for.
+    $request->attributes->set('manager_pane_mail', [(string) $project->id(), $subtype]);
+    $form = $this->formBuilder->buildForm(ProjectMailForm::class, $form_state);
+    $args = $form_state->getBuildInfo()['args'] ?? [];
+    $built_for = ($args[0] ?? NULL) instanceof Project ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;
+    if ($built_for !== NULL && $built_for !== [(string) $project->id(), $subtype]) {
+      return $this->emptyPane($project);
+    }
+    if ($form_state->get('send_denied')) {
+      return $this->emptyPane($project);
+    }
+    if ($form_state->get('already_submitted')) {
+      $this->messenger->addStatus($this->t('This form was already submitted.'));
+      return $this->buildIndex($project);
+    }
+    if ($form_state->get('sent')) {
+      $this->messenger->addStatus($this->t('The mail was sent.'));
+      return $this->buildIndex($project);
+    }
+    if ($form_state->get('send_failed')) {
+      // symfony_mailer reports the transport error (host, port) on the
+      // messenger as error or warning: show the manager only our own message.
+      $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
+      $this->messenger->deleteByType(MessengerInterface::TYPE_WARNING);
+      $this->messenger->addError($this->t('The mail could not be sent. Please try again later.'));
+    }
+    $build = $this->emptyPane($project);
+    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
+    $build['content']['form'] = $form;
+    $this->buildMails($build, $project, $subtype);
+    $this->buildLastSent($build, $project);
+    return $build;
+  }
+
+  /**
+   * Builds the index view: the mails of the state and the last sent.
+   */
+  protected function buildIndex(Project $project): array {
+    $build = $this->emptyPane($project);
     $may_mail = $this->access->access($this->currentUser, $project)->isAllowed();
-    $may_note = $this->access->noteAccess($this->currentUser, $project)->isAllowed();
-    if (!$may_mail && !$may_note) {
+    if (!$may_mail) {
       return $build;
     }
-    if ($may_mail) {
-      $this->buildMails($build, $project);
-    }
-    if ($may_note) {
-      $build['content']['notes'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Add note'),
-        '#url' => Url::fromRoute('manager.note_add', ['project' => $project->id()]),
-        '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $this->t('Add note'),
-          ]),
-        ],
-      ];
-    }
-    if ($may_mail && $last = $this->lastSent($project)) {
+    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
+    $this->buildMails($build, $project);
+    $this->buildLastSent($build, $project);
+    return $build;
+  }
+
+  /**
+   * Adds the line with the time of the latest sent mail.
+   */
+  protected function buildLastSent(array &$build, Project $project): void {
+    if ($last = $this->lastSent($project)) {
       $build['content']['last'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
@@ -98,29 +189,32 @@ class ManagerContextPaneMail extends ManagerContextPaneBase {
         ]),
       ];
     }
-    return $build;
   }
 
   /**
    * Adds the links of the mails that can be sent in the project state.
+   *
+   * @param array $build
+   *   The pane build.
+   * @param \Drupal\projects\Entity\Project $project
+   *   The project.
+   * @param string|null $active
+   *   The subtype whose form is open, which is marked as current.
    */
-  protected function buildMails(array &$build, Project $project): void {
+  protected function buildMails(array &$build, Project $project, ?string $active = NULL): void {
     foreach ($this->registry->available($project) as $definition) {
+      $is_active = $definition->subtype === $active;
       $build['content']['mails'][$definition->subtype] = [
         '#type' => 'link',
         '#title' => $definition->label,
-        '#url' => Url::fromRoute('manager.mail_form', [
-          'project' => $project->id(),
-          'subtype' => $definition->subtype,
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
+          'query' => ['type' => 'mail', 'view' => 'mail', 'subtype' => $definition->subtype],
         ]),
         '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $definition->label,
-          ]),
-        ],
+          'class' => $is_active ? ['manager-mail-type', 'is-active'] : ['manager-mail-type'],
+          'data-pane-view' => 'mail',
+          'data-pane-params' => http_build_query(['subtype' => $definition->subtype]),
+        ] + ($is_active ? ['aria-current' => 'true'] : []),
       ];
     }
     if (!isset($build['content']['mails'])) {

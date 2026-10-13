@@ -16,6 +16,15 @@
   vertical-align: middle;
 }
 
+.manager-icon-delete {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('../assets/trash.svg') no-repeat center/contain;
+  background-size: 18px 18px;
+  vertical-align: middle;
+}
+
 .manager-icon-transition {
   width: 24px;
   height: 24px;

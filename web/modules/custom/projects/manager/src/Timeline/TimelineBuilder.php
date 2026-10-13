@@ -28,7 +28,7 @@ class TimelineBuilder {
   /**
    * Builds the rows, newest first.
    *
-   * @return array<int, array{type: string, time: int, build: array, actions?: array}>
+   * @return array<int, array{type: string, id: int, time: int, build: array, actions?: array}>
    *   The rows.
    */
   public function build(ProjectInterface $project, AccountInterface $account): array {
@@ -73,14 +73,14 @@ class TimelineBuilder {
     $type_order = ['note' => 0, 'mail' => 1, 'log' => 2];
     usort($rows, static fn (array $a, array $b): int => [$b['time'], $type_order[$a['type']], $b['id']]
       <=> [$a['time'], $type_order[$b['type']], $a['id']]);
-    return array_map(static function (array $row): array {
-      unset($row['id']);
-      return $row;
-    }, $rows);
+    return $rows;
   }
 
   /**
-   * Builds the modal links to edit and delete a note for the account.
+   * Builds the in-pane links to edit and delete a note for the account.
+   *
+   * The links open the note views of the logbook pane (data-pane-view with the
+   * note id as parameter); the pane checks the access again.
    *
    * @return array<string, array>
    *   The link render arrays keyed by operation, without the not permitted.
@@ -90,25 +90,28 @@ class TimelineBuilder {
       return [];
     }
     $operations = [
-      'edit' => ['update', 'manager.note_edit', $this->t('Edit note')],
-      'delete' => ['delete', 'manager.note_delete', $this->t('Delete note')],
+      'edit' => ['update', 'note_edit', $this->t('Edit note'), 'manager-icon-edit'],
+      'delete' => ['delete', 'note_delete', $this->t('Delete note'), 'manager-icon-delete'],
     ];
     $actions = [];
-    foreach ($operations as $key => [$operation, $route, $title]) {
+    foreach ($operations as $key => [$operation, $view, $title, $icon]) {
       if (!$note->access($operation, $account)) {
         continue;
       }
       $actions[$key] = [
         '#type' => 'link',
-        '#title' => $title,
-        '#url' => Url::fromRoute($route, ['correspondence' => $note->id()]),
+        '#title' => [
+          '#markup' => '<span class="' . $icon . '" aria-hidden="true"></span><span class="visually-hidden">' . $title . '</span>',
+        ],
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $note->get('project')->target_id], [
+          'query' => ['type' => 'logbook', 'view' => $view, 'id' => $note->id()],
+        ]),
         '#attributes' => [
-          'class' => ['use-ajax', 'button', 'button--small'],
-          'data-dialog-type' => 'modal',
-          'data-dialog-options' => json_encode([
-            'width' => 760,
-            'title' => (string) $title,
-          ]),
+          'class' => ['logbook-timeline-action', 'pane-icon-button'],
+          'title' => $title,
+          'data-pane-view' => $view,
+          'data-pane-row' => 'note-' . $note->id(),
+          'data-pane-params' => http_build_query(['id' => $note->id()]),
         ],
       ];
     }

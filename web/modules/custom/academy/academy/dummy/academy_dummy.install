@@ -23,11 +23,11 @@ function academy_dummy_install(): void {
 }
 
 /**
- * Implements hook_site_install_finished().
+ * Generates the dummy content.
  *
- * @see https://www.drupal.org/project/drupal/issues/2924549
+ * Called by youvo_dummy_site_install_finished() to guarantee the order.
  */
-function academy_dummy_site_install_finished(): void {
+function academy_dummy_generate_content(): void {
 
   // Set course titles.
   $course_titles = [

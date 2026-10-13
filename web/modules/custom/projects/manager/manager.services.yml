@@ -26,3 +26,9 @@ services:
     arguments:
       - '@entity_type.manager'
       - '@mailer.manager_mail_access'
+
+  manager.form_once:
+    class: Drupal\manager\Form\FormOnceGuard
+    arguments:
+      - '@keyvalue.expirable'
+      - '@lock'

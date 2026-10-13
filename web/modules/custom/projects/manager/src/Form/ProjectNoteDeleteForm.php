@@ -2,25 +2,47 @@
 
 namespace Drupal\manager\Form;
 
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\correspondence\CorrespondenceInterface;
-use Drupal\manager\Ajax\ManagerRefreshCommand;
+use Drupal\mailer\Manager\ManagerMailAccess;
+use Drupal\projects\ProjectInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Asks a manager to confirm the deletion of a note.
+ *
+ * A plain form that is built and processed inside the logbook context pane,
+ * in the row of the note (arguments: the project and the entry). The pane
+ * reads the outcome from the form state flags 'deleted', 'delete_failed',
+ * 'delete_denied' and 'already_submitted' and renders the messages itself.
  */
 class ProjectNoteDeleteForm extends FormBase {
 
+  use NoteFormAuthorizationTrait;
+
   /**
-   * The id of the wrapper that the ajax callback replaces.
+   * Constructs the form.
    */
-  protected const WRAPPER_ID = 'manager-note-delete-form-wrapper';
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ManagerMailAccess $access,
+    protected FormOnceGuard $once,
+  ) {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container): static {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('mailer.manager_mail_access'),
+      $container->get('manager.form_once'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -32,87 +54,90 @@ class ProjectNoteDeleteForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?CorrespondenceInterface $correspondence = NULL): array {
-    $form['#prefix'] = '<div id="' . self::WRAPPER_ID . '">';
-    $form['#suffix'] = '</div>';
-    $form['status_messages'] = ['#type' => 'status_messages'];
+  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, ?CorrespondenceInterface $correspondence = NULL): array {
+    $form['#attributes']['class'][] = 'manager-pane-form';
+    // The confirmation sits in the row of the note, next to its text: a short
+    // question, the title is right there.
     $form['question'] = [
       '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#value' => $this->t('Do you really want to delete the note "@title"? This cannot be undone.', [
-        '@title' => $correspondence?->label() ?? '',
-      ]),
+      '#tag' => 'span',
+      '#attributes' => ['class' => ['logbook-confirm-question']],
+      '#value' => $this->t('Delete this note? This cannot be undone.'),
     ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Delete'),
-      '#ajax' => [
-        'callback' => '::ajaxSubmit',
-        'wrapper' => self::WRAPPER_ID,
-      ],
+      '#attributes' => ['class' => ['pane-button-danger']],
     ];
-    $form['actions']['cancel'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Cancel'),
-      '#url' => Url::fromRoute('<none>'),
-      '#attributes' => ['class' => ['dialog-cancel', 'button']],
-    ];
+    $project_id = $project?->id() ?? $correspondence?->get('project')->target_id;
+    if ($project_id !== NULL) {
+      $form['actions']['cancel'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Cancel'),
+        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project_id], [
+          'query' => ['type' => 'logbook', 'view' => 'index'],
+        ]),
+        '#attributes' => [
+          'data-pane-view' => 'index',
+          'data-pane-row' => 'note-' . ($correspondence?->id() ?? ''),
+          'class' => ['button'],
+        ],
+      ];
+    }
     return $form;
   }
 
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
+    if ($this->authorizedNote($form_state, 'delete') === NULL) {
+      $form_state->set('delete_denied', TRUE);
+      $form_state->setErrorByName('', $this->t('The note could not be deleted.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Only guards against a repeated submitForm() call on this one in-memory
-    // form state. Replays of a request are rejected by Drupal's form cache.
+    // Guard 1: only covers a repeated submitForm() call on this one in-memory
+    // form state.
     if ($form_state->get('deleted')) {
       return;
     }
     $form_state->set('delete_failed', FALSE);
-    $correspondence = $this->entry($form_state);
-    $deleted = FALSE;
-    if ($correspondence->isNote() && $correspondence->access('delete', $this->currentUser())) {
+    // Never trust the restored build info: check access again on the actual
+    // project and note, fail closed.
+    $authorized = $this->authorizedNote($form_state, 'delete');
+    if ($authorized === NULL) {
+      $form_state->set('delete_denied', TRUE);
+      return;
+    }
+    $correspondence = $authorized[1];
+    // Guard 2: a replayed or id-less POST does not delete again (see
+    // FormOnceGuard); the claim is released if the delete fails or throws.
+    $deleted = $this->once->runOnce($form_state, function () use ($correspondence): bool {
       try {
         $correspondence->delete();
-        $deleted = TRUE;
+        return TRUE;
       }
       catch (EntityStorageException $exception) {
         $this->getLogger('manager')->error('A note could not be deleted: @message', ['@message' => $exception->getMessage()]);
+        return FALSE;
       }
+    });
+    if ($deleted === NULL) {
+      $form_state->set('already_submitted', TRUE);
+      return;
     }
     if (!$deleted) {
       $form_state->set('delete_failed', TRUE);
       $form_state->setRebuild();
-      $this->messenger()->addError($this->t('The note could not be deleted.'));
       return;
     }
+    // The pane shows the confirmation when it sees this flag.
     $form_state->set('deleted', TRUE);
-    // The ajax response closes the dialog and refreshes the pane instead.
-    $request = $this->getRequest();
-    if (!$request->query->has('ajax_form') && !$request->request->has('_drupal_ajax')) {
-      $this->messenger()->addStatus($this->t('The note was deleted.'));
-    }
-  }
-
-  /**
-   * Ajax callback: closes the dialog on success, shows errors otherwise.
-   */
-  public function ajaxSubmit(array &$form, FormStateInterface $form_state): AjaxResponse {
-    $response = new AjaxResponse();
-    if ($form_state->get('delete_failed') || $form_state->hasAnyErrors()) {
-      return $response->addCommand(new ReplaceCommand('#' . self::WRAPPER_ID, $form));
-    }
-    return $response
-      ->addCommand(new CloseModalDialogCommand())
-      ->addCommand(new ManagerRefreshCommand($this->entry($form_state)->get('project')->target_id));
-  }
-
-  /**
-   * Gets the entry from the build arguments.
-   */
-  protected function entry(FormStateInterface $form_state): CorrespondenceInterface {
-    return $form_state->getBuildInfo()['args'][0];
   }
 
 }

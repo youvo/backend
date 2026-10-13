@@ -40,12 +40,19 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->assertStringContainsString($project->getTitle(), $form['subject']['#default_value']);
     $this->assertStringContainsString('[mail:project_link]', $form['body']['#default_value']);
     $this->assertSame('textarea', $form['body']['#type']);
+    // A plain form for the pane: no ajax, a Cancel link back to the pane list.
+    $this->assertArrayNotHasKey('#ajax', $form['actions']['submit']);
+    $this->assertContains('manager-pane-form', $form['#attributes']['class']);
+    $this->assertArrayNotHasKey('cancel', $form['actions']);
 
     $form_state = $this->submit($form_object, $project, [
       'subject' => 'Betreff',
       'body' => "Hallo\n\n[mail:project_link]",
     ]);
     $this->assertFalse($form_state->hasAnyErrors());
+    $this->assertTrue($form_state->get('sent'));
+    // The form does not use the messenger; the pane renders the messages.
+    $this->assertSame([], $this->container->get('messenger')->all());
     $entries = array_values($this->loadEntries($project->id()));
     $this->assertCount(1, $entries);
     $this->assertSame('manager', $entries[0]->get('origin')->value);
@@ -99,21 +106,26 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $this->useFailingTransport();
     $form_object = ProjectMailForm::create($this->container);
-    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $values = ['subject' => 'Edited subject', 'body' => 'Edited body', 'form_build_id' => 'form-retry'];
+    $form_state = $this->submit($form_object, $project, $values);
     $this->assertTrue($form_state->get('send_failed'));
     $this->assertTrue($form_state->isRebuilding());
     $this->assertFalse($form_state->hasAnyErrors());
+    // The form adds no message itself (the pane does). The transport error of
+    // symfony_mailer is on the messenger; the pane discards it.
+    $this->assertArrayNotHasKey('status', $this->container->get('messenger')->all());
+    $this->container->get('messenger')->deleteAll();
     $form = $form_state->getCompleteForm();
     $this->assertSame('Edited subject', $form['subject']['#value']);
     $this->assertSame('Edited body', $form['body']['#value']);
     $entries = array_values($this->loadEntries($project->id()));
     $this->assertCount(1, $entries);
     $this->assertFalse($entries[0]->isSent());
-    $this->container->get('messenger')->deleteAll();
 
     // Retry with a working transport.
     $this->config('mailer_transport.settings')->set('default_transport', 'null')->save();
-    $form_state = $this->submit($form_object, $project, ['subject' => 'Edited subject', 'body' => 'Edited body']);
+    $values = ['subject' => 'Edited subject', 'body' => 'Edited body', 'form_build_id' => 'form-retry'];
+    $form_state = $this->submit($form_object, $project, $values);
     $this->assertFalse($form_state->get('send_failed'));
     $this->assertFalse($form_state->isRebuilding());
     $sent = array_filter($this->loadEntries($project->id()), static fn ($e) => $e->isSent());
@@ -133,6 +145,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     $form_object = ProjectMailForm::create($this->container);
 
     $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+    $form_state->setUserInput(['form_build_id' => 'form-once-in-submit']);
     $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
     $form_state->set('preview', TRUE);
     $form = [];
@@ -152,7 +165,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   public function testLaterValidatorFailureSendsNothing(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
-    $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens')) extends ProjectMailForm {
+    $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens'), $this->container->get('mailer.manager_mail_access'), $this->container->get('entity_type.manager'), $this->container->get('manager.form_once')) extends ProjectMailForm {
 
       /**
        * {@inheritdoc}
@@ -165,6 +178,53 @@ class ProjectMailFormTest extends MailerKernelTestBase {
     };
     $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
     $this->assertTrue($form_state->hasAnyErrors());
+    $this->assertSame([], $this->loadEntries($project->id()));
+  }
+
+  /**
+   * The restored project is reloaded and access is checked on actual values.
+   *
+   * A POST with a form_build_id restores the build info of the earlier GET.
+   * If the project changed state meanwhile, the stale serialized project must
+   * not be mailed.
+   */
+  public function testStaleProjectSendsNothing(): void {
+    // User 1 bypasses all permission checks: use it up.
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
+    $this->container->get('current_user')->setAccount($manager);
+    $form_object = ProjectMailForm::create($this->container);
+
+    // The allowed case sends.
+    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
+    $this->assertTrue($form_state->get('sent'));
+    $this->assertCount(1, $this->loadEntries($project->id()));
+
+    // The project moves on in storage; the form still holds the old object.
+    $fresh = $this->container->get('entity_type.manager')->getStorage('project')->load($project->id());
+    $fresh->set('field_lifecycle', ProjectState::Open->value)->save();
+    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
+    $this->assertTrue($form_state->hasAnyErrors());
+    $this->assertNull($form_state->get('sent'));
+    $this->assertCount(1, $this->loadEntries($project->id()), 'Nothing more was sent.');
+  }
+
+  /**
+   * The send fails closed when the account may not mail the project.
+   */
+  public function testSubmitWithoutAccessSendsNothing(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $other = $this->accountWith($this->createMailableCreative('Other'), ['send project mails']);
+    $this->container->get('current_user')->setAccount($other);
+    $form_object = ProjectMailForm::create($this->container);
+    $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+    $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
+    $form = [];
+    // Even a direct submit (validation skipped) does not send.
+    $form_object->submitForm($form, $form_state);
+    $this->assertTrue($form_state->get('send_denied'));
     $this->assertSame([], $this->loadEntries($project->id()));
   }
 
@@ -197,52 +257,72 @@ class ProjectMailFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * The ajax callback closes the dialog and refreshes, or keeps the form.
+   * Mail access goes to the assigned manager in an offered state only.
    */
-  public function testAjaxCommands(): void {
-    $project = $this->createMailableProject(ProjectState::Draft);
-    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
-    $form_object = ProjectMailForm::create($this->container);
-
-    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
-    $form = $this->build($form_object, $project);
-    $commands = $form_object->ajaxSubmit($form, $form_state)->getCommands();
-    $this->assertSame(['closeDialog', 'managerRefresh'], array_column($commands, 'command'));
-    $this->assertSame((string) $project->id(), $commands[1]['projectId']);
-
-    $this->useFailingTransport();
-    $form_state = $this->submit($form_object, $project, ['subject' => 'S', 'body' => 'x']);
-    $this->assertTrue($form_state->get('send_failed'));
-    $response = $form_object->ajaxSubmit($form, $form_state);
-    $names = array_column($response->getCommands(), 'command');
-    $this->assertContains('insert', $names);
-    $this->assertNotContains('closeDialog', $names);
-    $this->assertNotContains('managerRefresh', $names);
-    $this->assertSame('replaceWith', $response->getCommands()[0]['method']);
-  }
-
-  /**
-   * The route is granted to the assigned manager in an offered state only.
-   */
-  public function testRouteAccess(): void {
+  public function testMailAccess(): void {
     // User 1 bypasses all permission checks, so do not let the manager be it.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
     $other = $this->accountWith($this->createMailableCreative('Other'), ['send project mails']);
-    $this->container->get('router.builder')->rebuild();
-    $access = $this->container->get('access_manager');
-    $parameters = ['project' => $project->id(), 'subtype' => 'reminder_draft'];
+    $access = $this->container->get('mailer.manager_mail_access');
 
-    $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $manager));
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $other));
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', ['subtype' => 'reminder_ongoing'] + $parameters, $manager));
+    $this->assertTrue($access->access($manager, $project, 'reminder_draft')->isAllowed());
+    $this->assertFalse($access->access($other, $project, 'reminder_draft')->isAllowed());
+    $this->assertFalse($access->access($manager, $project, 'reminder_ongoing')->isAllowed());
     // The assigned manager without the permission is denied.
-    $this->assertFalse($access->checkNamedRoute('manager.mail_form', $parameters, $this->accountWith($manager, [])));
+    $this->assertFalse($access->access($this->accountWith($manager, []), $project, 'reminder_draft')->isAllowed());
     // An administrator with the permission who is not the manager is allowed.
     $admin = $this->accountWith($other, ['send project mails', 'administer projects']);
-    $this->assertTrue($access->checkNamedRoute('manager.mail_form', $parameters, $admin));
+    $this->assertTrue($access->access($admin, $project, 'reminder_draft')->isAllowed());
   }
+
+  /**
+   * A submit without a usable form_build_id sends nothing (fail closed).
+   */
+  public function testMissingOrInvalidFormBuildIdSendsNothing(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    foreach ([NULL, '', ['form-a'], 123, 'not-a-build-id', 'form-' . str_repeat('a', 300)] as $id) {
+      $form_object = ProjectMailForm::create($this->container);
+      $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'x'])->setProgrammed();
+      $form_state->setUserInput(['subject' => 'S', 'body' => 'x'] + ($id === NULL ? [] : ['form_build_id' => $id]));
+      $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
+      $this->container->get('form_builder')->submitForm($form_object, $form_state);
+      $this->assertTrue($form_state->get('already_submitted'), json_encode($id));
+      $this->assertNull($form_state->get('sent'));
+    }
+    $this->assertSame([], $this->loadEntries($project->id()));
+  }
+
+  /**
+   * An exception while sending releases the claim, so a retry can send.
+   */
+  public function testExceptionDuringSendReleasesTheClaim(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
+    $real = $this->container->get(ManagerMailerInterface::class);
+    $throwing = $this->createMock(ManagerMailerInterface::class);
+    $throwing->method('preview')->willReturnCallback(static fn (ProjectInterface $project, string $subtype) => $real->preview($project, $subtype));
+    $throwing->method('send')->willThrowException(new \RuntimeException('boom'));
+    $form_object = new ProjectMailForm($throwing, $this->container->get('mailer.late_tokens'), $this->container->get('mailer.manager_mail_access'), $this->container->get('entity_type.manager'), $this->container->get('manager.form_once'));
+    $values = ['subject' => 'S', 'body' => 'x', 'form_build_id' => 'form-boom'];
+    try {
+      $this->submit($form_object, $project, $values);
+      $this->fail('The exception must propagate.');
+    }
+    catch (\RuntimeException) {
+    }
+    $this->assertSame([], $this->loadEntries($project->id()));
+    $form_state = $this->submit(ProjectMailForm::create($this->container), $project, $values);
+    $this->assertTrue($form_state->get('sent'), 'The claim was released by the exception.');
+    $this->assertCount(1, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * Counts the submits to give each a form_build_id.
+   */
+  protected int $submits = 0;
 
   /**
    * Builds the form (form builder arguments travel in the build info).
@@ -257,6 +337,8 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * Submits the form programmatically.
    */
   protected function submit(ProjectMailForm $form_object, ProjectInterface $project, array $values, string $subtype = 'reminder_draft'): FormStateInterface {
+    // Every submit is a new browser form unless the test posts an id itself.
+    $values += ['form_build_id' => 'form-test-' . ++$this->submits];
     $form_state = (new FormState())->setValues($values)->setProgrammed();
     $form_state->addBuildInfo('args', [$project, $subtype]);
     $this->container->get('form_builder')->submitForm($form_object, $form_state);

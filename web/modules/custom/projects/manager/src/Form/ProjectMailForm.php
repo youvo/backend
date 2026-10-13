@@ -2,26 +2,25 @@
 
 namespace Drupal\manager\Form;
 
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\mailer\Manager\LateTokens;
-use Drupal\manager\Ajax\ManagerRefreshCommand;
+use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Lets a manager edit and send a reminder mail for a project.
+ *
+ * A plain form that is built and processed inside the manager context pane
+ * (see ManagerContextPaneMail): the pane reads the outcome from the form
+ * state (the 'sent' and 'send_failed' flags) and renders the messages itself.
  */
 class ProjectMailForm extends FormBase {
 
-  /**
-   * The id of the wrapper that the ajax callback replaces.
-   */
-  protected const WRAPPER_ID = 'manager-mail-form-wrapper';
+  use FieldErrorsTrait;
 
   /**
    * Constructs the form.
@@ -29,6 +28,9 @@ class ProjectMailForm extends FormBase {
   public function __construct(
     protected ManagerMailerInterface $mailer,
     protected LateTokens $lateTokens,
+    protected ManagerMailAccess $access,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected FormOnceGuard $once,
   ) {}
 
   /**
@@ -38,6 +40,9 @@ class ProjectMailForm extends FormBase {
     return new static(
       $container->get(ManagerMailerInterface::class),
       $container->get('mailer.late_tokens'),
+      $container->get('mailer.manager_mail_access'),
+      $container->get('entity_type.manager'),
+      $container->get('manager.form_once'),
     );
   }
 
@@ -52,11 +57,10 @@ class ProjectMailForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, string $subtype = ''): array {
-    $form['#prefix'] = '<div id="' . self::WRAPPER_ID . '">';
-    $form['#suffix'] = '</div>';
-    $form['status_messages'] = ['#type' => 'status_messages'];
+    $form['#attributes']['class'][] = 'manager-pane-form';
 
-    // Render the preview once; later builds (ajax rebuilds) reuse it.
+    // Render the preview once; later builds (rebuilds after a failed send or
+    // an error) reuse it.
     if (!$form_state->has('preview')) {
       $preview = $project instanceof ProjectInterface ? $this->mailer->preview($project, $subtype) : NULL;
       $form_state->set('preview', $preview ?? FALSE);
@@ -78,6 +82,7 @@ class ProjectMailForm extends FormBase {
       '#default_value' => $preview->subject,
       '#maxlength' => 255,
       '#required' => TRUE,
+      '#attributes' => ['placeholder' => $this->t('Subject')],
     ];
     $form['body'] = [
       '#type' => 'textarea',
@@ -85,20 +90,36 @@ class ProjectMailForm extends FormBase {
       '#default_value' => $preview->body,
       '#rows' => 14,
       '#required' => TRUE,
+      '#attributes' => ['placeholder' => $this->t('Write a message…')],
     ];
+    // The placeholders insert themselves into the message (see the script).
     $form['tokens'] = [
-      '#type' => 'item',
-      '#title' => $this->t('Placeholders (resolved when sending)'),
-      '#markup' => implode(' ', array_map(static fn ($n) => '<code>' . LateTokens::token($n) . '</code>', $this->lateTokens->names())),
-      '#description' => $this->t('Plain text. Web addresses become links.'),
+      '#type' => 'container',
+      '#attributes' => ['class' => ['manager-mail-tokens']],
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['manager-mail-tokens-label']],
+        '#value' => $this->t('Insert placeholder'),
+      ],
     ];
+    foreach ($this->lateTokens->names() as $name) {
+      $form['tokens'][$name] = [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#attributes' => [
+          'type' => 'button',
+          'class' => ['manager-mail-token'],
+          // Active while the cursor is in the message (see the script).
+          'aria-disabled' => 'true',
+          'data-token' => LateTokens::token($name),
+        ],
+        '#value' => LateTokens::token($name),
+      ];
+    }
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Send'),
-      '#ajax' => [
-        'callback' => '::ajaxSubmit',
-        'wrapper' => self::WRAPPER_ID,
-      ],
     ];
     return $form;
   }
@@ -108,6 +129,10 @@ class ProjectMailForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     if (!$form_state->get('preview')) {
+      $form_state->setErrorByName('', $this->t('This mail cannot be sent for this project.'));
+      return;
+    }
+    if ($this->authorizedProject($form_state) === NULL) {
       $form_state->setErrorByName('', $this->t('This mail cannot be sent for this project.'));
       return;
     }
@@ -124,47 +149,79 @@ class ProjectMailForm extends FormBase {
     if (trim((string) $form_state->getValue('body')) === '') {
       $form_state->setErrorByName('body', $this->t('The message is required.'));
     }
+    $this->showFieldErrors($form, $form_state, ['subject', 'body']);
+  }
+
+  /**
+   * Gets the project to mail if the current user may send this mail now.
+   *
+   * A POST that carries a form_build_id restores the build info (the project
+   * and subtype) of the earlier GET, so neither the serialized project nor
+   * the cached subtype can be trusted: the project is reloaded from storage,
+   * access is checked again on these actual values, and, if the pane put the
+   * project id and subtype of the current request on the request, they must
+   * match the cached ones.
+   *
+   * @return \Drupal\projects\ProjectInterface|null
+   *   The freshly loaded project, or NULL if the mail must not be sent.
+   */
+  protected function authorizedProject(FormStateInterface $form_state): ?ProjectInterface {
+    $args = $form_state->getBuildInfo()['args'] ?? [];
+    $cached = $args[0] ?? NULL;
+    $subtype = $args[1] ?? NULL;
+    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '') {
+      return NULL;
+    }
+    $expected = $this->getRequest()->attributes->get('manager_pane_mail');
+    if (is_array($expected) && ($expected !== [(string) $cached->id(), $subtype])) {
+      return NULL;
+    }
+    $project = $this->entityTypeManager->getStorage('project')->load($cached->id());
+    if (!$project instanceof ProjectInterface) {
+      return NULL;
+    }
+    if (!$this->access->access($this->currentUser(), $project, $subtype)->isAllowed()) {
+      return NULL;
+    }
+    return $project;
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Only guards against a repeated submitForm() call on this one in-memory
-    // form state. Replays of a request are rejected by Drupal's form cache.
+    // Guard 1: only covers a repeated submitForm() call on this one in-memory
+    // form state.
     if ($form_state->get('sent')) {
       return;
     }
     $form_state->set('send_failed', FALSE);
-    [$project, $subtype] = $form_state->getBuildInfo()['args'];
-    $sent = $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser());
-    if (!$sent) {
-      // Errors cannot be set during submit: rebuild the form with the input.
-      $form_state->set('send_failed', TRUE);
-      $form_state->setRebuild();
-      $this->messenger()->addError($this->t('The mail could not be sent. Please try again later.'));
+    // Never trust the restored build info: check access again on the actual
+    // project and subtype, fail closed.
+    $project = $this->authorizedProject($form_state);
+    if ($project === NULL) {
+      $form_state->set('send_denied', TRUE);
       return;
     }
+    $subtype = $form_state->getBuildInfo()['args'][1];
+    // Guard 2: a replayed POST (same form_build_id, still a valid token)
+    // rebuilds the form and would send again; a POST without a usable
+    // form_build_id is refused as well (fail closed). The build id is claimed
+    // before sending and released again if the send fails or throws.
+    $sent = $this->once->runOnce($form_state, fn (): bool => $this->mailer->send($project, $subtype, (string) $form_state->getValue('subject'), (string) $form_state->getValue('body'), $this->currentUser()));
+    if ($sent === NULL) {
+      $form_state->set('already_submitted', TRUE);
+      return;
+    }
+    if (!$sent) {
+      // Errors cannot be set during submit: rebuild the form with the input.
+      // The pane shows the error message when it sees this flag.
+      $form_state->set('send_failed', TRUE);
+      $form_state->setRebuild();
+      return;
+    }
+    // The pane shows the confirmation when it sees this flag.
     $form_state->set('sent', TRUE);
-    // The ajax response closes the dialog and refreshes the pane instead.
-    $request = $this->getRequest();
-    if (!$request->query->has('ajax_form') && !$request->request->has('_drupal_ajax')) {
-      $this->messenger()->addStatus($this->t('The mail was sent.'));
-    }
-  }
-
-  /**
-   * Ajax callback: closes the dialog on success, shows errors otherwise.
-   */
-  public function ajaxSubmit(array &$form, FormStateInterface $form_state): AjaxResponse {
-    $response = new AjaxResponse();
-    if ($form_state->get('send_failed') || $form_state->hasAnyErrors()) {
-      return $response->addCommand(new ReplaceCommand('#' . self::WRAPPER_ID, $form));
-    }
-    [$project] = $form_state->getBuildInfo()['args'];
-    return $response
-      ->addCommand(new CloseModalDialogCommand())
-      ->addCommand(new ManagerRefreshCommand($project->id()));
   }
 
 }

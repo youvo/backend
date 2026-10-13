@@ -26,7 +26,7 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
   ];
 
   /**
-   * The pane lists only the mails of the project's state, as modal links.
+   * The pane lists only the mails of the project's state, as in-pane links.
    */
   public function testListsMailsForState(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -37,9 +37,11 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
     $links = $build['content']['mails'];
     $this->assertCount(1, $links);
     $first = reset($links);
-    $this->assertSame('modal', $first['#attributes']['data-dialog-type']);
-    $this->assertContains('use-ajax', $first['#attributes']['class']);
-    $this->assertStringContainsString('/project/manage/mail/' . $project->id() . '/reminder_draft', $first['#url']->toString());
+    $this->assertSame('mail', $first['#attributes']['data-pane-view']);
+    $this->assertSame('subtype=reminder_draft', $first['#attributes']['data-pane-params']);
+    $this->assertNotContains('use-ajax', $first['#attributes']['class']);
+    $this->assertStringContainsString('/project/manage/context/' . $project->id(), $first['#url']->toString());
+    $this->assertStringContainsString('view=mail', $first['#url']->toString());
     $this->assertArrayNotHasKey('last', $build['content']);
   }
 
@@ -100,35 +102,11 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
     $build = $this->pane()->build($project);
     $this->assertArrayNotHasKey('mails', $build['content']);
     $this->assertArrayHasKey('empty', $build['content']);
-    $this->assertArrayNotHasKey('notes', $build['content']);
 
     $this->container->get('current_user')->setAccount($this->createMailableCreative('Other'));
     $build = $this->pane()->build($project);
     $this->assertArrayNotHasKey('empty', $build['content']);
     $this->assertSame([], $build['content']);
-  }
-
-  /**
-   * The note link is offered with the note permission for the manager only.
-   */
-  public function testNoteLink(): void {
-    $this->createMailableCreative('Root');
-    $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
-    $manager = $this->accountWith($project->getOwner()->getManager(), ['manage correspondence notes']);
-    $this->container->get('current_user')->setAccount($manager);
-    $build = $this->pane()->build($project);
-    $link = $build['content']['notes'];
-    $this->assertSame('modal', $link['#attributes']['data-dialog-type']);
-    $this->assertContains('use-ajax', $link['#attributes']['class']);
-    $this->assertStringContainsString('/project/manage/note/' . $project->id(), $link['#url']->toString());
-    // Without the mail permission there is no mail text and no last line.
-    $this->assertArrayNotHasKey('empty', $build['content']);
-    $this->assertArrayNotHasKey('last', $build['content']);
-
-    $other = $this->accountWith($this->createMailableCreative('Other'), ['manage correspondence notes']);
-    $this->container->get('current_user')->setAccount($other);
-    $this->assertSame([], $this->pane()->build($project)['content']);
   }
 
   /**
