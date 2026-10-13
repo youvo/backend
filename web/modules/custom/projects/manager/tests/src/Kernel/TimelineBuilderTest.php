@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\manager\Kernel;
 
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\Entity\LogPattern;
@@ -9,6 +10,7 @@ use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneLogbook;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
+use Drupal\user\Entity\User;
 
 /**
  * Tests the merged timeline.
@@ -201,9 +203,82 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $this->assertInstanceOf(ManagerContextPaneLogbook::class, $pane);
     $build = $pane->build($project);
     $this->assertSame('logbook', $build['#type']);
-    $types = array_column($build['content']['rows'], 'type');
+    $types = array_column($build['content']['timeline']['#rows'], 'type');
     $this->assertSame('note', $types[0]);
     $this->assertContains('log', $types);
+  }
+
+  /**
+   * The rendered timeline is cached and invalidated by changes of the project.
+   */
+  public function testTimelineIsRenderCached(): void {
+    $this->installEntitySchema('log_text');
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
+    $this->container->get('current_user')->setAccount($manager);
+    $note = $this->createEntry($project, 'note', 3000, 'First');
+
+    $render = function () use ($project): string {
+      $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('logbook');
+      $build = $pane->build($project);
+      return (string) $this->container->get('renderer')->renderInIsolation($build);
+    };
+    $this->assertStringContainsString('First', $render());
+
+    // A change that bypasses the entity hooks stays invisible: the second
+    // render comes from the cache.
+    $storage = $this->container->get('entity_type.manager')->getStorage('correspondence');
+    $this->assertInstanceOf(SqlContentEntityStorage::class, $storage);
+    $table = $storage->getBaseTable();
+    $this->container->get('database')->update($table)->fields(['subject' => 'Sneaky'])->condition('id', $note->id())->execute();
+    $storage->resetCache();
+    $html = $render();
+    $this->assertStringContainsString('First', $html);
+    $this->assertStringNotContainsString('Sneaky', $html);
+
+    // A new entry invalidates the timeline of the project.
+    $this->createEntry($project, 'note', 4000, 'Second');
+    $html = $render();
+    $this->assertStringContainsString('Second', $html);
+    $this->assertStringContainsString('Sneaky', $html);
+
+    // So does a new log, and the timeline of another project is kept.
+    $other = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $other);
+    $this->createLog($project, 5000);
+    $this->assertSame(substr_count($html, 'data-row-key'), substr_count($render(), 'data-row-key') - 1);
+
+    // Deleting an entry removes it.
+    $note->delete();
+    $this->assertStringNotContainsString('Sneaky', $render());
+  }
+
+  /**
+   * The cached timeline is kept per user.
+   */
+  public function testTimelineCacheVariesByUser(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
+    $this->createEntry($project, 'note', 3000, 'Visible');
+    $render = function () use ($project): string {
+      $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('logbook');
+      $build = $pane->build($project);
+      return (string) $this->container->get('renderer')->renderInIsolation($build);
+    };
+    $this->container->get('current_user')->setAccount($manager);
+    $this->assertStringContainsString('Visible', $render());
+    // Another user without the permission must not get the cached rows.
+    $viewer = User::create(['name' => 'viewer', 'status' => 1]);
+    $viewer->save();
+    $this->container->get('current_user')->setAccount($this->accountWith($viewer, ['access content']));
+    $this->assertStringNotContainsString('Visible', $render());
+    // And the manager still gets theirs.
+    $this->container->get('current_user')->setAccount($manager);
+    $this->assertStringContainsString('Visible', $render());
   }
 
   /**
