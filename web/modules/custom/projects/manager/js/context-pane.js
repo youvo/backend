@@ -39,6 +39,7 @@ async function loadAndReplaceRow(row, id, type) {
       newRow.dataset.contextType = type;
       newRow.dataset.projectId = id;
       row.replaceWith(newRow);
+      Drupal.attachBehaviors(newRow);
       if (type === 'transition') {
         initCheckboxHandlers(newRow);
       }
@@ -56,44 +57,49 @@ function closeContextPane() {
 }
 
 function initContextPane(context) {
-  (context || document)
-    .querySelectorAll(SELECTORS.contextTable)
-    .forEach(table => {
-      table.addEventListener('click', async e => {
-        const trigger = e.target.closest(SELECTORS.contextTrigger);
-        if (!trigger) return;
-        e.stopPropagation();
-        const id = trigger.getAttribute('data-project-id');
-        const type = trigger.getAttribute('data-context-pane');
-        if (!id || !type) return;
-        const row = trigger.closest('tr');
-        if (!row) return;
-        const nextRow = row.nextElementSibling;
-        if (nextRow && nextRow.classList.contains('js-context-pane')) {
-          if (nextRow.dataset.contextType === type) {
-            nextRow.remove();
-            return;
-          }
-          nextRow.innerHTML = `
+  once(
+    'manager-context-pane',
+    SELECTORS.contextTable,
+    context || document
+  ).forEach(table => {
+    table.addEventListener('click', async e => {
+      const trigger = e.target.closest(SELECTORS.contextTrigger);
+      if (!trigger) return;
+      e.stopPropagation();
+      const id = trigger.getAttribute('data-project-id');
+      const type = trigger.getAttribute('data-context-pane');
+      if (!id || !type) return;
+      const row = trigger.closest('tr');
+      if (!row) return;
+      const nextRow = row.nextElementSibling;
+      if (nextRow && nextRow.classList.contains('js-context-pane')) {
+        if (nextRow.dataset.contextType === type) {
+          nextRow.remove();
+          return;
+        }
+        nextRow.innerHTML = `
           <td colspan="100%">
             <span class="sliding-bar-loader">
               <span class="sliding-bar"></span>
             </span>
           </td>
         `;
-          nextRow.className = 'loading-pane context-pane';
-          await loadAndReplaceRow(nextRow, id, type);
-          return;
-        }
-        closeContextPane();
-        const loadingRow = showLoadingRow(row, type);
-        await loadAndReplaceRow(loadingRow, id, type);
-      });
+        nextRow.className = 'loading-pane context-pane';
+        await loadAndReplaceRow(nextRow, id, type);
+        return;
+      }
+      closeContextPane();
+      const loadingRow = showLoadingRow(row, type);
+      await loadAndReplaceRow(loadingRow, id, type);
     });
+  });
 
-  // Close context pane when clicking outside
+  // Close context pane when clicking outside.
+  if (window._managerBodyClickAttached) return;
+  window._managerBodyClickAttached = true;
   document.body.addEventListener('click', e => {
     if (
+      e.target.closest('.ui-dialog, .ui-widget-overlay') ||
       e.target.closest(SELECTORS.contextPane) ||
       e.target.closest(SELECTORS.contextTrigger) ||
       e.target.closest(SELECTORS.contextTable)
@@ -146,6 +152,29 @@ function initPromoteButton() {
     } catch (err) {
       btn.disabled = false;
     }
+  });
+}
+
+function initTimelineFilter() {
+  if (window._timelineFilterHandlerAttached) return;
+  window._timelineFilterHandlerAttached = true;
+
+  document.body.addEventListener('click', function (e) {
+    const btn = e.target.closest('.js-timeline-filter');
+    if (!btn) return;
+    const pane = btn.closest('.js-context-pane, .context-pane');
+    if (!pane) return;
+    const filter = btn.getAttribute('data-filter') || 'all';
+    pane.querySelectorAll('.js-timeline-filter').forEach(other => {
+      other.classList.toggle('is-active', other === btn);
+      other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+    });
+    pane
+      .querySelectorAll('.logbook-timeline-flex-row[data-timeline-type]')
+      .forEach(row => {
+        row.hidden =
+          filter !== 'all' && row.getAttribute('data-timeline-type') !== filter;
+      });
   });
 }
 
@@ -256,12 +285,32 @@ function initTransitionButton() {
   });
 }
 
+function defineManagerRefreshCommand(Drupal) {
+  if (!Drupal.AjaxCommands) return;
+  Drupal.AjaxCommands.prototype.managerRefresh = function (ajax, response) {
+    const row = document.querySelector(
+      `.js-context-pane[data-project-id="${response.projectId}"]`
+    );
+    if (row) {
+      loadAndReplaceRow(row, response.projectId, row.dataset.contextType);
+    }
+    document.querySelectorAll('.view-project-manager').forEach(view => {
+      view.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
+    });
+  };
+}
+
 (function (Drupal) {
+  defineManagerRefreshCommand(Drupal);
+
   Drupal.behaviors.projectManagerContextPane = {
     attach: function (context, settings) {
+      // Drupal.AjaxCommands may only exist after this script was evaluated.
+      defineManagerRefreshCommand(Drupal);
       initContextPane(context);
       initPromoteButton();
       initTransitionButton();
+      initTimelineFilter();
 
       if (lastScrollPosition !== null) {
         window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });

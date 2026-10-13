@@ -21,9 +21,11 @@ dependencies:
     - rest.resource.question.submission
   module:
     - contextual
+    - correspondence
     - courses
     - lifecycle
     - logbook
+    - mailer
     - navigation
     - projects
     - rest
@@ -44,6 +46,7 @@ permissions:
   - 'create project'
   - 'delete any project'
   - 'general manager access'
+  - 'manage correspondence notes'
   - 'restful delete organization:manage'
   - 'restful get organization:manage'
   - 'restful get progress:course:access'
@@ -67,7 +70,9 @@ permissions:
   - 'restful post project:show'
   - 'restful post project:submit'
   - 'restful post question:submission'
+  - 'send project mails'
   - 'update any project'
+  - 'view correspondence'
   - 'view courses'
   - 'view detectable log'
   - 'view observable log'

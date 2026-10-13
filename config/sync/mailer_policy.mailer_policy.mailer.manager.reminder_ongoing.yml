@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.reminder_ongoing
+configuration:
+  email_subject:
+    value: 'Wie läuft Dein Projekt {{ project_title }}?'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>Dein Projekt {{ project_title }} wird gerade umgesetzt. Sobald es abgeschlossen ist, markiere es bitte als abgeschlossen, damit wir es dokumentieren können und Du Feedback geben kannst.</p><p>{{ project_link }}</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

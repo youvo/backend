@@ -21,3 +21,8 @@ services:
     tags:
       - { name: event_subscriber }
 
+  manager.timeline_builder:
+    class: Drupal\manager\Timeline\TimelineBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@mailer.manager_mail_access'

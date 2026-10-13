@@ -1,0 +1,8 @@
+uuid: 540baf0c-fcc3-41b7-8014-de769907b5a1
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: FQKxYGTSAF62bAmvPYGyn35k-5k2xrNTPXVvNB1fkXU
+id: note
+label: Note

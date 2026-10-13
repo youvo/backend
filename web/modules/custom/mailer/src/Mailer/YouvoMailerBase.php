@@ -101,11 +101,15 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    *   The recipient address.
    * @param string[] $secrets
    *   Strings that must not be stored.
+   * @param string $origin
+   *   The origin of the mail as recorded: 'automatic' or 'manager'.
+   * @param int|null $sender
+   *   The uid of the user who sent the mail, if a person did.
    *
    * @return bool
    *   TRUE if the mail was sent.
    */
-  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, ?string $to, array $secrets = []): bool {
+  protected function deliver(EmailInterface $email, ?ProjectInterface $project, string $subtype, ?string $to, array $secrets = [], string $origin = 'automatic', ?int $sender = NULL): bool {
     if ($to === NULL || $to === '') {
       $this->logger->error('Unable to send mail %tag for project @project: no recipient address.', [
         '%tag' => $this->getBaseTag() . '.' . $subtype,
@@ -133,7 +137,7 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     }
 
     if ($captured['subject'] !== '' || $captured['body'] !== '') {
-      $this->recorder->recordMail($project, $this->getBaseTag() . '.' . $subtype, [$to], self::redactSecrets($captured['subject'], $secrets), self::redactSecrets($captured['body'], $secrets), $success);
+      $this->recorder->recordMail($project, $this->getBaseTag() . '.' . $subtype, [$to], self::redactSecrets($captured['subject'], $secrets), self::redactSecrets($captured['body'], $secrets), $success, $origin, $sender);
     }
     return $success;
   }

@@ -18,6 +18,7 @@ dependencies:
     - courses
     - lifecycle
     - logbook
+    - mailer
     - projects
     - rest
     - system
@@ -33,6 +34,7 @@ permissions:
   - 'create project'
   - 'delete any project'
   - 'general manager access'
+  - 'manage correspondence notes'
   - 'restful delete organization:manage'
   - 'restful get organization:manage'
   - 'restful get progress:course:access'
@@ -50,6 +52,7 @@ permissions:
   - 'restful post project:notify'
   - 'restful post project:publish'
   - 'restful post question:submission'
+  - 'send project mails'
   - 'update any project'
   - 'use project_lifecycle transition archive'
   - 'use project_lifecycle transition complete'

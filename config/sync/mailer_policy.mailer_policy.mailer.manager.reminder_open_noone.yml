@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.reminder_open_noone
+configuration:
+  email_subject:
+    value: 'Dein Projekt {{ project_title }} ist online'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>Dein Projekt {{ project_title }} ist für Kreative sichtbar. Bisher hat sich noch niemand beworben. Wenn Du magst, passen wir gemeinsam die Beschreibung an, damit mehr Kreative darauf aufmerksam werden.</p><p>{{ project_link }}</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html
