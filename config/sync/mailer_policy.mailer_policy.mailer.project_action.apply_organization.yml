@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_action.apply_organization
+configuration:
+  email_subject:
+    value: '{{ creative_name }} hat Interesse an Eurem Projekt {{ project_title }}'
+  email_body:
+    content:
+      value: '<p>{{ message|nl2br }}</p><p>========</p><p>Bitte schaut Euch das Portfolio von {{ creative_name }} an (<a href="{{ creative_link }}">{{ creative_link }}</a>) und antwortet auf die Anfrage. Bedenkt, dass Kommunikation während einer Zusammenarbeit besonders wichtig ist. Hier die Kontaktdaten der Interessierten/des Interessierten:  {{ creative_email }} {{ creative_phone }}<br>Wenn Ihr Euch nicht persönlich verabreden könnt, tauscht Telefonnummern oder Skypedaten aus, um Euch kennenzulernen.</p><p>TIPP: Wenn Ihr über Mail kommuniziert, denkt bitte daran auch in Eurem Spam-Ordner zu schauen, damit keine Nachrichten verloren gehen.</p><p>Wenn Ihr Euch einig seid und beginnt, das Projekt gemeinsam umzusetzen, stellt bitte den Status des Projektes unter youvo.org auf „vermittelt“, damit die anderen Kreativen Bescheid wissen.<br>Es ist auch möglich, mehrere Kreative für ein Projekt zu gewinnen, bitte sprecht das miteinander ab.</p><p>Wir sind während des Projektes immer für Euch da – meldet Euch bitte, wenn Probleme oder Fragen auftauchen.<br>Wenn Ihr (zu viele) Anfragen von Kreativen bekommt, mit denen Ihr nicht zusammenarbeiten wollt oder könnt, sagt ihnen bitte Bescheid. Bitte denkt daran, dass Ihr Eure Absage freundlich begründet.<br>Wir wünschen Euch viel Erfolg bei der Umsetzung und sind gespannt auf die Ergebnisse.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

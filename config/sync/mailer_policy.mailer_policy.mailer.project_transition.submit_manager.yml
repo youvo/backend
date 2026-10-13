@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.submit_manager
+configuration:
+  email_subject:
+    value: 'Neues Projekt {{ project_title }} wurde eingereicht'
+  email_body:
+    content:
+      value: '<p>Hallo {{ manager }},</p><p>die Organisation {{ organization_name }} hat ein neues Projekt eingereicht:</p><p>Projekt: {{ project_title }}<br>Kontakt: {{ organization_contact }}<br>E-Mail: {{ organization_email }}</p><p>Das Projekt ist jetzt zur Überprüfung bereit und kann bei Bedarf veröffentlicht werden.</p><p>Liebe Grüße<br>Dein youvo-Team</p>'
+      format: email_html

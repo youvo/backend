@@ -1,11 +1,15 @@
 name: Mailer
 type: module
-description: Administration and handling of transactional emails.
+description: Sends the transactional emails of the platform and records them as correspondence.
 package: youvo
 
 core_version_requirement: ^10.3 || ^11
 
 dependencies:
-  - youvo:youvo
-
-configure: entity.transactional_email.collection
+  - correspondence:correspondence
+  - creatives:creatives
+  - organizations:organizations
+  - projects:projects
+  - symfony_mailer:mailer_policy
+  - symfony_mailer:mailer_transport
+  - symfony_mailer:symfony_mailer

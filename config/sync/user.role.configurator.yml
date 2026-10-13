@@ -10,7 +10,6 @@ dependencies:
     - contextual
     - dashboard
     - logbook
-    - mailer
     - navigation
     - system
     - taxonomy
@@ -28,7 +27,6 @@ permissions:
   - 'create content translations'
   - 'edit log pattern'
   - 'edit terms in skills'
-  - 'edit transactional emails'
   - 'translate log_text'
   - 'translate skills taxonomy_term'
   - 'view youvo dashboard'

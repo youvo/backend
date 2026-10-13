@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.mediate_creative
+configuration:
+  email_subject:
+    value: 'Du wurdest für das Projekt {{ project_title }} ausgewählt'
+  email_body:
+    content:
+      value: '<p>Hallo {{ creative_name }},</p><p>gratulation! Du wurdest für das Projekt {{ project_title }} der Organisation {{ organization_name }} ausgewählt.</p><p>Du kannst jetzt direkt mit der Organisation in Kontakt treten:</p><p>{{ organization_name }}<br>c/o {{ organization_contact }}<br>{{ organization_address }}<br>{{ organization_email }}<br>{{ organization_phone }}</p><p>Das Projekt ist jetzt in der Umsetzungsphase. Viel Erfolg bei der Zusammenarbeit!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

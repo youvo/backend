@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.publish_organization
+configuration:
+  email_subject:
+    value: 'Dein Projekt {{ project_title }} wurde veröffentlicht'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>dein Projekt {{ project_title }} wurde erfolgreich veröffentlicht und ist jetzt für Kreative sichtbar. Kreative können sich jetzt für dein Projekt bewerben.</p><p>Du wirst benachrichtigt, sobald sich jemand für dein Projekt interessiert.</p><p>Wenn Du Fragen hast, melde Dich gern.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

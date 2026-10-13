@@ -1,0 +1,11 @@
+uuid: d0fc3034-1655-4d56-aeca-c05fbc1b296a
+langcode: de
+status: true
+dependencies:
+  module:
+    - correspondence
+id: correspondence_type--correspondence_type
+disabled: true
+path: correspondence_type/correspondence_type
+resourceType: correspondence_type--correspondence_type
+resourceFields: {  }

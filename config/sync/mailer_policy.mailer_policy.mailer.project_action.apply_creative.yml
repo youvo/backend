@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_action.apply_creative
+configuration:
+  email_subject:
+    value: 'Deine Interessensbekundung für das Projekt {{ project_title }}'
+  email_body:
+    content:
+      value: '<p>Hallo {{ creative_name }},</p><p>vielen Dank für Dein Interesse an dem Projekt {{ project_title }}. Die Organisation wurde benachrichtigt und wird sich bald bei Dir melden. Falls Du weitere Fragen hast, melde Dich gern bei der Organisation:</p><p>{{ organization_name }}<br>c/o {{ organization_contact }}<br>{{ organization_address }}<br>{{ organization_email }}<br>{{ organization_phone }}</p><p>Wenn Du länger keine Antwort bekommen solltest oder weitere Fragen hast, wende Dich gern an: {{ manager_email }}.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

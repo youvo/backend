@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.complete_creative
+configuration:
+  email_subject:
+    value: 'Projekt {{ project_title }} ist abgeschlossen - Feedback und Ergebnisse'
+  email_body:
+    content:
+      value: '<p>Hallo {{ creative_name }},</p><p>das Projekt {{ project_title }} für {{ organization_name }} ist erfolgreich abgeschlossen! Vielen Dank für deine tolle Arbeit.</p><p>Wir würden uns sehr über dein Feedback freuen:</p><p><a href="{{ feedback_link }}">{{ feedback_link }}</a></p><p>Hier kannst du die Ergebnisse des Projekts einsehen:</p><p><a href="{{ results_link }}">{{ results_link }}</a></p><p>Dein Feedback hilft uns dabei, zukünftige Projekte noch besser zu gestalten.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

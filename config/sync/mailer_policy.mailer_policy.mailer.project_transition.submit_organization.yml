@@ -1,0 +1,13 @@
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.project_transition.submit_organization
+configuration:
+  email_subject:
+    value: 'Dein Projekt {{ project_title }} wurde eingereicht'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>dein Projekt {{ project_title }} wurde erfolgreich eingereicht und wird jetzt von {{ manager }} überprüft.</p><p>Du wirst benachrichtigt, sobald das Projekt veröffentlicht wurde und für Kreative sichtbar ist.</p><p>Vielen Dank für dein Vertrauen!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

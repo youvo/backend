@@ -1,0 +1,10 @@
+correspondence.correspondence_type.*:
+  type: config_entity
+  label: 'Correspondence type'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'

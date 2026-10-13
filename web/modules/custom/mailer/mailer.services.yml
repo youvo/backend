@@ -1,52 +1,78 @@
 services:
   mailer.project_apply.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectApplySubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectActionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_notify.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectNotifySubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectActionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_publish.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectPublishSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_submit.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectSubmitSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_mediate.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectMediateSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_complete.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectCompleteSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectTransitionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.project_invite.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectInviteSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\ProjectActionMailerInterface']
     tags:
       - { name: event_subscriber }
   mailer.creative_register.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerCreativeRegisterSubscriber
-    arguments:
-      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.mailer', '@plugin.manager.mail', '@youvo.token_replacer' ]
+    arguments: ['@Drupal\mailer\Mailer\YouvoUserMailerInterface']
     tags:
       - { name: event_subscriber }
+  mailer.organization_create.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerOrganizationCreateSubscriber
+    arguments: ['@Drupal\mailer\Mailer\YouvoUserMailerInterface']
+    tags:
+      - { name: event_subscriber }
+  mailer.correspondence_recorder:
+    class: Drupal\mailer\CorrespondenceRecorder
+    arguments: ['@entity_type.manager', '@logger.channel.mailer', '@datetime.time']
+  mailer.variables:
+    class: Drupal\mailer\MailVariables
+    arguments: ['@config.factory']
+  Drupal\mailer\Mailer\ProjectTransitionMailerInterface:
+    class: Drupal\mailer\Mailer\ProjectTransitionMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $mailVariables: '@mailer.variables'
+      $configFactory: '@config.factory'
+  Drupal\mailer\Mailer\ProjectActionMailerInterface:
+    class: Drupal\mailer\Mailer\ProjectActionMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $configFactory: '@config.factory'
+      $mailVariables: '@mailer.variables'
+  Drupal\mailer\Mailer\YouvoUserMailerInterface:
+    class: Drupal\mailer\Mailer\YouvoUserMailer
+    autowire: true
+    arguments:
+      $recorder: '@mailer.correspondence_recorder'
+      $logger: '@logger.channel.mailer'
+      $configFactory: '@config.factory'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]

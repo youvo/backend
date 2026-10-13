@@ -2,23 +2,32 @@
 
 namespace Drupal\mailer\EventSubscriber;
 
-use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\mailer\Mailer\ProjectActionMailerInterface;
 use Drupal\projects\Event\ProjectInviteEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Mailer project invite event subscriber.
+ * Sends mail on project invite.
  */
-class MailerProjectInviteSubscriber extends MailerProjectNotifySubscriber {
+class MailerProjectInviteSubscriber implements EventSubscriberInterface {
 
-  use StringTranslationTrait;
+  /**
+   * Constructs the subscriber.
+   */
+  public function __construct(protected ProjectActionMailerInterface $mailer) {}
 
-  const EMAIL_ID = 'project_invite_organization';
+  /**
+   * Sends the invite mail with the link set by the event subscribers before.
+   */
+  public function mail(ProjectInviteEvent $event): void {
+    $this->mailer->invite($event->getProject(), $event->getLink());
+  }
 
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectInviteEvent::class => 'mail'];
+    return [ProjectInviteEvent::class => ['mail', -100]];
   }
 
 }

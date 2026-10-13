@@ -2,49 +2,32 @@
 
 namespace Drupal\mailer\EventSubscriber;
 
-use Drupal\Component\EventDispatcher\Event;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\creatives\Event\CreativeRegisterEvent;
-use Drupal\mailer\Entity\TransactionalEmail;
+use Drupal\mailer\Mailer\YouvoUserMailerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Mailer project invite event subscriber.
+ * Sends mail on creative registration.
  */
-class MailerCreativeRegisterSubscriber extends MailerSubscriberBase {
-
-  use StringTranslationTrait;
-
-  const EMAIL_ID = 'user_register_creative';
+class MailerCreativeRegisterSubscriber implements EventSubscriberInterface {
 
   /**
-   * Sends mail during project notify event.
+   * Constructs the subscriber.
    */
-  public function mail(Event $event): void {
+  public function __construct(protected YouvoUserMailerInterface $mailer) {}
 
-    $email = $this->loadTransactionalEmail(self::EMAIL_ID);
-    if (!$email instanceof TransactionalEmail) {
-      return;
-    }
-
-    /** @var \Drupal\creatives\Event\CreativeRegisterEvent $event */
-    $creative = $event->getCreative();
-    $replacements = [
-      '%Name' => $creative->getName(),
-      '%Link' => $event->getLink(),
-    ];
-
-    $this->sendMail(
-      $creative->getEmail(),
-      $this->handleTokensSubject($email, $replacements),
-      $this->handleTokensBody($email, $replacements)
-    );
+  /**
+   * Sends the registration mail with the link of the event.
+   */
+  public function mail(CreativeRegisterEvent $event): void {
+    $this->mailer->registerCreative($event->getCreative(), $event->getLink());
   }
 
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [CreativeRegisterEvent::class => 'mail'];
+    return [CreativeRegisterEvent::class => ['mail', -100]];
   }
 
 }
