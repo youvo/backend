@@ -67,6 +67,7 @@ class ProjectNoteDeleteForm extends FormBase {
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Delete'),
+      '#attributes' => ['class' => ['pane-button-danger']],
     ];
     $project_id = $project?->id() ?? $correspondence?->get('project')->target_id;
     if ($project_id !== NULL) {

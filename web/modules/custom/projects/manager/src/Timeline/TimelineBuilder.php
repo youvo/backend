@@ -107,7 +107,7 @@ class TimelineBuilder {
           'query' => ['type' => 'logbook', 'view' => $view, 'id' => $note->id()],
         ]),
         '#attributes' => [
-          'class' => ['logbook-timeline-action'],
+          'class' => ['logbook-timeline-action', 'pane-icon-button'],
           'title' => $title,
           'data-pane-view' => $view,
           'data-pane-row' => 'note-' . $note->id(),
