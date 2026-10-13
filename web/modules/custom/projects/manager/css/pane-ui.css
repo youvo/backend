@@ -17,22 +17,36 @@
 */
 
 .context-pane {
-  --pane-ink: #222330;
-  --pane-muted: #4d6580;
-  --pane-accent: #3f78b5;
-  --pane-accent-strong: #2f6199;
-  --pane-ring: 0 0 0 2px #fff, 0 0 0 4px var(--pane-accent);
-  --pane-line: #e3e9f1;
-  --pane-line-hover: #b8c7d9;
-  --pane-outline: #c5d1df;
-  --pane-chip: #e8ecf2;
-  --pane-chip-hover: #dfe6ef;
-  --pane-hover: rgb(34 35 48 / 7%);
-  --pane-danger: #b3261e;
-  --pane-danger-strong: #8c1d18;
-  --pane-danger-wash: #fbe9e7;
-  --pane-note: #fdf0c8;
-  --pane-mail: #d6e6f7;
+  /* Gin sets the look; the fallbacks are the values of the default Gin theme. */
+  --pane-ink: var(--gin-color-title, #222330);
+  --pane-muted: var(--gin-color-text-light, #545560);
+  --pane-accent: var(--gin-color-primary, #3f78b5);
+  --pane-accent-strong: var(--gin-color-primary-hover, #2f6199);
+  --pane-surface: var(--gin-bg-layer, #fff);
+  --pane-ring:
+    0 0 0 2px var(--pane-surface),
+    0 0 0 4px var(--gin-color-focus, var(--pane-accent));
+  --pane-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --pane-line-hover: var(--gin-border-color, #d4d4d8);
+  --pane-outline: var(--gin-border-color, #d4d4d8);
+  --pane-chip: color-mix(in srgb, var(--pane-accent) 15%, var(--pane-surface));
+  --pane-track: var(--pane-chip);
+  --pane-chip-hover: color-mix(
+    in srgb,
+    var(--pane-accent) 22%,
+    var(--pane-surface)
+  );
+  --pane-hover: var(--gin-bg-item-hover, rgb(63 120 181 / 8%));
+  --pane-danger: var(--gin-color-danger, #cc3d3d);
+  --pane-danger-strong: color-mix(in srgb, var(--pane-danger), #000 25%);
+  --pane-danger-wash: var(--gin-color-danger-lightest, #fdd9d9);
+  --pane-note: color-mix(
+    in srgb,
+    var(--gin-color-warning, #d8b234) 30%,
+    var(--pane-surface)
+  );
+  --pane-mail: var(--pane-chip-hover);
+  --pane-fast: var(--gin-transition-fast, 0.3s ease);
   --pane-tap: 44px;
 }
 
@@ -69,9 +83,9 @@ tr.context-pane .button {
   text-decoration: none;
   cursor: pointer;
   transition:
-    background-color 0.15s ease-in-out,
-    color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
+    background-color var(--pane-fast),
+    color var(--pane-fast),
+    box-shadow var(--pane-fast);
 }
 
 tr.context-pane .button:hover {
@@ -168,7 +182,7 @@ tr.context-pane
   box-shadow: none;
   color: var(--pane-ink);
   font: inherit;
-  transition: border-color 0.15s ease-in-out;
+  transition: border-color var(--pane-fast);
 }
 
 /* A title: one 24px line, level with the pill and the dot of the timeline. */
@@ -239,7 +253,7 @@ tr.context-pane
   border-radius: 0.5em;
   background: var(--pane-chip);
   color: var(--pane-ink);
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color var(--pane-fast);
 }
 
 .note-when:hover > span,
@@ -267,7 +281,7 @@ tr.context-pane
 
 .pane-icon-button {
   border-radius: 0.5em;
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color var(--pane-fast);
 }
 
 .pane-icon-button:hover {
@@ -283,8 +297,8 @@ tr.context-pane
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4em;
-  margin: 0 0 0.75em;
+  gap: var(--gin-spacing-density-xs, 0.4rem);
+  margin: 0 0 var(--gin-spacing-density-s, 0.75rem);
 }
 
 .pane-message {
@@ -295,7 +309,11 @@ tr.context-pane
   max-width: 100%;
   padding: 0.25em 0.4em 0.25em 0.5em;
   border-radius: 1em;
-  background: #e3f2ea;
+  background: color-mix(
+    in srgb,
+    var(--gin-color-green, #26a769) 18%,
+    var(--pane-surface)
+  );
   color: #1e5a3c;
   font-size: 0.8em;
   font-weight: 500;

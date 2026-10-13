@@ -36,12 +36,12 @@
   left: 52%;
   width: 96%;
   height: 4px;
-  background: #e8ecf2;
+  background: var(--pane-track);
   z-index: 1;
 }
 
 .lifecycle-progress-step.next-completed.has-segment::after {
-  background: #3f78b5;
+  background: var(--pane-accent);
 }
 
 .lifecycle-progress-circle {
@@ -49,7 +49,7 @@
   height: 16px;
   border-radius: 50%;
   background: transparent;
-  border: 5px solid #e8ecf2;
+  border: 5px solid var(--pane-track);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,8 +59,8 @@
 }
 
 .lifecycle-progress-circle.completed {
-  background: #3f78b5;
-  border-color: #3f78b5;
+  background: var(--pane-accent);
+  border-color: var(--pane-accent);
 }
 
 .lifecycle-progress-circle .checkmark {
@@ -131,7 +131,7 @@
 }
 
 .status-dormant.views-field-field-lifecycle > div::before {
-  background: #e8ecf2;
+  background: var(--gin-border-color, #d4d4d8);
 }
 
 .status-archived.views-field-field-lifecycle > div::before {
@@ -223,7 +223,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 5px solid #e8ecf2;
+  border: 5px solid var(--pane-track);
   background: transparent;
   z-index: 2;
   position: absolute;
@@ -243,7 +243,7 @@
   transform: translateX(-50%);
   width: 4px;
   height: calc(100% + 16px);
-  background: #e8ecf2;
+  background: var(--pane-track);
   border-radius: 2px;
   z-index: 1;
 }
@@ -299,7 +299,7 @@
   width: 16px;
   height: 16px;
   background: url('../assets/chevron-down.svg') no-repeat center/contain;
-  transition: transform 0.15s ease-in-out;
+  transition: transform var(--pane-fast);
 }
 
 .logbook-timeline-details[open] .logbook-timeline-toggle {
@@ -331,7 +331,7 @@
 }
 
 .logbook-timeline-label {
-  background: #e8ecf2;
+  background: var(--pane-chip);
   border-radius: 1em;
   padding: 0.2em 0.8em;
   font-size: 0.8em;
@@ -346,15 +346,15 @@
 .transition-checkboxes {
   display: flex;
   flex-flow: row wrap;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-density-xs, 0.5rem);
   align-items: stretch;
-  margin-bottom: 1em;
+  margin-bottom: var(--gin-spacing-density-m, 1rem);
 }
 
 .transition-checkbox {
   position: relative;
   display: flex;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-density-xs, 0.5rem);
   width: 10%;
   min-width: 96px;
 }
@@ -372,15 +372,15 @@
   align-items: flex-start;
   justify-content: center;
   flex: 1;
-  padding: 0.5rem;
+  padding: var(--gin-spacing-density-xs, 0.5rem);
   border-radius: 0.5em;
   color: var(--pane-ink);
   cursor: pointer;
   hyphens: manual;
   overflow-wrap: normal;
   transition:
-    background-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
+    background-color var(--pane-fast),
+    box-shadow var(--pane-fast);
 }
 
 /* Participants of a completion are shown like options, but are not chosen. */
@@ -393,7 +393,7 @@
 }
 
 .transition-checkbox input:checked + .transition-checkbox-option {
-  background: #f4f8ff;
+  background: var(--pane-chip);
   box-shadow: inset 0 0 0 2px var(--pane-accent);
 }
 
@@ -433,7 +433,7 @@
   text-wrap: balance;
   font-size: 0.8em;
   padding: 0.5em 1em;
-  border-right: 1px solid #e8ecf2;
+  border-right: 1px solid var(--pane-line);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -454,7 +454,7 @@
 
   .status-overview-item {
     border-right: none;
-    border-bottom: 1px solid #e8ecf2;
+    border-bottom: 1px solid var(--pane-line);
   }
 
   .status-overview-item:last-child {
@@ -552,7 +552,7 @@ a.manager-mail-type {
   line-height: 1.4;
   color: var(--pane-ink);
   text-decoration: none;
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color var(--pane-fast);
 }
 
 a.manager-mail-type:hover {
@@ -606,13 +606,13 @@ a.logbook-timeline-add .logbook-timeline-label {
   box-shadow: inset 0 0 0 1px var(--pane-outline);
   color: inherit;
   transition:
-    background-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out,
-    transform 0.15s ease-in-out;
+    background-color var(--pane-fast),
+    box-shadow var(--pane-fast),
+    transform var(--pane-fast);
 }
 
 a.logbook-timeline-add .logbook-timeline-circle {
-  background: #f4f7fb;
+  background: var(--pane-surface);
   border-color: var(--pane-chip-hover);
 }
 
@@ -990,8 +990,8 @@ a.logbook-timeline-add:active .logbook-timeline-label {
    and the question with its buttons take the place of the edit and delete
    icons. */
 .logbook-timeline-flex-row.is-deleting {
-  background: #fbefed;
-  box-shadow: 0 0 0 6px #fbefed;
+  background: var(--pane-danger-wash);
+  box-shadow: 0 0 0 6px var(--pane-danger-wash);
 }
 
 .logbook-timeline-confirm .manager-pane-form {
