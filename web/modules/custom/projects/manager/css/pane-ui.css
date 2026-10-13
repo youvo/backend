@@ -21,7 +21,7 @@
   --pane-muted: #4d6580;
   --pane-accent: #3f78b5;
   --pane-accent-strong: #2f6199;
-  --pane-ring: 0 0 0 3px rgb(63 120 181 / 30%);
+  --pane-ring: 0 0 0 2px #fff, 0 0 0 4px var(--pane-accent);
   --pane-line: #e3e9f1;
   --pane-line-hover: #b8c7d9;
   --pane-outline: #c5d1df;
@@ -110,7 +110,15 @@ tr.context-pane a.button.is-armed {
   color: var(--pane-danger);
 }
 
-tr.context-pane .button:focus-visible {
+/* One focus ring for every control of a pane (Gin sets its own on links and
+   buttons, which is replaced here). */
+tr.context-pane
+  :is(
+    .button,
+    .manager-mail-token,
+    .pane-icon-button,
+    .manager-mail-type
+  ):focus-visible {
   outline: none;
   box-shadow: var(--pane-ring) !important;
 }
@@ -185,22 +193,27 @@ tr.context-pane .button:focus-visible {
   color: var(--pane-muted);
 }
 
-.manager-pane-form input.form-text:hover,
-.manager-pane-form textarea:hover {
+/* Gin draws a dark inset outline around a hovered field: only the underline
+   reacts here. */
+.manager-pane-form :is(input.form-text, textarea):hover:not(:focus) {
   border-bottom-color: var(--pane-line-hover);
+  box-shadow: none !important;
 }
 
+/* The focused underline is 2px: the border and a shadow below it (no layout
+   shift). */
 .manager-pane-form input.form-text:focus,
 .manager-pane-form textarea:focus {
   border-bottom-color: var(--pane-accent);
   outline: none;
-  box-shadow: none;
+  box-shadow: 0 1px 0 0 var(--pane-accent) !important;
 }
 
 .manager-pane-form :is(input.form-text, textarea)[aria-invalid='true'],
 .manager-pane-form :is(input.form-text, textarea)[aria-invalid='true']:hover,
 .manager-pane-form :is(input.form-text, textarea)[aria-invalid='true']:focus {
   border-bottom-color: var(--pane-danger);
+  box-shadow: 0 1px 0 0 var(--pane-danger) !important;
 }
 
 /* Field errors: marked at the field, not in a banner above the form. */
@@ -234,9 +247,7 @@ tr.context-pane .button:focus-visible {
   background: var(--pane-chip-hover);
 }
 
-.note-when:focus-visible > span,
-.note-when-field:focus-within,
-.manager-mail-token:focus-visible {
+.note-when-field:focus-within {
   outline: none;
   box-shadow: var(--pane-ring);
 }
@@ -261,11 +272,6 @@ tr.context-pane .button:focus-visible {
 
 .pane-icon-button:hover {
   background: var(--pane-hover);
-}
-
-.pane-icon-button:focus-visible {
-  outline: none;
-  box-shadow: var(--pane-ring);
 }
 
 /* =========================

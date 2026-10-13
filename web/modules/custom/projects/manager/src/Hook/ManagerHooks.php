@@ -20,6 +20,23 @@ class ManagerHooks {
   ) {}
 
   /**
+   * Implements hook_gin_ignore_sticky_form_actions().
+   *
+   * The pane forms keep their buttons below the fields: Gin must not move them
+   * into a sticky bar (and add a hidden link to the tab order).
+   *
+   * @return string[]
+   *   The ids of the forms.
+   */
+  #[Hook('gin_ignore_sticky_form_actions')]
+  public function ginIgnoreStickyFormActions(): array {
+    return [
+      'manager_project_note_form',
+      'manager_project_mail_form',
+    ];
+  }
+
+  /**
    * Implements hook_theme().
    */
   #[Hook('theme')]

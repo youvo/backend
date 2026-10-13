@@ -560,11 +560,6 @@ a.manager-mail-type.is-active {
   font-weight: 600;
 }
 
-a.manager-mail-type:focus-visible {
-  outline: none;
-  box-shadow: var(--pane-ring);
-}
-
 .manager-mail-pane-last {
   margin: 1em 0 0;
   font-size: 0.8em;
@@ -878,8 +873,11 @@ a.logbook-timeline-add:active .logbook-timeline-label {
     cursor: pointer;
   }
 
+  /* One ring around both chips of the button. */
   .logbook-timeline-form .manager-pane-form .note-when:focus-visible {
     outline: none;
+    border-radius: 0.5em;
+    box-shadow: var(--pane-ring);
   }
 
   .logbook-timeline-form .manager-pane-form .note-when > span {
@@ -971,7 +969,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 
   .note-when-picker:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--pane-accent);
+    box-shadow: var(--pane-ring);
   }
 }
 
