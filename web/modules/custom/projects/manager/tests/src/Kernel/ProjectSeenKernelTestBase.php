@@ -25,6 +25,7 @@ abstract class ProjectSeenKernelTestBase extends MailerKernelTestBase {
    */
   protected static $modules = [
     'user',
+    'user_types',
     'views',
     'logbook',
     'manager',

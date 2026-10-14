@@ -78,6 +78,10 @@ class ManagerHooks {
         'variables' => ['rows' => [], 'add_form' => NULL],
         'template' => 'manager-timeline',
       ],
+      'manager_projects_block' => [
+        'variables' => ['cards' => [], 'more_url' => NULL, 'seen_all_url' => NULL],
+        'template' => 'manager-projects-block',
+      ],
       'manager_rule' => [
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessManagerRule',

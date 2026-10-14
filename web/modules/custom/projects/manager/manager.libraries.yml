@@ -25,3 +25,8 @@ dev_dark_mode:
   dependencies:
     - core/drupal
     - core/once
+
+projects_block:
+  css:
+    theme:
+      build/css/projects-block.css: {}
