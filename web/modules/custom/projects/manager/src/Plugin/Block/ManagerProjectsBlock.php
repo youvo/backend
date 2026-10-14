@@ -92,7 +92,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
         'id' => $id,
         'title' => $project->label(),
         'url' => $project->toUrl()->toString(),
-        'organization' => $project->getOwner()->getDisplayName(),
+        'organization' => $this->organizationName($project),
         'state' => ucfirst((string) $project->get('field_lifecycle')->value),
         'is_new' => $item['is_new'],
         'count' => $item['count'],
@@ -124,6 +124,17 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
         'tags' => array_merge($list_tags, [ProjectSeenTracker::cacheTag($uid)]),
       ],
     ];
+  }
+
+  /**
+   * Gets the name of the organization of a project.
+   *
+   * The display name of an organization is its email address. If the
+   * organization has no name, the display name is the fallback.
+   */
+  protected function organizationName(ProjectInterface $project): string {
+    $owner = $project->getOwner();
+    return $owner->getName() ?: $owner->getDisplayName();
   }
 
   /**

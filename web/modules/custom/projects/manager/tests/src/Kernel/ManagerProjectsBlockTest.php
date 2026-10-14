@@ -72,6 +72,17 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
   }
 
   /**
+   * The card shows the name of the organization, not its email address.
+   */
+  public function testShowsTheOrganizationName(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $project->getOwner()->set('field_name', 'Greenhouse e.V.')->save();
+    $html = $this->renderFor($this->managerOf($project));
+    $this->assertStringContainsString('Greenhouse e.V.', $html);
+    $this->assertStringNotContainsString('organization@example.com', $html);
+  }
+
+  /**
    * A confirmed project has no badge and no button.
    */
   public function testConfirmedProjectHasNoBadge(): void {
