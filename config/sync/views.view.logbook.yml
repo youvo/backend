@@ -285,20 +285,21 @@ display:
           relationship: organization
           entity_type: user
           entity_field: name
-          plugin_id: user_name
-          operator: in
-          value: {  }
+          plugin_id: string
+          operator: contains
+          value: ''
           group: 1
           exposed: true
           expose:
             operator_id: ''
-            label: ''
+            label: Organisation
+            description: ''
             use_operator: false
             identifier: organization
             required: false
             remember: false
             multiple: false
-            reduce: false
+            placeholder: Organisation
         author_name:
           id: author_name
           table: users_field_data
@@ -306,20 +307,21 @@ display:
           relationship: author
           entity_type: user
           entity_field: name
-          plugin_id: user_name
-          operator: in
-          value: {  }
+          plugin_id: string
+          operator: contains
+          value: ''
           group: 1
           exposed: true
           expose:
             operator_id: ''
-            label: ''
+            label: Person
+            description: ''
             use_operator: false
             identifier: person
             required: false
             remember: false
             multiple: false
-            reduce: false
+            placeholder: Person
       style:
         type: table
         options:

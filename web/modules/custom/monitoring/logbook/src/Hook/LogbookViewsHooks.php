@@ -2,10 +2,14 @@
 
 namespace Drupal\logbook\Hook;
 
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\logbook\LogInterface;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -14,6 +18,8 @@ use Drupal\views\ViewExecutable;
 class LogbookViewsHooks {
 
   use StringTranslationTrait;
+
+  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
 
   /**
    * Implements hook_views_data_alter().
@@ -50,6 +56,9 @@ class LogbookViewsHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'logbook') {
       $view->element['#attached']['library'][] = 'logbook/table';
+      // The pills and icons read the log patterns: the list changes with them.
+      $tags = $this->entityTypeManager->getDefinition('log_pattern')->getListCacheTags();
+      $view->element['#cache']['tags'] = Cache::mergeTags($view->element['#cache']['tags'] ?? [], $tags);
     }
   }
 
@@ -99,6 +108,24 @@ class LogbookViewsHooks {
     }
     if (isset($form['type']['#options']['All'])) {
       $form['type']['#options']['All'] = $this->t('All types');
+    }
+  }
+
+  /**
+   * Implements hook_views_query_alter().
+   *
+   * The view lists patterns by a fixed list of ids. A pattern that was disabled
+   * since is not tracked anymore and not listed either, as access to its logs
+   * is forbidden.
+   */
+  #[Hook('views_query_alter')]
+  public function viewsQueryAlter(ViewExecutable $view, QueryPluginBase $query): void {
+    if ($view->id() !== 'logbook' || !$query instanceof Sql) {
+      return;
+    }
+    $disabled = array_keys($this->entityTypeManager->getStorage('log_pattern')->loadByProperties(['status' => FALSE]));
+    if ($disabled !== []) {
+      $query->addWhere('0', 'log.type', $disabled, 'NOT IN');
     }
   }
 

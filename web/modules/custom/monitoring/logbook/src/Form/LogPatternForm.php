@@ -152,7 +152,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['settings']['observable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Observable'),
-      '#description' => $this->t('This log is accessable for managers with respect to their organizations.'),
+      '#description' => $this->t('This log is accessable for managers with respect to their organizations. The admin logbook lists the patterns set in its view, not this flag: deleting a pattern that the view lists also deletes the view.'),
       '#default_value' => $this->entity->isObservable(),
     ];
 

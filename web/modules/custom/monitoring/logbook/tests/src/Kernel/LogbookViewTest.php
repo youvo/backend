@@ -3,6 +3,8 @@
 namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\creatives\Entity\Creative;
+use Drupal\organizations\Entity\Organization;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
 use Drupal\views\Views;
@@ -206,6 +208,55 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertStringContainsString('value="2026-06-05"', $html);
     $this->assertStringContainsString('All types', $html);
     $this->assertStringNotContainsString('- Any -', $html);
+  }
+
+  /**
+   * A disabled pattern is not listed, also if the view's list names it.
+   */
+  public function testDisabledPatternNotListed(): void {
+    $this->createPattern('project_reset', ['observable' => TRUE, 'status' => FALSE]);
+    $this->createLog('project_reset', ['created' => 100]);
+    $apply = $this->createLog('project_apply', ['created' => 200]);
+    $this->assertSame([(int) $apply->id()], $this->ids());
+  }
+
+  /**
+   * The organization and person filters have a name and a placeholder.
+   */
+  public function testUserFiltersAreNamed(): void {
+    $html = $this->renderPage();
+    $this->assertStringContainsString('placeholder="Organisation"', $html);
+    $this->assertStringContainsString('placeholder="Person"', $html);
+    $this->assertMatchesRegularExpression('/<label[^>]*for="edit-organization"[^>]*>Organisation<\/label>/', $html);
+    $this->assertMatchesRegularExpression('/<label[^>]*for="edit-person"[^>]*>Person<\/label>/', $html);
+    $this->assertStringNotContainsString('Usernames', $html);
+  }
+
+  /**
+   * Editing a log pattern invalidates the rendered list.
+   */
+  public function testListDependsOnLogPatterns(): void {
+    $this->setCurrentUser($this->createUser(['administer log pattern']));
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $render = $view->buildRenderable('page_1');
+    $this->container->get('renderer')->renderInIsolation($render);
+    $this->assertContains('config:log_pattern_list', $render['#cache']['tags'] ?? []);
+  }
+
+  /**
+   * The organization and person filters find logs by a part of the name.
+   */
+  public function testOrganizationAndPersonFilter(): void {
+    $organization = Organization::create(['name' => 'Greenhouse Collective']);
+    $organization->save();
+    $author = Creative::create(['name' => 'Zelda Writer']);
+    $author->save();
+    $one = $this->createLog('project_apply', ['organization' => $organization->id(), 'created' => 100]);
+    $two = $this->createLog('project_apply', ['author' => $author->id(), 'created' => 200]);
+    $this->assertSame([(int) $one->id()], $this->ids(['organization' => 'Greenhouse']));
+    $this->assertSame([(int) $two->id()], $this->ids(['person' => 'Zelda']));
+    $this->assertSame([], $this->ids(['organization' => 'Nobody']));
   }
 
 }
