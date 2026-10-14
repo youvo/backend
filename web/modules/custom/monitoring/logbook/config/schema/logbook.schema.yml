@@ -43,3 +43,6 @@ logbook.log_pattern.*:
     color:
       type: string
       label: 'Color'
+    tone:
+      type: string
+      label: 'Tone'

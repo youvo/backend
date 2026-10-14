@@ -56,7 +56,8 @@ use Drupal\youvo\SimpleToken;
  *     "public",
  *     "promote",
  *     "hidden",
- *     "color"
+ *     "color",
+ *     "tone"
  *   }
  * )
  */
@@ -126,6 +127,13 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
   protected string $color;
 
   /**
+   * The tone of the type pill in the logbook.
+   *
+   * @var string
+   */
+  protected string $tone = '';
+
+  /**
    * The log text entity.
    *
    * @var \Drupal\logbook\Entity\LogText
@@ -163,6 +171,13 @@ class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
    */
   public function getColor(): string {
     return $this->color ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTone(): string {
+    return $this->tone;
   }
 
   /**

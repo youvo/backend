@@ -188,6 +188,19 @@ class LogPatternForm extends BundleEntityFormBase {
       '#default_value' => $this->entity->getColor(),
     ];
 
+    $form['settings']['tone'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Tone'),
+      '#description' => $this->t('Colors the type pill in the logbook. A celebrate pattern also colors the whole row.'),
+      '#options' => [
+        'positive' => $this->t('Positive'),
+        'attention' => $this->t('Needs attention'),
+        'celebrate' => $this->t('Celebrate'),
+      ],
+      '#empty_option' => $this->t('None'),
+      '#default_value' => $this->entity->getTone(),
+    ];
+
     $form['details_tokens'] = [
       '#type' => 'details',
       '#title' => $this->t('Tokens'),

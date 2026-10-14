@@ -22,3 +22,4 @@ public: true
 promote: true
 hidden: false
 color: ''
+tone: positive

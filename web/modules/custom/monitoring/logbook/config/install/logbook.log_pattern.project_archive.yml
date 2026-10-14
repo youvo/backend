@@ -19,3 +19,4 @@ public: false
 promote: false
 hidden: false
 color: ''
+tone: ''
