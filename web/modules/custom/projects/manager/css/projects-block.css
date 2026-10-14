@@ -129,6 +129,15 @@
   color: var(--mp-ink);
 }
 
+/* Five labels in a row: keep every word whole on a narrow screen. */
+@media (max-width: 480px) {
+  .manager-projects__step-label {
+    hyphens: none;
+    overflow-wrap: normal;
+    font-size: 0.6875rem;
+  }
+}
+
 .manager-projects__logs {
   margin: 0;
   padding: 0;

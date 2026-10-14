@@ -49,3 +49,42 @@ function manager_schema(): array {
   ];
   return $schema;
 }
+
+/**
+ * Creates the table of seen projects and marks the existing projects as seen.
+ *
+ * Without this every unfinished project of every manager would be new on the
+ * first day, with all its logs counted.
+ */
+function manager_update_11001(): void {
+  $database = \Drupal::database();
+  if (!$database->schema()->tableExists(ProjectSeenTracker::TABLE)) {
+    $database->schema()->createTable(ProjectSeenTracker::TABLE, manager_schema()[ProjectSeenTracker::TABLE]);
+  }
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $user_storage = $entity_type_manager->getStorage('user');
+  $project_storage = $entity_type_manager->getStorage('project');
+  $max_log_id = (int) $database->query('SELECT MAX([id]) FROM {log}')->fetchField();
+  $now = \Drupal::time()->getRequestTime();
+  $organization_ids = $user_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->exists('field_manager')
+    ->execute();
+  foreach ($user_storage->loadMultiple($organization_ids) as $organization) {
+    $manager_id = (int) $organization->get('field_manager')->target_id;
+    if (!$manager_id) {
+      continue;
+    }
+    $project_ids = $project_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('uid', $organization->id())
+      ->condition('field_lifecycle', ProjectSeenTracker::UNFINISHED, 'IN')
+      ->execute();
+    foreach ($project_ids as $project_id) {
+      $database->merge(ProjectSeenTracker::TABLE)
+        ->keys(['uid' => $manager_id, 'project_id' => (int) $project_id])
+        ->fields(['log_id' => $max_log_id, 'confirmed' => $now])
+        ->execute();
+    }
+  }
+}
