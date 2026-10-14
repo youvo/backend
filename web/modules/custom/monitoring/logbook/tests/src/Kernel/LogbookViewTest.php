@@ -116,13 +116,17 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * The created filter limits the time range.
+   * The created filter limits the time range, the end day included.
    */
   public function testCreatedRange(): void {
     $this->createLog('project_apply', ['created' => strtotime('2026-06-01 12:00')]);
+    $start = $this->createLog('project_apply', ['created' => strtotime('2026-06-05 00:30')]);
     $in = $this->createLog('project_apply', ['created' => strtotime('2026-06-10 12:00')]);
+    $end = $this->createLog('project_apply', ['created' => strtotime('2026-06-15 23:30')]);
+    $this->createLog('project_apply', ['created' => strtotime('2026-06-16 00:30')]);
     $this->createLog('project_apply', ['created' => strtotime('2026-06-20 12:00')]);
-    $this->assertSame([(int) $in->id()], $this->ids(['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']]));
+    $range = ['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']];
+    $this->assertSame([(int) $end->id(), (int) $in->id(), (int) $start->id()], $this->ids($range));
   }
 
   /**
@@ -203,6 +207,9 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[min\]"/', $html);
     $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[max\]"/', $html);
     $this->assertStringContainsString('value="2026-06-05"', $html);
+    // The end day is made inclusive in the form values, not in the field.
+    $this->assertStringContainsString('value="2026-06-15"', $html);
+    $this->assertStringNotContainsString('23:59:59', $html);
     $this->assertStringContainsString('All types', $html);
     $this->assertStringNotContainsString('- Any -', $html);
   }

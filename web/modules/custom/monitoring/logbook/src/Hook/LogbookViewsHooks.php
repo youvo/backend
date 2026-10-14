@@ -106,6 +106,7 @@ class LogbookViewsHooks {
         }
       }
     }
+    $form['#validate'][] = [static::class, 'includeEndDay'];
     if (isset($form['type']['#options']['All'])) {
       $form['type']['#options']['All'] = $this->t('All types');
     }
@@ -126,6 +127,20 @@ class LogbookViewsHooks {
     $disabled = array_keys($this->entityTypeManager->getStorage('log_pattern')->loadByProperties(['status' => FALSE]));
     if ($disabled !== []) {
       $query->addWhere('0', 'log.type', $disabled, 'NOT IN');
+    }
+  }
+
+  /**
+   * Validate callback of the exposed form: the end day belongs to the range.
+   *
+   * The date filter turns a date without a time into midnight, which would
+   * leave out the whole end day. The value of the form is changed, not the
+   * input, so the date field keeps showing the day that was picked.
+   */
+  public static function includeEndDay(array &$form, FormStateInterface $form_state): void {
+    $end = $form_state->getValue(['created', 'max']);
+    if (is_string($end) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)) {
+      $form_state->setValue(['created', 'max'], $end . ' 23:59:59');
     }
   }
 
