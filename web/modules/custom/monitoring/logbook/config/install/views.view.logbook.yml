@@ -130,7 +130,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'administer log pattern'
+          perm: 'view observable log'
       cache:
         type: tag
         options: {  }
@@ -313,6 +313,7 @@ display:
         - user.permissions
       tags:
         - 'config:log_pattern_list'
+        - log_list
   page_1:
     id: page_1
     display_title: Page
@@ -332,4 +333,5 @@ display:
         - user.permissions
       tags:
         - 'config:log_pattern_list'
+        - log_list
 

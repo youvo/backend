@@ -62,7 +62,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
    */
   protected function renderPage(array $input = []): string {
     // The view checks access: render as a user who may see it.
-    $this->setCurrentUser($this->createUser(['administer log pattern']));
+    $this->setCurrentUser($this->createUser(['view observable log']));
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $view->setExposedInput($input);
@@ -197,24 +197,27 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * The page needs the administer permission.
+   * The page needs the permission to view observable logs.
    */
   public function testAccess(): void {
     $access_manager = $this->container->get('access_manager');
     $this->container->get('router.builder')->rebuild();
     // User 1 bypasses permission checks: use it up.
     $this->createUser();
-    $user = $this->createUser([]);
-    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $user));
-    $admin = $this->createUser(['administer log pattern']);
-    $this->assertTrue($access_manager->checkNamedRoute('view.logbook.page_1', [], $admin));
+    $nobody = $this->createUser([]);
+    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $nobody));
+    // Administering the log patterns is not the permission of the logbook.
+    $pattern_admin = $this->createUser(['administer log pattern']);
+    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $pattern_admin));
+    $observer = $this->createUser(['view observable log']);
+    $this->assertTrue($access_manager->checkNamedRoute('view.logbook.page_1', [], $observer));
   }
 
   /**
    * Only a celebrate pattern colors the row and the library is attached.
    */
   public function testCelebrateRow(): void {
-    $this->setCurrentUser($this->createUser(['administer log pattern']));
+    $this->setCurrentUser($this->createUser(['view observable log']));
     $this->createLog('project_apply', ['created' => 100]);
     $this->assertStringNotContainsString('logbook-row--celebrate', $this->renderPage());
     $this->createLog('project_complete', ['created' => 200]);
@@ -245,7 +248,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
    * Editing a log pattern invalidates the rendered list.
    */
   public function testListDependsOnLogPatterns(): void {
-    $this->setCurrentUser($this->createUser(['administer log pattern']));
+    $this->setCurrentUser($this->createUser(['view observable log']));
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $render = $view->buildRenderable('page_1');
