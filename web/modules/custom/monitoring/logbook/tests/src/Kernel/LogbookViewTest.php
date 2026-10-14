@@ -3,6 +3,7 @@
 namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\logbook\Entity\LogPattern;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
 use Drupal\views\Views;
@@ -70,14 +71,40 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * Only the patterns of the view's pattern filter are listed, newest first.
+   * The flags of the patterns decide what is listed, newest first.
    */
-  public function testScope(): void {
-    $a = $this->createLog('project_apply', ['created' => 100]);
-    $b = $this->createLog('project_publish', ['created' => 200]);
-    $this->createLog('project_notify', ['created' => 300]);
+  public function testScopeFollowsThePatternFlags(): void {
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $publish = $this->createLog('project_publish', ['created' => 200]);
+    $notify = $this->createLog('project_notify', ['created' => 300]);
     $this->createLog('feedback_off', ['created' => 400]);
-    $this->assertSame([(int) $b->id(), (int) $a->id()], $this->ids());
+    // Not observable and disabled patterns are not listed.
+    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids());
+    // Making a pattern observable lists it, without any change of the view.
+    $pattern = LogPattern::load('project_notify');
+    $pattern->set('observable', TRUE)->save();
+    $this->assertSame([(int) $notify->id(), (int) $publish->id(), (int) $apply->id()], $this->ids());
+    // A pattern that is created later is listed as well.
+    $this->createPattern('project_new', ['observable' => TRUE]);
+    $new = $this->createLog('project_new', ['created' => 500]);
+    $this->assertContains((int) $new->id(), $this->ids());
+    // Disabling a pattern removes its logs from the list.
+    $pattern->set('status', FALSE)->save();
+    $this->assertNotContains((int) $notify->id(), $this->ids());
+  }
+
+  /**
+   * Deleting a log pattern does not take the view with it.
+   *
+   * The delete form of a config entity deletes the config that depends on it.
+   */
+  public function testDeletingPatternKeepsTheView(): void {
+    // The patterns exist now: saving the view records what it depends on.
+    View::load('logbook')->save();
+    $changes = $this->container->get('config.manager')
+      ->getConfigEntitiesToChangeOnDependencyRemoval('config', ['logbook.log_pattern.project_apply']);
+    $deleted = array_map(static fn ($entity) => $entity->getConfigDependencyName(), $changes['delete']);
+    $this->assertNotContains('views.view.logbook', $deleted);
   }
 
   /**
@@ -212,16 +239,6 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertStringNotContainsString('23:59:59', $html);
     $this->assertStringContainsString('All types', $html);
     $this->assertStringNotContainsString('- Any -', $html);
-  }
-
-  /**
-   * A disabled pattern is not listed, also if the view's list names it.
-   */
-  public function testDisabledPatternNotListed(): void {
-    $this->createPattern('project_reset', ['observable' => TRUE, 'status' => FALSE]);
-    $this->createLog('project_reset', ['created' => 100]);
-    $apply = $this->createLog('project_apply', ['created' => 200]);
-    $this->assertSame([(int) $apply->id()], $this->ids());
   }
 
   /**

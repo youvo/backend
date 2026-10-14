@@ -8,8 +8,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\logbook\LogInterface;
-use Drupal\views\Plugin\views\query\QueryPluginBase;
-use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -24,8 +22,8 @@ class LogbookViewsHooks {
   /**
    * Implements hook_views_data_alter().
    *
-   * Adds the fields of the logbook view to the log table. They have no column
-   * of their own: they read the entity.
+   * Adds the fields and the pattern filter of the logbook view to the log
+   * table. They have no column of their own.
    */
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data): void {
@@ -41,6 +39,11 @@ class LogbookViewsHooks {
       'title' => $this->t('Logbook: Event text'),
       'help' => $this->t('The text of the log with its message.'),
       'field' => ['id' => 'log_event_text'],
+    ];
+    $data['log']['log_pattern_scope'] = [
+      'title' => $this->t('Logbook: Listed patterns'),
+      'help' => $this->t('Limits the logs to the enabled, observable log patterns.'),
+      'filter' => ['id' => 'log_pattern_scope', 'real field' => 'type'],
     ];
     $data['log']['log_visibility'] = [
       'title' => $this->t('Logbook: Visibility'),
@@ -109,24 +112,6 @@ class LogbookViewsHooks {
     $form['#validate'][] = [static::class, 'includeEndDay'];
     if (isset($form['type']['#options']['All'])) {
       $form['type']['#options']['All'] = $this->t('All types');
-    }
-  }
-
-  /**
-   * Implements hook_views_query_alter().
-   *
-   * The view lists patterns by a fixed list of ids. A pattern that was disabled
-   * since is not tracked anymore and not listed either, as access to its logs
-   * is forbidden.
-   */
-  #[Hook('views_query_alter')]
-  public function viewsQueryAlter(ViewExecutable $view, QueryPluginBase $query): void {
-    if ($view->id() !== 'logbook' || !$query instanceof Sql) {
-      return;
-    }
-    $disabled = array_keys($this->entityTypeManager->getStorage('log_pattern')->loadByProperties(['status' => FALSE]));
-    if ($disabled !== []) {
-      $query->addWhere('0', 'log.type', $disabled, 'NOT IN');
     }
   }
 

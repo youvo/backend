@@ -2,17 +2,6 @@ uuid: 9ddee264-6b02-442a-83f7-9f5d5af18011
 langcode: de
 status: true
 dependencies:
-  config:
-    - logbook.log_pattern.organization_create
-    - logbook.log_pattern.organization_disband
-    - logbook.log_pattern.organization_manage
-    - logbook.log_pattern.project_apply
-    - logbook.log_pattern.project_complete
-    - logbook.log_pattern.project_create
-    - logbook.log_pattern.project_mediate
-    - logbook.log_pattern.project_publish
-    - logbook.log_pattern.project_reset
-    - logbook.log_pattern.project_submit
   module:
     - logbook
     - projects
@@ -175,27 +164,13 @@ display:
           order: DESC
           exposed: false
       filters:
-        type:
-          id: type
+        log_pattern_scope:
+          id: log_pattern_scope
           table: log
-          field: type
-          relationship: none
-          group_type: group
-          entity_type: log
-          entity_field: type
-          plugin_id: bundle
+          field: log_pattern_scope
+          plugin_id: log_pattern_scope
           operator: in
-          value:
-            organization_create: organization_create
-            organization_disband: organization_disband
-            organization_manage: organization_manage
-            project_apply: project_apply
-            project_complete: project_complete
-            project_create: project_create
-            project_mediate: project_mediate
-            project_publish: project_publish
-            project_reset: project_reset
-            project_submit: project_submit
+          value: {  }
           group: 1
           exposed: false
         combine:
@@ -221,27 +196,13 @@ display:
             message: message
             title: title
             name: name
-        type_1:
-          id: type_1
+        log_pattern_choice:
+          id: log_pattern_choice
           table: log
-          field: type
-          relationship: none
-          group_type: group
-          entity_type: log
-          entity_field: type
-          plugin_id: bundle
+          field: log_pattern_scope
+          plugin_id: log_pattern_scope
           operator: in
-          value:
-            organization_create: organization_create
-            organization_disband: organization_disband
-            organization_manage: organization_manage
-            project_apply: project_apply
-            project_complete: project_complete
-            project_create: project_create
-            project_mediate: project_mediate
-            project_publish: project_publish
-            project_reset: project_reset
-            project_submit: project_submit
+          value: {  }
           group: 1
           exposed: true
           expose:
@@ -253,7 +214,7 @@ display:
             required: false
             remember: false
             multiple: false
-            reduce: true
+            reduce: false
         created:
           id: created
           table: log
@@ -350,7 +311,8 @@ display:
         - url
         - url.query_args
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:log_pattern_list'
   page_1:
     id: page_1
     display_title: Page
@@ -368,5 +330,6 @@ display:
         - url
         - url.query_args
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:log_pattern_list'
 
