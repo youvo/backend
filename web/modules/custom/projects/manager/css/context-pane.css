@@ -616,11 +616,6 @@ a.logbook-timeline-add .logbook-timeline-label {
     transform var(--pane-fast);
 }
 
-a.logbook-timeline-add .logbook-timeline-circle {
-  background: var(--pane-surface);
-  border-color: var(--pane-chip-hover);
-}
-
 a.logbook-timeline-add .logbook-timeline-text {
   color: inherit;
 }
