@@ -16,3 +16,8 @@ services:
     class: Drupal\youvo\EventSubscriber\HttpResponseHeaderSubscriber
     tags:
       - { name: event_subscriber }
+
+  youvo.normalizer.datetime_iso8601:
+    class: Drupal\youvo\Normalizer\DateOnlyDateTimeIso8601Normalizer
+    decorates: serializer.normalizer.datetimeiso8601
+    arguments: [ '@youvo.normalizer.datetime_iso8601.inner', '@config.factory' ]
