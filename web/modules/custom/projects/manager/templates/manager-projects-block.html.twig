@@ -4,8 +4,8 @@
  * The block with the projects of a manager.
  *
  * Available variables:
- * - cards: The projects, each with id, title, url, organization, is_new, count,
- *   seen_url, progress (steps) and logs (label, text).
+ * - cards: The projects, each with id, title, url, organization, state,
+ *   is_new, count, seen_url, progress (steps) and logs (label, text).
  * - more_url: The link to the overview if there are more projects.
  * - seen_all_url: The URL that confirms all projects, if one is new.
  */
@@ -14,28 +14,37 @@
   {% if cards %}
     {% if seen_all_url %}
       <form class="manager-projects__all" method="post" action="{{ seen_all_url }}">
-        <button type="submit" class="button">{{ 'Mark all as seen'|t }}</button>
+        <button type="submit" class="manager-projects__check-all"><span class="manager-projects__icon" aria-hidden="true"></span>{{ 'Mark all as seen'|t }}</button>
       </form>
     {% endif %}
     {% for card in cards %}
       <article class="manager-projects__card{{ card.is_new ? ' is-new' : '' }}">
         <header class="manager-projects__head">
-          <div>
+          <div class="manager-projects__main">
             <h3 class="manager-projects__title"><a href="{{ card.url }}">{{ card.title }}</a></h3>
-            <div class="manager-projects__org">{{ card.organization }}</div>
+            <span class="manager-projects__org">{{ card.organization }}</span>
           </div>
-          {% if card.is_new %}
-            <span class="manager-projects__badge">{% if card.count %}{{ '@count new'|t({'@count': card.count}) }}{% else %}{{ 'New'|t }}{% endif %}</span>
-          {% endif %}
-        </header>
-        <div class="manager-projects__progress">
-          {% for step in card.progress %}
-            <div class="manager-projects__step{{ step.completed ? ' is-completed' : '' }}{{ not loop.last ? ' has-segment' : '' }}{{ step.next_completed ? ' is-next-completed' : '' }}">
-              <span class="manager-projects__dot"></span>
-              <span class="manager-projects__step-label">{{ step.label }}</span>
+          <div class="manager-projects__progress">
+            <div class="manager-projects__steps" aria-hidden="true">
+              {% for step in card.progress %}
+                <span class="manager-projects__step{{ step.completed ? ' is-completed' : '' }}{{ not loop.last ? ' has-segment' : '' }}{{ step.next_completed ? ' is-next-completed' : '' }}" title="{{ step.label }}">
+                  <span class="manager-projects__dot"></span>
+                </span>
+              {% endfor %}
             </div>
-          {% endfor %}
-        </div>
+            <span class="manager-projects__state">{{ card.state }}</span>
+          </div>
+          <div class="manager-projects__actions">
+            {% if card.is_new %}
+              <span class="manager-projects__badge">{% if card.count %}{{ '@count new'|t({'@count': card.count}) }}{% else %}{{ 'New'|t }}{% endif %}</span>
+            {% endif %}
+            {% if card.seen_url %}
+              <form class="manager-projects__confirm" method="post" action="{{ card.seen_url }}">
+                <button type="submit" class="manager-projects__check" title="{{ 'Mark as seen'|t }}" aria-label="{{ 'Mark @title as seen'|t({'@title': card.title}) }}"></button>
+              </form>
+            {% endif %}
+          </div>
+        </header>
         {% if card.logs %}
           <ul class="manager-projects__logs">
             {% for log in card.logs %}
@@ -45,11 +54,6 @@
               </li>
             {% endfor %}
           </ul>
-        {% endif %}
-        {% if card.seen_url %}
-          <form class="manager-projects__confirm" method="post" action="{{ card.seen_url }}">
-            <button type="submit" class="button">{{ 'Mark as seen'|t }}</button>
-          </form>
         {% endif %}
       </article>
     {% endfor %}

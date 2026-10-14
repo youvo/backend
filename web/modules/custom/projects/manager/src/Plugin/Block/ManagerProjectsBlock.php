@@ -93,6 +93,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
         'title' => $project->label(),
         'url' => $project->toUrl()->toString(),
         'organization' => $project->getOwner()->getDisplayName(),
+        'state' => ucfirst((string) $project->get('field_lifecycle')->value),
         'is_new' => $item['is_new'],
         'count' => $item['count'],
         'seen_url' => $item['is_new'] ? Url::fromRoute('manager.project_seen', ['project' => $id], $options)->toString() : NULL,

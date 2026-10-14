@@ -65,7 +65,10 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
     $this->assertStringContainsString('2 new', $html);
     $this->assertStringNotContainsString('Finished one', $html);
     $this->assertStringNotContainsString('Foreign project', $html);
-    $this->assertStringContainsString('Mark as seen', $html);
+    // The confirm button is an icon; its name says which project it confirms.
+    $this->assertStringContainsString('manager-projects__check', $html);
+    $this->assertStringContainsString('aria-label="Mark Garden website as seen"', $html);
+    $this->assertStringContainsString('manager-projects__state', $html);
   }
 
   /**
@@ -78,7 +81,7 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
     $this->container->get('manager.project_seen')->markSeen($manager, $project);
     $html = $this->renderFor($manager);
     $this->assertStringNotContainsString('manager-projects__badge', $html);
-    $this->assertStringNotContainsString('Mark as seen', $html);
+    $this->assertStringNotContainsString('manager-projects__check"', $html);
   }
 
   /**
