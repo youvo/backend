@@ -16,15 +16,10 @@ use Drupal\Core\Utility\Error;
  */
 function oauth_grant_install(): void {
 
-  // Overwrite simple_oauth settings.
+  // Overwrite simple_oauth settings. Token lifetimes and consent behavior live
+  // on the consumers since simple_oauth 6.
   $config = \Drupal::configFactory()->getEditable('simple_oauth.settings');
-  // 1 hour, 2 minutes and 14 days.
-  $config->set('access_token_expiration', 3600);
-  $config->set('authorization_code_expiration', 120);
-  $config->set('refresh_token_expiration', 1209600);
-  $config->set('remember_clients', TRUE);
   $config->set('disable_openid_connect', TRUE);
-  $config->set('use_implicit', FALSE);
   $config->set('public_key', dirname(DRUPAL_ROOT) . '/config/certs/public.key');
   $config->set('private_key', dirname(DRUPAL_ROOT) . '/config/certs/private.key');
   $config->save(TRUE);
@@ -68,108 +63,45 @@ function oauth_grant_install(): void {
       }
     }
 
-    // Add new consumer for creatives (local).
-    if (isset($consumer_uuids['UUID_CREATIVE_LOCAL']) &&
-      isset($consumer_redirects['REDIRECT_CREATIVE_LOCAL']) &&
-      isset($consumer_secrets['SECRET_CREATIVE_LOCAL'])) {
-      $consumer = Consumer::create([
-        'uuid' => 'dd9ace1c-8879-45ae-b137-9cc06b4b5821',
-        'client_id' => $consumer_uuids['UUID_CREATIVE_LOCAL'],
-        'label' => 'Creatives (local)',
+    // Add consumers for creatives and organizations. The scopes are provided
+    // as configuration by the creatives and organizations modules.
+    $consumers = [
+      'CREATIVE_LOCAL' => ['dd9ace1c-8879-45ae-b137-9cc06b4b5821', 'Creatives (local)', FALSE],
+      'CREATIVE' => ['7f56f1d5-154f-42c1-b591-45e4e2fd235e', 'Creatives', TRUE],
+      'ORGANIZATION_LOCAL' => ['ff5a1e31-557c-4c17-a7f5-a4a342d3cc19', 'Organizations (local)', TRUE],
+      'ORGANIZATION' => ['63b60b9e-dbbc-4214-a520-f8cf4cab65da', 'Organizations', TRUE],
+    ];
+    foreach ($consumers as $key => [$uuid, $label, $is_default]) {
+      if (!isset($consumer_uuids['UUID_' . $key], $consumer_redirects['REDIRECT_' . $key], $consumer_secrets['SECRET_' . $key])) {
+        continue;
+      }
+      Consumer::create([
+        'uuid' => $uuid,
+        'client_id' => $consumer_uuids['UUID_' . $key],
+        'label' => $label,
         'third_party' => FALSE,
-        'is_default' => FALSE,
+        'is_default' => $is_default,
         'owner_id' => 1,
         'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_CREATIVE_LOCAL'],
-        'roles' => [
-          ['target_id' => 'creative'],
+        'secret' => $consumer_secrets['SECRET_' . $key],
+        'grant_types' => [
+          ['value' => 'authorization_code'],
+          ['value' => 'refresh_token'],
         ],
+        // The frontend is a first party client, so skip the consent form.
+        'automatic_authorization' => TRUE,
+        'remember_approval' => TRUE,
+        'pkce' => FALSE,
+        // 1 hour and 14 days.
+        'access_token_expiration' => 3600,
+        'refresh_token_expiration' => 1209600,
         'image_styles' => [
           ['target_id' => 'avatar'],
           ['target_id' => 'content'],
           ['target_id' => 'teaser'],
         ],
-        'redirect' => $consumer_redirects['REDIRECT_CREATIVE_LOCAL'],
-      ]);
-      $consumer->save();
-    }
-
-    // Add new consumer for creatives.
-    if (isset($consumer_uuids['UUID_CREATIVE']) &&
-      isset($consumer_redirects['REDIRECT_CREATIVE']) &&
-      isset($consumer_secrets['SECRET_CREATIVE'])) {
-      $consumer = Consumer::create([
-        'uuid' => '7f56f1d5-154f-42c1-b591-45e4e2fd235e',
-        'client_id' => $consumer_uuids['UUID_CREATIVE'],
-        'label' => 'Creatives',
-        'third_party' => FALSE,
-        'is_default' => TRUE,
-        'owner_id' => 1,
-        'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_CREATIVE'],
-        'roles' => [
-          ['target_id' => 'creative'],
-        ],
-        'image_styles' => [
-          ['target_id' => 'avatar'],
-          ['target_id' => 'content'],
-          ['target_id' => 'teaser'],
-        ],
-        'redirect' => $consumer_redirects['REDIRECT_CREATIVE'],
-      ]);
-      $consumer->save();
-    }
-
-    // Add new consumer for organizations (local).
-    if (isset($consumer_uuids['UUID_ORGANIZATION_LOCAL']) &&
-      isset($consumer_redirects['REDIRECT_ORGANIZATION_LOCAL']) &&
-      isset($consumer_secrets['SECRET_ORGANIZATION_LOCAL'])) {
-      $consumer = Consumer::create([
-        'uuid' => 'ff5a1e31-557c-4c17-a7f5-a4a342d3cc19',
-        'client_id' => $consumer_uuids['UUID_ORGANIZATION_LOCAL'],
-        'label' => 'Organizations (local)',
-        'third_party' => FALSE,
-        'is_default' => TRUE,
-        'owner_id' => 1,
-        'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_ORGANIZATION_LOCAL'],
-        'roles' => [
-          ['target_id' => 'organization'],
-        ],
-        'image_styles' => [
-          ['target_id' => 'avatar'],
-          ['target_id' => 'content'],
-          ['target_id' => 'teaser'],
-        ],
-        'redirect' => $consumer_redirects['REDIRECT_ORGANIZATION_LOCAL'],
-      ]);
-      $consumer->save();
-    }
-
-    // Add new consumer for organizations.
-    if (isset($consumer_uuids['UUID_ORGANIZATION']) &&
-      isset($consumer_redirects['REDIRECT_ORGANIZATION']) &&
-      isset($consumer_secrets['SECRET_ORGANIZATION'])) {
-      $consumer = Consumer::create([
-        'uuid' => '63b60b9e-dbbc-4214-a520-f8cf4cab65da',
-        'client_id' => $consumer_uuids['UUID_ORGANIZATION'],
-        'label' => 'Organizations',
-        'third_party' => FALSE,
-        'is_default' => TRUE,
-        'owner_id' => 1,
-        'confidential' => TRUE,
-        'secret' => $consumer_secrets['SECRET_ORGANIZATION'],
-        'roles' => [
-          ['target_id' => 'organization'],
-        ],
-        'image_styles' => [
-          ['target_id' => 'avatar'],
-          ['target_id' => 'content'],
-          ['target_id' => 'teaser'],
-        ],
-        'redirect' => $consumer_redirects['REDIRECT_ORGANIZATION'],
-      ]);
-      $consumer->save();
+        'redirect' => $consumer_redirects['REDIRECT_' . $key],
+      ])->save();
     }
   }
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException | RuntimeException $e) {
