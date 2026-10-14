@@ -36,6 +36,11 @@ class ProjectSeenTracker {
    */
   public const LATEST = 3;
 
+  /**
+   * The number of events that the list of all events returns at most.
+   */
+  public const EVENTS_LIMIT = 100;
+
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected Connection $database,
@@ -102,9 +107,10 @@ class ProjectSeenTracker {
    * @param \Drupal\projects\ProjectInterface[] $projects
    *   The projects.
    *
-   * @return array<int, array{is_new: bool, count: int, latest: \Drupal\logbook\LogInterface[]}>
-   *   Per project id: whether it is new, the number of new logs and the latest
-   *   observable logs of the project (including the user's own).
+   * @return array<int, array{is_new: bool, count: int, total: int, latest: \Drupal\logbook\LogInterface[]}>
+   *   Per project id: whether it is new, the number of new logs, the number of
+   *   all observable logs and the latest observable logs of the project
+   *   (including the user's own).
    */
   public function getActivity(AccountInterface $account, array $projects): array {
     $uid = (int) Profile::id($account);
@@ -127,6 +133,7 @@ class ProjectSeenTracker {
       $activity[$id] = [
         'is_new' => isset($seen[$id]) ? $new !== [] : TRUE,
         'count' => count($new),
+        'total' => count($of_project),
         'latest' => $latest,
       ];
     }
@@ -151,6 +158,48 @@ class ProjectSeenTracker {
       return FALSE;
     }
     return $organization instanceof Organization && $organization->isManager($account);
+  }
+
+  /**
+   * Gets the events of a project, newest first, with the new ones marked.
+   *
+   * The events are the observable logs of the project, the user's own
+   * included. A log is new if someone else wrote it after the user confirmed
+   * the project, or at all if the user never did.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user.
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The project.
+   * @param int $limit
+   *   The number of events to return at most.
+   *
+   * @return array{events: array<int, array{log: \Drupal\logbook\LogInterface, is_new: bool}>, total: int}
+   *   The events and the number of all events. Both are empty for a project
+   *   the user does not manage.
+   */
+  public function getEvents(AccountInterface $account, ProjectInterface $project, int $limit = self::EVENTS_LIMIT): array {
+    if (!$this->isManagedBy($account, $project)) {
+      return ['events' => [], 'total' => 0];
+    }
+    $uid = (int) Profile::id($account);
+    $id = (int) $project->id();
+    $logs = $this->observableLogs([$id])[$id] ?? [];
+    $seen = $this->loadSeen($uid, [$id]);
+    $shown = array_slice($logs, 0, $limit);
+    $loaded = $shown ? $this->entityTypeManager->getStorage('log')->loadMultiple(array_column($shown, 'id')) : [];
+    $events = [];
+    foreach ($shown as $entry) {
+      $log = $loaded[$entry['id']] ?? NULL;
+      if (!$log instanceof LogInterface) {
+        continue;
+      }
+      $events[] = [
+        'log' => $log,
+        'is_new' => $entry['author'] !== $uid && (!isset($seen[$id]) || $entry['id'] > $seen[$id]),
+      ];
+    }
+    return ['events' => $events, 'total' => count($logs)];
   }
 
   /**

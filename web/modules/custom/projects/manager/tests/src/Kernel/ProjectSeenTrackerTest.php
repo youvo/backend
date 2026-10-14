@@ -81,6 +81,78 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
   }
 
   /**
+   * The activity counts all observable logs of a project, the own included.
+   */
+  public function testActivityHasTheTotal(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    $this->createProjectLog($project);
+    $this->createProjectLog($project, 'project_publish', $manager);
+    $this->createProjectLog($project, 'project_notify');
+    $activity = $this->container->get('manager.project_seen')->getActivity($manager, [$project])[$project->id()];
+    $this->assertSame(2, $activity['total'], 'Not observable logs are not counted.');
+  }
+
+  /**
+   * The events of a project, newest first, with the new ones marked.
+   */
+  public function testEventsOfProject(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    $tracker = $this->container->get('manager.project_seen');
+    $old = $this->createProjectLog($project);
+    $tracker->markSeen($manager, $project);
+    $own = $this->createProjectLog($project, 'project_publish', $manager);
+    $new = $this->createProjectLog($project);
+    $this->createProjectLog($project, 'project_notify');
+    $result = $tracker->getEvents($manager, $project);
+    $this->assertSame(3, $result['total']);
+    $ids = array_map(static fn (array $event) => (int) $event['log']->id(), $result['events']);
+    $this->assertSame([(int) $new->id(), (int) $own->id(), (int) $old->id()], $ids);
+    $flags = array_map(static fn (array $event) => $event['is_new'], $result['events']);
+    $this->assertSame([TRUE, FALSE, FALSE], $flags, 'Only the log of someone else after the confirmation is new, not the own log.');
+  }
+
+  /**
+   * Without a row every log of someone else is new.
+   */
+  public function testEventsWithoutRowAreNew(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    $this->createProjectLog($project);
+    $this->createProjectLog($project, 'project_publish', $manager);
+    $result = $this->container->get('manager.project_seen')->getEvents($manager, $project);
+    $flags = array_map(static fn (array $event) => $event['is_new'], $result['events']);
+    $this->assertSame([FALSE, TRUE], $flags);
+  }
+
+  /**
+   * The events are capped, the total tells how many there are.
+   */
+  public function testEventsAreCapped(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    for ($i = 0; $i < 5; $i++) {
+      $this->createProjectLog($project);
+    }
+    $result = $this->container->get('manager.project_seen')->getEvents($manager, $project, 3);
+    $this->assertCount(3, $result['events']);
+    $this->assertSame(5, $result['total']);
+  }
+
+  /**
+   * Another manager gets no events of a project.
+   */
+  public function testEventsOfProjectNotManaged(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $other = $this->managerOf($this->createMailableProject(ProjectState::Open));
+    $this->createProjectLog($project);
+    $result = $this->container->get('manager.project_seen')->getEvents($other, $project);
+    $this->assertSame([], $result['events']);
+    $this->assertSame(0, $result['total']);
+  }
+
+  /**
    * A project with no logs yet is new for a manager who never confirmed it.
    */
   public function testProjectWithoutLogsIsNew(): void {
