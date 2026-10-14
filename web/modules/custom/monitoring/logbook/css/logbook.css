@@ -19,21 +19,35 @@
   --logbook-teal: #1da8a5;
 }
 
-/* Exposed filters: hairline underline fields with placeholders, as in the
-   project manager view. */
+/* Exposed filters: one row of hairline underline fields with placeholders, as
+   in the project manager view. All controls share the bottom line. */
 .view-logbook .views-exposed-form {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.75rem 1.25rem;
+  gap: 0.75rem 1.5rem;
   margin-bottom: 1.25rem;
 }
 
-.view-logbook .views-exposed-form .form-item {
+.view-logbook .views-exposed-form .form-item,
+.view-logbook .views-exposed-form .form-actions {
   margin: 0;
 }
 
-.view-logbook .views-exposed-form .form-item > label {
+/* The search takes the free space. */
+.view-logbook .views-exposed-form .js-form-item-search {
+  flex: 1 1 16rem;
+}
+
+.view-logbook .views-exposed-form .js-form-item-search input {
+  width: 100%;
+}
+
+/* Labels are read out, not shown: the fields have placeholders or first
+   options that say what they are. */
+.view-logbook .views-exposed-form .form-item > label,
+.view-logbook .views-exposed-form fieldset > legend,
+.view-logbook .views-exposed-form fieldset > legend > * {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -41,8 +55,11 @@
   clip-path: inset(50%);
 }
 
-.view-logbook .views-exposed-form :is(input.form-text, input.form-date, select.form-select, input.form-autocomplete) {
-  min-height: 0;
+.view-logbook .views-exposed-form :is(input.form-text, input.form-date, select.form-select) {
+  box-sizing: border-box;
+  min-height: 2.25rem;
+  margin: 0;
+  padding-block: 0.25rem;
   border: 0;
   border-bottom: 1px solid var(--logbook-field-line);
   border-radius: 0;
@@ -57,30 +74,74 @@
   outline: none;
 }
 
-/* The two date fields keep their From and To labels, in a row. */
+/* The date range: From and To labels sit in front of their fields, in one
+   row with the other filters. */
+.view-logbook .views-exposed-form fieldset {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) > .form-item {
+  margin: 0 !important;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
 .view-logbook .views-exposed-form fieldset .form-item > label {
   position: static;
   width: auto;
   height: auto;
   overflow: visible;
   clip-path: none;
-  font-size: var(--logbook-text-xs);
+  padding-bottom: 0.4rem;
   color: var(--logbook-muted);
+  font-size: var(--logbook-text-xs);
 }
 
-/* The date range is two fields in a row, not a boxed fieldset. */
-.view-logbook .views-exposed-form fieldset {
+.view-logbook .views-exposed-form .form-actions .button {
+  box-sizing: border-box;
+  min-height: 2.25rem;
   margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
+  padding-block: 0;
 }
 
-.view-logbook .views-exposed-form fieldset .fieldset-wrapper {
-  display: flex;
-  gap: 1rem;
-  padding: 0;
+/* On a narrow screen the controls fill the row; the two dates share one. */
+@media (max-width: 640px) {
+  .view-logbook .views-exposed-form > :is(.form-item, fieldset) {
+    flex: 1 1 100%;
+  }
+
+  .view-logbook .views-exposed-form :is(input.form-text, select.form-select) {
+    width: 100%;
+  }
+
+  .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) {
+    flex-wrap: wrap;
+  }
+
+  .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) > .form-item {
+    flex: 1 1 9rem;
+    min-width: 0;
+  }
+
+  .view-logbook .views-exposed-form fieldset input.form-date {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 /* Table cells. */
