@@ -285,4 +285,36 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertSame(['star'], $icons['Publish']);
   }
 
+  /**
+   * Gets the patterns that the pattern select of the page offers.
+   *
+   * @return list<string>
+   *   The pattern ids, without the option for all.
+   */
+  protected function typeOptions(): array {
+    preg_match('/<select[^>]*name="type".*?<\/select>/s', $this->renderPage(), $select);
+    preg_match_all('/<option value="([^"]+)"/', $select[0] ?? '', $found);
+    return array_values(array_diff($found[1], ['All']));
+  }
+
+  /**
+   * The pattern select offers the patterns that have logs.
+   */
+  public function testTypeOptionsAreThePatternsWithLogs(): void {
+    $offered = $this->typeOptions();
+    $this->assertSame([], $offered);
+    $this->createLog('project_publish', ['created' => 100]);
+    $this->createLog('project_apply', ['created' => 200]);
+    // Not observable, disabled and unused patterns are not offered.
+    $this->createLog('project_notify', ['created' => 300]);
+    $this->createLog('feedback_off', ['created' => 400]);
+    $offered = $this->typeOptions();
+    sort($offered);
+    $this->assertSame(['project_apply', 'project_publish'], $offered);
+    $this->createLog('project_complete', ['created' => 500]);
+    $offered = $this->typeOptions();
+    sort($offered);
+    $this->assertSame(['project_apply', 'project_complete', 'project_publish'], $offered);
+  }
+
 }

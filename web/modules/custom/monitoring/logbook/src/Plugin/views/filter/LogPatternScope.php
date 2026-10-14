@@ -18,7 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * so deleting a pattern does not delete the view.
  *
  * Not exposed, the filter limits the list to those patterns. Exposed, it is a
- * select of those patterns and limits the list to the chosen one.
+ * select of those patterns that have logs, and limits the list to the chosen
+ * one.
  */
 #[ViewsFilter('log_pattern_scope')]
 class LogPatternScope extends InOperator implements ContainerFactoryPluginInterface {
@@ -46,7 +47,15 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public function getValueOptions(): array {
-    $this->valueOptions = $this->listedPatterns();
+    // The select offers what there is to choose from: the listed patterns
+    // that have logs. The query still covers all listed patterns, so a log of
+    // another pattern shows up as soon as it is written.
+    $used = $this->usedTypes();
+    $this->valueOptions = array_filter(
+      $this->listedPatterns(),
+      static fn (string $id) => isset($used[$id]),
+      ARRAY_FILTER_USE_KEY,
+    );
     return $this->valueOptions;
   }
 
@@ -72,7 +81,30 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public function getCacheTags(): array {
-    return array_merge(parent::getCacheTags(), $this->entityTypeManager->getDefinition('log_pattern')->getListCacheTags());
+    return array_merge(
+      parent::getCacheTags(),
+      $this->entityTypeManager->getDefinition('log_pattern')->getListCacheTags(),
+      $this->entityTypeManager->getDefinition('log')->getListCacheTags(),
+    );
+  }
+
+  /**
+   * Gets the log types that have at least one log.
+   *
+   * @return array<string, true>
+   *   The pattern ids as keys.
+   */
+  protected function usedTypes(): array {
+    /** @var array<int, array{type: string}> $rows */
+    $rows = $this->entityTypeManager->getStorage('log')->getAggregateQuery()
+      ->accessCheck(FALSE)
+      ->groupBy('type')
+      ->execute();
+    $used = [];
+    foreach ($rows as $row) {
+      $used[(string) $row['type']] = TRUE;
+    }
+    return $used;
   }
 
   /**
