@@ -4,6 +4,8 @@ namespace Drupal\logbook\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\logbook\LogInterface;
+use Drupal\views\ViewExecutable;
 
 /**
  * Views hook implementations of the logbook module.
@@ -59,6 +61,35 @@ class LogbookViewsHooks {
       'help' => $this->t('Filter by who can see the log.'),
       'filter' => ['id' => 'log_pattern_visibility', 'real field' => 'type'],
     ];
+  }
+
+  /**
+   * Implements hook_views_pre_render().
+   */
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view): void {
+    if ($view->id() === 'logbook') {
+      $view->element['#attached']['library'][] = 'logbook/table';
+    }
+  }
+
+  /**
+   * Implements hook_preprocess_views_view_table().
+   *
+   * A row of a celebrate pattern gets a class, as the manager adds status
+   * classes to its rows.
+   */
+  #[Hook('preprocess_views_view_table')]
+  public function preprocessViewsViewTable(array &$variables): void {
+    if ($variables['view']->id() !== 'logbook') {
+      return;
+    }
+    foreach ($variables['rows'] as $key => &$row) {
+      $log = $variables['view']->result[$key]->_entity ?? NULL;
+      if ($log instanceof LogInterface && $log->getPattern()->getTone() === 'celebrate') {
+        $row['attributes']->addClass('logbook-row--celebrate');
+      }
+    }
   }
 
 }

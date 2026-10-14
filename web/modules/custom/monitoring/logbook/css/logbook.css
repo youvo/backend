@@ -1,0 +1,166 @@
+/*
+ * The logbook table. The tokens follow the manager's pane-ui.css: Gin sets the
+ * look, the fallbacks are the values of the default Gin theme. They are scoped
+ * to the view, so the logbook does not depend on the manager module.
+ */
+.view-logbook {
+  --logbook-ink: var(--gin-color-title, #222330);
+  --logbook-muted: var(--gin-color-text-light, #545560);
+  --logbook-accent: var(--gin-color-primary, #3f78b5);
+  --logbook-surface: var(--gin-bg-layer, #fff);
+  --logbook-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --logbook-outline: var(--gin-border-color, #d4d4d8);
+  --logbook-field-line: var(--gin-border-color-form-element, #8e929c);
+  --logbook-chip: color-mix(in srgb, var(--logbook-accent) 15%, var(--logbook-surface));
+  --logbook-radius-m: var(--gin-border-m, 0.5rem);
+  --logbook-text-xs: var(--gin-font-size-xs, small);
+  --logbook-green: var(--gin-color-green, #26a769);
+  --logbook-yellow: var(--gin-color-warning, #d8b234);
+  --logbook-teal: #1da8a5;
+}
+
+/* Exposed filters: hairline underline fields with placeholders, as in the
+   project manager view. */
+.view-logbook .views-exposed-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.view-logbook .views-exposed-form .form-item {
+  margin: 0;
+}
+
+.view-logbook .views-exposed-form .form-item:not(.form-type-checkbox) > label,
+.view-logbook .views-exposed-form .fieldset-legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.view-logbook .views-exposed-form :is(input.form-text, input.form-date, select.form-select, input.form-autocomplete) {
+  min-height: 0;
+  border: 0;
+  border-bottom: 1px solid var(--logbook-field-line);
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--logbook-ink);
+}
+
+.view-logbook .views-exposed-form :is(input, select):focus {
+  border-bottom-color: var(--logbook-accent);
+  box-shadow: 0 1px 0 0 var(--logbook-accent);
+  outline: none;
+}
+
+/* Table cells. */
+.view-logbook td {
+  vertical-align: top;
+}
+
+.view-logbook td.views-field-created {
+  font-size: var(--logbook-text-xs);
+}
+
+.logbook-event__message {
+  color: var(--logbook-muted);
+  font-size: var(--logbook-text-xs);
+}
+
+/* Type pill: a neutral chip, mixed with the tone of the pattern. */
+.logbook-type {
+  display: inline-block;
+  padding: 0.2em 0.8em;
+  border-radius: var(--logbook-radius-m, 0.5rem);
+  background: var(--logbook-chip, #e8eef6);
+  font-size: var(--logbook-text-xs, small);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.logbook-type--positive {
+  background: color-mix(in srgb, var(--logbook-green, #26a769) 28%, var(--logbook-surface, #fff));
+}
+
+.logbook-type--attention {
+  background: color-mix(in srgb, var(--logbook-yellow, #d8b234) 40%, var(--logbook-surface, #fff));
+}
+
+.logbook-type--celebrate {
+  background: color-mix(in srgb, var(--logbook-teal, #1da8a5) 40%, var(--logbook-surface, #fff));
+}
+
+/* Visibility icons: grey, drawn with masks so they follow the text color. */
+.view-logbook th.views-field-log-visibility,
+.view-logbook td.views-field-log-visibility {
+  width: 1%;
+  padding-left: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.logbook-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  background: var(--logbook-muted);
+  vertical-align: middle;
+  mask: no-repeat center / contain;
+}
+
+.logbook-icon--lock {
+  mask-image: url('../assets/lock.svg');
+}
+
+.logbook-icon--globe {
+  mask-image: url('../assets/globe.svg');
+}
+
+.logbook-icon--star {
+  mask-image: url('../assets/star.svg');
+}
+
+.logbook-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* A completed project is the ultimate log: the whole row is colored, with the
+   sparkle pattern and the finish illustration of the old youvo.org logbook.
+   The tint is set on the row, so the pattern runs across the cells. */
+.view-logbook tr.logbook-row--celebrate {
+  background-color: color-mix(in srgb, var(--logbook-teal) 26%, var(--logbook-surface));
+  background-image: url('../assets/sparkle.svg');
+  background-position: center;
+  background-size: 420px auto;
+}
+
+.view-logbook tr.logbook-row--celebrate td {
+  position: relative;
+  height: 84px;
+  background: none;
+}
+
+.view-logbook tr.logbook-row--celebrate td.views-field-log-event-text {
+  padding-right: 150px;
+}
+
+.view-logbook tr.logbook-row--celebrate td.views-field-log-event-text::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  width: 130px;
+  height: 64px;
+  background: url('../assets/finish.svg') no-repeat right bottom / contain;
+  pointer-events: none;
+}

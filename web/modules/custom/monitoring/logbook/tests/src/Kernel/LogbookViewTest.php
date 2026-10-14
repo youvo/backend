@@ -193,4 +193,20 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertTrue($access_manager->checkNamedRoute('view.logbook.page_1', [], $admin));
   }
 
+  /**
+   * Only a celebrate pattern colors the row and the library is attached.
+   */
+  public function testCelebrateRow(): void {
+    $this->setCurrentUser($this->createUser(['administer log pattern']));
+    $this->createLog('project_apply', ['created' => 100]);
+    $this->assertStringNotContainsString('logbook-row--celebrate', $this->renderPage());
+    $this->createLog('project_complete', ['created' => 200]);
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $render = $view->buildRenderable('page_1');
+    $html = (string) $this->container->get('renderer')->renderInIsolation($render);
+    $this->assertSame(1, substr_count($html, 'logbook-row--celebrate'));
+    $this->assertContains('logbook/table', $render['#attached']['library'] ?? []);
+  }
+
 }
