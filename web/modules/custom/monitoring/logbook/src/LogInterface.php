@@ -100,6 +100,14 @@ interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, Ent
   public function getMessage(): string;
 
   /**
+   * Builds the message of the log as a render array.
+   *
+   * Feedback logs link to the feedback, other logs show their plain message.
+   * The array is empty if there is nothing to show.
+   */
+  public function buildMessage(): array;
+
+  /**
    * Sets the message.
    */
   public function setMessage(string $message): static;

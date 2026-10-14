@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
@@ -208,6 +209,21 @@ class Log extends ContentEntityBase implements LogInterface {
    */
   public function getMessage(): string {
     return $this->get('message')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildMessage(): array {
+    if (str_starts_with($this->bundle(), 'feedback_')) {
+      $feedback_id = $this->getMisc()['feedback_id'] ?? NULL;
+      if ($feedback_id === NULL) {
+        return [];
+      }
+      return ['#markup' => Link::createFromRoute(new TranslatableMarkup('Feedback ansehen'), 'entity.feedback.canonical', ['feedback' => $feedback_id])->toString()];
+    }
+    $message = $this->getMessage();
+    return $message === '' ? [] : ['#plain_text' => $message];
   }
 
   /**
