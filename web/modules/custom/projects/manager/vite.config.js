@@ -14,6 +14,7 @@ export default {
         'css/loader': './css/loader.css',
         'css/manager': './css/manager.css',
         'css/rule': './css/rule.css',
+        'css/projects-block': './css/projects-block.css',
       },
       output: {
         assetFileNames: '[name][extname]',

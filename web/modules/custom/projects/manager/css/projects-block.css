@@ -1,0 +1,171 @@
+/*
+ * The dashboard block with the projects of a manager. The tokens follow the
+ * manager's pane-ui.css: Gin sets the look, the fallbacks are the values of the
+ * default Gin theme.
+ */
+.manager-projects {
+  --mp-ink: var(--gin-color-title, #222330);
+  --mp-muted: var(--gin-color-text-light, #545560);
+  --mp-accent: var(--gin-color-primary, #3f78b5);
+  --mp-surface: var(--gin-bg-layer, #fff);
+  --mp-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --mp-chip: color-mix(in srgb, var(--mp-accent) 15%, var(--mp-surface));
+  --mp-track: var(--mp-chip);
+  --mp-radius-m: var(--gin-border-m, 0.5rem);
+  --mp-text-xs: var(--gin-font-size-xs, small);
+  --mp-note: color-mix(
+    in srgb,
+    var(--gin-color-warning, #d8b234) 30%,
+    var(--mp-surface)
+  );
+
+  display: grid;
+  gap: 1rem;
+}
+
+.manager-projects__all {
+  margin: 0;
+}
+
+.manager-projects__card {
+  padding: 1rem 1.25rem;
+  border-radius: var(--mp-radius-m);
+  background: var(--mp-surface);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 0 0 1px var(--mp-line);
+}
+
+/* A new project: an accent bar at the left, as the manager pane has one. */
+.manager-projects__card.is-new {
+  box-shadow:
+    inset 4px 0 var(--mp-accent),
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 0 0 1px var(--mp-line);
+}
+
+.manager-projects__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.manager-projects__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.manager-projects__org {
+  color: var(--mp-muted);
+  font-size: var(--mp-text-xs);
+}
+
+.manager-projects__badge {
+  flex: 0 0 auto;
+  padding: 0.2em 0.8em;
+  border-radius: var(--mp-radius-m);
+  background: var(--mp-note);
+  color: var(--mp-ink);
+  font-size: var(--mp-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The lifecycle progress bar, like the one of the manager pane. */
+.manager-projects__progress {
+  display: flex;
+  margin: 1rem 0 0.75rem;
+}
+
+.manager-projects__step {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.manager-projects__step.has-segment::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 52%;
+  width: 96%;
+  height: 4px;
+  background: var(--mp-track);
+  z-index: 1;
+}
+
+.manager-projects__step.is-next-completed.has-segment::after {
+  background: var(--mp-accent);
+}
+
+.manager-projects__dot {
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 5px solid var(--mp-track);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.manager-projects__step.is-completed .manager-projects__dot {
+  border-color: var(--mp-accent);
+  background: var(--mp-accent);
+}
+
+.manager-projects__step-label {
+  margin-top: 6px;
+  color: var(--mp-muted);
+  font-size: var(--mp-text-xs);
+  text-align: center;
+}
+
+.manager-projects__step.is-completed .manager-projects__step-label {
+  color: var(--mp-ink);
+}
+
+.manager-projects__logs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--gin-font-size-s, 0.875rem);
+}
+
+.manager-projects__log {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--mp-line);
+}
+
+.manager-projects__log-label {
+  flex: 0 0 auto;
+  padding: 0.2em 0.8em;
+  border-radius: var(--mp-radius-m);
+  background: var(--mp-chip);
+  font-size: var(--mp-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.manager-projects__log-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.manager-projects__confirm {
+  margin: 0.75rem 0 0;
+}
+
+.manager-projects__more,
+.manager-projects__empty {
+  margin: 0;
+  color: var(--mp-muted);
+  font-size: var(--gin-font-size-s, 0.875rem);
+}
