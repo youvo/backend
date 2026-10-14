@@ -53,10 +53,16 @@ class ProjectSeenTracker {
   /**
    * Gets the unfinished projects of the organizations a user manages.
    *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user.
+   * @param int $limit
+   *   The number of projects to return at most, 0 for all. Only the returned
+   *   projects are loaded.
+   *
    * @return array<int, \Drupal\projects\ProjectInterface>
    *   The projects keyed by id, the one with the newest activity first.
    */
-  public function getManagedProjects(AccountInterface $account): array {
+  public function getManagedProjects(AccountInterface $account, int $limit = 0): array {
     $organization_ids = $this->entityTypeManager->getStorage('user')->getQuery()
       ->accessCheck(FALSE)
       ->condition('field_manager', (int) Profile::id($account))
@@ -75,6 +81,9 @@ class ProjectSeenTracker {
     }
     $last = $this->lastLogIds($project_ids);
     usort($project_ids, static fn (int $a, int $b) => (($last[$b] ?? 0) <=> ($last[$a] ?? 0)) ?: $b <=> $a);
+    if ($limit > 0) {
+      $project_ids = array_slice($project_ids, 0, $limit);
+    }
     $loaded = $storage->loadMultiple($project_ids);
     $projects = [];
     foreach ($project_ids as $id) {
@@ -231,8 +240,7 @@ class ProjectSeenTracker {
    *   The logs per project id.
    */
   protected function observableLogs(array $project_ids): array {
-    $pattern_ids = array_keys($this->entityTypeManager->getStorage('log_pattern')
-      ->loadByProperties(['status' => TRUE, 'observable' => TRUE]));
+    $pattern_ids = $this->observablePatternIds();
     if (!$pattern_ids) {
       return [];
     }
@@ -250,6 +258,19 @@ class ProjectSeenTracker {
   }
 
   /**
+   * Gets the ids of the enabled, observable log patterns.
+   *
+   * The pattern flags decide, as in the logbook.
+   *
+   * @return string[]
+   *   The pattern ids.
+   */
+  protected function observablePatternIds(): array {
+    return array_map('strval', array_keys($this->entityTypeManager->getStorage('log_pattern')
+      ->loadByProperties(['status' => TRUE, 'observable' => TRUE])));
+  }
+
+  /**
    * Gets the highest observable log id per project.
    *
    * @param int[] $project_ids
@@ -259,9 +280,19 @@ class ProjectSeenTracker {
    *   The log ids keyed by project id.
    */
   protected function lastLogIds(array $project_ids): array {
+    $pattern_ids = $this->observablePatternIds();
+    if (!$pattern_ids) {
+      return [];
+    }
+    $query = $this->database->select('log', 'l')
+      ->fields('l', ['project'])
+      ->condition('l.project', $project_ids, 'IN')
+      ->condition('l.type', $pattern_ids, 'IN')
+      ->groupBy('l.project');
+    $query->addExpression('MAX([l].[id])', 'last_id');
     $last = [];
-    foreach ($this->observableLogs($project_ids) as $project_id => $logs) {
-      $last[$project_id] = $logs[0]['id'];
+    foreach ($query->execute() as $row) {
+      $last[(int) $row->project] = (int) $row->last_id;
     }
     return $last;
   }

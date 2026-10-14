@@ -128,6 +128,8 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
     $block = $this->container->get('plugin.manager.block')->createInstance('manager_projects');
     $build = $block->build();
     $this->assertContains('user', $build['#cache']['contexts']);
+    // The buttons carry a CSRF token, which belongs to the session.
+    $this->assertContains('session', $build['#cache']['contexts']);
     $this->assertContains('manager_project_seen:' . $manager->id(), $build['#cache']['tags']);
     $this->assertContains('log_list', $build['#cache']['tags']);
   }

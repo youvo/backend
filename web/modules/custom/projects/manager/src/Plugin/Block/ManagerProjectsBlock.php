@@ -76,7 +76,8 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function build(): array {
     $uid = (int) $this->currentUser->id();
-    $projects = $this->tracker->getManagedProjects($this->currentUser);
+    // One more than shown tells whether there are more, without loading all.
+    $projects = $this->tracker->getManagedProjects($this->currentUser, self::LIMIT + 1);
     $shown = array_slice($projects, 0, self::LIMIT, TRUE);
     $activity = $this->tracker->getActivity($this->currentUser, $shown);
     $destination = $this->requestStack->getCurrentRequest()?->getPathInfo() ?: '/admin/dashboard';
@@ -117,7 +118,8 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
       '#seen_all_url' => $any_new ? Url::fromRoute('manager.project_seen_all', [], $options)->toString() : NULL,
       '#attached' => ['library' => ['manager/projects_block']],
       '#cache' => [
-        'contexts' => ['user', 'url.path'],
+        // The buttons carry a CSRF token, which belongs to the session.
+        'contexts' => ['user', 'session', 'url.path'],
         'tags' => array_merge($list_tags, [ProjectSeenTracker::cacheTag($uid)]),
       ],
     ];

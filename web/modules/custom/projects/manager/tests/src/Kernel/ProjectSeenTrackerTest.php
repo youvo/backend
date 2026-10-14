@@ -48,6 +48,22 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
   }
 
   /**
+   * A limit gives the projects with the newest activity, and no others.
+   */
+  public function testManagedProjectsLimit(): void {
+    $first = $this->createMailableProject(ProjectState::Open);
+    $organization = $first->getOwner();
+    $second = $this->createProjectFor($organization, ProjectState::Open);
+    $third = $this->createProjectFor($organization, ProjectState::Open);
+    $manager = $this->managerOf($first);
+    $this->createProjectLog($first);
+    $this->createProjectLog($third);
+    $this->createProjectLog($second);
+    $projects = $this->container->get('manager.project_seen')->getManagedProjects($manager, 2);
+    $this->assertSame([(int) $second->id(), (int) $third->id()], array_keys($projects));
+  }
+
+  /**
    * Without a row a project is new, with the logs of others counted.
    */
   public function testActivityWithoutRowIsNew(): void {
