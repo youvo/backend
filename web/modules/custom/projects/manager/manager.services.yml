@@ -32,3 +32,12 @@ services:
     arguments:
       - '@keyvalue.expirable'
       - '@lock'
+
+  manager.project_seen:
+    class: Drupal\manager\ProjectSeenTracker
+    arguments:
+      - '@entity_type.manager'
+      - '@database'
+      - '@datetime.time'
+      - '@cache_tags.invalidator'
+  Drupal\manager\ProjectSeenTracker: '@manager.project_seen'

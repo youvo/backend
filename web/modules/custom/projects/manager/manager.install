@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Install and update code of the project manager.
+ */
+
+use Drupal\manager\ProjectSeenTracker;
+
+/**
+ * Implements hook_schema().
+ */
+function manager_schema(): array {
+  $schema[ProjectSeenTracker::TABLE] = [
+    'description' => 'The last log that a manager has seen of a project.',
+    'fields' => [
+      'uid' => [
+        'description' => 'The user who confirmed the project.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'project_id' => [
+        'description' => 'The project.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'log_id' => [
+        'description' => 'The highest log id when the user confirmed.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'confirmed' => [
+        'description' => 'The time of the confirmation.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['uid', 'project_id'],
+    'indexes' => [
+      'project_id' => ['project_id'],
+    ],
+  ];
+  return $schema;
+}
