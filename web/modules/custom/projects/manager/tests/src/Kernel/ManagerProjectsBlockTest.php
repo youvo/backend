@@ -83,23 +83,31 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
   }
 
   /**
-   * A project with more events than the latest ones has a toggle for all.
+   * Events are only reachable through the dropdown of a project with events.
    */
-  public function testToggleForAllEvents(): void {
+  public function testEventsOnlyInTheDropdown(): void {
     $project = $this->createMailableProject(ProjectState::Open);
     $project->setTitle('Garden website');
     $project->save();
-    $few = $this->createProjectFor($project->getOwner(), ProjectState::Open, 'Quiet project');
-    for ($i = 0; $i < 5; $i++) {
-      $this->createProjectLog($project);
-    }
-    $this->createProjectLog($few);
+    $quiet = $this->createProjectFor($project->getOwner(), ProjectState::Open, 'Quiet project');
+    $this->createProjectLog($project);
     $html = $this->renderFor($this->managerOf($project));
-    $this->assertSame(1, substr_count($html, '<details class="manager-projects__all-events"'), 'Only the project with more than the shown events.');
-    $this->assertStringContainsString('All events (5)', $html);
+    $this->assertSame(1, substr_count($html, '<details class="manager-projects__all-events"'), 'Only the project with events.');
+    $this->assertStringContainsString('Show all events', $html);
+    $this->assertStringNotContainsString('manager-projects__log"', $html);
     $this->assertMatchesRegularExpression('#data-events-url="/project/manage/events/' . $project->id() . '"#', $html);
+    $this->assertStringNotContainsString('/project/manage/events/' . $quiet->id(), $html);
     // Without JavaScript the toggle leads to the logbook.
     $this->assertStringContainsString('/logbook?search=Garden%20website', $html);
+  }
+
+  /**
+   * The title leads to the project manager.
+   */
+  public function testTitleLinksToTheProjectManager(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $html = $this->renderFor($this->managerOf($project));
+    $this->assertMatchesRegularExpression('#<h3 class="manager-projects__title"><a href="/projects/manage">#', $html);
   }
 
   /**

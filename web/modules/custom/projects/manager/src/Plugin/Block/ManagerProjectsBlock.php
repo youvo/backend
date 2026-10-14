@@ -12,7 +12,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\logbook\LogInterface;
 use Drupal\manager\ProjectSeenTracker;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
@@ -91,7 +90,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
       $cards[] = [
         'id' => $id,
         'title' => $project->label(),
-        'url' => $project->toUrl()->toString(),
+        'url' => Url::fromUserInput('/projects/manage')->toString(),
         'organization' => $this->organizationName($project),
         'state' => ucfirst((string) $project->get('field_lifecycle')->value),
         'is_new' => $item['is_new'],
@@ -102,10 +101,6 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
         'logbook_url' => Url::fromUserInput('/logbook', ['query' => ['search' => $project->label()]])->toString(),
         'seen_url' => $item['is_new'] ? Url::fromRoute('manager.project_seen', ['project' => $id], $options)->toString() : NULL,
         'progress' => $this->buildProgress($project),
-        'logs' => array_map(static fn (LogInterface $log) => [
-          'label' => trim(str_replace('Project ', '', (string) $log->getPattern()->label())),
-          'text' => ['#markup' => $log->getMarkup()],
-        ], $item['latest']),
       ];
     }
 

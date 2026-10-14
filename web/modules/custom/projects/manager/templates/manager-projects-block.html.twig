@@ -5,8 +5,7 @@
  *
  * Available variables:
  * - cards: The projects, each with id, title, url, organization, state,
- *   is_new, count, total, events_url, logbook_url, seen_url, progress (steps)
- *   and logs (label, text).
+ *   is_new, count, total, events_url, logbook_url, seen_url, progress (steps).
  * - more_url: The link to the overview if there are more projects.
  * - seen_all_url: The URL that confirms all projects, if one is new.
  */
@@ -46,19 +45,9 @@
             {% endif %}
           </div>
         </header>
-        {% if card.logs %}
-          <ul class="manager-projects__logs">
-            {% for log in card.logs %}
-              <li class="manager-projects__log">
-                <span class="manager-projects__log-label">{{ log.label }}</span>
-                <span class="manager-projects__log-text">{{ log.text }}</span>
-              </li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-        {% if card.total > card.logs|length %}
+        {% if card.total %}
           <details class="manager-projects__all-events" data-events-url="{{ card.events_url }}">
-            <summary class="manager-projects__all-events-toggle">{{ 'All events (@count)'|t({'@count': card.total}) }}</summary>
+            <summary class="manager-projects__all-events-toggle">{{ 'Show all events'|t }}</summary>
             <div class="manager-projects__all-events-body">
               <a href="{{ card.logbook_url }}">{{ 'View in the logbook'|t }}</a>
             </div>
