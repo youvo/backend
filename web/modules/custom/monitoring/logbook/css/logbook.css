@@ -57,6 +57,17 @@
   outline: none;
 }
 
+/* The two date fields keep their From and To labels, in a row. */
+.view-logbook .views-exposed-form fieldset .form-item > label {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  font-size: var(--logbook-text-xs);
+  color: var(--logbook-muted);
+}
+
 /* The date range is two fields in a row, not a boxed fieldset. */
 .view-logbook .views-exposed-form fieldset {
   margin: 0;

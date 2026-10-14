@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\Hook;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\logbook\LogInterface;
@@ -68,6 +69,36 @@ class LogbookViewsHooks {
       if ($log instanceof LogInterface && $log->getPattern()->getTone() === 'celebrate') {
         $row['attributes']->addClass('logbook-row--celebrate');
       }
+    }
+  }
+
+  /**
+   * Implements hook_form_FORM_ID_alter() for the views exposed form.
+   *
+   * The date filter of Views shows two plain text fields. The browser's date
+   * input is the better widget and still submits Y-m-d, which the filter
+   * parses. The pattern select says what "all" means instead of "- Any -".
+   */
+  #[Hook('form_views_exposed_form_alter')]
+  public function exposedFormAlter(array &$form, FormStateInterface $form_state): void {
+    $view = $form_state->get('view');
+    if (!$view instanceof ViewExecutable || $view->id() !== 'logbook') {
+      return;
+    }
+    // The filter puts the two fields in a wrapper fieldset.
+    if (isset($form['created_wrapper']['created'])) {
+      $labels = ['min' => $this->t('From'), 'max' => $this->t('To')];
+      foreach ($labels as $key => $label) {
+        if (isset($form['created_wrapper']['created'][$key])) {
+          $element = &$form['created_wrapper']['created'][$key];
+          $element['#type'] = 'date';
+          $element['#title'] = $label;
+          unset($element['#size'], $element['#maxlength'], $element);
+        }
+      }
+    }
+    if (isset($form['type']['#options']['All'])) {
+      $form['type']['#options']['All'] = $this->t('All types');
     }
   }
 

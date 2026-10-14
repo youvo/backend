@@ -196,4 +196,16 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertContains('logbook/table', $render['#attached']['library'] ?? []);
   }
 
+  /**
+   * The date range uses date inputs and the pattern select says what all means.
+   */
+  public function testExposedFormWidgets(): void {
+    $html = $this->renderPage(['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']]);
+    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[min\]"/', $html);
+    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[max\]"/', $html);
+    $this->assertStringContainsString('value="2026-06-05"', $html);
+    $this->assertStringContainsString('All types', $html);
+    $this->assertStringNotContainsString('- Any -', $html);
+  }
+
 }
