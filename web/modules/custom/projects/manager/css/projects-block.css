@@ -241,22 +241,6 @@
     0 0 0 4px var(--mp-accent);
 }
 
-/* The latest logs, one small line each. */
-.manager-projects__logs {
-  margin: 0.4rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--mp-text-xs);
-}
-
-.manager-projects__log {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding: 0.2rem 0;
-  border-top: 1px solid var(--mp-line);
-}
-
 .manager-projects__log-label {
   flex: 0 0 auto;
   padding: 0 0.6em;

@@ -77,7 +77,6 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
     $activity = $tracker->getActivity($manager, [$project])[$project->id()];
     $this->assertTrue($activity['is_new']);
     $this->assertSame(2, $activity['count']);
-    $this->assertCount(3, $activity['latest'], 'The latest logs include the own one.');
   }
 
   /**

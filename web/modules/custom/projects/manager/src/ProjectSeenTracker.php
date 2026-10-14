@@ -32,11 +32,6 @@ class ProjectSeenTracker {
   public const UNFINISHED = ['draft', 'pending', 'open', 'ongoing'];
 
   /**
-   * The number of latest logs that the activity returns per project.
-   */
-  public const LATEST = 3;
-
-  /**
    * The number of events that the list of all events returns at most.
    */
   public const EVENTS_LIMIT = 100;
@@ -107,10 +102,9 @@ class ProjectSeenTracker {
    * @param \Drupal\projects\ProjectInterface[] $projects
    *   The projects.
    *
-   * @return array<int, array{is_new: bool, count: int, total: int, latest: \Drupal\logbook\LogInterface[]}>
-   *   Per project id: whether it is new, the number of new logs, the number of
-   *   all observable logs and the latest observable logs of the project
-   *   (including the user's own).
+   * @return array<int, array{is_new: bool, count: int, total: int}>
+   *   Per project id: whether it is new, the number of new logs and the number
+   *   of all observable logs (including the user's own).
    */
   public function getActivity(AccountInterface $account, array $projects): array {
     $uid = (int) Profile::id($account);
@@ -120,7 +114,6 @@ class ProjectSeenTracker {
     }
     $seen = $this->loadSeen($uid, $ids);
     $logs = $this->observableLogs($ids);
-    $latest_ids = [];
     $activity = [];
     foreach ($ids as $id) {
       $of_project = $logs[$id] ?? [];
@@ -128,21 +121,11 @@ class ProjectSeenTracker {
       $new = isset($seen[$id])
         ? array_filter($by_others, static fn (array $log) => $log['id'] > $seen[$id])
         : $by_others;
-      $latest = array_slice(array_column($of_project, 'id'), 0, self::LATEST);
-      $latest_ids = array_merge($latest_ids, $latest);
       $activity[$id] = [
         'is_new' => isset($seen[$id]) ? $new !== [] : TRUE,
         'count' => count($new),
         'total' => count($of_project),
-        'latest' => $latest,
       ];
-    }
-    $loaded = $latest_ids ? $this->entityTypeManager->getStorage('log')->loadMultiple($latest_ids) : [];
-    foreach ($activity as &$item) {
-      $item['latest'] = array_values(array_filter(
-        array_map(static fn (int $log_id) => $loaded[$log_id] ?? NULL, $item['latest']),
-        static fn ($log) => $log instanceof LogInterface,
-      ));
     }
     return $activity;
   }

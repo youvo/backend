@@ -35,7 +35,8 @@
             headers: { Accept: 'text/html' },
           })
             .then(response => {
-              if (!response.ok) {
+              // A redirect means the session ended: the answer is a login page.
+              if (!response.ok || response.redirected) {
                 throw new Error(`Status ${response.status}`);
               }
               return response.text();
