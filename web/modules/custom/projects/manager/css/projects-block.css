@@ -30,6 +30,7 @@
   gap: 0.5rem;
 
   /* Level with the heading bar of the block, not flush with its edge. */
+  margin-block-end: var(--gin-spacing-s, 0.75rem);
   margin-inline: var(--gin-spacing-s, 0.75rem);
 }
 
