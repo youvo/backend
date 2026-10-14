@@ -12,6 +12,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
 use Drupal\logbook\LogPatternInterface;
+use Drupal\youvo\Event\TimestampedEventInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -59,10 +60,10 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
     if (!$log_pattern->isEnabled()) {
       return NULL;
     }
+    $timestamp = $event instanceof TimestampedEventInterface ? $event->getTimestamp() : NULL;
     return Log::create([
       'type' => static::LOG_PATTERN,
-      // @phpstan-ignore-next-line Need to add proper interface.
-      'created' => $event->getTimestamp() ?? $this->time->getCurrentTime(),
+      'created' => $timestamp ?? $this->time->getCurrentTime(),
     ]);
   }
 

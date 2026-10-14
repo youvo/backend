@@ -4,11 +4,12 @@ namespace Drupal\projects\Event;
 
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\projects\ProjectInterface;
+use Drupal\youvo\Event\TimestampedEventInterface;
 
 /**
  * Defines a base class for project events.
  */
-abstract class ProjectEventBase extends Event {
+abstract class ProjectEventBase extends Event implements TimestampedEventInterface {
 
   /**
    * Constructs a ProjectEventBase object.
@@ -26,10 +27,7 @@ abstract class ProjectEventBase extends Event {
   }
 
   /**
-   * Gets the timestamp for the event.
-   *
-   * Usually this is only used for creating fake content. Rely on the request
-   * time otherwise.
+   * {@inheritdoc}
    */
   public function getTimestamp(): ?int {
     return $this->timestamp;
