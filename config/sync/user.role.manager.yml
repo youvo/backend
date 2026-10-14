@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - dashboard.dashboard.youvo
     - rest.resource.organization.manage
     - rest.resource.progress.course.access
     - rest.resource.progress.lecture.access
@@ -16,6 +17,7 @@ dependencies:
   module:
     - correspondence
     - courses
+    - dashboard
     - lifecycle
     - logbook
     - mailer
@@ -68,3 +70,4 @@ permissions:
   - 'view courses'
   - 'view observable log'
   - 'view project manager fields'
+  - 'view youvo dashboard'

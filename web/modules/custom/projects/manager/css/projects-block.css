@@ -1,0 +1,400 @@
+/*
+ * The dashboard block with the projects of a manager. The tokens follow the
+ * manager's pane-ui.css: Gin sets the look, the fallbacks are the values of the
+ * default Gin theme.
+ */
+.manager-projects {
+  --mp-ink: var(--gin-color-title, #222330);
+  --mp-muted: var(--gin-color-text-light, #545560);
+  --mp-accent: var(--gin-color-primary, #3f78b5);
+  --mp-on-accent: var(--gin-color-button-text, #fff);
+  --mp-surface: var(--gin-bg-layer, #fff);
+  --mp-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --mp-chip: color-mix(in srgb, var(--mp-accent) 15%, var(--mp-surface));
+  --mp-chip-hover: color-mix(in srgb, var(--mp-accent) 22%, var(--mp-surface));
+  --mp-track: var(--mp-chip);
+  --mp-radius-s: var(--gin-border-s, 0.375rem);
+  --mp-radius-m: var(--gin-border-m, 0.5rem);
+  --mp-text-xs: var(--gin-font-size-xs, small);
+  --mp-note: color-mix(
+    in srgb,
+    var(--gin-color-warning, #d8b234) 30%,
+    var(--mp-surface)
+  );
+
+  /* A plain tick, drawn as a mask so that it takes the text color. */
+  --mp-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --mp-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  display: grid;
+  gap: 0.5rem;
+
+  /* Level with the heading bar of the block, not flush with its edge. */
+  margin-block-end: var(--gin-spacing-s, 0.75rem);
+  margin-inline: var(--gin-spacing-s, 0.75rem);
+}
+
+/* "Mark all as seen": a quiet text button at the right, above the cards. */
+.manager-projects__all {
+  justify-self: end;
+  margin: 0;
+}
+
+.manager-projects__check-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0.2em 0.7em;
+  border: 0;
+  border-radius: var(--mp-radius-s);
+  background: transparent;
+  box-shadow: none;
+  color: var(--mp-ink);
+  font-size: var(--mp-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__check-all:hover {
+  background: var(--mp-chip);
+}
+
+.manager-projects__icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentcolor;
+  mask: var(--mp-tick) no-repeat center / contain;
+}
+
+/* One compact card per project. */
+.manager-projects__card {
+  padding: 0.6rem 0.9rem 0.35rem;
+  border-radius: var(--mp-radius-m);
+  background: var(--mp-surface);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 0 0 1px var(--mp-line);
+}
+
+/* A new project: an accent bar at the left, as the manager pane has one. */
+.manager-projects__card.is-new {
+  box-shadow:
+    inset 4px 0 var(--mp-accent),
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 0 0 1px var(--mp-line);
+}
+
+/* Title and organization | progress | badge and confirm, in one row. */
+.manager-projects__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(8rem, 12rem) 7.5rem;
+  align-items: center;
+  gap: 0.25rem 1rem;
+}
+
+.manager-projects__main {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.manager-projects__title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-projects__org {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mp-muted);
+  font-size: var(--mp-text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The lifecycle progress as small dots, with the current state beside it. */
+.manager-projects__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.manager-projects__steps {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+.manager-projects__step {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+}
+
+.manager-projects__step.has-segment::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 55%;
+  width: 90%;
+  height: 3px;
+  background: var(--mp-track);
+  z-index: 1;
+}
+
+.manager-projects__step.is-next-completed.has-segment::after {
+  background: var(--mp-accent);
+}
+
+.manager-projects__dot {
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+  border: 3px solid var(--mp-track);
+  border-radius: 50%;
+  background: var(--mp-surface);
+}
+
+.manager-projects__step.is-completed .manager-projects__dot {
+  border-color: var(--mp-accent);
+  background: var(--mp-accent);
+}
+
+.manager-projects__state {
+  flex: 0 0 4.25rem;
+  color: var(--mp-muted);
+  font-size: var(--mp-text-xs);
+}
+
+.manager-projects__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-height: 1.75rem;
+}
+
+.manager-projects__badge {
+  padding: 0.1em 0.65em;
+  border-radius: var(--mp-radius-m);
+  background: var(--mp-note);
+  color: var(--mp-ink);
+  font-size: var(--mp-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.manager-projects__confirm {
+  margin: 0;
+}
+
+/* The confirm button is a little tick in a chip, like the pills of the manager. */
+.manager-projects__check {
+  position: relative;
+  width: 1.75rem;
+  height: 1.75rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mp-radius-s);
+  background: var(--mp-chip);
+  box-shadow: none;
+  color: var(--mp-accent);
+  cursor: pointer;
+  transition:
+    background-color var(--gin-transition-fast, 0.3s ease),
+    color var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__check::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentcolor;
+  mask: var(--mp-tick) no-repeat center / 62%;
+}
+
+.manager-projects__check:hover {
+  background: var(--mp-accent);
+  color: var(--mp-on-accent);
+}
+
+.manager-projects__check:focus-visible,
+.manager-projects__check-all:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--mp-surface),
+    0 0 0 4px var(--mp-accent);
+}
+
+.manager-projects__log-label {
+  flex: 0 0 auto;
+  padding: 0 0.6em;
+  border-radius: var(--mp-radius-s);
+  background: var(--mp-chip);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.manager-projects__log-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-projects__more,
+.manager-projects__empty {
+  margin: 0;
+  color: var(--mp-muted);
+  font-size: var(--gin-font-size-s, 0.875rem);
+}
+
+/* The dropdown with all events, loaded when it is opened. */
+.manager-projects__all-events {
+  margin: 0.15rem 0 0;
+  font-size: var(--mp-text-xs);
+}
+
+.manager-projects__all-events-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem 0.15rem 0.25rem;
+  border-radius: var(--mp-radius-s);
+  color: var(--mp-accent);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+  transition: background-color var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__all-events-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.manager-projects__all-events-toggle::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: currentcolor;
+  mask: var(--mp-chevron) no-repeat center / contain;
+  transition: transform var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__all-events[open] > .manager-projects__all-events-toggle::before {
+  transform: rotate(180deg);
+}
+
+.manager-projects__all-events-toggle:hover {
+  background: var(--mp-chip);
+}
+
+.manager-projects__all-events-toggle:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--mp-surface),
+    0 0 0 4px var(--mp-accent);
+}
+
+.manager-projects__all-events-body {
+  max-height: 18rem;
+  padding: 0.25rem 0 0.4rem;
+  overflow: auto;
+}
+
+.manager-projects__events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.manager-projects__event {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  border-top: 1px solid var(--mp-line);
+}
+
+.manager-projects__event-date {
+  flex: 0 0 auto;
+  color: var(--mp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.manager-projects__event .manager-projects__log-text {
+  overflow: visible;
+  white-space: normal;
+}
+
+/* A new event has a small dot at its end, like the badge of the card. */
+.manager-projects__event-new {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  align-self: center;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--mp-accent);
+}
+
+.manager-projects__events-note {
+  margin: 0.4rem 0 0;
+  color: var(--mp-muted);
+}
+
+/* On a narrow screen the progress takes its own row. */
+@media (max-width: 640px) {
+  .manager-projects__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .manager-projects__progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .manager-projects__main {
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+  }
+
+  .manager-projects__title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .manager-projects__log-text {
+    hyphens: none;
+    white-space: normal;
+  }
+
+  /* An event: the date above, the pill and the text below it. */
+  .manager-projects__event {
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+  }
+
+  .manager-projects__event-date {
+    flex: 1 1 100%;
+  }
+
+  .manager-projects__event .manager-projects__log-text {
+    flex: 1 1 0;
+  }
+}

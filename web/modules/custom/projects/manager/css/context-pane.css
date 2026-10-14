@@ -327,6 +327,10 @@
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+
+  /* A fixed width, so that a wide pill (Complete) does not widen the header
+     and shift the rail; it reaches into the gap instead. */
+  width: 80px;
   min-width: 80px;
   flex: 0 0 80px;
 }
@@ -616,11 +620,6 @@ a.logbook-timeline-add .logbook-timeline-label {
     transform var(--pane-fast);
 }
 
-a.logbook-timeline-add .logbook-timeline-circle {
-  background: var(--pane-surface);
-  border-color: var(--pane-chip-hover);
-}
-
 a.logbook-timeline-add .logbook-timeline-text {
   color: inherit;
 }
@@ -774,6 +773,7 @@ a.logbook-timeline-add:active .logbook-timeline-label {
 
   .logbook-timeline-label-container,
   .logbook-timeline-date-container {
+    width: auto;
     min-width: 0;
     flex: 0 0 auto;
   }

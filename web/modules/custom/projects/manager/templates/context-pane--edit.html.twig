@@ -1,5 +1,10 @@
 <tr class="context-pane" {{ attributes }}>
   <td colspan="100%">
     {{ content.button }}
+    {% if content.description %}
+      <div class="transition-description">
+        {{ content.description }}
+      </div>
+    {% endif %}
   </td>
 </tr>

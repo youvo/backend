@@ -7,11 +7,12 @@ dependencies:
     - system.menu.dashboard-moderation
     - system.menu.dashboard-monitoring
   module:
+    - manager
     - system
     - youvo
 id: youvo
 label: Youvo
-description: 'Landing page for editors, observers, configurators and administrators.'
+description: 'Landing page for editors, observers, configurators, managers and administrators.'
 layout:
   -
     layout_id: layout_onecol
@@ -29,6 +30,17 @@ layout:
           provider: youvo
           context_mapping: {  }
         weight: 0
+        additional: {  }
+      3c1a8d52-6f0e-4b3a-9a47-5d2e8f1b7c90:
+        uuid: 3c1a8d52-6f0e-4b3a-9a47-5d2e8f1b7c90
+        region: content
+        configuration:
+          id: manager_projects
+          label: 'Meine Projekte'
+          label_display: visible
+          provider: manager
+          context_mapping: {  }
+        weight: 1
         additional: {  }
     third_party_settings: {  }
   -

@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * The list of all events of a project, loaded into the dropdown of a card.
+ *
+ * Available variables:
+ * - events: The events, newest first, each with date, label, text and is_new.
+ * - total: The number of all events, which can be more than the listed ones.
+ */
+#}
+<ul class="manager-projects__events">
+  {% for event in events %}
+    <li class="manager-projects__event{{ event.is_new ? ' is-new' : '' }}">
+      <time class="manager-projects__event-date">{{ event.date }}</time>
+      <span class="manager-projects__log-label">{{ event.label }}</span>
+      <span class="manager-projects__log-text">{{ event.text }}</span>
+      {% if event.is_new %}
+        <span class="manager-projects__event-new" title="{{ 'New'|t }}"><span class="visually-hidden">{{ 'New'|t }}</span></span>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% if total > events|length %}
+  <p class="manager-projects__events-note">{{ 'The newest @shown of @total events are shown.'|t({'@shown': events|length, '@total': total}) }}</p>
+{% endif %}

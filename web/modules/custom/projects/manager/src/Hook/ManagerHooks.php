@@ -10,8 +10,10 @@ use Drupal\Core\Site\Settings;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
+use Drupal\manager\ProjectSeenTracker;
 use Drupal\manager\Timeline\TimelineBuilder;
 use Drupal\projects\ProjectInterface;
+use Drupal\user\UserInterface;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -23,6 +25,7 @@ class ManagerHooks {
     protected ManagerContextPanes $managerContextPanes,
     protected ManagerRules $managerRules,
     protected AdminContext $adminContext,
+    protected ProjectSeenTracker $projectSeenTracker,
   ) {}
 
   /**
@@ -74,6 +77,14 @@ class ManagerHooks {
       'manager_timeline' => [
         'variables' => ['rows' => [], 'add_form' => NULL],
         'template' => 'manager-timeline',
+      ],
+      'manager_project_events' => [
+        'variables' => ['events' => [], 'total' => 0],
+        'template' => 'manager-project-events',
+      ],
+      'manager_projects_block' => [
+        'variables' => ['cards' => [], 'more_url' => NULL, 'seen_all_url' => NULL],
+        'template' => 'manager-projects-block',
       ],
       'manager_rule' => [
         'render element' => 'elements',
@@ -188,6 +199,24 @@ class ManagerHooks {
     if (!empty($variables['elements']['#type'])) {
       $suggestions[] = 'context_pane__' . $variables['elements']['#type'];
     }
+  }
+
+  /**
+   * Implements hook_ENTITY_TYPE_delete() for projects.
+   *
+   * The confirmations of a deleted project are not needed anymore.
+   */
+  #[Hook('project_delete')]
+  public function projectDelete(ProjectInterface $project): void {
+    $this->projectSeenTracker->deleteForProject($project->id());
+  }
+
+  /**
+   * Implements hook_ENTITY_TYPE_delete() for users.
+   */
+  #[Hook('user_delete')]
+  public function userDelete(UserInterface $account): void {
+    $this->projectSeenTracker->deleteForUser($account->id());
   }
 
 }
