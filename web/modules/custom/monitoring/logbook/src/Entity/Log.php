@@ -38,6 +38,7 @@ use Drupal\user_types\Utility\Profile;
  *     "access" = "Drupal\logbook\LogAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\logbook\LogListBuilder",
+ *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\logbook\Form\LogForm",
  *       "edit" = "Drupal\logbook\Form\LogForm",
