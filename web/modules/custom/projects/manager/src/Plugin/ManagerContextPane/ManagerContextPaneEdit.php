@@ -51,7 +51,34 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase {
       '#project' => $project,
       'content' => [
         'button' => $button,
+        'description' => $is_promoted ? $this->buildDemoteDescription() : $this->buildPromoteDescription(),
       ],
+    ];
+  }
+
+  /**
+   * Builds the promote description.
+   */
+  protected function buildPromoteDescription(): array {
+    return [
+      '#markup' => '<ul>' .
+      '    <li>' . $this->t('This action will promote the project.') . '</li>' .
+      '    <li>' . $this->t('The project is promoted to the front page.') . '</li>' .
+      '    <li>' . $this->t('Nobody receives an email.') . '</li>' .
+      '  </ul>',
+    ];
+  }
+
+  /**
+   * Builds the demote description.
+   */
+  protected function buildDemoteDescription(): array {
+    return [
+      '#markup' => '<ul>' .
+      '    <li>' . $this->t('This action will demote the project.') . '</li>' .
+      '    <li>' . $this->t('The project is no longer promoted to the front page.') . '</li>' .
+      '    <li>' . $this->t('Nobody receives an email.') . '</li>' .
+      '  </ul>',
     ];
   }
 
