@@ -70,50 +70,35 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * Only enabled observable patterns are listed, newest first.
+   * Only the patterns of the view's pattern filter are listed, newest first.
    */
   public function testScope(): void {
     $a = $this->createLog('project_apply', ['created' => 100]);
     $b = $this->createLog('project_publish', ['created' => 200]);
     $this->createLog('project_notify', ['created' => 300]);
     $this->createLog('feedback_off', ['created' => 400]);
-    $this->createLog('organization_create', ['created' => 500]);
     $this->assertSame([(int) $b->id(), (int) $a->id()], $this->ids());
   }
 
   /**
-   * An absent hidden input still excludes hidden patterns.
-   *
-   * An unchecked box sends nothing.
+   * The exposed pattern filter limits the list to one pattern.
    */
-  public function testHiddenInput(): void {
-    $a = $this->createLog('project_apply', ['created' => 100]);
-    $h = $this->createLog('organization_create', ['created' => 200]);
-    $this->assertSame([(int) $a->id()], $this->ids([]));
-    $this->assertSame([(int) $h->id(), (int) $a->id()], $this->ids(['hidden' => 1]));
-  }
-
-  /**
-   * The group and visibility filters, also when nothing matches.
-   */
-  public function testGroupAndVisibility(): void {
+  public function testTypeFilter(): void {
     $apply = $this->createLog('project_apply', ['created' => 100]);
     $publish = $this->createLog('project_publish', ['created' => 200]);
-    $this->assertSame([(int) $publish->id()], $this->ids(['group' => 'lifecycle']));
-    $this->assertSame([(int) $apply->id()], $this->ids(['group' => 'creatives']));
-    $this->assertSame([], $this->ids(['group' => 'organizations']));
-    $this->assertSame([(int) $publish->id()], $this->ids(['visibility' => 'public']));
-    $this->assertSame([(int) $apply->id()], $this->ids(['visibility' => 'internal']));
-    $this->assertSame([], $this->ids(['group' => 'creatives', 'visibility' => 'public']));
+    $this->assertSame([(int) $apply->id()], $this->ids(['type' => 'project_apply']));
+    $this->assertSame([(int) $publish->id()], $this->ids(['type' => 'project_publish']));
+    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids(['type' => 'All']));
   }
 
   /**
-   * An unknown filter value does not throw.
+   * A pattern outside the list cannot be reached through the filter.
    */
-  public function testUnknownFilterValue(): void {
+  public function testUnknownOrUnlistedType(): void {
     $this->createLog('project_apply', ['created' => 100]);
-    $this->assertIsArray($this->ids(['group' => 'bogus']));
-    $this->assertIsArray($this->ids(['visibility' => 'bogus']));
+    $notify = $this->createLog('project_notify', ['created' => 200]);
+    $this->assertNotContains((int) $notify->id(), $this->ids(['type' => 'project_notify']));
+    $this->assertNotContains((int) $notify->id(), $this->ids(['type' => 'bogus']));
   }
 
   /**
@@ -173,6 +158,8 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertStringContainsString('logbook-type--positive', $html);
     $this->assertStringContainsString('logbook-event__message', $html);
     $this->assertStringContainsString('Hello &lt;b&gt;world&lt;/b&gt;', $html);
+    // The visibility column has an accessible name, but no visible title.
+    $this->assertStringContainsString('Sichtbarkeit</th>', $html);
     $this->assertStringContainsString('logbook-icon--lock', $html);
     $this->assertStringContainsString('aria-label="Internal: only managers of the organization"', $html);
     $this->assertStringContainsString('logbook-icon--globe', $html);

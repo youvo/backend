@@ -126,10 +126,3 @@ services:
     class: Drupal\logbook\EventSubscriber\LogbookParseJsonapiAttributesSubscriber
     tags:
       - { name: event_subscriber }
-
-  # Logbook view.
-  logbook.groups:
-    class: Drupal\logbook\LogGroups
-  logbook.pattern_matcher:
-    class: Drupal\logbook\LogPatternMatcher
-    arguments: ['@entity_type.manager', '@logbook.groups']

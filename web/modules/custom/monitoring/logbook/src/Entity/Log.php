@@ -38,7 +38,6 @@ use Drupal\user_types\Utility\Profile;
  *   handlers = {
  *     "access" = "Drupal\logbook\LogAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\logbook\LogListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\logbook\Form\LogForm",
@@ -67,8 +66,7 @@ use Drupal\user_types\Utility\Profile;
  *     "add-page" = "/admin/content/log/add",
  *     "canonical" = "/log/{log}",
  *     "edit-form" = "/admin/content/logt/{log}/edit",
- *     "delete-form" = "/admin/content/log/{log}/delete",
- *     "collection" = "/logbook"
+ *     "delete-form" = "/admin/content/log/{log}/delete"
  *   },
  *   bundle_entity_type = "log_pattern"
  * )

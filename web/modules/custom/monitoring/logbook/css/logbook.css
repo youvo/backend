@@ -33,8 +33,7 @@
   margin: 0;
 }
 
-.view-logbook .views-exposed-form .form-item:not(.form-type-checkbox) > label,
-.view-logbook .views-exposed-form .fieldset-legend {
+.view-logbook .views-exposed-form .form-item > label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -56,6 +55,21 @@
   border-bottom-color: var(--logbook-accent);
   box-shadow: 0 1px 0 0 var(--logbook-accent);
   outline: none;
+}
+
+/* The date range is two fields in a row, not a boxed fieldset. */
+.view-logbook .views-exposed-form fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.view-logbook .views-exposed-form fieldset .fieldset-wrapper {
+  display: flex;
+  gap: 1rem;
+  padding: 0;
 }
 
 /* Table cells. */
@@ -126,12 +140,11 @@
   mask-image: url('../assets/star.svg');
 }
 
-.logbook-visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+/* The title of the visibility column is read out, but not shown. No absolute
+   positioning: it would escape the scroll wrapper of the table. */
+.view-logbook th.logbook-visually-hidden {
+  font-size: 0;
+  line-height: 0;
 }
 
 /* A completed project is the ultimate log: the whole row is colored, with the

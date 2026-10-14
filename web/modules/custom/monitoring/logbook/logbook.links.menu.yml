@@ -6,7 +6,7 @@ entity.log_pattern.overview:
 
 logbook.dashboard.logbook:
   title: Logbook
-  route_name: entity.log.collection
+  route_name: view.logbook.page_1
   menu_name: dashboard-monitoring
   weight: 0
 
