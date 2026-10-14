@@ -83,6 +83,26 @@ class ManagerProjectsBlockTest extends ProjectSeenKernelTestBase {
   }
 
   /**
+   * A project with more events than the latest ones has a toggle for all.
+   */
+  public function testToggleForAllEvents(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $project->setTitle('Garden website');
+    $project->save();
+    $few = $this->createProjectFor($project->getOwner(), ProjectState::Open, 'Quiet project');
+    for ($i = 0; $i < 5; $i++) {
+      $this->createProjectLog($project);
+    }
+    $this->createProjectLog($few);
+    $html = $this->renderFor($this->managerOf($project));
+    $this->assertSame(1, substr_count($html, '<details class="manager-projects__all-events"'), 'Only the project with more than the shown events.');
+    $this->assertStringContainsString('All events (5)', $html);
+    $this->assertMatchesRegularExpression('#data-events-url="/project/manage/events/' . $project->id() . '"#', $html);
+    // Without JavaScript the toggle leads to the logbook.
+    $this->assertStringContainsString('/logbook?search=Garden%20website', $html);
+  }
+
+  /**
    * A confirmed project has no badge and no button.
    */
   public function testConfirmedProjectHasNoBadge(): void {

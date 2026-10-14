@@ -8,6 +8,7 @@ export default {
     rollupOptions: {
       input: {
         'js/context-pane': './js/context-pane.js',
+        'js/projects-block': './js/projects-block.js',
         'css/pane-ui': './css/pane-ui.css',
         'css/context-pane': './css/context-pane.css',
         'css/icons': './css/icons.css',

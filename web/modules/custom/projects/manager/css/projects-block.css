@@ -23,6 +23,7 @@
   );
 
   /* A plain tick, drawn as a mask so that it takes the text color. */
+  --mp-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --mp-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
   display: grid;
@@ -278,6 +279,100 @@
   font-size: var(--gin-font-size-s, 0.875rem);
 }
 
+/* The dropdown with all events, loaded when it is opened. */
+.manager-projects__all-events {
+  margin: 0.15rem 0 0;
+  font-size: var(--mp-text-xs);
+}
+
+.manager-projects__all-events-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem 0.15rem 0.25rem;
+  border-radius: var(--mp-radius-s);
+  color: var(--mp-accent);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+  transition: background-color var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__all-events-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.manager-projects__all-events-toggle::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: currentcolor;
+  mask: var(--mp-chevron) no-repeat center / contain;
+  transition: transform var(--gin-transition-fast, 0.3s ease);
+}
+
+.manager-projects__all-events[open] > .manager-projects__all-events-toggle::before {
+  transform: rotate(180deg);
+}
+
+.manager-projects__all-events-toggle:hover {
+  background: var(--mp-chip);
+}
+
+.manager-projects__all-events-toggle:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--mp-surface),
+    0 0 0 4px var(--mp-accent);
+}
+
+.manager-projects__all-events-body {
+  max-height: 18rem;
+  padding: 0.25rem 0 0.4rem;
+  overflow: auto;
+}
+
+.manager-projects__events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.manager-projects__event {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  border-top: 1px solid var(--mp-line);
+}
+
+.manager-projects__event-date {
+  flex: 0 0 auto;
+  color: var(--mp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.manager-projects__event .manager-projects__log-text {
+  overflow: visible;
+  white-space: normal;
+}
+
+/* A new event has a small dot at its end, like the badge of the card. */
+.manager-projects__event-new {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  align-self: center;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--mp-accent);
+}
+
+.manager-projects__events-note {
+  margin: 0.4rem 0 0;
+  color: var(--mp-muted);
+}
+
 /* On a narrow screen the progress takes its own row. */
 @media (max-width: 640px) {
   .manager-projects__head {
@@ -302,5 +397,19 @@
   .manager-projects__log-text {
     hyphens: none;
     white-space: normal;
+  }
+
+  /* An event: the date above, the pill and the text below it. */
+  .manager-projects__event {
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+  }
+
+  .manager-projects__event-date {
+    flex: 1 1 100%;
+  }
+
+  .manager-projects__event .manager-projects__log-text {
+    flex: 1 1 0;
   }
 }

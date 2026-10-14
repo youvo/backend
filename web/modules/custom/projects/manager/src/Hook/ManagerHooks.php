@@ -78,6 +78,10 @@ class ManagerHooks {
         'variables' => ['rows' => [], 'add_form' => NULL],
         'template' => 'manager-timeline',
       ],
+      'manager_project_events' => [
+        'variables' => ['events' => [], 'total' => 0],
+        'template' => 'manager-project-events',
+      ],
       'manager_projects_block' => [
         'variables' => ['cards' => [], 'more_url' => NULL, 'seen_all_url' => NULL],
         'template' => 'manager-projects-block',

@@ -96,6 +96,10 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
         'state' => ucfirst((string) $project->get('field_lifecycle')->value),
         'is_new' => $item['is_new'],
         'count' => $item['count'],
+        'total' => $item['total'],
+        'events_url' => Url::fromRoute('manager.project_events', ['project' => $id])->toString(),
+        // Without JavaScript the dropdown leads to the logbook, found by title.
+        'logbook_url' => Url::fromUserInput('/logbook', ['query' => ['search' => $project->label()]])->toString(),
         'seen_url' => $item['is_new'] ? Url::fromRoute('manager.project_seen', ['project' => $id], $options)->toString() : NULL,
         'progress' => $this->buildProgress($project),
         'logs' => array_map(static fn (LogInterface $log) => [
