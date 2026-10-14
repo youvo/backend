@@ -10,12 +10,15 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\UserInterface;
 
 /**
  * Provides a test base for the seen tracking of the manager.
  */
 abstract class ProjectSeenKernelTestBase extends MailerKernelTestBase {
+
+  use UserCreationTrait;
 
   /**
    * {@inheritdoc}

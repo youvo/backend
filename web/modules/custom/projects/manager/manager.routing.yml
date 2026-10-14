@@ -22,3 +22,26 @@ manager.mediate_form:
     parameters:
       project:
         type: entity:project
+
+manager.project_seen:
+  path: '/project/manage/seen/{project}'
+  defaults:
+    _controller: '\Drupal\manager\Controller\ProjectSeenController::seen'
+  methods: [POST]
+  requirements:
+    _permission: 'general manager access'
+    _custom_access: '\Drupal\manager\Controller\ProjectSeenController::access'
+    _csrf_token: 'TRUE'
+  options:
+    parameters:
+      project:
+        type: entity:project
+
+manager.project_seen_all:
+  path: '/project/manage/seen'
+  defaults:
+    _controller: '\Drupal\manager\Controller\ProjectSeenController::seenAll'
+  methods: [POST]
+  requirements:
+    _permission: 'general manager access'
+    _csrf_token: 'TRUE'
