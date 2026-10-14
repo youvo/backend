@@ -61,6 +61,16 @@ interface LogPatternInterface extends ConfigEntityInterface {
   public function isPromoted(): bool;
 
   /**
+   * The allowed tones of the type pill in the logbook.
+   */
+  public const TONES = ['positive', 'attention', 'celebrate'];
+
+  /**
+   * Gets the tone of the log pattern, or an empty string for none.
+   */
+  public function getTone(): string;
+
+  /**
    * Returns whether the log pattern is hidden.
    */
   public function isHidden(): bool;

@@ -16,6 +16,7 @@ tokens:
 detectable: true
 observable: true
 public: true
-promote: true
+promote: false
 hidden: false
 color: ''
+tone: positive

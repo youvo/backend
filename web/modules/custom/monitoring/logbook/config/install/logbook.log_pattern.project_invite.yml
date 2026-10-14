@@ -17,8 +17,9 @@ tokens:
     token: '%Project'
     required: 1
 detectable: true
-observable: true
+observable: false
 public: false
 promote: false
 hidden: false
 color: ''
+tone: ''

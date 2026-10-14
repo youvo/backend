@@ -43,3 +43,10 @@ logbook.log_pattern.*:
     color:
       type: string
       label: 'Color'
+    tone:
+      type: string
+      label: 'Tone'
+
+views.filter.log_pattern_scope:
+  type: views.filter.in_operator
+  label: 'Logbook: listed patterns'

@@ -152,7 +152,7 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['settings']['observable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Observable'),
-      '#description' => $this->t('This log is accessable for managers with respect to their organizations.'),
+      '#description' => $this->t('This log is accessable for managers with respect to their organizations. The administration logbook lists the logs of enabled, observable patterns.'),
       '#default_value' => $this->entity->isObservable(),
     ];
 
@@ -186,6 +186,19 @@ class LogPatternForm extends BundleEntityFormBase {
       '#attributes' => ['placeholder' => '#FFFFFF'],
       '#maxlength' => 7,
       '#default_value' => $this->entity->getColor(),
+    ];
+
+    $form['settings']['tone'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Tone'),
+      '#description' => $this->t('Colors the type pill in the logbook. A celebrate pattern also colors the whole row.'),
+      '#options' => [
+        'positive' => $this->t('Positive'),
+        'attention' => $this->t('Needs attention'),
+        'celebrate' => $this->t('Celebrate'),
+      ],
+      '#empty_option' => $this->t('None'),
+      '#default_value' => $this->entity->getTone(),
     ];
 
     $form['details_tokens'] = [

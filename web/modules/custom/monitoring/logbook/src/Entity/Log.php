@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
@@ -37,7 +38,7 @@ use Drupal\user_types\Utility\Profile;
  *   handlers = {
  *     "access" = "Drupal\logbook\LogAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\logbook\LogListBuilder",
+ *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\logbook\Form\LogForm",
  *       "edit" = "Drupal\logbook\Form\LogForm",
@@ -65,8 +66,7 @@ use Drupal\user_types\Utility\Profile;
  *     "add-page" = "/admin/content/log/add",
  *     "canonical" = "/log/{log}",
  *     "edit-form" = "/admin/content/logt/{log}/edit",
- *     "delete-form" = "/admin/content/log/{log}/delete",
- *     "collection" = "/logbook"
+ *     "delete-form" = "/admin/content/log/{log}/delete"
  *   },
  *   bundle_entity_type = "log_pattern"
  * )
@@ -207,6 +207,21 @@ class Log extends ContentEntityBase implements LogInterface {
    */
   public function getMessage(): string {
     return $this->get('message')->value ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildMessage(): array {
+    if (str_starts_with($this->bundle(), 'feedback_')) {
+      $feedback_id = $this->getMisc()['feedback_id'] ?? NULL;
+      if ($feedback_id === NULL) {
+        return [];
+      }
+      return ['#markup' => Link::createFromRoute(new TranslatableMarkup('Feedback ansehen'), 'entity.feedback.canonical', ['feedback' => $feedback_id])->toString()];
+    }
+    $message = $this->getMessage();
+    return $message === '' ? [] : ['#plain_text' => $message];
   }
 
   /**
