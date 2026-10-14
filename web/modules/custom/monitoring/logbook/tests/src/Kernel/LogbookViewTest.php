@@ -162,7 +162,6 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertStringContainsString('Sichtbarkeit</th>', $html);
     $this->assertStringContainsString('logbook-icon--lock', $html);
     $this->assertStringContainsString('aria-label="Internal: only managers of the organization"', $html);
-    $this->assertStringContainsString('logbook-icon--globe', $html);
     $this->assertStringContainsString('logbook-icon--star', $html);
   }
 
@@ -238,6 +237,28 @@ class LogbookViewTest extends LogbookKernelTestBase {
     preg_match_all('/<(?:input|select)[^>]*name="([^"]+)"/', substr($html, 0, strpos($html, '<table') ?: NULL), $matches);
     $names = array_values(array_diff($matches[1], ['form_build_id', 'form_id']));
     $this->assertSame(['search', 'type', 'created[min]', 'created[max]'], $names);
+  }
+
+  /**
+   * Internal logs show a lock, public logs a globe, promoted logs a star only.
+   */
+  public function testVisibilityIcons(): void {
+    $this->createPattern('project_mediate', ['observable' => TRUE, 'public' => TRUE]);
+    $this->createLog('project_apply', ['created' => 100]);
+    $this->createLog('project_mediate', ['created' => 200]);
+    $this->createLog('project_publish', ['created' => 300]);
+    $html = $this->renderPage();
+    preg_match_all('/<tr>.*?<\/tr>/s', $html, $rows);
+    $icons = [];
+    foreach ($rows[0] as $row) {
+      if (preg_match('/logbook-type[^>]*>([^<]+)</', $row, $type)) {
+        preg_match_all('/logbook-icon--(\w+)/', $row, $found);
+        $icons[$type[1]] = $found[1];
+      }
+    }
+    $this->assertSame(['lock'], $icons['Apply']);
+    $this->assertSame(['globe'], $icons['Mediate']);
+    $this->assertSame(['star'], $icons['Publish']);
   }
 
 }

@@ -11,7 +11,10 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
 /**
- * Shows who can see a log as icons: lock (internal), globe (public), star.
+ * Shows who can see a log as an icon.
+ *
+ * A lock for internal logs, a globe for public ones and a star for promoted
+ * ones, which are public as well.
  */
 #[ViewsField('log_visibility')]
 class LogVisibility extends FieldPluginBase {
@@ -32,17 +35,18 @@ class LogVisibility extends FieldPluginBase {
       return '';
     }
     $pattern = $log->getPattern();
-    $icons = [];
+    // One icon: a promoted log is public by definition, so the star stands for
+    // both and the globe would be redundant.
     if (!$pattern->isPublic()) {
-      $icons[] = $this->icon('lock', $this->t('Internal: only managers of the organization'));
+      $icon = $this->icon('lock', $this->t('Internal: only managers of the organization'));
+    }
+    elseif ($pattern->isPromoted()) {
+      $icon = $this->icon('star', $this->t('Public and promoted: highlighted in the site-wide logbook'));
     }
     else {
-      $icons[] = $this->icon('globe', $this->t('Public: visible to signed-in users'));
-      if ($pattern->isPromoted()) {
-        $icons[] = $this->icon('star', $this->t('Promoted: highlighted in the site-wide logbook'));
-      }
+      $icon = $this->icon('globe', $this->t('Public: visible to signed-in users'));
     }
-    return Markup::create('<span class="logbook-visibility">' . implode('', $icons) . '</span>');
+    return Markup::create('<span class="logbook-visibility">' . $icon . '</span>');
   }
 
   /**
