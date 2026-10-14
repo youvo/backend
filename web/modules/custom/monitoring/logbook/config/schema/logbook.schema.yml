@@ -46,3 +46,19 @@ logbook.log_pattern.*:
     tone:
       type: string
       label: 'Tone'
+
+views.filter.log_pattern_scope:
+  type: views_filter
+  label: 'Logbook: observable patterns'
+
+views.filter.log_pattern_hidden:
+  type: views_filter
+  label: 'Logbook: hidden patterns'
+
+views.filter.log_pattern_group:
+  type: views.filter.in_operator
+  label: 'Logbook: pattern group'
+
+views.filter.log_pattern_visibility:
+  type: views.filter.in_operator
+  label: 'Logbook: pattern visibility'

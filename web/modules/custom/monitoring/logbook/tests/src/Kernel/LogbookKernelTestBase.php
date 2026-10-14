@@ -2,6 +2,9 @@
 
 namespace Drupal\Tests\logbook\Kernel;
 
+use Drupal\creatives\Entity\Creative;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\projects\ProjectInterface;
@@ -20,10 +23,16 @@ abstract class LogbookKernelTestBase extends ProjectEventSubscriberTestBase {
     'child_entities',
     'content_translation',
     'language',
+    'system',
     'views',
     'youvo',
     'logbook',
   ];
+
+  /**
+   * The default author of created logs.
+   */
+  protected ?Creative $logAuthor = NULL;
 
   /**
    * {@inheritdoc}
@@ -31,6 +40,16 @@ abstract class LogbookKernelTestBase extends ProjectEventSubscriberTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('log');
+    // The text of a log reads the names of creatives and organizations.
+    $storage = FieldStorageConfig::create([
+      'field_name' => 'field_name',
+      'entity_type' => 'user',
+      'type' => 'string',
+    ]);
+    $storage->save();
+    foreach (['user', 'organization'] as $bundle) {
+      FieldConfig::create(['field_storage' => $storage, 'bundle' => $bundle])->save();
+    }
   }
 
   /**
@@ -55,10 +74,11 @@ abstract class LogbookKernelTestBase extends ProjectEventSubscriberTestBase {
   }
 
   /**
-   * Creates and saves a log.
+   * Creates and saves a log. The author defaults to a creative.
    */
   protected function createLog(string $type, array $values = []): Log {
-    $log = Log::create(['type' => $type] + $values);
+    $this->logAuthor ??= $this->createCreative();
+    $log = Log::create(['type' => $type] + $values + ['author' => $this->logAuthor->id()]);
     $log->save();
     return $log;
   }
