@@ -1,0 +1,22 @@
+uuid: 1ab07554-6c7b-43f9-94b1-07c29eaefab1
+langcode: de
+status: true
+dependencies: {  }
+id: creative
+name: creative
+description: Creatives
+grant_types:
+  authorization_code:
+    status: true
+    description: ''
+  client_credentials:
+    status: false
+    description: ''
+  refresh_token:
+    status: true
+    description: ''
+umbrella: false
+parent: _none
+granularity_id: role
+granularity_configuration:
+  role: creative

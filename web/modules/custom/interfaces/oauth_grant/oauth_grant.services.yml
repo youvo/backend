@@ -3,3 +3,8 @@ services:
     class: Drupal\oauth_grant\Routing\RouteSubscriber
     tags:
       - { name: event_subscriber }
+
+  oauth_grant.token_expiry_trigger_handler:
+    class: Drupal\oauth_grant\TokenExpiryTriggerHandler
+    decorates: Drupal\simple_oauth\TokenExpiryTriggerHandlerInterface
+    arguments: ['@oauth_grant.token_expiry_trigger_handler.inner']

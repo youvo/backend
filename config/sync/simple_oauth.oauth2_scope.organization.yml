@@ -1,0 +1,22 @@
+uuid: f3b7a20a-2513-46aa-8236-d46f20d598fe
+langcode: de
+status: true
+dependencies: {  }
+id: organization
+name: organization
+description: Organizations
+grant_types:
+  authorization_code:
+    status: true
+    description: ''
+  client_credentials:
+    status: false
+    description: ''
+  refresh_token:
+    status: true
+    description: ''
+umbrella: false
+parent: _none
+granularity_id: role
+granularity_configuration:
+  role: organization

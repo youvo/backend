@@ -1,0 +1,22 @@
+uuid: f1e4dc6a-4858-4ee1-876e-5627c6ba7c51
+langcode: de
+status: true
+dependencies: {  }
+id: manager
+name: manager
+description: Manager
+grant_types:
+  authorization_code:
+    status: true
+    description: ''
+  client_credentials:
+    status: false
+    description: ''
+  refresh_token:
+    status: true
+    description: ''
+umbrella: false
+parent: _none
+granularity_id: role
+granularity_configuration:
+  role: manager
