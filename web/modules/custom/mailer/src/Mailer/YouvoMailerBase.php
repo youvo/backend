@@ -54,11 +54,8 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    *
    * Sets the manager of the project as reply-to address when there is one and
    * the site mail address otherwise, as the replaced mail code did. The name
-   * is the one the mail is signed with. Addresses other than the recipient
-   * can only be set during the build phase.
-   *
-   * Automatic mails are marked as such, so that servers do not answer them
-   * with out-of-office replies, which would reach the reply-to address.
+   * is the name of the manager, else the site name. Addresses other than the
+   * recipient can only be set during the build phase.
    */
   public function build(EmailInterface $email): void {
     $project = $email->getParam('project');
@@ -71,18 +68,6 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     elseif ((string) $site->get('mail') !== '') {
       $email->setReplyTo(new Address((string) $site->get('mail'), (string) $site->get('name')));
     }
-    if ($this->isAutomatic()) {
-      // RFC 3834, and the Exchange header for the same purpose.
-      $email->addTextHeader('Auto-Submitted', 'auto-generated');
-      $email->addTextHeader('X-Auto-Response-Suppress', 'OOF, AutoReply');
-    }
-  }
-
-  /**
-   * Whether the mails of this mailer are sent without a person writing them.
-   */
-  protected function isAutomatic(): bool {
-    return TRUE;
   }
 
   /**
@@ -136,6 +121,16 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
         '@project' => $project?->id() ?? '-',
       ]);
       return FALSE;
+    }
+    if ($origin === 'automatic') {
+      // Marks the mail as automatic (RFC 3834, and the Exchange header for the
+      // same purpose), so that servers do not answer it with out-of-office
+      // replies, which would reach the reply-to address. Headers can only be
+      // added from the build phase on.
+      $email->addCallback(static function (EmailInterface $e): void {
+        $e->addTextHeader('Auto-Submitted', 'auto-generated');
+        $e->addTextHeader('X-Auto-Response-Suppress', 'OOF, AutoReply');
+      }, EmailInterface::PHASE_BUILD, id: 'auto_submitted');
     }
     $captured = ['subject' => '', 'body' => ''];
     // Capture after the URLs are made absolute (700) and before the layout

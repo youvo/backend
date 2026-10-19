@@ -39,9 +39,9 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * Captures the From and Reply-To addresses of the mails of a mailer.
+   * Captures the From and Reply-To addresses and auto-reply headers of mails.
    *
-   * @return array<int, array{from: string[], reply_to: string[]}>
+   * @return array<int, array{from: string[], reply_to: string[], reply_to_name: string[], auto_submitted: ?string, auto_response_suppress: ?string}>
    *   The addresses, one entry per sent mail.
    */
   protected function captureHeaders(ProjectTransitionMailerInterface $mailer, callable $send): array {
@@ -50,6 +50,9 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
       $headers[] = [
         'from' => array_map(static fn ($a) => $a->getEmail(), $email->getFrom()),
         'reply_to' => array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo()),
+        'reply_to_name' => array_map(static fn ($a) => $a->getDisplayName(), $email->getReplyTo()),
+        'auto_submitted' => $email->getHeaders()->get('Auto-Submitted')?->getBodyAsString(),
+        'auto_response_suppress' => $email->getHeaders()->get('X-Auto-Response-Suppress')?->getBodyAsString(),
       ];
     }, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
     $send($mailer);
@@ -65,6 +68,11 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
     $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
     $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
+    // The reply-to name is the name of the manager.
+    $this->assertSame([(string) $project->getOwner()->getManager()->getName()], $headers[0]['reply_to_name']);
+    // Automatic mails are marked, so that servers send no out-of-office reply.
+    $this->assertSame('auto-generated', $headers[0]['auto_submitted']);
+    $this->assertSame('OOF, AutoReply', $headers[0]['auto_response_suppress']);
   }
 
   /**
@@ -77,6 +85,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
     $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
     $this->assertSame(['noreply@youvo.org'], $headers[0]['reply_to']);
+    $this->assertSame([(string) $this->config('system.site')->get('name')], $headers[0]['reply_to_name']);
   }
 
   /**

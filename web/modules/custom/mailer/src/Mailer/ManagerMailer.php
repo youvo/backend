@@ -87,15 +87,6 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * A manager writes and sends these mails.
-   */
-  protected function isAutomatic(): bool {
-    return FALSE;
-  }
-
-  /**
    * Creates the email with variables and the project parameter.
    */
   protected function projectEmail(string $subtype, ProjectInterface $project, bool $preview): EmailInterface {

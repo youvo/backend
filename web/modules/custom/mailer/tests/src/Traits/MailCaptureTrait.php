@@ -13,7 +13,7 @@ trait MailCaptureTrait {
   /**
    * Captured mails, one entry per send.
    *
-   * @var array<int, array{to: string[], subject: string, html: string}>
+   * @var array<int, array{to: string[], subject: string, html: string, auto_submitted: ?string}>
    */
   protected array $capturedMails = [];
 
@@ -28,6 +28,7 @@ trait MailCaptureTrait {
         'to' => array_map(static fn ($a) => $a->getEmail(), $email->getTo()),
         'subject' => (string) $email->getSubject(),
         'html' => (string) $email->getHtmlBody(),
+        'auto_submitted' => $email->getHeaders()->get('Auto-Submitted')?->getBodyAsString(),
       ];
     }, EmailInterface::PHASE_POST_RENDER, 950, 'mail_capture');
   }
