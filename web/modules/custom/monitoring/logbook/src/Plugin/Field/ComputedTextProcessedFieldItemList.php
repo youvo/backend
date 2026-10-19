@@ -26,10 +26,15 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
       $replacements['%Manager'] = '<manager>' . $manager->getName() . '</manager>';
     }
 
-    // Replacement for project and organization.
-    if ($project = $log->getProject()) {
+    // Replacement for project.
+    $project = $log->getProject();
+    if ($project) {
       $replacements['%Project'] = '<project>' . $project->getTitle() . '</project>';
-      $replacements['%Organization'] = '<organization>' . $project->getOwner()->getName() . '</organization>';
+    }
+
+    // Replacement for organization. Organization logs have no project.
+    if ($organization = $log->getOrganization() ?? $project?->getOwner()) {
+      $replacements['%Organization'] = '<organization>' . $organization->getName() . '</organization>';
     }
 
     // Replacement for creatives.
