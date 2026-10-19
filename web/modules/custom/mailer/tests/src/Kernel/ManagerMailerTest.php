@@ -134,6 +134,8 @@ class ManagerMailerTest extends MailerKernelTestBase {
     $this->assertStringNotContainsString('[mail:', $html);
     $this->assertStringContainsString('<html', $html, 'The mail wrapper around the body is kept.');
     $this->assertStringContainsString('email-sub-type-manager', $html);
+    // Manager mails are not marked as automatic.
+    $this->assertNull($this->capturedMails[0]['auto_submitted']);
 
     $entries = array_values($this->loadEntries($project->id()));
     $this->assertCount(1, $entries);

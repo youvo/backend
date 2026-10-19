@@ -1,35 +1,41 @@
 <mjml lang="de">
   <mj-head>
     <mj-title>{{ subject }}</mj-title>
+    <mj-preview>{{ preview }}</mj-preview>
     <mj-attributes>
       <mj-all font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" />
       <mj-text font-size="16px" line-height="26px" color="#2a2a2a" padding="0" />
     </mj-attributes>
     <mj-style>
-      .yv-body { overflow-wrap: anywhere; word-break: break-word; }
-      .yv-body p { margin: 0 0 16px 0; }
+      .yv-body { word-break: break-word; }
       .yv-body a { color: #15508e; text-decoration: underline; }
     </mj-style>
+    <mj-raw>
+      <meta name="color-scheme" content="light">
+      <meta name="supported-color-schemes" content="light">
+      <!--[if mso]><style type="text/css">
+        body, table, td, div, p, a { font-family: 'Segoe UI', Arial, sans-serif !important; }
+        .yv-body p { margin: 16px 0 !important; }
+        .yv-body div, .yv-body p { mso-line-height-rule: exactly; }
+        .yv-logo { width: 245px !important; height: 76px !important; }
+      </style><![endif]-->
+    </mj-raw>
   </mj-head>
   <mj-body background-color="#f4f8ff">
-    <mj-wrapper full-width="full-width" background-color="#3ec4c2" padding="0 20px">
-      <mj-section padding="28px 32px 20px 32px">
-        <mj-column>
-          <mj-text padding="0" line-height="0"><a href="{{ url('<front>') }}" target="_blank"><img src="{{ url('<front>') }}assets/logo_email.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:245px;height:76px;" /></a></mj-text>
-        </mj-column>
-      </mj-section>
-    </mj-wrapper>
-    <mj-wrapper full-width="full-width" background-color="#f4f8ff" background-url="{{ url('<front>') }}assets/email_band.png" background-repeat="no-repeat" background-position="top center" background-size="100% 48px" padding="0 20px">
-      <mj-section background-color="#ffffff" padding="32px">
-        <mj-column>
-          <mj-text css-class="yv-body">{{ body }}</mj-text>
-        </mj-column>
-      </mj-section>
-    </mj-wrapper>
+    <mj-section full-width="full-width" background-color="#3ec4c2" padding="28px 20px 0 20px">
+      <mj-column>
+        <mj-text padding="0 32px 20px 32px" line-height="0"><a href="{{ url('<front>') }}" target="_blank" style="color:#2a2a2a;"><img class="yv-logo" src="{{ url('<front>') }}assets/logo_email_v2.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:100%;max-width:245px;height:auto;color:#2a2a2a;" /></a></mj-text>
+        <mj-spacer height="24px" container-background-color="#ffffff" />
+      </mj-column>
+    </mj-section>
+    <mj-section full-width="full-width" padding="0 20px">
+      <mj-column>
+        <mj-text css-class="yv-body" padding="0 32px 24px 32px" container-background-color="#ffffff">{{ body }}</mj-text>
+      </mj-column>
+    </mj-section>
     <mj-section padding="24px 12px 32px 12px">
       <mj-column>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#787878">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#3f78b5;text-decoration:underline;">youvo.org</a></mj-text>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#787878" padding="4px 0 0 0">Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#2a2a2a">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#15508e;text-decoration:underline;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

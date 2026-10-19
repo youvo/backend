@@ -4,9 +4,11 @@ namespace Drupal\mailer\Mailer;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Installer\InstallerKernel;
+use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
+use Drupal\symfony_mailer\Address;
 use Drupal\symfony_mailer\Component\ComponentMailerBase;
 use Drupal\symfony_mailer\EmailInterface;
 use Drupal\symfony_mailer\Exception\SkipMailException;
@@ -46,23 +48,49 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     if (InstallerKernel::installationAttempted()) {
       throw new SkipMailException('Installer is running.');
     }
+    // Names the manager as sender ("Evi Vogt | youvo.org"). The address stays
+    // the site address, the only one the mails can be signed for. Runs after
+    // the policy sets it (weight 500).
+    $email->addCallback(function (EmailInterface $e): void {
+      $from = $e->getFrom()[0] ?? NULL;
+      $name = $this->manager($e)?->getName() ?? '';
+      if ($from && $name !== '') {
+        $e->setFrom(new Address($from->getEmail(), implode(' | ', array_filter([$name, $from->getDisplayName()]))));
+      }
+    }, EmailInterface::PHASE_BUILD, 600, 'manager_from');
   }
 
   /**
    * {@inheritdoc}
    *
-   * Sets the manager of the project as reply-to address when there is one and
-   * the site mail address otherwise, as the replaced mail code did.
+   * Sets the reply-to to the project manager, else to the site mail and name.
    * Addresses other than the recipient can only be set during the build phase.
    */
   public function build(EmailInterface $email): void {
-    $project = $email->getParam('project');
-    $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
-    $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
-    $reply_to = $manager?->getEmail() ?: (string) $this->configFactory->get('system.site')->get('mail');
-    if ($reply_to !== '') {
-      $email->setReplyTo($reply_to);
+    if ($manager = $this->manager($email)) {
+      $email->setReplyTo(new Address($manager->getEmail(), $manager->getName()));
     }
+    elseif ((string) $this->configFactory->get('system.site')->get('mail') !== '') {
+      $email->setReplyTo('<site>');
+    }
+  }
+
+  /**
+   * Gets the manager of the project of a mail, if they have a mail address.
+   *
+   * Mails without the project parameter (such as those to staff) or with a
+   * project without a usable owner have none.
+   */
+  protected function manager(EmailInterface $email): ?Creative {
+    $project = $email->getParam('project');
+    try {
+      $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
+    $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
+    return $manager?->getEmail() ? $manager : NULL;
   }
 
   /**
@@ -116,6 +144,15 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
         '@project' => $project?->id() ?? '-',
       ]);
       return FALSE;
+    }
+    if ($origin === 'automatic') {
+      // Marks the mail as automatic (RFC 3834 plus the Exchange equivalent), so
+      // out-of-office replies do not reach the reply-to address. Headers can
+      // only be added from the build phase on.
+      $email->addCallback(static function (EmailInterface $e): void {
+        $e->addTextHeader('Auto-Submitted', 'auto-generated');
+        $e->addTextHeader('X-Auto-Response-Suppress', 'OOF, AutoReply');
+      }, EmailInterface::PHASE_BUILD, id: 'auto_submitted');
     }
     $captured = ['subject' => '', 'body' => ''];
     // Capture after the URLs are made absolute (700) and before the layout

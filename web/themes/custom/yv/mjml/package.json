@@ -6,6 +6,7 @@
     "build": "node build.mjs"
   },
   "devDependencies": {
+    "cssnano": "^8.0.10",
     "mjml": "^5.4.1"
   }
 }

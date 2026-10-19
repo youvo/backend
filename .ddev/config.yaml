@@ -14,7 +14,8 @@ database:
 host_db_port: "59002"
 use_dns_when_possible: true
 composer_version: "2"
-web_environment: []
+web_environment:
+  - MP_ENABLE_SPAMASSASSIN=spamassassin:783
 nodejs_version: "16"
 corepack_enable: false
 

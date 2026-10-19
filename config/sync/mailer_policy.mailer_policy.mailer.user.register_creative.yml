@@ -10,5 +10,5 @@ configuration:
     value: 'Deine Anmeldung auf youvo.org'
   email_body:
     content:
-      value: '<p>Willkommen {{ name }},</p><p>vielen Dank, dass Du Dich bei youvo registriert hast. Klicke auf den folgenden Link oder kopiere ihn in Deine Browserzeile, um Dich einzuloggen:</p><p><a href="{{ link }}">{{ link }}</a></p><p>Du kannst diesen Link nur einmal zum Einloggen benutzen. Er führt Dich zu einer Seite, auf der Du Dein Passwort bestimmen kannst.</p><p>Falls Du Unterstützung bei der Anmeldung brauchst, melde Dich bei simon@youvo.org.</p><p>Dein youvo-Team</p>'
+      value: '<p>Willkommen {{ name }},</p><p>vielen Dank, dass Du Dich bei youvo registriert hast. Klicke auf den folgenden Link, um Dich einzuloggen:</p><p><a href="{{ link }}">Jetzt einloggen</a></p><p>Du kannst diesen Link nur einmal zum Einloggen benutzen. Er führt Dich zu einer Seite, auf der Du Dein Passwort bestimmen kannst.</p><p>Falls Du Unterstützung bei der Anmeldung brauchst, melde Dich bei simon@youvo.org.</p><p>Dein youvo-Team</p>'
       format: email_html

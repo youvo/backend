@@ -1,0 +1,13 @@
+# SpamAssassin for Mailpit's spam check (MP_ENABLE_SPAMASSASSIN in
+# config.yaml). Only content rules are meaningful locally; DDEV mails are
+# unsigned and not sent from production.
+services:
+  spamassassin:
+    container_name: ddev-${DDEV_SITENAME}-spamassassin
+    image: axllent/spamassassin@sha256:9bea393891c92a3531cb7081e9b2c478a654a048c9a6fa6f9d1df4300bf3ab8b
+    restart: "no"
+    expose:
+      - "783"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
