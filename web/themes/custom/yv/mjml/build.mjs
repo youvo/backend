@@ -18,7 +18,8 @@ const strip = [
   [/<style media="screen and \(min-width:480px\)">\.moz-text-html \.mj-column-per-100\{[^}]*\}<\/style>/, ''],
   // Outlook link fix, only needed for mso-specific anchors.
   [/#outlook a\{padding:0\}/, ''],
-  // Default paragraph margin, the body paragraphs are styled in the layout.
+  // MJML's paragraph margin; the body paragraphs keep the client defaults
+  // (only Outlook gets explicit margins in the layout).
   [/p\{display:block;margin:13px 0\}/, ''],
   // Unsupported in many clients and not needed for the logo.
   [/;?outline:none/, ''],

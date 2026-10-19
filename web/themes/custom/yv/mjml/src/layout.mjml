@@ -8,7 +8,7 @@
     </mj-attributes>
     <mj-style>
       .yv-body { word-break: break-word; }
-      .yv-body a { color: #15508e; }
+      .yv-body a { color: #15508e; text-decoration: underline; }
     </mj-style>
     <mj-raw>
       <meta name="color-scheme" content="light">
@@ -36,7 +36,7 @@
     </mj-section>
     <mj-section padding="24px 12px 32px 12px">
       <mj-column>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#2a2a2a">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#15508e;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#2a2a2a">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#15508e;text-decoration:underline;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
