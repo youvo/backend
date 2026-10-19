@@ -28,10 +28,21 @@ class PreviewTextTest extends UnitTestCase {
   public function testKeepsFirstParagraph(): void {
     $this->assertSame('Hallo, ich habe Interesse. Bitte schaut Euch das an', PreviewText::fromHtml('<p>Hallo, ich habe Interesse.</p><p>========</p><p>Bitte schaut Euch das an</p>'));
     // A long first paragraph ending with a comma is not a greeting.
-    $long = str_repeat('Wort ', 15) . 'Ende,';
+    $long = str_repeat('Wort ', 20) . 'Ende,';
     $this->assertSame($long . ' Mehr', PreviewText::fromHtml("<p>$long</p><p>Mehr</p>"));
     // A greeting alone is the whole text.
     $this->assertSame('Hallo zusammen,', PreviewText::fromHtml('<p>Hallo zusammen,</p>'));
+  }
+
+  /**
+   * Line breaks do not split a paragraph; block elements do.
+   */
+  public function testParagraphs(): void {
+    // A free text with line breaks is one paragraph: its first line is no
+    // greeting and its case is kept.
+    $this->assertSame('Hi, iPad-Entwürfe anbei Mehr', PreviewText::fromHtml('<p>Hi,<br>iPad-Entwürfe anbei</p><p>Mehr</p>'));
+    // Block elements other than paragraphs separate words.
+    $this->assertSame('Eins Zwei Drei', PreviewText::fromHtml('<ul><li>Eins</li><li>Zwei</li></ul><div>Drei</div>'));
   }
 
   /**
