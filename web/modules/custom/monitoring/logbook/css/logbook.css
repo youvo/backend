@@ -149,6 +149,19 @@
   vertical-align: top;
 }
 
+/* Date and type shrink to their content, the event takes the remaining
+   width. Long type labels wrap between words. */
+.view-logbook th.views-field-created,
+.view-logbook td.views-field-created {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.view-logbook th.views-field-log-type,
+.view-logbook td.views-field-log-type {
+  width: 1%;
+}
+
 .view-logbook td.views-field-created {
   font-size: var(--logbook-text-xs);
 }
@@ -166,7 +179,7 @@
   background: var(--logbook-chip, #e8eef6);
   font-size: var(--logbook-text-xs, small);
   font-weight: 600;
-  white-space: nowrap;
+  hyphens: manual;
 }
 
 .logbook-type--positive {
