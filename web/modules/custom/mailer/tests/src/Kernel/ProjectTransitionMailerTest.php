@@ -41,7 +41,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   /**
    * Captures the address and auto-reply headers of sent mails.
    *
-   * @return array<int, array{from: string[], reply_to: string[], reply_to_name: string[], auto_submitted: ?string, auto_response_suppress: ?string}>
+   * @return array<int, array{from: string[], from_name: string[], reply_to: string[], reply_to_name: string[], auto_submitted: ?string, auto_response_suppress: ?string}>
    *   The headers, one entry per sent mail.
    */
   protected function captureHeaders(ProjectTransitionMailerInterface $mailer, callable $send): array {
@@ -49,6 +49,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $mailer->addCallback(static function (EmailInterface $email) use (&$headers): void {
       $headers[] = [
         'from' => array_map(static fn ($a) => $a->getEmail(), $email->getFrom()),
+        'from_name' => array_map(static fn ($a) => $a->getDisplayName(), $email->getFrom()),
         'reply_to' => array_map(static fn ($a) => $a->getEmail(), $email->getReplyTo()),
         'reply_to_name' => array_map(static fn ($a) => $a->getDisplayName(), $email->getReplyTo()),
         'auto_submitted' => $email->getHeaders()->get('Auto-Submitted')?->getBodyAsString(),
@@ -60,15 +61,17 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * The mail carries a valid From address and the manager as reply-to.
+   * The mail names the manager as sender and has them as reply-to.
    */
   public function testHeaders(): void {
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
+    $manager = (string) $project->getOwner()->getManager()->getName();
     $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
+    $this->assertSame([$manager . ' | ' . $this->config('system.site')->get('name')], $headers[0]['from_name']);
     $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
-    $this->assertSame([(string) $project->getOwner()->getManager()->getName()], $headers[0]['reply_to_name']);
+    $this->assertSame([$manager], $headers[0]['reply_to_name']);
     // Automatic mails suppress out-of-office replies.
     $this->assertSame('auto-generated', $headers[0]['auto_submitted']);
     $this->assertSame('OOF, AutoReply', $headers[0]['auto_response_suppress']);
@@ -82,13 +85,15 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $project->getOwner()->set('field_manager', NULL)->save();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
+    $site = (string) $this->config('system.site')->get('name');
     $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
+    $this->assertSame([$site], $headers[0]['from_name']);
     $this->assertSame(['noreply@youvo.org'], $headers[0]['reply_to']);
-    $this->assertSame([(string) $this->config('system.site')->get('name')], $headers[0]['reply_to_name']);
+    $this->assertSame([$site], $headers[0]['reply_to_name']);
   }
 
   /**
-   * The mail to the manager itself has the site mail address as reply-to.
+   * The mail to the manager itself comes from and replies to the site.
    */
   public function testSubmitManagerMailReplyToSiteMail(): void {
     $this->config('system.site')->set('mail', 'team@example.com')->save();
@@ -96,6 +101,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->submit($project));
     // Only the first mail of a mailer is captured: the manager mail.
+    $this->assertSame(['team@example.com'], $headers[0]['from']);
     $this->assertSame(['team@example.com'], $headers[0]['reply_to']);
   }
 

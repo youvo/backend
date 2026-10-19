@@ -4,6 +4,7 @@ namespace Drupal\mailer\Mailer;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Installer\InstallerKernel;
+use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -47,6 +48,15 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     if (InstallerKernel::installationAttempted()) {
       throw new SkipMailException('Installer is running.');
     }
+    // Names the manager as sender ("Evi Vogt | youvo.org"). The address stays
+    // the site address, the only one the mails can be signed for. Runs after
+    // the policy sets it (weight 500).
+    $email->addCallback(function (EmailInterface $e): void {
+      $from = $e->getFrom()[0] ?? NULL;
+      if ($from && $manager = $this->manager($e)) {
+        $e->setFrom(new Address($from->getEmail(), $manager->getName() . ' | ' . $from->getDisplayName()));
+      }
+    }, EmailInterface::PHASE_BUILD, 600, 'manager_from');
   }
 
   /**
@@ -56,15 +66,24 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    * Addresses other than the recipient can only be set during the build phase.
    */
   public function build(EmailInterface $email): void {
-    $project = $email->getParam('project');
-    $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
-    $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
-    if ($manager?->getEmail()) {
+    if ($manager = $this->manager($email)) {
       $email->setReplyTo(new Address($manager->getEmail(), (string) $manager->getName()));
     }
     elseif ((string) $this->configFactory->get('system.site')->get('mail') !== '') {
       $email->setReplyTo('<site>');
     }
+  }
+
+  /**
+   * Gets the manager of the project of a mail, if they have a mail address.
+   *
+   * Mails without the project parameter (such as those to staff) have none.
+   */
+  protected function manager(EmailInterface $email): ?Creative {
+    $project = $email->getParam('project');
+    $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
+    $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
+    return $manager?->getEmail() ? $manager : NULL;
   }
 
   /**
