@@ -15,10 +15,8 @@ class MailerHooks {
   /**
    * Implements hook_preprocess_HOOK() for email_wrap__mailer.
    *
-   * Provides the inbox preview text of HTML mails of the mailer module, whose
-   * layout (email-wrap--mailer.html.twig) prints it. The trailing invisible
-   * characters keep the start of the body out of the preview, which would
-   * repeat the text.
+   * Sets the inbox preview text. Trailing invisible characters keep the body
+   * start from repeating after it in the preview.
    */
   #[Hook('preprocess_email_wrap__mailer')]
   public function preprocessEmailWrap(array &$variables): void {

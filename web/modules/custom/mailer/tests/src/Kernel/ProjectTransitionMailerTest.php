@@ -39,10 +39,10 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * Captures the From and Reply-To addresses and auto-reply headers of mails.
+   * Captures the address and auto-reply headers of sent mails.
    *
    * @return array<int, array{from: string[], reply_to: string[], reply_to_name: string[], auto_submitted: ?string, auto_response_suppress: ?string}>
-   *   The addresses, one entry per sent mail.
+   *   The headers, one entry per sent mail.
    */
   protected function captureHeaders(ProjectTransitionMailerInterface $mailer, callable $send): array {
     $headers = [];
@@ -68,9 +68,8 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
     $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
     $this->assertSame(['noreply@youvo.org'], $headers[0]['from']);
     $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
-    // The reply-to name is the name of the manager.
     $this->assertSame([(string) $project->getOwner()->getManager()->getName()], $headers[0]['reply_to_name']);
-    // Automatic mails are marked, so that servers send no out-of-office reply.
+    // Automatic mails suppress out-of-office replies.
     $this->assertSame('auto-generated', $headers[0]['auto_submitted']);
     $this->assertSame('OOF, AutoReply', $headers[0]['auto_response_suppress']);
   }

@@ -38,8 +38,7 @@ class PreviewTextTest extends UnitTestCase {
    * Line breaks do not split a paragraph; block elements do.
    */
   public function testParagraphs(): void {
-    // A free text with line breaks is one paragraph: its first line is no
-    // greeting and its case is kept.
+    // A <br> does not end a greeting, so nothing is skipped or capitalized.
     $this->assertSame('Hi, iPad-Entwürfe anbei Mehr', PreviewText::fromHtml('<p>Hi,<br>iPad-Entwürfe anbei</p><p>Mehr</p>'));
     // Block elements other than paragraphs separate words.
     $this->assertSame('Eins Zwei Drei', PreviewText::fromHtml('<ul><li>Eins</li><li>Zwei</li></ul><div>Drei</div>'));

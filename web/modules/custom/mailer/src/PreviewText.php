@@ -2,14 +2,14 @@
 
 namespace Drupal\mailer;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 
 /**
  * Derives the inbox preview text of a mail from its HTML body.
  *
- * Inboxes show the start of the body next to the subject. Without a preview
- * text this is the greeting, so the preview skips a greeting paragraph and
- * shows what the mail is about.
+ * Skips a leading greeting, which inboxes would otherwise show next to the
+ * subject.
  */
 class PreviewText {
 
@@ -31,11 +31,11 @@ class PreviewText {
    */
   public static function fromHtml(string $html, int $length = 110): string {
     $paragraphs = [];
-    // Block elements end a paragraph; line breaks only separate words, so a
-    // free text with line breaks (such as an applicant's message) stays one.
+    // Block elements end a paragraph; <br> only separates words, so a free
+    // text stays one paragraph.
     foreach (preg_split('#</(?:p|div|li|h[1-6]|td|tr|blockquote)>#i', $html) ?: [] as $part) {
       $part = preg_replace('#<br\s*/?>#i', ' ', $part) ?? $part;
-      $text = html_entity_decode(strip_tags($part), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+      $text = Html::decodeEntities(strip_tags($part));
       $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
       // Separators such as "========" have no letters.
       if (preg_match('/\p{L}/u', $text)) {
@@ -44,7 +44,7 @@ class PreviewText {
     }
     if (count($paragraphs) > 1 && str_ends_with($paragraphs[0], ',') && mb_strlen($paragraphs[0]) <= static::GREETING_LENGTH) {
       array_shift($paragraphs);
-      // The sentence after the greeting starts in lower case ("vielen Dank").
+      // The text after a greeting starts in lower case.
       $paragraphs[0] = Unicode::ucfirst($paragraphs[0]);
     }
     return Unicode::truncate(implode(' ', $paragraphs), $length, TRUE, TRUE);

@@ -62,9 +62,8 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
     // The policy text also appears after the header, inside the wrapper body.
     $header = strpos($html, 'alt="youvo');
     $this->assertNotFalse(strpos($html, 'Wrapper check', $header));
-    // The hidden preview text skips the greeting and names the project.
-    $this->assertMatchesRegularExpression('#<div style="display:none[^"]*">([^<]*)</div>#', $html);
-    preg_match('#<div style="display:none[^"]*">([^<]*)</div>#', $html, $matches);
+    // The hidden preview text skips the greeting.
+    $this->assertSame(1, preg_match('#<div style="display:none[^"]*">([^<]*)</div>#', $html, $matches));
     $this->assertStringContainsString('Wrapper check', $matches[1]);
     $this->assertStringStartsNotWith('Hallo', $matches[1]);
   }

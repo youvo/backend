@@ -52,21 +52,18 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
   /**
    * {@inheritdoc}
    *
-   * Sets the manager of the project as reply-to address when there is one and
-   * the site mail address otherwise, as the replaced mail code did. The name
-   * is the name of the manager, else the site name. Addresses other than the
-   * recipient can only be set during the build phase.
+   * Sets the reply-to to the project manager, else to the site mail and name.
+   * Addresses other than the recipient can only be set during the build phase.
    */
   public function build(EmailInterface $email): void {
     $project = $email->getParam('project');
     $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
     $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
-    $site = $this->configFactory->get('system.site');
     if ($manager?->getEmail()) {
       $email->setReplyTo(new Address($manager->getEmail(), (string) $manager->getName()));
     }
-    elseif ((string) $site->get('mail') !== '') {
-      $email->setReplyTo(new Address((string) $site->get('mail'), (string) $site->get('name')));
+    elseif ((string) $this->configFactory->get('system.site')->get('mail') !== '') {
+      $email->setReplyTo('<site>');
     }
   }
 
@@ -123,10 +120,9 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
       return FALSE;
     }
     if ($origin === 'automatic') {
-      // Marks the mail as automatic (RFC 3834, and the Exchange header for the
-      // same purpose), so that servers do not answer it with out-of-office
-      // replies, which would reach the reply-to address. Headers can only be
-      // added from the build phase on.
+      // Marks the mail as automatic (RFC 3834 plus the Exchange equivalent), so
+      // out-of-office replies do not reach the reply-to address. Headers can
+      // only be added from the build phase on.
       $email->addCallback(static function (EmailInterface $e): void {
         $e->addTextHeader('Auto-Submitted', 'auto-generated');
         $e->addTextHeader('X-Auto-Response-Suppress', 'OOF, AutoReply');
