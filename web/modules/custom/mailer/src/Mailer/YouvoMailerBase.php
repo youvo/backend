@@ -53,8 +53,9 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
     // the policy sets it (weight 500).
     $email->addCallback(function (EmailInterface $e): void {
       $from = $e->getFrom()[0] ?? NULL;
-      if ($from && $manager = $this->manager($e)) {
-        $e->setFrom(new Address($from->getEmail(), $manager->getName() . ' | ' . $from->getDisplayName()));
+      $name = $this->manager($e)?->getName() ?? '';
+      if ($from && $name !== '') {
+        $e->setFrom(new Address($from->getEmail(), implode(' | ', array_filter([$name, $from->getDisplayName()]))));
       }
     }, EmailInterface::PHASE_BUILD, 600, 'manager_from');
   }
@@ -67,7 +68,7 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    */
   public function build(EmailInterface $email): void {
     if ($manager = $this->manager($email)) {
-      $email->setReplyTo(new Address($manager->getEmail(), (string) $manager->getName()));
+      $email->setReplyTo(new Address($manager->getEmail(), $manager->getName()));
     }
     elseif ((string) $this->configFactory->get('system.site')->get('mail') !== '') {
       $email->setReplyTo('<site>');
@@ -77,11 +78,17 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
   /**
    * Gets the manager of the project of a mail, if they have a mail address.
    *
-   * Mails without the project parameter (such as those to staff) have none.
+   * Mails without the project parameter (such as those to staff) or with a
+   * project without a usable owner have none.
    */
   protected function manager(EmailInterface $email): ?Creative {
     $project = $email->getParam('project');
-    $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
+    try {
+      $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
+    }
+    catch (\Throwable) {
+      return NULL;
+    }
     $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
     return $manager?->getEmail() ? $manager : NULL;
   }

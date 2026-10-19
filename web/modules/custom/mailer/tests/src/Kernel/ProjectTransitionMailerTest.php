@@ -78,6 +78,19 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
   }
 
   /**
+   * A manager without a name leaves the sender name to the site.
+   */
+  public function testManagerWithoutName(): void {
+    $project = $this->createMailableProject();
+    $project->getOwner()->getManager()->set('field_name', NULL)->save();
+    $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
+    $headers = $this->captureHeaders($mailer, static fn ($m) => $m->publish($project));
+    $this->assertSame([(string) $this->config('system.site')->get('name')], $headers[0]['from_name']);
+    $this->assertSame(['manager@example.com'], $headers[0]['reply_to']);
+    $this->assertSame([''], $headers[0]['reply_to_name']);
+  }
+
+  /**
    * Without a manager the reply-to address is the site mail address.
    */
   public function testReplyToFallsBackToSiteMail(): void {
