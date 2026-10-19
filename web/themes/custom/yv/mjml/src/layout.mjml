@@ -24,7 +24,7 @@
   <mj-body background-color="#f4f8ff">
     <mj-section full-width="full-width" background-color="#3ec4c2" padding="28px 20px 0 20px">
       <mj-column>
-        <mj-text padding="0 32px 20px 32px" line-height="0"><a href="{{ url('<front>') }}" target="_blank" style="color:#2a2a2a;"><img src="{{ url('<front>') }}assets/logo_email.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:245px;height:76px;color:#2a2a2a;" /></a></mj-text>
+        <mj-text padding="0 32px 20px 32px" line-height="0"><a href="{{ url('<front>') }}" target="_blank" style="color:#2a2a2a;"><img src="{{ url('<front>') }}assets/logo_email.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:100%;max-width:245px;height:auto;color:#2a2a2a;" /></a></mj-text>
         <mj-spacer height="24px" container-background-color="#ffffff" />
       </mj-column>
     </mj-section>
