@@ -10,6 +10,10 @@
       .yv-body a { color: #15508e; }
     </mj-style>
     <mj-raw>
+      <meta name="color-scheme" content="light">
+      <meta name="supported-color-schemes" content="light">
+    </mj-raw>
+    <mj-raw>
       <!--[if mso]><style type="text/css">
         body, table, td, div, p, a { font-family: 'Segoe UI', Arial, sans-serif !important; }
         .yv-body p { margin: 16px 0 !important; }
