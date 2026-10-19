@@ -31,7 +31,7 @@
     </mj-section>
     <mj-section padding="24px 12px 32px 12px">
       <mj-column>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#787878">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#3f78b5;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#6b6b6b">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#356ba6;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
