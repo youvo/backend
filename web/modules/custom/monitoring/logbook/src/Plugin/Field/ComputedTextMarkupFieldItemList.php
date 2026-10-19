@@ -32,10 +32,15 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
       $replacements['%Manager'] = $this->generateLink($manager->getName(), $manager);
     }
 
-    // Replacement for project and organization.
-    if ($project = $log->getProject()) {
+    // Replacement for project.
+    $project = $log->getProject();
+    if ($project) {
       $replacements['%Project'] = $this->generateLink($project->getTitle(), $project);
-      $replacements['%Organization'] = $this->generateLink($project->getOwner()->getName(), $project->getOwner());
+    }
+
+    // Replacement for organization. Organization logs have no project.
+    if ($organization = $log->getOrganization() ?? $project?->getOwner()) {
+      $replacements['%Organization'] = $this->generateLink($organization->getName(), $organization);
     }
 
     // Replacement for creatives.
