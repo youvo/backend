@@ -28,6 +28,9 @@ const strip = [
   [/(<td style="direction:ltr;font-size:0px;padding:[^";]*);text-align:center"/g, '$1"'],
   // Text blocks repeat the left alignment their column already sets.
   [/(<div style="font-family:[^"]*?);text-align:left/g, '$1'],
+  // Columns are inline blocks so that several share a row; each column here
+  // is a full-width block, left aligned by default.
+  [/(class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px);text-align:left;direction:ltr;display:inline-block;vertical-align:top;(width:100%")/g, '$1;direction:ltr;$2'],
   // One style block in the head instead of two.
   [/<\/style>(<!--\[if mso\]>[\s\S]*?<!\[endif\]-->)<style type="text\/css">([^<]*)<\/style>/, '$2</style>$1'],
 ];
