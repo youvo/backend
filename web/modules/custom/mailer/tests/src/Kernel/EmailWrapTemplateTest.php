@@ -56,7 +56,7 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
     $this->assertStringContainsString('<!doctype html>', strtolower($html));
     $this->assertStringContainsString('mj-column', $html);
     $this->assertStringContainsString('alt="youvo', $html);
-    $this->assertMatchesRegularExpression('#src="https?://[^"]+/assets/logo_email\.png"#', $html);
+    $this->assertMatchesRegularExpression('#src="https?://[^"]+/assets/logo_email_v2\.png"#', $html);
     $this->assertStringContainsString('lang="de"', $html);
     $this->assertStringContainsString('Wrapper check', $html);
     // The policy text also appears after the header, inside the wrapper body.
