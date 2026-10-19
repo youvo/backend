@@ -1,6 +1,7 @@
 <mjml lang="de">
   <mj-head>
     <mj-title>{{ subject }}</mj-title>
+    <mj-preview>{{ preview }}</mj-preview>
     <mj-attributes>
       <mj-all font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" />
       <mj-text font-size="16px" line-height="26px" color="#2a2a2a" padding="0" />
