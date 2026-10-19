@@ -6,9 +6,9 @@
       <mj-text font-size="16px" line-height="26px" color="#2a2a2a" padding="0" />
     </mj-attributes>
     <mj-style>
-      .yv-body { overflow-wrap: anywhere; word-break: break-word; }
+      .yv-body { word-break: break-word; }
       .yv-body p { margin: 0 0 16px 0; }
-      .yv-body a { color: #15508e; text-decoration: underline; }
+      .yv-body a { color: #15508e; }
     </mj-style>
   </mj-head>
   <mj-body background-color="#f4f8ff">
@@ -18,9 +18,10 @@
           <mj-text padding="0" line-height="0"><a href="{{ url('<front>') }}" target="_blank"><img src="{{ url('<front>') }}assets/logo_email.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:245px;height:76px;" /></a></mj-text>
         </mj-column>
       </mj-section>
+      <mj-section background-color="#ffffff" padding="32px 0 0 0" />
     </mj-wrapper>
-    <mj-wrapper full-width="full-width" background-color="#f4f8ff" background-url="{{ url('<front>') }}assets/email_band.png" background-repeat="no-repeat" background-position="top center" background-size="100% 48px" padding="0 20px">
-      <mj-section background-color="#ffffff" padding="32px">
+    <mj-wrapper full-width="full-width" background-color="#f4f8ff" padding="0 20px">
+      <mj-section background-color="#ffffff" padding="0 32px 32px 32px">
         <mj-column>
           <mj-text css-class="yv-body">{{ body }}</mj-text>
         </mj-column>
@@ -28,7 +29,7 @@
     </mj-wrapper>
     <mj-section padding="24px 12px 32px 12px">
       <mj-column>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#787878">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#3f78b5;text-decoration:underline;">youvo.org</a></mj-text>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#787878">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#3f78b5;">youvo.org</a></mj-text>
         <mj-text align="center" font-size="12px" line-height="20px" color="#787878" padding="4px 0 0 0">Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
       </mj-column>
     </mj-section>

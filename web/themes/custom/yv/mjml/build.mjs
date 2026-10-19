@@ -24,6 +24,12 @@ const strip = [
   [/;?outline:none/, ''],
   // Only inline occurrences; the body area sets it once in the head style.
   [/(style="[^"]*?);?word-break:break-word/g, '$1'],
+  // Section cells center their columns, but every column is 100% wide.
+  [/(<td style="direction:ltr;font-size:0px;padding:[^";]*);text-align:center"/g, '$1"'],
+  // Text blocks repeat the left alignment their column already sets.
+  [/(<div style="font-family:[^"]*?);text-align:left/g, '$1'],
+  // One style block in the head instead of two.
+  [/<\/style>(<!--\[if mso\]>[\s\S]*?<!\[endif\]-->)<style type="text\/css">([^<]*)<\/style>/, '$2</style>$1'],
 ];
 let html = compiled;
 for (const [pattern, replacement] of strip) {
