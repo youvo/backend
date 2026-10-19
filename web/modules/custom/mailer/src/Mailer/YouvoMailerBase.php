@@ -7,6 +7,7 @@ use Drupal\Core\Installer\InstallerKernel;
 use Drupal\mailer\CorrespondenceRecorder;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
+use Drupal\symfony_mailer\Address;
 use Drupal\symfony_mailer\Component\ComponentMailerBase;
 use Drupal\symfony_mailer\EmailInterface;
 use Drupal\symfony_mailer\Exception\SkipMailException;
@@ -52,17 +53,36 @@ abstract class YouvoMailerBase extends ComponentMailerBase {
    * {@inheritdoc}
    *
    * Sets the manager of the project as reply-to address when there is one and
-   * the site mail address otherwise, as the replaced mail code did.
-   * Addresses other than the recipient can only be set during the build phase.
+   * the site mail address otherwise, as the replaced mail code did. The name
+   * is the one the mail is signed with. Addresses other than the recipient
+   * can only be set during the build phase.
+   *
+   * Automatic mails are marked as such, so that servers do not answer them
+   * with out-of-office replies, which would reach the reply-to address.
    */
   public function build(EmailInterface $email): void {
     $project = $email->getParam('project');
     $owner = $project instanceof ProjectInterface ? $project->getOwner() : NULL;
     $manager = $owner instanceof Organization ? $owner->getManager() : NULL;
-    $reply_to = $manager?->getEmail() ?: (string) $this->configFactory->get('system.site')->get('mail');
-    if ($reply_to !== '') {
-      $email->setReplyTo($reply_to);
+    $site = $this->configFactory->get('system.site');
+    if ($manager?->getEmail()) {
+      $email->setReplyTo(new Address($manager->getEmail(), (string) $manager->getName()));
     }
+    elseif ((string) $site->get('mail') !== '') {
+      $email->setReplyTo(new Address((string) $site->get('mail'), (string) $site->get('name')));
+    }
+    if ($this->isAutomatic()) {
+      // RFC 3834, and the Exchange header for the same purpose.
+      $email->addTextHeader('Auto-Submitted', 'auto-generated');
+      $email->addTextHeader('X-Auto-Response-Suppress', 'OOF, AutoReply');
+    }
+  }
+
+  /**
+   * Whether the mails of this mailer are sent without a person writing them.
+   */
+  protected function isAutomatic(): bool {
+    return TRUE;
   }
 
   /**
