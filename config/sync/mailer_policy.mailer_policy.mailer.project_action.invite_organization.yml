@@ -10,5 +10,5 @@ configuration:
     value: 'Dein Projekt auf youvo.org'
   email_body:
     content:
-      value: '<p>Hallo {{ contact }},</p><p>schön, dass Ihr dabei seid! Wie bereits angekündigt, kannst Du über folgenden Link Dein Projekt vervollständigen:</p><p><a href="{{ link }}">{{ link }}</a></p><p>Der Link ist 30 Tage lang gültig.</p><p>Wenn Du Fragen hast, melde Dich gern.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      value: '<p>Hallo {{ contact }},</p><p>schön, dass Ihr dabei seid! Wie bereits angekündigt, kannst Du über folgenden Link Dein Projekt vervollständigen:</p><p><a href="{{ link }}">Projekt vervollständigen</a></p><p>Der Link ist 30 Tage lang gültig.</p><p>Wenn Du Fragen hast, melde Dich gern.</p><p>Liebe Grüße<br>{{ manager }}</p>'
       format: email_html

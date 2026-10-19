@@ -10,5 +10,5 @@ configuration:
     value: 'Projekt {{ project_title }} ist abgeschlossen - Feedback erwünscht'
   email_body:
     content:
-      value: '<p>Hallo {{ contact }},</p><p>dein Projekt {{ project_title }} ist erfolgreich abgeschlossen! Vielen Dank für die Zusammenarbeit mit {{ participants }}.</p><p>Wir würden uns sehr über dein Feedback freuen, um unsere Plattform weiter zu verbessern:</p><p><a href="{{ feedback_link }}">{{ feedback_link }}</a></p><p>Dein Feedback hilft uns dabei, zukünftige Projekte noch besser zu gestalten.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      value: '<p>Hallo {{ contact }},</p><p>dein Projekt {{ project_title }} ist erfolgreich abgeschlossen! Vielen Dank für die Zusammenarbeit mit {{ participants }}.</p><p>Wir würden uns sehr über dein Feedback freuen, um unsere Plattform weiter zu verbessern:</p><p><a href="{{ feedback_link }}">Feedback geben</a></p><p>Dein Feedback hilft uns dabei, zukünftige Projekte noch besser zu gestalten.</p><p>Liebe Grüße<br>{{ manager }}</p>'
       format: email_html
