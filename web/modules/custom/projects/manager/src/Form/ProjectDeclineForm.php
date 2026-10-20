@@ -89,10 +89,12 @@ class ProjectDeclineForm extends ProjectMailForm {
    */
   protected function afterSend(ProjectInterface $project, string $subtype, FormStateInterface $form_state): void {
     $reason = ManagerMailRegistry::declineReason($subtype);
+    // acceptsSubtype() only lets subtypes with a reason through: fail closed.
+    if ($reason === NULL) {
+      $form_state->set('decline_failed', TRUE);
+      return;
+    }
     try {
-      if ($reason === NULL) {
-        throw new \LogicException('The subtype has no decline reason.');
-      }
       $this->eventDispatcher->dispatch((new ProjectDeclineEvent($project))->setReason($reason));
     }
     catch (\Throwable $e) {
@@ -100,8 +102,13 @@ class ProjectDeclineForm extends ProjectMailForm {
         '@id' => $project->id(),
         '@message' => $e->getMessage(),
       ]);
-      // The pane shows the error message when it sees this flag.
-      $form_state->set('decline_failed', TRUE);
+      // A later listener may fail after the project was declined and saved:
+      // only report a failure if the stored project is not declined.
+      $stored = $this->entityTypeManager->getStorage('project')->loadUnchanged($project->id());
+      if (!$stored instanceof ProjectInterface || !$stored->lifecycle()->isDeclined()) {
+        // The pane shows the error message when it sees this flag.
+        $form_state->set('decline_failed', TRUE);
+      }
     }
   }
 

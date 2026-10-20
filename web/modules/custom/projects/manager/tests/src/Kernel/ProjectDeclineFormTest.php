@@ -4,6 +4,7 @@ namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\Entity\LogPattern;
@@ -18,6 +19,7 @@ use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\UserInterface;
+use Psr\Log\AbstractLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
@@ -310,6 +312,48 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     $this->assertStringNotContainsString('<form', $html);
     $this->assertTrue($this->reload($project)->lifecycle()->isPending());
     $this->assertCount(1, $this->loadEntries($project->id()));
+  }
+
+  /**
+   * A listener failing after the decline is logged, but not reported.
+   */
+  public function testListenerFailureAfterDecline(): void {
+    $project = $this->actAsManagerOf(ProjectState::Pending);
+    $query = ['view' => 'decline', 'reason' => 'custom'];
+    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
+    // Runs after the decline subscriber (priority 1000) saved the project.
+    $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
+      throw new \RuntimeException('boom');
+    }, 500);
+    $logger = new class() extends AbstractLogger {
+
+      /**
+       * The logged records.
+       *
+       * @var array<int, array{0: mixed, 1: string, 2: array<string, mixed>}>
+       */
+      public array $records = [];
+
+      /**
+       * {@inheritdoc}
+       */
+      public function log($level, \Stringable|string $message, array $context = []): void {
+        $this->records[] = [$level, (string) $message, $context];
+      }
+
+    };
+    $this->container->get('logger.factory')->addLogger($logger);
+    $html = $this->pane($project, $query, $post);
+
+    $this->assertStringContainsString('The project was declined and the mail was sent.', $html);
+    $this->assertStringNotContainsString('could not be declined', $html);
+    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
+    $this->assertSame(1, $this->declineEvents);
+    $this->assertCount(1, $this->loadEntries($project->id()));
+    $errors = array_values(array_filter($logger->records, static fn (array $record) => ($record[2]['@message'] ?? NULL) === 'boom'));
+    $this->assertCount(1, $errors);
+    $this->assertSame(RfcLogLevel::ERROR, $errors[0][0]);
+    $this->assertSame('manager', $errors[0][2]['channel']);
   }
 
   /**
