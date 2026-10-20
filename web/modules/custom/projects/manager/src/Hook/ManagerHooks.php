@@ -174,14 +174,14 @@ class ManagerHooks {
           }
         }
 
-        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isArchived()) {
+        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isDeclined()) {
           $action_transition = &$row['columns']['nothing_2'];
           $action_transition['attributes']->offsetUnset('class');
           unset($action_transition['content']);
         }
 
         // Promote and demote are not available for archived projects.
-        if ($project->lifecycle()->isArchived()) {
+        if ($project->lifecycle()->isDeclined()) {
           $action_edit = &$row['columns']['nothing_3'];
           $action_edit['attributes']->offsetUnset('class');
           unset($action_edit['content']);

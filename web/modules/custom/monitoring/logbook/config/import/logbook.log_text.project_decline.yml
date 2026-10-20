@@ -1,0 +1,4 @@
+id: project_decline
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole abgelehnt.'
+public_text: 'Das Projekt %Project wurde von %Author abgelehnt.'

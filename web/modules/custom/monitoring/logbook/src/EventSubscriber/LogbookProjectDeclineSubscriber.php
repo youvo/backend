@@ -3,15 +3,15 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\projects\Event\ProjectArchiveEvent;
+use Drupal\projects\Event\ProjectDeclineEvent;
 
 /**
- * Logbook project archive event subscriber.
+ * Logbook project decline event subscriber.
  */
-class LogbookProjectArchiveSubscriber extends LogbookSubscriberBase {
+class LogbookProjectDeclineSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectArchiveEvent::class;
-  const LOG_PATTERN = 'project_archive';
+  const EVENT_CLASS = ProjectDeclineEvent::class;
+  const LOG_PATTERN = 'project_decline';
 
   /**
    * {@inheritdoc}
@@ -20,16 +20,13 @@ class LogbookProjectArchiveSubscriber extends LogbookSubscriberBase {
     if (!$log = $this->createLog($event)) {
       return;
     }
-    /** @var \Drupal\projects\Event\ProjectArchiveEvent $event */
+    /** @var \Drupal\projects\Event\ProjectDeclineEvent $event */
     $log->setProject($event->getProject());
     $log->setOrganization($event->getProject()->getOwner());
     if ($manager = $event->getProject()->getOwner()->getManager()) {
       $log->setManager($manager);
     }
-    $log->setMessage($event->getMessage());
-    if ($reason = $event->getReason()) {
-      $log->setMisc(['reason' => $reason->value]);
-    }
+    $log->setMisc(['reason' => $event->getReason()->value]);
     $log->save();
   }
 

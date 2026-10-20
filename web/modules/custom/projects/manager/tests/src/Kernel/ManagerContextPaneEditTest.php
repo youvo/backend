@@ -47,7 +47,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
   public function testArchivedHasNoContent(): void {
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
-    $project->set('field_lifecycle', ProjectState::Archived->value)->save();
+    $project->set('field_lifecycle', ProjectState::Declined->value)->save();
     $this->assertSame([], $this->pane()->build($project)['content']);
   }
 

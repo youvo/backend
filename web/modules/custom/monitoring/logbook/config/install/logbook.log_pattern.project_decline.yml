@@ -1,8 +1,8 @@
 langcode: de
 status: true
 dependencies: {  }
-id: project_archive
-label: 'Project Archive'
+id: project_decline
+label: 'Project Decline'
 tokens:
   -
     token: '%Project'

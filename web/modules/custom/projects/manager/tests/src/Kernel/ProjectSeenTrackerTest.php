@@ -22,7 +22,7 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
     $pending = $this->createProjectFor($organization, ProjectState::Pending);
     $ongoing = $this->createProjectFor($organization, ProjectState::Ongoing);
     $this->createProjectFor($organization, ProjectState::Completed);
-    $this->createProjectFor($organization, ProjectState::Archived);
+    $this->createProjectFor($organization, ProjectState::Declined);
     // A project of an organization someone else manages.
     $this->createMailableProject(ProjectState::Open);
 

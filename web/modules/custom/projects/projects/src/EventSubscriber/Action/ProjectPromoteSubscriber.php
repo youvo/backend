@@ -17,8 +17,8 @@ class ProjectPromoteSubscriber implements EventSubscriberInterface {
    */
   public function onProjectPromote(ProjectPromoteEvent $event): void {
     $project = $event->getProject();
-    if ($project->lifecycle()->isArchived()) {
-      throw new \LogicException('Cannot promote an archived project.');
+    if ($project->lifecycle()->isDeclined()) {
+      throw new \LogicException('Cannot promote a declined project.');
     }
     $project->setPromoted(TRUE);
     $project->save();

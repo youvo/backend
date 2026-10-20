@@ -47,7 +47,7 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
    */
   public function testNoMailForOtherStates(): void {
     $registry = $this->container->get('mailer.manager_mail_registry');
-    foreach ([ProjectState::Pending, ProjectState::Completed, ProjectState::Archived] as $state) {
+    foreach ([ProjectState::Pending, ProjectState::Completed, ProjectState::Declined] as $state) {
       $this->assertSame([], $registry->available($this->createMailableProject($state)), $state->value);
     }
   }

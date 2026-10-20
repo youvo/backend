@@ -3,11 +3,11 @@ langcode: de
 status: true
 dependencies:
   config:
-    - logbook.log_pattern.project_archive
-id: log--project_archive
+    - logbook.log_pattern.project_decline
+id: log--project_decline
 disabled: false
-path: logs/project_archive
-resourceType: project_archive
+path: logs/project_decline
+resourceType: project_decline
 resourceFields:
   id:
     disabled: true

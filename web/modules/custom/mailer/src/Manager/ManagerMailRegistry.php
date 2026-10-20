@@ -36,7 +36,7 @@ class ManagerMailRegistry {
       $lifecycle->isOpen() => ProjectState::Open,
       $lifecycle->isOngoing() => ProjectState::Ongoing,
       $lifecycle->isCompleted() => ProjectState::Completed,
-      default => ProjectState::Archived,
+      default => ProjectState::Declined,
     };
   }
 

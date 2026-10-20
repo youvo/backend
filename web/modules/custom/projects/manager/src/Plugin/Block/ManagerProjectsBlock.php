@@ -150,7 +150,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
     foreach ($project->lifecycle()->history() as $item) {
       $reached[$item->to] = TRUE;
     }
-    $states = array_values(array_filter(ProjectState::cases(), static fn (ProjectState $state) => $state !== ProjectState::Archived));
+    $states = array_values(array_filter(ProjectState::cases(), static fn (ProjectState $state) => $state !== ProjectState::Declined));
     $steps = [];
     foreach ($states as $index => $state) {
       $next = $states[$index + 1] ?? NULL;

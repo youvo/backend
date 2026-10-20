@@ -55,11 +55,11 @@ class ProjectPromoteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project promote resource - archived project.
+   * Tests the for the project promote resource - declined project.
    */
-  public function testProjectPromoteArchived(): void {
+  public function testProjectPromoteDeclined(): void {
 
-    $project = $this->createProject(ProjectState::Archived);
+    $project = $this->createProject(ProjectState::Declined);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/promote';

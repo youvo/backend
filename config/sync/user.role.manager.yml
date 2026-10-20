@@ -8,7 +8,6 @@ dependencies:
     - rest.resource.progress.course.access
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
-    - rest.resource.project.archive
     - rest.resource.project.complete
     - rest.resource.project.mediate
     - rest.resource.project.notify
@@ -48,7 +47,6 @@ permissions:
   - 'restful post progress:course:access'
   - 'restful post progress:lecture:access'
   - 'restful post progress:lecture:complete'
-  - 'restful post project:archive'
   - 'restful post project:complete'
   - 'restful post project:mediate'
   - 'restful post project:notify'
@@ -56,12 +54,12 @@ permissions:
   - 'restful post question:submission'
   - 'send project mails'
   - 'update any project'
-  - 'use project_lifecycle transition archive'
   - 'use project_lifecycle transition complete'
+  - 'use project_lifecycle transition decline'
   - 'use project_lifecycle transition mediate'
   - 'use project_lifecycle transition publish'
-  - 'use project_lifecycle transition remain_archived'
   - 'use project_lifecycle transition remain_completed'
+  - 'use project_lifecycle transition remain_declined'
   - 'use project_lifecycle transition remain_draft'
   - 'use project_lifecycle transition remain_ongoing'
   - 'use project_lifecycle transition remain_open'

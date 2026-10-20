@@ -24,7 +24,7 @@ class ManagerRuleArchived extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
-    return $project->lifecycle()->isArchived();
+    return $project->lifecycle()->isDeclined();
   }
 
   /**
