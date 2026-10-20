@@ -313,6 +313,29 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
+   * Replaying a POST after a failed decline does not send a second mail.
+   *
+   * The project stays pending, so only the form guard prevents the replay.
+   */
+  public function testDeclineReplayAfterFailedDecline(): void {
+    $project = $this->actAsManagerOf(ProjectState::Pending);
+    $query = ['view' => 'decline', 'reason' => 'custom'];
+    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
+    $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
+      throw new \RuntimeException('boom');
+    }, 3000);
+    $html = $this->pane($project, $query, $post);
+    $this->assertStringContainsString('The mail was sent, but the project could not be declined.', $html);
+
+    $html = $this->pane($this->reload($project), $query, $post);
+    $this->assertStringContainsString('This form was already submitted.', $html);
+    $this->assertStringNotContainsString('The mail was sent', $html);
+    $this->assertCount(1, $this->loadEntries($project->id()));
+    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
+    $this->assertSame(0, $this->declineHistoryCount($project));
+  }
+
+  /**
    * Replaying a successful POST sends and declines nothing more.
    */
   public function testDeclineReplay(): void {

@@ -77,7 +77,12 @@ class ProjectDeclineAccessTest extends ProjectEventSubscriberTestBase {
     $organization = $project->getOwner();
     $field = $project->getFieldDefinition($field_name);
     $result = ProjectFieldAccess::checkFieldAccess($project, 'view', $field, $organization);
-    $this->assertFalse($result->isAllowed());
+    $this->assertTrue($result->isForbidden());
+
+    // In contrast, the author may view the field of an open project.
+    $open = $this->createProject(ProjectState::Open);
+    $result = ProjectFieldAccess::checkFieldAccess($open, 'view', $open->getFieldDefinition($field_name), $open->getOwner());
+    $this->assertEquals($field_name === 'field_applicants', !$result->isForbidden());
   }
 
   /**
