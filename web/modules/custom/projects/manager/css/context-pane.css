@@ -134,7 +134,7 @@
   background: var(--gin-border-color, #d4d4d8);
 }
 
-.status-archived.views-field-field-lifecycle > div::before {
+.status-declined.views-field-field-lifecycle > div::before {
   background: #9aa3b2;
 }
 

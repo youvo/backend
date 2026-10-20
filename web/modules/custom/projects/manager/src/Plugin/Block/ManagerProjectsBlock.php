@@ -139,7 +139,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
   /**
    * Builds the steps of the lifecycle progress bar of a project.
    *
-   * The steps are the lifecycle states without archived, like the progress bar
+   * The steps are the lifecycle states without declined, like the progress bar
    * of the manager pane. A step is completed if the project reached it.
    *
    * @return array<int, array{label: string, completed: bool, next_completed: bool}>

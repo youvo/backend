@@ -42,9 +42,9 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
   }
 
   /**
-   * An archived project has neither button nor description.
+   * A declined project has neither button nor description.
    */
-  public function testArchivedHasNoContent(): void {
+  public function testDeclinedHasNoContent(): void {
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
     $project->set('field_lifecycle', ProjectState::Declined->value)->save();

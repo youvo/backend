@@ -46,7 +46,7 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
   }
 
   /**
-   * Pending, completed and archived offer nothing.
+   * Pending, completed and declined offer nothing.
    */
   public function testNoMailForOtherStates(): void {
     $registry = $this->container->get('mailer.manager_mail_registry');

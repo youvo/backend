@@ -118,7 +118,8 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * index view with a confirmation; a failed send returns the form again.
    */
   protected function buildMailView(Project $project, string $subtype, Request $request): array {
-    if ($subtype === '' || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
+    // Decline mails are sent from the transition pane, which also declines.
+    if ($subtype === '' || ManagerMailRegistry::declineReason($subtype) !== NULL || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
       return $this->emptyPane($project);
     }
     $form_state = new FormState();
