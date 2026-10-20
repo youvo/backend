@@ -4,7 +4,6 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -29,6 +28,7 @@ use Symfony\Component\HttpFoundation\Request;
 #[ManagerContextPane(id: "transition")]
 class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
+  use MailPaneFormTrait;
   use PaneMessagesTrait;
   use StringTranslationTrait;
 
@@ -183,29 +183,17 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
     if (!$this->mayDecline($project, $subtype)) {
       return $this->emptyDeclinePane($project);
     }
-    $form_state = new FormState();
-    // Without this the form API would try to produce a redirect response.
-    $form_state->disableRedirect();
-    $form_state->addBuildInfo('args', [$project, $subtype]);
-    // A POST with a form_build_id restores the build info of the earlier GET:
-    // tell the form which project and subtype this request is for.
-    $request->attributes->set('manager_pane_mail', [(string) $project->id(), $subtype]);
-    $form = $this->formBuilder->buildForm(ProjectDeclineForm::class, $form_state);
-    $args = $form_state->getBuildInfo()['args'] ?? [];
-    $built_for = ($args[0] ?? NULL) instanceof Project ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;
-    if ($built_for !== NULL && $built_for !== [(string) $project->id(), $subtype]) {
-      return $this->emptyDeclinePane($project);
-    }
-    if ($form_state->get('send_denied')) {
+    [$outcome, $form, $form_state] = $this->processMailForm($this->formBuilder, $this->messenger, ProjectDeclineForm::class, $project, $subtype, $request);
+    if ($outcome === 'denied') {
       return $this->emptyDeclinePane($project);
     }
     $build = $this->emptyDeclinePane($project);
-    if ($form_state->get('already_submitted')) {
+    if ($outcome === 'already') {
       $this->messenger->addStatus($this->t('This form was already submitted.'));
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
       return $build;
     }
-    if ($form_state->get('sent')) {
+    if ($outcome === 'sent') {
       if ($form_state->get('decline_failed')) {
         $this->messenger->addError($this->t('The mail was sent, but the project could not be declined. Please contact a supervisor.'));
       }
@@ -215,11 +203,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
       return $build;
     }
-    if ($form_state->get('send_failed')) {
-      // symfony_mailer reports the transport error (host, port) on the
-      // messenger as error or warning: show the manager only our own message.
-      $this->messenger->deleteByType(MessengerInterface::TYPE_ERROR);
-      $this->messenger->deleteByType(MessengerInterface::TYPE_WARNING);
+    if ($outcome === 'failed') {
       $this->messenger->addError($this->t('The mail could not be sent. The project was not declined.'));
     }
     $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
