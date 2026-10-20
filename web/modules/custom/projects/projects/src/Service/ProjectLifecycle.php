@@ -150,6 +150,14 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * {@inheritdoc}
    */
+  public function canDecline(): bool {
+    $transition = ProjectTransition::Decline;
+    return $this->canTransition($transition, $this->getState(), $this->getSuccessorFromTransition($transition));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function history(): FieldItemListInterface {
     /** @var \Drupal\Core\Field\FieldItemListInterface<\Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem> $history */
     $history = $this->project()->get(static::LIFECYCLE_HISTORY_FIELD);

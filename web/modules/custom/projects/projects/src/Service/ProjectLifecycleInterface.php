@@ -81,6 +81,11 @@ interface ProjectLifecycleInterface {
   public function decline(?int $timestamp = NULL): bool;
 
   /**
+   * Checks if the project can be declined, without declining it.
+   */
+  public function canDecline(): bool;
+
+  /**
    * Gets the lifecycle history.
    *
    * @return \Drupal\Core\Field\FieldItemListInterface<\Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem>

@@ -21,15 +21,12 @@ final class ManagerMailDefinition {
    *   States in which the mail is offered.
    * @param \Closure|null $condition
    *   Optional extra condition on the project.
-   * @param bool $decline
-   *   Whether the mail declines a project proposal.
    */
   public function __construct(
     public readonly string $subtype,
     public readonly string $label,
     public readonly array $states,
     protected ?\Closure $condition = NULL,
-    public readonly bool $decline = FALSE,
   ) {}
 
   /**

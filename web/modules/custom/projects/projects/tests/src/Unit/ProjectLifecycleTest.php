@@ -264,6 +264,33 @@ class ProjectLifecycleTest extends UnitTestCase {
   }
 
   /**
+   * Tests whether a project can be declined.
+   *
+   * @covers ::canDecline
+   * @covers ::canTransition
+   *
+   * @dataProvider canDeclineProvider
+   */
+  public function testCanDecline(ProjectState $state, bool $has_transition, bool $is_prospect, bool $expected): void {
+    $this->prophesizeWorkflow([$state], [$has_transition], FALSE, $is_prospect);
+    $this->assertSame($expected, $this->lifecycle->canDecline());
+  }
+
+  /**
+   * Provides data for the testCanDecline method.
+   */
+  public static function canDeclineProvider(): array {
+    return [
+      'draft of prospect' => [ProjectState::Draft, TRUE, TRUE, TRUE],
+      'draft of organization' => [ProjectState::Draft, TRUE, FALSE, FALSE],
+      'pending' => [ProjectState::Pending, TRUE, FALSE, TRUE],
+      'open' => [ProjectState::Open, FALSE, TRUE, FALSE],
+      // The remain transition of the declined state satisfies the state check.
+      'declined' => [ProjectState::Declined, TRUE, TRUE, FALSE],
+    ];
+  }
+
+  /**
    * Tests the history method.
    *
    * @covers ::history

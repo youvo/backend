@@ -37,9 +37,9 @@ class ManagerMailRegistry {
       static fn (ProjectDeclineReason $reason) => new ManagerMailDefinition(
         self::declineSubtype($reason),
         (string) $reason->label(),
-        [ProjectState::Draft, ProjectState::Pending],
-        static fn (ProjectInterface $p) => !$p->lifecycle()->isDraft() || $p->getOwner()->hasRoleProspect(),
-        TRUE,
+        // The lifecycle decides in which states a project can be declined.
+        ProjectState::cases(),
+        static fn (ProjectInterface $p) => $p->lifecycle()->canDecline(),
       ),
       ProjectDeclineReason::cases(),
     );
