@@ -2,6 +2,7 @@
 
 namespace Drupal\mailer\Manager;
 
+use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 
@@ -23,6 +24,39 @@ class ManagerMailRegistry {
       new ManagerMailDefinition('reminder_open_noone', 'Erinnerung: Projekt ist online', [ProjectState::Open], static fn (ProjectInterface $p) => !$p->hasApplicant()),
       new ManagerMailDefinition('reminder_ongoing', 'Erinnerung: Projekt abschließen', [ProjectState::Ongoing]),
     ];
+  }
+
+  /**
+   * Gets the decline definitions in enum order.
+   *
+   * @return \Drupal\mailer\Manager\ManagerMailDefinition[]
+   *   The definitions.
+   */
+  protected function declineDefinitions(): array {
+    return array_map(
+      static fn (ProjectDeclineReason $reason) => new ManagerMailDefinition(
+        self::declineSubtype($reason),
+        (string) $reason->label(),
+        [ProjectState::Draft, ProjectState::Pending],
+        static fn (ProjectInterface $p) => !$p->lifecycle()->isDraft() || $p->getOwner()->hasRoleProspect(),
+        TRUE,
+      ),
+      ProjectDeclineReason::cases(),
+    );
+  }
+
+  /**
+   * Gets the mailer subtype of a decline reason.
+   */
+  public static function declineSubtype(ProjectDeclineReason $reason): string {
+    return 'decline_' . $reason->value;
+  }
+
+  /**
+   * Gets the decline reason of a mailer subtype.
+   */
+  public static function declineReason(string $subtype): ?ProjectDeclineReason {
+    return str_starts_with($subtype, 'decline_') ? ProjectDeclineReason::tryFrom(substr($subtype, 8)) : NULL;
   }
 
   /**
@@ -52,10 +86,21 @@ class ManagerMailRegistry {
   }
 
   /**
+   * Gets the decline definitions offered for the project.
+   *
+   * @return \Drupal\mailer\Manager\ManagerMailDefinition[]
+   *   The definitions in enum order.
+   */
+  public function availableDeclines(ProjectInterface $project): array {
+    $state = $this->stateOf($project);
+    return array_values(array_filter($this->declineDefinitions(), static fn (ManagerMailDefinition $d) => $d->appliesTo($project, $state)));
+  }
+
+  /**
    * Finds a definition if it is offered for the project's current state.
    */
   public function find(ProjectInterface $project, string $subtype): ?ManagerMailDefinition {
-    foreach ($this->available($project) as $definition) {
+    foreach ([...$this->available($project), ...$this->availableDeclines($project)] as $definition) {
       if ($definition->subtype === $subtype) {
         return $definition;
       }

@@ -1,0 +1,14 @@
+uuid: 02c5b092-377f-4049-9cd9-09786ab59986
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_deadline
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag. Leider ist die Deadline für das Projekt zu knapp für unsere Community. Zusammen mit der Ausschreibungsphase sollte die Deadline mindestens einen Monat in der Zukunft liegen.</p><p>Gibt es von Eurer Seite aus die Möglichkeit, für das Projekt mehr Zeit einzuplanen? Dann schreibt uns gern und wir finden eine Lösung. Ansonsten wünschen wir Euch viel Erfolg bei Eurem Vorhaben!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

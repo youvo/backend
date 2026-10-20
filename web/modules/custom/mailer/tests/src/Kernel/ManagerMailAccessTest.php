@@ -92,4 +92,24 @@ class ManagerMailAccessTest extends MailerKernelTestBase {
     $this->assertContains('user.permissions', $result->getCacheContexts());
   }
 
+  /**
+   * Decline subtypes are allowed for the manager of a pending project only.
+   */
+  public function testDeclineSubtypeAccess(): void {
+    $this->createMailableCreative('Root');
+    $access = $this->container->get('mailer.manager_mail_access');
+
+    $pending = $this->createMailableProject(ProjectState::Pending);
+    $manager = $pending->getOwner()->getManager();
+    $this->assertTrue($access->access($this->accountWith($manager, ['send project mails']), $pending, 'decline_custom')->isAllowed());
+
+    $otherManager = $this->createMailableCreative('OtherManager');
+    Organization::create(['name' => 'Other org', 'field_manager' => $otherManager])->save();
+    $this->assertFalse($access->access($this->accountWith($otherManager, ['send project mails']), $pending, 'decline_custom')->isAllowed());
+
+    $open = $this->createMailableProject(ProjectState::Open);
+    $openManager = $open->getOwner()->getManager();
+    $this->assertFalse($access->access($this->accountWith($openManager, ['send project mails']), $open, 'decline_custom')->isAllowed());
+  }
+
 }

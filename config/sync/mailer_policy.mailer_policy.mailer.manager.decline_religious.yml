@@ -1,0 +1,14 @@
+uuid: d6adc844-3aa9-4f59-8e7c-76174420b51f
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_religious
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Liebe {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag.</p><p>Da eine Ausschreibung auf youvo.org auch für Euch einige Ressourcen bindet, bemühen wir uns, im Vorfeld mithilfe unserer Erfahrung und dem Feedback aus unserer Community die Chancen auf eine erfolgreiche Vermittlung einzuschätzen, um Euch vergebliche Arbeit zu ersparen: Leider passt Euer Projektvorhaben unserer Erfahrung nach nicht so gut zur youvo-Community.</p><p>In unseren FAQ''s kannst Du die Kriterien, nach denen wir Organisationen auswählen auch nochmal nachlesen: https://www.youvo.org/hilfe/faq</p><p>Dort haben wir festgelegt, dass u.a. religiöse bzw. konfessionelle Organisationen keine Projekte auf unserer Plattform ausschreiben können.</p><p>Wir wünschen Euch dennoch viel Erfolg bei Eurer wichtigen Arbeit.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

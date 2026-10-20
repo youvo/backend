@@ -1,0 +1,14 @@
+uuid: 2e943d55-9847-4e2d-9d3c-acac3bea0fdf
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_idea
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag.</p><p>Da eine Ausschreibung auf youvo.org auch für Euch einige Ressourcen bindet, schätzen wir im Vorfeld mithilfe unserer Erfahrung und dem Feedback aus unserer Community die Chancen auf eine erfolgreiche Vermittlung ein, um Euch vergebliche Arbeit zu ersparen:</p><p>Leider passt er unserer Erfahrung nach nicht so gut zur youvo-Community.</p><p>Für unsere Community ist es essenziell, dass ihr Engagement auch eine gesellschaftliche Wirkung entfaltet. Deshalb ist es wichtig, dass die Umsetzung des Projektes gewährleistet ist und es sich nicht mehr nur um eine Idee handelt.</p><p>Wenn Du Menschen suchst, die Dir bei der Umsetzung Deiner Idee beistehen, kannst Du deshalb leider noch kein Projekt bei youvo ausschreiben.</p><p>Aber wie wäre es mit einem Barcamp in Deiner Nähe auf dem Du mit Interessierten ins Gespräch über Deine Idee kommen kannst und vielleicht sogar Mitstreiter*innen findest?</p><p>Wenn Ihr dann ein Team geformt habt und mit Euren Aktivitäten begonnen habt, könnt Ihr gern einen neuen Projektvorschlag auf youvo einreichen.</p><p>Wir wollen so gern sicherstellen, dass nichts „in der Schublade” landet und unsere Community eine positive Engagement-Erfahrung hat.</p><p>Falls Du der Meinung bist, dass wir Dein Projekt falsch eingeschätzt haben, können wir gern telefonieren und eine Lösung finden. Wir wünschen Dir viel Erfolg mit Deinem Vorhaben.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

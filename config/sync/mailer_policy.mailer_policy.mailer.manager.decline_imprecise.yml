@@ -1,0 +1,14 @@
+uuid: bb8650a9-1ade-4a32-b6e3-6cadae2f03cd
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_imprecise
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag. Leider können wir nicht genau einschätzen, ob Dein Projekt zu unserer Community passt, da es noch ein bisschen zu unkonkret formuliert ist.</p><p>Schau Dir gern unsere FAQ-Seite an, dort findest Du Hilfestellungen bezüglich einer Projektbeschreibung (Briefing). Es wäre schön, wenn Du den Projektvorschlag noch einmal konkreter einreichen könntest. Wenn Du möchtest, können wir dazu auch gern mal telefonieren.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

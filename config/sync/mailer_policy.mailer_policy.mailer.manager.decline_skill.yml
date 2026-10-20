@@ -1,0 +1,14 @@
+uuid: 0b4f5645-3fb4-464f-92f8-04c685f74908
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_skill
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag. Leider findet sich in unserer Community erfahrungsgemäß niemand, der die passenden Fähigkeiten mitbringt um Euer Projekt umzusetzen. Aber vielleicht braucht Ihr in Zukunft mal Unterstützung aus den Bereichen Design, Digitalisierung, Fotografie oder Onlinekommunikation? Dann reicht gern einen neuen Projektvorschlag bei uns ein. Wir wünschen Euch viel Erfolg bei Eurem Vorhaben!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html
