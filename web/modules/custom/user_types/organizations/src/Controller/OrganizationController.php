@@ -64,11 +64,12 @@ final class OrganizationController extends ControllerBase {
     // Load the organization.
     $organization = $user_storage->load($uid);
 
-    // Verify that the organization is active and a prospect.
+    // Verify that the organization is active, a prospect and has a draft.
     if (
       !$organization instanceof Organization ||
       !$organization->isActive() ||
-      !$organization->hasRoleProspect()
+      !$organization->hasRoleProspect() ||
+      !$organization->hasDraftProject()
     ) {
       throw new AccessDeniedHttpException();
     }
