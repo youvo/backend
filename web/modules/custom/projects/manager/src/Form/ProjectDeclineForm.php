@@ -98,16 +98,24 @@ class ProjectDeclineForm extends ProjectMailForm {
       $this->eventDispatcher->dispatch((new ProjectDeclineEvent($project))->setReason($reason));
     }
     catch (\Throwable $e) {
-      $this->logger('manager')->error('The project @id could not be declined after the decline mail was sent: @message', [
-        '@id' => $project->id(),
-        '@message' => $e->getMessage(),
-      ]);
+      // The pane shows the error message when it sees this flag.
+      $form_state->set('decline_failed', TRUE);
       // A later listener may fail after the project was declined and saved:
-      // only report a failure if the stored project is not declined.
-      $stored = $this->entityTypeManager->getStorage('project')->loadUnchanged($project->id());
-      if (!$stored instanceof ProjectInterface || !$stored->lifecycle()->isDeclined()) {
-        // The pane shows the error message when it sees this flag.
-        $form_state->set('decline_failed', TRUE);
+      // the failure is only reported if the stored project is not declined.
+      try {
+        $stored = $this->entityTypeManager->getStorage('project')->loadUnchanged($project->id());
+        $declined = $stored instanceof ProjectInterface && $stored->lifecycle()->isDeclined();
+      }
+      catch (\Throwable) {
+        $declined = FALSE;
+      }
+      $context = ['@id' => $project->id(), '@message' => $e->getMessage()];
+      if ($declined) {
+        $form_state->set('decline_failed', FALSE);
+        $this->logger('manager')->error('The project @id was declined, but a listener of the decline failed: @message', $context);
+      }
+      else {
+        $this->logger('manager')->error('The project @id could not be declined after the decline mail was sent: @message', $context);
       }
     }
   }

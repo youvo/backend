@@ -354,6 +354,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     $this->assertCount(1, $errors);
     $this->assertSame(RfcLogLevel::ERROR, $errors[0][0]);
     $this->assertSame('manager', $errors[0][2]['channel']);
+    $this->assertSame('The project @id was declined, but a listener of the decline failed: @message', $errors[0][1]);
   }
 
   /**

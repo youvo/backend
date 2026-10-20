@@ -272,8 +272,11 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @dataProvider canDeclineProvider
    */
   public function testCanDecline(ProjectState $state, bool $has_transition, bool $is_prospect, bool $expected): void {
-    $this->prophesizeWorkflow([$state], [$has_transition], FALSE, $is_prospect);
+    [$project, $history] = $this->prophesizeWorkflow([$state], [$has_transition], FALSE, $is_prospect);
     $this->assertSame($expected, $this->lifecycle->canDecline());
+    // The check neither changes the state nor writes the history.
+    $project->set(Argument::any(), Argument::any())->shouldNotHaveBeenCalled();
+    $history->appendItem(Argument::any())->shouldNotHaveBeenCalled();
   }
 
   /**
@@ -305,8 +308,11 @@ class ProjectLifecycleTest extends UnitTestCase {
 
   /**
    * Prophesizes a project lifecycle with different workflow conditions.
+   *
+   * @return array{0: \Prophecy\Prophecy\ObjectProphecy<\Drupal\projects\ProjectInterface>, 1: \Prophecy\Prophecy\ObjectProphecy<\Drupal\Core\Field\FieldItemListInterface>}
+   *   The prophecies of the project and of its lifecycle history.
    */
-  protected function prophesizeWorkflow(array $states, array $has_transition, bool $has_participant, bool $is_prospect = TRUE): void {
+  protected function prophesizeWorkflow(array $states, array $has_transition, bool $has_participant, bool $is_prospect = TRUE): array {
 
     $lifecycle_config = $this->prophesize(Lifecycle::class);
     $lifecycle_config->hasTransitionFromStateToState(Argument::any(), Argument::any())
@@ -343,6 +349,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       $time->reveal()
     );
     $this->lifecycle->setProject($project->reveal());
+    return [$project, $history];
   }
 
 }
