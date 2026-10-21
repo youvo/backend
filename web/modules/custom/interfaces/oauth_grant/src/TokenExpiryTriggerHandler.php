@@ -43,6 +43,13 @@ class TokenExpiryTriggerHandler implements TokenExpiryTriggerHandlerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function handleConsumerDelete(ConsumerInterface $consumer): void {
+    $this->inner->handleConsumerDelete($consumer);
+  }
+
+  /**
    * Checks if the password, the roles or the status of the user changed.
    */
   protected function isSecurityRelevantChange(UserInterface $user): bool {
