@@ -2,26 +2,26 @@
 
 namespace Drupal\projects\EventSubscriber\Transition;
 
-use Drupal\projects\Event\ProjectArchiveEvent;
+use Drupal\projects\Event\ProjectDeclineEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Defines event subscriber for the project archive event.
+ * Defines event subscriber for the project decline event.
  */
-class ProjectArchiveSubscriber implements EventSubscriberInterface {
+class ProjectDeclineSubscriber implements EventSubscriberInterface {
 
   /**
-   * Listens to the project archive event.
+   * Listens to the project decline event.
    *
-   * The project remains published. Access to archived projects is governed by
+   * The project remains published. Access to declined projects is governed by
    * the lifecycle state, so that a reset restores a fully usable draft.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Drupal\lifecycle\Exception\LifecycleTransitionException
    */
-  public function onProjectArchive(ProjectArchiveEvent $event): void {
+  public function onProjectDecline(ProjectDeclineEvent $event): void {
     $project = $event->getProject();
-    $project->lifecycle()->archive($event->getTimestamp());
+    $project->lifecycle()->decline($event->getTimestamp());
     $project->setPromoted(FALSE);
     $project->save();
   }
@@ -30,7 +30,7 @@ class ProjectArchiveSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectArchiveEvent::class => ['onProjectArchive', 1000]];
+    return [ProjectDeclineEvent::class => ['onProjectDecline', 1000]];
   }
 
 }

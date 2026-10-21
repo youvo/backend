@@ -8,15 +8,15 @@ use Drupal\manager\Attribute\ManagerRule;
 use Drupal\projects\ProjectInterface;
 
 /**
- * Provides a project archived manager rule.
+ * Provides a project declined manager rule.
  */
 #[ManagerRule(
-  id: "archived",
+  id: "declined",
   category: RuleCategory::Supress,
-  severity: RuleSeverity::Archived,
+  severity: RuleSeverity::Declined,
   weight: 110,
 )]
-class ManagerRuleArchived extends ManagerRuleBase {
+class ManagerRuleDeclined extends ManagerRuleBase {
 
   use StringTranslationTrait;
 
@@ -24,14 +24,14 @@ class ManagerRuleArchived extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
-    return $project->lifecycle()->isArchived();
+    return $project->lifecycle()->isDeclined();
   }
 
   /**
    * {@inheritdoc}
    */
   protected function text(ProjectInterface $project): TranslatableMarkup {
-    return $this->t('The project is archived.');
+    return $this->t('The project was declined.');
   }
 
 }

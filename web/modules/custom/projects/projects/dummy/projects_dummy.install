@@ -10,14 +10,15 @@ use Drupal\Core\Utility\Error;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
-use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
+use Drupal\projects\Event\ProjectDeclineEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
-use Drupal\projects\ProjectArchiveReason;
+use Drupal\projects\ProjectDeclineReason;
 use Drupal\user\Entity\User;
 use Faker\Factory;
 
@@ -92,20 +93,14 @@ function projects_dummy_generate_content(): void {
       'open',
       'ongoing',
       'completed',
-      'archived',
+      'declined',
     ];
     $final_state = $faker->randomElement($lifecycle_states);
 
-    // Archived projects follow the path up to a random state first.
-    $path_state = $final_state;
-    if ($final_state === 'archived') {
-      $path_state = $faker->randomElement(['draft', 'pending', 'open', 'ongoing']);
-    }
-
-    // Completed and archived projects have a deadline in the past, since the
+    // Completed and declined projects have a deadline in the past, since the
     // manager rules ignore them. The deadline of all other projects is mostly
     // comfortable, so that only a few are upcoming or overdue.
-    if (in_array($final_state, ['completed', 'archived'])) {
+    if (in_array($final_state, ['completed', 'declined'])) {
       $rnd_time = random_int($created, $created + 1209600);
     }
     else {
@@ -138,6 +133,12 @@ function projects_dummy_generate_content(): void {
     else {
       $contact = $contacts[$oid];
       $manager = $managers[$oid];
+    }
+
+    // Declined projects are drafts of prospect organizations or pending.
+    $path_state = $final_state;
+    if ($final_state === 'declined') {
+      $path_state = Organization::load($oid)->hasRoleProspect() ? 'draft' : 'pending';
     }
 
     $project = Project::create([
@@ -223,12 +224,11 @@ function projects_dummy_generate_content(): void {
         $event_dispatcher->dispatch(new ProjectCompleteEvent($project, $transition_time));
         // @todo Add project results if needed.
       }
-      if ($final_state === 'archived') {
+      if ($final_state === 'declined') {
         $transition_time += $transition_increment;
-        $archive_event = new ProjectArchiveEvent($project, $transition_time);
-        $archive_event->setReason($faker->randomElement(ProjectArchiveReason::cases()));
-        $archive_event->setMessage($faker->sentence());
-        $event_dispatcher->dispatch($archive_event);
+        $decline_event = new ProjectDeclineEvent($project, $transition_time);
+        $decline_event->setReason($faker->randomElement(ProjectDeclineReason::cases()));
+        $event_dispatcher->dispatch($decline_event);
       }
       // Attach the image with the final save only. File paths moves the file
       // when it is attached, and every further save of the project would

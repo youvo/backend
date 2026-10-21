@@ -1,0 +1,14 @@
+uuid: ae50c2b7-c793-40a0-88b0-8dcab325db59
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_custom
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag.</p><p></p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

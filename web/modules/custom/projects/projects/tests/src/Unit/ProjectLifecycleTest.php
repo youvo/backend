@@ -11,6 +11,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\Plugin\WorkflowType\Lifecycle;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
@@ -79,7 +80,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @covers ::isOpen
    * @covers ::isOngoing
    * @covers ::isCompleted
-   * @covers ::isArchived
+   * @covers ::isDeclined
    * @covers ::getState
    *
    * @dataProvider isStateProvider
@@ -130,7 +131,7 @@ class ProjectLifecycleTest extends UnitTestCase {
    * @covers ::mediate
    * @covers ::complete
    * @covers ::reset
-   * @covers ::archive
+   * @covers ::decline
    * @covers ::hasTransition
    * @covers ::canTransition
    * @covers ::doTransition
@@ -202,20 +203,94 @@ class ProjectLifecycleTest extends UnitTestCase {
       'has_participant' => FALSE,
     ];
 
-    $cases[ProjectTransition::Archive->value] = [
-      'transition' => ProjectTransition::Archive,
-      'allowed_from' => [
-        ProjectState::Draft,
-        ProjectState::Pending,
-        ProjectState::Open,
-        ProjectState::Ongoing,
-      ],
-      'has_transition' => [TRUE, TRUE, TRUE, TRUE, FALSE, FALSE],
+    $cases[ProjectTransition::Decline->value] = [
+      'transition' => ProjectTransition::Decline,
+      'allowed_from' => [ProjectState::Draft, ProjectState::Pending],
+      'has_transition' => [TRUE, TRUE, FALSE, FALSE, FALSE, FALSE],
       // Not relevant for this case.
       'has_participant' => FALSE,
     ];
 
     return $cases;
+  }
+
+  /**
+   * Tests that a draft project can only be declined for prospect owners.
+   *
+   * @covers ::decline
+   * @covers ::canTransition
+   */
+  public function testDeclineDraftRequiresProspect(): void {
+    $states = [ProjectState::Draft];
+    $this->prophesizeWorkflow($states, [TRUE], FALSE, FALSE);
+    $this->expectException(LifecycleTransitionException::class);
+    $this->lifecycle->decline();
+  }
+
+  /**
+   * Tests that a draft project of a prospect owner can be declined.
+   *
+   * @covers ::decline
+   * @covers ::canTransition
+   */
+  public function testDeclineDraftOfProspect(): void {
+    $this->prophesizeWorkflow([ProjectState::Draft], [TRUE], FALSE, TRUE);
+    $this->assertTrue($this->lifecycle->decline());
+  }
+
+  /**
+   * Tests that a pending project can be declined for any owner.
+   *
+   * @covers ::decline
+   * @covers ::canTransition
+   */
+  public function testDeclinePendingWithoutProspect(): void {
+    $this->prophesizeWorkflow([ProjectState::Pending], [TRUE], FALSE, FALSE);
+    $this->assertTrue($this->lifecycle->decline());
+  }
+
+  /**
+   * Tests that a declined project can not be declined again.
+   *
+   * The remain transition of the declined state satisfies the state check.
+   *
+   * @covers ::decline
+   * @covers ::canTransition
+   */
+  public function testDeclineDeclinedThrows(): void {
+    $this->prophesizeWorkflow([ProjectState::Declined], [TRUE], FALSE, TRUE);
+    $this->expectException(LifecycleTransitionException::class);
+    $this->lifecycle->decline();
+  }
+
+  /**
+   * Tests whether a project can be declined.
+   *
+   * @covers ::canDecline
+   * @covers ::canTransition
+   *
+   * @dataProvider canDeclineProvider
+   */
+  public function testCanDecline(ProjectState $state, bool $has_transition, bool $is_prospect, bool $expected): void {
+    [$project, $history] = $this->prophesizeWorkflow([$state], [$has_transition], FALSE, $is_prospect);
+    $this->assertSame($expected, $this->lifecycle->canDecline());
+    // The check neither changes the state nor writes the history.
+    $project->set(Argument::any(), Argument::any())->shouldNotHaveBeenCalled();
+    $history->appendItem(Argument::any())->shouldNotHaveBeenCalled();
+  }
+
+  /**
+   * Provides data for the testCanDecline method.
+   */
+  public static function canDeclineProvider(): array {
+    return [
+      'draft of prospect' => [ProjectState::Draft, TRUE, TRUE, TRUE],
+      'draft of organization' => [ProjectState::Draft, TRUE, FALSE, FALSE],
+      'pending' => [ProjectState::Pending, TRUE, FALSE, TRUE],
+      'open' => [ProjectState::Open, FALSE, TRUE, FALSE],
+      // The remain transition of the declined state satisfies the state check.
+      'declined' => [ProjectState::Declined, TRUE, TRUE, FALSE],
+    ];
   }
 
   /**
@@ -233,8 +308,11 @@ class ProjectLifecycleTest extends UnitTestCase {
 
   /**
    * Prophesizes a project lifecycle with different workflow conditions.
+   *
+   * @return array{0: \Prophecy\Prophecy\ObjectProphecy<\Drupal\projects\ProjectInterface>, 1: \Prophecy\Prophecy\ObjectProphecy<\Drupal\Core\Field\FieldItemListInterface>}
+   *   The prophecies of the project and of its lifecycle history.
    */
-  protected function prophesizeWorkflow(array $states, array $has_transition, bool $has_participant): void {
+  protected function prophesizeWorkflow(array $states, array $has_transition, bool $has_participant, bool $is_prospect = TRUE): array {
 
     $lifecycle_config = $this->prophesize(Lifecycle::class);
     $lifecycle_config->hasTransitionFromStateToState(Argument::any(), Argument::any())
@@ -258,6 +336,9 @@ class ProjectLifecycleTest extends UnitTestCase {
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_HISTORY_FIELD))->willReturn($history);
     $project->set(Argument::any(), Argument::any())->willReturn(TRUE);
     $project->hasParticipant(Argument::is('Creative'))->willReturn($has_participant);
+    $owner = $this->prophesize(Organization::class);
+    $owner->hasRoleProspect()->willReturn($is_prospect);
+    $project->getOwner()->willReturn($owner->reveal());
 
     $current_user = $this->prophesize(AccountProxyInterface::class);
     $time = $this->prophesize(TimeInterface::class);
@@ -268,6 +349,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       $time->reveal()
     );
     $this->lifecycle->setProject($project->reveal());
+    return [$project, $history];
   }
 
 }

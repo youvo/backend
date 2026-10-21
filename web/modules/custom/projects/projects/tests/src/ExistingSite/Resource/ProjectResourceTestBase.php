@@ -7,7 +7,6 @@ use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectApplyEvent;
-use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
@@ -172,7 +171,6 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   public static function getSubscribedEvents(): array {
     return [
       ProjectApplyEvent::class => 'onProjectEvent',
-      ProjectArchiveEvent::class => 'onProjectEvent',
       ProjectCompleteEvent::class => 'onProjectEvent',
       ProjectMediateEvent::class => 'onProjectEvent',
       ProjectPublishEvent::class => 'onProjectEvent',

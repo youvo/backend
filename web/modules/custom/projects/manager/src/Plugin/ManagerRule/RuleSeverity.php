@@ -7,7 +7,7 @@ namespace Drupal\manager\Plugin\ManagerRule;
  */
 enum RuleSeverity {
 
-  case Archived;
+  case Declined;
   case Dormant;
   case Critical;
   case Warning;

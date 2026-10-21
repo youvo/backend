@@ -5,6 +5,8 @@ namespace Drupal\organizations\Entity;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\ManagerInterface;
+use Drupal\projects\ProjectState;
+use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\user_bundle\Entity\TypedUser;
 use Drupal\user_types\Utility\Profile;
 
@@ -122,6 +124,22 @@ class Organization extends TypedUser implements ManagerInterface {
    */
   public function hasRoleOrganization(): bool {
     return in_array(self::ROLE_ORGANIZATION, $this->getRoles(), TRUE);
+  }
+
+  /**
+   * Determines if this organization has a project in the draft state.
+   *
+   * A prospect only has draft or declined projects. Declining the draft
+   * invalidates the invite link.
+   */
+  public function hasDraftProject(): bool {
+    $count = $this->entityTypeManager()->getStorage('project')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('uid', $this->id())
+      ->condition(ProjectLifecycle::LIFECYCLE_FIELD, ProjectState::Draft->value)
+      ->count()
+      ->execute();
+    return $count > 0;
   }
 
   /**

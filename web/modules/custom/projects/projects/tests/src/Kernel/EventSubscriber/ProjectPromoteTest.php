@@ -33,11 +33,11 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
   }
 
   /**
-   * Tests that archived projects can not be promoted.
+   * Tests that declined projects can not be promoted.
    */
-  public function testProjectPromoteArchived(): void {
+  public function testProjectPromoteDeclined(): void {
 
-    $project = $this->createProject(ProjectState::Archived);
+    $project = $this->createProject(ProjectState::Declined);
     $project->setPromoted(FALSE);
 
     $this->expectException(\LogicException::class);

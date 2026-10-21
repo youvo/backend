@@ -146,11 +146,10 @@ class ProjectFieldAccess extends FieldAccess {
         ->cachePerPermissions();
     }
 
-    // Authors and managers may view applicants for open projects. Archived
-    // projects retain the applicants of the state they were archived from.
+    // Authors and managers may view applicants for open projects.
     if ($operation === 'view' &&
       $field->getName() === self::APPLICANTS_FIELD &&
-      ($entity->lifecycle()->isOpen() || $entity->lifecycle()->isArchived()) &&
+      $entity->lifecycle()->isOpen() &&
       ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))
     ) {
       return AccessResult::neutral()
@@ -161,11 +160,10 @@ class ProjectFieldAccess extends FieldAccess {
     }
 
     // Authors and managers may view participants for ongoing projects. Note
-    // that completed projects are handled above. Archived projects retain the
-    // participants of the state they were archived from.
+    // that completed projects are handled above.
     if ($operation === 'view' &&
       $field->getName() === self::PARTICIPANTS_FIELD &&
-      ($entity->lifecycle()->isOngoing() || $entity->lifecycle()->isArchived()) &&
+      $entity->lifecycle()->isOngoing() &&
       ($entity->isAuthor($account) || $entity->getOwner()->isManager($account))
     ) {
       return AccessResult::neutral()

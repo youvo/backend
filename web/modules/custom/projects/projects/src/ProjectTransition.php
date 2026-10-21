@@ -12,6 +12,6 @@ enum ProjectTransition: string {
   case Mediate = 'mediate';
   case Complete = 'complete';
   case Reset = 'reset';
-  case Archive = 'archive';
+  case Decline = 'decline';
 
 }

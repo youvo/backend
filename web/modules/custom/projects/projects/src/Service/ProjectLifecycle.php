@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
@@ -100,8 +101,8 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * {@inheritdoc}
    */
-  public function isArchived(): bool {
-    return $this->getState() === ProjectState::Archived;
+  public function isDeclined(): bool {
+    return $this->getState() === ProjectState::Declined;
   }
 
   /**
@@ -142,8 +143,16 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
   /**
    * {@inheritdoc}
    */
-  public function archive(?int $timestamp = NULL): bool {
-    return $this->doTransition(ProjectTransition::Archive, $timestamp);
+  public function decline(?int $timestamp = NULL): bool {
+    return $this->doTransition(ProjectTransition::Decline, $timestamp);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function canDecline(): bool {
+    $transition = ProjectTransition::Decline;
+    return $this->canTransition($transition, $this->getState(), $this->getSuccessorFromTransition($transition));
   }
 
   /**
@@ -178,10 +187,20 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
     if ($transition === ProjectTransition::Mediate || $transition === ProjectTransition::Complete) {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
-    // The remain transition of the archived state satisfies the state check.
-    // Archived projects must not be archived again.
-    if ($transition === ProjectTransition::Archive && $from === ProjectState::Archived) {
-      return FALSE;
+    if ($transition === ProjectTransition::Decline) {
+      // The remain transition of the declined state satisfies the state check.
+      // Declined projects must not be declined again.
+      if ($from === ProjectState::Declined) {
+        return FALSE;
+      }
+      // Drafts can only be declined if the organization is a prospect.
+      // Otherwise, the organization has not submitted the project yet.
+      if ($from === ProjectState::Draft) {
+        $owner = $this->project()->getOwner();
+        if (!$owner instanceof Organization || !$owner->hasRoleProspect()) {
+          return FALSE;
+        }
+      }
     }
 
     return $this->hasTransition($from, $to);
@@ -210,7 +229,7 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
       ProjectTransition::Publish => ProjectState::Open,
       ProjectTransition::Mediate => ProjectState::Ongoing,
       ProjectTransition::Complete => ProjectState::Completed,
-      ProjectTransition::Archive => ProjectState::Archived,
+      ProjectTransition::Decline => ProjectState::Declined,
       // All other transitions, including reset, set the project state to draft.
       default => ProjectState::Draft,
     };

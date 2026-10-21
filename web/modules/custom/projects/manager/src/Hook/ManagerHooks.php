@@ -42,6 +42,7 @@ class ManagerHooks {
     return [
       'manager_project_note_form',
       'manager_project_mail_form',
+      'manager_project_decline_form',
     ];
   }
 
@@ -97,6 +98,10 @@ class ManagerHooks {
         'base hook' => 'context_pane',
       ];
     }
+    // The decline view of the transition pane.
+    $hooks['context_pane__decline'] = [
+      'base hook' => 'context_pane',
+    ];
 
     return $hooks;
   }
@@ -174,14 +179,14 @@ class ManagerHooks {
           }
         }
 
-        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isArchived()) {
+        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isDeclined()) {
           $action_transition = &$row['columns']['nothing_2'];
           $action_transition['attributes']->offsetUnset('class');
           unset($action_transition['content']);
         }
 
-        // Promote and demote are not available for archived projects.
-        if ($project->lifecycle()->isArchived()) {
+        // Promote and demote are not available for declined projects.
+        if ($project->lifecycle()->isDeclined()) {
           $action_edit = &$row['columns']['nothing_3'];
           $action_edit['attributes']->offsetUnset('class');
           unset($action_edit['content']);

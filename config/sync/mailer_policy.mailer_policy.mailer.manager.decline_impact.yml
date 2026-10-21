@@ -1,0 +1,14 @@
+uuid: d49fb70e-9527-4872-b56c-724783498559
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_impact
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag.</p><p>Da eine Ausschreibung auf youvo.org auch für Euch einige Ressourcen bindet, schätzen wir im Vorfeld mithilfe unserer Erfahrung und dem Feedback aus unserer Community die Chancen auf eine erfolgreiche Vermittlung ein, um Euch vergebliche Arbeit zu ersparen:</p><p>Leider passt er unserer Erfahrung nach nicht so gut zur youvo-Community. Die Kreativen die sich über youvo engagieren, haben oft noch keine Erfahrungen mit Ehrenamt und wählen die Projekte sehr genau aus, für die sie sich engagieren wollen. Dabei achten sie besonders auf die soziale Wirkung und wie leicht sich diese kommunizieren lässt. Wir wollen gern jederzeit attraktive Engagement-Angebote zur Verfügung stellen und versuchen die Vermittlungsquote möglichst hoch zu halten.</p><p>Des Weiteren können wir leider keine Projekte von politischen oder religiösen Organisationen oder Interessensverbänden ausschreiben. Auch öffentliche Einrichtungen oder Organisationen die zum Großteil aus öffentlichen Geldern finanziert werden, passen nicht zur youvo-Community, auch wenn uns klar ist, dass diese auch auf die ehrenamtliche Unterstützung Kreativer angewiesen sind.</p><p>Falls Du der Meinung bist, dass wir Dein Projekt falsch eingeschätzt haben, können wir gern telefonieren und eine Lösung finden. Unser Ziel ist es, gute Kommunikation dort zu ermöglichen, wo sie ansonsten partout nicht stattfindet.</p><p>Wir wünschen Euch viel Erfolg mit Eurem Vorhaben.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

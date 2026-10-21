@@ -19,8 +19,8 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase {
    */
   public function build(Project $project): array {
 
-    // Promote and demote are not available for archived projects.
-    if ($project->lifecycle()->isArchived()) {
+    // Promote and demote are not available for declined projects.
+    if ($project->lifecycle()->isDeclined()) {
       return [
         '#theme' => 'context_pane',
         '#type' => 'edit',

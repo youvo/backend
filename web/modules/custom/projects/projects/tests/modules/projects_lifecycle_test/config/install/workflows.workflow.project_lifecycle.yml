@@ -23,8 +23,8 @@ type_settings:
     pending:
       label: Pending
       weight: 1
-    archived:
-      label: Archived
+    declined:
+      label: Declined
       weight: 5
   transitions:
     remain_draft:
@@ -33,20 +33,18 @@ type_settings:
         - draft
       to: draft
       weight: 0
-    archive:
-      label: 'Project Archive'
+    decline:
+      label: 'Project Decline'
       from:
         - draft
         - pending
-        - open
-        - ongoing
-      to: archived
+      to: declined
       weight: 10
-    remain_archived:
-      label: 'Project Remain Archived'
+    remain_declined:
+      label: 'Project Remain Declined'
       from:
-        - archived
-      to: archived
+        - declined
+      to: declined
       weight: 11
     complete:
       label: 'Project Complete'
@@ -93,8 +91,8 @@ type_settings:
     reset:
       label: 'Project Reset'
       from:
-        - archived
         - completed
+        - declined
         - ongoing
         - open
         - pending

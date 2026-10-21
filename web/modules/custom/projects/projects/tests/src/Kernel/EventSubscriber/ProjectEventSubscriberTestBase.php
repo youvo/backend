@@ -50,8 +50,10 @@ abstract class ProjectEventSubscriberTestBase extends KernelTestBase {
 
   /**
    * Creates a minimal project for testing purposes.
+   *
+   * The owner is a prospect organization if requested.
    */
-  protected function createProject(ProjectState $state = ProjectState::Draft): ProjectInterface {
+  protected function createProject(ProjectState $state = ProjectState::Draft, bool $prospect = FALSE): ProjectInterface {
 
     $manager = Creative::create(['name' => $this->randomString()]);
     $manager->save();
@@ -60,6 +62,9 @@ abstract class ProjectEventSubscriberTestBase extends KernelTestBase {
       'name' => $this->randomString(),
       'field_manager' => $manager,
     ]);
+    if ($prospect) {
+      $organization->addRole(Organization::ROLE_PROSPECT);
+    }
     $organization->save();
 
     return Project::create([

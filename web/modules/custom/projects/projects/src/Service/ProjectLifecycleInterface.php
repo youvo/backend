@@ -46,9 +46,9 @@ interface ProjectLifecycleInterface {
   public function isCompleted(): bool;
 
   /**
-   * Checks if the project is archived.
+   * Checks if the project is declined.
    */
-  public function isArchived(): bool;
+  public function isDeclined(): bool;
 
   /**
    * Submits the project.
@@ -76,9 +76,14 @@ interface ProjectLifecycleInterface {
   public function reset(?int $timestamp = NULL): bool;
 
   /**
-   * Archives the project.
+   * Declines the project.
    */
-  public function archive(?int $timestamp = NULL): bool;
+  public function decline(?int $timestamp = NULL): bool;
+
+  /**
+   * Checks if the project can be declined, without declining it.
+   */
+  public function canDecline(): bool;
 
   /**
    * Gets the lifecycle history.

@@ -1,0 +1,14 @@
+uuid: 7b8eb8ec-cf98-47ab-b057-34ff4a7ccb16
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.decline_organization
+configuration:
+  email_subject:
+    value: 'Dein Projekt auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag.</p><p>Wir wollen langfristig gern Verständnis für kreative Leistungen im sozialen Sektor schaffen und sind überzeugt, dass Kommunikation am wirkungsvollsten ist, wenn sie auch bezahlt ist. Deshalb können öffentliche Einrichtungen oder Organisationen, die zum größten Teil aus öffentlichen Geldern finanziert sind leider keine Projekte bei youvo ausschreiben, auch wenn deren Budget manchmal ähnlich knapp ist.</p><p>Auch Organisationen, bei denen die Kreativen die einzigen wären, die ehrenamtlich arbeiten oder For-Profit-Unternehmen finden auf youvo leider keine Unterstützung.</p><p>Vielleicht gibt es für Euch eine Möglichkeit in Zukunft auch Gelder für kreative Leistungen zu beantragen? Viele Kreative bieten reduzierte Preise für gemeinnützige Auftraggeber an.</p><p>Wir arbeiten außerdem an einer Freelancer-Jobbörse, die den kreativen Talenten, die sich auf youvo engagieren, die Möglichkeit geben soll, sich auch für bezahlte Aufträge zu bewerben. Wenn Ihr dazu Ideen habt, freuen wir uns von Euch zu hören.</p><p>Wir wünschen Euch viel Erfolg bei Eurem Vorhaben!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

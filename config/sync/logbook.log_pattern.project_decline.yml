@@ -2,8 +2,8 @@ uuid: 5e748b80-2d85-4f51-949e-6b7f70747e42
 langcode: de
 status: true
 dependencies: {  }
-id: project_archive
-label: 'Project Archive'
+id: project_decline
+label: 'Project Decline'
 tokens:
   -
     token: '%Project'

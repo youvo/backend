@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\mailer\Manager\LateTokens;
 use Drupal\mailer\Manager\ManagerMailAccess;
+use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -62,7 +63,7 @@ class ProjectMailForm extends FormBase {
     // Render the preview once; later builds (rebuilds after a failed send or
     // an error) reuse it.
     if (!$form_state->has('preview')) {
-      $preview = $project instanceof ProjectInterface ? $this->mailer->preview($project, $subtype) : NULL;
+      $preview = $project instanceof ProjectInterface && $this->acceptsSubtype($subtype) ? $this->mailer->preview($project, $subtype) : NULL;
       $form_state->set('preview', $preview ?? FALSE);
     }
     $preview = $form_state->get('preview');
@@ -169,7 +170,7 @@ class ProjectMailForm extends FormBase {
     $args = $form_state->getBuildInfo()['args'] ?? [];
     $cached = $args[0] ?? NULL;
     $subtype = $args[1] ?? NULL;
-    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '') {
+    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '' || !$this->acceptsSubtype($subtype)) {
       return NULL;
     }
     $expected = $this->getRequest()->attributes->get('manager_pane_mail');
@@ -185,6 +186,28 @@ class ProjectMailForm extends FormBase {
     }
     return $project;
   }
+
+  /**
+   * Whether the form sends mails of this subtype.
+   *
+   * Decline mails are only sent by the decline form, which also declines the
+   * project.
+   */
+  protected function acceptsSubtype(string $subtype): bool {
+    return ManagerMailRegistry::declineReason($subtype) === NULL;
+  }
+
+  /**
+   * Acts after the mail was sent; the default does nothing.
+   *
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The freshly loaded project the mail was sent for.
+   * @param string $subtype
+   *   The mail subtype.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  protected function afterSend(ProjectInterface $project, string $subtype, FormStateInterface $form_state): void {}
 
   /**
    * {@inheritdoc}
@@ -222,6 +245,7 @@ class ProjectMailForm extends FormBase {
     }
     // The pane shows the confirmation when it sees this flag.
     $form_state->set('sent', TRUE);
+    $this->afterSend($project, $subtype, $form_state);
   }
 
 }
