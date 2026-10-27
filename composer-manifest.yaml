@@ -33,6 +33,7 @@ packages:
     drupal/admin_toolbar: 3.6.3
     drupal/coder: 8.3.31
     drupal/config_ignore: 3.4.0
+    drupal/config_split: 2.0.2
     drupal/consumer_image_styles: 4.0.10
     drupal/consumers: 1.24.0
     drupal/core: 11.4.11

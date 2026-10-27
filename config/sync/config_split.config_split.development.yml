@@ -1,0 +1,30 @@
+uuid: 6d09ba45-050f-49da-917d-2c85b2430b6c
+langcode: de
+status: false
+dependencies: {  }
+id: development
+label: Development
+description: 'Dummy content and developer tools. Active in DDEV and CI only.'
+weight: 0
+stackable: false
+no_patching: false
+storage: folder
+folder: ../config/split/development
+module:
+  mailsystem: 0
+  openapi: 0
+  openapi_jsonapi: 0
+  openapi_ui: 0
+  openapi_ui_redoc: 0
+  restui: 0
+  schemata: 0
+  schemata_json_schema: 0
+  postman_interface: 0
+  youvo_dummy: 1
+  creatives_dummy: 2
+  academy_dummy: 3
+  organizations_dummy: 3
+  projects_dummy: 3
+theme: {  }
+complete_list: {  }
+partial_list: {  }

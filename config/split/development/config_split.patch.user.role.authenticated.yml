@@ -1,0 +1,7 @@
+adding:
+  dependencies:
+    config:
+      - rest.resource.postman.uuid
+  permissions:
+    - 'restful get postman:uuid'
+removing: {  }

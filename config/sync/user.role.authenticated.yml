@@ -4,7 +4,6 @@ status: true
 dependencies:
   config:
     - rest.resource.feedback.create
-    - rest.resource.postman.uuid
     - rest.resource.stats.public
     - rest.resource.user.update.mail
     - rest.resource.user.update.password
@@ -28,7 +27,6 @@ permissions:
   - 'access user profiles'
   - 'debug simple_oauth tokens'
   - 'issue subrequests'
-  - 'restful get postman:uuid'
   - 'restful get stats:public'
   - 'restful get user:update:mail'
   - 'restful patch user:update:mail'

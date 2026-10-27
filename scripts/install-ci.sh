@@ -34,6 +34,12 @@
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}"
 
+ # Import the development config split and generate dummy content.
+ echo "Importing development configuration ..."
+ vendor/bin/drush cim -y > /dev/null 2>&1
+ echo "Generating dummy content ..."
+ vendor/bin/drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
+
  # Rebuild Cache.
  echo "Rebuild cache ..."
  vendor/bin/drush cr > /dev/null 2>&1

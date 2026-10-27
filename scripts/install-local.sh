@@ -73,6 +73,12 @@
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}"
 
+ # Import the development config split and generate dummy content.
+ echo "Importing development configuration ..."
+ ddev drush cim -y > /dev/null 2>&1
+ echo "Generating dummy content ..."
+ ddev drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
+
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  ddev drush cr > /dev/null 2>&1

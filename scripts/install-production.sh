@@ -23,7 +23,10 @@
  cd default
  [[ -f settings.php ]] && chmod 0777 settings.php
  [[ -f settings.php ]] && rm settings.php
- cp default.settings.php settings.php
+ [[ -f services.yml ]] && chmod 0777 services.yml
+ [[ -f services.yml ]] && rm services.yml
+ cp install.settings.php settings.php
+ cp install.services.yml services.yml
  chmod 0755 settings.php
  echo "Settings reset ..."
 
@@ -37,7 +40,7 @@
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
- drush site:install -y youvo_platform \
+ drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \
@@ -55,6 +58,7 @@
  cd www/$SITE_FOLDER/web/sites/default
  chmod 0444 settings.php
  chmod 0444 default.settings.php
+ chmod 0444 services.yml
 
  # Bye bye.
  echo "Exit in 3 seconds!"
