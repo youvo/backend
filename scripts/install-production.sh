@@ -23,10 +23,8 @@
  cd default
  [[ -f settings.php ]] && chmod 0777 settings.php
  [[ -f settings.php ]] && rm settings.php
- [[ -f services.yml ]] && chmod 0777 services.yml
- [[ -f services.yml ]] && rm services.yml
  cp install.settings.php settings.php
- cp install.services.yml services.yml
+ [[ -f services.yml ]] || cp install.services.yml services.yml
  chmod 0755 settings.php
  echo "Settings reset ..."
 
@@ -58,7 +56,6 @@
  cd www/$SITE_FOLDER/web/sites/default
  chmod 0444 settings.php
  chmod 0444 default.settings.php
- chmod 0444 services.yml
 
  # Bye bye.
  echo "Exit in 3 seconds!"
