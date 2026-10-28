@@ -21,8 +21,11 @@
  SCRIPT_PATH="$( cd -- "$(dirname "$0")" || exit >/dev/null 2>&1 ; pwd -P )"
  cd "$SCRIPT_PATH/.." || exit
  set -a; source "$ENV_FILE"; set +a
- export MYSQL_PWD="$DB_PASSWORD"
- CONNECTION=(--host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER")
+ # Pass credentials through an option file, which overrides ~/.my.cnf.
+ DEFAULTS=$(mktemp)
+ trap 'rm -f "$DEFAULTS"' EXIT
+ printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\n' "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASSWORD" > "$DEFAULTS"
+ CONNECTION=(--defaults-extra-file="$DEFAULTS")
 
  # Tables to export. Taxonomy terms are created identically by the installation.
  TABLES="

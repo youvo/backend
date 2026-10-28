@@ -29,11 +29,9 @@
 
  # Import content.
  echo "Importing content ..."
- gzip -cdf "$INPUT" | drush sql:cli
+ gzip -cdf "$INPUT" | $(drush sql:connect)
  echo "Imported $(drush sqlq "SELECT COUNT(*) FROM users") users and $(drush sqlq "SELECT COUNT(*) FROM course") courses."
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1
-
- echo "Done. Copy the academy files next, e.g. from web/sites/default/files/academy of the old site to web/files/academy."
