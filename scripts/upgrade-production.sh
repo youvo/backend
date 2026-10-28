@@ -35,7 +35,7 @@
  php -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);' || fail "PHP 8.3 or newer is required."
  [[ -x vendor/bin/drush ]] || fail "Run composer install first."
  [[ -r config/.env.consumers.production ]] || fail "config/.env.consumers.production is missing."
- [[ -r config/.env.oauth_remote.development ]] || fail "config/.env.oauth_remote.development is missing."
+ [[ -r config/.env.oauth_remote.production ]] || fail "config/.env.oauth_remote.production is missing."
  [[ -r config/certs/public.key && -r config/certs/private.key ]] || fail "OAuth keys are missing in config/certs."
  [[ -n "$TRUSTED_HOST_PATTERN" ]] || fail "Set TRUSTED_HOST_PATTERN in config/.env.production."
  [[ -v JSONAPI_OBSCURITY_PREFIX ]] || fail "Set JSONAPI_OBSCURITY_PREFIX in config/.env.production (may be empty)."
@@ -72,9 +72,9 @@
  grep -q "jsonapi_obscurity.prefix: '$JSONAPI_OBSCURITY_PREFIX'" $SITE/services.yml || fail "Could not set jsonapi_obscurity.prefix in $SITE/services.yml."
  echo "Settings reset ..."
 
- # Install Drupal with the production consumers.
+ # Install Drupal with the production consumers and OAuth remote settings.
  echo "Installing Drupal ..."
- CONSUMERS_ENV=production drush site:install -y --existing-config \
+ CONFIG_ENV=production drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \
@@ -97,7 +97,7 @@
  drush cset -y simple_oauth.settings public_key "$(pwd)/config/certs/public.key" > /dev/null
  drush cset -y simple_oauth.settings private_key "$(pwd)/config/certs/private.key" > /dev/null
  (
-  set -a; source config/.env.oauth_remote.development; set +a
+  set -a; source config/.env.oauth_remote.production; set +a
   [[ -n "$JWT_KEY_PATH" ]] && drush cset -y oauth_grant_remote.settings jwt_key_path "$JWT_KEY_PATH" > /dev/null
   [[ -n "$AUTH_RELAY_URL" ]] && drush cset -y oauth_grant_remote.settings auth_relay_url "$AUTH_RELAY_URL" > /dev/null
   drush cset -y oauth_grant_remote.settings development "${DEVELOPMENT:-0}" > /dev/null
