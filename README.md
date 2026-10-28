@@ -161,7 +161,7 @@ git clone git@github.com:youvo/backend.git
 cd backend
 cp config/.env.example config/.env.production # and adjust settings
 cp config/.env.api.example config/.env.api # and adjust settings
-cp config/.env.consumers.example config/.env.consumers.development # and adjust settings
+cp config/.env.consumers.example config/.env.consumers.production # and adjust settings
 cp config/.env.oauth_remote.example config/.env.oauth_remote.development # and adjust settings
 composer install
 ./scripts/install-production.sh

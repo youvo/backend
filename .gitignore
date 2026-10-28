@@ -8,6 +8,7 @@
 
 /config/.env.api
 /config/.env.consumers.development
+/config/.env.consumers.production
 /config/.env.development
 /config/.env.oauth_remote.development
 /config/.env.production

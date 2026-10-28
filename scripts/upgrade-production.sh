@@ -34,7 +34,7 @@
  fail() { echo "Error: $1"; exit 1; }
  php -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);' || fail "PHP 8.3 or newer is required."
  [[ -x vendor/bin/drush ]] || fail "Run composer install first."
- [[ -r config/.env.consumers.development ]] || fail "config/.env.consumers.development is missing."
+ [[ -r config/.env.consumers.production ]] || fail "config/.env.consumers.production is missing."
  [[ -r config/.env.oauth_remote.development ]] || fail "config/.env.oauth_remote.development is missing."
  [[ -r config/certs/public.key && -r config/certs/private.key ]] || fail "OAuth keys are missing in config/certs."
  [[ -n "$TRUSTED_HOST_PATTERN" ]] || fail "Set TRUSTED_HOST_PATTERN in config/.env.production."
@@ -72,9 +72,9 @@
  grep -q "jsonapi_obscurity.prefix: '$JSONAPI_OBSCURITY_PREFIX'" $SITE/services.yml || fail "Could not set jsonapi_obscurity.prefix in $SITE/services.yml."
  echo "Settings reset ..."
 
- # Install Drupal.
+ # Install Drupal with the production consumers.
  echo "Installing Drupal ..."
- drush site:install -y --existing-config \
+ CONSUMERS_ENV=production drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \

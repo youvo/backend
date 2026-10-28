@@ -38,7 +38,7 @@
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
- drush site:install -y --existing-config \
+ CONSUMERS_ENV=production drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \
