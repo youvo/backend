@@ -8,8 +8,10 @@
 
 /config/.env.api
 /config/.env.consumers.development
+/config/.env.consumers.production
 /config/.env.development
 /config/.env.oauth_remote.development
+/config/.env.oauth_remote.production
 /config/.env.production
 /config/certs/private.key
 /config/certs/public.key
