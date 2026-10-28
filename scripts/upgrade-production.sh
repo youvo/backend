@@ -38,7 +38,7 @@
  [[ -r config/.env.oauth_remote.development ]] || fail "config/.env.oauth_remote.development is missing."
  [[ -r config/certs/public.key && -r config/certs/private.key ]] || fail "OAuth keys are missing in config/certs."
  [[ -n "$TRUSTED_HOST_PATTERN" ]] || fail "Set TRUSTED_HOST_PATTERN in config/.env.production."
- [[ -n "$JSONAPI_OBSCURITY_PREFIX" ]] || fail "Set JSONAPI_OBSCURITY_PREFIX in config/.env.production."
+ [[ -v JSONAPI_OBSCURITY_PREFIX ]] || fail "Set JSONAPI_OBSCURITY_PREFIX in config/.env.production (may be empty)."
  USERS=$(mysql "${CONNECTION[@]}" -N -e "SELECT COUNT(*) FROM users" "$DB_NAME") || fail "Cannot read the database $DB_NAME."
  [[ "$USERS" -gt 2 ]] || fail "The database has no content to migrate. Was it upgraded already?"
  [[ ! -e "$NEW_FILES/academy" ]] || fail "$NEW_FILES/academy exists already."
