@@ -58,10 +58,6 @@
  scripts/export-content.sh "$BACKUP/content.sql.gz"
  BLOCKER_MODE=$(mysql "${CONNECTION[@]}" -N -e "SELECT value FROM key_value WHERE collection = 'state' AND name = 'system.blocker_mode'" "$DB_NAME")
 
- # Reset database.
- mysql "${CONNECTION[@]}" -e "DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`"
- echo "Database reset ..."
-
  # Reset settings. Keep an existing services.yml and set the obscurity prefix.
  chmod u+w $SITE $SITE/settings.php 2>/dev/null || true
  rm -f $SITE/settings.php
@@ -74,6 +70,8 @@
  echo "Settings reset ..."
 
  # Install Drupal with the production consumers and OAuth remote settings.
+ # The installation drops all tables of the existing database; dropping and
+ # creating the database itself needs privileges the database user may lack.
  echo "Installing Drupal ..."
  CONFIG_ENV=production drush site:install -y --existing-config \
   --locale="en" \
