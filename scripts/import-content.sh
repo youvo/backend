@@ -29,7 +29,7 @@
 
  # Import content.
  echo "Importing content ..."
- drush sqlq --file="$INPUT" > /dev/null
+ gzip -cdf "$INPUT" | drush sql:cli
  echo "Imported $(drush sqlq "SELECT COUNT(*) FROM users") users and $(drush sqlq "SELECT COUNT(*) FROM course") courses."
 
  # Rebuild Cache.
