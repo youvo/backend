@@ -47,6 +47,9 @@
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
 
+ # Enable blocker mode.
+ drush state:set system.blocker_mode 1 --input-format=integer
+
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1

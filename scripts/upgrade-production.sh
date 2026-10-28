@@ -54,8 +54,9 @@
  cp -a $SITE/services.yml "$BACKUP/" 2>/dev/null || true
  echo "Backup written to $BACKUP ..."
 
- # Export content.
+ # Export content and remember whether blocker mode is on. It lives in state.
  scripts/export-content.sh "$BACKUP/content.sql.gz"
+ BLOCKER_MODE=$(mysql "${CONNECTION[@]}" -N -e "SELECT value FROM key_value WHERE collection = 'state' AND name = 'system.blocker_mode'" "$DB_NAME")
 
  # Reset database.
  mysql "${CONNECTION[@]}" -e "DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`"
@@ -85,6 +86,12 @@
 
  # Import content.
  scripts/import-content.sh "$BACKUP/content.sql.gz"
+
+ # Restore blocker mode.
+ if [[ "$BLOCKER_MODE" == "i:1;" ]]; then
+  drush state:set system.blocker_mode 1 --input-format=integer
+  echo "Blocker mode enabled ..."
+ fi
 
  # Copy academy files to the new public files path.
  mkdir -p $NEW_FILES
