@@ -5,9 +5,9 @@ packages:
     brick/math: 1.0.0
     chi-teck/drupal-code-generator: 4.2.0
     colinodell/psr-testlogger: v1.3.1
-    composer/ca-bundle: 1.6.0
+    composer/ca-bundle: 1.6.1
     composer/class-map-generator: 1.8.0
-    composer/composer: 2.10.3
+    composer/composer: 2.11.0
     composer/installers: v1.12.0
     composer/metadata-minifier: 1.0.1
     composer/pcre: 3.4.0
@@ -27,7 +27,7 @@ packages:
     defuse/php-encryption: v2.4.0
     dflydev/dot-access-data: v3.0.3
     doctrine/deprecations: 1.1.6
-    doctrine/instantiator: 2.0.0
+    doctrine/instantiator: 2.1.0
     doctrine/lexer: 3.0.3
     dompdf/php-font-lib: 1.0.2
     drupal/admin_toolbar: 3.6.3
@@ -67,7 +67,7 @@ packages:
     drupal/restui: 1.22.0
     drupal/schemata: 1.1.0
     drupal/schemata_json_schema: 1.1.0
-    drupal/simple_oauth: 6.1.2
+    drupal/simple_oauth: 6.1.3
     drupal/sophron: 3.1.1
     drupal/subrequests: 3.0.12
     drupal/symfony_mailer: 2.0.2
@@ -85,7 +85,7 @@ packages:
     google/protobuf: v5.36.2
     grasmash/expander: 3.0.1
     grasmash/yaml-cli: 3.2.1
-    guzzlehttp/guzzle: 7.16.0
+    guzzlehttp/guzzle: 7.16.1
     guzzlehttp/promises: 2.6.0
     guzzlehttp/psr7: 2.13.2
     html2text/html2text: 4.3.2
@@ -93,13 +93,13 @@ packages:
     joachim-n/composer-manifest: 1.1.7
     justinrainbow/json-schema: 6.8.2
     laravel/prompts: v0.3.26
-    lcobucci/clock: 3.5.0
+    lcobucci/clock: 3.6.0
     lcobucci/jwt: 5.6.1
     league/container: 4.2.5
     league/event: 3.0.3
     league/oauth2-server: 9.4.1
-    league/uri: 7.9.0
-    league/uri-interfaces: 7.9.0
+    league/uri: 7.9.1
+    league/uri-interfaces: 7.9.1
     lullabot/mink-selenium2-driver: v1.7.4
     lullabot/php-webdriver: v2.0.7
     marc-mabe/php-enum: v4.7.2
@@ -142,8 +142,8 @@ packages:
     phpspec/prophecy: v1.26.1
     phpspec/prophecy-phpunit: v2.5.0
     phpstan/extension-installer: 1.4.3
-    phpstan/phpdoc-parser: 2.3.6
-    phpstan/phpstan: 2.3.1
+    phpstan/phpdoc-parser: 2.4.0
+    phpstan/phpstan: 2.3.4
     phpstan/phpstan-deprecation-rules: 2.0.5
     phpstan/phpstan-phpunit: 2.1.1
     phpunit/php-code-coverage: 11.0.12
@@ -167,7 +167,7 @@ packages:
     ramsey/uuid: 4.9.4
     react/promise: v3.3.0
     revolt/event-loop: v1.0.9
-    roave/security-advisories: 'dev-latest:1d3860eceb9c8a3c76ade46a8ef7896a63802048'
+    roave/security-advisories: 'dev-latest:7fd2aa4f9a2f0db3e04724273d5121c1d16a6c66'
     sebastian/cli-parser: 3.0.2
     sebastian/code-unit: 3.0.3
     sebastian/code-unit-reverse-lookup: 4.0.1
@@ -191,28 +191,28 @@ packages:
     squizlabs/php_codesniffer: 3.13.6
     staabm/side-effects-detector: 1.0.5
     steverhoades/oauth2-openid-connect-server: v3.0.1
-    symfony/browser-kit: v7.4.21
-    symfony/console: v7.4.21
-    symfony/css-selector: v7.4.18
-    symfony/dependency-injection: v7.4.21
+    symfony/browser-kit: v7.4.22
+    symfony/console: v7.4.22
+    symfony/css-selector: v7.4.22
+    symfony/dependency-injection: v7.4.22
     symfony/deprecation-contracts: v3.7.1
-    symfony/dom-crawler: v7.4.17
-    symfony/error-handler: v7.4.20
+    symfony/dom-crawler: v7.4.22
+    symfony/error-handler: v7.4.22
     symfony/event-dispatcher: v7.4.17
     symfony/event-dispatcher-contracts: v3.7.1
     symfony/filesystem: v7.4.21
-    symfony/finder: v7.4.20
-    symfony/http-foundation: v7.4.21
-    symfony/http-kernel: v7.4.21
-    symfony/lock: v7.4.21
-    symfony/mailer: v7.4.19
-    symfony/mime: v7.4.19
+    symfony/finder: v7.4.22
+    symfony/http-foundation: v7.4.22
+    symfony/http-kernel: v7.4.22
+    symfony/lock: v7.4.22
+    symfony/mailer: v7.4.22
+    symfony/mime: v7.4.22
     symfony/polyfill-ctype: v1.37.0
     symfony/polyfill-iconv: v1.43.0
-    symfony/polyfill-intl-grapheme: v1.43.0
+    symfony/polyfill-intl-grapheme: v1.43.3
     symfony/polyfill-intl-idn: v1.43.0
     symfony/polyfill-intl-normalizer: v1.43.0
-    symfony/polyfill-mbstring: v1.43.0
+    symfony/polyfill-mbstring: v1.43.3
     symfony/polyfill-php73: v1.37.0
     symfony/polyfill-php80: v1.43.0
     symfony/polyfill-php81: v1.38.1
@@ -221,18 +221,18 @@ packages:
     symfony/polyfill-php84: v1.43.0
     symfony/polyfill-php85: v1.43.0
     symfony/polyfill-php86: v1.43.0
-    symfony/process: v7.4.21
+    symfony/process: v7.4.22
     symfony/psr-http-message-bridge: v7.4.21
-    symfony/routing: v7.4.21
-    symfony/runtime: v7.4.21
-    symfony/serializer: v7.4.21
+    symfony/routing: v7.4.22
+    symfony/runtime: v7.4.22
+    symfony/serializer: v7.4.22
     symfony/service-contracts: v3.7.3
-    symfony/string: v7.4.21
+    symfony/string: v7.4.22
     symfony/translation-contracts: v3.7.1
-    symfony/validator: v7.4.21
-    symfony/var-dumper: v7.4.21
-    symfony/var-exporter: v7.4.18
-    symfony/yaml: v7.4.21
+    symfony/validator: v7.4.22
+    symfony/var-dumper: v7.4.22
+    symfony/var-exporter: v7.4.22
+    symfony/yaml: v7.4.22
     tbachert/spi: v1.0.5
     theseer/tokenizer: 1.3.1
     tijsverkoyen/css-to-inline-styles: v2.4.0
