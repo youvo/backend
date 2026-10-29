@@ -7,8 +7,6 @@
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Utility\Error;
@@ -130,7 +128,7 @@ function youvo_dummy_get_image_by_path(string $path, string $file_name): FileInt
  *
  * The file is copied to public://dummy/<module>/<path> once. Later calls reuse
  * the file entity, and a file left over from an earlier install is not copied
- * again.
+ * again. Throws when the file cannot be put in place.
  *
  * @param string $module
  *   The dummy module shipping the file.
@@ -149,27 +147,28 @@ function youvo_dummy_get_file(string $module, string $path): FileInterface {
     return $file;
   }
 
+  // Fail loudly: a file entity without its file breaks image styles later.
+  if (!file_exists($uri)) {
+    /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+    $file_system = \Drupal::service('file_system');
+    $directory = dirname($uri);
+    if (!$file_system->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
+      throw new \RuntimeException(sprintf('Unable to create the dummy directory %s (%s).', $directory, $file_system->realpath($directory) ?: 'no real path'));
+    }
+    $source = DRUPAL_ROOT . '/' . \Drupal::service('extension.list.module')->getPath($module) . '/' . $path;
+    $file_system->copy($source, $uri, FileExists::Replace);
+    clearstatcache();
+    if (!file_exists($uri)) {
+      throw new \RuntimeException(sprintf('Copied %s to %s, but the file is missing (%s).', $source, $uri, $file_system->realpath($uri) ?: 'no real path'));
+    }
+  }
+
   $file = File::create([
     'uri' => $uri,
     'uid' => 1,
     'status' => 1,
   ]);
-  try {
-    if (!file_exists($uri)) {
-      /** @var \Drupal\Core\File\FileSystemInterface $file_system */
-      $file_system = \Drupal::service('file_system');
-      $directory = dirname($uri);
-      $file_system->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-      $source = \Drupal::service('extension.list.module')->getPath($module) . '/' . $path;
-      $file_system->copy($source, $uri, FileExists::Replace);
-    }
-    $file->save();
-  }
-  catch (FileException | EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('youvo_dummy')
-      ->error('An error occurred while creating a dummy file. %type: @message in %function (line %line of %file).', $variables);
-  }
+  $file->save();
 
   return $file;
 }

@@ -77,6 +77,7 @@
  # Import the development config split and generate dummy content.
  echo "Importing development configuration ..."
  ddev drush cim -y > /dev/null 2>&1
+ ddev drush cr > /dev/null 2>&1
  echo "Generating dummy content ..."
  ddev drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
 
