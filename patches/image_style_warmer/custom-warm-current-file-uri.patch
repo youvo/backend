@@ -1,0 +1,20 @@
+diff --git a/src/ImageStylesWarmer.php b/src/ImageStylesWarmer.php
+--- a/src/ImageStylesWarmer.php
++++ b/src/ImageStylesWarmer.php
+@@ -174,7 +174,16 @@
+     if (!empty($this->warmupFiles)) {
+       $initialImageStyles = $this->config->get('initial_image_styles');
+       if (!empty($initialImageStyles)) {
++        // A file can be moved after it was registered, e.g. by File (Field)
++        // Paths. The move saves a clone with the new URI, so the registered
++        // object keeps the old one. Reload each file once to warm its current
++        // URI and skip files deleted since.
++        $ids = [];
+         foreach ($this->warmupFiles as $warmup_file) {
++          $ids[$warmup_file->id()] = $warmup_file->id();
++        }
++        $this->file->resetCache($ids);
++        foreach ($this->file->loadMultiple($ids) as $warmup_file) {
+           $this->doWarmUp($warmup_file, array_keys($initialImageStyles));
+         }
+       }

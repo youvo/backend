@@ -15,6 +15,9 @@
         "drupal/filefield_paths": {
             "Custom: Exclude consumer entity type from filefield_paths handling": "patches/filefield_paths/custom-exclude-consumer-entity-type.patch"
         },
+        "drupal/image_style_warmer": {
+            "Custom: Warm the current URI of files moved after registration": "patches/image_style_warmer/custom-warm-current-file-uri.patch"
+        },
         "drupal/jsonapi_boost": {
             "Issue #3431472: Drupal 11 Compatibility": "patches/jsonapi_boost/drupal-11-compatibility.patch",
         	  "Custom: Add account switcher to JSON:API warming": "patches/jsonapi_boost/custom-add-account-switcher-to-jsonapi-boost-warming.patch"
