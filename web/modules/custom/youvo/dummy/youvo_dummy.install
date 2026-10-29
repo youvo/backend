@@ -26,14 +26,46 @@ function youvo_dummy_install(): void {
  * during the installation. Therefore, the dummy content is generated here in
  * an explicit order: Projects depend on creatives and organizations.
  *
+ * The project events of the dummy content trigger mails. The default mail
+ * transport is routed to the null transport while generating.
+ *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
 function youvo_dummy_site_install_finished(): void {
-  $module_handler = \Drupal::moduleHandler();
-  foreach (['creatives', 'organizations', 'academy', 'projects'] as $name) {
-    $module_handler->loadInclude($name . '_dummy', 'install');
-    ($name . '_dummy_generate_content')();
+  $transport_id = \Drupal::config('mailer_transport.settings')->get('default_transport');
+  $override_key = 'mailer_transport.mailer_transport.' . $transport_id;
+  $previous = $GLOBALS['config'][$override_key] ?? NULL;
+  $GLOBALS['config'][$override_key] = [
+    'plugin' => 'dsn',
+    'configuration' => ['dsn' => 'null://null'],
+  ];
+  youvo_dummy_reset_transport($override_key);
+
+  try {
+    $module_handler = \Drupal::moduleHandler();
+    foreach (['creatives', 'organizations', 'academy', 'projects'] as $name) {
+      $module_handler->loadInclude($name . '_dummy', 'install');
+      ($name . '_dummy_generate_content')();
+    }
   }
+  finally {
+    // Restore overrides from settings.php, e.g. the DDEV mail catcher.
+    if ($previous === NULL) {
+      unset($GLOBALS['config'][$override_key]);
+    }
+    else {
+      $GLOBALS['config'][$override_key] = $previous;
+    }
+    youvo_dummy_reset_transport($override_key);
+  }
+}
+
+/**
+ * Drops cached copies of a mail transport, so config overrides apply.
+ */
+function youvo_dummy_reset_transport(string $config_name): void {
+  \Drupal::configFactory()->reset($config_name);
+  \Drupal::entityTypeManager()->getStorage('mailer_transport')->resetCache();
 }
 
 /**
