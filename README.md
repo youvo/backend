@@ -154,20 +154,7 @@ The database is `youvo_dev`.
 
 ### Production
 
-To set up a Drupal distribution with the `youvo_platform` profile, do the following:
-
-```bash
-git clone git@github.com:youvo/backend.git
-cd backend
-cp config/.env.example config/.env.production # and adjust settings
-cp config/.env.api.example config/.env.api # and adjust settings
-cp config/.env.consumers.example config/.env.consumers.production # and adjust settings
-cp config/.env.oauth_remote.example config/.env.oauth_remote.production # and adjust settings
-composer install
-./scripts/install-production.sh
-```
-
-This provides a clean-state installation. For the login you may need to navigate to `/user/login`, because the site is in blocker mode (see `/admin/config/development/blockermode`). The administration can be found under `/admin/index` and `/admin/configuration`.
+The production site runs the `youvo_platform` profile and is live. It is never reinstalled; changes go out with `scripts/deploy.sh`. For the login you may need to navigate to `/user/login`, because the site is in blocker mode (see `/admin/config/development/blockermode`). The administration can be found under `/admin/index` and `/admin/configuration`.
 
 The database is `youvo_prod`.
 
