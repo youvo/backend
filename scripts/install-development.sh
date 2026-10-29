@@ -29,7 +29,8 @@
  chmod 0755 settings.php
  echo "Settings reset ..."
 
- # Reset files folder.
+ # Reset files folder. The public files path is web/files.
+ cd ../..
  rm -rf files
  mkdir files
  chmod 0755 files

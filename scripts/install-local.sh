@@ -35,9 +35,10 @@
  chmod 0777 settings.php
  echo "Settings reset ..."
 
- # Reset files folder.
+ # Reset files folder. The public files path is web/files.
+ cd ../.. || exit
  if test -d "files"; then
- 	sudo chmod 0777 files
+ 	sudo chmod -R 0777 files
  	rm -rf files
  fi
  mkdir files
@@ -49,7 +50,7 @@
  echo "Files folder reset ..."
 
  # Start Docker containers.
- cd ../../..
+ cd ..
  echo "Starting Docker containers ..."
  ddev start > /dev/null 2>&1
 
