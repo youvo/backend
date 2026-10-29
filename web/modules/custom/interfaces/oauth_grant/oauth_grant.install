@@ -24,8 +24,8 @@ function oauth_grant_install(): void {
   $config->set('private_key', dirname(DRUPAL_ROOT) . '/config/certs/private.key');
   $config->save(TRUE);
 
-  // The following settings are for development purposes. Production settings
-  // should be determined manually.
+  // Consumers come from config/.env.consumers.<environment>, where the
+  // environment is set by CONFIG_ENV and defaults to development.
   try {
     // Delete default consumer.
     $default_consumer = \Drupal::entityTypeManager()
@@ -33,8 +33,9 @@ function oauth_grant_install(): void {
       ->load(1);
     $default_consumer?->delete();
 
-    // Load development environment. Exit if not available.
-    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.consumers.development';
+    // Load consumers environment. Exit if not available.
+    $environment = getenv('CONFIG_ENV') ?: 'development';
+    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.consumers.' . $environment;
     if (!is_readable($env_path)) {
       throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
     }

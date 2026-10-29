@@ -876,6 +876,14 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # $settings['migrate_file_private_path'] = '';
 
 /**
+ * Activate the development config split in DDEV and CI only.
+ *
+ * The split holds the dummy content modules and developer tools. Production
+ * sets neither variable, so the split stays inactive there.
+ */
+$config['config_split.config_split.development']['status'] = getenv('IS_DDEV_PROJECT') === 'true' || getenv('CI') === 'true';
+
+/**
  * Load local development override configuration, if available.
  *
  * Create a settings.local.php file to override variables on secondary (staging,

@@ -11,5 +11,5 @@
  # Install Composer dependecies.
  composer install --no-interaction --no-progress
 
- # Rebuild Cache.
- drush cr > /dev/null 2>&1
+ # Run database updates, import configuration and rebuild cache.
+ drush deploy -y

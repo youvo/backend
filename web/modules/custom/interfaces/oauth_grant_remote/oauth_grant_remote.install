@@ -17,8 +17,10 @@ function oauth_grant_remote_install(): void {
     ->getEditable('oauth_grant_remote.settings');
 
   try {
-    // Load development enviroment. Exit if not available.
-    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.oauth_remote.development';
+    // Load config/.env.oauth_remote.<environment>, where the environment is
+    // set by CONFIG_ENV and defaults to development. Exit if not available.
+    $environment = getenv('CONFIG_ENV') ?: 'development';
+    $env_path = dirname(DRUPAL_ROOT) . '/config/.env.oauth_remote.' . $environment;
     if (!is_readable($env_path)) {
       throw new \RuntimeException(sprintf('%s file is not readable.', $env_path));
     }

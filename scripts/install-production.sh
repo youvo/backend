@@ -23,7 +23,8 @@
  cd default
  [[ -f settings.php ]] && chmod 0777 settings.php
  [[ -f settings.php ]] && rm settings.php
- cp default.settings.php settings.php
+ cp install.settings.php settings.php
+ [[ -f services.yml ]] || cp install.services.yml services.yml
  chmod 0755 settings.php
  echo "Settings reset ..."
 
@@ -37,7 +38,7 @@
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
- drush site:install -y youvo_platform \
+ CONFIG_ENV=production drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \
@@ -45,6 +46,9 @@
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
+
+ # Enable blocker mode.
+ drush state:set system.blocker_mode 1 --input-format=integer
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."

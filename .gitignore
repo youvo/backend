@@ -22,3 +22,7 @@
 
 /vendor/
 node_modules/
+
+# Database dumps and content exports.
+/*.sql
+/*.sql.gz

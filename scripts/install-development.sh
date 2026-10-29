@@ -23,7 +23,9 @@
  cd default
  [[ -f settings.php ]] && chmod 0777 settings.php
  [[ -f settings.php ]] && rm settings.php
- cp default.settings.php settings.php
+ cp install.settings.php settings.php
+ [[ -f services.yml ]] || cp install.services.yml services.yml
+ echo "\$config['config_split.config_split.development']['status'] = TRUE;" >> settings.php
  chmod 0755 settings.php
  echo "Settings reset ..."
 
@@ -37,7 +39,7 @@
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
- drush site:install -y youvo_development \
+ drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
   --site-name="${SITE_NAME}" \
@@ -45,6 +47,12 @@
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
+
+ # Import the development config split and generate dummy content.
+ echo "Importing development configuration ..."
+ drush cim -y > /dev/null 2>&1
+ echo "Generating dummy content ..."
+ drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
