@@ -4,6 +4,14 @@
  set -e
 
  SITE_FOLDER=_dev/backend
+
+ # Print the duration of each step.
+ START_TIME=$SECONDS
+ STEP_TIME=$SECONDS
+ took() {
+ 	echo "  took $((SECONDS - STEP_TIME))s"
+ 	STEP_TIME=$SECONDS
+ }
  PATH=$PATH:~/www/$SITE_FOLDER/vendor/bin
 
  cd ~
@@ -40,6 +48,7 @@
  cd ~
  cd www/$SITE_FOLDER/web
  echo "Installing Drupal ..."
+ STEP_TIME=$SECONDS
  drush site:install -y --existing-config \
   --locale="en" \
   --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
@@ -48,17 +57,21 @@
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}" > /dev/null 2>&1
+ took
 
  # Import the development config split and generate dummy content.
  echo "Importing development configuration ..."
  drush cim -y > /dev/null 2>&1
  drush cr > /dev/null 2>&1
+ took
  echo "Generating dummy content ..."
  drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
+ took
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  drush cr > /dev/null 2>&1
+ took
 
  # Set permissions for settings file.
  cd ~
@@ -67,6 +80,7 @@
  chmod 0444 default.settings.php
 
  # Bye bye.
+ echo "Installation duration: $((SECONDS - START_TIME)) seconds."
  echo "Exit in 3 seconds!"
  sleep 3
 

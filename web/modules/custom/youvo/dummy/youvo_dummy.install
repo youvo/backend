@@ -43,8 +43,13 @@ function youvo_dummy_site_install_finished(): void {
   try {
     $module_handler = \Drupal::moduleHandler();
     foreach (['creatives', 'organizations', 'academy', 'projects'] as $name) {
+      $start = microtime(TRUE);
       $module_handler->loadInclude($name . '_dummy', 'install');
       ($name . '_dummy_generate_content')();
+      // Shown by the install scripts, which run this hook via drush.
+      if (PHP_SAPI === 'cli') {
+        printf("  %s: %.1fs\n", $name, microtime(TRUE) - $start);
+      }
     }
   }
   finally {
