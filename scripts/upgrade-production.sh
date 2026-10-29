@@ -3,14 +3,25 @@
  # One-time upgrade of the old v0.2.3 production site to this codebase.
  #
  # Backs up the old database, files and settings, exports users and academy
- # content, reinstalls from existing configuration, imports the content and
- # copies the academy files to the new public files path. Files are never
- # deleted; the old files folder stays in place.
+ # content, empties the database, reinstalls from existing configuration,
+ # imports the content and copies the academy files to the new public files
+ # path. Files are never deleted; the old files folder stays in place.
+ #
+ # With --content, an existing export from scripts/export-content.sh is
+ # imported instead, e.g. after an interrupted run. The database then does not
+ # need to hold the old content.
  #
  # Run after checking out this code, switching to PHP 8.3 and running
  # composer install. Nothing is changed before all checks pass.
  #
- # Usage: scripts/upgrade-production.sh [backup directory]
+ # Usage: scripts/upgrade-production.sh [--content <export file>] [backup directory]
+
+ # Get arguments.
+ CONTENT=
+ if [[ "$1" == "--content" ]]; then
+  CONTENT=$(cd "$(dirname "$2")" && pwd -P)/$(basename "$2")
+  shift 2
+ fi
 
  # Exit on error.
  set -e
@@ -39,11 +50,17 @@
  [[ -r config/certs/public.key && -r config/certs/private.key ]] || fail "OAuth keys are missing in config/certs."
  [[ -n "$TRUSTED_HOST_PATTERN" ]] || fail "Set TRUSTED_HOST_PATTERN in config/.env.production."
  [[ -v JSONAPI_OBSCURITY_PREFIX ]] || fail "Set JSONAPI_OBSCURITY_PREFIX in config/.env.production (may be empty)."
- USERS=$(mysql "${CONNECTION[@]}" -N -e "SELECT COUNT(*) FROM users" "$DB_NAME") || fail "Cannot read the database $DB_NAME."
- [[ "$USERS" -gt 2 ]] || fail "The database has no content to migrate. Was it upgraded already?"
+ mysql "${CONNECTION[@]}" -e "SELECT 1" "$DB_NAME" > /dev/null || fail "Cannot connect to the database $DB_NAME."
+ if [[ -n "$CONTENT" ]]; then
+  [[ -r "$CONTENT" ]] || fail "$CONTENT is not readable."
+  gzip -cdf "$CONTENT" | grep -q "^INSERT INTO \`users_field_data\`" || fail "$CONTENT is not a content export."
+ else
+  USERS=$(mysql "${CONNECTION[@]}" -N -e "SELECT COUNT(*) FROM users" "$DB_NAME") || fail "Cannot read the old content in $DB_NAME. Use --content with an existing export."
+  [[ "$USERS" -gt 2 ]] || fail "The database has no content to migrate. Was it upgraded already? Use --content with an existing export."
+ fi
  [[ ! -e "$NEW_FILES/academy" ]] || fail "$NEW_FILES/academy exists already."
  [[ ! -e "$BACKUP" ]] || fail "$BACKUP exists already."
- echo "Checks passed ..."
+ echo "Checks passed. Database $DB_NAME will be emptied ..."
 
  # Back up database, files and settings.
  mkdir -p "$BACKUP"
@@ -54,9 +71,20 @@
  cp -a $SITE/services.yml "$BACKUP/" 2>/dev/null || true
  echo "Backup written to $BACKUP ..."
 
- # Export content and remember whether blocker mode is on. It lives in state.
- scripts/export-content.sh "$BACKUP/content.sql.gz"
- BLOCKER_MODE=$(mysql "${CONNECTION[@]}" -N -e "SELECT value FROM key_value WHERE collection = 'state' AND name = 'system.blocker_mode'" "$DB_NAME")
+ # Export content, or keep a copy of the given export.
+ if [[ -n "$CONTENT" ]]; then
+  cp "$CONTENT" "$BACKUP/content.sql.gz"
+  echo "Using content from $CONTENT ..."
+ else
+  scripts/export-content.sh "$BACKUP/content.sql.gz"
+ fi
+
+ # Empty the database. The database itself is kept.
+ TABLES=$(mysql "${CONNECTION[@]}" -N -e "SET SESSION group_concat_max_len = 1000000; SELECT GROUP_CONCAT(CONCAT('\`', table_name, '\`')) FROM information_schema.tables WHERE table_schema = '$DB_NAME'")
+ if [[ -n "$TABLES" && "$TABLES" != "NULL" ]]; then
+  mysql "${CONNECTION[@]}" -e "SET FOREIGN_KEY_CHECKS = 0; DROP TABLE $TABLES" "$DB_NAME"
+ fi
+ echo "Database emptied ..."
 
  # Reset settings. Keep an existing services.yml and set the obscurity prefix.
  chmod u+w $SITE $SITE/settings.php 2>/dev/null || true
@@ -85,11 +113,9 @@
  # Import content.
  scripts/import-content.sh "$BACKUP/content.sql.gz"
 
- # Restore blocker mode.
- if [[ "$BLOCKER_MODE" == "i:1;" ]]; then
-  drush state:set system.blocker_mode 1 --input-format=integer
-  echo "Blocker mode enabled ..."
- fi
+ # Enable blocker mode.
+ drush state:set system.blocker_mode 1 --input-format=integer
+ echo "Blocker mode enabled ..."
 
  # Copy academy files to the new public files path.
  mkdir -p $NEW_FILES
