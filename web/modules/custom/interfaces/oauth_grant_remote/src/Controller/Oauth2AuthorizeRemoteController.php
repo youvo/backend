@@ -195,14 +195,14 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
     // If the Auth Relay does not deliver a JWT, there was no valid session
     // found on the host site, and we have to log in the user on the original
     // host.
-    if (!isset($relay_response->jwt)) {
+    if (!isset($relay_response['jwt'])) {
       return $this->loginRedirectResponse($request, $auth_relay_server);
     }
 
     try {
       // Parse JWT.
       /** @var \Lcobucci\JWT\Token\Plain $remote_jwt */
-      $remote_jwt = $config->parser()->parse($relay_response->jwt);
+      $remote_jwt = $config->parser()->parse($relay_response['jwt']);
     }
     catch (CannotDecodeContent | InvalidTokenStructure | UnsupportedHeaderFound $e) {
       $variables = Error::decodeException($e);

@@ -14,3 +14,7 @@ oauth_grant_remote.settings:
       type: string
       label: 'Auth Relay URL'
       description: 'The URL of the Auth Relay.'
+    development:
+      type: boolean
+      label: 'Development Environment'
+      description: 'Skips the Auth Relay check for local sessions and lets organizations log in directly.'
