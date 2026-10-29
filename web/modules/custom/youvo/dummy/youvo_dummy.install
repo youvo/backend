@@ -27,20 +27,18 @@ function youvo_dummy_install(): void {
  * during the installation. Therefore, the dummy content is generated here in
  * an explicit order: Projects depend on creatives and organizations.
  *
- * The project events of the dummy content trigger mails. The default mail
- * transport is routed to the null transport while generating.
+ * The project events of the dummy content trigger hundreds of mails. The
+ * global mailer policy skips them while generating, before they are built.
  *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
 function youvo_dummy_site_install_finished(): void {
-  $transport_id = \Drupal::config('mailer_transport.settings')->get('default_transport');
-  $override_key = 'mailer_transport.mailer_transport.' . $transport_id;
+  $override_key = 'mailer_policy.mailer_policy._';
   $previous = $GLOBALS['config'][$override_key] ?? NULL;
-  $GLOBALS['config'][$override_key] = [
-    'plugin' => 'dsn',
-    'configuration' => ['dsn' => 'null://null'],
+  $GLOBALS['config'][$override_key]['configuration']['email_skip_sending'] = [
+    'message' => 'Dummy content is being generated.',
   ];
-  youvo_dummy_reset_transport($override_key);
+  youvo_dummy_reset_policy($override_key);
 
   try {
     $module_handler = \Drupal::moduleHandler();
@@ -50,23 +48,35 @@ function youvo_dummy_site_install_finished(): void {
     }
   }
   finally {
-    // Restore overrides from settings.php, e.g. the DDEV mail catcher.
+    // Restore overrides from settings.php.
     if ($previous === NULL) {
       unset($GLOBALS['config'][$override_key]);
     }
     else {
       $GLOBALS['config'][$override_key] = $previous;
     }
-    youvo_dummy_reset_transport($override_key);
+    youvo_dummy_reset_policy($override_key);
   }
 }
 
 /**
- * Drops cached copies of a mail transport, so config overrides apply.
+ * Drops cached copies of a mailer policy, so config overrides apply.
  */
-function youvo_dummy_reset_transport(string $config_name): void {
+function youvo_dummy_reset_policy(string $config_name): void {
   \Drupal::configFactory()->reset($config_name);
-  \Drupal::entityTypeManager()->getStorage('mailer_transport')->resetCache();
+  \Drupal::entityTypeManager()->getStorage('mailer_policy')->resetCache();
+}
+
+/**
+ * Returns the password field value for dummy users.
+ *
+ * Hashing is deliberately slow, so "password" is hashed once and stored as is
+ * for every dummy user.
+ */
+function youvo_dummy_get_password(): array {
+  $hash = &drupal_static(__FUNCTION__);
+  $hash ??= \Drupal::service('password')->hash('password');
+  return ['value' => $hash, 'pre_hashed' => TRUE];
 }
 
 /**
