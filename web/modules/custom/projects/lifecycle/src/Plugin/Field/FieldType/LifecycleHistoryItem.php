@@ -103,8 +103,15 @@ class LifecycleHistoryItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function mainPropertyName(): string {
+    return 'to';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isEmpty(): bool {
-    return FALSE;
+    return $this->to === NULL || $this->to === '';
   }
 
 }
