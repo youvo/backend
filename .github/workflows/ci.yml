@@ -36,7 +36,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version-file: .nvmrc
       - name: Build Manager
         working-directory: web/modules/custom/projects/manager
         run: yarn install --frozen-lockfile && yarn build
