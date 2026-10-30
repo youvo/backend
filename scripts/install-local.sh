@@ -95,6 +95,11 @@
  ddev drush cr > /dev/null 2>&1
  took
 
+ # Generate the image styles of the dummy content.
+ echo "Generating image styles ..."
+ ddev drush queue:run image_style_warmer_pregenerator > /dev/null 2>&1
+ took
+
  # Set permissions for settings file.
  cd web/sites/default || exit
  chmod 0444 settings.php
