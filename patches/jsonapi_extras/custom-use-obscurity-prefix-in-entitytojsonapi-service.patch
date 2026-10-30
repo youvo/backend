@@ -58,7 +58,7 @@ index c6e1c97..e4f83b8 100644
      }
      $request = Request::create(
 -      $jsonapi_url,
-+      '/' . ltrim($this->obscurityPrefix, '/') . $jsonapi_url,
++      rtrim('/' . trim($this->obscurityPrefix, '/'), '/') . $jsonapi_url,
        'GET',
        $query,
        $this->currentRequest->cookies->all(),
