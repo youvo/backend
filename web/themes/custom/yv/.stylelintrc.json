@@ -47,6 +47,6 @@
   },
   "ignoreFiles": [
     "node_modules/**/*",
-    "css/**/*"
+    "dist/**/*"
   ]
 }

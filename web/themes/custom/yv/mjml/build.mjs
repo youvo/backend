@@ -42,8 +42,8 @@ for (const [pattern, replacement] of strip) {
   html = html.replace(pattern, replacement);
 }
 
-mkdirSync('build', { recursive: true });
-writeFileSync('build/layout.html', html);
+mkdirSync('dist', { recursive: true });
+writeFileSync('dist/layout.html', html);
 
 const twig = `{#
 /**
