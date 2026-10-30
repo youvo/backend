@@ -18,6 +18,16 @@
  cd www/$SITE_FOLDER
  set -a; source config/.env.development; set +a
 
+ # Reject web requests until the script ends, see settings.php below. Requests
+ # during site:install cache outdated field storage definitions, which the
+ # installer never clears, since it only uses in-memory caches.
+ # site:install makes the folder read-only, so it is made writable to remove
+ # the flag.
+ SITES_DEFAULT=~/www/$SITE_FOLDER/web/sites/default
+ chmod 0755 "$SITES_DEFAULT"
+ touch "$SITES_DEFAULT/installing"
+ trap 'chmod u+w "$SITES_DEFAULT"; rm -f "$SITES_DEFAULT/installing"; chmod a-w "$SITES_DEFAULT"' EXIT
+
  # Delete database.
  mysql -e "DROP DATABASE IF EXISTS ${DB_NAME}"
  mysql -e "CREATE DATABASE ${DB_NAME}"
@@ -34,6 +44,13 @@
  cp install.settings.php settings.php
  [[ -f services.yml ]] || cp install.services.yml services.yml
  echo "\$config['config_split.config_split.development']['status'] = TRUE;" >> settings.php
+ cat >> settings.php <<'EOF'
+// Reject web requests while scripts/install-development.sh runs.
+if (PHP_SAPI !== 'cli' && file_exists(__DIR__ . '/installing')) {
+  http_response_code(503);
+  exit('Installation in progress.');
+}
+EOF
  chmod 0755 settings.php
  echo "Settings reset ..."
 
