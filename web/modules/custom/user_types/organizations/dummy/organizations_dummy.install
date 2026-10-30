@@ -82,7 +82,7 @@ function organizations_dummy_generate_content(): void {
       'name' => $mail,
       'mail' => $mail,
       'type' => 'organization',
-      'pass' => 'password',
+      'pass' => youvo_dummy_get_password(),
       'status' => 1,
     ];
 

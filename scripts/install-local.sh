@@ -8,6 +8,11 @@
 
  # Display time.
  START_TIME=$SECONDS
+ STEP_TIME=$SECONDS
+ took() {
+ 	echo "  took $((SECONDS - STEP_TIME))s"
+ 	STEP_TIME=$SECONDS
+ }
  NOW=$(date +"%T")
  echo "Installation started at: $NOW"
 
@@ -35,9 +40,10 @@
  chmod 0777 settings.php
  echo "Settings reset ..."
 
- # Reset files folder.
+ # Reset files folder. The public files path is web/files.
+ cd ../.. || exit
  if test -d "files"; then
- 	sudo chmod 0777 files
+ 	sudo chmod -R 0777 files
  	rm -rf files
  fi
  mkdir files
@@ -49,7 +55,7 @@
  echo "Files folder reset ..."
 
  # Start Docker containers.
- cd ../../..
+ cd ..
  echo "Starting Docker containers ..."
  ddev start > /dev/null 2>&1
 
@@ -64,6 +70,7 @@
 
  # Reinstall drupal.
  echo "Installing Drupal ..."
+ STEP_TIME=$SECONDS
  ddev drush si --yes --existing-config \
   --locale=en \
   --db-url="${DB_DRIVER}"://"${DB_USER}":"${DB_PASSWORD}"@"${DB_HOST}":"${DB_PORT}"/"${DB_NAME}" \
@@ -72,16 +79,21 @@
   --account-name="${ACCOUNT_NAME}" \
   --account-mail="${ACCOUNT_MAIL}" \
   --account-pass="${ACCOUNT_PASS}"
+ took
 
  # Import the development config split and generate dummy content.
  echo "Importing development configuration ..."
  ddev drush cim -y > /dev/null 2>&1
+ ddev drush cr > /dev/null 2>&1
+ took
  echo "Generating dummy content ..."
  ddev drush php:eval "\Drupal::moduleHandler()->invoke('youvo_dummy', 'site_install_finished');"
+ took
 
  # Rebuild Cache.
  echo "Rebuilding Cache ..."
  ddev drush cr > /dev/null 2>&1
+ took
 
  # Set permissions for settings file.
  cd web/sites/default || exit

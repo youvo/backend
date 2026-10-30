@@ -69,7 +69,7 @@ function creatives_dummy_generate_content(): void {
       'name' => $mail,
       'mail' => $mail,
       'roles' => $roles,
-      'pass' => 'password',
+      'pass' => youvo_dummy_get_password(),
       'status' => 1,
       'field_avatar' => [
         'target_id' => $image_file->id(),

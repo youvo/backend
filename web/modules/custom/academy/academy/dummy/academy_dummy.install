@@ -6,10 +6,7 @@
  */
 
 use Drupal\Component\Utility\Random;
-use Drupal\Core\Entity\EntityStorageException;
-use Drupal\Core\Utility\Error;
 use Drupal\courses\Entity\Course;
-use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
@@ -380,72 +377,21 @@ function academy_dummy_generate_content(): void {
  * Returns stock image file.
  */
 function academy_dummy_get_stock_image(int $i): FileInterface {
-
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
-  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/img/' . $index . '.jpg';
-  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.jpg');
-  $image_file = File::create([
-    'uri' => $public_path,
-    'uid' => 1,
-    'status' => 1,
-  ]);
-  try {
-    $image_file->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('academy')
-      ->error('An error occurred while creating stock academy images. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  return $image_file;
+  return youvo_dummy_get_file('academy_dummy', 'img/' . $index . '.jpg');
 }
 
 /**
  * Returns stock illustration file.
  */
 function academy_dummy_get_stock_illustration(int $i): FileInterface {
-
   $index = sprintf('%02d', (($i - 1) % 7) + 1);
-  $image_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/gfx/' . $index . '.png';
-  $public_path = \Drupal::service('file_system')->copy($image_path, 'public://' . $index . '.png');
-  $image_file = File::create([
-    'uri' => $public_path,
-    'uid' => 1,
-    'status' => 1,
-  ]);
-  try {
-    $image_file->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('academy')
-      ->error('An error occurred while creating stock academy illustration. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  return $image_file;
+  return youvo_dummy_get_file('academy_dummy', 'gfx/' . $index . '.png');
 }
 
 /**
  * Returns test file.
  */
 function academy_dummy_get_test_file(): FileInterface {
-
-  $file_path = \Drupal::service('extension.list.module')->getPath('academy_dummy') . '/file/test.txt';
-  $public_path = \Drupal::service('file_system')->copy($file_path, 'public://test.txt');
-  $file = File::create([
-    'uri' => $public_path,
-    'uid' => 1,
-    'status' => 1,
-  ]);
-  try {
-    $file->save();
-  }
-  catch (EntityStorageException $e) {
-    $variables = Error::decodeException($e);
-    \Drupal::logger('academy')
-      ->error('An error occurred while creating test file. %type: @message in %function (line %line of %file).', $variables);
-  }
-
-  return $file;
+  return youvo_dummy_get_file('academy_dummy', 'file/test.txt');
 }
