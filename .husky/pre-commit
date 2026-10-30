@@ -9,3 +9,22 @@ if [ -x "vendor/bin/grumphp" ]; then
     exit $grumphp_status
   fi
 fi
+
+# Frontend build output is committed and deployed from git. Rebuild a package
+# when its sources are staged and stage the output along with them. Paths after
+# the package folder are relative to it: the output, then the sources.
+build() {
+  dir=$1 output=$2
+  shift 2
+  (cd "$dir" && git diff --cached --quiet -- "$@") && return
+  if [ ! -d "$dir/node_modules" ]; then
+    echo "⚠️  Skipping the $dir build, dependencies are not installed."
+    return
+  fi
+  echo "Building $dir..."
+  (cd "$dir" && npm run build >/dev/null && git add -- "$output")
+}
+
+build web/modules/custom/projects/manager dist assets css js vite.config.js package.json yarn.lock || exit 1
+build web/themes/custom/yv dist sass vite.config.js package.json yarn.lock || exit 1
+build web/themes/custom/yv/mjml ../templates/email-wrap--mailer.html.twig src build.mjs package.json package-lock.json || exit 1

@@ -2,7 +2,7 @@ import autoprefixer from 'autoprefixer'
 
 export default {
   build: {
-    outDir: 'css',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {

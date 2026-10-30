@@ -126,6 +126,24 @@ The hook runs `vendor/bin/grumphp` on the host, so the Composer dependencies and
 
 You can run all checks manually with `npm run grumphp`. To skip the hook in an emergency, use `git commit --no-verify`.
 
+### Frontend builds
+
+Deployments check out the repository without a build step, so the build output is committed. There are three packages:
+
+- `web/modules/custom/projects/manager` builds its CSS and JS into `dist/` (Vite, `yarn build`).
+- `web/themes/custom/yv` builds its SASS into `dist/` (Vite, `yarn build`).
+- `web/themes/custom/yv/mjml` compiles the mail layout into `templates/email-wrap--mailer.html.twig` (MJML, `npm run build`).
+
+Install the dependencies of each package on the host (not inside DDEV), using the Node version in `.nvmrc`:
+
+```bash
+(cd web/modules/custom/projects/manager && yarn install)
+(cd web/themes/custom/yv && yarn install)
+(cd web/themes/custom/yv/mjml && npm install)
+```
+
+When the sources of a package are staged, the pre-commit hook rebuilds the package and stages its output. Packages without installed dependencies are skipped. The CI job "Frontend Build" fails when the committed output is out of date.
+
 ### PHPStorm CodeSniffer configuration
 
 * https://www.drupal.org/node/1419988

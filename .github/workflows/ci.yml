@@ -27,6 +27,34 @@ jobs:
       - name: Static Code Analysis
         run: vendor/bin/phpstan analyze web/modules/custom
 
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Build Manager
+        working-directory: web/modules/custom/projects/manager
+        run: yarn install --frozen-lockfile && yarn build
+      - name: Build Theme
+        working-directory: web/themes/custom/yv
+        run: yarn install --frozen-lockfile && yarn build
+      - name: Build Mail Layout
+        working-directory: web/themes/custom/yv/mjml
+        run: npm ci && npm run build
+      - name: Check Committed Build
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            git diff
+            echo "The committed build is out of date. Run the builds and commit the output."
+            exit 1
+          fi
+
   test:
     name: Testing
     runs-on: ubuntu-latest

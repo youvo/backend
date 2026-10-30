@@ -1,0 +1,2 @@
+dist/** linguist-generated=true -diff
+templates/email-wrap--mailer.html.twig linguist-generated=true -diff

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import mjml from 'mjml';
 
 const { html: compiled, errors } = await mjml(readFileSync('src/layout.mjml', 'utf8'), {
@@ -41,9 +41,6 @@ for (const [pattern, replacement] of strip) {
   }
   html = html.replace(pattern, replacement);
 }
-
-mkdirSync('build', { recursive: true });
-writeFileSync('build/layout.html', html);
 
 const twig = `{#
 /**

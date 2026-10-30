@@ -3,7 +3,7 @@ import postcssUrl from 'postcss-url';
 
 export default {
   build: {
-    outDir: 'build',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {

@@ -23,6 +23,6 @@
   },
   "ignoreFiles": [
     "node_modules/**/*",
-    "build/**/*"
+    "dist/**/*"
   ]
 } 
