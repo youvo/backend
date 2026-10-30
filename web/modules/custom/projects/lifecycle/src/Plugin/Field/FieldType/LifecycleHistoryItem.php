@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lifecycle\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,20 +15,18 @@ use Drupal\Core\TypedData\DataDefinition;
  *
  * This field type does not provide an UI and is intended to be used in code.
  *
- * @FieldType(
- *   id = "lifecycle_history_item",
- *   label = @Translation("Lifecyle History"),
- *   description = @Translation("Allows you to store a workflow state."),
- *   default_formatter = NULL,
- *   default_widget = NULL,
- * )
- *
  * @property string|null $transition
  * @property string|null $from
  * @property string $to
  * @property int $uid
  * @property int $timestamp
  */
+#[FieldType(
+  id: 'lifecycle_history_item',
+  label: new TranslatableMarkup('Lifecycle History'),
+  description: new TranslatableMarkup('Stores the transitions of a workflow state.'),
+  no_ui: TRUE,
+)]
 class LifecycleHistoryItem extends FieldItemBase {
 
   /**
