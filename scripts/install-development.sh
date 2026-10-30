@@ -73,6 +73,11 @@
  drush cr > /dev/null 2>&1
  took
 
+ # Generate the image styles of the dummy content in the background, since
+ # ImageMagick takes minutes. There is no cron to process the queue.
+ echo "Generating image styles in the background ..."
+ nohup drush queue:run image_style_warmer_pregenerator > ~/image-style-warmer.log 2>&1 &
+
  # Set permissions for settings file.
  cd ~
  cd www/$SITE_FOLDER/web/sites/default

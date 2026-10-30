@@ -30,6 +30,10 @@ function youvo_dummy_install(): void {
  * The project events of the dummy content trigger hundreds of mails. The
  * global mailer policy skips them while generating, before they are built.
  *
+ * The image styles of the dummy files are queued instead of being generated
+ * when the process ends, which takes minutes with ImageMagick. The install
+ * scripts process the queue.
+ *
  * @see https://www.drupal.org/project/drupal/issues/2924549
  */
 function youvo_dummy_site_install_finished(): void {
@@ -39,6 +43,16 @@ function youvo_dummy_site_install_finished(): void {
     'message' => 'Dummy content is being generated.',
   ];
   youvo_dummy_reset_policy($override_key);
+
+  // The image style warmer keeps the settings it was created with, so the
+  // override still applies when the process ends. It must be NULL, because an
+  // empty array is merged into the configured styles.
+  $warmer_key = 'image_style_warmer.settings';
+  $previous_warmer = $GLOBALS['config'][$warmer_key] ?? NULL;
+  $styles = \Drupal::config($warmer_key)->get('initial_image_styles');
+  $GLOBALS['config'][$warmer_key]['initial_image_styles'] = NULL;
+  $GLOBALS['config'][$warmer_key]['queue_image_styles'] = $styles;
+  \Drupal::configFactory()->reset($warmer_key);
 
   try {
     $module_handler = \Drupal::moduleHandler();
@@ -61,6 +75,13 @@ function youvo_dummy_site_install_finished(): void {
       $GLOBALS['config'][$override_key] = $previous;
     }
     youvo_dummy_reset_policy($override_key);
+    if ($previous_warmer === NULL) {
+      unset($GLOBALS['config'][$warmer_key]);
+    }
+    else {
+      $GLOBALS['config'][$warmer_key] = $previous_warmer;
+    }
+    \Drupal::configFactory()->reset($warmer_key);
   }
 }
 
