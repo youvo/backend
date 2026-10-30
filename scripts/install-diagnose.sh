@@ -7,6 +7,9 @@
 # samples other PHP processes during the install to spot concurrent access.
 #
 # WARNING: This resets the dev installation, like "make install".
+#
+# With --check, it only runs the check on the current installation and lists
+# running PHP processes, without resetting anything.
 
 set -e
 
@@ -14,12 +17,6 @@ SITE_FOLDER=_dev/backend
 SITE=~/www/$SITE_FOLDER
 LOG=~/install-diagnose-$(date +%Y%m%d-%H%M%S).log
 PATH=$PATH:$SITE/vendor/bin
-
-read -r -p "This resets the installation in $SITE. Continue? [y/n] " REPLY
-[[ $REPLY =~ ^[Yy]$ ]] || exit 1
-
-# Log everything to the terminal and the log file.
-exec > >(tee -a "$LOG") 2>&1
 
 # Compares the current field storage definitions with the installed ones, both
 # in the database record (key_value) and in the cached copy (cache_discovery).
@@ -62,6 +59,19 @@ watch_processes() {
     sleep 1
   done > "$LOG.processes"
 }
+
+if [[ $1 == "--check" ]]; then
+  check "nothing (check only)"
+  echo "--- running PHP processes"
+  ps -eo pid,ppid,lstart,args | grep -E "php|drush" | grep -vE "grep|ps -eo" || echo "(none)"
+  exit 0
+fi
+
+read -r -p "This resets the installation in $SITE. Continue? [y/n] " REPLY
+[[ $REPLY =~ ^[Yy]$ ]] || exit 1
+
+# Log everything to the terminal and the log file.
+exec > >(tee -a "$LOG") 2>&1
 
 echo "Log: $LOG"
 echo "Commit: $(cd "$SITE" && git log --oneline -1)"
