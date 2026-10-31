@@ -124,7 +124,8 @@
 .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) > .form-item {
   margin: 0 !important;
   display: flex;
-  align-items: flex-end;
+  /* The label sits on the line of the date text. */
+  align-items: baseline;
   gap: 0.5rem;
 }
 
@@ -134,7 +135,6 @@
   height: auto;
   overflow: visible;
   clip-path: none;
-  padding-bottom: 0.4rem;
   color: var(--logbook-muted);
   font-size: var(--logbook-text-xs);
 }

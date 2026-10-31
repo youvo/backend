@@ -27,6 +27,24 @@
   min-width: 4rem;
 }
 
+/* Tags, the placeholder and the typed text share one line: the typing line
+   is as high as a tag, with its text centered as in the tags. Tags and text
+   start where the text of the other filters starts. Tagify forces no padding
+   on the bar. */
+.tagify.logbook-search {
+  padding-inline-start: 4px !important;
+}
+
+.views-exposed-form .tagify.logbook-search.form-element > .tagify__input {
+  height: auto;
+  /* Tagify makes it one and a half lines high, with the text at the top. */
+  min-height: 32px;
+  margin-block: 2px;
+  margin-inline: 3px 5px;
+  padding-block: 0;
+  line-height: 32px;
+}
+
 /* In a narrow bar, the name is shortened, never the type label. */
 .tagify.logbook-search .tagify__tag > div {
   min-width: 0;
