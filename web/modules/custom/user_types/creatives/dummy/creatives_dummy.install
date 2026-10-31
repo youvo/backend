@@ -9,6 +9,9 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Utility\Error;
+use Drupal\creatives\Entity\Creative;
+use Drupal\creatives\Event\CreativeRegisterEvent;
+use Drupal\logbook\LogInterface;
 use Drupal\user\Entity\User;
 use Faker\Factory;
 
@@ -113,5 +116,50 @@ function creatives_dummy_generate_content(): void {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
       ->error('An error occurred while deleting dummy creative. %type: @message in %function (line %line of %file).', $variables);
+  }
+}
+
+/**
+ * Logs the registrations of the creatives.
+ *
+ * Called by youvo_dummy_site_install_finished() after the projects, so a
+ * creative registers a few days before the first log with them, mostly an
+ * application. Creatives without such a log register some time in the year of
+ * the projects. The mail with the link is skipped while the dummy content is
+ * generated.
+ */
+function creatives_dummy_log_registrations(): void {
+  $current_time = \Drupal::time()->getRequestTime();
+  $one_year_ago = $current_time - 31536000;
+  /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
+  $event_dispatcher = \Drupal::service('event_dispatcher');
+  try {
+    $log_storage = \Drupal::entityTypeManager()->getStorage('log');
+    $creative_ids = \Drupal::entityQuery('user')
+      ->accessCheck(FALSE)
+      ->condition('roles', 'creative')
+      ->execute();
+    foreach (Creative::loadMultiple($creative_ids) as $id => $creative) {
+      $first = $log_storage->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('creatives', $id)
+        ->sort('created')
+        ->range(0, 1)
+        ->execute();
+      $first_log = $first ? $log_storage->load(reset($first)) : NULL;
+      if ($first_log instanceof LogInterface) {
+        $registered = max($one_year_ago, $first_log->getCreatedTime() - random_int(86400, 14 * 86400));
+      }
+      else {
+        $registered = random_int($one_year_ago, $current_time);
+      }
+      $creative->set('created', $registered)->save();
+      $event_dispatcher->dispatch(new CreativeRegisterEvent($creative, 'https://www.youvo.org', $registered));
+    }
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while logging dummy registrations. %type: @message in %function (line %line of %file).', $variables);
   }
 }
