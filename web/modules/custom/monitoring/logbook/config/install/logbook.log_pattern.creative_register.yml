@@ -2,13 +2,13 @@ langcode: de
 status: true
 dependencies: {  }
 id: creative_register
-label: 'Creative Register'
+label: Register
 tokens:
   -
     token: '%Creative'
     required: 0
 detectable: true
-observable: false
+observable: true
 public: false
 promote: false
 hidden: false

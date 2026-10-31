@@ -5,13 +5,13 @@ dependencies: {  }
 _core:
   default_config_hash: MRRF314jY8kfN9XkRkEQNTvZKzn8DqXiMb4gveSDCYI
 id: creative_register
-label: 'Creative Register'
+label: Register
 tokens:
   -
     token: '%Creative'
     required: 0
 detectable: true
-observable: false
+observable: true
 public: false
 promote: false
 hidden: false
