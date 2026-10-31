@@ -372,13 +372,21 @@
     grid-area: event;
   }
 
-  /* The celebrated row keeps its tint and sparkles, with room at the sides;
-     the illustration would cover the text. */
+  /* The celebrated row is a tinted band, as on a wide screen: square, with
+     room for the text at its sides, and without lines above and below, as
+     the tint sets it apart. The illustration would cover the text. */
   .view-logbook tr.logbook-row--celebrate {
-    margin-block: 0.75rem;
     padding-inline: 0.75rem;
     border-bottom: 0;
-    border-radius: var(--logbook-radius-m);
+  }
+
+  .view-logbook tbody tr:has(+ tr.logbook-row--celebrate) {
+    border-bottom-color: transparent;
+  }
+
+  /* Bands that follow each other are told apart by a line in their tint. */
+  .view-logbook tr.logbook-row--celebrate:has(+ tr.logbook-row--celebrate) {
+    border-bottom: 1px solid color-mix(in srgb, var(--logbook-teal) 45%, var(--logbook-surface));
   }
 
   .view-logbook tr.logbook-row--celebrate td {
