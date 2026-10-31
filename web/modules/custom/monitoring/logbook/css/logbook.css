@@ -1,7 +1,8 @@
 /*
- * The logbook table. The tokens follow the manager's pane-ui.css: Gin sets the
- * look, the fallbacks are the values of the default Gin theme. They are scoped
- * to the view, so the logbook does not depend on the manager module.
+ * The logbook page: filters, table and empty state. The tokens follow the
+ * manager's pane-ui.css: Gin sets the look, the fallbacks are the values of
+ * the default Gin theme. They are scoped to the view, so the logbook does not
+ * depend on the manager module.
  */
 .view-logbook {
   --logbook-ink: var(--gin-color-title, #222330);
@@ -29,18 +30,40 @@
   margin-bottom: 1.25rem;
 }
 
+/* Gin leaves room for labels above the fields; the fields have none, so the
+   card gets the same space at the top as at the sides and the bottom. The
+   doubled class wins over Gin's own doubled-class selector. */
+.view-logbook .views-exposed-form.views-exposed-form {
+  padding-block-start: var(--gin-spacing-l, 1.5rem);
+}
+
 .view-logbook .views-exposed-form .form-item,
 .view-logbook .views-exposed-form .form-actions {
   margin: 0;
 }
 
-/* The search takes the free space. */
-.view-logbook .views-exposed-form .js-form-item-search {
-  flex: 1 1 16rem;
+/* The search bar takes a row of its own, with room for several tags; the
+   other filters follow in the next row. */
+.view-logbook .views-exposed-form .js-form-item-tags {
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
-.view-logbook .views-exposed-form .js-form-item-search input {
+/* The search bar is an underlined field, as the other filters are. */
+.view-logbook .views-exposed-form .js-form-item-tags .tagify {
+  box-sizing: border-box;
   width: 100%;
+  min-height: 2.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--logbook-field-line);
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none !important;
+}
+
+.view-logbook .views-exposed-form .js-form-item-tags .tagify.tagify--focus {
+  border-bottom-color: var(--logbook-accent);
+  box-shadow: 0 1px 0 0 var(--logbook-accent) !important;
 }
 
 /* Labels are read out, not shown: the fields have placeholders or first
@@ -74,6 +97,12 @@
   outline: none;
 }
 
+/* The input behind the search bar holds the tags as data: never show it,
+   not even before Tagify has started. */
+.view-logbook .views-exposed-form input.logbook-search {
+  color: transparent;
+}
+
 /* The date range: From and To labels sit in front of their fields, in one
    row with the other filters. */
 .view-logbook .views-exposed-form fieldset {
@@ -96,7 +125,8 @@
 .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) > .form-item {
   margin: 0 !important;
   display: flex;
-  align-items: flex-end;
+  /* The label sits on the line of the date text. */
+  align-items: baseline;
   gap: 0.5rem;
 }
 
@@ -106,9 +136,15 @@
   height: auto;
   overflow: visible;
   clip-path: none;
-  padding-bottom: 0.4rem;
   color: var(--logbook-muted);
   font-size: var(--logbook-text-xs);
+}
+
+.view-logbook .views-exposed-form.views-exposed-form > .form-actions {
+  display: flex;
+  gap: 0.5rem;
+  /* Gin sets the buttons apart; here they follow the row gap. */
+  margin-block: 0;
 }
 
 .view-logbook .views-exposed-form .form-actions .button {
@@ -118,14 +154,101 @@
   padding-block: 0;
 }
 
-/* On a narrow screen the controls fill the row; the two dates share one. */
+/* Further filters: on a wide screen they always show. On narrower screens a
+   button opens them; the script adds it and folds them away unless one is
+   set. */
+.view-logbook .logbook-filters-toggle {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .view-logbook .logbook-filters-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--logbook-accent);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .view-logbook .logbook-filters-toggle::after {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline-start: 0.125rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    content: '';
+    transform: translateY(-0.125rem) rotate(45deg);
+    transition: transform 0.15s;
+  }
+
+  .view-logbook .logbook-filters-toggle[aria-expanded='true']::after {
+    transform: translateY(0.125rem) rotate(-135deg);
+  }
+
+  /* Gin rings a focused button; for the keyboard, the label gets a ring. */
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible > span {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--logbook-accent);
+    outline-offset: 2px;
+  }
+
+  /* Open, the filters start on a new row below the button. */
+  .view-logbook .logbook-filters-toggle[aria-expanded='true'] {
+    flex-basis: 100%;
+  }
+
+  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset) {
+    display: none;
+  }
+}
+
+/* On a phone every control takes a row of its own, at full width, and the
+   buttons share the last row with room for a thumb. */
 @media (max-width: 640px) {
+  .view-logbook .views-exposed-form.views-exposed-form {
+    padding-block-start: var(--gin-spacing-s, 0.75rem);
+  }
+
+  .view-logbook .views-exposed-form {
+    column-gap: 0.75rem;
+  }
+
   .view-logbook .views-exposed-form > :is(.form-item, fieldset) {
     flex: 1 1 100%;
   }
 
+  /* As high as the buttons, which have room for a thumb on a phone. */
+  .view-logbook .views-exposed-form .logbook-filters-toggle {
+    min-height: 2.75rem;
+  }
+
+  /* The buttons share the row with "Weitere Filter" when they fit; both
+     buttons need a row of their own. */
+  .view-logbook .views-exposed-form > .form-actions {
+    flex: 1 1 12rem;
+    flex-wrap: nowrap;
+  }
+
+  .view-logbook .views-exposed-form > .form-actions:has(.button + .button) {
+    flex-basis: 100%;
+  }
+
   .view-logbook .views-exposed-form :is(input.form-text, select.form-select) {
     width: 100%;
+    max-width: none;
   }
 
   .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) {
@@ -133,8 +256,12 @@
   }
 
   .view-logbook .views-exposed-form fieldset :is(.fieldset-wrapper, .fieldset__wrapper) > .form-item {
-    flex: 1 1 9rem;
+    flex: 1 1 100%;
     min-width: 0;
+  }
+
+  .view-logbook .views-exposed-form fieldset .form-item > label {
+    min-width: 2.5rem;
   }
 
   .view-logbook .views-exposed-form fieldset input.form-date {
@@ -142,6 +269,37 @@
     min-width: 0;
     width: 100%;
   }
+
+  .view-logbook .views-exposed-form .form-actions .button {
+    flex: 1 1 0;
+    min-height: 2.75rem;
+  }
+}
+
+/* The columns explain themselves: the header is read out, but not shown,
+   and the list starts with the first log. */
+.view-logbook thead th {
+  height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Without a visible header, the list keeps the same space to the top and
+   bottom of its card as to the sides: no header line, and neither Gin's pull
+   towards the header nor the margin below the table. */
+.view-logbook thead tr {
+  border-bottom: 0 !important;
+}
+
+.view-logbook .gin-table-scroll-wrapper {
+  margin-top: 0;
+}
+
+.view-logbook table {
+  margin-bottom: 0;
 }
 
 /* Table cells. */
@@ -164,6 +322,12 @@
 
 .view-logbook td.views-field-created {
   font-size: var(--logbook-text-xs);
+}
+
+/* Long lines are hard to read: the event text stops growing on wide
+   screens, while the table keeps the full width. */
+.view-logbook .logbook-event {
+  max-width: 75ch;
 }
 
 .logbook-event__message {
@@ -192,6 +356,11 @@
 
 .logbook-type--celebrate {
   background: color-mix(in srgb, var(--logbook-teal, #1da8a5) 40%, var(--logbook-surface, #fff));
+}
+
+/* On its tinted row, the pill would blend in: it is set off in white. */
+.view-logbook tr.logbook-row--celebrate .logbook-type--celebrate {
+  background: var(--logbook-surface, #fff);
 }
 
 /* Visibility icons: grey, drawn with masks so they follow the text color. */
@@ -225,13 +394,6 @@
   mask-image: url('../assets/star.svg');
 }
 
-/* The title of the visibility column is read out, but not shown. No absolute
-   positioning: it would escape the scroll wrapper of the table. */
-.view-logbook th.logbook-visually-hidden {
-  font-size: 0;
-  line-height: 0;
-}
-
 /* A completed project is the ultimate log: the whole row is colored, with the
    sparkle pattern and the finish illustration of the old youvo.org logbook.
    The tint is set on the row, so the pattern runs across the cells. */
@@ -261,4 +423,120 @@
   height: 64px;
   background: url('../assets/finish.svg') no-repeat right bottom / contain;
   pointer-events: none;
+}
+
+/* On a phone each log is a card: the type, the date and the visibility in a
+   line, the event below at full width. The header is not shown; the list
+   stays sorted newest first. */
+@media (max-width: 640px) {
+  .view-logbook table,
+  .view-logbook tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .view-logbook thead {
+    display: none;
+  }
+
+  .view-logbook tbody tr {
+    display: grid;
+    grid-template-areas:
+      'type date visibility'
+      'event event event';
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--logbook-line);
+  }
+
+  .view-logbook tbody td {
+    display: block;
+    width: auto;
+    padding: 0;
+    border: 0;
+  }
+
+  .view-logbook td.views-field-log-type {
+    grid-area: type;
+  }
+
+  .view-logbook td.views-field-created {
+    grid-area: date;
+  }
+
+  .view-logbook td.views-field-log-visibility {
+    grid-area: visibility;
+  }
+
+  .view-logbook td.views-field-log-event-text {
+    grid-area: event;
+  }
+
+  /* The celebrated row is a tinted band, as on a wide screen: square and
+     without lines above and below, as the tint sets it apart. The
+     illustration would cover the text. */
+  .view-logbook tr.logbook-row--celebrate {
+    /* The band reaches the edges of the card, so its pill, text and icon
+       stay on the lines of the other logs. */
+    margin-inline: calc(-1 * var(--gin-spacing-s, 0.75rem));
+    padding-inline: var(--gin-spacing-s, 0.75rem);
+    border-bottom: 0;
+  }
+
+  /* The cards never scroll sideways; the scroll wrapper of the table would
+     cut off the band. */
+  .view-logbook .gin-table-scroll-wrapper {
+    overflow: visible;
+  }
+
+  .view-logbook tbody tr:has(+ tr.logbook-row--celebrate) {
+    border-bottom-color: transparent;
+  }
+
+  /* Bands that follow each other are told apart by a line in their tint. */
+  .view-logbook tr.logbook-row--celebrate:has(+ tr.logbook-row--celebrate) {
+    border-bottom: 1px solid color-mix(in srgb, var(--logbook-teal) 45%, var(--logbook-surface));
+  }
+
+  .view-logbook tr.logbook-row--celebrate td {
+    height: auto;
+  }
+
+  .view-logbook tr.logbook-row--celebrate td.views-field-log-event-text {
+    padding-right: 0;
+  }
+
+  .view-logbook tr.logbook-row--celebrate td.views-field-log-event-text::after {
+    display: none;
+  }
+}
+
+/* A logbook without entries, or a search without results: a card like the
+   list. */
+.view-logbook .logbook-empty {
+  padding: var(--gin-spacing-l, 1.5rem);
+  border-radius: var(--gin-border-l, 1rem);
+  background: var(--logbook-surface);
+  box-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 0.05));
+}
+
+.view-logbook .logbook-empty__title {
+  margin: 0;
+  color: var(--logbook-ink);
+  font-weight: 600;
+}
+
+.view-logbook .logbook-empty__hint {
+  margin: 0.25rem 0 0;
+  color: var(--logbook-muted);
+}
+
+/* On a phone the pager keeps one row: the arrows stay, first and last go. */
+@media (max-width: 640px) {
+  .view-logbook .pager__item--first,
+  .view-logbook .pager__item--last {
+    display: none;
+  }
 }

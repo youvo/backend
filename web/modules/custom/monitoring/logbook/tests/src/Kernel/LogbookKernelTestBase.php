@@ -26,6 +26,7 @@ abstract class LogbookKernelTestBase extends ProjectEventSubscriberTestBase {
     'system',
     'views',
     'youvo',
+    'tagify',
     'logbook',
   ];
 

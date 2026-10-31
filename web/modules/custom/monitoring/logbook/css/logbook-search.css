@@ -1,0 +1,79 @@
+/**
+ * @file
+ * The logbook search bar, on top of Tagify's Gin styles.
+ *
+ * Tagify's Gin styles force some values with !important, which is why a few
+ * rules here need it too.
+ */
+
+/* The bar: tags and text start where the text of the other filters starts.
+   Tagify's light grey placeholder is too faint to read. */
+.tagify.logbook-search {
+  --placeholder-color: color-mix(in srgb, var(--gin-color-text-light, #545560) 85%, var(--gin-bg-layer, #fff));
+  padding-inline-start: 4px !important;
+}
+
+/* The typing line is as high as a tag, with its text centered as in the
+   tags, so tags, placeholder and text share one line. Tagify makes it one
+   and a half lines high, with the text at the top. */
+.views-exposed-form .tagify.logbook-search.form-element > .tagify__input {
+  min-width: 4rem;
+  height: auto;
+  min-height: 32px;
+  margin-block: 2px;
+  margin-inline: 3px 5px;
+  padding-block: 0;
+  line-height: 32px;
+}
+
+/* Wrapped tags keep a gap between their rows. */
+.tagify.logbook-search .tagify__tag {
+  margin-block: 2px !important;
+}
+
+/* In a narrow bar, the name is shortened, never the type label. */
+.tagify.logbook-search .tagify__tag > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tagify.logbook-search .tagify__tag-text {
+  overflow: hidden;
+  min-width: 0;
+  /* Room for the slant of italic text, which overflow would cut off. */
+  padding-inline-end: 0.15em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tagify.logbook-search .tagify__tag__info-label-wrap {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Text tags are told apart from people, organizations and projects. */
+.tagify__tag.logbook-search__text {
+  --tag-bg: var(--gin-color-primary-light, #e6ecfa);
+  --tag-hover: var(--gin-color-primary-light-hover, #d6e0f7);
+}
+
+.tagify__tag.logbook-search__text :is(.tagify__tag-text, .tagify__tag-text-with-entity-id) {
+  font-style: italic;
+}
+
+/* The suggestions lie over the other filters: give them an edge. Tagify
+   attaches them to the page, outside the bar. */
+.tagify__dropdown .tagify__dropdown__wrapper {
+  border: 1px solid var(--gin-border-color, #d3d4d9);
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: var(--gin-shadow-l2, 0 0.5rem 1.5rem rgb(0 0 0 / 0.15));
+}
+
+/* On a phone a long tag leaves little room: the typing line stays beside it
+   and moves to a row of its own once there is text, instead of leaving an
+   empty row below the tags. */
+@media (max-width: 640px) {
+  .views-exposed-form .tagify.logbook-search.form-element > .tagify__input {
+    min-width: 1.5rem;
+  }
+}

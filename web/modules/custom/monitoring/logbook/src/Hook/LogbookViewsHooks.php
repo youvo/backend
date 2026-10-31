@@ -2,8 +2,6 @@
 
 namespace Drupal\logbook\Hook;
 
-use Drupal\Core\Cache\Cache;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -17,8 +15,6 @@ class LogbookViewsHooks {
 
   use StringTranslationTrait;
 
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
-
   /**
    * Implements hook_views_data_alter().
    *
@@ -27,6 +23,11 @@ class LogbookViewsHooks {
    */
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data): void {
+    $data['views']['logbook_empty'] = [
+      'title' => $this->t('Logbook: Empty'),
+      'help' => $this->t('Says why the logbook is empty.'),
+      'area' => ['id' => 'logbook_empty'],
+    ];
     if (!isset($data['log'])) {
       return;
     }
@@ -45,6 +46,11 @@ class LogbookViewsHooks {
       'help' => $this->t('Limits the logs to the enabled, observable log patterns.'),
       'filter' => ['id' => 'log_pattern_scope', 'real field' => 'type'],
     ];
+    $data['log']['log_involves'] = [
+      'title' => $this->t('Logbook: Involves'),
+      'help' => $this->t('Limits the logs to the people, organizations, projects and texts of the search bar.'),
+      'filter' => ['id' => 'log_involves', 'real field' => 'id'],
+    ];
     $data['log']['log_visibility'] = [
       'title' => $this->t('Logbook: Visibility'),
       'help' => $this->t('Icons for who can see the log.'),
@@ -59,9 +65,6 @@ class LogbookViewsHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'logbook') {
       $view->element['#attached']['library'][] = 'logbook/table';
-      // The pills and icons read the log patterns: the list changes with them.
-      $tags = $this->entityTypeManager->getDefinition('log_pattern')->getListCacheTags();
-      $view->element['#cache']['tags'] = Cache::mergeTags($view->element['#cache']['tags'] ?? [], $tags);
     }
   }
 

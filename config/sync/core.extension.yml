@@ -78,6 +78,7 @@ module:
   subrequests: 0
   symfony_mailer: 0
   system: 0
+  tagify: 0
   taxonomy: 0
   text: 0
   twig_field_value: 0

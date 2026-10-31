@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2364a7cb50eb7a717559d88108b58424",
+    "content-hash": "d8c5e711a0f20bfbfd56019a57cc7104",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -3050,6 +3050,61 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/symfony_mailer"
             }
+        },
+        {
+            "name": "drupal/tagify",
+            "version": "2.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/tagify.git",
+                "reference": "2.0.5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/tagify-2.0.5.zip",
+                "reference": "2.0.5",
+                "shasum": "5dd3553190e29c21848435903452785ae8600b83"
+            },
+            "require": {
+                "drupal/core": "^10.3 || ^11 || ^12"
+            },
+            "require-dev": {
+                "drupal/ai": "1.6.x-dev",
+                "drupal/better_exposed_filters": "^7.1",
+                "drupal/facets": "^2.0",
+                "drupal/iconify_icons": "*",
+                "drupal/search_api": "^1.31",
+                "drupal/ui_icons": "*",
+                "drupal/ui_icons_field": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.5",
+                    "datestamp": "1791555707",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "David Galeano",
+                    "homepage": "https://www.drupal.org/u/gxleano"
+                }
+            ],
+            "description": "Integration with the Tagify JavaScript library.",
+            "homepage": "https://drupal.org/project/tagify",
+            "support": {
+                "source": "https://git.drupalcode.org/project/tagify",
+                "issues": "https://www.drupal.org/project/issues/tagify"
+            },
+            "published-time": "2026-10-09T14:21:25+00:00"
         },
         {
             "name": "drupal/twig_field_value",
@@ -17709,5 +17764,5 @@
     "platform-overrides": {
         "php": "8.4.27"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.11.0"
 }

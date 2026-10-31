@@ -3,10 +3,15 @@
 namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Routing\RouteMatch;
 use Drupal\logbook\Entity\LogPattern;
+use Drupal\logbook\Entity\LogText;
+use Drupal\logbook\Hook\LogbookPageHooks;
+use Drupal\organizations\Entity\Organization;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
 use Drupal\views\Views;
+use Symfony\Component\Routing\Route;
 
 /**
  * Tests the logbook view.
@@ -129,17 +134,287 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * The search matches message and project title, and % and _ are literal.
+   * A text tag matches the message, the project title and the organization.
+   *
+   * The wildcards % and _ match literally.
    */
-  public function testSearch(): void {
+  public function testTextMatchesMessageProjectTitleAndOrganizationName(): void {
     $project = $this->createLogbookProject('Zebra Garden');
     $with_project = $this->createLog('project_apply', ['project' => $project->id(), 'created' => 100]);
     $percent = $this->createLog('project_apply', ['message' => 'Rabatt 50% heute', 'created' => 200]);
     $other = $this->createLog('project_apply', ['message' => 'Rabatt 500 heute', 'created' => 300]);
-    $this->assertSame([(int) $with_project->id()], $this->ids(['search' => 'Zebra']));
-    $this->assertSame([(int) $percent->id()], $this->ids(['search' => '50%']));
-    $this->assertSame([], $this->ids(['search' => 'Rabatt_50']));
-    $this->assertContains((int) $other->id(), $this->ids(['search' => 'Rabatt']));
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $with_organization = $this->createLog('project_apply', ['organization' => $organization->id(), 'created' => 400]);
+    $this->assertSame([(int) $with_project->id()], $this->ids(['tags' => ['text:Zebra']]));
+    $this->assertSame([(int) $percent->id()], $this->ids(['tags' => ['text:50%']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:Rabatt_50']]));
+    $this->assertContains((int) $other->id(), $this->ids(['tags' => ['text:Rabatt']]));
+    $this->assertSame([(int) $with_organization->id()], $this->ids(['tags' => ['text:kranich']]));
+  }
+
+  /**
+   * A text tag matches the names of the people in a log, in every role.
+   */
+  public function testTextMatchesPeopleNames(): void {
+    $creative = $this->createCreative();
+    $creative->setName('Monika Großmann');
+    $creative->save();
+    $manager = $this->createCreative();
+    $manager->setName('Fredolina Schütte');
+    $manager->save();
+    $author = $this->createCreative();
+    $author->setName('Willy Schreiber');
+    $author->save();
+    $member = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
+    $managed = $this->createLog('project_apply', ['manager' => $manager->id(), 'created' => 200]);
+    $written = $this->createLog('project_apply', ['author' => $author->id(), 'created' => 300]);
+    $this->createLog('project_apply', ['created' => 400]);
+    $this->assertSame([(int) $member->id()], $this->ids(['tags' => ['text:großmann']]));
+    $this->assertSame([(int) $managed->id()], $this->ids(['tags' => ['text:Schütte']]));
+    $this->assertSame([(int) $written->id()], $this->ids(['tags' => ['text:Schreiber']]));
+  }
+
+  /**
+   * The log text names the role of the author, the manager of the log too.
+   */
+  public function testLogTextNamesAuthorRole(): void {
+    $creative = $this->createCreative();
+    $manager = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $role = static function ($log): string {
+      $text = $log->get('markup');
+      return (new \ReflectionMethod($text, 'fakeTranslateRole'))->invoke($text);
+    };
+    $this->assertSame('creative', $role($this->createLog('project_apply', ['author' => $creative->id()])));
+    $this->assertSame('manager', $role($this->createLog('project_apply', [
+      'author' => $manager->id(),
+      'manager' => $manager->id(),
+    ])));
+    $this->assertSame('organization', $role($this->createLog('project_apply', ['author' => $organization->id()])));
+  }
+
+  /**
+   * A text tag matches the log text of the pattern, not its placeholders.
+   */
+  public function testTextMatchesLogText(): void {
+    LogText::create([
+      'log_pattern' => 'project_apply',
+      'text' => '%Creative hat für das Projekt %Project Interesse bekundet!',
+    ])->save();
+    LogText::create(['log_pattern' => 'project_publish', 'text' => 'Das Projekt %Project wurde veröffentlicht.'])->save();
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $publish = $this->createLog('project_publish', ['created' => 200]);
+    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:interesse']]));
+    $this->assertSame([(int) $publish->id()], $this->ids(['tags' => ['text:veröffentlicht']]));
+    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids(['tags' => ['text:Projekt']]));
+    // The placeholders are not part of the text.
+    $this->assertSame([], $this->ids(['tags' => ['text:Creative']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:%Project']]));
+  }
+
+  /**
+   * Cached results follow edited log texts.
+   */
+  public function testResultsFollowEditedLogTexts(): void {
+    $text = LogText::create(['log_pattern' => 'project_apply', 'text' => 'Interesse bekundet']);
+    $text->save();
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:Interesse']]));
+    $text->setText('Beworben')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Interesse']]));
+  }
+
+  /**
+   * A person or organization tag matches every role in a log.
+   */
+  public function testTagMatchesEveryRole(): void {
+    $creative = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $author = $this->createLog('project_apply', ['author' => $creative->id(), 'created' => 100]);
+    $member = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 200]);
+    $managed = $this->createLog('project_apply', ['manager' => $creative->id(), 'created' => 300]);
+    $owned = $this->createLog('project_apply', ['organization' => $organization->id(), 'created' => 400]);
+    $this->createLog('project_apply', ['created' => 500]);
+    $this->assertSame(
+      [(int) $managed->id(), (int) $member->id(), (int) $author->id()],
+      $this->ids(['tags' => ['user:' . $creative->id()]]),
+    );
+    $this->assertSame([(int) $owned->id()], $this->ids(['tags' => ['user:' . $organization->id()]]));
+  }
+
+  /**
+   * An organization tag finds the logs of its projects without organization.
+   */
+  public function testOrganizationTagFindsFeedbackLogsOfItsProjects(): void {
+    $this->createPattern('feedback_complete', ['observable' => TRUE]);
+    $project = $this->createLogbookProject('Kranichflug');
+    $feedback = $this->createLog('feedback_complete', ['project' => $project->id(), 'created' => 100]);
+    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject()->id(), 'created' => 200]);
+    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['user:' . $project->getOwnerId()]]));
+  }
+
+  /**
+   * Tags of people, organizations and projects add up.
+   */
+  public function testTagsCombineWithOr(): void {
+    $creative = $this->createCreative();
+    $project = $this->createLogbookProject('Kranichflug');
+    $by_creative = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
+    $of_project = $this->createLog('project_apply', ['project' => $project->id(), 'created' => 200]);
+    $this->createLog('project_apply', ['created' => 300]);
+    $this->assertSame(
+      [(int) $of_project->id(), (int) $by_creative->id()],
+      $this->ids(['tags' => ['user:' . $creative->id(), 'project:' . $project->id()]]),
+    );
+  }
+
+  /**
+   * Text tags narrow the result, each of them.
+   */
+  public function testTextNarrowsTags(): void {
+    $project = $this->createLogbookProject('Kranichflug');
+    $feedback = $this->createLog('project_apply', [
+      'project' => $project->id(),
+      'message' => 'Feedback kam',
+      'created' => 100,
+    ]);
+    $this->createLog('project_apply', ['project' => $project->id(), 'message' => 'Nichts', 'created' => 200]);
+    $this->createLog('project_apply', ['message' => 'Feedback woanders', 'created' => 300]);
+    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['project:' . $project->id(), 'text:Feedback']]));
+    $both = $this->createLog('project_apply', ['message' => 'Zebra im Garden', 'created' => 400]);
+    $this->createLog('project_apply', ['message' => 'Zebra allein', 'created' => 500]);
+    $this->assertSame([(int) $both->id()], $this->ids(['tags' => ['text:Zebra', 'text:Garden']]));
+  }
+
+  /**
+   * A log with two tagged creatives is listed once.
+   */
+  public function testLogWithTwoTaggedCreativesIsListedOnce(): void {
+    $first = $this->createCreative();
+    $second = $this->createCreative();
+    $log = $this->createLog('project_apply', ['creatives' => [$first->id(), $second->id()], 'created' => 100]);
+    $this->assertSame(
+      [(int) $log->id()],
+      $this->ids(['tags' => ['user:' . $first->id(), 'user:' . $second->id()]]),
+    );
+  }
+
+  /**
+   * Invalid tags and ids of deleted entities are ignored, as in the bar.
+   */
+  public function testInvalidTagsAreIgnored(): void {
+    $this->createLog('project_apply', ['created' => 100]);
+    $with_message = $this->createLog('project_apply', ['message' => 'Kranich hallo', 'created' => 200]);
+    $all = $this->ids();
+    $this->assertSame($all, $this->ids(['tags' => ['node:1', 'user:abc', 'text:  ']]));
+    $this->assertSame($all, $this->ids(['tags' => 'garbage']));
+    $this->assertSame($all, $this->ids(['tags' => ['user:999999']]));
+    $this->assertSame([(int) $with_message->id()], $this->ids(['tags' => ['user:999999', 'text:Kranich']]));
+  }
+
+  /**
+   * Invalid input does not show up in the search bar.
+   */
+  public function testInvalidTagsAreNotShownInTheBar(): void {
+    $html = $this->renderPage(['tags' => ['node:1', '<b>x</b>']]);
+    $this->assertStringNotContainsString('node:1', $html);
+    $this->assertStringNotContainsString('&lt;b&gt;x', $html);
+  }
+
+  /**
+   * Typing an organization name finds the logs of its projects, as its tag.
+   */
+  public function testOrganizationNameFindsFeedbackLogsOfItsProjects(): void {
+    $this->createPattern('feedback_complete', ['observable' => TRUE]);
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $project = $this->createLogbookProject('Flug');
+    $project->setOwnerId($organization->id())->save();
+    $feedback = $this->createLog('feedback_complete', ['project' => $project->id(), 'created' => 100]);
+    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject('Andere')->id(), 'created' => 200]);
+    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['text:Kranich']]));
+  }
+
+  /**
+   * Cached results follow renamed projects and organizations.
+   */
+  public function testResultsFollowRenamedProjectsAndOrganizations(): void {
+    $project = $this->createLogbookProject('Zebra Garden');
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $log = $this->createLog('project_apply', [
+      'project' => $project->id(),
+      'organization' => $organization->id(),
+      'created' => 100,
+    ]);
+    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Zebra']]));
+    $project->setTitle('Anderer Titel')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Zebra']]));
+    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Kranich']]));
+    $organization->set('field_name', 'Storch e.V.')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Kranich']]));
+  }
+
+  /**
+   * The search bar replaces the text box.
+   */
+  public function testRenderedFormHasSearchBar(): void {
+    $html = $this->renderPage();
+    $this->assertStringContainsString('logbook-search', $html);
+    $this->assertStringContainsString('/logbook/search/autocomplete', $html);
+    $this->assertStringNotContainsString('Suchen …', $html);
+  }
+
+  /**
+   * Creates an organization with a name.
+   */
+  protected function createNamedOrganization(string $name): Organization {
+    $organization = Organization::create(['name' => $this->randomMachineName(), 'field_name' => $name]);
+    $organization->save();
+    return $organization;
+  }
+
+  /**
+   * A search without results says so and points to the reset button.
+   */
+  public function testEmptySearchOffersReset(): void {
+    $this->createLog('project_apply', ['created' => 100]);
+    $html = $this->renderPage(['tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+    $this->assertStringContainsString('setze die Suche zurück', $html);
+    $html = $this->renderPage(['type' => 'project_apply', 'tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+  }
+
+  /**
+   * An empty logbook without a search has nothing to reset.
+   */
+  public function testEmptyLogbookWithoutSearch(): void {
+    $html = $this->renderPage();
+    $this->assertStringContainsString('Noch keine Einträge.', $html);
+    $this->assertStringNotContainsString('setze die Suche zurück', $html);
+  }
+
+  /**
+   * The date column is not sortable; the list is newest first.
+   */
+  public function testDateColumnIsNotSortable(): void {
+    $old = $this->createLog('project_apply', ['created' => 100]);
+    $new = $this->createLog('project_apply', ['created' => 200]);
+    $html = $this->renderPage();
+    $this->assertStringNotContainsString('Sort ascending', $html);
+    $this->assertStringNotContainsString('order=created', $html);
+    $this->assertSame([(int) $new->id(), (int) $old->id()], $this->ids(['order' => 'created', 'sort' => 'asc']));
+  }
+
+  /**
+   * The page title of the logbook is read out, but not shown.
+   */
+  public function testPageTitleIsVisuallyHidden(): void {
+    $variables = ['title_attributes' => []];
+    (new LogbookPageHooks(new RouteMatch('view.logbook.page_1', new Route('/logbook'))))->preprocessPageTitle($variables);
+    $this->assertContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
+    $variables = ['title_attributes' => []];
+    (new LogbookPageHooks(new RouteMatch('system.admin', new Route('/admin'))))->preprocessPageTitle($variables);
+    $this->assertNotContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
   }
 
   /**
@@ -168,6 +443,17 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $view->execute();
     $this->assertCount(50, $view->result);
     $this->assertSame(51, (int) $view->pager->getTotalItems());
+  }
+
+  /**
+   * The pager links at most five pages, so it fits on a phone.
+   */
+  public function testPagerLinksFivePages(): void {
+    for ($i = 1; $i <= 351; $i++) {
+      $this->createLog('project_apply', ['created' => $i]);
+    }
+    preg_match_all('#class="pager__item(?: is-active)? ?"#', $this->renderPage(), $items);
+    $this->assertCount(5, $items[0]);
   }
 
   /**
@@ -257,13 +543,13 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * The search comes first, then the pattern and the date range.
+   * The search bar comes first, then the pattern and the date range.
    */
   public function testExposedFilterOrder(): void {
     $html = $this->renderPage();
     preg_match_all('/<(?:input|select)[^>]*name="([^"]+)"/', substr($html, 0, strpos($html, '<table') ?: NULL), $matches);
     $names = array_values(array_diff($matches[1], ['form_build_id', 'form_id']));
-    $this->assertSame(['search', 'type', 'created[min]', 'created[max]'], $names);
+    $this->assertSame(['tags', 'type', 'created[min]', 'created[max]'], $names);
   }
 
   /**

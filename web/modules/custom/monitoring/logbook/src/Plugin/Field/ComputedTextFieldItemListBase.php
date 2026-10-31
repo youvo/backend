@@ -17,6 +17,17 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   use ComputedItemListTrait;
 
   /**
+   * The German words of the author roles, as %AuthorWithRole shows them.
+   */
+  protected const array AUTHOR_ROLE_WORDS = [
+    'organization' => 'Organisation',
+    'manager' => 'Managerin',
+    'supervisor' => 'Supervisorin',
+    'administrator' => 'Administratorin',
+    'creative' => 'Kreative',
+  ];
+
+  /**
    * {@inheritdoc}
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
@@ -123,49 +134,38 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
    * Returns the author role with respect to the project in English or German.
    */
   protected function fakeTranslateRole(): string {
+    $role = $this->authorRole();
+    if (\Drupal::languageManager()->getCurrentLanguage()->getId() === 'de') {
+      return self::AUTHOR_ROLE_WORDS[$role];
+    }
+    return $role;
+  }
 
+  /**
+   * Returns the role of the author with respect to the project.
+   */
+  protected function authorRole(): string {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
     $author = $log->getOwner();
     $project = $log->getProject();
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
 
     if (Profile::isOrganization($author)) {
-      if ($langcode === 'de') {
-        return 'Organisation';
-      }
       return 'organization';
     }
 
-    if ($log->getManager()?->id() == Profile::id($author)) {
-      if ($langcode === 'de') {
-        return 'Managerin';
-      }
+    $manager = $log->getManager();
+    if ($manager && (int) $manager->id() === Profile::id($author)) {
       return 'manager';
     }
 
-    if (
-      (!$project || !$project->isParticipant($author)) &&
-      in_array('supervisor', $author->getRoles(), TRUE)
-    ) {
-      if ($langcode === 'de') {
-        return 'Supervisorin';
+    // Staff outside the project write in their staff role.
+    if (!$project?->isParticipant($author)) {
+      foreach (['supervisor', 'administrator'] as $role) {
+        if (in_array($role, $author->getRoles(), TRUE)) {
+          return $role;
+        }
       }
-      return 'supervisor';
-    }
-
-    if (
-      (!$project || !$project->isParticipant($author)) &&
-      in_array('administrator', $author->getRoles(), TRUE)
-    ) {
-      if ($langcode === 'de') {
-        return 'Administratorin';
-      }
-      return 'administrator';
-    }
-
-    if ($langcode === 'de') {
-      return 'Kreative';
     }
 
     return 'creative';

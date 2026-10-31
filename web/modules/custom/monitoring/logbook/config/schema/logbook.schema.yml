@@ -50,3 +50,22 @@ logbook.log_pattern.*:
 views.filter.log_pattern_scope:
   type: views.filter.in_operator
   label: 'Logbook: listed patterns'
+
+views.filter.log_involves:
+  type: views_filter
+  label: 'Logbook: Involves'
+  mapping:
+    value:
+      type: sequence
+      label: 'Tokens'
+      sequence:
+        type: string
+        label: 'Token'
+
+views.cache.logbook_tag:
+  type: views.cache.tag
+  label: 'Logbook tags'
+
+views.area.logbook_empty:
+  type: views_area
+  label: 'Logbook: Empty'

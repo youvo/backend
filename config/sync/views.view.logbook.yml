@@ -4,7 +4,6 @@ status: true
 dependencies:
   module:
     - logbook
-    - projects
     - user
 id: logbook
 label: Logbook
@@ -70,40 +69,6 @@ display:
           group_type: group
           plugin_id: log_visibility
           label: Sichtbarkeit
-          element_label_class: logbook-visually-hidden
-        message:
-          id: message
-          table: log
-          field: message
-          relationship: none
-          group_type: group
-          entity_type: log
-          entity_field: message
-          plugin_id: field
-          label: ''
-          exclude: true
-        title:
-          id: title
-          table: project_field_data
-          field: title
-          relationship: project
-          group_type: group
-          entity_type: project
-          entity_field: title
-          plugin_id: field
-          label: ''
-          exclude: true
-        name:
-          id: name
-          table: users_field_data
-          field: name
-          relationship: organization
-          group_type: group
-          entity_type: user
-          entity_field: name
-          plugin_id: field
-          label: ''
-          exclude: true
       pager:
         type: full
         options:
@@ -119,7 +84,7 @@ display:
           expose:
             items_per_page: false
             offset: false
-          quantity: 9
+          quantity: 5
       exposed_form:
         type: basic
         options:
@@ -132,16 +97,15 @@ display:
         options:
           perm: 'view observable log'
       cache:
-        type: tag
+        type: logbook_tag
         options: {  }
       empty:
-        area_text_custom:
-          id: area_text_custom
+        logbook_empty:
+          id: logbook_empty
           table: views
-          field: area_text_custom
-          plugin_id: text_custom
+          field: logbook_empty
+          plugin_id: logbook_empty
           empty: true
-          content: 'Keine Einträge.'
       sorts:
         created:
           id: created
@@ -173,13 +137,16 @@ display:
           value: {  }
           group: 1
           exposed: false
-        combine:
-          id: combine
-          table: views
-          field: combine
-          plugin_id: combine
-          operator: contains
-          value: ''
+        log_involves:
+          id: log_involves
+          table: log
+          field: log_involves
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: log_involves
+          operator: '='
+          value: {  }
           group: 1
           exposed: true
           expose:
@@ -187,15 +154,16 @@ display:
             label: ''
             description: ''
             use_operator: false
-            identifier: search
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: tags
             required: false
             remember: false
             multiple: false
-            placeholder: 'Suchen …'
-          fields:
-            message: message
-            title: title
-            name: name
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
         log_pattern_choice:
           id: log_pattern_choice
           table: log
@@ -250,10 +218,10 @@ display:
             log_type: log_type
             log_event_text: log_event_text
             log_visibility: log_visibility
-          default: created
+          default: '-1'
           info:
             created:
-              sortable: true
+              sortable: false
               default_sort_order: desc
             log_type:
               sortable: false
@@ -277,27 +245,7 @@ display:
           distinct: false
           replica: false
           query_tags: {  }
-      relationships:
-        project:
-          id: project
-          table: log
-          field: project
-          relationship: none
-          group_type: group
-          entity_type: log
-          entity_field: project
-          plugin_id: standard
-          required: false
-        organization:
-          id: organization
-          table: log
-          field: organization
-          relationship: none
-          group_type: group
-          entity_type: log
-          entity_field: organization
-          plugin_id: standard
-          required: false
+      relationships: {  }
       use_ajax: false
       show_admin_links: false
       header: {  }
@@ -334,3 +282,4 @@ display:
       tags:
         - 'config:log_pattern_list'
         - log_list
+
