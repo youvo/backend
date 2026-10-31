@@ -54,15 +54,7 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
    * {@inheritdoc}
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state): string|false|null {
-    if ($input === FALSE) {
-      $input = $element['#default_value'] ?? [];
-    }
-    elseif (is_string($input)) {
-      // Without its script, the Tagify input submits its JSON list of tags.
-      $decoded = json_decode($input, TRUE);
-      $input = is_array($decoded) ? array_column($decoded, 'entity_id') : $input;
-    }
-    $tokens = SearchTags::tokens($input);
+    $tokens = SearchTags::fromInput($input === FALSE ? ($element['#default_value'] ?? []) : $input);
     if ($tokens === []) {
       return NULL;
     }

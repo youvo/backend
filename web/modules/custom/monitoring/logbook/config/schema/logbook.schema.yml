@@ -50,3 +50,14 @@ logbook.log_pattern.*:
 views.filter.log_pattern_scope:
   type: views.filter.in_operator
   label: 'Logbook: listed patterns'
+
+views.filter.log_involves:
+  type: views_filter
+  label: 'Logbook: involves'
+  mapping:
+    value:
+      type: sequence
+      label: 'Tokens'
+      sequence:
+        type: string
+        label: 'Token'

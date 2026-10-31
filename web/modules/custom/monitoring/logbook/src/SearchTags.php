@@ -46,6 +46,27 @@ final class SearchTags {
   }
 
   /**
+   * Reads the tokens of submitted input.
+   *
+   * The script of the search bar submits a list of tokens. Without it, the
+   * Tagify input submits its JSON list of tags, and the form value is that
+   * JSON list as well.
+   *
+   * @param mixed $input
+   *   A list of tokens, a JSON list of tags, a token or anything else.
+   *
+   * @return string[]
+   *   The valid, distinct tokens up to the limit.
+   */
+  public static function fromInput(mixed $input): array {
+    if (is_string($input) && str_starts_with(ltrim($input), '[')) {
+      $decoded = json_decode($input, TRUE);
+      $input = is_array($decoded) ? array_column(array_filter($decoded, 'is_array'), 'entity_id') : [];
+    }
+    return self::tokens($input);
+  }
+
+  /**
    * Normalizes tokens, keeping their order.
    *
    * @param mixed $raw
