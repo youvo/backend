@@ -387,15 +387,15 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * A search without results says so and offers to reset it.
+   * A search without results says so and points to the reset button.
    */
   public function testEmptySearchOffersReset(): void {
     $this->createLog('project_apply', ['created' => 100]);
     $html = $this->renderPage(['tags' => ['text:zzzzqqq']]);
     $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
-    $this->assertMatchesRegularExpression('#<a [^>]*href="/logbook"[^>]*>Suche zurücksetzen</a>#', $html);
+    $this->assertStringContainsString('setze die Suche zurück', $html);
     $html = $this->renderPage(['type' => 'project_apply', 'tags' => ['text:zzzzqqq']]);
-    $this->assertStringContainsString('Suche zurücksetzen', $html);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
   }
 
   /**
@@ -404,7 +404,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
   public function testEmptyLogbookWithoutSearch(): void {
     $html = $this->renderPage();
     $this->assertStringContainsString('Noch keine Einträge.', $html);
-    $this->assertStringNotContainsString('Suche zurücksetzen', $html);
+    $this->assertStringNotContainsString('setze die Suche zurück', $html);
   }
 
   /**

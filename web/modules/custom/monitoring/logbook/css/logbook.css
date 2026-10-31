@@ -453,7 +453,7 @@
 }
 
 /* A logbook without entries, or a search without results: a card like the
-   list, with a way back. */
+   list. */
 .view-logbook .logbook-empty {
   padding: var(--gin-spacing-l, 1.5rem);
   border-radius: var(--gin-border-l, 1rem);
@@ -470,10 +470,6 @@
 .view-logbook .logbook-empty__hint {
   margin: 0.25rem 0 0;
   color: var(--logbook-muted);
-}
-
-.view-logbook .logbook-empty .button {
-  margin: 1rem 0 0;
 }
 
 /* Further filters: on a wide screen they always show. On narrower screens a

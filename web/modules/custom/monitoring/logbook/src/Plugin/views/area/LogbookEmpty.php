@@ -2,13 +2,12 @@
 
 namespace Drupal\logbook\Plugin\views\area;
 
-use Drupal\Core\Url;
 use Drupal\logbook\SearchTags;
 use Drupal\views\Attribute\ViewsArea;
 use Drupal\views\Plugin\views\area\AreaPluginBase;
 
 /**
- * Says why the logbook is empty, and offers to reset a search without results.
+ * Says why the logbook is empty.
  */
 #[ViewsArea('logbook_empty')]
 class LogbookEmpty extends AreaPluginBase {
@@ -32,13 +31,8 @@ class LogbookEmpty extends AreaPluginBase {
       'title' => $paragraph($searching ? 'Keine Einträge für diese Suche.' : 'Noch keine Einträge.', 'title'),
     ];
     if ($searching) {
+      // The exposed form has the button that resets the search.
       $build['hint'] = $paragraph('Entferne einen Suchbegriff oder Filter, oder setze die Suche zurück.', 'hint');
-      $build['reset'] = [
-        '#type' => 'link',
-        '#title' => 'Suche zurücksetzen',
-        '#url' => Url::fromUserInput('/' . $this->view->getPath()),
-        '#attributes' => ['class' => ['button', 'button--small']],
-      ];
     }
     return $build;
   }

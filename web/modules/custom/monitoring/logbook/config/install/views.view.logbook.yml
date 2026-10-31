@@ -69,7 +69,6 @@ display:
           group_type: group
           plugin_id: log_visibility
           label: Sichtbarkeit
-          element_label_class: logbook-visually-hidden
       pager:
         type: full
         options:
