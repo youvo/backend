@@ -17,7 +17,7 @@ use Drupal\views\Plugin\views\cache\Tag;
 #[ViewsCache(
   id: 'logbook_tag',
   title: new TranslatableMarkup('Logbook tags'),
-  help: new TranslatableMarkup('Tag based caching that also follows projects and users.'),
+  help: new TranslatableMarkup('Tag based caching that also follows projects, users and log texts.'),
 )]
 class LogbookTag extends Tag {
 

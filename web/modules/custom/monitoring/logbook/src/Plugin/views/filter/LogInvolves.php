@@ -101,6 +101,7 @@ class LogInvolves extends FilterPluginBase {
    * {@inheritdoc}
    */
   public function adminSummary(): string {
+    // The value is a list of tokens, which says little in the Views UI.
     return '';
   }
 
@@ -115,39 +116,63 @@ class LogInvolves extends FilterPluginBase {
     $alias = $this->ensureMyTable();
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;
-
     if ($tags['user'] || $tags['project']) {
-      $or = new Condition('OR');
-      if ($users = $tags['user']) {
-        foreach (self::PARTICIPANTS as $field) {
-          $this->logCondition($or, $alias, $field, $users, 'IN');
-        }
-        $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $users, 'IN'), 'IN');
-      }
-      if ($projects = $tags['project']) {
-        $this->logCondition($or, $alias, 'project', $projects, 'IN');
-      }
-      $query->addWhere($this->options['group'], $or);
+      $query->addWhere($this->options['group'], $this->entityCondition($alias, $tags['user'], $tags['project']));
     }
-
     foreach ($tags['text'] as $text) {
-      $like = '%' . $this->database->escapeLike($text) . '%';
-      $or = new Condition('OR');
-      $this->logCondition($or, $alias, 'message', $like, 'LIKE');
-      $this->logCondition($or, $alias, 'project', $this->ids('project', 'title', $like, 'LIKE'), 'IN');
-      // The names of the people and organizations in the log, in every role,
-      // as a tag of them would find it.
-      $names = $this->ids('user', 'field_name', $like, 'LIKE');
-      foreach (self::PARTICIPANTS as $field) {
-        $this->logCondition($or, $alias, $field, clone $names, 'IN');
-      }
-      // As an organization tag, the name finds the logs of its projects.
-      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $names, 'IN'), 'IN');
-      if ($patterns = $this->patternsByText($text)) {
-        $this->logCondition($or, $alias, 'type', $patterns, 'IN');
-      }
-      $query->addWhere($this->options['group'], $or);
+      $query->addWhere($this->options['group'], $this->textCondition($alias, $text));
     }
+  }
+
+  /**
+   * Matches the logs of any of the people, organizations and projects.
+   *
+   * @param string $alias
+   *   The alias of the log table.
+   * @param int[] $users
+   *   The ids of the people and organizations.
+   * @param int[] $projects
+   *   The ids of the projects.
+   */
+  protected function entityCondition(string $alias, array $users, array $projects): Condition {
+    $or = new Condition('OR');
+    if ($users) {
+      foreach (self::PARTICIPANTS as $field) {
+        $this->logCondition($or, $alias, $field, $users, 'IN');
+      }
+      // The logs of the projects they own.
+      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $users, 'IN'), 'IN');
+    }
+    if ($projects) {
+      $this->logCondition($or, $alias, 'project', $projects, 'IN');
+    }
+    return $or;
+  }
+
+  /**
+   * Matches the logs that contain the text.
+   *
+   * @param string $alias
+   *   The alias of the log table.
+   * @param string $text
+   *   The text.
+   */
+  protected function textCondition(string $alias, string $text): Condition {
+    $like = '%' . $this->database->escapeLike($text) . '%';
+    $or = new Condition('OR');
+    $this->logCondition($or, $alias, 'message', $like, 'LIKE');
+    $this->logCondition($or, $alias, 'project', $this->ids('project', 'title', $like, 'LIKE'), 'IN');
+    // The names of the people and organizations in the log, in every role,
+    // and the logs of the projects they own, as a tag of them would find.
+    $names = $this->ids('user', 'field_name', $like, 'LIKE');
+    foreach (self::PARTICIPANTS as $field) {
+      $this->logCondition($or, $alias, $field, clone $names, 'IN');
+    }
+    $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $names, 'IN'), 'IN');
+    if ($patterns = $this->patternsByText($text)) {
+      $this->logCondition($or, $alias, 'type', $patterns, 'IN');
+    }
+    return $or;
   }
 
   /**

@@ -1,7 +1,8 @@
 /*
- * The logbook table. The tokens follow the manager's pane-ui.css: Gin sets the
- * look, the fallbacks are the values of the default Gin theme. They are scoped
- * to the view, so the logbook does not depend on the manager module.
+ * The logbook page: filters, table and empty state. The tokens follow the
+ * manager's pane-ui.css: Gin sets the look, the fallbacks are the values of
+ * the default Gin theme. They are scoped to the view, so the logbook does not
+ * depend on the manager module.
  */
 .view-logbook {
   --logbook-ink: var(--gin-color-title, #222330);
@@ -151,6 +152,67 @@
   min-height: 2.25rem;
   margin: 0;
   padding-block: 0;
+}
+
+/* Further filters: on a wide screen they always show. On narrower screens a
+   button opens them; the script adds it and folds them away unless one is
+   set. */
+.view-logbook .logbook-filters-toggle {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .view-logbook .logbook-filters-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--logbook-accent);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .view-logbook .logbook-filters-toggle::after {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline-start: 0.125rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    content: '';
+    transform: translateY(-0.125rem) rotate(45deg);
+    transition: transform 0.15s;
+  }
+
+  .view-logbook .logbook-filters-toggle[aria-expanded='true']::after {
+    transform: translateY(0.125rem) rotate(-135deg);
+  }
+
+  /* Gin rings a focused button; for the keyboard, the label gets a ring. */
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible > span {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--logbook-accent);
+    outline-offset: 2px;
+  }
+
+  /* Open, the filters start on a new row below the button. */
+  .view-logbook .logbook-filters-toggle[aria-expanded='true'] {
+    flex-basis: 100%;
+  }
+
+  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset) {
+    display: none;
+  }
 }
 
 /* On a phone every control takes a row of its own, at full width, and the
@@ -469,67 +531,6 @@
 .view-logbook .logbook-empty__hint {
   margin: 0.25rem 0 0;
   color: var(--logbook-muted);
-}
-
-/* Further filters: on a wide screen they always show. On narrower screens a
-   button opens them; the script adds it and folds them away unless one is
-   set. */
-.view-logbook .logbook-filters-toggle {
-  display: none;
-}
-
-@media (max-width: 1024px) {
-  .view-logbook .logbook-filters-toggle {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 2.25rem;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--logbook-accent);
-    font: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .view-logbook .logbook-filters-toggle::after {
-    width: 0.5rem;
-    height: 0.5rem;
-    margin-inline-start: 0.125rem;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    content: '';
-    transform: translateY(-0.125rem) rotate(45deg);
-    transition: transform 0.15s;
-  }
-
-  .view-logbook .logbook-filters-toggle[aria-expanded='true']::after {
-    transform: translateY(0.125rem) rotate(-135deg);
-  }
-
-  /* Gin rings a focused button; for the keyboard, the label gets a ring. */
-  .view-logbook .views-exposed-form .logbook-filters-toggle:focus {
-    outline: none;
-    box-shadow: none;
-  }
-
-  .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible > span {
-    border-radius: 0.25rem;
-    outline: 2px solid var(--logbook-accent);
-    outline-offset: 2px;
-  }
-
-  /* Open, the filters start on a new row below the button. */
-  .view-logbook .logbook-filters-toggle[aria-expanded='true'] {
-    flex-basis: 100%;
-  }
-
-  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset) {
-    display: none;
-  }
 }
 
 /* On a phone the pager keeps one row: the arrows stay, first and last go. */

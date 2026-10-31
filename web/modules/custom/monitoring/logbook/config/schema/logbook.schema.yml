@@ -53,7 +53,7 @@ views.filter.log_pattern_scope:
 
 views.filter.log_involves:
   type: views_filter
-  label: 'Logbook: involves'
+  label: 'Logbook: Involves'
   mapping:
     value:
       type: sequence
@@ -68,4 +68,4 @@ views.cache.logbook_tag:
 
 views.area.logbook_empty:
   type: views_area
-  label: 'Logbook: empty'
+  label: 'Logbook: Empty'

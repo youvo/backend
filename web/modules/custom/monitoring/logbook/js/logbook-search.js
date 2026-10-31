@@ -39,8 +39,9 @@
               }
             },
           });
+          // Enter adds the typed text: no suggestion is highlighted until the
+          // user moves to it, and none completes the text in grey.
           tagify.settings.dropdown.highlightFirst = false;
-          // No grey completion of a suggestion: Enter adds the typed text.
           tagify.settings.autoComplete.enabled = false;
 
           // Tagify names its input in English; use the name of the element.

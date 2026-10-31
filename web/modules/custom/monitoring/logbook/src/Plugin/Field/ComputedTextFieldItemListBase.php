@@ -145,7 +145,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
    * Returns the role of the author with respect to the project.
    */
   protected function authorRole(): string {
-
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
     $author = $log->getOwner();
@@ -160,10 +159,12 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
       return 'manager';
     }
 
-    $participant = $project && $project->isParticipant($author);
-    foreach (['supervisor', 'administrator'] as $role) {
-      if (!$participant && in_array($role, $author->getRoles(), TRUE)) {
-        return $role;
+    // Staff outside the project write in their staff role.
+    if (!$project?->isParticipant($author)) {
+      foreach (['supervisor', 'administrator'] as $role) {
+        if (in_array($role, $author->getRoles(), TRUE)) {
+          return $role;
+        }
       }
     }
 

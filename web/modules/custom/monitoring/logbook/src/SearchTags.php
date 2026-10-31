@@ -18,33 +18,12 @@ final class SearchTags {
   /**
    * The number of tokens that are honored.
    */
-  public const MAX_TOKENS = 20;
+  public const int MAX_TOKENS = 20;
 
   /**
    * The length a text is cut to.
    */
-  public const MAX_TEXT_LENGTH = 100;
-
-  /**
-   * Parses tokens into ids and texts.
-   *
-   * Invalid tokens are ignored, duplicates are dropped and only the first
-   * tokens up to the limit count.
-   *
-   * @param mixed $raw
-   *   Input as SearchTags::fromInput() reads it.
-   *
-   * @return array{user: int[], project: int[], text: string[]}
-   *   The user ids, the project ids and the texts, in the order given.
-   */
-  public static function parse(mixed $raw): array {
-    $parsed = ['user' => [], 'project' => [], 'text' => []];
-    foreach (self::fromInput($raw) as $token) {
-      [$kind, $value] = explode(':', $token, 2);
-      $parsed[$kind][] = $kind === 'text' ? $value : (int) $value;
-    }
-    return $parsed;
-  }
+  public const int MAX_TEXT_LENGTH = 100;
 
   /**
    * Reads the tokens of submitted input.
@@ -57,47 +36,41 @@ final class SearchTags {
    *   A list of tokens, a JSON list of tags, a token or anything else.
    *
    * @return string[]
-   *   The valid, distinct tokens up to the limit.
+   *   The valid, distinct tokens up to the limit, texts trimmed and cut.
    */
   public static function fromInput(mixed $input): array {
     if (is_string($input) && str_starts_with(ltrim($input), '[')) {
       $decoded = json_decode($input, TRUE);
       $input = is_array($decoded) ? array_column(array_filter($decoded, 'is_array'), 'entity_id') : [];
     }
-    return self::tokens($input);
-  }
-
-  /**
-   * Normalizes tokens, keeping their order.
-   *
-   * @param mixed $raw
-   *   A token, a list of tokens or anything else.
-   *
-   * @return string[]
-   *   The valid, distinct tokens up to the limit, texts trimmed and cut.
-   */
-  public static function tokens(mixed $raw): array {
     $tokens = [];
-    foreach (is_array($raw) ? $raw : [$raw] as $token) {
+    foreach (is_array($input) ? $input : [$input] as $token) {
       if (count($tokens) >= self::MAX_TOKENS) {
         break;
       }
-      if (!is_string($token) || !str_contains($token, ':')) {
-        continue;
+      if ($token = self::normalize($token)) {
+        $tokens[$token] = TRUE;
       }
-      [$kind, $value] = explode(':', $token, 2);
-      if ($kind === 'text') {
-        $value = mb_substr(trim($value), 0, self::MAX_TEXT_LENGTH);
-        if ($value === '') {
-          continue;
-        }
-      }
-      elseif (!in_array($kind, ['user', 'project'], TRUE) || !preg_match('/^[1-9]\d{0,9}$/', $value)) {
-        continue;
-      }
-      $tokens[$kind . ':' . $value] = TRUE;
     }
     return array_keys($tokens);
+  }
+
+  /**
+   * Parses input into ids and texts.
+   *
+   * @param mixed $input
+   *   Input as SearchTags::fromInput() reads it.
+   *
+   * @return array{user: int[], project: int[], text: string[]}
+   *   The user ids, the project ids and the texts, in the order given.
+   */
+  public static function parse(mixed $input): array {
+    $parsed = ['user' => [], 'project' => [], 'text' => []];
+    foreach (self::fromInput($input) as $token) {
+      [$kind, $value] = explode(':', $token, 2);
+      $parsed[$kind][] = $kind === 'text' ? $value : (int) $value;
+    }
+    return $parsed;
   }
 
   /**
@@ -108,35 +81,50 @@ final class SearchTags {
    */
   public static function tag(EntityInterface $entity): array {
     if ($entity instanceof UserInterface) {
-      $token = 'user:' . $entity->id();
       $label = $entity->hasField('field_name') ? (string) $entity->get('field_name')->value : '';
-      $info = Profile::isOrganization($entity) ? 'Organisation' : 'Person';
+      return self::build('user:' . $entity->id(), $label, Profile::isOrganization($entity) ? 'Organisation' : 'Person');
     }
-    else {
-      $token = 'project:' . $entity->id();
-      $label = (string) $entity->label();
-      $info = 'Projekt';
-    }
-    return ['value' => $token, 'entity_id' => $token, 'label' => $label, 'info_label' => $info];
+    return self::build('project:' . $entity->id(), (string) $entity->label(), 'Projekt');
   }
 
   /**
    * Builds the tag of a text.
    *
-   * Tagify gives the tag the class, so text tags are told apart.
+   * The class tells text tags apart from people, organizations and projects.
    *
    * @return array{value: string, entity_id: string, label: string, info_label: string, class: string}
    *   The tag as Tagify reads it.
    */
   public static function textTag(string $text): array {
-    $token = 'text:' . $text;
-    return [
-      'value' => $token,
-      'entity_id' => $token,
-      'label' => $text,
-      'info_label' => 'Text',
-      'class' => 'logbook-search__text',
-    ];
+    return self::build('text:' . $text, $text, 'Text') + ['class' => 'logbook-search__text'];
+  }
+
+  /**
+   * Normalizes a token: texts are trimmed and cut, ids must be positive.
+   *
+   * @return string|null
+   *   The token, or NULL if it is invalid.
+   */
+  private static function normalize(mixed $token): ?string {
+    if (!is_string($token) || !str_contains($token, ':')) {
+      return NULL;
+    }
+    [$kind, $value] = explode(':', $token, 2);
+    if ($kind === 'text') {
+      $value = mb_substr(trim($value), 0, self::MAX_TEXT_LENGTH);
+      return $value === '' ? NULL : 'text:' . $value;
+    }
+    if (in_array($kind, ['user', 'project'], TRUE) && preg_match('/^[1-9]\d{0,9}$/', $value)) {
+      return $token;
+    }
+    return NULL;
+  }
+
+  /**
+   * Builds a tag as Tagify reads it.
+   */
+  private static function build(string $token, string $label, string $info): array {
+    return ['value' => $token, 'entity_id' => $token, 'label' => $label, 'info_label' => $info];
   }
 
 }

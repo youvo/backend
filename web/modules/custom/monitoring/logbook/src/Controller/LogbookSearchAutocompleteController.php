@@ -23,6 +23,11 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
    */
   protected const int LIMIT = 10;
 
+  /**
+   * The length the text needs before people and projects are suggested.
+   */
+  protected const int MIN_LENGTH = 2;
+
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
   ) {}
@@ -38,30 +43,40 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
    * Returns the suggestions for the typed text.
    */
   public function handle(Request $request): JsonResponse {
-    $query = mb_substr(trim((string) $request->query->get('q', '')), 0, SearchTags::MAX_TEXT_LENGTH);
-    if ($query === '') {
+    $text = mb_substr(trim((string) $request->query->get('q', '')), 0, SearchTags::MAX_TEXT_LENGTH);
+    if ($text === '') {
       return new JsonResponse([]);
     }
 
-    $entities = [];
-    if (mb_strlen($query) >= 2) {
+    $tags = [];
+    if (mb_strlen($text) >= static::MIN_LENGTH) {
       $entities = array_merge(
         // People and organizations, not the anonymous user.
-        $this->match('user', 'field_name', $query, [['uid', 0, '>'], ['type', ['user', 'organization'], 'IN']]),
-        $this->match('project', 'title', $query),
+        $this->match('user', 'field_name', $text, [['uid', 0, '>'], ['type', ['user', 'organization'], 'IN']]),
+        $this->match('project', 'title', $text),
       );
+      $tags = array_map(SearchTags::tag(...), $entities);
+      usort($tags, static fn (array $a, array $b) => strcasecmp($a['label'], $b['label']));
     }
-    $tags = array_map(SearchTags::tag(...), $entities);
-    usort($tags, static fn (array $a, array $b) => strcasecmp($a['label'], $b['label']));
-    $tags = array_slice($tags, 0, static::LIMIT);
 
-    // Tagify leaves out the suggestions that are tags already.
-    array_unshift($tags, SearchTags::textTag($query));
-    return new JsonResponse($tags);
+    // Tagify itself leaves out the suggestions that are tags already.
+    return new JsonResponse([
+      SearchTags::textTag($text),
+      ...array_slice($tags, 0, static::LIMIT),
+    ]);
   }
 
   /**
    * Loads the entities whose name field contains the text, sorted by it.
+   *
+   * @param string $entity_type_id
+   *   The entity type.
+   * @param string $field
+   *   The name field.
+   * @param string $text
+   *   The text.
+   * @param array<array{string, mixed, string}> $conditions
+   *   More conditions, each as field, value and operator.
    *
    * @return \Drupal\Core\Entity\EntityInterface[]
    *   The entities.
