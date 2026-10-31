@@ -150,6 +150,28 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * A text tag matches the names of the people in a log, in every role.
+   */
+  public function testTextMatchesPeopleNames(): void {
+    $creative = $this->createCreative();
+    $creative->setName('Monika Großmann');
+    $creative->save();
+    $manager = $this->createCreative();
+    $manager->setName('Fredolina Schütte');
+    $manager->save();
+    $author = $this->createCreative();
+    $author->setName('Willy Schreiber');
+    $author->save();
+    $member = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
+    $managed = $this->createLog('project_apply', ['manager' => $manager->id(), 'created' => 200]);
+    $written = $this->createLog('project_apply', ['author' => $author->id(), 'created' => 300]);
+    $this->createLog('project_apply', ['created' => 400]);
+    $this->assertSame([(int) $member->id()], $this->ids(['tags' => ['text:großmann']]));
+    $this->assertSame([(int) $managed->id()], $this->ids(['tags' => ['text:Schütte']]));
+    $this->assertSame([(int) $written->id()], $this->ids(['tags' => ['text:Schreiber']]));
+  }
+
+  /**
    * A text tag matches the log text of the pattern, not its placeholders.
    */
   public function testTextMatchesLogText(): void {

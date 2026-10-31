@@ -23,7 +23,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * matches the logs they wrote, take part in as creative, manage or belong to,
  * and the logs of the projects they own. Tags of people, organizations and
  * projects add up. Each text narrows the result: it is looked for in the
- * message, the project title and the organization name.
+ * message, the log text of the pattern, the project title and the names of
+ * the people and organizations in the log.
  *
  * Multi-value fields are matched in subqueries, so a log is never listed
  * twice.
@@ -130,7 +131,11 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       $or = new Condition('OR');
       $this->logCondition($or, $alias, 'message', $like, 'LIKE');
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'title', $like, 'LIKE'), 'IN');
-      $this->logCondition($or, $alias, 'organization', $this->ids('user', 'field_name', $like, 'LIKE'), 'IN');
+      // The names of the people and organizations in the log, in every role,
+      // as a tag of them would find it.
+      foreach (['author', 'manager', 'organization', 'creatives'] as $field) {
+        $this->logCondition($or, $alias, $field, $this->ids('user', 'field_name', $like, 'LIKE'), 'IN');
+      }
       // As an organization tag, the name finds the logs of its projects.
       $owners = $this->ids('user', 'field_name', $like, 'LIKE');
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $owners, 'IN'), 'IN');
