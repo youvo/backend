@@ -123,12 +123,20 @@ final class SearchTags {
   /**
    * Builds the tag of a text.
    *
-   * @return array{value: string, entity_id: string, label: string, info_label: string}
+   * Tagify gives the tag the class, so text tags are told apart.
+   *
+   * @return array{value: string, entity_id: string, label: string, info_label: string, class: string}
    *   The tag as Tagify reads it.
    */
   public static function textTag(string $text): array {
     $token = 'text:' . $text;
-    return ['value' => $token, 'entity_id' => $token, 'label' => $text, 'info_label' => 'Text'];
+    return [
+      'value' => $token,
+      'entity_id' => $token,
+      'label' => $text,
+      'info_label' => 'Text',
+      'class' => 'logbook-search__text',
+    ];
   }
 
 }

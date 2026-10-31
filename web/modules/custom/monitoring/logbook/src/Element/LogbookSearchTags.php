@@ -46,9 +46,6 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
   public static function processSearchTags(array &$element, FormStateInterface $form_state, array &$complete_form): array {
     $element['#attributes']['data-autocomplete-url'] = Url::fromRoute('logbook.search_autocomplete')->toString();
     $element['#attributes']['class'][] = 'logbook-search';
-    // Tagify removes the name of the input in a GET form; the script needs it
-    // to submit the tags.
-    $element['#attributes']['data-logbook-name'] = $element['#name'] ?? '';
     // The script gives the Tagify input this name for screen readers.
     $element['#attributes']['aria-label'] ??= 'Logbuch durchsuchen: Person, Organisation, Projekt oder Text';
     $element['#attached']['drupalSettings']['tagify']['information_message']['no_matching_suggestions'] = 'Keine Vorschläge für:';

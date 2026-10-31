@@ -88,8 +88,6 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
     $this->assertStringContainsString('/logbook/search/autocomplete', $element['#attributes']['data-autocomplete-url']);
     $this->assertContains('tagify/default', $element['#attached']['library']);
     $this->assertContains('logbook/search', $element['#attached']['library']);
-    // The script needs the name to submit the tags; Tagify removes it.
-    $this->assertSame('tags', $element['#attributes']['data-logbook-name']);
     // The bar is named for screen readers and speaks German.
     $this->assertSame('Logbuch durchsuchen: Person, Organisation, Projekt oder Text', $element['#attributes']['aria-label']);
     $this->assertSame('Keine Vorschläge für:', $element['#attached']['drupalSettings']['tagify']['information_message']['no_matching_suggestions']);

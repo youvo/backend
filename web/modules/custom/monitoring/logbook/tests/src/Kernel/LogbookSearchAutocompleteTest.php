@@ -53,7 +53,13 @@ class LogbookSearchAutocompleteTest extends LogbookKernelTestBase {
     $this->createNamedCreative('Someone Else');
 
     $items = $this->autocomplete(['q' => 'berg']);
-    $this->assertSame(['value' => 'text:berg', 'entity_id' => 'text:berg', 'label' => 'berg', 'info_label' => 'Text'], $items[0]);
+    $this->assertSame([
+      'value' => 'text:berg',
+      'entity_id' => 'text:berg',
+      'label' => 'berg',
+      'info_label' => 'Text',
+      'class' => 'logbook-search__text',
+    ], $items[0]);
     $rest = array_slice($items, 1);
     $this->assertSame([
       'user:' . $creative->id(),
