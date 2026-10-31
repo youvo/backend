@@ -98,7 +98,7 @@ display:
         options:
           perm: 'view observable log'
       cache:
-        type: tag
+        type: logbook_tag
         options: {  }
       empty:
         area_text_custom:

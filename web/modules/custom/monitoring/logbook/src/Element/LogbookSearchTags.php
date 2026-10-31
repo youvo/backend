@@ -54,9 +54,12 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
    * {@inheritdoc}
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state): string|false|null {
+    // Without tags, submitted input still gives an empty value: NULL would let
+    // the form builder show the raw input in the bar.
+    $empty = $input === FALSE ? NULL : '';
     $tokens = SearchTags::fromInput($input === FALSE ? ($element['#default_value'] ?? []) : $input);
     if ($tokens === []) {
-      return NULL;
+      return $empty;
     }
 
     $parsed = SearchTags::parse($tokens);
@@ -75,7 +78,8 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
         $tags[] = SearchTags::tag($entities[$kind][$value]);
       }
     }
-    return $tags ? json_encode($tags) : NULL;
+    // Ids of deleted entities are dropped, as invalid tokens are.
+    return $tags ? json_encode($tags) : $empty;
   }
 
 }

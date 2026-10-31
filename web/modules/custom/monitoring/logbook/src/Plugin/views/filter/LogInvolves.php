@@ -131,6 +131,9 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       $this->logCondition($or, $alias, 'message', $like, 'LIKE');
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'title', $like, 'LIKE'), 'IN');
       $this->logCondition($or, $alias, 'organization', $this->ids('user', 'field_name', $like, 'LIKE'), 'IN');
+      // As an organization tag, the name finds the logs of its projects.
+      $owners = $this->ids('user', 'field_name', $like, 'LIKE');
+      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $owners, 'IN'), 'IN');
       $query->addWhere($this->options['group'], $or);
     }
   }

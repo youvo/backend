@@ -224,15 +224,57 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * Invalid tags do not filter, unknown ids match nothing.
+   * Invalid tags and ids of deleted entities are ignored, as in the bar.
    */
   public function testInvalidTagsAreIgnored(): void {
     $this->createLog('project_apply', ['created' => 100]);
-    $this->createLog('project_apply', ['created' => 200]);
+    $with_message = $this->createLog('project_apply', ['message' => 'Kranich hallo', 'created' => 200]);
     $all = $this->ids();
     $this->assertSame($all, $this->ids(['tags' => ['node:1', 'user:abc', 'text:  ']]));
     $this->assertSame($all, $this->ids(['tags' => 'garbage']));
-    $this->assertSame([], $this->ids(['tags' => ['user:999999']]));
+    $this->assertSame($all, $this->ids(['tags' => ['user:999999']]));
+    $this->assertSame([(int) $with_message->id()], $this->ids(['tags' => ['user:999999', 'text:Kranich']]));
+  }
+
+  /**
+   * Invalid input does not show up in the search bar.
+   */
+  public function testInvalidTagsAreNotShownInTheBar(): void {
+    $html = $this->renderPage(['tags' => ['node:1', '<b>x</b>']]);
+    $this->assertStringNotContainsString('node:1', $html);
+    $this->assertStringNotContainsString('&lt;b&gt;x', $html);
+  }
+
+  /**
+   * Typing an organization name finds the logs of its projects, as its tag.
+   */
+  public function testOrganizationNameFindsFeedbackLogsOfItsProjects(): void {
+    $this->createPattern('feedback_complete', ['observable' => TRUE]);
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $project = $this->createLogbookProject('Flug');
+    $project->setOwnerId($organization->id())->save();
+    $feedback = $this->createLog('feedback_complete', ['project' => $project->id(), 'created' => 100]);
+    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject('Andere')->id(), 'created' => 200]);
+    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['text:Kranich']]));
+  }
+
+  /**
+   * Cached results follow renamed projects and organizations.
+   */
+  public function testResultsFollowRenamedProjectsAndOrganizations(): void {
+    $project = $this->createLogbookProject('Zebra Garden');
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $log = $this->createLog('project_apply', [
+      'project' => $project->id(),
+      'organization' => $organization->id(),
+      'created' => 100,
+    ]);
+    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Zebra']]));
+    $project->setTitle('Anderer Titel')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Zebra']]));
+    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Kranich']]));
+    $organization->set('field_name', 'Storch e.V.')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Kranich']]));
   }
 
   /**

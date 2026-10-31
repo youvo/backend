@@ -46,11 +46,12 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
   }
 
   /**
-   * Nothing valid gives no value.
+   * Nothing valid gives an empty value, never the raw input.
    */
   public function testEmptyValue(): void {
     $element = [];
-    $this->assertNull(LogbookSearchTags::valueCallback($element, ['node:1'], new FormState()));
+    $this->assertSame('', LogbookSearchTags::valueCallback($element, ['node:1'], new FormState()));
+    $this->assertSame('', LogbookSearchTags::valueCallback($element, ['user:999999'], new FormState()));
     $this->assertNull(LogbookSearchTags::valueCallback($element, FALSE, new FormState()));
   }
 

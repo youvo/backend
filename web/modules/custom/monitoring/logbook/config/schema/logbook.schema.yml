@@ -61,3 +61,7 @@ views.filter.log_involves:
       sequence:
         type: string
         label: 'Token'
+
+views.cache.logbook_tag:
+  type: views.cache.tag
+  label: 'Logbook tags'
