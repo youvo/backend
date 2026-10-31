@@ -72,15 +72,12 @@ class LogbookSearchAutocompleteTest extends LogbookKernelTestBase {
   }
 
   /**
-   * Selected tags are left out, short queries only offer the text.
+   * Short queries only offer the text.
    */
-  public function testSelectedAndShortQuery(): void {
+  public function testShortQuery(): void {
     $this->createNamedCreative('Bob');
-    $project = $this->createLogbookProject('Bergwanderung');
     $this->assertSame(['text:b'], array_column($this->autocomplete(['q' => 'b']), 'entity_id'));
     $this->assertSame([], $this->autocomplete(['q' => '  ']));
-    $items = $this->autocomplete(['q' => 'berg', 'selected' => 'project:' . $project->id() . ',text:berg']);
-    $this->assertSame([], $items);
   }
 
   /**

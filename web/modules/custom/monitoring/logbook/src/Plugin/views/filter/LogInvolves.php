@@ -37,13 +37,6 @@ class LogInvolves extends FilterPluginBase {
   protected const array PARTICIPANTS = ['author', 'manager', 'organization', 'creatives'];
 
   /**
-   * The words of the log texts by pattern id, without their placeholders.
-   *
-   * @var array<string, string[]>|null
-   */
-  protected ?array $logTextWords = NULL;
-
-  /**
    * Constructs the filter.
    */
   public function __construct(
@@ -115,7 +108,6 @@ class LogInvolves extends FilterPluginBase {
    * {@inheritdoc}
    */
   public function query(): void {
-
     $tags = SearchTags::parse($this->value);
     if (!$tags['user'] && !$tags['project'] && !$tags['text']) {
       return;
@@ -168,20 +160,15 @@ class LogInvolves extends FilterPluginBase {
    *   The pattern ids.
    */
   protected function patternsByText(string $text): array {
-    if ($this->logTextWords === NULL) {
-      $this->logTextWords = [];
-      /** @var \Drupal\logbook\LogTextInterface $log_text */
-      foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
-        if ($pattern = (string) $log_text->get('log_pattern')->target_id) {
-          $this->logTextWords[$pattern][] = preg_replace('/%\w+/u', ' ', $log_text->getText()) ?? '';
-        }
+    $patterns = [];
+    /** @var \Drupal\logbook\LogTextInterface $log_text */
+    foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
+      $words = preg_replace('/%\w+/u', ' ', $log_text->getText()) ?? '';
+      if (mb_stripos($words, $text) !== FALSE) {
+        $patterns[] = (string) $log_text->get('log_pattern')->target_id;
       }
     }
-    $matches = array_filter(
-      $this->logTextWords,
-      static fn (array $texts) => array_filter($texts, static fn (string $words) => mb_stripos($words, $text) !== FALSE) !== [],
-    );
-    return array_map('strval', array_keys($matches));
+    return array_values(array_unique(array_filter($patterns)));
   }
 
   /**

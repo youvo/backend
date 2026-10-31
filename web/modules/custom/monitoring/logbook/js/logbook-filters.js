@@ -8,21 +8,6 @@
  * filters show.
  */
 ((Drupal, once) => {
-  /**
-   * Counts the further filters that are set.
-   *
-   * @param {Element[]} fields
-   *   The form items of the further filters.
-   *
-   * @return {number}
-   *   The number of set filters.
-   */
-  function countActive(fields) {
-    return fields
-      .flatMap((field) => [...field.querySelectorAll('select, input')])
-      .filter((input) => input.value !== '' && input.value !== 'All').length;
-  }
-
   Drupal.behaviors.logbookFilters = {
     attach(context) {
       once('logbook-filters', '.view-logbook .views-exposed-form', context).forEach(
@@ -39,7 +24,6 @@
           fields.forEach((field, index) => {
             field.id = field.id || `logbook-filters-more-${index}`;
           });
-          const active = countActive(fields);
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'logbook-filters-toggle';
@@ -47,15 +31,10 @@
             'aria-controls',
             fields.map((field) => field.id).join(' '),
           );
+          // The label gets the focus ring, which hugs the text.
           const label = document.createElement('span');
           label.textContent = Drupal.t('Weitere Filter');
           button.append(label);
-          if (active) {
-            const count = document.createElement('span');
-            count.className = 'logbook-filters-toggle__count';
-            count.textContent = String(active);
-            button.append(count);
-          }
           anchor.after(button);
 
           const setOpen = (open) => {
@@ -65,7 +44,12 @@
           button.addEventListener('click', () => {
             setOpen(button.getAttribute('aria-expanded') !== 'true');
           });
-          setOpen(active > 0);
+          // A set filter shows from the start.
+          setOpen(
+            fields
+              .flatMap((field) => [...field.querySelectorAll('select, input')])
+              .some((el) => el.value !== '' && el.value !== 'All'),
+          );
         },
       );
     },
