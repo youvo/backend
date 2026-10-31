@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\logbook\Plugin\Field\ComputedTextFieldItemListBase;
 use Drupal\logbook\SearchTags;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
@@ -43,13 +42,6 @@ class LogInvolves extends FilterPluginBase {
    * @var array<string, string[]>|null
    */
   protected ?array $logTextWords = NULL;
-
-  /**
-   * The ids of the patterns whose log text shows the role of the author.
-   *
-   * @var string[]|null
-   */
-  protected ?array $authorRolePatterns = NULL;
 
   /**
    * Constructs the filter.
@@ -162,7 +154,6 @@ class LogInvolves extends FilterPluginBase {
       if ($patterns = $this->patternsByText($text)) {
         $this->logCondition($or, $alias, 'type', $patterns, 'IN');
       }
-      $this->addAuthorRoleConditions($or, $alias, $text);
       $query->addWhere($this->options['group'], $or);
     }
   }
@@ -177,89 +168,20 @@ class LogInvolves extends FilterPluginBase {
    *   The pattern ids.
    */
   protected function patternsByText(string $text): array {
-    $this->loadLogTexts();
+    if ($this->logTextWords === NULL) {
+      $this->logTextWords = [];
+      /** @var \Drupal\logbook\LogTextInterface $log_text */
+      foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
+        if ($pattern = (string) $log_text->get('log_pattern')->target_id) {
+          $this->logTextWords[$pattern][] = preg_replace('/%\w+/u', ' ', $log_text->getText()) ?? '';
+        }
+      }
+    }
     $matches = array_filter(
       $this->logTextWords,
       static fn (array $texts) => array_filter($texts, static fn (string $words) => mb_stripos($words, $text) !== FALSE) !== [],
     );
     return array_map('strval', array_keys($matches));
-  }
-
-  /**
-   * Reads the log texts once for all texts of the search.
-   */
-  protected function loadLogTexts(): void {
-    if ($this->logTextWords !== NULL) {
-      return;
-    }
-    $this->logTextWords = [];
-    $this->authorRolePatterns = [];
-    /** @var \Drupal\logbook\LogTextInterface $log_text */
-    foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
-      $pattern = (string) $log_text->get('log_pattern')->target_id;
-      if ($pattern === '') {
-        continue;
-      }
-      $text = $log_text->getText();
-      $words = preg_replace('/%\w+/u', ' ', $text) ?? '';
-      $this->logTextWords[$pattern][] = $words;
-      if (str_contains($text, '%AuthorWithRole')) {
-        $this->authorRolePatterns[$pattern] = $pattern;
-      }
-    }
-    $this->authorRolePatterns = array_values($this->authorRolePatterns);
-  }
-
-  /**
-   * Matches the role that a log text shows in front of its author.
-   *
-   * The placeholder %AuthorWithRole becomes a role and the name of the author,
-   * as ComputedTextFieldItemListBase::fakeTranslateRole() decides when the text
-   * is shown: an organization, the manager of the log, a supervisor, an
-   * administrator or else a creative. The role is matched with the same order
-   * of rules. Unlike the shown text, a supervisor or an administrator who
-   * takes part in the project is not matched as a creative.
-   */
-  protected function addAuthorRoleConditions(Condition $or, string $alias, string $text): void {
-
-    $roles = array_keys(array_filter(
-      ComputedTextFieldItemListBase::AUTHOR_ROLE_WORDS,
-      static fn (string $word) => mb_stripos($word, $text) !== FALSE,
-    ));
-    $this->loadLogTexts();
-    if (!$roles || !$this->authorRolePatterns) {
-      return;
-    }
-    $author = $this->logColumn($alias, 'author');
-    $manager = $this->logColumn($alias, 'manager');
-    $in = static fn (bool $is) => $is ? 'IN' : 'NOT IN';
-    // The rules in their order: a role holds when its rule does and none
-    // before it. A creative is what no rule holds for.
-    $rules = [
-      'organization' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'type', 'organization', '='), $in($is)),
-      'manager' => static fn (Condition $c, bool $is) => $c->where($is ? "$author = $manager" : "($manager IS NULL OR $author <> $manager)"),
-      'supervisor' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'roles', 'supervisor', '='), $in($is)),
-      'administrator' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'roles', 'administrator', '='), $in($is)),
-    ];
-
-    foreach ($roles as $kind) {
-      $and = new Condition('AND');
-      $this->logCondition($and, $alias, 'type', $this->authorRolePatterns, 'IN');
-      foreach ($rules as $rule => $add) {
-        $add($and, $rule === $kind);
-        if ($rule === $kind) {
-          break;
-        }
-      }
-      $or->condition($and);
-    }
-  }
-
-  /**
-   * Gets the column of a field in the base table of the log.
-   */
-  protected function logColumn(string $alias, string $field): string {
-    return $alias . '.' . $this->column('log', $field)[1];
   }
 
   /**

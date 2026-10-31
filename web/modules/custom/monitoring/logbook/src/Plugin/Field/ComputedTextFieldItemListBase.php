@@ -19,7 +19,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   /**
    * The German words of the author roles, as %AuthorWithRole shows them.
    */
-  public const array AUTHOR_ROLE_WORDS = [
+  protected const array AUTHOR_ROLE_WORDS = [
     'organization' => 'Organisation',
     'manager' => 'Managerin',
     'supervisor' => 'Supervisorin',
