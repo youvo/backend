@@ -32,6 +32,8 @@
    start where the text of the other filters starts. Tagify forces no padding
    on the bar. */
 .tagify.logbook-search {
+  /* The placeholder reads well: Tagify's light grey is too faint. */
+  --placeholder-color: color-mix(in srgb, var(--gin-color-text-light, #545560) 85%, var(--gin-bg-layer, #fff));
   padding-inline-start: 4px !important;
 }
 

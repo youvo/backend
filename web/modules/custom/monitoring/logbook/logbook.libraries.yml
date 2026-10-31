@@ -2,6 +2,11 @@ table:
   css:
     theme:
       css/logbook.css: {}
+  js:
+    js/logbook-filters.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
 
 search:
   js:

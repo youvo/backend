@@ -85,7 +85,7 @@ display:
           expose:
             items_per_page: false
             offset: false
-          quantity: 9
+          quantity: 5
       exposed_form:
         type: basic
         options:
@@ -101,13 +101,12 @@ display:
         type: logbook_tag
         options: {  }
       empty:
-        area_text_custom:
-          id: area_text_custom
+        logbook_empty:
+          id: logbook_empty
           table: views
-          field: area_text_custom
-          plugin_id: text_custom
+          field: logbook_empty
+          plugin_id: logbook_empty
           empty: true
-          content: 'Keine Einträge.'
       sorts:
         created:
           id: created

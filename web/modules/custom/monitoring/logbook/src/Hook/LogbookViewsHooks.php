@@ -27,6 +27,11 @@ class LogbookViewsHooks {
    */
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data): void {
+    $data['views']['logbook_empty'] = [
+      'title' => $this->t('Logbook: Empty'),
+      'help' => $this->t('Says why the logbook is empty and offers to reset a search.'),
+      'area' => ['id' => 'logbook_empty'],
+    ];
     if (!isset($data['log'])) {
       return;
     }

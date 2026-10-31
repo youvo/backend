@@ -384,6 +384,27 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * A search without results says so and offers to reset it.
+   */
+  public function testEmptySearchOffersReset(): void {
+    $this->createLog('project_apply', ['created' => 100]);
+    $html = $this->renderPage(['tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+    $this->assertMatchesRegularExpression('#<a [^>]*href="/logbook"[^>]*>Suche zurücksetzen</a>#', $html);
+    $html = $this->renderPage(['type' => 'project_apply', 'tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Suche zurücksetzen', $html);
+  }
+
+  /**
+   * An empty logbook without a search has nothing to reset.
+   */
+  public function testEmptyLogbookWithoutSearch(): void {
+    $html = $this->renderPage();
+    $this->assertStringContainsString('Noch keine Einträge.', $html);
+    $this->assertStringNotContainsString('Suche zurücksetzen', $html);
+  }
+
+  /**
    * The created filter limits the time range, the end day included.
    */
   public function testCreatedRange(): void {
@@ -409,6 +430,17 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $view->execute();
     $this->assertCount(50, $view->result);
     $this->assertSame(51, (int) $view->pager->getTotalItems());
+  }
+
+  /**
+   * The pager links at most five pages, so it fits on a phone.
+   */
+  public function testPagerLinksFivePages(): void {
+    for ($i = 1; $i <= 351; $i++) {
+      $this->createLog('project_apply', ['created' => $i]);
+    }
+    preg_match_all('#class="pager__item(?: is-active)? ?"#', $this->renderPage(), $items);
+    $this->assertCount(5, $items[0]);
   }
 
   /**
