@@ -3,7 +3,13 @@
  * The logbook search bar.
  */
 
-.logbook-search__text {
-  --tag-bg: var(--gin-bg-layer3, #f3f4f9);
+/* Text tags are told apart from people, organizations and projects. */
+.tagify__tag.logbook-search__text {
+  --tag-bg: var(--gin-color-primary-light, #e6ecfa);
+  --tag-hover: var(--gin-color-primary-light-hover, #d6e0f7);
+}
+
+.tagify__tag.logbook-search__text .tagify__tag-text,
+.tagify__tag.logbook-search__text .tagify__tag-text-with-entity-id {
   font-style: italic;
 }
