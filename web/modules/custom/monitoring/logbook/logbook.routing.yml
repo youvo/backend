@@ -29,3 +29,10 @@ entity.log_pattern.delete_form:
     _title: 'Delete a log pattern'
   requirements:
     _permission: 'administer log pattern'
+
+logbook.search_autocomplete:
+  path: '/logbook/search/autocomplete'
+  defaults:
+    _controller: '\Drupal\logbook\Controller\LogbookSearchAutocompleteController::handle'
+  requirements:
+    _permission: 'view observable log'
