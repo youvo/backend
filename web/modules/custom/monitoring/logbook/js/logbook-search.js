@@ -21,6 +21,8 @@
 
           Object.assign(tagify.settings, {
             enforceWhitelist: false,
+            // A comma belongs to the text: Enter ends a tag.
+            delimiters: null,
             // Typed text becomes a text tag, as the autocomplete offers it.
             transformTag(data) {
               if (data.entity_id == null) {
