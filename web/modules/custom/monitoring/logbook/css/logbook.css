@@ -523,3 +523,11 @@
     display: block;
   }
 }
+
+/* On a phone the pager keeps one row: the arrows stay, first and last go. */
+@media (max-width: 640px) {
+  .view-logbook .pager__item--first,
+  .view-logbook .pager__item--last {
+    display: none;
+  }
+}
