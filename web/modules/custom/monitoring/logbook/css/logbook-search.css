@@ -9,6 +9,31 @@
   --tag-hover: var(--gin-color-primary-light-hover, #d6e0f7);
 }
 
+/* The suggestions lie over the other filters: give them an edge. */
+.tagify__dropdown .tagify__dropdown__wrapper {
+  border: 1px solid var(--gin-border-color, #d3d4d9);
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: var(--gin-shadow-l2, 0 0.5rem 1.5rem rgb(0 0 0 / 0.15));
+}
+
+/* In a narrow bar, the name is shortened, never the type label. */
+.tagify.logbook-search .tagify__tag > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tagify.logbook-search .tagify__tag-text {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tagify.logbook-search .tagify__tag__info-label-wrap {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
 .tagify__tag.logbook-search__text .tagify__tag-text,
 .tagify__tag.logbook-search__text .tagify__tag-text-with-entity-id {
   font-style: italic;

@@ -85,6 +85,10 @@
             return;
           }
 
+          // No grey completion of a highlighted suggestion in the bar: Enter
+          // adds the typed text, so the hint would promise something else.
+          tagify.settings.autoComplete.enabled = false;
+
           // Tagify names its input in English; use the name of the element.
           if (input.getAttribute('aria-label')) {
             tagify.DOM.input.setAttribute(
