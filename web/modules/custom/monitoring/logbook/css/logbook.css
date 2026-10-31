@@ -139,6 +139,11 @@
   font-size: var(--logbook-text-xs);
 }
 
+.view-logbook .views-exposed-form .form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .view-logbook .views-exposed-form .form-actions .button {
   box-sizing: border-box;
   min-height: 2.25rem;
@@ -241,6 +246,11 @@
 
 .logbook-type--celebrate {
   background: color-mix(in srgb, var(--logbook-teal, #1da8a5) 40%, var(--logbook-surface, #fff));
+}
+
+/* On its tinted row, the pill would blend in: it is set off in white. */
+.view-logbook tr.logbook-row--celebrate .logbook-type--celebrate {
+  background: var(--logbook-surface, #fff);
 }
 
 /* Visibility icons: grey, drawn with masks so they follow the text color. */
@@ -365,8 +375,9 @@
   /* The celebrated row keeps its tint and sparkles, with room at the sides;
      the illustration would cover the text. */
   .view-logbook tr.logbook-row--celebrate {
-    margin-block: 0.375rem;
+    margin-block: 0.75rem;
     padding-inline: 0.75rem;
+    border-bottom: 0;
     border-radius: var(--logbook-radius-m);
   }
 
