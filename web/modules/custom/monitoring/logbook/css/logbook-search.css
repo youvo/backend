@@ -16,6 +16,17 @@
   box-shadow: var(--gin-shadow-l2, 0 0.5rem 1.5rem rgb(0 0 0 / 0.15));
 }
 
+/* Wrapped tags keep a gap between their rows (Tagify's Gin styles force no
+   block margin on all tags), and the typing line fits next to the last tag
+   instead of opening a row of its own. */
+.tagify.logbook-search .tagify__tag {
+  margin-block: 2px !important;
+}
+
+.tagify.logbook-search .tagify__input {
+  min-width: 4rem;
+}
+
 /* In a narrow bar, the name is shortened, never the type label. */
 .tagify.logbook-search .tagify__tag > div {
   min-width: 0;
