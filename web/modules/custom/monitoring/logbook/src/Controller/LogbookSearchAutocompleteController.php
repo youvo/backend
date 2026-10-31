@@ -21,9 +21,11 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
   /**
    * The number of people, organizations and projects suggested.
    */
-  protected const LIMIT = 10;
+  protected const int LIMIT = 10;
 
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+  ) {}
 
   /**
    * {@inheritdoc}
@@ -36,6 +38,7 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
    * Returns the suggestions for the typed text.
    */
   public function handle(Request $request): JsonResponse {
+
     $query = mb_substr(trim((string) $request->query->get('q', '')), 0, SearchTags::MAX_TEXT_LENGTH);
     if ($query === '') {
       return new JsonResponse([]);

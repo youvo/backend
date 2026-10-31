@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\logbook\Plugin\Field\ComputedTextFieldItemListBase;
 use Drupal\logbook\SearchTags;
 use Drupal\views\Attribute\ViewsFilter;
@@ -31,12 +30,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * twice.
  */
 #[ViewsFilter('log_involves')]
-class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInterface {
+class LogInvolves extends FilterPluginBase {
 
   /**
    * The fields of the log that hold the people and organizations in it.
    */
-  protected const PARTICIPANTS = ['author', 'manager', 'organization', 'creatives'];
+  protected const array PARTICIPANTS = ['author', 'manager', 'organization', 'creatives'];
 
   /**
    * The words of the log texts by pattern id, without their placeholders.
@@ -124,6 +123,7 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
    * {@inheritdoc}
    */
   public function query(): void {
+
     $tags = SearchTags::parse($this->value);
     if (!$tags['user'] && !$tags['project'] && !$tags['text']) {
       return;
@@ -221,6 +221,7 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
    * takes part in the project is not matched as a creative.
    */
   protected function addAuthorRoleConditions(Condition $or, string $alias, string $text): void {
+
     $roles = array_keys(array_filter(
       ComputedTextFieldItemListBase::AUTHOR_ROLE_WORDS,
       static fn (string $word) => mb_stripos($word, $text) !== FALSE,

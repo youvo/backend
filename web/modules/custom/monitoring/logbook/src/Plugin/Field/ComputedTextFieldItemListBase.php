@@ -19,7 +19,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   /**
    * The German words of the author roles, as %AuthorWithRole shows them.
    */
-  public const AUTHOR_ROLE_WORDS = [
+  public const array AUTHOR_ROLE_WORDS = [
     'organization' => 'Organisation',
     'manager' => 'Managerin',
     'supervisor' => 'Supervisorin',
@@ -155,7 +155,8 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
       return 'organization';
     }
 
-    if ($log->getManager()?->id() == Profile::id($author)) {
+    $manager = $log->getManager();
+    if ($manager && (int) $manager->id() === Profile::id($author)) {
       return 'manager';
     }
 

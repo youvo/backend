@@ -208,6 +208,25 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * The log text names the role of the author, the manager of the log too.
+   */
+  public function testLogTextNamesAuthorRole(): void {
+    $creative = $this->createCreative();
+    $manager = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $role = static function ($log): string {
+      $text = $log->get('markup');
+      return (new \ReflectionMethod($text, 'fakeTranslateRole'))->invoke($text);
+    };
+    $this->assertSame('creative', $role($this->createLog('project_apply', ['author' => $creative->id()])));
+    $this->assertSame('manager', $role($this->createLog('project_apply', [
+      'author' => $manager->id(),
+      'manager' => $manager->id(),
+    ])));
+    $this->assertSame('organization', $role($this->createLog('project_apply', ['author' => $organization->id()])));
+  }
+
+  /**
    * A text tag matches the log text of the pattern, not its placeholders.
    */
   public function testTextMatchesLogText(): void {
