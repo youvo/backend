@@ -27,6 +27,8 @@
   min-width: 0;
   white-space: nowrap;
   text-overflow: ellipsis;
+  /* Room for the slant of italic text, which overflow would cut off. */
+  padding-inline-end: 0.15em;
 }
 
 .tagify.logbook-search .tagify__tag__info-label-wrap {
