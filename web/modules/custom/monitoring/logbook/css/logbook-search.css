@@ -71,3 +71,12 @@
 .tagify__tag.logbook-search__text .tagify__tag-text-with-entity-id {
   font-style: italic;
 }
+
+/* On a phone a long tag leaves little room: the typing line stays beside it
+   and moves to a row of its own once there is text, instead of leaving an
+   empty row below the tags. */
+@media (max-width: 640px) {
+  .tagify.logbook-search .tagify__input {
+    min-width: 1.5rem;
+  }
+}

@@ -56,10 +56,7 @@
             count.textContent = String(active);
             button.append(count);
           }
-          const lineBreak = document.createElement('div');
-          lineBreak.className = 'logbook-filters-break';
-          lineBreak.setAttribute('aria-hidden', 'true');
-          anchor.after(button, lineBreak);
+          anchor.after(button);
 
           const setOpen = (open) => {
             form.classList.toggle('logbook-filters--collapsed', !open);

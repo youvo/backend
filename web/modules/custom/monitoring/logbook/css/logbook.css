@@ -139,9 +139,11 @@
   font-size: var(--logbook-text-xs);
 }
 
-.view-logbook .views-exposed-form .form-actions {
+.view-logbook .views-exposed-form.views-exposed-form > .form-actions {
   display: flex;
   gap: 0.5rem;
+  /* Gin sets the buttons apart; here they follow the row gap. */
+  margin-block: 0;
 }
 
 .view-logbook .views-exposed-form .form-actions .button {
@@ -158,8 +160,28 @@
     padding-block-start: var(--gin-spacing-s, 0.75rem);
   }
 
-  .view-logbook .views-exposed-form > :is(.form-item, fieldset, .form-actions) {
+  .view-logbook .views-exposed-form {
+    column-gap: 0.75rem;
+  }
+
+  .view-logbook .views-exposed-form > :is(.form-item, fieldset) {
     flex: 1 1 100%;
+  }
+
+  /* As high as the buttons, which have room for a thumb on a phone. */
+  .view-logbook .views-exposed-form .logbook-filters-toggle {
+    min-height: 2.75rem;
+  }
+
+  /* The buttons share the row with "Weitere Filter" when they fit; both
+     buttons need a row of their own. */
+  .view-logbook .views-exposed-form > .form-actions {
+    flex: 1 1 12rem;
+    flex-wrap: nowrap;
+  }
+
+  .view-logbook .views-exposed-form > .form-actions:has(.button + .button) {
+    flex-basis: 100%;
   }
 
   .view-logbook .views-exposed-form :is(input.form-text, select.form-select) {
@@ -184,12 +206,6 @@
     flex: 1 1 auto;
     min-width: 0;
     width: 100%;
-  }
-
-  .view-logbook .views-exposed-form .form-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0;
   }
 
   .view-logbook .views-exposed-form .form-actions .button {
@@ -480,12 +496,13 @@
     flex: 0 0 auto;
     align-items: center;
     gap: 0.5rem;
-    min-height: 2.75rem;
+    min-height: 2.25rem;
     padding: 0;
     border: 0;
     background: none;
     color: var(--logbook-accent);
     font: inherit;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
   }
@@ -522,31 +539,23 @@
   }
 
   .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible {
-    border-radius: 0.25rem;
-    outline: 2px solid var(--logbook-accent);
-    outline-offset: 2px;
+    outline: none;
     box-shadow: none;
   }
 
-  /* Open, the filters start on a new row below the button. Folded, the
-     buttons follow on its row. */
-  .view-logbook .logbook-filters-break {
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible > span:first-child {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--logbook-accent);
+    outline-offset: 2px;
+  }
+
+  /* Open, the filters start on a new row below the button. */
+  .view-logbook .logbook-filters-toggle[aria-expanded='true'] {
     flex-basis: 100%;
-    height: 0;
   }
 
-  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset, .logbook-filters-break) {
+  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset) {
     display: none;
-  }
-}
-
-.view-logbook .logbook-filters-break {
-  display: none;
-}
-
-@media (max-width: 1024px) {
-  .view-logbook .views-exposed-form:not(.logbook-filters--collapsed) > .logbook-filters-break {
-    display: block;
   }
 }
 
