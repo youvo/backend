@@ -81,7 +81,8 @@ final class SearchTags {
    */
   public static function tag(EntityInterface $entity): array {
     if ($entity instanceof UserInterface) {
-      $label = $entity->hasField('field_name') ? (string) $entity->get('field_name')->value : '';
+      // Without a name, the account name tells who it is.
+      $label = ($entity->hasField('field_name') ? (string) $entity->get('field_name')->value : '') ?: (string) $entity->getAccountName();
       return self::build('user:' . $entity->id(), $label, Profile::isOrganization($entity) ? 'Organisation' : 'Person');
     }
     return self::build('project:' . $entity->id(), (string) $entity->label(), 'Projekt');

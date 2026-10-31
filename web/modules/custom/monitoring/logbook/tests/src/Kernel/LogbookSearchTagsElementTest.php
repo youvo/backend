@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\logbook\Element\LogbookSearchTags;
+use Drupal\logbook\SearchTags;
 use Drupal\organizations\Entity\Organization;
 
 /**
@@ -33,6 +34,17 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
     $tags = json_decode((string) $value, TRUE);
     $this->assertSame(['user:' . $organization->id(), 'text:Feedback', 'project:' . $project->id()], array_column($tags, 'entity_id'));
     $this->assertSame(['Berg e.V.', 'Feedback', 'Bergwanderung'], array_column($tags, 'label'));
+  }
+
+  /**
+   * Without a name, a person or organization is shown by its account name.
+   */
+  public function testUnnamedUserShowsAccountName(): void {
+    $organization = Organization::create(['name' => 'kranich']);
+    $organization->save();
+    $element = [];
+    $value = LogbookSearchTags::valueCallback($element, ['user:' . $organization->id()], new FormState());
+    $this->assertSame(['kranich'], array_column(json_decode((string) $value, TRUE), 'label'));
   }
 
   /**
@@ -91,6 +103,9 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
     // The bar is named for screen readers and speaks German.
     $this->assertSame('Logbuch durchsuchen: Person, Organisation, Projekt oder Text', $element['#attributes']['aria-label']);
     $this->assertSame('Keine Vorschläge für:', $element['#attached']['drupalSettings']['tagify']['information_message']['no_matching_suggestions']);
+    // The bar takes as many tags as the search honors.
+    $this->assertSame(SearchTags::MAX_TOKENS, $element['#attributes']['data-cardinality']);
+    $this->assertSame('Höchstens so viele Suchbegriffe:', $element['#attached']['drupalSettings']['tagify']['information_message']['limit_tag']);
   }
 
 }

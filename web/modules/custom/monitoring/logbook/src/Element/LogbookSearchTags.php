@@ -34,6 +34,8 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
     $info = parent::getInfo();
     // The parent requires a target type; the logbook route ignores it.
     $info['#target_type'] = 'user';
+    // Tagify stops at as many tags as the search honors.
+    $info['#cardinality'] = SearchTags::MAX_TOKENS;
     $info['#max_items'] = SearchTags::MAX_TOKENS;
     $info['#suggestions_dropdown'] = 1;
     $info['#process'][] = [static::class, 'processSearchTags'];
@@ -48,7 +50,10 @@ class LogbookSearchTags extends EntityAutocompleteTagify {
     $element['#attributes']['class'][] = 'logbook-search';
     // The script gives the Tagify input this name for screen readers.
     $element['#attributes']['aria-label'] ??= 'Logbuch durchsuchen: Person, Organisation, Projekt oder Text';
-    $element['#attached']['drupalSettings']['tagify']['information_message']['no_matching_suggestions'] = 'Keine Vorschläge für:';
+    $element['#attached']['drupalSettings']['tagify']['information_message'] = [
+      'limit_tag' => 'Höchstens so viele Suchbegriffe:',
+      'no_matching_suggestions' => 'Keine Vorschläge für:',
+    ];
     $element['#attached']['library'][] = 'logbook/search';
     return $element;
   }
