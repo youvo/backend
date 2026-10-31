@@ -372,12 +372,21 @@
     grid-area: event;
   }
 
-  /* The celebrated row is a tinted band, as on a wide screen: square, with
-     room for the text at its sides, and without lines above and below, as
-     the tint sets it apart. The illustration would cover the text. */
+  /* The celebrated row is a tinted band, as on a wide screen: square and
+     without lines above and below, as the tint sets it apart. The
+     illustration would cover the text. */
   .view-logbook tr.logbook-row--celebrate {
-    padding-inline: 0.75rem;
+    /* The band reaches the edges of the card, so its pill, text and icon
+       stay on the lines of the other logs. */
+    margin-inline: calc(-1 * var(--gin-spacing-s, 0.75rem));
+    padding-inline: var(--gin-spacing-s, 0.75rem);
     border-bottom: 0;
+  }
+
+  /* The cards never scroll sideways; the scroll wrapper of the table would
+     cut off the band. */
+  .view-logbook .gin-table-scroll-wrapper {
+    overflow: visible;
   }
 
   .view-logbook tbody tr:has(+ tr.logbook-row--celebrate) {
