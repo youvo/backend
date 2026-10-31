@@ -1,0 +1,311 @@
+uuid: a579ce8a-415a-4b63-9524-38decaeda172
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.organization
+    - field.field.feedback.organization.field_add_text
+    - field.field.feedback.organization.field_challenge_boolean
+    - field.field.feedback.organization.field_challenge_text
+    - field.field.feedback.organization.field_channels_checkboxes
+    - field.field.feedback.organization.field_communication_scale
+    - field.field.feedback.organization.field_difficulties_boolean
+    - field.field.feedback.organization.field_difficulties_text
+    - field.field.feedback.organization.field_digital_text
+    - field.field.feedback.organization.field_features_text
+    - field.field.feedback.organization.field_handling_scale
+    - field.field.feedback.organization.field_handling_text
+    - field.field.feedback.organization.field_knowledge_boolean
+    - field.field.feedback.organization.field_meet_boolean
+    - field.field.feedback.organization.field_next_boolean
+    - field.field.feedback.organization.field_next_text
+    - field.field.feedback.organization.field_recommend_boolean
+    - field.field.feedback.organization.field_result_radios
+    - field.field.feedback.organization.field_satisfied_scale
+    - field.field.feedback.organization.field_service_checkboxes
+    - field.field.feedback.organization.field_service_scale
+    - field.field.feedback.organization.field_service_text
+    - field.field.feedback.organization.field_struggel_boolean
+    - field.field.feedback.organization.field_volunteer_boolean
+  module:
+    - feedback
+id: feedback.organization.default
+targetEntityType: feedback
+bundle: organization
+mode: default
+content:
+  author:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  created:
+    type: timestamp
+    label: inline
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_add_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 28
+    region: content
+  field_challenge_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  field_challenge_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 12
+    region: content
+  field_channels_checkboxes:
+    type: feedback_options
+    label: above
+    settings:
+      options:
+        -
+          value: 0
+          label: Telefon
+        -
+          value: 1
+          label: E-Mail
+        -
+          value: 2
+          label: 'Videotelefonie (Skype, Zoom, …)'
+        -
+          value: 3
+          label: Sonstiges
+    third_party_settings: {  }
+    weight: 19
+    region: content
+  field_communication_scale:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 17
+    region: content
+  field_difficulties_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 26
+    region: content
+  field_difficulties_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 27
+    region: content
+  field_digital_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 32
+    region: content
+  field_features_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 25
+    region: content
+  field_handling_scale:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 23
+    region: content
+  field_handling_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 24
+    region: content
+  field_knowledge_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 29
+    region: content
+  field_meet_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 18
+    region: content
+  field_next_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 30
+    region: content
+  field_next_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 31
+    region: content
+  field_recommend_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 16
+    region: content
+  field_result_radios:
+    type: feedback_options
+    label: above
+    settings:
+      options:
+        -
+          value: 0
+          label: 'Ja, es ist genau so geworden, wie wir uns das anfänglich vorgestellt haben.'
+        -
+          value: 1
+          label: 'Nein, wir mussten den Projektumfang verkleinern.'
+        -
+          value: 2
+          label: 'Das Projektergebnis ist sogar noch umfangreicher als wir es ausgeschrieben haben.'
+    third_party_settings: {  }
+    weight: 21
+    region: content
+  field_satisfied_scale:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_service_checkboxes:
+    type: feedback_options
+    label: above
+    settings:
+      options:
+        -
+          value: 0
+          label: Telefonberatung
+        -
+          value: 1
+          label: 'Hilfe bei der Erstellung des Briefings'
+        -
+          value: 2
+          label: 'Wissensvermittlung durch Erklärtexte und Videos'
+        -
+          value: 3
+          label: 'Sonstige Hilfestellungen'
+    third_party_settings: {  }
+    weight: 15
+    region: content
+  field_service_scale:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 13
+    region: content
+  field_service_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 14
+    region: content
+  field_struggel_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 20
+    region: content
+  field_volunteer_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 22
+    region: content
+  project:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  project_comment:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+hidden:
+  completed: true
+  step: true
+
