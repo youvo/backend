@@ -2,3 +2,14 @@ table:
   css:
     theme:
       css/logbook.css: {}
+
+search:
+  js:
+    js/logbook-search.js: {}
+  css:
+    theme:
+      css/logbook-search.css: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - tagify/default

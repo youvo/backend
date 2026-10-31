@@ -1,0 +1,9 @@
+/**
+ * @file
+ * The logbook search bar.
+ */
+
+.logbook-search__text {
+  --tag-bg: var(--gin-bg-layer3, #f3f4f9);
+  font-style: italic;
+}

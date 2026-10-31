@@ -38,10 +38,26 @@ final class SearchTags {
    */
   public static function parse(mixed $raw): array {
     $parsed = ['user' => [], 'project' => [], 'text' => []];
-    $tokens = is_array($raw) ? $raw : [$raw];
-    $count = 0;
-    foreach ($tokens as $token) {
-      if ($count >= self::MAX_TOKENS) {
+    foreach (self::tokens($raw) as $token) {
+      [$kind, $value] = explode(':', $token, 2);
+      $parsed[$kind][] = $kind === 'text' ? $value : (int) $value;
+    }
+    return $parsed;
+  }
+
+  /**
+   * Normalizes tokens, keeping their order.
+   *
+   * @param mixed $raw
+   *   A token, a list of tokens or anything else.
+   *
+   * @return string[]
+   *   The valid, distinct tokens up to the limit, texts trimmed and cut.
+   */
+  public static function tokens(mixed $raw): array {
+    $tokens = [];
+    foreach (is_array($raw) ? $raw : [$raw] as $token) {
+      if (count($tokens) >= self::MAX_TOKENS) {
         break;
       }
       if (!is_string($token) || !str_contains($token, ':')) {
@@ -50,22 +66,16 @@ final class SearchTags {
       [$kind, $value] = explode(':', $token, 2);
       if ($kind === 'text') {
         $value = mb_substr(trim($value), 0, self::MAX_TEXT_LENGTH);
-        if ($value === '' || in_array($value, $parsed['text'], TRUE)) {
+        if ($value === '') {
           continue;
         }
-        $parsed['text'][] = $value;
-        $count++;
       }
-      elseif (($kind === 'user' || $kind === 'project') && preg_match('/^[1-9]\d{0,9}$/', $value)) {
-        $id = (int) $value;
-        if (in_array($id, $parsed[$kind], TRUE)) {
-          continue;
-        }
-        $parsed[$kind][] = $id;
-        $count++;
+      elseif (!in_array($kind, ['user', 'project'], TRUE) || !preg_match('/^[1-9]\d{0,9}$/', $value)) {
+        continue;
       }
+      $tokens[$kind . ':' . $value] = TRUE;
     }
-    return $parsed;
+    return array_keys($tokens);
   }
 
   /**
