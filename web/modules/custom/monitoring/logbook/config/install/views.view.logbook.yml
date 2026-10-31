@@ -219,10 +219,10 @@ display:
             log_type: log_type
             log_event_text: log_event_text
             log_visibility: log_visibility
-          default: created
+          default: '-1'
           info:
             created:
-              sortable: true
+              sortable: false
               default_sort_order: desc
             log_type:
               sortable: false

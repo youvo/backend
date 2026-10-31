@@ -3,12 +3,15 @@
 namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Routing\RouteMatch;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\logbook\Entity\LogText;
+use Drupal\logbook\Hook\LogbookPageHooks;
 use Drupal\organizations\Entity\Organization;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
 use Drupal\views\Views;
+use Symfony\Component\Routing\Route;
 
 /**
  * Tests the logbook view.
@@ -402,6 +405,30 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $html = $this->renderPage();
     $this->assertStringContainsString('Noch keine Einträge.', $html);
     $this->assertStringNotContainsString('Suche zurücksetzen', $html);
+  }
+
+  /**
+   * The date column is not sortable; the list is newest first.
+   */
+  public function testDateColumnIsNotSortable(): void {
+    $old = $this->createLog('project_apply', ['created' => 100]);
+    $new = $this->createLog('project_apply', ['created' => 200]);
+    $html = $this->renderPage();
+    $this->assertStringNotContainsString('Sort ascending', $html);
+    $this->assertStringNotContainsString('order=created', $html);
+    $this->assertSame([(int) $new->id(), (int) $old->id()], $this->ids(['order' => 'created', 'sort' => 'asc']));
+  }
+
+  /**
+   * The page title of the logbook is read out, but not shown.
+   */
+  public function testPageTitleIsVisuallyHidden(): void {
+    $variables = ['title_attributes' => []];
+    (new LogbookPageHooks(new RouteMatch('view.logbook.page_1', new Route('/logbook'))))->preprocessPageTitle($variables);
+    $this->assertContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
+    $variables = ['title_attributes' => []];
+    (new LogbookPageHooks(new RouteMatch('system.admin', new Route('/admin'))))->preprocessPageTitle($variables);
+    $this->assertNotContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
   }
 
   /**

@@ -4,8 +4,6 @@
  * to the view, so the logbook does not depend on the manager module.
  */
 .view-logbook {
-  /* Long lines are hard to read: the logbook stops growing on wide screens. */
-  max-width: 80rem;
   --logbook-ink: var(--gin-color-title, #222330);
   --logbook-muted: var(--gin-color-text-light, #545560);
   --logbook-accent: var(--gin-color-primary, #3f78b5);
@@ -220,6 +218,12 @@
 
 .view-logbook td.views-field-created {
   font-size: var(--logbook-text-xs);
+}
+
+/* Long lines are hard to read: the event text stops growing on wide
+   screens, while the table keeps the full width. */
+.view-logbook .logbook-event {
+  max-width: 75ch;
 }
 
 .logbook-event__message {
