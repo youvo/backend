@@ -54,20 +54,48 @@ content:
     weight: 2
     region: content
   field_appreciation_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
     third_party_settings: {  }
     weight: 25
     region: content
   field_collaboration_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
     third_party_settings: {  }
     weight: 22
     region: content
@@ -79,11 +107,25 @@ content:
     weight: 23
     region: content
   field_communication_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
     third_party_settings: {  }
     weight: 24
     region: content
@@ -105,11 +147,25 @@ content:
     weight: 21
     region: content
   field_handling_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: 'schwer bedienbar'
+        -
+          value: 2
+          label: 'eher schwer bedienbar'
+        -
+          value: 3
+          label: durchwachsen
+        -
+          value: 4
+          label: 'eher gut bedienbar'
+        -
+          value: 5
+          label: 'gut bedienbar'
     third_party_settings: {  }
     weight: 18
     region: content
@@ -155,20 +211,48 @@ content:
     weight: 13
     region: content
   field_satisfied_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: 'gar nicht zufrieden'
+        -
+          value: 2
+          label: 'eher unzufrieden'
+        -
+          value: 3
+          label: neutral
+        -
+          value: 4
+          label: 'eher zufrieden'
+        -
+          value: 5
+          label: 'sehr zufrieden'
     third_party_settings: {  }
     weight: 10
     region: content
   field_service_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: 'gar nicht zufrieden'
+        -
+          value: 2
+          label: 'eher unzufrieden'
+        -
+          value: 3
+          label: neutral
+        -
+          value: 4
+          label: 'eher zufrieden'
+        -
+          value: 5
+          label: 'sehr zufrieden'
     third_party_settings: {  }
     weight: 11
     region: content
@@ -190,11 +274,25 @@ content:
     weight: 17
     region: content
   field_time_scale:
-    type: number_integer
+    type: feedback_scale
     label: above
     settings:
-      thousand_separator: ''
-      prefix_suffix: true
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
     third_party_settings: {  }
     weight: 26
     region: content

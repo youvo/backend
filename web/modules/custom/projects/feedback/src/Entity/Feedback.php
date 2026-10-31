@@ -8,8 +8,10 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\creatives\Entity\Creative;
 use Drupal\feedback\Event\FeedbackCompleteEvent;
 use Drupal\feedback\FeedbackInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
@@ -80,6 +82,19 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
    */
   public function isCompleted(): bool {
     return !empty($this->get('completed')->value);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The admin page of a feedback is titled with the person who gave it.
+   */
+  public function label(): string|TranslatableMarkup|null {
+    $owner = $this->getOwner();
+    if ($owner instanceof Creative || $owner instanceof Organization) {
+      return new TranslatableMarkup('Feedback by @name', ['@name' => $owner->getName()]);
+    }
+    return parent::label();
   }
 
   /**

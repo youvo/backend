@@ -28,3 +28,7 @@ field.formatter.settings.feedback_options:
           label:
             type: label
             label: 'Label'
+
+field.formatter.settings.feedback_scale:
+  type: field.formatter.settings.feedback_options
+  label: 'Feedback scale formatter settings'
