@@ -4,6 +4,7 @@ namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\logbook\Entity\LogPattern;
+use Drupal\logbook\Entity\LogText;
 use Drupal\organizations\Entity\Organization;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
@@ -146,6 +147,37 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertSame([], $this->ids(['tags' => ['text:Rabatt_50']]));
     $this->assertContains((int) $other->id(), $this->ids(['tags' => ['text:Rabatt']]));
     $this->assertSame([(int) $with_organization->id()], $this->ids(['tags' => ['text:kranich']]));
+  }
+
+  /**
+   * A text tag matches the log text of the pattern, not its placeholders.
+   */
+  public function testTextMatchesLogText(): void {
+    LogText::create([
+      'log_pattern' => 'project_apply',
+      'text' => '%Creative hat für das Projekt %Project Interesse bekundet!',
+    ])->save();
+    LogText::create(['log_pattern' => 'project_publish', 'text' => 'Das Projekt %Project wurde veröffentlicht.'])->save();
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $publish = $this->createLog('project_publish', ['created' => 200]);
+    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:interesse']]));
+    $this->assertSame([(int) $publish->id()], $this->ids(['tags' => ['text:veröffentlicht']]));
+    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids(['tags' => ['text:Projekt']]));
+    // The placeholders are not part of the text.
+    $this->assertSame([], $this->ids(['tags' => ['text:Creative']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:%Project']]));
+  }
+
+  /**
+   * Cached results follow edited log texts.
+   */
+  public function testResultsFollowEditedLogTexts(): void {
+    $text = LogText::create(['log_pattern' => 'project_apply', 'text' => 'Interesse bekundet']);
+    $text->save();
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:Interesse']]));
+    $text->setText('Beworben')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Interesse']]));
   }
 
   /**

@@ -134,8 +134,32 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       // As an organization tag, the name finds the logs of its projects.
       $owners = $this->ids('user', 'field_name', $like, 'LIKE');
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $owners, 'IN'), 'IN');
+      if ($patterns = $this->patternsByText($text)) {
+        $this->logCondition($or, $alias, 'type', $patterns, 'IN');
+      }
       $query->addWhere($this->options['group'], $or);
     }
+  }
+
+  /**
+   * Gets the patterns whose log text contains the text.
+   *
+   * The log text is what the logbook shows around the names, so it is
+   * matched without its placeholders: "%Creative" is no word of the text.
+   *
+   * @return string[]
+   *   The pattern ids.
+   */
+  protected function patternsByText(string $text): array {
+    $patterns = [];
+    /** @var \Drupal\logbook\LogTextInterface $log_text */
+    foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
+      $words = preg_replace('/%\w+/u', ' ', $log_text->getText()) ?? '';
+      if (mb_stripos($words, $text) !== FALSE) {
+        $patterns[] = (string) $log_text->get('log_pattern')->target_id;
+      }
+    }
+    return array_values(array_unique(array_filter($patterns)));
   }
 
   /**
