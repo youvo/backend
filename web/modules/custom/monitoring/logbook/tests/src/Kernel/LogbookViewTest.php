@@ -172,6 +172,39 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * A text tag matches the role the log text shows in front of the author.
+   */
+  public function testTextMatchesAuthorRole(): void {
+    $this->createPattern('project_create', ['observable' => TRUE]);
+    LogText::create([
+      'log_pattern' => 'project_create',
+      'text' => 'Die %AuthorWithRole hat das Projekt %Project erstellt.',
+    ])->save();
+    LogText::create(['log_pattern' => 'project_apply', 'text' => '%Creative hat Interesse bekundet.'])->save();
+    $creative = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $manager = $this->createCreative();
+    $this->createRole([], 'supervisor');
+    $supervisor = $this->createCreative();
+    $supervisor->addRole('supervisor');
+    $supervisor->save();
+    $by_creative = $this->createLog('project_create', ['author' => $creative->id(), 'created' => 100]);
+    $by_organization = $this->createLog('project_create', ['author' => $organization->id(), 'created' => 200]);
+    $by_manager = $this->createLog('project_create', [
+      'author' => $manager->id(),
+      'manager' => $manager->id(),
+      'created' => 300,
+    ]);
+    $by_supervisor = $this->createLog('project_create', ['author' => $supervisor->id(), 'created' => 400]);
+    // The pattern without a role in its text does not match a role.
+    $this->createLog('project_apply', ['author' => $creative->id(), 'created' => 500]);
+    $this->assertSame([(int) $by_creative->id()], $this->ids(['tags' => ['text:Kreative']]));
+    $this->assertSame([(int) $by_organization->id()], $this->ids(['tags' => ['text:organisation']]));
+    $this->assertSame([(int) $by_manager->id()], $this->ids(['tags' => ['text:Managerin']]));
+    $this->assertSame([(int) $by_supervisor->id()], $this->ids(['tags' => ['text:Supervisor']]));
+  }
+
+  /**
    * A text tag matches the log text of the pattern, not its placeholders.
    */
   public function testTextMatchesLogText(): void {

@@ -33,6 +33,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInterface {
 
   /**
+   * The roles a log text shows in front of its author, by their German word.
+   */
+  protected const AUTHOR_ROLES = [
+    'Organisation' => 'organization',
+    'Managerin' => 'manager',
+    'Supervisorin' => 'supervisor',
+    'Administratorin' => 'administrator',
+    'Kreative' => 'creative',
+  ];
+
+  /**
    * Constructs the filter.
    */
   public function __construct(
@@ -142,6 +153,7 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       if ($patterns = $this->patternsByText($text)) {
         $this->logCondition($or, $alias, 'type', $patterns, 'IN');
       }
+      $this->addAuthorRoleConditions($or, $alias, $text);
       $query->addWhere($this->options['group'], $or);
     }
   }
@@ -165,6 +177,91 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       }
     }
     return array_values(array_unique(array_filter($patterns)));
+  }
+
+  /**
+   * Matches the role that a log text shows in front of its author.
+   *
+   * The placeholder %AuthorWithRole becomes a role and the name of the author,
+   * as ComputedTextFieldItemListBase::fakeTranslateRole() decides when the text
+   * is shown: an organization, the manager of the log, a supervisor, an
+   * administrator or else a creative. The role is matched with the same order
+   * of rules. Unlike the shown text, a supervisor or an administrator who
+   * takes part in the project is not matched as a creative.
+   */
+  protected function addAuthorRoleConditions(Condition $or, string $alias, string $text): void {
+    $roles = array_filter(
+      self::AUTHOR_ROLES,
+      static fn (string $word) => mb_stripos($word, $text) !== FALSE,
+      ARRAY_FILTER_USE_KEY,
+    );
+    if (!$roles || !($patterns = $this->patternsWithAuthorRole())) {
+      return;
+    }
+    $author = $this->logColumn($alias, 'author');
+    $manager = $this->logColumn($alias, 'manager');
+    $organizations = fn () => $this->ids('user', 'type', 'organization', '=');
+    $role = fn (string $id) => $this->ids('user', 'roles', $id, '=');
+    $not_manager = "($manager IS NULL OR $author <> $manager)";
+
+    foreach ($roles as $kind) {
+      $and = new Condition('AND');
+      $this->logCondition($and, $alias, 'type', $patterns, 'IN');
+      switch ($kind) {
+        case 'organization':
+          $and->condition($author, $organizations(), 'IN');
+          break;
+
+        case 'manager':
+          $and->condition($author, $organizations(), 'NOT IN');
+          $and->where("$author = $manager");
+          break;
+
+        case 'supervisor':
+          $and->condition($author, $organizations(), 'NOT IN');
+          $and->where($not_manager);
+          $and->condition($author, $role('supervisor'), 'IN');
+          break;
+
+        case 'administrator':
+          $and->condition($author, $organizations(), 'NOT IN');
+          $and->where($not_manager);
+          $and->condition($author, $role('supervisor'), 'NOT IN');
+          $and->condition($author, $role('administrator'), 'IN');
+          break;
+
+        default:
+          $and->condition($author, $organizations(), 'NOT IN');
+          $and->where($not_manager);
+          $and->condition($author, $role('supervisor'), 'NOT IN');
+          $and->condition($author, $role('administrator'), 'NOT IN');
+      }
+      $or->condition($and);
+    }
+  }
+
+  /**
+   * Gets the patterns whose log text shows the role of the author.
+   *
+   * @return string[]
+   *   The pattern ids.
+   */
+  protected function patternsWithAuthorRole(): array {
+    $patterns = [];
+    /** @var \Drupal\logbook\LogTextInterface $log_text */
+    foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
+      if (str_contains($log_text->getText(), '%AuthorWithRole')) {
+        $patterns[] = (string) $log_text->get('log_pattern')->target_id;
+      }
+    }
+    return array_values(array_unique(array_filter($patterns)));
+  }
+
+  /**
+   * Gets the column of a field in the base table of the log.
+   */
+  protected function logColumn(string $alias, string $field): string {
+    return $alias . '.' . $this->column('log', $field)[1];
   }
 
   /**
