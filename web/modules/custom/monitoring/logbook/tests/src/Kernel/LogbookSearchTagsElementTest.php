@@ -88,6 +88,8 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
     $this->assertStringContainsString('/logbook/search/autocomplete', $element['#attributes']['data-autocomplete-url']);
     $this->assertContains('tagify/default', $element['#attached']['library']);
     $this->assertContains('logbook/search', $element['#attached']['library']);
+    // The script needs the name to submit the tags; Tagify removes it.
+    $this->assertSame('tags', $element['#attributes']['data-logbook-name']);
   }
 
 }

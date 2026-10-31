@@ -6,7 +6,8 @@
  * highlighted one. While the suggestions still belong to an earlier input,
  * that can be a person or organization the user did not mean. So Enter adds
  * the typed text as a text tag, unless the user chose a suggestion with the
- * arrow keys. Text tags get a class of their own.
+ * arrow keys. With nothing typed, Enter submits the search. Text tags get a
+ * class of their own.
  */
 ((Drupal, once) => {
   const TEXT_PREFIX = 'text:';
@@ -41,6 +42,38 @@
     if ((tag.getAttribute('entity_id') ?? '').startsWith(TEXT_PREFIX)) {
       tag.classList.add('logbook-search__text');
     }
+  }
+
+  /**
+   * Writes the current tags into the hidden inputs the form submits.
+   *
+   * Tagify's module writes them on its change event, which fires after a
+   * delay: a submit right after adding or removing a tag would miss it.
+   *
+   * @param {HTMLFormElement} form
+   *   The form.
+   * @param {string} name
+   *   The name of the tags input.
+   * @param {object} tagify
+   *   The Tagify instance.
+   */
+  function syncHiddenInputs(form, name, tagify) {
+    if (!name) {
+      return;
+    }
+    form
+      .querySelectorAll(`input[data-tagify-field="${CSS.escape(name)}"]`)
+      .forEach((el) => el.remove());
+    tagify.value
+      .filter((tag) => tag.entity_id != null)
+      .forEach((tag) => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = `${name}[]`;
+        hidden.dataset.tagifyField = name;
+        hidden.value = tag.entity_id;
+        form.appendChild(hidden);
+      });
   }
 
   Drupal.behaviors.logbookSearch = {
@@ -80,6 +113,17 @@
                 .trim()
                 .slice(0, MAX_TEXT_LENGTH);
               if (text === '') {
+                // Nothing typed: Enter searches, as in a text field.
+                const form = input.closest('form');
+                if (form) {
+                  e.preventDefault();
+                  e.stopImmediatePropagation();
+                  syncHiddenInputs(form, input.dataset.logbookName, tagify);
+                  form.requestSubmit(
+                    form.querySelector('.form-actions [type="submit"]') ??
+                      undefined,
+                  );
+                }
                 return;
               }
               e.preventDefault();
