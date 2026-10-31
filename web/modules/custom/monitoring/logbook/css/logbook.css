@@ -198,6 +198,32 @@
   }
 }
 
+/* The columns explain themselves: the header is read out, but not shown,
+   and the list starts with the first log. */
+.view-logbook thead th {
+  height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Without a visible header, the list keeps the same space to the top and
+   bottom of its card as to the sides: no header line, and neither Gin's pull
+   towards the header nor the margin below the table. */
+.view-logbook thead tr {
+  border-bottom: 0 !important;
+}
+
+.view-logbook .gin-table-scroll-wrapper {
+  margin-top: 0;
+}
+
+.view-logbook table {
+  margin-bottom: 0;
+}
+
 /* Table cells. */
 .view-logbook td {
   vertical-align: top;
