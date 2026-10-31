@@ -11,6 +11,7 @@ use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\logbook\Plugin\Field\ComputedTextFieldItemListBase;
 use Drupal\logbook\SearchTags;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
@@ -33,15 +34,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The roles a log text shows in front of its author, by their German word.
+   * The fields of the log that hold the people and organizations in it.
    */
-  protected const AUTHOR_ROLES = [
-    'Organisation' => 'organization',
-    'Managerin' => 'manager',
-    'Supervisorin' => 'supervisor',
-    'Administratorin' => 'administrator',
-    'Kreative' => 'creative',
-  ];
+  protected const PARTICIPANTS = ['author', 'manager', 'organization', 'creatives'];
+
+  /**
+   * The words of the log texts by pattern id, without their placeholders.
+   *
+   * @var array<string, string[]>|null
+   */
+  protected ?array $logTextWords = NULL;
+
+  /**
+   * The ids of the patterns whose log text shows the role of the author.
+   *
+   * @var string[]|null
+   */
+  protected ?array $authorRolePatterns = NULL;
 
   /**
    * Constructs the filter.
@@ -115,7 +124,7 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
    * {@inheritdoc}
    */
   public function query(): void {
-    $tags = SearchTags::parse(SearchTags::fromInput($this->value));
+    $tags = SearchTags::parse($this->value);
     if (!$tags['user'] && !$tags['project'] && !$tags['text']) {
       return;
     }
@@ -126,7 +135,7 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
     if ($tags['user'] || $tags['project']) {
       $or = new Condition('OR');
       if ($users = $tags['user']) {
-        foreach (['author', 'manager', 'organization', 'creatives'] as $field) {
+        foreach (self::PARTICIPANTS as $field) {
           $this->logCondition($or, $alias, $field, $users, 'IN');
         }
         $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $users, 'IN'), 'IN');
@@ -144,12 +153,12 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'title', $like, 'LIKE'), 'IN');
       // The names of the people and organizations in the log, in every role,
       // as a tag of them would find it.
-      foreach (['author', 'manager', 'organization', 'creatives'] as $field) {
-        $this->logCondition($or, $alias, $field, $this->ids('user', 'field_name', $like, 'LIKE'), 'IN');
+      $names = $this->ids('user', 'field_name', $like, 'LIKE');
+      foreach (self::PARTICIPANTS as $field) {
+        $this->logCondition($or, $alias, $field, clone $names, 'IN');
       }
       // As an organization tag, the name finds the logs of its projects.
-      $owners = $this->ids('user', 'field_name', $like, 'LIKE');
-      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $owners, 'IN'), 'IN');
+      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $names, 'IN'), 'IN');
       if ($patterns = $this->patternsByText($text)) {
         $this->logCondition($or, $alias, 'type', $patterns, 'IN');
       }
@@ -168,15 +177,37 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
    *   The pattern ids.
    */
   protected function patternsByText(string $text): array {
-    $patterns = [];
+    $this->loadLogTexts();
+    $matches = array_filter(
+      $this->logTextWords,
+      static fn (array $texts) => array_filter($texts, static fn (string $words) => mb_stripos($words, $text) !== FALSE) !== [],
+    );
+    return array_map('strval', array_keys($matches));
+  }
+
+  /**
+   * Reads the log texts once for all texts of the search.
+   */
+  protected function loadLogTexts(): void {
+    if ($this->logTextWords !== NULL) {
+      return;
+    }
+    $this->logTextWords = [];
+    $this->authorRolePatterns = [];
     /** @var \Drupal\logbook\LogTextInterface $log_text */
     foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
-      $words = preg_replace('/%\w+/u', ' ', $log_text->getText()) ?? '';
-      if (mb_stripos($words, $text) !== FALSE) {
-        $patterns[] = (string) $log_text->get('log_pattern')->target_id;
+      $pattern = (string) $log_text->get('log_pattern')->target_id;
+      if ($pattern === '') {
+        continue;
+      }
+      $text = $log_text->getText();
+      $words = preg_replace('/%\w+/u', ' ', $text) ?? '';
+      $this->logTextWords[$pattern][] = $words;
+      if (str_contains($text, '%AuthorWithRole')) {
+        $this->authorRolePatterns[$pattern] = $pattern;
       }
     }
-    return array_values(array_unique(array_filter($patterns)));
+    $this->authorRolePatterns = array_values($this->authorRolePatterns);
   }
 
   /**
@@ -190,71 +221,37 @@ class LogInvolves extends FilterPluginBase implements ContainerFactoryPluginInte
    * takes part in the project is not matched as a creative.
    */
   protected function addAuthorRoleConditions(Condition $or, string $alias, string $text): void {
-    $roles = array_filter(
-      self::AUTHOR_ROLES,
+    $roles = array_keys(array_filter(
+      ComputedTextFieldItemListBase::AUTHOR_ROLE_WORDS,
       static fn (string $word) => mb_stripos($word, $text) !== FALSE,
-      ARRAY_FILTER_USE_KEY,
-    );
-    if (!$roles || !($patterns = $this->patternsWithAuthorRole())) {
+    ));
+    $this->loadLogTexts();
+    if (!$roles || !$this->authorRolePatterns) {
       return;
     }
     $author = $this->logColumn($alias, 'author');
     $manager = $this->logColumn($alias, 'manager');
-    $organizations = fn () => $this->ids('user', 'type', 'organization', '=');
-    $role = fn (string $id) => $this->ids('user', 'roles', $id, '=');
-    $not_manager = "($manager IS NULL OR $author <> $manager)";
+    $in = static fn (bool $is) => $is ? 'IN' : 'NOT IN';
+    // The rules in their order: a role holds when its rule does and none
+    // before it. A creative is what no rule holds for.
+    $rules = [
+      'organization' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'type', 'organization', '='), $in($is)),
+      'manager' => static fn (Condition $c, bool $is) => $c->where($is ? "$author = $manager" : "($manager IS NULL OR $author <> $manager)"),
+      'supervisor' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'roles', 'supervisor', '='), $in($is)),
+      'administrator' => fn (Condition $c, bool $is) => $c->condition($author, $this->ids('user', 'roles', 'administrator', '='), $in($is)),
+    ];
 
     foreach ($roles as $kind) {
       $and = new Condition('AND');
-      $this->logCondition($and, $alias, 'type', $patterns, 'IN');
-      switch ($kind) {
-        case 'organization':
-          $and->condition($author, $organizations(), 'IN');
+      $this->logCondition($and, $alias, 'type', $this->authorRolePatterns, 'IN');
+      foreach ($rules as $rule => $add) {
+        $add($and, $rule === $kind);
+        if ($rule === $kind) {
           break;
-
-        case 'manager':
-          $and->condition($author, $organizations(), 'NOT IN');
-          $and->where("$author = $manager");
-          break;
-
-        case 'supervisor':
-          $and->condition($author, $organizations(), 'NOT IN');
-          $and->where($not_manager);
-          $and->condition($author, $role('supervisor'), 'IN');
-          break;
-
-        case 'administrator':
-          $and->condition($author, $organizations(), 'NOT IN');
-          $and->where($not_manager);
-          $and->condition($author, $role('supervisor'), 'NOT IN');
-          $and->condition($author, $role('administrator'), 'IN');
-          break;
-
-        default:
-          $and->condition($author, $organizations(), 'NOT IN');
-          $and->where($not_manager);
-          $and->condition($author, $role('supervisor'), 'NOT IN');
-          $and->condition($author, $role('administrator'), 'NOT IN');
+        }
       }
       $or->condition($and);
     }
-  }
-
-  /**
-   * Gets the patterns whose log text shows the role of the author.
-   *
-   * @return string[]
-   *   The pattern ids.
-   */
-  protected function patternsWithAuthorRole(): array {
-    $patterns = [];
-    /** @var \Drupal\logbook\LogTextInterface $log_text */
-    foreach ($this->entityTypeManager->getStorage('log_text')->loadMultiple() as $log_text) {
-      if (str_contains($log_text->getText(), '%AuthorWithRole')) {
-        $patterns[] = (string) $log_text->get('log_pattern')->target_id;
-      }
-    }
-    return array_values(array_unique(array_filter($patterns)));
   }
 
   /**

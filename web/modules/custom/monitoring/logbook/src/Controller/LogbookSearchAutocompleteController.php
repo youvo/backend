@@ -44,7 +44,11 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
 
     $entities = [];
     if (mb_strlen($query) >= 2) {
-      $entities = array_merge($this->matchUsers($query), $this->matchProjects($query));
+      $entities = array_merge(
+        // People and organizations, not the anonymous user.
+        $this->match('user', 'field_name', $query, [['uid', 0, '>'], ['type', ['user', 'organization'], 'IN']]),
+        $this->match('project', 'title', $query),
+      );
     }
     $tags = array_map(SearchTags::tag(...), $entities);
     $tags = array_values(array_filter($tags, static fn (array $tag) => !isset($selected[$tag['entity_id']])));
@@ -59,39 +63,22 @@ class LogbookSearchAutocompleteController implements ContainerInjectionInterface
   }
 
   /**
-   * Loads the people and organizations whose name contains the text.
+   * Loads the entities whose name field contains the text, sorted by it.
    *
    * @return \Drupal\Core\Entity\EntityInterface[]
-   *   The users.
+   *   The entities.
    */
-  protected function matchUsers(string $text): array {
-    $storage = $this->entityTypeManager->getStorage('user');
-    $ids = $storage->getQuery()
+  protected function match(string $entity_type_id, string $field, string $text, array $conditions = []): array {
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
+    $query = $storage->getQuery()
       ->accessCheck(FALSE)
-      ->condition('uid', 0, '>')
-      ->condition('type', ['user', 'organization'], 'IN')
-      ->condition('field_name', $text, 'CONTAINS')
-      ->sort('field_name')
-      ->range(0, static::LIMIT)
-      ->execute();
-    return $storage->loadMultiple($ids);
-  }
-
-  /**
-   * Loads the projects whose title contains the text.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface[]
-   *   The projects.
-   */
-  protected function matchProjects(string $text): array {
-    $storage = $this->entityTypeManager->getStorage('project');
-    $ids = $storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('title', $text, 'CONTAINS')
-      ->sort('title')
-      ->range(0, static::LIMIT)
-      ->execute();
-    return $storage->loadMultiple($ids);
+      ->condition($field, $text, 'CONTAINS')
+      ->sort($field)
+      ->range(0, static::LIMIT);
+    foreach ($conditions as [$condition_field, $value, $operator]) {
+      $query->condition($condition_field, $value, $operator);
+    }
+    return $storage->loadMultiple($query->execute());
   }
 
 }

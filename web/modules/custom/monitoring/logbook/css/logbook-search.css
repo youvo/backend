@@ -23,10 +23,6 @@
   margin-block: 2px !important;
 }
 
-.tagify.logbook-search .tagify__input {
-  min-width: 4rem;
-}
-
 /* Tags, the placeholder and the typed text share one line: the typing line
    is as high as a tag, with its text centered as in the tags. Tags and text
    start where the text of the other filters starts. Tagify forces no padding
@@ -42,6 +38,7 @@
   /* Tagify makes it one and a half lines high, with the text at the top. */
   min-height: 32px;
   margin-block: 2px;
+  min-width: 4rem;
   margin-inline: 3px 5px;
   padding-block: 0;
   line-height: 32px;
@@ -76,7 +73,7 @@
    and moves to a row of its own once there is text, instead of leaving an
    empty row below the tags. */
 @media (max-width: 640px) {
-  .tagify.logbook-search .tagify__input {
+  .views-exposed-form .tagify.logbook-search.form-element > .tagify__input {
     min-width: 1.5rem;
   }
 }

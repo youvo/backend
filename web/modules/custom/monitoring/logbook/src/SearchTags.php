@@ -4,6 +4,7 @@ namespace Drupal\logbook;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\user\UserInterface;
+use Drupal\user_types\Utility\Profile;
 
 /**
  * The tags of the logbook search.
@@ -31,14 +32,14 @@ final class SearchTags {
    * tokens up to the limit count.
    *
    * @param mixed $raw
-   *   A token, a list of tokens or anything else.
+   *   Input as SearchTags::fromInput() reads it.
    *
    * @return array{user: int[], project: int[], text: string[]}
    *   The user ids, the project ids and the texts, in the order given.
    */
   public static function parse(mixed $raw): array {
     $parsed = ['user' => [], 'project' => [], 'text' => []];
-    foreach (self::tokens($raw) as $token) {
+    foreach (self::fromInput($raw) as $token) {
       [$kind, $value] = explode(':', $token, 2);
       $parsed[$kind][] = $kind === 'text' ? $value : (int) $value;
     }
@@ -109,7 +110,7 @@ final class SearchTags {
     if ($entity instanceof UserInterface) {
       $token = 'user:' . $entity->id();
       $label = $entity->hasField('field_name') ? (string) $entity->get('field_name')->value : '';
-      $info = $entity->bundle() === 'organization' ? 'Organisation' : 'Person';
+      $info = Profile::isOrganization($entity) ? 'Organisation' : 'Person';
     }
     else {
       $token = 'project:' . $entity->id();

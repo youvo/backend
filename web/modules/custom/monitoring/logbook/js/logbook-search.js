@@ -90,15 +90,12 @@
           tagify.settings.autoComplete.enabled = false;
 
           // Tagify names its input in English; use the name of the element.
-          if (input.getAttribute('aria-label')) {
-            tagify.DOM.input.setAttribute(
-              'aria-label',
-              input.getAttribute('aria-label'),
-            );
-          }
+          tagify.DOM.input.setAttribute(
+            'aria-label',
+            input.getAttribute('aria-label'),
+          );
 
           tagify.getTagElms().forEach(markText);
-          tagify.on('add', (e) => markText(e.detail.tag));
 
           // Whether the user moved through the suggestions since typing.
           let navigated = false;
@@ -109,7 +106,8 @@
             navigated = false;
             quiet = false;
           });
-          tagify.on('add', () => {
+          tagify.on('add', (e) => {
+            markText(e.detail.tag);
             quiet = true;
             tagify.dropdown.hide();
           });

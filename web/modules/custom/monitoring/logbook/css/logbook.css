@@ -332,13 +332,6 @@
   mask-image: url('../assets/star.svg');
 }
 
-/* The title of the visibility column is read out, but not shown. No absolute
-   positioning: it would escape the scroll wrapper of the table. */
-.view-logbook th.logbook-visually-hidden {
-  font-size: 0;
-  line-height: 0;
-}
-
 /* A completed project is the ultimate log: the whole row is colored, with the
    sparkle pattern and the finish illustration of the old youvo.org logbook.
    The tint is set on the row, so the pattern runs across the cells. */
@@ -532,13 +525,8 @@
     text-align: center;
   }
 
-  /* Gin rings a focused button; the ring only shows for the keyboard. */
-  .view-logbook .views-exposed-form .logbook-filters-toggle:focus:not(:focus-visible) {
-    outline: none;
-    box-shadow: none;
-  }
-
-  .view-logbook .views-exposed-form .logbook-filters-toggle:focus-visible {
+  /* Gin rings a focused button; for the keyboard, the label gets a ring. */
+  .view-logbook .views-exposed-form .logbook-filters-toggle:focus {
     outline: none;
     box-shadow: none;
   }

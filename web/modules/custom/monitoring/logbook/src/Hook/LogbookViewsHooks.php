@@ -2,8 +2,6 @@
 
 namespace Drupal\logbook\Hook;
 
-use Drupal\Core\Cache\Cache;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -16,8 +14,6 @@ use Drupal\views\ViewExecutable;
 class LogbookViewsHooks {
 
   use StringTranslationTrait;
-
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager) {}
 
   /**
    * Implements hook_views_data_alter().
@@ -69,9 +65,6 @@ class LogbookViewsHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'logbook') {
       $view->element['#attached']['library'][] = 'logbook/table';
-      // The pills and icons read the log patterns: the list changes with them.
-      $tags = $this->entityTypeManager->getDefinition('log_pattern')->getListCacheTags();
-      $view->element['#cache']['tags'] = Cache::mergeTags($view->element['#cache']['tags'] ?? [], $tags);
     }
   }
 

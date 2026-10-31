@@ -20,37 +20,27 @@ class LogbookEmpty extends AreaPluginBase {
     if (!$empty && empty($this->options['empty'])) {
       return [];
     }
-    if (!$this->isSearching()) {
-      return [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['logbook-empty']],
-        'title' => [
-          '#markup' => 'Noch keine Einträge.',
-          '#prefix' => '<p class="logbook-empty__title">',
-          '#suffix' => '</p>',
-        ],
-      ];
-    }
-    return [
+    $searching = $this->isSearching();
+    $paragraph = static fn (string $text, string $class) => [
+      '#markup' => $text,
+      '#prefix' => '<p class="logbook-empty__' . $class . '">',
+      '#suffix' => '</p>',
+    ];
+    $build = [
       '#type' => 'container',
       '#attributes' => ['class' => ['logbook-empty']],
-      'title' => [
-        '#markup' => 'Keine Einträge für diese Suche.',
-        '#prefix' => '<p class="logbook-empty__title">',
-        '#suffix' => '</p>',
-      ],
-      'hint' => [
-        '#markup' => 'Entferne einen Suchbegriff oder Filter, oder setze die Suche zurück.',
-        '#prefix' => '<p class="logbook-empty__hint">',
-        '#suffix' => '</p>',
-      ],
-      'reset' => [
+      'title' => $paragraph($searching ? 'Keine Einträge für diese Suche.' : 'Noch keine Einträge.', 'title'),
+    ];
+    if ($searching) {
+      $build['hint'] = $paragraph('Entferne einen Suchbegriff oder Filter, oder setze die Suche zurück.', 'hint');
+      $build['reset'] = [
         '#type' => 'link',
         '#title' => 'Suche zurücksetzen',
         '#url' => Url::fromUserInput('/' . $this->view->getPath()),
         '#attributes' => ['class' => ['button', 'button--small']],
-      ],
-    ];
+      ];
+    }
+    return $build;
   }
 
   /**
