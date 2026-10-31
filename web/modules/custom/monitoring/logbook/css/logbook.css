@@ -34,12 +34,15 @@
   margin: 0;
 }
 
-/* The search takes the free space. */
-.view-logbook .views-exposed-form .js-form-item-search {
-  flex: 1 1 16rem;
+/* The search bar takes a row of its own, with room for several tags; the
+   other filters follow in the next row. */
+.view-logbook .views-exposed-form .js-form-item-tags {
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
-.view-logbook .views-exposed-form .js-form-item-search input {
+.view-logbook .views-exposed-form .js-form-item-tags .tagify {
+  box-sizing: border-box;
   width: 100%;
 }
 
@@ -72,6 +75,12 @@
   border-bottom-color: var(--logbook-accent);
   box-shadow: 0 1px 0 0 var(--logbook-accent);
   outline: none;
+}
+
+/* The input behind the search bar holds the tags as data: never show it,
+   not even before Tagify has started. */
+.view-logbook .views-exposed-form input.logbook-search {
+  color: transparent;
 }
 
 /* The date range: From and To labels sit in front of their fields, in one

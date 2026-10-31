@@ -85,13 +85,34 @@
             return;
           }
 
+          // Tagify names its input in English; use the name of the element.
+          if (input.getAttribute('aria-label')) {
+            tagify.DOM.input.setAttribute(
+              'aria-label',
+              input.getAttribute('aria-label'),
+            );
+          }
+
           tagify.getTagElms().forEach(markText);
           tagify.on('add', (e) => markText(e.detail.tag));
 
           // Whether the user moved through the suggestions since typing.
           let navigated = false;
+          // Whether suggestions stay closed: after a tag was added, a late
+          // answer of the autocomplete must not open them again.
+          let quiet = false;
           tagify.on('input', () => {
             navigated = false;
+            quiet = false;
+          });
+          tagify.on('add', () => {
+            quiet = true;
+            tagify.dropdown.hide();
+          });
+          tagify.on('dropdown:show', () => {
+            if (quiet) {
+              tagify.dropdown.hide();
+            }
           });
 
           // Capture keys before Tagify does.
