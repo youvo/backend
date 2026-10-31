@@ -46,10 +46,10 @@ class LogbookViewsHooks {
       'help' => $this->t('Limits the logs to the enabled, observable log patterns.'),
       'filter' => ['id' => 'log_pattern_scope', 'real field' => 'type'],
     ];
-    $data['log']['log_involves'] = [
-      'title' => $this->t('Logbook: Involves'),
+    $data['log']['logbook_search'] = [
+      'title' => $this->t('Logbook: Search'),
       'help' => $this->t('Limits the logs to the people, organizations, projects and texts of the search bar.'),
-      'filter' => ['id' => 'log_involves', 'real field' => 'id'],
+      'filter' => ['id' => 'logbook_search', 'real field' => 'id'],
     ];
     $data['log']['log_visibility'] = [
       'title' => $this->t('Logbook: Visibility'),

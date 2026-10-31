@@ -51,9 +51,9 @@ views.filter.log_pattern_scope:
   type: views.filter.in_operator
   label: 'Logbook: listed patterns'
 
-views.filter.log_involves:
+views.filter.logbook_search:
   type: views_filter
-  label: 'Logbook: Involves'
+  label: 'Logbook: Search'
   mapping:
     value:
       type: sequence

@@ -137,14 +137,14 @@ display:
           value: {  }
           group: 1
           exposed: false
-        log_involves:
-          id: log_involves
+        logbook_search:
+          id: logbook_search
           table: log
-          field: log_involves
+          field: logbook_search
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: log_involves
+          plugin_id: logbook_search
           operator: '='
           value: {  }
           group: 1

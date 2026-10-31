@@ -28,8 +28,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Multi-value fields are matched in subqueries, so a log is never listed
  * twice.
  */
-#[ViewsFilter('log_involves')]
-class LogInvolves extends FilterPluginBase {
+#[ViewsFilter('logbook_search')]
+class LogbookSearch extends FilterPluginBase {
 
   /**
    * The fields of the log that hold the people and organizations in it.
