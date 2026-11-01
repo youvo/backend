@@ -19,6 +19,7 @@ dependencies:
     - rest.resource.project.submit
     - rest.resource.question.submission
   module:
+    - blocker_mode
     - contextual
     - correspondence
     - courses
@@ -40,6 +41,7 @@ permissions:
   - 'access content'
   - 'access contextual links'
   - 'access navigation'
+  - 'access site'
   - 'administer projects'
   - 'bypass project_lifecycle transition access'
   - 'create project'

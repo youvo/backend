@@ -9,6 +9,7 @@ dependencies:
     - rest.resource.progress.lecture.complete
     - rest.resource.question.submission
   module:
+    - blocker_mode
     - contextual
     - courses
     - dashboard
@@ -26,6 +27,7 @@ permissions:
   - 'access content'
   - 'access contextual links'
   - 'access navigation'
+  - 'access site'
   - 'restful get progress:course:access'
   - 'restful get progress:lecture:access'
   - 'restful get progress:lecture:complete'
