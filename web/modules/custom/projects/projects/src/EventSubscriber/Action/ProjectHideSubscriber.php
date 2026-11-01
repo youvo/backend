@@ -17,11 +17,14 @@ class ProjectHideSubscriber implements EventSubscriberInterface {
    */
   public function onProjectHide(ProjectHideEvent $event): void {
     $project = $event->getProject();
+    if ($project->isArchived()) {
+      throw new \LogicException('Cannot hide an archived project.');
+    }
     if ($project->lifecycle()->isDraft() || $project->lifecycle()->isPending()) {
       throw new \LogicException('Cannot hide a project in a draft or pending state.');
     }
     $project->setPromoted(FALSE);
-    $project->setUnpublished();
+    $project->setHidden();
     $project->save();
   }
 

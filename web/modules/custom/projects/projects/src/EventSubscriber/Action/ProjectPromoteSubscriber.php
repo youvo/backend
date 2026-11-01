@@ -20,6 +20,9 @@ class ProjectPromoteSubscriber implements EventSubscriberInterface {
     if ($project->lifecycle()->isDeclined()) {
       throw new \LogicException('Cannot promote a declined project.');
     }
+    if ($project->isHidden() || $project->isArchived()) {
+      throw new \LogicException('Cannot promote a hidden or archived project.');
+    }
     $project->setPromoted(TRUE);
     $project->save();
   }

@@ -115,6 +115,18 @@ services:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:
       - { name: event_subscriber }
+  logbook.project_hide.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectHideSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_show.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectShowSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
   logbook.project_demote.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectDemoteSubscriber
     arguments:

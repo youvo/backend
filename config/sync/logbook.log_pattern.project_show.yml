@@ -1,0 +1,23 @@
+uuid: a35335a6-9ea9-4077-9fae-c634b76b6260
+langcode: de
+status: true
+dependencies: {  }
+id: project_show
+label: 'Project Show'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''
+tone: ''

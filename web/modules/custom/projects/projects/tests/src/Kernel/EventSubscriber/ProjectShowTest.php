@@ -23,14 +23,25 @@ class ProjectShowTest extends ProjectEventSubscriberTestBase {
   public function testProjectShow(): void {
 
     $project = $this->createProject(ProjectState::Open);
-    $project->setUnpublished();
+    $project->setHidden();
     $project->save();
-    $this->assertFalse($project->isPublished());
+    $this->assertTrue($project->isHidden());
 
     $event = new ProjectShowEvent($project);
     $this->eventDispatcher->dispatch($event);
 
-    $this->assertTrue($project->isPublished());
+    $this->assertFalse($project->isHidden());
+  }
+
+  /**
+   * Tests that archived projects can not be shown.
+   */
+  public function testProjectShowArchived(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $project->setArchived()->setHidden();
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectShowEvent($project));
   }
 
 }

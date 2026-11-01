@@ -38,7 +38,7 @@ class ProjectApplyResource extends ProjectActionResourceBase {
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
     // The resource should define project-dependent access conditions.
-    $project_condition = $project->isPublished() && $project->lifecycle()->isOpen();
+    $project_condition = !$project->isArchived() && !$project->isHidden() && $project->lifecycle()->isOpen();
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project);
     if ($access_project instanceof AccessResultReasonInterface) {

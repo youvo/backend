@@ -141,6 +141,26 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests the for the project apply resource - hidden project.
+   */
+  public function testProjectApplyHidden(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $project->setHidden();
+    $project->save();
+    $creative = $this->createCreative();
+
+    $path = '/api/projects/' . $project->uuid() . '/apply';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $creative);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
+  }
+
+  /**
    * Tests the project apply resource - no permission.
    *
    * @covers ::access

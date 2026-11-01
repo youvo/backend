@@ -1,0 +1,4 @@
+id: project_hide
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole verborgen.'
+public_text: 'Das Projekt %Project wurde von %Author verborgen.'
