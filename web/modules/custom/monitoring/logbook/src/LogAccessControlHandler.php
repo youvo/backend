@@ -29,10 +29,18 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::allowed()->cachePerPermissions();
     }
 
+    // Archived logs are only accessible with the permission.
+    if ($entity->isArchived() && !$account->hasPermission('view archived log')) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
+    }
+
     // Disabled logs are not accessible.
     if (!$entity->getPattern()->isEnabled()) {
       return AccessResult::forbidden()
         ->addCacheableDependency($entity->getPattern())
+        ->addCacheableDependency($entity)
         ->cachePerPermissions();
     }
 
@@ -44,7 +52,8 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
-        ->addCacheableDependency($entity->getPattern());
+        ->addCacheableDependency($entity->getPattern())
+        ->addCacheableDependency($entity);
     }
 
     // Check access for detectable log.
@@ -55,7 +64,8 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
     ) {
       return AccessResult::allowed()
         ->cachePerPermissions()
-        ->addCacheableDependency($entity->getPattern());
+        ->addCacheableDependency($entity->getPattern())
+        ->addCacheableDependency($entity);
     }
 
     // Check access for observable log.
@@ -70,17 +80,20 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIf($entity->getProject()->getOwner()->isManager($account))
           ->addCacheableDependency($entity->getProject()->getOwner())
           ->addCacheableDependency($entity->getPattern())
+          ->addCacheableDependency($entity)
           ->cachePerPermissions()
           ->cachePerUser();
       }
 
       return AccessResult::allowed()
         ->cachePerPermissions()
-        ->addCacheableDependency($entity->getPattern());
+        ->addCacheableDependency($entity->getPattern())
+        ->addCacheableDependency($entity);
     }
 
     return AccessResult::neutral()
       ->addCacheableDependency($entity->getPattern())
+      ->addCacheableDependency($entity)
       ->cachePerPermissions();
   }
 

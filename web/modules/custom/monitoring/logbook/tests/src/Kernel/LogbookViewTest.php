@@ -25,6 +25,11 @@ class LogbookViewTest extends LogbookKernelTestBase {
   /**
    * {@inheritdoc}
    */
+  protected static $modules = ['entity'];
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     // Rendering the view needs a theme and the date formats.
@@ -65,9 +70,9 @@ class LogbookViewTest extends LogbookKernelTestBase {
   /**
    * Renders the page to HTML.
    */
-  protected function renderPage(array $input = []): string {
+  protected function renderPage(array $input = [], array $permissions = ['view observable log']): string {
     // The view checks access: render as a user who may see it.
-    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->setCurrentUser($this->createUser($permissions));
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $view->setExposedInput($input);
@@ -115,6 +120,23 @@ class LogbookViewTest extends LogbookKernelTestBase {
     // Supervisors and observers also view detectable logs.
     $this->setCurrentUser($this->createUser(['view observable log', 'view detectable log']));
     $this->assertSame([(int) $decline->id(), (int) $apply->id()], $this->ids());
+  }
+
+  /**
+   * Archived logs are listed only for those who may view them.
+   */
+  public function testArchivedLogsPerPermission(): void {
+    $active = $this->createLog('project_apply', ['created' => 100]);
+    $archived = $this->createLog('project_apply', ['created' => 200])->setArchived();
+    $archived->save();
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([(int) $active->id()], $this->ids());
+
+    $this->setCurrentUser($this->createUser(['view observable log', 'view archived log']));
+    $this->assertSame([(int) $archived->id(), (int) $active->id()], $this->ids());
   }
 
   /**
@@ -601,6 +623,16 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertSame(['lock'], $icons['Apply']);
     $this->assertSame(['globe'], $icons['Mediate']);
     $this->assertSame(['star'], $icons['Publish']);
+  }
+
+  /**
+   * An archived log shows the archive icon instead of its visibility.
+   */
+  public function testArchivedIcon(): void {
+    $this->createLog('project_publish', ['created' => 100])->setArchived()->save();
+    $html = $this->renderPage([], ['view observable log', 'view archived log']);
+    preg_match_all('/logbook-icon--(\w+)/', $html, $found);
+    $this->assertSame(['archive'], $found[1]);
   }
 
   /**

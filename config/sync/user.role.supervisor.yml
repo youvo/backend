@@ -76,6 +76,7 @@ permissions:
   - 'send project mails'
   - 'update any project'
   - 'upload project result files'
+  - 'view archived log'
   - 'view correspondence'
   - 'view courses'
   - 'view detectable log'

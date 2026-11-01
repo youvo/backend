@@ -1,5 +1,11 @@
 services:
 
+  # Query access for logs.
+  logbook.log_query_access.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogQueryAccessSubscriber
+    tags:
+      - { name: event_subscriber }
+
   # Creative logs.
   logbook.creative_register.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookCreativeRegisterSubscriber

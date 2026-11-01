@@ -79,6 +79,19 @@ class LogAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that only supervisors view archived logs.
+   */
+  public function testArchivedLog(): void {
+    $project = $this->createProject();
+    $log = $this->createLog('project_submit', $project)->setArchived();
+    $log->save();
+
+    $this->assertTrue($log->access('view', $this->createSupervisor()));
+    $this->assertFalse($log->access('view', $this->createCreative('observer')));
+    $this->assertFalse($log->access('view', $project->getOwner()->getManager()));
+  }
+
+  /**
    * Creates a log of a pattern, optionally for a project.
    */
   protected function createLog(string $type, ?ProjectInterface $project = NULL): LogInterface {
