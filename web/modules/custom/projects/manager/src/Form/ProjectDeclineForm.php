@@ -16,9 +16,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 /**
  * Lets a manager decline a project with an edited rejection mail.
  *
- * The mail is sent first; the project is only declined if the mail was sent.
- * The pane (see ManagerContextPaneTransition) reads the outcome from the form
- * state: the flags of the mail form and 'decline_failed'.
+ * Dispatches the decline event; the mailer module sends the mail.
  */
 class ProjectDeclineForm extends ProjectMailForm {
 
@@ -85,39 +83,80 @@ class ProjectDeclineForm extends ProjectMailForm {
   /**
    * {@inheritdoc}
    *
-   * Declines the project with the reason of the sent mail.
+   * Declines the project; the mailer sends the edited mail afterwards.
    */
-  protected function afterSend(ProjectInterface $project, string $subtype, FormStateInterface $form_state): void {
-    $reason = ManagerMailRegistry::declineReason($subtype);
-    // acceptsSubtype() only lets subtypes with a reason through: fail closed.
-    if ($reason === NULL) {
-      $form_state->set('decline_failed', TRUE);
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+
+    // A repeated submitForm() call on this in-memory form state.
+    if ($form_state->get('sent')) {
       return;
     }
+    $form_state->set('send_failed', FALSE);
+    $project = $this->authorizedProject($form_state);
+    $subtype = (string) ($form_state->getBuildInfo()['args'][1] ?? '');
+    $reason = ManagerMailRegistry::declineReason($subtype);
+    if ($project === NULL || $reason === NULL) {
+      $form_state->set('send_denied', TRUE);
+      return;
+    }
+
+    $event = (new ProjectDeclineEvent($project))
+      ->setReason($reason)
+      ->setMail((string) $form_state->getValue('subject'), (string) $form_state->getValue('body'))
+      ->setSender($this->currentUser());
+
+    // A replayed POST must not decline and mail again.
+    $declined = $this->once->runOnce($form_state, fn (): bool => $this->decline($event));
+    if ($declined === NULL) {
+      $form_state->set('already_submitted', TRUE);
+    }
+    elseif ($declined) {
+      $form_state->set('sent', TRUE);
+    }
+    else {
+      // Nothing happened: show the form again with the input.
+      $form_state->set('send_failed', TRUE);
+      $form_state->setRebuild();
+    }
+  }
+
+  /**
+   * Dispatches the decline event.
+   *
+   * @return bool
+   *   TRUE if the project is declined, even if a later listener failed.
+   */
+  protected function decline(ProjectDeclineEvent $event): bool {
     try {
-      $this->eventDispatcher->dispatch((new ProjectDeclineEvent($project))->setReason($reason));
+      $this->eventDispatcher->dispatch($event);
+      return TRUE;
     }
     catch (\Throwable $e) {
-      // The pane shows the error message when it sees this flag.
-      $form_state->set('decline_failed', TRUE);
-      // A later listener may fail after the project was declined and saved:
-      // the failure is only reported if the stored project is not declined.
-      try {
-        $stored = $this->entityTypeManager->getStorage('project')->loadUnchanged($project->id());
-        $declined = $stored instanceof ProjectInterface && $stored->lifecycle()->isDeclined();
-      }
-      catch (\Throwable) {
-        $declined = FALSE;
-      }
+      // A later listener may fail after the project was declined and saved.
+      $project = $event->getProject();
+      $declined = $this->isDeclined($project);
       $context = ['@id' => $project->id(), '@message' => $e->getMessage()];
       if ($declined) {
-        $form_state->set('decline_failed', FALSE);
         $this->logger('manager')->error('The project @id was declined, but a listener of the decline failed: @message', $context);
       }
       else {
-        $this->logger('manager')->error('The project @id could not be declined after the decline mail was sent: @message', $context);
+        $this->logger('manager')->error('The project @id could not be declined: @message', $context);
       }
+      return $declined;
     }
+  }
+
+  /**
+   * Whether the stored project is declined.
+   */
+  protected function isDeclined(ProjectInterface $project): bool {
+    try {
+      $stored = $this->entityTypeManager->getStorage('project')->loadUnchanged($project->id());
+    }
+    catch (\Throwable) {
+      return FALSE;
+    }
+    return $stored instanceof ProjectInterface && $stored->lifecycle()->isDeclined();
   }
 
 }

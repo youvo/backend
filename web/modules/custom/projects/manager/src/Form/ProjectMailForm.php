@@ -198,18 +198,6 @@ class ProjectMailForm extends FormBase {
   }
 
   /**
-   * Acts after the mail was sent; the default does nothing.
-   *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The freshly loaded project the mail was sent for.
-   * @param string $subtype
-   *   The mail subtype.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state.
-   */
-  protected function afterSend(ProjectInterface $project, string $subtype, FormStateInterface $form_state): void {}
-
-  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
@@ -245,7 +233,6 @@ class ProjectMailForm extends FormBase {
     }
     // The pane shows the confirmation when it sees this flag.
     $form_state->set('sent', TRUE);
-    $this->afterSend($project, $subtype, $form_state);
   }
 
 }

@@ -145,13 +145,6 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
    * {@inheritdoc}
    */
   public function send(ProjectInterface $project, string $subtype, string $subject, string $bodyText, AccountInterface $sender): bool {
-    if ($this->registry->find($project, $subtype) === NULL) {
-      $this->logger->warning('Manager mail %subtype is not offered for project @id.', [
-        '%subtype' => $subtype,
-        '@id' => $project->id(),
-      ]);
-      return FALSE;
-    }
     $subject = trim(preg_replace('/\s+/', ' ', $subject) ?? '');
     if ($subject === '' || trim($bodyText) === '') {
       $this->logger->warning('Manager mail %subtype for project @id has an empty subject or body.', [

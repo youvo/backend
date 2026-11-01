@@ -175,15 +175,15 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * Builds the decline form view; access is checked on every request.
    *
-   * A valid POST sends the mail and then declines the project in the form's
-   * submit handler; the pane then only shows the outcome. A failed send
-   * returns the form again.
+   * A valid POST declines the project in the form's submit handler, and the
+   * mailer sends the mail; the pane then only shows the outcome. A failed
+   * decline returns the form again.
    */
   protected function buildDeclineView(Project $project, string $subtype, Request $request): array {
     if (!$this->mayDecline($project, $subtype)) {
       return $this->emptyDeclinePane($project);
     }
-    [$outcome, $form, $form_state] = $this->processMailForm($this->formBuilder, $this->messenger, ProjectDeclineForm::class, $project, $subtype, $request);
+    [$outcome, $form] = $this->processMailForm($this->formBuilder, $this->messenger, ProjectDeclineForm::class, $project, $subtype, $request);
     if ($outcome === 'denied') {
       return $this->emptyDeclinePane($project);
     }
@@ -194,17 +194,12 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
       return $build;
     }
     if ($outcome === 'sent') {
-      if ($form_state->get('decline_failed')) {
-        $this->messenger->addError($this->t('The mail was sent, but the project could not be declined. Please contact a supervisor.'));
-      }
-      else {
-        $this->messenger->addStatus($this->t('The project was declined and the mail was sent.'));
-      }
+      $this->messenger->addStatus($this->t('The project was declined.'));
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
       return $build;
     }
     if ($outcome === 'failed') {
-      $this->messenger->addError($this->t('The mail could not be sent. The project was not declined.'));
+      $this->messenger->addError($this->t('The project could not be declined. No mail was sent.'));
     }
     $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
     $build['content']['form'] = $form;

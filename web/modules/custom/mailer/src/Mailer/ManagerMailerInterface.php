@@ -23,8 +23,7 @@ interface ManagerMailerInterface extends ComponentMailerInterface {
   /**
    * Sends the manager-edited plain text mail, one mail per recipient.
    *
-   * Returns TRUE only if every mail was sent. Nothing is sent or recorded when
-   * the mail is not offered for the project's current state.
+   * Returns TRUE only if every mail was sent. Access is checked by the caller.
    */
   public function send(ProjectInterface $project, string $subtype, string $subject, string $bodyText, AccountInterface $sender): bool;
 
