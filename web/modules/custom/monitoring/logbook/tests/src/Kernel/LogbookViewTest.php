@@ -140,6 +140,34 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * Logs of hidden projects are listed only beyond the public level.
+   */
+  public function testHiddenProjectLogsPerPermission(): void {
+    $visible_project = $this->createLogbookProject('Visible');
+    $visible = $this->createLog('project_publish', ['created' => 100, 'project' => $visible_project->id()]);
+    $hidden_project = $this->createLogbookProject('Hidden');
+    $hidden_project->setHidden()->save();
+    $hidden = $this->createLog('project_publish', ['created' => 200, 'project' => $hidden_project->id()]);
+    $without_project = $this->createLog('project_publish', ['created' => 50]);
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([(int) $visible->id(), (int) $without_project->id()], $this->ids());
+    // JSON:API collections use entity queries, not Views.
+    $log_storage = $this->container->get('entity_type.manager')->getStorage('log');
+    $query_ids = $log_storage->getQuery()->accessCheck()->execute();
+    $this->assertEqualsCanonicalizing([$visible->id(), $without_project->id()], array_values($query_ids));
+
+    $this->setCurrentUser($this->createUser(['view public log', 'view observable log']));
+    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
+
+    $hidden_project->setHidden(FALSE)->save();
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
+  }
+
+  /**
    * The list varies per permissions, so cached results are not shared.
    */
   public function testScopeVariesPerPermissions(): void {

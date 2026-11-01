@@ -44,16 +44,19 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
         ->cachePerPermissions();
     }
 
-    // Check access for public log.
+    // Check access for public log. A hidden project keeps its logs private.
+    $project = $entity->getProject();
     if (
       $operation === 'view' &&
       $account->hasPermission('view public log') &&
-      $entity->getPattern()->isPublic()
+      $entity->getPattern()->isPublic() &&
+      !$project?->isHidden()
     ) {
-      return AccessResult::allowed()
+      $access_result = AccessResult::allowed()
         ->cachePerPermissions()
         ->addCacheableDependency($entity->getPattern())
         ->addCacheableDependency($entity);
+      return $project ? $access_result->addCacheableDependency($project) : $access_result;
     }
 
     // Check access for detectable log.
@@ -91,10 +94,11 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
         ->addCacheableDependency($entity);
     }
 
-    return AccessResult::neutral()
+    $access_result = AccessResult::neutral()
       ->addCacheableDependency($entity->getPattern())
       ->addCacheableDependency($entity)
       ->cachePerPermissions();
+    return $project ? $access_result->addCacheableDependency($project) : $access_result;
   }
 
 }

@@ -92,6 +92,35 @@ class LogAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that public logs of hidden projects are not public.
+   */
+  public function testHiddenProjectLog(): void {
+    // The pattern project_publish is public, detectable and observable.
+    $project = $this->createProject();
+    $log = $this->createLog('project_publish', $project);
+    $creative = $this->createCreative();
+    $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('log');
+    $this->assertTrue($log->access('view', $creative));
+
+    $project->setHidden()->save();
+    $handler->resetCache();
+    $result = $log->access('view', $creative, TRUE);
+    $this->assertFalse($result->isAllowed());
+    $this->assertInstanceOf(CacheableDependencyInterface::class, $result);
+    $this->assertContains('project:' . $project->id(), $result->getCacheTags());
+    $this->assertTrue($log->access('view', $project->getOwner()->getManager()));
+    $this->assertTrue($log->access('view', $this->createCreative('observer')));
+    $this->assertTrue($log->access('view', $this->createSupervisor()));
+
+    $project->setHidden(FALSE)->save();
+    $handler->resetCache();
+    $result = $log->access('view', $creative, TRUE);
+    $this->assertTrue($result->isAllowed());
+    $this->assertInstanceOf(CacheableDependencyInterface::class, $result);
+    $this->assertContains('project:' . $project->id(), $result->getCacheTags());
+  }
+
+  /**
    * Creates a log of a pattern, optionally for a project.
    */
   protected function createLog(string $type, ?ProjectInterface $project = NULL): LogInterface {
