@@ -55,7 +55,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
 
     $manager = Creative::create([
       'name' => $this->randomString(),
-      'mail' => 'manager@example.com',
+      'mail' => $this->randomMachineName() . '@example.com',
       'pass' => 'password',
       'status' => 1,
     ]);
@@ -66,7 +66,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
 
     $organization = Organization::create([
       'name' => $this->randomString(),
-      'mail' => 'test@example.org',
+      'mail' => $this->randomMachineName() . '@example.org',
       'field_manager' => $manager,
       'pass' => 'password',
       'status' => 1,
@@ -97,7 +97,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   protected function createCreative(string $role = 'creative'): Creative {
     $creative = Creative::create([
       'name' => $this->randomString(),
-      'mail' => 'test@example.com',
+      'mail' => $this->randomMachineName() . '@example.com',
       'pass' => 'password',
       'status' => 1,
     ]);
@@ -113,7 +113,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   protected function createManager(): Creative {
     $manager = Creative::create([
       'name' => $this->randomString(),
-      'mail' => 'other_manager@example.com',
+      'mail' => $this->randomMachineName() . '@example.com',
       'pass' => 'password',
       'status' => 1,
     ]);
@@ -130,7 +130,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   protected function createSupervisor(): Creative {
     $supervisor = Creative::create([
       'name' => $this->randomString(),
-      'mail' => 'supervisor@example.com',
+      'mail' => $this->randomMachineName() . '@example.com',
       'pass' => 'password',
       'status' => 1,
     ]);
@@ -146,7 +146,7 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   protected function createOrganization(): Organization {
     $organization = Organization::create([
       'name' => $this->randomString(),
-      'mail' => 'other@example.org',
+      'mail' => $this->randomMachineName() . '@example.org',
       'pass' => 'password',
       'status' => 1,
     ]);
