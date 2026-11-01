@@ -9,6 +9,7 @@ dependencies:
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
     - rest.resource.project.complete
+    - rest.resource.project.decline
     - rest.resource.project.mediate
     - rest.resource.project.notify
     - rest.resource.project.publish
@@ -42,6 +43,7 @@ permissions:
   - 'restful get progress:course:access'
   - 'restful get progress:lecture:access'
   - 'restful get progress:lecture:complete'
+  - 'restful get project:decline'
   - 'restful get project:mediate'
   - 'restful get question:submission'
   - 'restful post organization:manage'
@@ -49,6 +51,7 @@ permissions:
   - 'restful post progress:lecture:access'
   - 'restful post progress:lecture:complete'
   - 'restful post project:complete'
+  - 'restful post project:decline'
   - 'restful post project:mediate'
   - 'restful post project:notify'
   - 'restful post project:publish'

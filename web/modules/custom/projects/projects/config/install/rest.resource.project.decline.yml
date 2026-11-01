@@ -1,0 +1,12 @@
+id: project.decline
+plugin_id: 'project:decline'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

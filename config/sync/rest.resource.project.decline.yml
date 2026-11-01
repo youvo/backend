@@ -1,0 +1,23 @@
+uuid: 301afdd9-6855-43ad-bb28-952af12bfb59
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+    - user
+id: project.decline
+plugin_id: 'project:decline'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
+    - cookie
