@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Projects module.
+ */
+
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\projects\Entity\Project;
+
+/**
+ * Adds the hidden field and labels the status field Active or Archived.
+ */
+function projects_update_11001(): void {
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  if (!$update_manager->getFieldStorageDefinition('hidden', 'project')) {
+    // Existing projects are not hidden.
+    $hidden = Project::hiddenFieldDefinition()->setInitialValue(FALSE);
+    $update_manager->installFieldStorageDefinition('hidden', 'project', 'projects', $hidden);
+  }
+
+  $status = $update_manager->getFieldStorageDefinition('status', 'project');
+  if ($status instanceof BaseFieldDefinition) {
+    $status->setLabel(t('Archive status'))
+      ->setDescription(t("Archived projects are offline: only supervisors and administrators can see them, and they don't transition."))
+      ->setSetting('on_label', t('Active'))
+      ->setSetting('off_label', t('Archived'));
+    $update_manager->updateFieldStorageDefinition($status);
+  }
+}

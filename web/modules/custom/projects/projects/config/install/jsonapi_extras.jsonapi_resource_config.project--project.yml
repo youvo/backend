@@ -62,6 +62,12 @@ resourceFields:
     publicName: promote
     enhancer:
       id: ''
+  hidden:
+    disabled: false
+    fieldName: hidden
+    publicName: hidden
+    enhancer:
+      id: ''
   project_result:
     disabled: false
     fieldName: project_result
