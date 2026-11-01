@@ -4,9 +4,8 @@ entity.project.settings:
     _form: '\Drupal\projects\Form\ProjectSettingsForm'
     _title: 'Project Settings'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
 
-# @todo Adjust access for project transition forms.
 project.submit:
   path: '/projects/{project}/submit'
   defaults:
@@ -14,7 +13,7 @@ project.submit:
     _title: 'Submit Project'
     transition: 'submit'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
     project: \d+
   options:
     _admin_route: TRUE
@@ -29,7 +28,7 @@ project.publish:
     _title: 'Publish Project'
     transition: 'publish'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
     project: \d+
   options:
     _admin_route: TRUE
@@ -44,7 +43,7 @@ project.mediate:
     _title: 'Mediate Project'
     transition: 'mediate'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
     project: \d+
   options:
     _admin_route: TRUE
@@ -59,7 +58,7 @@ project.complete:
     _title: 'Complete Project'
     transition: 'complete'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
     project: \d+
   options:
     _admin_route: TRUE
@@ -74,7 +73,7 @@ project.reset:
     _title: 'Reset Project'
     transition: 'reset'
   requirements:
-    _permission: 'administer projects'
+    _permission: 'access project admin forms'
     project: \d+
   options:
     _admin_route: TRUE
