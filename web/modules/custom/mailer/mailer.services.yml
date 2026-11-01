@@ -4,6 +4,11 @@ services:
     arguments: ['@Drupal\mailer\Mailer\ProjectActionMailerInterface']
     tags:
       - { name: event_subscriber }
+  mailer.project_archive.event_subscriber:
+    class: Drupal\mailer\EventSubscriber\MailerProjectArchiveSubscriber
+    arguments: ['@Drupal\mailer\Mailer\ManagerMailerInterface', '@mailer.manager_mail_registry']
+    tags:
+      - { name: event_subscriber }
   mailer.project_decline.event_subscriber:
     class: Drupal\mailer\EventSubscriber\MailerProjectDeclineSubscriber
     arguments: ['@Drupal\mailer\Mailer\ManagerMailerInterface']

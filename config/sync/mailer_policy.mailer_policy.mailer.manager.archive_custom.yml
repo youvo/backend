@@ -1,0 +1,14 @@
+uuid: a1143672-1ce7-432f-a620-de43b93321cb
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.archive_custom
+configuration:
+  email_subject:
+    value: 'Euer Projekt „{{ project_title }}“ auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>wir haben Euer Projekt „{{ project_title }}“ auf youvo.org archiviert. Es ist damit nicht mehr online und nimmt keine Bewerbungen mehr an.</p><p></p><p>Wenn Ihr Fragen habt oder ein neues Projekt plant, meldet Euch gern bei mir.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

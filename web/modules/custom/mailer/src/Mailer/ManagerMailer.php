@@ -40,6 +40,9 @@ use Psr\Log\LoggerInterface;
     "decline_impact" => new TranslatableMarkup("Decline: Impact hard to communicate"),
     "decline_idea" => new TranslatableMarkup("Decline: Only an idea"),
     "decline_religious" => new TranslatableMarkup("Decline: Religious"),
+    "archive_custom" => new TranslatableMarkup("Archive: Custom reason"),
+    "archive_unattractive" => new TranslatableMarkup("Archive: Project unattractive"),
+    "archive_external" => new TranslatableMarkup("Archive: External mediation"),
   ],
   required_config: ["email_subject", "email_body"],
   variables: [

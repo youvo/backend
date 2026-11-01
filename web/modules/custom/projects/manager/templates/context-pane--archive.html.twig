@@ -1,0 +1,20 @@
+<tr {{ attributes }} class="context-pane">
+  <td colspan="100%">
+    <div class="manager-mail-pane">
+      {{ content.messages }}
+      <div class="manager-mail-main">
+        {{ content.form }}
+      </div>
+      {% if content.reasons %}
+        <aside class="manager-mail-side">
+          <h4 class="manager-mail-side-title">{{ 'Reason'|t }}</h4>
+          <div class="manager-mail-types">
+            {% for link in content.reasons %}
+              {{ link }}
+            {% endfor %}
+          </div>
+        </aside>
+      {% endif %}
+    </div>
+  </td>
+</tr>

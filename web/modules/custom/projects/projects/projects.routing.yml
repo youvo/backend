@@ -80,3 +80,17 @@ project.reset:
     parameters:
       project:
         type: entity:project
+
+project.unarchive:
+  path: '/projects/{project}/unarchive'
+  defaults:
+    _form: '\Drupal\projects\Form\ProjectUnarchiveForm'
+    _title: 'Unarchive Project'
+  requirements:
+    _permission: 'unarchive projects'
+    project: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      project:
+        type: entity:project

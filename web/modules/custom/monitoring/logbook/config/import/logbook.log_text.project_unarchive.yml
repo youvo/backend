@@ -1,0 +1,4 @@
+id: project_unarchive
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole wieder aktiviert.'
+public_text: 'Das Projekt %Project wurde von %Author wieder aktiviert.'

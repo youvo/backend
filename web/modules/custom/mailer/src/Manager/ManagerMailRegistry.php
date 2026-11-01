@@ -2,6 +2,7 @@
 
 namespace Drupal\mailer\Manager;
 
+use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
@@ -10,6 +11,11 @@ use Drupal\projects\ProjectState;
  * Registry of the mails a manager may send per project state.
  */
 class ManagerMailRegistry {
+
+  /**
+   * The states in which archiving a project sends a mail.
+   */
+  public const array ARCHIVE_MAIL_STATES = [ProjectState::Open, ProjectState::Ongoing, ProjectState::Completed];
 
   /**
    * Gets all definitions.
@@ -60,6 +66,38 @@ class ManagerMailRegistry {
   }
 
   /**
+   * Gets the archive definitions in enum order.
+   *
+   * @return \Drupal\mailer\Manager\ManagerMailDefinition[]
+   *   The definitions.
+   */
+  protected function archiveDefinitions(): array {
+    return array_map(
+      static fn (ProjectArchiveReason $reason) => new ManagerMailDefinition(
+        self::archiveSubtype($reason),
+        (string) $reason->label(),
+        static::ARCHIVE_MAIL_STATES,
+        static fn (ProjectInterface $p) => !$p->isArchived(),
+      ),
+      ProjectArchiveReason::cases(),
+    );
+  }
+
+  /**
+   * Gets the mailer subtype of an archive reason.
+   */
+  public static function archiveSubtype(ProjectArchiveReason $reason): string {
+    return 'archive_' . $reason->value;
+  }
+
+  /**
+   * Gets the archive reason of a mailer subtype.
+   */
+  public static function archiveReason(string $subtype): ?ProjectArchiveReason {
+    return str_starts_with($subtype, 'archive_') ? ProjectArchiveReason::tryFrom(substr($subtype, 8)) : NULL;
+  }
+
+  /**
    * Gets the lifecycle state of a project.
    */
   public function stateOf(ProjectInterface $project): ProjectState {
@@ -97,10 +135,26 @@ class ManagerMailRegistry {
   }
 
   /**
+   * Gets the archive definitions offered for the project.
+   *
+   * @return \Drupal\mailer\Manager\ManagerMailDefinition[]
+   *   The definitions in enum order.
+   */
+  public function availableArchives(ProjectInterface $project): array {
+    $state = $this->stateOf($project);
+    return array_values(array_filter($this->archiveDefinitions(), static fn (ManagerMailDefinition $d) => $d->appliesTo($project, $state)));
+  }
+
+  /**
    * Finds a definition if it is offered for the project's current state.
    */
   public function find(ProjectInterface $project, string $subtype): ?ManagerMailDefinition {
-    foreach ([...$this->available($project), ...$this->availableDeclines($project)] as $definition) {
+    $definitions = [
+      ...$this->available($project),
+      ...$this->availableDeclines($project),
+      ...$this->availableArchives($project),
+    ];
+    foreach ($definitions as $definition) {
       if ($definition->subtype === $subtype) {
         return $definition;
       }
