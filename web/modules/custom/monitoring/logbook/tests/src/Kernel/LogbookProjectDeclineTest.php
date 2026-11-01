@@ -16,7 +16,7 @@ use Drupal\projects\ProjectState;
 class LogbookProjectDeclineTest extends LogbookKernelTestBase {
 
   /**
-   * The decline log keeps the reason and is neither observable nor public.
+   * The decline log keeps the reason and is detectable only.
    */
   public function testDeclineLog(): void {
     $values = Yaml::decode(file_get_contents(__DIR__ . '/../../../config/install/logbook.log_pattern.project_decline.yml'));
@@ -33,6 +33,7 @@ class LogbookProjectDeclineTest extends LogbookKernelTestBase {
     $log = reset($logs);
     $this->assertSame('project_decline', $log->bundle());
     $this->assertSame(['reason' => 'skill'], $log->getMisc());
+    $this->assertTrue($log->getPattern()->isDetectable());
     $this->assertFalse($log->getPattern()->isObservable());
     $this->assertFalse($log->getPattern()->isPublic());
   }
