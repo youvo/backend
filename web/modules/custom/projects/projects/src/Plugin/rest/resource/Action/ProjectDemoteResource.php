@@ -10,6 +10,7 @@ use Drupal\projects\Event\ProjectDemoteEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project demote resource.
@@ -37,6 +38,9 @@ class ProjectDemoteResource extends ProjectActionResourceBase {
   public function post(ProjectInterface $project): ResourceResponseInterface {
     try {
       $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
+    }
+    catch (\LogicException) {
+      throw new ConflictHttpException('Project can not be demoted.');
     }
     catch (\Throwable $e) {
       $variables = Error::decodeException($e);

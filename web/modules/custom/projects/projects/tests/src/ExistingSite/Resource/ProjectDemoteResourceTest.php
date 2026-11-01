@@ -54,4 +54,22 @@ class ProjectDemoteResourceTest extends ProjectResourceTestBase {
     $this->assertEquals('The \'restful post project:demote\' permission is required.', $response->getContent());
   }
 
+  /**
+   * Tests the for the project demote resource - declined project.
+   */
+  public function testProjectDemoteDeclined(): void {
+
+    $project = $this->createProject(ProjectState::Declined);
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/demote';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(409, $response->getStatusCode());
+    $this->assertEquals('Project can not be demoted.', $response->getContent());
+  }
+
 }
