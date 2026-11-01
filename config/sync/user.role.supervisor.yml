@@ -23,6 +23,7 @@ dependencies:
     - contextual
     - correspondence
     - courses
+    - feedback
     - lifecycle
     - logbook
     - mailer
@@ -42,6 +43,7 @@ permissions:
   - 'access contextual links'
   - 'access navigation'
   - 'access site'
+  - 'administer feedback'
   - 'administer projects'
   - 'bypass project_lifecycle transition access'
   - 'create project'
