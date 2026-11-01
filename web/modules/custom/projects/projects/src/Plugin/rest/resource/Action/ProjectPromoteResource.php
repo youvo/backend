@@ -4,6 +4,7 @@ namespace Drupal\projects\Plugin\rest\resource\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectPromoteEvent;
@@ -29,7 +30,21 @@ class ProjectPromoteResource extends ProjectActionResourceBase {
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
-    return AccessResult::allowedIfHasPermission($account, 'administer projects');
+
+    // The user requires the permission to do this action.
+    $access_result = AccessResult::allowedIfHasPermission($account, 'administer projects');
+
+    // Declined, hidden and archived projects are not promoted.
+    $access_project = AccessResult::allowedIf(
+      $project->isActive() &&
+      !$project->isHidden() &&
+      !$project->lifecycle()->isDeclined()
+    )->addCacheableDependency($project);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this action are not met.');
+    }
+
+    return $access_result->andIf($access_project);
   }
 
   /**

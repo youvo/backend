@@ -8,7 +8,7 @@ const SELECTORS = {
   contextPane: '.context-pane',
   contextTrigger: '[data-context-pane][data-project-id]',
   transitionCheckbox: '.js-transition-checkbox',
-  promoteButton: '.js-promote-btn',
+  actionButton: '.js-action-btn',
   transitionButton: '.js-transition-btn',
 };
 
@@ -969,6 +969,10 @@ function initPaneForms() {
       : null;
     if (!form || !form.closest('.js-context-pane')) return;
     e.preventDefault();
+    if (form.dataset.restAction) {
+      submitActionForm(form);
+      return;
+    }
     submitPaneForm(form, e.submitter);
   });
 
@@ -1163,12 +1167,21 @@ async function getCsrfToken() {
   return response.text();
 }
 
-function initPromoteButton() {
-  if (window._promoteBtnHandlerAttached) return;
-  window._promoteBtnHandlerAttached = true;
+function refreshProjectViews() {
+  document.querySelectorAll('.view-project-manager').forEach(el => {
+    el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
+  });
+}
+
+/**
+ * Posts an action of the edit pane (promote, hide, notify, reset, …).
+ */
+function initActionButton() {
+  if (window._actionBtnHandlerAttached) return;
+  window._actionBtnHandlerAttached = true;
 
   document.body.addEventListener('click', async function (e) {
-    const btn = e.target.closest('.js-promote-btn');
+    const btn = e.target.closest(SELECTORS.actionButton);
     if (!btn) return;
     const row = btn.closest('.js-context-pane');
     if (!row) return;
@@ -1178,7 +1191,7 @@ function initPromoteButton() {
     try {
       lastScrollPosition = window.scrollY;
       const csrfToken = await getCsrfToken();
-      const action = btn.getAttribute('data-action') || 'promote';
+      const action = btn.getAttribute('data-action');
       const response = await fetch(`/api/projects/${projectId}/${action}`, {
         method: 'POST',
         headers: {
@@ -1186,20 +1199,69 @@ function initPromoteButton() {
           'X-CSRF-Token': csrfToken,
         },
       });
-      if (response.status === 200) {
-        document
-          .querySelectorAll('.view-project-manager')
-          .forEach(function (el) {
-            el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
-          });
-      } else if (response.status === 403) {
-        alert('You do not have permission to promote/demote this project.');
+      if (response.ok) {
+        refreshProjectViews();
+      } else {
         btn.disabled = false;
+        showPaneError(row, paneErrorText(`HTTP ${response.status}`));
       }
     } catch (err) {
       btn.disabled = false;
+      showPaneError(row, paneErrorText(err.message));
     }
   });
+}
+
+/**
+ * Posts a mail editor (decline, archive) to the REST resource of its action.
+ *
+ * On failure the editor stays with the written text.
+ */
+async function submitActionForm(form) {
+  const row = form.closest('.js-context-pane');
+  if (!row || form.dataset.paneBusy || !form.reportValidity()) return;
+  const buttons = form.querySelectorAll('[type="submit"]');
+  const release = () => {
+    delete form.dataset.paneBusy;
+    delete row.dataset.paneBusy;
+    buttons.forEach(button => {
+      button.disabled = false;
+    });
+  };
+  form.dataset.paneBusy = '1';
+  row.dataset.paneBusy = '1';
+  buttons.forEach(button => {
+    button.disabled = true;
+  });
+  try {
+    lastScrollPosition = window.scrollY;
+    const csrfToken = await getCsrfToken();
+    const response = await fetch(
+      `/api/projects/${row.dataset.projectId}/${form.dataset.restAction}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({
+          reason: form.dataset.reason,
+          subject: form.elements.subject.value,
+          body: form.elements.body.value,
+        }),
+      }
+    );
+    if (response.ok) {
+      release();
+      refreshProjectViews();
+    } else {
+      release();
+      showPaneError(row, paneErrorText(`HTTP ${response.status}`));
+    }
+  } catch (err) {
+    release();
+    showPaneError(row, paneErrorText(err.message));
+  }
 }
 
 function initCheckboxHandlers(context) {
@@ -1292,11 +1354,7 @@ function initTransitionButton() {
             : undefined,
       });
       if (response.status === 200) {
-        document
-          .querySelectorAll('.view-project-manager')
-          .forEach(function (el) {
-            el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
-          });
+        refreshProjectViews();
       } else if (response.status === 403) {
         alert('You do not have permission to transition this project.');
       } else if (response.status === 400) {
@@ -1324,13 +1382,13 @@ function initTransitionButton() {
       revealNewRow(context);
       initPaneForms();
       initMailTokens(context);
-      initPromoteButton();
+      initActionButton();
       initTransitionButton();
 
       if (lastScrollPosition !== null) {
         window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });
         lastScrollPosition = null;
-        document.querySelectorAll('.js-promote-btn:disabled').forEach(btn => {
+        document.querySelectorAll('.js-action-btn:disabled').forEach(btn => {
           btn.disabled = false;
         });
       }

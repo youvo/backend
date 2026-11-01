@@ -46,4 +46,14 @@ class ProjectHideTest extends ProjectEventSubscriberTestBase {
     $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
   }
 
+  /**
+   * Tests that declined projects can not be hidden.
+   */
+  public function testProjectHideDeclined(): void {
+    $project = $this->createProject(ProjectState::Declined);
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
+  }
+
 }

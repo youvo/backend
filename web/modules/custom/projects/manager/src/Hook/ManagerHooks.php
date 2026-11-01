@@ -6,9 +6,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\AdminContext;
-use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Site\Settings;
-use Drupal\manager\Form\ProjectArchiveForm;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
@@ -28,7 +26,6 @@ class ManagerHooks {
     protected ManagerRules $managerRules,
     protected AdminContext $adminContext,
     protected ProjectSeenTracker $projectSeenTracker,
-    protected AccountProxyInterface $currentUser,
   ) {}
 
   /**
@@ -159,6 +156,8 @@ class ManagerHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'project_manager') {
       $view->element['#attached']['library'][] = 'manager/core';
+      // The pane triggers depend on whether the user manages the organization.
+      $view->element['#cache']['contexts'][] = 'user';
     }
   }
 
@@ -186,23 +185,14 @@ class ManagerHooks {
           }
         }
 
-        // The transition pane offers the next transition and Archive.
-        $lifecycle = $project->lifecycle();
-        if (
-          $project->isArchived() ||
-          $lifecycle->isDeclined() ||
-          ($lifecycle->isCompleted() && !ProjectArchiveForm::mayArchive($this->currentUser))
-        ) {
-          $action_transition = &$row['columns']['nothing_2'];
-          $action_transition['attributes']->offsetUnset('class');
-          unset($action_transition['content']);
-        }
-
-        // Promote and demote are not available for declined projects.
-        if ($project->lifecycle()->isDeclined()) {
-          $action_edit = &$row['columns']['nothing_3'];
-          $action_edit['attributes']->offsetUnset('class');
-          unset($action_edit['content']);
+        // A pane trigger only shows if the pane offers the user an action.
+        foreach (['nothing_2' => 'transition', 'nothing_3' => 'edit'] as $column => $pane) {
+          if (empty($this->managerContextPanes->createInstance($pane)->build($project)['content'])) {
+            $trigger = &$row['columns'][$column];
+            $trigger['attributes']->offsetUnset('class');
+            unset($trigger['content']);
+            unset($trigger);
+          }
         }
       }
 

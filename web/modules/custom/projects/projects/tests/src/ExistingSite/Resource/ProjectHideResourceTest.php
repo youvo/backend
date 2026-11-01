@@ -50,8 +50,8 @@ class ProjectHideResourceTest extends ProjectResourceTestBase {
     $this->authenticateRequest($request, $supervisor);
 
     $response = $this->doRequest($request);
-    $this->assertEquals(409, $response->getStatusCode());
-    $this->assertEquals('Project can not be hidden.', $response->getContent());
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
   }
 
   /**

@@ -20,8 +20,9 @@ class ProjectHideSubscriber implements EventSubscriberInterface {
     if ($project->isArchived()) {
       throw new \LogicException('Cannot hide an archived project.');
     }
-    if ($project->lifecycle()->isDraft() || $project->lifecycle()->isPending()) {
-      throw new \LogicException('Cannot hide a project in a draft or pending state.');
+    $lifecycle = $project->lifecycle();
+    if (!$lifecycle->isOpen() && !$lifecycle->isOngoing() && !$lifecycle->isCompleted()) {
+      throw new \LogicException('Only open, ongoing or completed projects can be hidden.');
     }
     $project->setPromoted(FALSE);
     $project->setHidden();

@@ -3,17 +3,8 @@
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\Url;
-use Drupal\mailer\Manager\ManagerMailAccess;
-use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Attribute\ManagerContextPane;
-use Drupal\manager\Form\ProjectArchiveForm;
-use Drupal\manager\Form\ProjectDeclineForm;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
@@ -24,22 +15,12 @@ use Symfony\Component\HttpFoundation\Request;
  * Provides a project transition manager context pane.
  *
  * Besides the next transition, the pane offers to decline a project proposal
- * (view 'decline') and to archive a project (view 'archive'): forms that
- * decline or archive the project, after which the mailer sends the mail.
+ * (view 'decline') with the mail editor.
  */
 #[ManagerContextPane(id: "transition")]
 class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
 
-  /**
-   * The forms of the decline and the archive view.
-   */
-  protected const array FORMS = [
-    'decline' => ProjectDeclineForm::class,
-    'archive' => ProjectArchiveForm::class,
-  ];
-
-  use MailPaneFormTrait;
-  use PaneMessagesTrait;
+  use ProjectActionPaneTrait;
   use StringTranslationTrait;
 
   /**
@@ -48,43 +29,17 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * The current user.
-   */
-  protected AccountProxyInterface $currentUser;
-
-  /**
-   * The registry of manager mails.
-   */
-  protected ManagerMailRegistry $registry;
-
-  /**
-   * The access service of manager mails.
-   */
-  protected ManagerMailAccess $access;
-
-  /**
-   * The form builder.
-   */
-  protected FormBuilderInterface $formBuilder;
-
-  /**
-   * The messenger.
-   */
-  protected MessengerInterface $messenger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
     $instance = parent::create($container, ...$defaults);
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->currentUser = $container->get('current_user');
+    $instance->resourceManager = $container->get('plugin.manager.rest');
     $instance->registry = $container->get('mailer.manager_mail_registry');
     $instance->access = $container->get('mailer.manager_mail_access');
     $instance->formBuilder = $container->get('form_builder');
-    $instance->messenger = $container->get('messenger');
     return $instance;
-
   }
 
   /**
@@ -93,24 +48,22 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   public function build(Project $project): array {
 
     $transition = $this->getNextTransition($project);
-    $archive = $this->buildActionLink($project, 'archive', $this->t('Archive'));
-    if (!$transition instanceof ProjectTransition) {
-      if (!$archive) {
-        return [];
-      }
-      return [
-        '#theme' => 'context_pane',
-        '#type' => 'transition',
-        '#project' => $project,
-        'content' => ['archive' => $archive],
-      ];
+    if (!$transition instanceof ProjectTransition || !$this->mayPost($project, $transition->value)) {
+      $transition = NULL;
+    }
+    $decline = $this->buildMailActionLink($project, 'decline', $this->t('Decline'));
+    if (!$transition && !$decline) {
+      return [];
     }
 
     $build = [
       '#theme' => 'context_pane',
       '#type' => 'transition',
       '#project' => $project,
-      'content' => [
+      'content' => [],
+    ];
+    if ($transition) {
+      $build['content'] = [
         'button' => [
           '#type' => 'button',
           // phpcs:ignore
@@ -141,15 +94,10 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
           ProjectTransition::Complete => $this->buildCompleteDescription($project),
           default => NULL,
         },
-      ],
-    ];
-
-    $decline = $this->buildActionLink($project, 'decline', $this->t('Decline'));
+      ];
+    }
     if ($decline) {
       $build['content']['decline'] = $decline;
-    }
-    if ($archive) {
-      $build['content']['archive'] = $archive;
     }
 
     return $build;
@@ -159,130 +107,10 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
    * {@inheritdoc}
    */
   public function buildView(Project $project, Request $request): array {
-    $view = $request->query->get('view');
-    if (!isset(static::FORMS[$view])) {
+    if ($request->query->get('view') !== 'decline') {
       return $this->build($project);
     }
-    // The mail subtypes are 'decline_<reason>' and 'archive_<reason>'. The
-    // access check refuses unknown reasons.
-    $subtype = $view . '_' . $request->query->get('reason', 'custom');
-    return $this->buildActionView($project, $view, $subtype, $request);
-  }
-
-  /**
-   * Whether the current user may decline or archive with the mail subtype.
-   */
-  protected function mayAct(Project $project, string $view, string $subtype): bool {
-    $permitted = $view === 'archive'
-      ? ProjectArchiveForm::mayArchive($this->currentUser)
-      : ProjectDeclineForm::mayDecline($this->currentUser);
-    return $permitted && $this->access->access($this->currentUser, $project, $subtype)->isAllowed();
-  }
-
-  /**
-   * Builds the link that opens the decline or archive view, if permitted.
-   */
-  protected function buildActionLink(Project $project, string $view, TranslatableMarkup $title): ?array {
-    if (!$this->mayAct($project, $view, $view . '_custom')) {
-      return NULL;
-    }
-    return [
-      '#type' => 'link',
-      '#title' => $title,
-      '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
-        'query' => ['type' => 'transition', 'view' => $view],
-      ]),
-      '#attributes' => [
-        'class' => ['button', 'button--small', 'button--danger'],
-        'data-pane-view' => $view,
-      ],
-    ];
-  }
-
-  /**
-   * Builds the empty decline or archive pane.
-   */
-  protected function emptyActionPane(Project $project, string $view): array {
-    return ['#theme' => 'context_pane', '#type' => $view, '#project' => $project, 'content' => []];
-  }
-
-  /**
-   * Builds the decline or archive form view; access is checked every time.
-   *
-   * A valid POST declines or archives the project in the form's submit
-   * handler, and the mailer sends the mail; the pane then only shows the
-   * outcome. A failure returns the form again.
-   */
-  protected function buildActionView(Project $project, string $view, string $subtype, Request $request): array {
-    if (!$this->mayAct($project, $view, $subtype)) {
-      return $this->emptyActionPane($project, $view);
-    }
-    [$outcome, $form] = $this->processMailForm($this->formBuilder, $this->messenger, static::FORMS[$view], $project, $subtype, $request);
-    if ($outcome === 'denied') {
-      return $this->emptyActionPane($project, $view);
-    }
-    $build = $this->emptyActionPane($project, $view);
-    [$sent, $failed] = match ($view) {
-      'archive' => [
-        $this->t('The project was archived.'),
-        $this->t('The project could not be archived. No mail was sent.'),
-      ],
-      default => [
-        $this->t('The project was declined.'),
-        $this->t('The project could not be declined. No mail was sent.'),
-      ],
-    };
-    if ($outcome === 'already') {
-      $this->messenger->addStatus($this->t('This form was already submitted.'));
-      $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-      return $build;
-    }
-    if ($outcome === 'sent') {
-      $this->messenger->addStatus($sent);
-      $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-      return $build;
-    }
-    if ($outcome === 'failed') {
-      $this->messenger->addError($failed);
-    }
-    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-    $build['content']['form'] = $form;
-    $this->buildReasons($build, $project, $view, $subtype);
-    return $build;
-  }
-
-  /**
-   * Adds the links of the decline or archive reasons.
-   *
-   * @param array $build
-   *   The pane build.
-   * @param \Drupal\projects\Entity\Project $project
-   *   The project.
-   * @param string $view
-   *   The view: 'decline' or 'archive'.
-   * @param string $active
-   *   The subtype whose form is open, which is marked as current.
-   */
-  protected function buildReasons(array &$build, Project $project, string $view, string $active): void {
-    $definitions = $view === 'archive'
-      ? $this->registry->availableArchives($project)
-      : $this->registry->availableDeclines($project);
-    foreach ($definitions as $definition) {
-      $reason = substr($definition->subtype, strlen($view) + 1);
-      $is_active = $definition->subtype === $active;
-      $build['content']['reasons'][$reason] = [
-        '#type' => 'link',
-        '#title' => $definition->label,
-        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
-          'query' => ['type' => 'transition', 'view' => $view, 'reason' => $reason],
-        ]),
-        '#attributes' => [
-          'class' => $is_active ? ['manager-mail-type', 'is-active'] : ['manager-mail-type'],
-          'data-pane-view' => $view,
-          'data-pane-params' => http_build_query(['reason' => $reason]),
-        ] + ($is_active ? ['aria-current' => 'true'] : []),
-      ];
-    }
+    return $this->buildMailActionView($project, 'decline', $request);
   }
 
   /**
@@ -372,7 +200,6 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
    */
   protected function getNextTransition(ProjectInterface $project): ?ProjectTransition {
     return match (TRUE) {
-      $project->isArchived() => NULL,
       $project->lifecycle()->isDraft() => ProjectTransition::Submit,
       $project->lifecycle()->isPending() => ProjectTransition::Publish,
       $project->lifecycle()->isOpen() => ProjectTransition::Mediate,

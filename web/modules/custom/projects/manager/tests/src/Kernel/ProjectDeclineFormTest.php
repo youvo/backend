@@ -4,22 +4,19 @@ namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\lifecycle\WorkflowPermissions;
-use Drupal\logbook\Entity\Log;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\manager\Controller\ContextPaneController;
-use Drupal\manager\Form\ProjectDeclineForm;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectDeclineEvent;
-use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\Entity\RestResourceConfig;
+use Drupal\rest\RestResourceConfigInterface;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\UserInterface;
-use Psr\Log\AbstractLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
@@ -39,6 +36,8 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     'views',
     'logbook',
     'manager',
+    'rest',
+    'serialization',
   ];
 
   /**
@@ -59,6 +58,13 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     $this->installEntitySchema('log');
     $values = Yaml::decode((string) file_get_contents(DRUPAL_ROOT . '/modules/custom/monitoring/logbook/config/install/logbook.log_pattern.project_decline.yml'));
     LogPattern::create(['tokens' => []] + array_diff_key($values, ['tokens' => 1, 'uuid' => 1]))->save();
+    // The REST permission exists with the resource config.
+    RestResourceConfig::create([
+      'id' => 'project.decline',
+      'plugin_id' => 'project:decline',
+      'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
+      'configuration' => ['methods' => ['GET', 'POST'], 'formats' => ['json'], 'authentication' => ['cookie']],
+    ])->save();
     $this->container->get('router.builder')->rebuild();
     // User 1 bypasses all permission checks: use it up.
     $this->createMailableCreative('Root');
@@ -89,6 +95,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
       'send project mails',
       'view correspondence',
       WorkflowPermissions::useTransition(ProjectLifecycle::WORKFLOW_ID, ProjectTransition::Decline->value),
+      'restful post project:decline',
     ]);
   }
 
@@ -166,17 +173,6 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * Counts the decline items in the lifecycle history of a project.
-   */
-  protected function declineHistoryCount(Project $project): int {
-    $count = 0;
-    foreach ($this->reload($project)->lifecycle()->history() as $item) {
-      $count += (int) ($item->transition === ProjectTransition::Decline->value);
-    }
-    return $count;
-  }
-
-  /**
    * The assigned manager sees the decline link on a prospect draft and pending.
    */
   public function testDeclineLinkShown(): void {
@@ -222,8 +218,18 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
       'general manager access',
       'send project mails',
       'view correspondence',
+      'restful post project:decline',
     ]);
     $cases['without transition permission'] = [$no_permission, $without];
+    // The assigned manager without the REST permission.
+    $no_rest = $this->createDeclinableProject(ProjectState::Pending);
+    $without_rest = $this->accountWith($no_rest->getOwner()->getManager(), [
+      'general manager access',
+      'send project mails',
+      'view correspondence',
+      WorkflowPermissions::useTransition(ProjectLifecycle::WORKFLOW_ID, ProjectTransition::Decline->value),
+    ]);
+    $cases['without REST permission'] = [$no_rest, $without_rest];
 
     foreach ($cases as $label => [$project, $account]) {
       $this->container->get('current_user')->setAccount($account);
@@ -239,166 +245,6 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
       $this->assertSame(0, $this->declineEvents, $label);
       $this->assertSame($state, $this->reload($project)->get('field_lifecycle')->value, $label);
     }
-  }
-
-  /**
-   * A valid POST declines with the reason, then the edited mail is sent once.
-   */
-  public function testDeclineThenMail(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'deadline'];
-    $post = ['subject' => 'Edited subject', 'body' => "Edited body\n\n[mail:project_link]"] + $this->hiddenValues($this->pane($project, $query));
-    // The form renders a preview before it declines: register the capture on
-    // the mailer right before the mail is sent.
-    $real = $this->container->get(ManagerMailerInterface::class);
-    $mailer = $this->createMock(ManagerMailerInterface::class);
-    $mailer->method('preview')->willReturnCallback(static fn (ProjectInterface $p, string $subtype) => $real->preview($p, $subtype));
-    $mailer->method('send')->willReturnCallback(function (...$args) use ($real, $project): bool {
-      // The project is declined and saved before the mail is sent.
-      $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
-      $this->captureMails($real);
-      return $real->send(...$args);
-    });
-    $this->container->set(ManagerMailerInterface::class, $mailer);
-    $html = $this->pane($project, $query, $post);
-
-    $this->assertStringContainsString('The project was declined.', $html);
-    $this->assertStringNotContainsString('<form', $html);
-    $this->assertCount(1, $this->capturedMails);
-    $this->assertSame('Edited subject', $this->capturedMails[0]['subject']);
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
-    $this->assertSame(1, $this->declineEvents);
-    $logs = Log::loadMultiple();
-    $this->assertCount(1, $logs);
-    $this->assertSame(['reason' => 'deadline'], reset($logs)->getMisc());
-    $entries = array_values($this->loadEntries($project->id()));
-    $this->assertCount(1, $entries);
-    $this->assertSame('manager', $entries[0]->get('origin')->value);
-    $this->assertSame('mailer.manager.decline_deadline', $entries[0]->getSubtype());
-    $this->assertTrue($entries[0]->isSent());
-    $this->assertSame([], $this->container->get('messenger')->all());
-  }
-
-  /**
-   * A failed mail leaves the project declined and is recorded as failed.
-   */
-  public function testMailFailureAfterDecline(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'deadline'];
-    $post = ['subject' => 'Edited subject', 'body' => 'Edited body'] + $this->hiddenValues($this->pane($project, $query));
-    $this->useFailingTransport();
-    $html = $this->pane($project, $query, $post);
-
-    $this->assertStringContainsString('The project was declined.', $html);
-    $this->assertStringNotContainsString('<form', $html);
-    $this->assertStringNotContainsString('127.0.0.1', $html);
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
-    $this->assertSame(1, $this->declineEvents);
-    $entries = array_values($this->loadEntries($project->id()));
-    $this->assertCount(1, $entries);
-    $this->assertFalse($entries[0]->isSent());
-  }
-
-  /**
-   * A failed decline sends no mail and shows the form with the input.
-   */
-  public function testDeclineFailureSendsNothing(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'custom'];
-    $post = ['subject' => 'Edited subject', 'body' => 'Edited body'] + $this->hiddenValues($this->pane($project, $query));
-    $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
-      throw new \RuntimeException('boom');
-    }, 3000);
-    $html = $this->pane($project, $query, $post);
-
-    $this->assertStringContainsString('The project could not be declined. No mail was sent.', $html);
-    $this->assertStringContainsString('<form', $html);
-    $this->assertStringContainsString('Edited subject', $html);
-    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
-    $this->assertSame([], $this->loadEntries($project->id()));
-  }
-
-  /**
-   * A failing listener after the decline is logged; the project stays declined.
-   */
-  public function testListenerFailureAfterDecline(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'custom'];
-    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    // Runs after the decline subscriber (priority 1000) saved the project and
-    // before the mailer (-100), so no mail is sent.
-    $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
-      throw new \RuntimeException('boom');
-    }, 500);
-    $logger = new class() extends AbstractLogger {
-
-      /**
-       * The logged records.
-       *
-       * @var array<int, array{0: mixed, 1: string, 2: array<string, mixed>}>
-       */
-      public array $records = [];
-
-      /**
-       * {@inheritdoc}
-       */
-      public function log($level, \Stringable|string $message, array $context = []): void {
-        $this->records[] = [$level, (string) $message, $context];
-      }
-
-    };
-    $this->container->get('logger.factory')->addLogger($logger);
-    $html = $this->pane($project, $query, $post);
-
-    $this->assertStringContainsString('The project was declined.', $html);
-    $this->assertStringNotContainsString('could not be declined', $html);
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
-    $this->assertSame(1, $this->declineEvents);
-    $this->assertSame([], $this->loadEntries($project->id()));
-    $errors = array_values(array_filter($logger->records, static fn (array $record) => ($record[2]['@message'] ?? NULL) === 'boom'));
-    $this->assertCount(1, $errors);
-    $this->assertSame(RfcLogLevel::ERROR, $errors[0][0]);
-    $this->assertSame('manager', $errors[0][2]['channel']);
-    $this->assertSame('The project @id was declined, but a listener of the decline failed: @message', $errors[0][1]);
-  }
-
-  /**
-   * After a failed decline, the same form can be submitted again.
-   *
-   * Nothing happened, so the form guard releases the form.
-   */
-  public function testRetryAfterFailedDecline(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'custom'];
-    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    $dispatcher = $this->container->get('event_dispatcher');
-    $failing = static function (): void {
-      throw new \RuntimeException('boom');
-    };
-    $dispatcher->addListener(ProjectDeclineEvent::class, $failing, 3000);
-    $this->assertStringContainsString('The project could not be declined.', $this->pane($project, $query, $post));
-
-    $dispatcher->removeListener(ProjectDeclineEvent::class, $failing);
-    $html = $this->pane($this->reload($project), $query, $post);
-    $this->assertStringContainsString('The project was declined.', $html);
-    $this->assertCount(1, $this->loadEntries($project->id()));
-    $this->assertSame(1, $this->declineHistoryCount($project));
-  }
-
-  /**
-   * Replaying a successful POST sends and declines nothing more.
-   */
-  public function testDeclineReplay(): void {
-    $project = $this->actAsManagerOf(ProjectState::Pending);
-    $query = ['view' => 'decline', 'reason' => 'custom'];
-    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    $this->assertStringContainsString('The project was declined.', $this->pane($project, $query, $post));
-
-    $html = $this->pane($this->reload($project), $query, $post);
-    $this->assertStringNotContainsString('The project was declined.', $html);
-    $this->assertCount(1, $this->loadEntries($project->id()));
-    $this->assertSame(1, $this->declineHistoryCount($project));
-    $this->assertSame(1, $this->declineEvents);
   }
 
   /**
@@ -443,16 +289,22 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * The decline form refuses reminder subtypes.
+   * A form API POST of the editor declines and mails nothing.
+   *
+   * Only the project:decline resource declines; the pane script posts to it.
    */
-  public function testDeclineFormRefusesReminders(): void {
-    $project = $this->actAsManagerOf(ProjectState::Draft, TRUE);
-    $form_state = (new FormState())->setValues(['subject' => 'S', 'body' => 'B', 'form_build_id' => 'form-reminder'])->setProgrammed();
-    $form_state->addBuildInfo('args', [$project, 'reminder_draft']);
-    $this->container->get('form_builder')->submitForm(ProjectDeclineForm::create($this->container), $form_state);
-    $this->assertNull($form_state->get('sent'));
-    $this->assertSame([], $this->loadEntries($project->id()));
+  public function testFormPostDoesNothing(): void {
+    $project = $this->actAsManagerOf(ProjectState::Pending);
+    $query = ['view' => 'decline', 'reason' => 'deadline'];
+    $html = $this->pane($project, $query);
+    $this->assertStringContainsString('data-rest-action="decline"', $html);
+    $this->assertStringContainsString('data-reason="deadline"', $html);
+
+    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($html);
+    $this->pane($project, $query, $post);
+    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
     $this->assertSame(0, $this->declineEvents);
+    $this->assertSame([], $this->loadEntries($project->id()));
   }
 
 }
