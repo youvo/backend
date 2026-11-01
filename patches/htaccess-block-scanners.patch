@@ -1,0 +1,21 @@
+--- a/web/.htaccess
++++ b/web/.htaccess
+@@ -128,6 +128,18 @@
+   # Rewrite install.php during installation to see if mod_rewrite is working
+   RewriteRule ^core/install\.php core/install.php?rewrite=ok [QSA,L]
+ 
++  # Answer vulnerability scanner probes with a plain 404 from Apache, so they
++  # never boot Drupal, tie up PHP-FPM workers or fill the watchdog log.
++  # Existing files are untouched. Keep in sync with fast_404.paths in
++  # system.performance.yml. Routes or private file uploads ending in one of
++  # these extensions need an exclusion here, like the sophron route.
++  RewriteCond %{REQUEST_FILENAME} !-f
++  RewriteCond %{REQUEST_URI} !^/sophron/
++  RewriteCond %{REQUEST_URI} \.(php[0-9]?|phtml|aspx?|jsp|cgi|ini|env|cnf|conf|cfg|dist|sql|sqlite3?|db|bak|old|swp|ya?ml|json|log|key|pem|p12|pfx|zip|tar|gz|tgz|bz2|xz|7z|rar)$ [NC,OR]
++  RewriteCond %{REQUEST_URI} ^/(_environment|_profiler|server-(status|info)|phpinfo|wp-(admin|content|includes|login)|vendor/|cgi-bin/|actuator) [NC,OR]
++  RewriteCond %{QUERY_STRING} (^|&)phpinfo(=|&|$) [NC]
++  RewriteRule ^ - [R=404,L]
++
+   # Pass all requests not referring directly to files in the filesystem to
+   # index.php.
+   RewriteCond %{REQUEST_FILENAME} !-f

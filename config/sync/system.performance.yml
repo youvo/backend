@@ -8,7 +8,7 @@ css:
   compress: true
 fast_404:
   enabled: true
-  paths: '/\.(?:txt|png|gif|jpe?g|css|js|ico|swf|flv|cgi|bat|pl|dll|exe|asp)$/i'
+  paths: '/\.(?:txt|png|gif|jpe?g|css|js|ico|swf|flv|cgi|bat|pl|dll|exe|asp|php[0-9]?|phtml|aspx|jsp|ini|env|cnf|conf|cfg|dist|sql|sqlite3?|db|bak|old|swp|ya?ml|json|log|key|pem|p12|pfx|zip|tar|gz|tgz|bz2|xz|7z|rar)$|^\/(?:_environment|_profiler|server-(?:status|info)|phpinfo|wp-(?:admin|content|includes|login)|vendor\/|cgi-bin\/|actuator)/i'
   exclude_paths: '/\/(?:styles|imagecache)\//'
   html: '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL "@path" was not found on this server.</p></body></html>'
 js:
