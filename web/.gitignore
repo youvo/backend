@@ -9,27 +9,31 @@
 
 # Ignore core when managing all of a project's dependencies with Composer
 # including Drupal core.
-core
-.csslintrc
-.editorconfig
-.eslintignore
-.eslintrc.json
-.gitattributes
-.ht.router.php
-.htaccess
-.htaccess.orig
-autoload.php
-composer.json
-composer.lock
-example.gitignore
-index.php
-INSTALL.txt
-LICENSE.txt
-README.md
-README.txt
-robots.txt
-update.php
-web.config
+/core
+/.csslintrc
+/.editorconfig
+/.eslintignore
+/.eslintrc.json
+/.gitattributes
+/.ht.router.php
+/.htaccess
+/.htaccess.orig
+/autoload.php
+/composer.json
+/composer.lock
+/example.gitignore
+/index.php
+/INSTALL.txt
+/LICENSE.txt
+/README.md
+/README.txt
+/modules/README.txt
+/profiles/README.txt
+/sites/README.txt
+/themes/README.txt
+/robots.txt
+/update.php
+/web.config
 
 # Ignore dependencies that are managed with Composer.
 # Generally you should only ignore the root vendor directory. It's important
