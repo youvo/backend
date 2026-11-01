@@ -150,7 +150,8 @@
     "scripts": {
 		"post-drupal-scaffold-cmd": [
 		  	"patch -p1 < patches/htaccess-rewritebase.patch",
-            "patch -p1 < patches/htaccess-favicon.patch"
+            "patch -p1 < patches/htaccess-favicon.patch",
+            "patch -p1 < patches/htaccess-block-scanners.patch"
 		]
 	}
 }
