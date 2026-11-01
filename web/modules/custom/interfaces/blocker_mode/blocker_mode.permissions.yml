@@ -1,3 +1,7 @@
 # Users without access site permission will be blocked in Blocker Mode.
 access site:
   title: 'Access site'
+bypass blocker mode:
+  title: 'Bypass blocker mode'
+  description: 'Access all paths in blocker mode, also /user paths.'
+  restrict access: true

@@ -5,7 +5,6 @@ namespace Drupal\logbook;
 use Drupal\Core\Access\AccessException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -20,20 +19,21 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
 
-    // Only projects should be handled by this access controller.
+    // Only logs should be handled by this access controller.
     if (!$entity instanceof LogInterface) {
       throw new AccessException('The LogAccessControlHandler was called by an entity that is not a Log.');
     }
 
-    // Administrators and supervisors skip access checks.
-    if (in_array('administrator', $account->getRoles(), TRUE)) {
-      return AccessResult::allowed()->cachePerUser();
+    // Administrators skip the access checks.
+    if ($account->hasPermission('administer log pattern')) {
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
     // Disabled logs are not accessible.
     if (!$entity->getPattern()->isEnabled()) {
       return AccessResult::forbidden()
-        ->addCacheableDependency($entity->getPattern());
+        ->addCacheableDependency($entity->getPattern())
+        ->cachePerPermissions();
     }
 
     // Check access for public log.
@@ -70,6 +70,7 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIf($entity->getProject()->getOwner()->isManager($account))
           ->addCacheableDependency($entity->getProject()->getOwner())
           ->addCacheableDependency($entity->getPattern())
+          ->cachePerPermissions()
           ->cachePerUser();
       }
 
@@ -78,7 +79,9 @@ class LogAccessControlHandler extends EntityAccessControlHandler {
         ->addCacheableDependency($entity->getPattern());
     }
 
-    return new AccessResultNeutral();
+    return AccessResult::neutral()
+      ->addCacheableDependency($entity->getPattern())
+      ->cachePerPermissions();
   }
 
 }
