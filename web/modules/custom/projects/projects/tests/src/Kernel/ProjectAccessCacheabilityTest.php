@@ -44,7 +44,7 @@ class ProjectAccessCacheabilityTest extends ProjectEventSubscriberTestBase {
   }
 
   /**
-   * Tests that the unpublished check only varies per role.
+   * Tests that the unpublished check only varies per permissions.
    *
    * @covers ::checkAccess
    */
@@ -56,7 +56,7 @@ class ProjectAccessCacheabilityTest extends ProjectEventSubscriberTestBase {
 
     $result = $project->access('view', $creative, TRUE);
     $this->assertTrue($result->isForbidden());
-    $this->assertContains('user.roles:supervisor', $this->cacheContexts($result));
+    $this->assertContains('user.permissions', $this->cacheContexts($result));
     $this->assertNotContains('user', $this->cacheContexts($result));
   }
 

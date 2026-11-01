@@ -34,6 +34,7 @@ permissions:
   - 'restful post project:mediate'
   - 'restful post project:submit'
   - 'update own project'
+  - 'upload project result files'
   - 'use project_lifecycle transition complete'
   - 'use project_lifecycle transition mediate'
   - 'use project_lifecycle transition remain_completed'

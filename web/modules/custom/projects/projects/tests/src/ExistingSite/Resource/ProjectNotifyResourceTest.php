@@ -77,6 +77,47 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests the project notify resource - supervisor outside the draft state.
+   *
+   * @covers ::access
+   */
+  public function testProjectNotifySupervisorNotDraft(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/notify';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
+  }
+
+  /**
+   * Tests the project notify resource - supervisor on an unpublished draft.
+   *
+   * @covers ::access
+   */
+  public function testProjectNotifySupervisorNotPublished(): void {
+
+    $project = $this->createProject();
+    $project->setUnpublished();
+    $project->save();
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/notify';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(200, $response->getStatusCode());
+  }
+
+  /**
    * Tests the for the project notify resource - not draft.
    *
    * @covers ::access
