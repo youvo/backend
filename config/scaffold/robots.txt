@@ -1,0 +1,6 @@
+# Headless backend (API and admin pages only): nothing should be crawled.
+# Scaffolded to web/robots.txt via the drupal-scaffold file-mapping in
+# composer.json.
+
+User-agent: *
+Disallow: /

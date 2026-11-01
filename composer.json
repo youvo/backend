@@ -80,6 +80,9 @@
             },
             "locations": {
                 "web-root": "web/"
+            },
+            "file-mapping": {
+                "[web-root]/robots.txt": "config/scaffold/robots.txt"
             }
         },
         "installer-paths": {

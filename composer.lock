@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8c5e711a0f20bfbfd56019a57cc7104",
+    "content-hash": "88b1d76a572b0a909dcd87b80e1fb82e",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2665,7 +2665,8 @@
             "homepage": "https://www.drupal.org/project/symfony_mailer",
             "support": {
                 "source": "https://git.drupalcode.org/project/symfony_mailer"
-            }
+            },
+            "published-time": "2026-07-25T10:14:05+00:00"
         },
         {
             "name": "drupal/multivalue_form_element",
@@ -11695,7 +11696,8 @@
             "homepage": "https://www.drupal.org/project/schemata",
             "support": {
                 "source": "https://git.drupalcode.org/project/schemata"
-            }
+            },
+            "published-time": "2026-09-16T16:25:52+00:00"
         },
         {
             "name": "fakerphp/faker",
@@ -13786,7 +13788,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-28T22:38:53+00:00"
+            "time": "2026-10-28T22:38:53+00:00",
+            "published-time": "2026-10-28T22:39:06+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
