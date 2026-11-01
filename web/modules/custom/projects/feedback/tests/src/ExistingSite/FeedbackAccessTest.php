@@ -1,37 +1,24 @@
 <?php
 
-namespace Drupal\Tests\feedback\Kernel;
+namespace Drupal\Tests\feedback\ExistingSite;
 
-use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Cache\CacheableDependencyInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\feedback\Access\FeedbackEntityAccess;
 use Drupal\feedback\Entity\Feedback;
-use Drupal\feedback\Entity\FeedbackType;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
-use Drupal\user\Entity\Role;
+use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the feedback entity access.
+ * Tests the feedback entity access with the site roles.
  */
 #[CoversClass(FeedbackEntityAccess::class)]
 #[Group('feedback')]
-class FeedbackAccessTest extends ProjectEventSubscriberTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'feedback',
-    'file',
-    'link',
-    'projects_result_test',
-    'system',
-  ];
+class FeedbackAccessTest extends ProjectResourceTestBase {
 
   /**
    * The feedback under test, not completed.
@@ -39,49 +26,35 @@ class FeedbackAccessTest extends ProjectEventSubscriberTestBase {
   protected FeedbackInterface $feedback;
 
   /**
+   * The author of the feedback.
+   */
+  protected Creative $author;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->installEntitySchema('feedback');
-    $this->installEntitySchema('project_comment');
-    $this->installConfig('projects_result_test');
-    FeedbackType::create(['id' => 'creative', 'label' => 'creative'])->save();
-    // The first user bypasses all permissions. Create it up front.
-    $this->createCreative();
-    Role::create(['id' => 'supervisor', 'label' => 'Supervisor'])
-      ->grantPermission('administer feedback')
-      ->save();
-    Role::create(['id' => 'administrator', 'label' => 'Administrator', 'is_admin' => TRUE])->save();
-
     $project = $this->createProject(ProjectState::Completed);
-    $project->save();
+    $this->author = $this->createCreative();
     $this->feedback = Feedback::create([
       'bundle' => 'creative',
       'project' => $project->id(),
-      'author' => $this->createCreative()->id(),
+      'author' => $this->author->id(),
     ]);
     $this->feedback->save();
-  }
-
-  /**
-   * Tests that the supervisor role in config/sync holds the permission.
-   */
-  public function testSupervisorPermissionIsPinned(): void {
-    $role = Yaml::decode(file_get_contents(DRUPAL_ROOT . '/../config/sync/user.role.supervisor.yml'));
-    $this->assertContains('administer feedback', $role['permissions']);
+    $this->markEntityForCleanup($this->feedback);
   }
 
   /**
    * Tests that the author views and edits until the feedback is completed.
    */
   public function testAuthorAccess(): void {
-    $author = $this->feedback->getOwner();
-    $this->assertAccess($author, TRUE, TRUE);
+    $this->assertAccess($this->author, TRUE, TRUE);
 
     $this->feedback->complete()->save();
     $this->container->get('entity_type.manager')->getAccessControlHandler('feedback')->resetCache();
-    $this->assertAccess($author, FALSE, FALSE);
+    $this->assertAccess($this->author, FALSE, FALSE);
   }
 
   /**
@@ -89,20 +62,22 @@ class FeedbackAccessTest extends ProjectEventSubscriberTestBase {
    */
   public function testOtherUserAccess(): void {
     $this->assertAccess($this->createCreative(), FALSE, FALSE);
+    $this->assertAccess($this->createManager(), FALSE, FALSE);
   }
 
   /**
    * Tests that supervisors and administrators only view the feedback.
    */
   public function testAdministerFeedbackAccess(): void {
-    foreach (['supervisor', 'administrator'] as $role) {
-      $account = $this->createCreative()->addRole($role);
-      $account->save();
+    $accounts = [$this->createSupervisor(), $this->createCreative('administrator')];
+    foreach ($accounts as $account) {
       $this->assertAccess($account, TRUE, FALSE);
     }
     $this->feedback->complete()->save();
     $this->container->get('entity_type.manager')->getAccessControlHandler('feedback')->resetCache();
-    $this->assertAccess($account, TRUE, FALSE);
+    foreach ($accounts as $account) {
+      $this->assertAccess($account, TRUE, FALSE);
+    }
   }
 
   /**
