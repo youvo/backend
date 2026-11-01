@@ -1,0 +1,328 @@
+uuid: b0130c32-92d1-4518-871a-af41d0a2282d
+langcode: de
+status: true
+dependencies:
+  config:
+    - feedback.feedback_type.creative
+    - field.field.feedback.creative.field_appreciation_scale
+    - field.field.feedback.creative.field_collaboration_scale
+    - field.field.feedback.creative.field_collaboration_text
+    - field.field.feedback.creative.field_communication_scale
+    - field.field.feedback.creative.field_features_text
+    - field.field.feedback.creative.field_followup_boolean
+    - field.field.feedback.creative.field_handling_scale
+    - field.field.feedback.creative.field_handling_text
+    - field.field.feedback.creative.field_next_boolean
+    - field.field.feedback.creative.field_next_text
+    - field.field.feedback.creative.field_organization_text
+    - field.field.feedback.creative.field_recommend_boolean
+    - field.field.feedback.creative.field_satisfied_scale
+    - field.field.feedback.creative.field_service_scale
+    - field.field.feedback.creative.field_service_text
+    - field.field.feedback.creative.field_skilled_boolean
+    - field.field.feedback.creative.field_time_scale
+    - field.field.feedback.creative.field_volunteer_boolean
+id: feedback.creative.default
+targetEntityType: feedback
+bundle: creative
+mode: default
+content:
+  author:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  created:
+    type: timestamp
+    label: inline
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_appreciation_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
+    third_party_settings: {  }
+    weight: 25
+    region: content
+  field_collaboration_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
+    third_party_settings: {  }
+    weight: 22
+    region: content
+  field_collaboration_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 23
+    region: content
+  field_communication_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
+    third_party_settings: {  }
+    weight: 24
+    region: content
+  field_features_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 20
+    region: content
+  field_followup_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 21
+    region: content
+  field_handling_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: 'schwer bedienbar'
+        -
+          value: 2
+          label: 'eher schwer bedienbar'
+        -
+          value: 3
+          label: durchwachsen
+        -
+          value: 4
+          label: 'eher gut bedienbar'
+        -
+          value: 5
+          label: 'gut bedienbar'
+    third_party_settings: {  }
+    weight: 18
+    region: content
+  field_handling_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 19
+    region: content
+  field_next_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 14
+    region: content
+  field_next_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 15
+    region: content
+  field_organization_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 27
+    region: content
+  field_recommend_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 13
+    region: content
+  field_satisfied_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: 'gar nicht zufrieden'
+        -
+          value: 2
+          label: 'eher unzufrieden'
+        -
+          value: 3
+          label: neutral
+        -
+          value: 4
+          label: 'eher zufrieden'
+        -
+          value: 5
+          label: 'sehr zufrieden'
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_service_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: 'gar nicht zufrieden'
+        -
+          value: 2
+          label: 'eher unzufrieden'
+        -
+          value: 3
+          label: neutral
+        -
+          value: 4
+          label: 'eher zufrieden'
+        -
+          value: 5
+          label: 'sehr zufrieden'
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  field_service_text:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 12
+    region: content
+  field_skilled_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 17
+    region: content
+  field_time_scale:
+    type: feedback_scale
+    label: above
+    settings:
+      options:
+        -
+          value: 1
+          label: enttäuschend
+        -
+          value: 2
+          label: 'nicht so gut'
+        -
+          value: 3
+          label: mittelmäßig
+        -
+          value: 4
+          label: gut
+        -
+          value: 5
+          label: perfekt
+    third_party_settings: {  }
+    weight: 26
+    region: content
+  field_volunteer_boolean:
+    type: boolean
+    label: above
+    settings:
+      format: custom
+      format_custom_false: Nein
+      format_custom_true: Ja
+    third_party_settings: {  }
+    weight: 16
+    region: content
+  project:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  project_comment:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+hidden:
+  completed: true
+  step: true
+

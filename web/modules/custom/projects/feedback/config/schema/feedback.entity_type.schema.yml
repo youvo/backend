@@ -10,3 +10,25 @@ feedback.feedback_type.*:
       label: 'Label'
     uuid:
       type: string
+
+field.formatter.settings.feedback_options:
+  type: mapping
+  label: 'Feedback options formatter settings'
+  mapping:
+    options:
+      type: sequence
+      label: 'Options'
+      sequence:
+        type: mapping
+        label: 'Option'
+        mapping:
+          value:
+            type: integer
+            label: 'Value'
+          label:
+            type: label
+            label: 'Label'
+
+field.formatter.settings.feedback_scale:
+  type: field.formatter.settings.feedback_options
+  label: 'Feedback scale formatter settings'

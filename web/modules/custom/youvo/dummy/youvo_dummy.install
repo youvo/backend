@@ -65,6 +65,8 @@ function youvo_dummy_site_install_finished(): void {
         printf("  %s: %.1fs\n", $name, microtime(TRUE) - $start);
       }
     }
+    // The registrations are dated by the first project logs of the creatives.
+    creatives_dummy_log_registrations();
   }
   finally {
     // Restore overrides from settings.php.

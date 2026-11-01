@@ -8,8 +8,10 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\creatives\Entity\Creative;
 use Drupal\feedback\Event\FeedbackCompleteEvent;
 use Drupal\feedback\FeedbackInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\EntityOwnerTrait;
@@ -84,6 +86,19 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * The admin page of a feedback is titled with the person who gave it.
+   */
+  public function label(): string|TranslatableMarkup|null {
+    $owner = $this->getOwner();
+    if ($owner instanceof Creative || $owner instanceof Organization) {
+      return new TranslatableMarkup('Feedback by @name', ['@name' => $owner->getName()]);
+    }
+    return parent::label();
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getProject(): ProjectInterface {
     /** @var \Drupal\projects\ProjectInterface $project */
@@ -110,6 +125,7 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
         $comment_object = ProjectComment::create([
           'value' => $this->get('project_comment')->value,
           'project_result' => $project_result->id(),
+          'author' => $this->getOwnerId(),
         ]);
         $comment_object->save();
         $project_result->appendComment($comment_object);
@@ -140,7 +156,9 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
 
     $fields = parent::baseFieldDefinitions($entity_type);
-    $fields += static::ownerBaseFieldDefinitions($entity_type);
+    $owner_fields = static::ownerBaseFieldDefinitions($entity_type);
+    $owner_fields['author']->setDisplayConfigurable('view', TRUE);
+    $fields += $owner_fields;
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Authored on'))
@@ -164,18 +182,21 @@ class Feedback extends ContentEntityBase implements FeedbackInterface {
     $fields['completed'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(new TranslatableMarkup('Completed'))
       ->setDefaultValue(0)
-      ->setDescription(new TranslatableMarkup('The time that the feedback was completed.'));
+      ->setDescription(new TranslatableMarkup('The time that the feedback was completed.'))
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['project'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Project'))
       ->setSetting('target_type', 'project')
       ->setDescription(new TranslatableMarkup('The project referenced by this feedback.'))
-      ->setTranslatable(FALSE);
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['project_comment'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(FALSE)
       ->setLabel(new TranslatableMarkup('Project Comment'))
-      ->setDescription(new TranslatableMarkup('The public comment for the project.'));
+      ->setDescription(new TranslatableMarkup('The public comment for the project.'))
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['step'] = BaseFieldDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Step'))

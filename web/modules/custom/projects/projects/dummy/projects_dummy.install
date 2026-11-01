@@ -5,9 +5,13 @@
  * Install, update and uninstall functions for the projects_dummy module.
  */
 
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Utility\Error;
 use Drupal\creatives\Entity\Creative;
+use Drupal\feedback\Entity\Feedback;
+use Drupal\feedback\Event\FeedbackCompleteEvent;
+use Drupal\field\FieldConfigInterface;
 use Drupal\file\FileInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
@@ -18,8 +22,10 @@ use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectDeclineReason;
+use Drupal\projects\ProjectInterface;
 use Drupal\user\Entity\User;
 use Faker\Factory;
+use Faker\Generator;
 
 /**
  * Implements hook_install().
@@ -50,6 +56,9 @@ function projects_dummy_generate_content(): void {
   // Object for random content.
   $faker = Factory::create('de_DE');
   $faker->seed(96886);
+  // The feedback has its own generator, so the projects stay as they were.
+  $feedback_faker = Factory::create('de_DE');
+  $feedback_faker->seed(43511);
 
   // Array of cycle states.
   $lifecycle_states = [
@@ -62,12 +71,16 @@ function projects_dummy_generate_content(): void {
 
   // Some time to use.
   $current_time = \Drupal::time()->getRequestTime();
-  $one_year_ago = $current_time - 31536000;
 
-  // Total projects.
+  // Total projects. The gaps between them are drawn first and counted back
+  // from now, so the newest project was created a day ago.
   $total = 100;
   $max_created_increment = 31536000 / $total;
-  $created = $one_year_ago;
+  $created_increments = [];
+  for ($i = 1; $i <= $total; $i++) {
+    $created_increments[$i] = random_int(min(86400, $max_created_increment), $max_created_increment);
+  }
+  $created = $current_time - 86400 - array_sum($created_increments);
 
   // Organization contacts and manager storage.
   $contacts = [];
@@ -83,7 +96,13 @@ function projects_dummy_generate_content(): void {
     $skills = youvo_dummy_get_random_skills();
 
     // Increase created time randomly.
-    $created += random_int(min(86400, $max_created_increment), $max_created_increment);
+    $created += $created_increments[$i];
+
+    // A project has at most 15 steps up to its last feedback: submit,
+    // publish, five applications, mediate, complete and six feedbacks. They
+    // take up to a week each, less for recent projects, so no step lies in the
+    // future.
+    $step_max = max(3600, min(7 * 86400, intdiv($current_time - $created, 15)));
 
     // Choose a random final state (not draft, since all start as draft).
     $lifecycle_states = [
@@ -100,7 +119,7 @@ function projects_dummy_generate_content(): void {
     // manager rules ignore them. The deadline of all other projects is mostly
     // comfortable, so that only a few are upcoming or overdue.
     if (in_array($final_state, ['completed', 'declined'])) {
-      $rnd_time = random_int($created, $created + 1209600);
+      $rnd_time = random_int($created, max($created, min($created + 1209600, $current_time)));
     }
     else {
       $deadline_roll = random_int(1, 100);
@@ -168,7 +187,8 @@ function projects_dummy_generate_content(): void {
     try {
       $project->save();
       $transition_time = $created;
-      $transition_increment = random_int(86400, 7 * 86400);
+      $participant_entities = [];
+      $transition_increment = random_int(min(86400, $step_max), $step_max);
       // Always start in draft. Now transition up to the random final state
       // using events.
       if (in_array($path_state, ['pending', 'open', 'ongoing', 'completed'])) {
@@ -190,7 +210,7 @@ function projects_dummy_generate_content(): void {
         foreach ($applicants as $applicant_id) {
           $applicant = Creative::load($applicant_id);
           if ($applicant) {
-            $transition_time += random_int(86400, 7 * 86400);
+            $transition_time += random_int(min(86400, $step_max), $step_max);
             $apply_event = new ProjectApplyEvent($project, $applicant, $transition_time);
             $apply_event->setMessage($faker->sentence());
             $event_dispatcher->dispatch($apply_event);
@@ -240,6 +260,9 @@ function projects_dummy_generate_content(): void {
       // Set the changed value to the last event timestamp and save.
       $project->set('changed', $transition_time);
       $project->save();
+      if ($final_state === 'completed') {
+        projects_dummy_complete_feedbacks($project, $participant_entities, $transition_time, $step_max, $feedback_faker);
+      }
     }
     catch (EntityStorageException $e) {
       $variables = Error::decodeException($e);
@@ -295,4 +318,95 @@ function projects_dummy_generate_content(): void {
 function projects_dummy_get_stock_image(int $i): FileInterface {
   $index = sprintf('%02d', (($i - 1) % 12) + 1);
   return youvo_dummy_get_file('projects_dummy', 'img/' . $index . '.jpg');
+}
+
+/**
+ * Completes feedback for some of the people of a completed project.
+ *
+ * The feedback is created completed, and the event is dispatched here with
+ * its time, as the project events above. Feedback::preSave() would log it at
+ * the time of the install. The current user is the author of a log, so the
+ * events are dispatched as the person who gave the feedback.
+ *
+ * @param \Drupal\projects\ProjectInterface $project
+ *   The completed project.
+ * @param \Drupal\creatives\Entity\Creative[] $participants
+ *   The creatives of the project.
+ * @param int $completed
+ *   The time the project was completed.
+ * @param int $step_max
+ *   The longest time between two feedbacks.
+ * @param \Faker\Generator $faker
+ *   The generator of random content.
+ */
+function projects_dummy_complete_feedbacks(ProjectInterface $project, array $participants, int $completed, int $step_max, Generator $faker): void {
+  $givers = ['organization' => [$project->getOwner()]];
+  foreach ($participants as $participant) {
+    $givers['creative'][] = $participant;
+  }
+  /** @var \Drupal\Core\Session\AccountSwitcherInterface $account_switcher */
+  $account_switcher = \Drupal::service('account_switcher');
+  /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
+  $event_dispatcher = \Drupal::service('event_dispatcher');
+  $time = $completed;
+  foreach ($givers as $bundle => $accounts) {
+    foreach ($accounts as $account) {
+      if (!$faker->boolean(60)) {
+        continue;
+      }
+      $time += $faker->numberBetween(min(3600, $step_max), $step_max);
+      $feedback = Feedback::create([
+        'bundle' => $bundle,
+        'author' => $account->id(),
+        'project' => $project->id(),
+        'project_comment' => $faker->sentence(),
+        'step' => $bundle === 'organization' ? 5 : 4,
+        'created' => $time,
+        'completed' => $time,
+      ] + projects_dummy_get_feedback_answers($bundle, $faker));
+      $feedback->save();
+      $account_switcher->switchTo($account);
+      try {
+        $event_dispatcher->dispatch(new FeedbackCompleteEvent($feedback, $time));
+      }
+      finally {
+        $account_switcher->switchBack();
+      }
+    }
+  }
+}
+
+/**
+ * Returns random answers for all questions of a feedback bundle.
+ *
+ * Radios and checkboxes store option indexes. They are taken from the
+ * options of the formatter in the default view display, so the admin page
+ * shows a label for each of them. The other numbers are scales from 1 to 5.
+ *
+ * @param string $bundle
+ *   The feedback bundle.
+ * @param \Faker\Generator $faker
+ *   The generator of random content.
+ *
+ * @return array
+ *   The field values, keyed by field name.
+ */
+function projects_dummy_get_feedback_answers(string $bundle, Generator $faker): array {
+  $display = EntityViewDisplay::load('feedback.' . $bundle . '.default');
+  $definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('feedback', $bundle);
+  $values = [];
+  foreach ($definitions as $name => $definition) {
+    if (!$definition instanceof FieldConfigInterface) {
+      continue;
+    }
+    $options = array_column($display?->getComponent($name)['settings']['options'] ?? [], 'value');
+    $values[$name] = match (TRUE) {
+      $definition->getType() === 'boolean' => $faker->boolean(),
+      $definition->getType() === 'string_long' => $faker->optional(0.7)->sentence(),
+      $options && $definition->getFieldStorageDefinition()->isMultiple() => $faker->randomElements($options, $faker->numberBetween(1, min(2, count($options)))),
+      (bool) $options => $faker->randomElement($options),
+      default => $faker->numberBetween(1, 5),
+    };
+  }
+  return $values;
 }

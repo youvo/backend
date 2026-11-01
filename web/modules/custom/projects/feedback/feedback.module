@@ -5,8 +5,25 @@
  * Custom module which handles business logic for feedback.
  */
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\feedback\Access\FeedbackFieldAccess;
 use Drupal\feedback\FeedbackInterface;
+
+/**
+ * Implements hook_entity_field_access().
+ */
+function feedback_entity_field_access(string $operation, FieldDefinitionInterface $field_definition, AccountInterface $account, ?FieldItemListInterface $items = NULL): AccessResultInterface {
+  $entity = $items?->getEntity();
+  if ($entity instanceof FeedbackInterface) {
+    return FeedbackFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
+  }
+  return AccessResult::neutral();
+}
 
 /**
  * Implements hook_form_FORM_ID_alter().
