@@ -114,12 +114,12 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * The proposal mail thanks the organization, without input in the subject.
+   * The proposal mail thanks the organization without any text of the proposal.
    */
   public function testConfirmOrganizationProposal(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
     $organization = $project->getOwner();
-    $organization->set('field_name', '<b>Bold</b> & Co')->save();
+    $organization->set('field_name', 'Win 500 euros: www.scam.example')->save();
     $mailer = $this->mailer();
     $this->captureMails($mailer);
     $this->assertTrue($mailer->confirmOrganizationProposal($organization));
@@ -127,9 +127,9 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
     $this->assertSame(['organization@example.com'], $this->capturedMails[0]['to']);
     $this->assertSame('Danke für Euren Projektvorschlag', $this->capturedMails[0]['subject']);
     $html = $this->capturedMails[0]['html'];
-    $this->assertStringContainsString('Hallo Olga Org,', $html);
-    $this->assertStringContainsString('&lt;b&gt;Bold&lt;/b&gt; &amp; Co', $html);
-    $this->assertStringNotContainsString('<b>Bold</b>', $html);
+    $this->assertStringContainsString('vielen Dank für Euren Projektvorschlag', $html);
+    $this->assertStringNotContainsString('scam', $html);
+    $this->assertStringNotContainsString('Olga Org', $html);
     // Without a project the mail is not recorded.
     $this->assertSame(0, $this->countCorrespondence());
   }

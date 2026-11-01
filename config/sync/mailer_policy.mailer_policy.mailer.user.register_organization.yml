@@ -10,5 +10,5 @@ configuration:
     value: 'Danke für Euren Projektvorschlag'
   email_body:
     content:
-      value: '<p>Hallo {{ organization_contact }},</p><p>vielen Dank für den Projektvorschlag von {{ organization_name }}. Wir schauen ihn uns an und melden uns innerhalb der nächsten zwei Wochen bei Dir.</p>'
+      value: '<p>Hallo,</p><p>vielen Dank für Euren Projektvorschlag. Wir schauen ihn uns an und melden uns innerhalb der nächsten zwei Wochen bei Dir.</p>'
       format: email_html
