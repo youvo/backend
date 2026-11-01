@@ -38,4 +38,15 @@ interface YouvoUserMailerInterface extends ComponentMailerInterface {
    */
   public function notifyOrganizationCreated(Organization $organization): bool;
 
+  /**
+   * Confirms the receipt of a project proposal to the organization.
+   *
+   * @param \Drupal\organizations\Entity\Organization $organization
+   *   The new organization.
+   *
+   * @return bool
+   *   TRUE if the mail was sent.
+   */
+  public function confirmOrganizationProposal(Organization $organization): bool;
+
 }

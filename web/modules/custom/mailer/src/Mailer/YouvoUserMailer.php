@@ -16,6 +16,7 @@ use Drupal\symfony_mailer\Attribute\MailerInfo;
   label: new TranslatableMarkup("User"),
   sub_defs: [
     "register_creative" => new TranslatableMarkup("Registration (creative)"),
+    "register_organization" => new TranslatableMarkup("Registration (organization)"),
     "register_organization_staff" => new TranslatableMarkup("Registration (organization, staff)"),
   ],
   required_config: ["email_subject", "email_body"],
@@ -57,6 +58,19 @@ class YouvoUserMailer extends YouvoMailerBase implements YouvoUserMailerInterfac
     ]);
     $to = (string) $this->configFactory->get('system.site')->get('mail');
     return $this->deliver($email, NULL, 'register_organization_staff', $to);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function confirmOrganizationProposal(Organization $organization): bool {
+    $name = $organization->getName();
+    $email = $this->newEmail('register_organization')->setVariables([
+      'organization_name' => $name,
+      // The name of the organization is the neutral choice for the contact.
+      'organization_contact' => $organization->getContact() ?: $name,
+    ]);
+    return $this->deliver($email, NULL, 'register_organization', $organization->getEmail());
   }
 
 }
