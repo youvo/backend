@@ -15,6 +15,7 @@ dependencies:
     - dashboard
     - logbook
     - navigation
+    - projects
     - rest
     - system
 _core:
@@ -38,5 +39,6 @@ permissions:
   - 'restful post question:submission'
   - 'view courses'
   - 'view detectable log'
+  - 'view hidden projects'
   - 'view observable log'
   - 'view youvo dashboard'
