@@ -202,6 +202,25 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
   }
 
   /**
+   * Archived logs neither count as activity nor show as events.
+   */
+  public function testArchivedLogsDoNotCount(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    $tracker = $this->container->get('manager.project_seen');
+    $tracker->markSeen($manager, $project);
+    $active = $this->createProjectLog($project);
+    $this->createProjectLog($project)->setArchived()->save();
+
+    $activity = $tracker->getActivity($manager, [$project])[$project->id()];
+    $this->assertSame(1, $activity['count']);
+    $this->assertSame(1, $activity['total']);
+    $events = $tracker->getEvents($manager, $project);
+    $this->assertSame([(int) $active->id()], array_map(static fn (array $event) => (int) $event['log']->id(), $events['events']));
+    $this->assertSame(1, $events['total']);
+  }
+
+  /**
    * A project the user does not manage cannot be confirmed.
    */
   public function testMarkSeenIgnoresProjectsThatAreNotManaged(): void {

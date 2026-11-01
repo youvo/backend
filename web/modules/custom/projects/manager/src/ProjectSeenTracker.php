@@ -261,9 +261,10 @@ class ProjectSeenTracker {
   }
 
   /**
-   * Gets the observable logs of projects, newest first.
+   * Gets the active, observable logs of projects, newest first.
    *
    * The pattern flags decide, as in the logbook: enabled and observable.
+   * Archived logs belong to an earlier run of the project and never count.
    *
    * @param int[] $project_ids
    *   The projects.
@@ -280,6 +281,7 @@ class ProjectSeenTracker {
       ->fields('l', ['id', 'project', 'author'])
       ->condition('l.project', $project_ids, 'IN')
       ->condition('l.type', $pattern_ids, 'IN')
+      ->condition('l.status', 1)
       ->orderBy('l.id', 'DESC')
       ->execute();
     $logs = [];
@@ -303,7 +305,7 @@ class ProjectSeenTracker {
   }
 
   /**
-   * Gets the highest observable log id per project.
+   * Gets the highest active, observable log id per project.
    *
    * @param int[] $project_ids
    *   The projects.
@@ -320,6 +322,7 @@ class ProjectSeenTracker {
       ->fields('l', ['project'])
       ->condition('l.project', $project_ids, 'IN')
       ->condition('l.type', $pattern_ids, 'IN')
+      ->condition('l.status', 1)
       ->groupBy('l.project');
     $query->addExpression('MAX([l].[id])', 'last_id');
     $last = [];
