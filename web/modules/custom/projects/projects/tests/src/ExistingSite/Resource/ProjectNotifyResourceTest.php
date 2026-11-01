@@ -97,14 +97,14 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project notify resource - supervisor on an unpublished draft.
+   * Tests the project notify resource - supervisor on an archived draft.
    *
    * @covers ::access
    */
-  public function testProjectNotifySupervisorNotPublished(): void {
+  public function testProjectNotifySupervisorArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $supervisor = $this->createSupervisor();
 
@@ -114,7 +114,8 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
     $this->authenticateRequest($request, $supervisor);
 
     $response = $this->doRequest($request);
-    $this->assertEquals(200, $response->getStatusCode());
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
   }
 
   /**
@@ -158,14 +159,14 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project notify resource - not published.
+   * Tests the for the project notify resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectNotifyNotPublished(): void {
+  public function testProjectNotifyArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $manager = $project->getOwner()->getManager();
 

@@ -360,8 +360,15 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
+  public function isActive(): bool {
+    return $this->isPublished();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isArchived(): bool {
-    return !$this->isPublished();
+    return !$this->isActive();
   }
 
   /**

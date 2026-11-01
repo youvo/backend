@@ -32,10 +32,18 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
+
+    // Archived projects don't transition, also not for administrators.
+    if (!$project->isActive()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // This resource may only be permitted for users with access control bypass.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    return AccessResult::allowedIfHasPermission($account, $bybass_permission);
+    return AccessResult::allowedIfHasPermission($account, $bybass_permission)
+      ->addCacheableDependency($project);
   }
 
   /**

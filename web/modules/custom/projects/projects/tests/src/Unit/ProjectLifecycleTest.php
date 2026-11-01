@@ -111,6 +111,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $project = $this->prophesize(ProjectInterface::class);
     $value = (object) ['value' => $state->value];
     $project->get(Argument::any())->willReturn($value);
+    $project->isArchived()->willReturn(FALSE);
     $this->lifecycle->setProject($project->reveal());
   }
 
@@ -332,6 +333,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_FIELD))->willReturn(...$values);
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_HISTORY_FIELD))->willReturn($history);
     $project->set(Argument::any(), Argument::any())->willReturn(TRUE);
+    $project->isArchived()->willReturn(FALSE);
     $project->hasParticipant(Argument::is('Creative'))->willReturn($has_participant);
     $owner = $this->prophesize(Organization::class);
     $owner->hasRoleProspect()->willReturn($is_prospect);

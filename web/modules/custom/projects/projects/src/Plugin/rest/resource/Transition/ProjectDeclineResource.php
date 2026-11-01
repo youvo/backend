@@ -64,10 +64,18 @@ class ProjectDeclineResource extends ProjectTransitionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
+    // Archived projects don't transition, also not for administrators.
+    if (!$project->isActive()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // The user may be permitted to bypass access control.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     if ($account->hasPermission(WorkflowPermissions::bypassTransition($workflow_id))) {
-      return AccessResult::allowed()->cachePerPermissions();
+      return AccessResult::allowed()
+        ->addCacheableDependency($project)
+        ->cachePerPermissions();
     }
 
     // The user requires the permission to initiate this transition.
@@ -76,7 +84,7 @@ class ProjectDeclineResource extends ProjectTransitionResourceBase {
 
     // Only the manager of the organization declines its projects.
     $organization = $project->getOwner();
-    $project_condition = $project->isPublished() && $organization->isManager($account);
+    $project_condition = $organization->isManager($account);
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization)

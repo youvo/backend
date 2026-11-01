@@ -42,11 +42,19 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
+    // Archived projects don't transition, also not for administrators.
+    if (!$project->isActive()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // The user may be permitted to bypass access control.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
     $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
     if ($account->hasPermission($bybass_permission)) {
-      return AccessResult::allowed()->cachePerPermissions();
+      return AccessResult::allowed()
+        ->addCacheableDependency($project)
+        ->cachePerPermissions();
     }
 
     // The user requires the permission to initiate this transition.
@@ -55,7 +63,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
 
     // The resource should define project-dependent access conditions.
     $organization = $project->getOwner();
-    $project_condition = $project->isPublished() && ($project->isAuthor($account) || $organization->isManager($account));
+    $project_condition = $project->isAuthor($account) || $organization->isManager($account);
     $access_project = AccessResult::allowedIf($project_condition)
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization)

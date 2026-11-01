@@ -119,14 +119,14 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project apply resource - not published (status).
+   * Tests the project apply resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectApplyNotPublished(): void {
+  public function testProjectApplyArchived(): void {
 
     $project = $this->createProject(ProjectState::Open);
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $creative = $this->createCreative();
 

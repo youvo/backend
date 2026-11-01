@@ -180,6 +180,10 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
    * Checks if the project can perform the given transition.
    */
   protected function canTransition(ProjectTransition $transition, ProjectState $from, ProjectState $to): bool {
+    // Archived projects don't transition, also not for administrators.
+    if ($this->project()->isArchived()) {
+      return FALSE;
+    }
     // Selected participants are set prior to the mediation of a project. This
     // allows for validation to ensure that eligible participants are present
     // before the mediation. The participants are only saved if the transition
