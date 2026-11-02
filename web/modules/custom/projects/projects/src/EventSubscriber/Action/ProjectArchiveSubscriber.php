@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber\Action;
 
 use Drupal\projects\Event\ProjectArchiveEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,11 +15,12 @@ class ProjectArchiveSubscriber implements EventSubscriberInterface {
    * Listens to the project archive event.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\projects\Exception\ProjectActionException
    */
   public function onProjectArchive(ProjectArchiveEvent $event): void {
     $project = $event->getProject();
     if ($project->isArchived()) {
-      throw new \LogicException('The project is already archived.');
+      throw new ProjectActionException('Cannot archive an archived project.');
     }
     $project->setPromoted(FALSE);
     $project->setArchived();

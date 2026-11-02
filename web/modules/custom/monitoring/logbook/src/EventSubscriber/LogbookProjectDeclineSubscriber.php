@@ -10,8 +10,8 @@ use Drupal\projects\Event\ProjectDeclineEvent;
  */
 class LogbookProjectDeclineSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectDeclineEvent::class;
-  const LOG_PATTERN = 'project_decline';
+  const string EVENT_CLASS = ProjectDeclineEvent::class;
+  const string LOG_PATTERN = 'project_decline';
 
   /**
    * {@inheritdoc}

@@ -17,7 +17,6 @@ class ProjectParseJsonapiRelationshipsSubscriber implements EventSubscriberInter
    * Resolves relationships for results in JSON:API parsing.
    */
   public function resolveRelationships(Event $event): void {
-
     /** @var \Drupal\youvo\Event\ParseJsonapiRelationshipsEvent $event */
     if ($event->getParentKey() === 'result') {
       $resource = $event->getResource();

@@ -46,6 +46,7 @@ class ProjectMediateTest extends ProjectEventSubscriberTestBase {
    * A selected manager is a participant once, as manager.
    */
   public function testSelectedManagerOnce(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $manager = $project->getOwner()->getManager();
     $creative = $this->createCreative();

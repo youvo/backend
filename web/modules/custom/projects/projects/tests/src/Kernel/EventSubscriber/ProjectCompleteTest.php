@@ -60,6 +60,7 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
    * The project stays ongoing if its results cannot be saved.
    */
   public function testProjectCompleteRollsBack(): void {
+
     $project = $this->createProject(ProjectState::Ongoing);
     $project->appendParticipant($this->createCreative());
     $project->save();

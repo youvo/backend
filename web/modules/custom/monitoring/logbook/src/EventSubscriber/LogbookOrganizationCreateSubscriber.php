@@ -10,10 +10,10 @@ use Drupal\organizations\Event\OrganizationCreateEvent;
  */
 class LogbookOrganizationCreateSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = OrganizationCreateEvent::class;
-  const LOG_PATTERN = 'organization_create';
+  const string EVENT_CLASS = OrganizationCreateEvent::class;
+  const string LOG_PATTERN = 'organization_create';
   // Should run after project is created.
-  const PRIORITY = -100;
+  const int PRIORITY = -100;
 
   /**
    * {@inheritdoc}

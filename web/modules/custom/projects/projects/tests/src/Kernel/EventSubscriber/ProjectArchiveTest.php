@@ -6,6 +6,7 @@ use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Event\ProjectUnarchiveEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectArchiveSubscriber;
 use Drupal\projects\EventSubscriber\Action\ProjectUnarchiveSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -42,10 +43,11 @@ class ProjectArchiveTest extends ProjectEventSubscriberTestBase {
    * Tests that archived projects can not be archived again.
    */
   public function testArchiveArchived(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $project->setArchived();
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectArchiveEvent($project));
   }
 
@@ -53,9 +55,10 @@ class ProjectArchiveTest extends ProjectEventSubscriberTestBase {
    * Tests that active projects can not be unarchived.
    */
   public function testUnarchiveActive(): void {
+
     $project = $this->createProject(ProjectState::Open);
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectUnarchiveEvent($project));
   }
 

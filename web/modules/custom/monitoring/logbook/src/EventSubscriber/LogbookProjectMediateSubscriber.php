@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectMediateEvent;
  */
 class LogbookProjectMediateSubscriber extends LogbookProjectCompleteSubscriber {
 
-  const EVENT_CLASS = ProjectMediateEvent::class;
-  const LOG_PATTERN = 'project_mediate';
+  const string EVENT_CLASS = ProjectMediateEvent::class;
+  const string LOG_PATTERN = 'project_mediate';
 
 }

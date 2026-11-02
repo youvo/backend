@@ -20,16 +20,17 @@ class ProjectMediateSubscriber implements EventSubscriberInterface {
   public function onProjectMediate(ProjectMediateEvent $event): void {
 
     $project = $event->getProject();
+
+    // The manager participates as manager, also if selected as creative.
     $manager = $project->getOwner()->getManager();
     $manager_id = $manager ? Profile::id($manager) : NULL;
-    // The manager participates as manager, also if selected as creative.
     $selected_creatives = array_filter($event->getCreatives(), static fn($creative) => Profile::id($creative) !== $manager_id);
     $project->setParticipants($selected_creatives);
-
     if ($manager) {
       $project->appendParticipant($manager, 'Manager');
     }
 
+    // The participants are set first, because the transition checks them.
     $project->lifecycle()->mediate($event->getTimestamp());
     $project->setPromoted(FALSE);
     $project->save();

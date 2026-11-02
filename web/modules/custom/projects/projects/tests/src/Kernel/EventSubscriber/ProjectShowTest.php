@@ -5,6 +5,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 use Drupal\projects\Event\ProjectShowEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectHideSubscriber;
 use Drupal\projects\EventSubscriber\Action\ProjectShowSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -37,10 +38,11 @@ class ProjectShowTest extends ProjectEventSubscriberTestBase {
    * Tests that archived projects can not be shown.
    */
   public function testProjectShowArchived(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $project->setArchived()->setHidden();
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectShowEvent($project));
   }
 
@@ -48,10 +50,11 @@ class ProjectShowTest extends ProjectEventSubscriberTestBase {
    * Tests that declined projects can not be shown.
    */
   public function testProjectShowDeclined(): void {
+
     $project = $this->createProject(ProjectState::Declined);
     $project->setHidden();
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectShowEvent($project));
   }
 

@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectArchiveEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\Plugin\rest\resource\ProjectMailRequestTrait;
 use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectArchiveReason;
@@ -117,7 +118,7 @@ class ProjectArchiveResource extends ProjectResourceBase {
     try {
       $this->eventDispatcher->dispatch($event);
     }
-    catch (\LogicException) {
+    catch (ProjectActionException) {
       throw new ConflictHttpException('Project can not be archived.');
     }
     catch (\Throwable $e) {

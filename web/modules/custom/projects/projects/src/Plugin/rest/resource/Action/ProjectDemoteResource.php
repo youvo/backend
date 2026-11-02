@@ -8,6 +8,7 @@ use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectDemoteEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -59,7 +60,7 @@ class ProjectDemoteResource extends ProjectResourceBase {
     try {
       $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
     }
-    catch (\LogicException) {
+    catch (ProjectActionException) {
       throw new ConflictHttpException('Project can not be demoted.');
     }
     catch (\Throwable $e) {

@@ -17,6 +17,7 @@ class LogbookProjectArchiveSubscriber extends LogbookSubscriberBase {
    * {@inheritdoc}
    */
   public function log(Event $event): void {
+
     // Archive the logs of the project. The archive log is created afterwards
     // and stays active.
     /** @var \Drupal\projects\Event\ProjectArchiveEvent $event */
