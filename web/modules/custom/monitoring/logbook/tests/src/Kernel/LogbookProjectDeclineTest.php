@@ -34,7 +34,7 @@ class LogbookProjectDeclineTest extends LogbookKernelTestBase {
     $log = reset($logs);
     $this->assertSame('project_decline', $log->bundle());
     $this->assertSame(['reason' => 'skill'], $log->getMisc());
-    $this->assertSame('Leider passt das Projekt nicht.', $log->getMessage());
+    $this->assertSame("Absage\n\nLeider passt das Projekt nicht.", $log->getMessage());
     $this->assertTrue($log->getPattern()->isDetectable());
     $this->assertFalse($log->getPattern()->isObservable());
     $this->assertFalse($log->getPattern()->isPublic());

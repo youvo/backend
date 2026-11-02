@@ -74,7 +74,7 @@ class LogbookProjectArchiveTest extends LogbookKernelTestBase {
     $this->assertCount(1, $archive_logs);
     $archive_log = reset($archive_logs);
     $this->assertSame(['reason' => 'unattractive'], $archive_log->getMisc());
-    $this->assertSame('Das Projekt wird archiviert.', $archive_log->getMessage());
+    $this->assertSame("Archiviert\n\nDas Projekt wird archiviert.", $archive_log->getMessage());
     $this->assertTrue($archive_log->getPattern()->isDetectable());
     $this->assertFalse($archive_log->getPattern()->isPublic());
     $archived = $this->archivedById();
