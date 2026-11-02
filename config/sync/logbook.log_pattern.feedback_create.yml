@@ -9,13 +9,13 @@ label: 'Feedback Create'
 tokens:
   -
     token: '%AuthorWithRole'
-    required: 0
+    required: false
   -
     token: '%Author'
-    required: 0
+    required: false
   -
     token: '%Project'
-    required: 0
+    required: false
 detectable: false
 observable: false
 public: false

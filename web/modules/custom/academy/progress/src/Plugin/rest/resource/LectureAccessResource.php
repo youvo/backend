@@ -6,8 +6,10 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\progress\Entity\LectureProgress;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -15,15 +17,14 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * Provides progress lecture complete resource.
- *
- * @RestResource(
- *   id = "progress:lecture:access",
- *   label = @Translation("Progress Lecture Access Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/lectures/{entity}/access"
- *   }
- * )
  */
+#[RestResource(
+  id: 'progress:lecture:access',
+  label: new TranslatableMarkup('Progress Lecture Access Resource'),
+  uri_paths: [
+    'canonical' => '/api/lectures/{entity}/access',
+  ],
+)]
 class LectureAccessResource extends ProgressResource {
 
   /**

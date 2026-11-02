@@ -1,0 +1,13 @@
+youvo.settings:
+  type: config_object
+  label: 'youvo settings'
+  mapping:
+    hub_url:
+      type: uri
+      label: 'Base URL of the hub, the frontend for organizations'
+    app_url:
+      type: uri
+      label: 'Base URL of the app, the frontend for creatives'
+    website_url:
+      type: uri
+      label: 'Base URL of the website for anonymous users, for now the old website'

@@ -4,12 +4,9 @@ namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Access\ProjectFieldAccess;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Tests the archive and hidden flags and who may edit the action fields.
  */
-#[CoversClass(Project::class)]
-#[CoversClass(ProjectFieldAccess::class)]
 #[Group('projects')]
 class ProjectActionFieldsTest extends ProjectResourceTestBase {
 
@@ -50,15 +45,6 @@ class ProjectActionFieldsTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Reloads a project from storage.
-   */
-  protected function reload(ProjectInterface $project): ProjectInterface {
-    /** @var \Drupal\projects\ProjectInterface $reloaded */
-    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
-    return $reloaded;
-  }
-
-  /**
    * Tests the archive and hidden helpers.
    */
   public function testHelpers(): void {
@@ -78,21 +64,17 @@ class ProjectActionFieldsTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests that the hidden flag is viewable, but the organization cannot set it.
-   */
-  public function testHiddenFieldAccess(): void {
-    $project = $this->createProject();
-    $organization = $project->getOwner();
-    $this->assertTrue($project->get('hidden')->access('view', $organization));
-    $this->assertFalse($project->get('hidden')->access('edit', $organization));
-  }
-
-  /**
    * Tests that supervisors cannot PATCH the action fields, nor the owner.
+   *
+   * The organization views the hidden flag, but cannot set it either.
    */
   public function testSupervisorCannotPatchActionFields(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $organization = $project->getOwner();
+    $this->assertTrue($project->get('hidden')->access('view', $organization));
+    $this->assertFalse($project->get('hidden')->access('edit', $organization));
+
     $supervisor = $this->createSupervisor();
     foreach (static::ACTION_VALUES as $field => $value) {
       $response = $this->patch($project, $supervisor, [$field => $value]);
@@ -102,7 +84,7 @@ class ProjectActionFieldsTest extends ProjectResourceTestBase {
     $owner = ['organization' => ['data' => ['type' => 'organization', 'id' => $this->createOrganization()->uuid()]]];
     $this->assertSame(403, $this->patch($project, $supervisor, [], $owner)->getStatusCode(), 'organization');
 
-    $stored = $this->reload($project);
+    $stored = $this->reloadProject($project);
     $this->assertFalse($stored->isArchived());
     $this->assertFalse($stored->isPromoted());
     $this->assertFalse($stored->isHidden());
@@ -121,7 +103,7 @@ class ProjectActionFieldsTest extends ProjectResourceTestBase {
     $response = $this->patch($project, $this->createCreative('administrator'), ['hidden' => TRUE]);
     $this->assertSame(200, $response->getStatusCode());
     $this->assertTrue(Json::decode((string) $response->getContent())['data']['hidden']);
-    $this->assertTrue($this->reload($project)->isHidden());
+    $this->assertTrue($this->reloadProject($project)->isHidden());
   }
 
 }

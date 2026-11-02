@@ -6,19 +6,22 @@ use Drupal\oauth_grant\TokenExpiryTriggerHandler;
 use Drupal\simple_oauth\TokenExpiryTriggerHandlerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\user\UserInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Tests the token revocation on user updates.
- *
- * @coversDefaultClass \Drupal\oauth_grant\TokenExpiryTriggerHandler
- * @group oauth_grant
  */
+#[CoversClass(TokenExpiryTriggerHandler::class)]
+#[Group('oauth_grant')]
 class TokenExpiryTriggerHandlerTest extends UnitTestCase {
 
   /**
    * Creates a user mock.
    */
-  protected function user(string $password, array $roles, bool $blocked): UserInterface {
+  protected function user(string $password, array $roles, bool $blocked): UserInterface&MockObject {
     $user = $this->createMock(UserInterface::class);
     $user->method('getPassword')->willReturn($password);
     $user->method('getRoles')->willReturn($roles);
@@ -28,10 +31,8 @@ class TokenExpiryTriggerHandlerTest extends UnitTestCase {
 
   /**
    * Tests which changes revoke the tokens.
-   *
-   * @covers ::handleUserUpdate
-   * @dataProvider provideChanges
    */
+  #[DataProvider('provideChanges')]
   public function testHandleUserUpdate(array $original, array $updated, bool $revoked): void {
 
     $inner = $this->createMock(TokenExpiryTriggerHandlerInterface::class);
@@ -39,7 +40,7 @@ class TokenExpiryTriggerHandlerTest extends UnitTestCase {
       ->method('handleUserUpdate');
 
     $user = $this->user(...$updated);
-    $user->original = $this->user(...$original);
+    $user->method('getOriginal')->willReturn($this->user(...$original));
 
     (new TokenExpiryTriggerHandler($inner))->handleUserUpdate($user);
   }
@@ -60,8 +61,6 @@ class TokenExpiryTriggerHandlerTest extends UnitTestCase {
 
   /**
    * Tests that a missing original user revokes the tokens.
-   *
-   * @covers ::handleUserUpdate
    */
   public function testMissingOriginal(): void {
 

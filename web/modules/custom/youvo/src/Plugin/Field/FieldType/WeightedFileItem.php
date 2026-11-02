@@ -2,25 +2,29 @@
 
 namespace Drupal\youvo\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
 
 /**
  * Plugin implementation of the 'weighted file' field type.
- *
- * @FieldType(
- *   id = "weighted_file",
- *   label = @Translation("Weighted File"),
- *   description = @Translation("This field stores the ID of a file as an integer value."),
- *   category = "reference",
- *   no_ui = TRUE,
- *   default_widget = "file_generic",
- *   default_formatter = "file_default",
- *   list_class = "\Drupal\file\Plugin\Field\FieldType\FileFieldItemList",
- *   constraints = {"ReferenceAccess" = {}, "FileValidation" = {}}
- * )
  */
+#[FieldType(
+  id: 'weighted_file',
+  label: new TranslatableMarkup('Weighted File'),
+  description: new TranslatableMarkup('This field stores the ID of a file as an integer value.'),
+  category: 'reference',
+  no_ui: TRUE,
+  default_widget: 'file_generic',
+  default_formatter: 'file_default',
+  list_class: '\Drupal\file\Plugin\Field\FieldType\FileFieldItemList',
+  constraints: [
+    'ReferenceAccess' => [],
+    'FileValidation' => [],
+  ],
+)]
 class WeightedFileItem extends FileItem {
 
   /**

@@ -16,14 +16,16 @@ use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha512;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\UnencryptedToken;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests that the authorize controller reads the Auth Relay response.
- *
- * @group oauth_grant_remote
  */
+#[Group('oauth_grant_remote')]
+#[RunTestsInSeparateProcesses]
 class AuthRelayResponseTest extends KernelTestBase {
 
   /**

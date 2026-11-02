@@ -184,7 +184,8 @@ final class CreativeRegisterForm extends FormBase {
         $redirect_url = Url::fromUri('http://localhost:3000' . $path)->toString();
       }
       else {
-        $redirect_url = Url::fromUri('https://app.dev.youvo.org' . $path)->toString();
+        $app_url = rtrim((string) $this->config('youvo.settings')->get('app_url'), '/');
+        $redirect_url = Url::fromUri($app_url . $path)->toString();
       }
       $response = new TrustedRedirectResponse($redirect_url);
       $form_state->setResponse($response);

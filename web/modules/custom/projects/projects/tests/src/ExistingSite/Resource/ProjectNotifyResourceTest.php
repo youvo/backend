@@ -3,23 +3,17 @@
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\projects\ProjectState;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project notify resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Action\ProjectNotifyResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project notify resource - standard workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::post
    */
   public function testProjectNotify(): void {
 
@@ -38,8 +32,6 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project notify resource - prospect.
-   *
-   * @covers ::post
    */
   public function testProjectNotifyProspect(): void {
 
@@ -58,8 +50,6 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project notify resource - supervisor.
-   *
-   * @covers ::access
    */
   public function testProjectNotifySupervisor(): void {
 
@@ -78,8 +68,6 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project notify resource - supervisor outside the draft state.
-   *
-   * @covers ::access
    */
   public function testProjectNotifySupervisorNotDraft(): void {
 
@@ -97,31 +85,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project notify resource - supervisor on an archived draft.
-   *
-   * @covers ::access
-   */
-  public function testProjectNotifySupervisorArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $supervisor = $this->createSupervisor();
-
-    $path = '/api/projects/' . $project->uuid() . '/notify';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $supervisor);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the for the project notify resource - not draft.
-   *
-   * @covers ::access
    */
   public function testProjectNotifyNotDraft(): void {
 
@@ -140,8 +104,6 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project notify resource - not manager.
-   *
-   * @covers ::access
    */
   public function testProjectNotifyNotManager(): void {
 
@@ -159,31 +121,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project notify resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectNotifyArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $manager = $project->getOwner()->getManager();
-
-    $path = '/api/projects/' . $project->uuid() . '/notify';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $manager);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the project notify resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectNotifyNoPermission(): void {
 

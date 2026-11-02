@@ -3,19 +3,13 @@
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\projects\Event\ProjectHideEvent;
-use Drupal\projects\Plugin\rest\resource\Action\ProjectHideResource;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project hide resource.
  */
-#[CoversMethod(ProjectHideResource::class, 'create')]
-#[CoversMethod(ProjectHideResource::class, 'routes')]
-#[CoversMethod(ProjectHideResource::class, 'access')]
-#[CoversMethod(ProjectHideResource::class, 'post')]
 #[Group('projects')]
 class ProjectHideResourceTest extends ProjectResourceTestBase {
 
@@ -25,6 +19,7 @@ class ProjectHideResourceTest extends ProjectResourceTestBase {
   public function testProjectHide(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setPromoted(TRUE)->save();
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/hide';
@@ -35,6 +30,12 @@ class ProjectHideResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project hidden."', $response->getContent());
+
+    // Hiding removes the promotion, but does not archive.
+    $stored = $this->reloadProject($project);
+    $this->assertTrue($stored->isHidden());
+    $this->assertFalse($stored->isPromoted());
+    $this->assertFalse($stored->isArchived());
   }
 
   /**
@@ -55,9 +56,7 @@ class ProjectHideResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    /** @var \Drupal\projects\ProjectInterface $stored */
-    $stored = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
-    $this->assertFalse($stored->isHidden());
+    $this->assertFalse($this->reloadProject($project)->isHidden());
   }
 
   /**

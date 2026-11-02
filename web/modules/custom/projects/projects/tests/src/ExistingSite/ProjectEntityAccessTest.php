@@ -3,19 +3,15 @@
 namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
-use Drupal\projects\Access\ProjectEntityAccess;
-use Drupal\projects\Access\ProjectResultUploadAccess;
+use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the project entity access with the site roles.
  */
-#[CoversClass(ProjectEntityAccess::class)]
-#[CoversClass(ProjectResultUploadAccess::class)]
 #[Group('projects')]
 class ProjectEntityAccessTest extends ProjectResourceTestBase {
 
@@ -103,6 +99,47 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
     $this->assertTrue($project->access('view', $administrator));
     $this->assertTrue($project->access('update', $administrator));
     $this->assertTrue($project->access('delete', $administrator));
+  }
+
+  /**
+   * Tests that declining revokes the access of other users.
+   *
+   * Declined projects remain visible to the organization and the manager, but
+   * not to anyone else, even though the project stays published.
+   */
+  public function testDeclinedAccess(): void {
+
+    $project = $this->createProject(ProjectState::Declined);
+    $this->assertTrue($project->isPublished());
+    $organization = $project->getOwner();
+    $manager = $organization->getManager();
+
+    $this->assertFalse($project->access('view', $this->createCreative()));
+    $this->assertFalse($project->access('view', $this->createManager()));
+    $this->assertTrue($project->access('view', $organization));
+    $this->assertFalse($project->access('update', $organization));
+    $this->assertFalse($project->access('delete', $organization));
+    $this->assertTrue($project->access('view', $manager));
+    $this->assertTrue($project->access('update', $manager));
+    $this->assertFalse($project->access('delete', $manager));
+  }
+
+  /**
+   * Tests that the organization views no applicants of declined projects.
+   *
+   * The organization views the applicants of open projects, but never the
+   * participants field.
+   */
+  public function testDeclinedHidesApplicantFields(): void {
+
+    $declined = $this->createProject(ProjectState::Declined);
+    $open = $this->createProject(ProjectState::Open);
+    foreach (['field_applicants', 'field_participants'] as $field_name) {
+      $result = ProjectFieldAccess::checkFieldAccess($declined, 'view', $declined->getFieldDefinition($field_name), $declined->getOwner());
+      $this->assertTrue($result->isForbidden(), "$field_name of a declined project");
+      $result = ProjectFieldAccess::checkFieldAccess($open, 'view', $open->getFieldDefinition($field_name), $open->getOwner());
+      $this->assertSame($field_name === 'field_applicants', !$result->isForbidden(), "$field_name of an open project");
+    }
   }
 
   /**

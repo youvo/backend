@@ -4,12 +4,14 @@ namespace Drupal\questionnaire\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -22,44 +24,45 @@ use Drupal\user\EntityOwnerTrait;
  * and trigger page not found responses.
  *
  * @todo Issue #11: Add revisions to entity.
- *
- * @ContentEntityType(
- *   id = "question",
- *   label = @Translation("Question"),
- *   label_collection = @Translation("Questions"),
- *   bundle_label = @Translation("Question type"),
- *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "form" = {
- *       "add" = "Drupal\questionnaire\Form\QuestionForm",
- *       "edit" = "Drupal\questionnaire\Form\QuestionForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "questions",
- *   data_table = "questions_field_data",
- *   fieldable = TRUE,
- *   translatable = TRUE,
- *   admin_permission = "administer courses",
- *   cascade_delete = TRUE,
- *   entity_keys = {
- *     "id" = "id",
- *     "langcode" = "langcode",
- *     "bundle" = "bundle",
- *     "label" = "id",
- *     "uuid" = "uuid",
- *     "parent" = "paragraph",
- *     "weight" = "weight"
- *   },
- *   links = {
- *     "edit-form" = "/academy/co/{course}/le/{lecture}/qu/{question}"
- *   },
- *   bundle_entity_type = "question_type",
- *   field_ui_base_route = "entity.question_type.edit_form"
- * )
  */
+#[ContentEntityType(
+  id: 'question',
+  label: new TranslatableMarkup('Question'),
+  label_collection: new TranslatableMarkup('Questions'),
+  bundle_label: new TranslatableMarkup('Question type'),
+  handlers: [
+    'access' => 'Drupal\child_entities\ChildEntityAccessControlHandler',
+    'form' => [
+      'add' => 'Drupal\questionnaire\Form\QuestionForm',
+      'edit' => 'Drupal\questionnaire\Form\QuestionForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'questions',
+  data_table: 'questions_field_data',
+  translatable: TRUE,
+  admin_permission: 'administer courses',
+  entity_keys: [
+    'id' => 'id',
+    'langcode' => 'langcode',
+    'bundle' => 'bundle',
+    'label' => 'id',
+    'uuid' => 'uuid',
+    'parent' => 'paragraph',
+    'weight' => 'weight',
+  ],
+  links: [
+    'edit-form' => '/academy/co/{course}/le/{lecture}/qu/{question}',
+  ],
+  bundle_entity_type: 'question_type',
+  field_ui_base_route: 'entity.question_type.edit_form',
+  additional: [
+    'fieldable' => TRUE,
+    'cascade_delete' => TRUE,
+  ],
+)]
 class Question extends ContentEntityBase implements ChildEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   use ChildEntityTrait;

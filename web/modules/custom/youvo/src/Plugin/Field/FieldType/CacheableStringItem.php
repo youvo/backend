@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -10,16 +11,15 @@ use Drupal\youvo\Plugin\DataType\CacheableStringData;
 
 /**
  * Defines the 'cacheable string' entity field type.
- *
- * @FieldType(
- *   id = "cacheable_string",
- *   label = @Translation("Cacheable Text (plain)"),
- *   description = @Translation("A field containing a plain cacheable string value."),
- *   no_ui = TRUE,
- *   default_widget = "string_textfield",
- *   default_formatter = "string"
- * )
  */
+#[FieldType(
+  id: 'cacheable_string',
+  label: new TranslatableMarkup('Cacheable Text (plain)'),
+  description: new TranslatableMarkup('A field containing a plain cacheable string value.'),
+  no_ui: TRUE,
+  default_widget: 'string_textfield',
+  default_formatter: 'string',
+)]
 class CacheableStringItem extends StringItem {
 
   /**

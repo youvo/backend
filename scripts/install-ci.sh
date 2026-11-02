@@ -21,6 +21,10 @@
   fi
  cp install.settings.php settings.php
  cp install.services.yml services.yml
+ # Point links and redirects to the frontends of this environment.
+ printf "\$config['youvo.settings']['hub_url'] = '%s';\n" "${HUB_URL:?Set HUB_URL in config/.env.ci.}" >> settings.php
+ printf "\$config['youvo.settings']['app_url'] = '%s';\n" "${APP_URL:?Set APP_URL in config/.env.ci.}" >> settings.php
+ printf "\$config['youvo.settings']['website_url'] = '%s';\n" "${WEBSITE_URL:?Set WEBSITE_URL in config/.env.ci.}" >> settings.php
  echo "Settings reset ..."
 
  # Install Drupal.

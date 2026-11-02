@@ -3,27 +3,23 @@
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project reset resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectResetResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectResetResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project reset resource - standard workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::post
    */
   public function testProjectReset(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setPromoted(TRUE)->setHidden()->save();
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/reset';
@@ -34,12 +30,16 @@ class ProjectResetResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project reset."', $response->getContent());
+
+    // The reset draft is neither promoted nor hidden.
+    $stored = $this->reloadProject($project);
+    $this->assertLastTransition($stored, ProjectTransition::Reset, ProjectState::Open, ProjectState::Draft);
+    $this->assertFalse($stored->isPromoted());
+    $this->assertFalse($stored->isHidden());
   }
 
   /**
    * Tests the for the project reset resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectResetNoPermission(): void {
 

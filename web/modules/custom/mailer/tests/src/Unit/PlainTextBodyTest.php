@@ -4,12 +4,15 @@ namespace Drupal\Tests\mailer\Unit;
 
 use Drupal\mailer\Manager\PlainTextBody;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the conversion between HTML and plain text bodies.
- *
- * @group mailer
  */
+#[CoversClass(PlainTextBody::class)]
+#[Group('mailer')]
 class PlainTextBodyTest extends UnitTestCase {
 
   /**
@@ -69,9 +72,8 @@ class PlainTextBodyTest extends UnitTestCase {
 
   /**
    * Links are delimited before escaping and nothing else is raw HTML.
-   *
-   * @dataProvider linkProvider
    */
+  #[DataProvider('linkProvider')]
   public function testToHtmlLinks(string $text, string $expected): void {
     $html = (new PlainTextBody())->toHtml($text);
     $this->assertSame($expected, $html);

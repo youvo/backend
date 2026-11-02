@@ -4,6 +4,7 @@ namespace Drupal\logbook\Entity;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -24,56 +25,57 @@ use Drupal\user_types\Utility\Profile;
 
 /**
  * Defines the log entity class.
- *
- * @ContentEntityType(
- *   id = "log",
- *   label = @Translation("Log"),
- *   label_collection = @Translation("Logbook"),
- *   label_singular = @Translation("log"),
- *   label_plural = @Translation("logs"),
- *   label_count = @PluralTranslation(
- *     singular = "@count log",
- *     plural = "@count logs"
- *   ),
- *   bundle_label = @Translation("Log Pattern"),
- *   handlers = {
- *     "access" = "Drupal\logbook\LogAccessControlHandler",
- *     "query_access" = "\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler",
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
- *     "form" = {
- *       "add" = "Drupal\logbook\Form\LogForm",
- *       "edit" = "Drupal\logbook\Form\LogForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "log",
- *   data_table = "log_field_data",
- *   translatable = FALSE,
- *   revisionable = FALSE,
- *   admin_permission = "administer log pattern",
- *   entity_keys = {
- *     "id" = "id",
- *     "bundle" = "type",
- *     "published" = "status",
- *     "status" = "status",
- *     "label" = "id",
- *     "uuid" = "uuid",
- *     "owner" = "author"
- *   },
- *   links = {
- *     "add-form" = "/admin/content/log/add/{log_pattern}",
- *     "add-page" = "/admin/content/log/add",
- *     "canonical" = "/log/{log}",
- *     "edit-form" = "/admin/content/logt/{log}/edit",
- *     "delete-form" = "/admin/content/log/{log}/delete"
- *   },
- *   bundle_entity_type = "log_pattern"
- * )
  */
+#[ContentEntityType(
+  id: 'log',
+  label: new TranslatableMarkup('Log'),
+  label_collection: new TranslatableMarkup('Logbook'),
+  label_singular: new TranslatableMarkup('log'),
+  label_plural: new TranslatableMarkup('logs'),
+  label_count: [
+    'singular' => '@count log',
+    'plural' => '@count logs',
+  ],
+  bundle_label: new TranslatableMarkup('Log Pattern'),
+  handlers: [
+    'access' => 'Drupal\logbook\LogAccessControlHandler',
+    'query_access' => '\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler',
+    'view_builder' => 'Drupal\Core\Entity\EntityViewBuilder',
+    'views_data' => 'Drupal\views\EntityViewsData',
+    'form' => [
+      'add' => 'Drupal\logbook\Form\LogForm',
+      'edit' => 'Drupal\logbook\Form\LogForm',
+      'delete' => 'Drupal\Core\Entity\ContentEntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'log',
+  data_table: 'log_field_data',
+  translatable: FALSE,
+  admin_permission: 'administer log pattern',
+  entity_keys: [
+    'id' => 'id',
+    'bundle' => 'type',
+    'published' => 'status',
+    'status' => 'status',
+    'label' => 'id',
+    'uuid' => 'uuid',
+    'owner' => 'author',
+  ],
+  links: [
+    'add-form' => '/admin/content/log/add/{log_pattern}',
+    'add-page' => '/admin/content/log/add',
+    'canonical' => '/log/{log}',
+    'edit-form' => '/admin/content/logt/{log}/edit',
+    'delete-form' => '/admin/content/log/{log}/delete',
+  ],
+  bundle_entity_type: 'log_pattern',
+  additional: [
+    'revisionable' => FALSE,
+  ],
+)]
 class Log extends ContentEntityBase implements LogInterface {
 
   use EntityOwnerTrait;

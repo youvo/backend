@@ -6,12 +6,9 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\manager\Plugin\ManagerRule\ManagerRuleArchived;
-use Drupal\projects\Access\ProjectEntityAccess;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,9 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Tests that archived projects don't transition or act and are read-only.
  */
-#[CoversClass(ProjectLifecycle::class)]
-#[CoversClass(ProjectEntityAccess::class)]
-#[CoversClass(ManagerRuleArchived::class)]
 #[Group('projects')]
 class ProjectArchivedTest extends ProjectResourceTestBase {
 

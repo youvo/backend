@@ -12,13 +12,17 @@ use Drupal\Core\Routing\RouteMatch;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Routing\Route;
 
 /**
  * Tests the shared behavior of child entities.
  *
- * @group child_entities
+ * The tests need the test-only entity types of child_entities_test.
  */
+#[Group('child_entities')]
+#[RunTestsInSeparateProcesses]
 class ChildEntityTest extends KernelTestBase {
 
   /**
@@ -48,15 +52,22 @@ class ChildEntityTest extends KernelTestBase {
   }
 
   /**
-   * Tests that new children are appended after their siblings.
+   * Tests the hierarchy, the weight of new children and the add form.
    */
-  public function testWeightIsAppendedToSiblings(): void {
+  public function testHierarchyWeightAndForm(): void {
 
+    // The hierarchy of child entity types is resolved up to the origin.
+    $hierarchy = $this->container->get('child_entities.hierarchy');
+    $type = $this->container->get('entity_type.manager')->getDefinition('child_test_grandchild');
+    $this->assertSame(['child_test_child', 'child_test_origin'], $hierarchy->getAncestorEntityTypeIds($type));
+    $this->assertSame('child_test_origin', $hierarchy->getOriginEntityType($type)->id());
+    $this->assertSame('child_test_origin', $hierarchy->getChildEntityTypes()['child_test_loose']);
+
+    // New children are appended after their siblings.
     $origin = TestOrigin::create(['name' => 'origin']);
     $origin->save();
     $other_origin = TestOrigin::create(['name' => 'other']);
     $other_origin->save();
-
     $first = TestChild::create(['child_test_origin' => $origin->id()]);
     $first->save();
     $second = TestChild::create(['child_test_origin' => $origin->id()]);
@@ -65,107 +76,69 @@ class ChildEntityTest extends KernelTestBase {
     $third->save();
     $unrelated = TestChild::create(['child_test_origin' => $other_origin->id()]);
     $unrelated->save();
-
     $this->assertEquals(0, $first->get('weight')->value);
     $this->assertEquals(1, $second->get('weight')->value);
     $this->assertEquals(2, $third->get('weight')->value);
     $this->assertEquals(0, $unrelated->get('weight')->value);
-
     // Updating does not touch the weight.
     $first->set('name', 'changed')->save();
     $this->assertEquals(0, $first->get('weight')->value);
-  }
 
-  /**
-   * Tests that deleting an origin cascades only to opted-in children.
-   */
-  public function testCascadeDeleteIsOptIn(): void {
-
-    $origin = TestOrigin::create(['name' => 'origin']);
-    $origin->save();
-    $child = TestChild::create(['child_test_origin' => $origin->id()]);
-    $child->save();
-    $grandchild = TestGrandchild::create(['child_test_child' => $child->id()]);
-    $grandchild->save();
-    $loose = TestLoose::create(['child_test_origin' => $origin->id()]);
-    $loose->save();
-
-    $origin->delete();
-
-    $this->assertNull(TestChild::load($child->id()));
-    $this->assertNull(TestGrandchild::load($grandchild->id()));
-    $this->assertNotNull(TestLoose::load($loose->id()));
-  }
-
-  /**
-   * Tests that deleting through the storage cascades as well.
-   */
-  public function testBulkDeleteCascades(): void {
-
-    $origin = TestOrigin::create(['name' => 'origin']);
-    $origin->save();
-    $child = TestChild::create(['child_test_origin' => $origin->id()]);
-    $child->save();
-    $grandchild = TestGrandchild::create(['child_test_child' => $child->id()]);
-    $grandchild->save();
-
-    $this->container->get('entity_type.manager')
-      ->getStorage('child_test_origin')
-      ->delete([$origin]);
-
-    $this->assertNull(TestChild::load($child->id()));
-    $this->assertNull(TestGrandchild::load($grandchild->id()));
-  }
-
-  /**
-   * Tests that deleting a child invalidates the cache tag of its parent.
-   */
-  public function testDeleteInvalidatesParentCacheTag(): void {
-
-    $origin = TestOrigin::create(['name' => 'origin']);
-    $origin->save();
-    $child = TestChild::create(['child_test_origin' => $origin->id()]);
-    $child->save();
-
-    $tag = 'child_test_origin:' . $origin->id();
-    $this->container->get('cache.default')->set('child_test_item', 1, Cache::PERMANENT, [$tag]);
-    $this->assertNotFalse($this->container->get('cache.default')->get('child_test_item'));
-
-    $child->delete();
-    $this->assertFalse($this->container->get('cache.default')->get('child_test_item'));
-  }
-
-  /**
-   * Tests that the form base class takes the parent from the route.
-   */
-  public function testFormSetsParentFromRoute(): void {
-
-    $origin = TestOrigin::create(['name' => 'origin']);
-    $origin->save();
-
+    // The form base class takes the parent from the route.
     $route = new Route('/test/{child_test_origin}/add');
     $route_match = new RouteMatch('test.add', $route, ['child_test_origin' => $origin], ['child_test_origin' => $origin->id()]);
-
-    $form = $this->container->get('entity_type.manager')
-      ->getFormObject('child_test_child', 'default');
+    $form = $this->container->get('entity_type.manager')->getFormObject('child_test_child', 'default');
     $entity = $form->getEntityFromRouteMatch($route_match, 'child_test_child');
-
     $this->assertInstanceOf(ChildEntityInterface::class, $entity);
     $this->assertTrue($entity->isNew());
     $this->assertEquals($origin->id(), $entity->getParentId());
   }
 
   /**
-   * Tests resolving the hierarchy of child entity types.
+   * Tests that deleting cascades to opted-in children and their caches.
    */
-  public function testHierarchy(): void {
+  public function testDeleteCascades(): void {
 
-    $hierarchy = $this->container->get('child_entities.hierarchy');
-    $type = $this->container->get('entity_type.manager')->getDefinition('child_test_grandchild');
+    // Deleting a child invalidates the cache tag of its parent.
+    $origin = TestOrigin::create(['name' => 'origin']);
+    $origin->save();
+    $deleted_child = TestChild::create(['child_test_origin' => $origin->id()]);
+    $deleted_child->save();
+    $cache = $this->container->get('cache.default');
+    $cache->set('child_test_item', 1, Cache::PERMANENT, ['child_test_origin:' . $origin->id()]);
+    $this->assertNotFalse($cache->get('child_test_item'));
+    $deleted_child->delete();
+    $this->assertFalse($cache->get('child_test_item'));
 
-    $this->assertSame(['child_test_child', 'child_test_origin'], $hierarchy->getAncestorEntityTypeIds($type));
-    $this->assertSame('child_test_origin', $hierarchy->getOriginEntityType($type)->id());
-    $this->assertSame('child_test_origin', $hierarchy->getChildEntityTypes()['child_test_loose']);
+    // Deleting an origin cascades only to opted-in children.
+    $child = TestChild::create(['child_test_origin' => $origin->id()]);
+    $child->save();
+    $grandchild = TestGrandchild::create(['child_test_child' => $child->id()]);
+    $grandchild->save();
+    $loose = TestLoose::create(['child_test_origin' => $origin->id()]);
+    $loose->save();
+    $origin->delete();
+    $this->assertNull(TestChild::load($child->id()));
+    $this->assertNull(TestGrandchild::load($grandchild->id()));
+    $loose = TestLoose::load($loose->id());
+    $this->assertNotNull($loose);
+
+    // Deleting through the storage cascades as well.
+    $bulk_origin = TestOrigin::create(['name' => 'bulk']);
+    $bulk_origin->save();
+    $bulk_child = TestChild::create(['child_test_origin' => $bulk_origin->id()]);
+    $bulk_child->save();
+    $bulk_grandchild = TestGrandchild::create(['child_test_child' => $bulk_child->id()]);
+    $bulk_grandchild->save();
+    $this->container->get('entity_type.manager')->getStorage('child_test_origin')->delete([$bulk_origin]);
+    $this->assertNull(TestChild::load($bulk_child->id()));
+    $this->assertNull(TestGrandchild::load($bulk_grandchild->id()));
+
+    // The orphaned loose child reports its missing parent with a meaningful
+    // exception.
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage('child_test_origin');
+    $loose->getParentEntity();
   }
 
   /**
@@ -212,24 +185,6 @@ class ChildEntityTest extends KernelTestBase {
     $user->save();
     $uid++;
     return $user;
-  }
-
-  /**
-   * Tests that a missing parent is reported with a meaningful exception.
-   */
-  public function testMissingParentThrows(): void {
-
-    $origin = TestOrigin::create(['name' => 'origin']);
-    $origin->save();
-    $loose = TestLoose::create(['child_test_origin' => $origin->id()]);
-    $loose->save();
-    // The loose child does not cascade, so it is orphaned.
-    $origin->delete();
-
-    $loose = TestLoose::load($loose->id());
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('child_test_origin');
-    $loose->getParentEntity();
   }
 
 }

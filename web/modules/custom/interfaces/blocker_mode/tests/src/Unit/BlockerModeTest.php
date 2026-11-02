@@ -7,7 +7,7 @@ use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Tests\UnitTestCase;
-use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Routing\Route;
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Tests which accounts and paths are exempt from blocker mode.
  */
-#[CoversMethod(BlockerMode::class, 'exempt')]
+#[CoversClass(BlockerMode::class)]
 #[Group('blocker_mode')]
 class BlockerModeTest extends UnitTestCase {
 

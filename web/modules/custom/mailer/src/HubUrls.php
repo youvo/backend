@@ -19,7 +19,7 @@ class HubUrls {
    * Gets the link organizations use to open this project.
    */
   public function project(ProjectInterface $project): string {
-    $base = rtrim((string) $this->configFactory->get('mailer.settings')->get('hub_url'), '/');
+    $base = rtrim((string) $this->configFactory->get('youvo.settings')->get('hub_url'), '/');
     $path = $project->lifecycle()->isDraft() ? '/draft/' : '/projects/';
     return $base . $path . $project->uuid();
   }

@@ -3,46 +3,49 @@
 namespace Drupal\projects\Entity;
 
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\projects\ProjectCommentInterface;
 use Drupal\projects\ProjectResultInterface;
 
 /**
  * Defines the project result entity class.
- *
- * @ContentEntityType(
- *   id = "project_result",
- *   label = @Translation("Project Result"),
- *   label_collection = @Translation("Project Results"),
- *   handlers = {
- *     "access" = "Drupal\projects\Access\ProjectResultUploadAccess",
- *     "form" = {
- *       "edit" = "Drupal\projects\Form\ProjectResultForm",
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "project_result",
- *   fieldable = TRUE,
- *   admin_permission = "administer projects",
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "id",
- *     "uuid" = "uuid",
- *     "parent" = "project",
- *     "weight" = "weight"
- *   },
- *   links = {
- *     "edit-form" = "/projects/{project}/result/{project_result}/edit",
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'project_result',
+  label: new TranslatableMarkup('Project Result'),
+  label_collection: new TranslatableMarkup('Project Results'),
+  handlers: [
+    'access' => 'Drupal\projects\Access\ProjectResultUploadAccess',
+    'form' => [
+      'edit' => 'Drupal\projects\Form\ProjectResultForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'project_result',
+  admin_permission: 'administer projects',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'id',
+    'uuid' => 'uuid',
+    'parent' => 'project',
+    'weight' => 'weight',
+  ],
+  links: [
+    'edit-form' => '/projects/{project}/result/{project_result}/edit',
+  ],
+  additional: [
+    'fieldable' => TRUE,
+  ],
+)]
 class ProjectResult extends ContentEntityBase implements ProjectResultInterface {
 
   use ChildEntityTrait;

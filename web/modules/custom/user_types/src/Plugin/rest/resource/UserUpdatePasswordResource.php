@@ -6,6 +6,8 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -16,15 +18,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides User Update Password Resource.
- *
- * @RestResource(
- *   id = "user:update:password",
- *   label = @Translation("User Update Password"),
- *   uri_paths = {
- *     "canonical" = "/api/users/update/password"
- *   }
- * )
  */
+#[RestResource(
+  id: 'user:update:password',
+  label: new TranslatableMarkup('User Update Password'),
+  uri_paths: [
+    'canonical' => '/api/users/update/password',
+  ],
+)]
 class UserUpdatePasswordResource extends ResourceBase {
 
   /**

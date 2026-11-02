@@ -9,9 +9,11 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Flood\FloodInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponseInterface;
@@ -27,15 +29,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Organization Create Resource.
- *
- * @RestResource(
- *   id = "organization:create",
- *   label = @Translation("Organization Create Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/organizations/create/prospect"
- *   }
- * )
  */
+#[RestResource(
+  id: 'organization:create',
+  label: new TranslatableMarkup('Organization Create Resource'),
+  uri_paths: [
+    'canonical' => '/api/organizations/create/prospect',
+  ],
+)]
 class OrganizationCreateResource extends ResourceBase {
 
   /**

@@ -3,6 +3,7 @@
 namespace Drupal\logbook\Entity;
 
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -13,40 +14,39 @@ use Drupal\logbook\LogTextInterface;
  * Defines the log text entity class.
  *
  * This entity is used to avoid the locale and config_translation module.
- *
- * @ContentEntityType(
- *   id = "log_text",
- *   label = @Translation("Log Text"),
- *   label_collection = @Translation("Log Texts"),
- *   label_singular = @Translation("Log Text"),
- *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "form" = {
- *       "add" = "Drupal\logbook\Form\LogTextForm",
- *       "edit" = "Drupal\logbook\Form\LogTextForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider"
- *     }
- *   },
- *   base_table = "log_text",
- *   data_table = "log_text_field_data",
- *   admin_permission = "administer log pattern",
- *   translatable = TRUE,
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "id",
- *     "parent" = "log_pattern",
- *     "weight" = "weight",
- *     "uuid" = "uuid",
- *     "langcode" = "langcode"
- *   },
- *   links = {
- *     "edit-form" = "/admin/structure/log-pattern/{log_pattern}/text/{log_text}"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'log_text',
+  label: new TranslatableMarkup('Log Text'),
+  label_collection: new TranslatableMarkup('Log Texts'),
+  label_singular: new TranslatableMarkup('Log Text'),
+  handlers: [
+    'access' => 'Drupal\child_entities\ChildEntityAccessControlHandler',
+    'form' => [
+      'add' => 'Drupal\logbook\Form\LogTextForm',
+      'edit' => 'Drupal\logbook\Form\LogTextForm',
+      'delete' => 'Drupal\Core\Entity\ContentEntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'log_text',
+  data_table: 'log_text_field_data',
+  admin_permission: 'administer log pattern',
+  translatable: TRUE,
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'id',
+    'parent' => 'log_pattern',
+    'weight' => 'weight',
+    'uuid' => 'uuid',
+    'langcode' => 'langcode',
+  ],
+  links: [
+    'edit-form' => '/admin/structure/log-pattern/{log_pattern}/text/{log_text}',
+  ],
+)]
 class LogText extends ContentEntityBase implements LogTextInterface {
 
   use ChildEntityTrait;

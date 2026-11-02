@@ -11,9 +11,11 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
 use Drupal\creatives\Event\CreativeRegisterEvent;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponseInterface;
@@ -27,15 +29,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Creative Create Resource.
- *
- * @RestResource(
- *   id = "creative:register",
- *   label = @Translation("Creative Register Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/users/register/creative"
- *   }
- * )
  */
+#[RestResource(
+  id: 'creative:register',
+  label: new TranslatableMarkup('Creative Register Resource'),
+  uri_paths: [
+    'canonical' => '/api/users/register/creative',
+  ],
+)]
 class CreativeRegisterResource extends ResourceBase {
 
   /**

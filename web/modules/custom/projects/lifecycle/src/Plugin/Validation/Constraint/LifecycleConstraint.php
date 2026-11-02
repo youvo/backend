@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Drupal\lifecycle\Plugin\Validation\Constraint;
 
-use Symfony\Component\Validator\Constraint;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Validation\Attribute\Constraint;
+use Symfony\Component\Validator\Constraint as SymfonyConstraint;
 
 /**
  * Validation constraint for the youvo lifecycle.
- *
- * @Constraint(
- *   id = "LifecycleConstraint",
- *   label = @Translation("LifecyleConstraint provider constraint", context = "Validation"),
- * )
  */
-class LifecycleConstraint extends Constraint {
+#[Constraint(
+  id: 'LifecycleConstraint',
+  label: new TranslatableMarkup('LifecyleConstraint provider constraint', [], ['context' => 'Validation']),
+)]
+class LifecycleConstraint extends SymfonyConstraint {
 
   /**
    * Message displayed during an invalid transition.

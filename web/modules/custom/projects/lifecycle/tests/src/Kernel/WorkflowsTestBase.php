@@ -8,9 +8,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 
 /**
- * Base class for testing.
- *
- * @group lifecycle
+ * Provides a base for the lifecycle tests with a fixture workflow on nodes.
  */
 abstract class WorkflowsTestBase extends KernelTestBase {
 

@@ -2,6 +2,8 @@
 
 namespace Drupal\stats\Plugin\rest\resource;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponseInterface;
@@ -10,15 +12,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides stats resource.
- *
- * @RestResource(
- *   id = "stats:public",
- *   label = @Translation("Public Stats Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/stats"
- *   }
- * )
  */
+#[RestResource(
+  id: 'stats:public',
+  label: new TranslatableMarkup('Public Stats Resource'),
+  uri_paths: [
+    'canonical' => '/api/stats',
+  ],
+)]
 class StatsResource extends ResourceBase {
 
   /**

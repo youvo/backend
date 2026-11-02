@@ -5,58 +5,61 @@ namespace Drupal\lectures\Entity;
 use Drupal\academy\AcademicFormatInterface;
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the lecture entity class.
- *
- * @ContentEntityType(
- *   id = "lecture",
- *   label = @Translation("Lecture"),
- *   label_collection = @Translation("Academy"),
- *   label_singular = @Translation("Lecture"),
- *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "list_builder" = "Drupal\lectures\LectureListBuilder",
- *     "form" = {
- *       "add" = "Drupal\lectures\Form\LectureForm",
- *       "edit" = "Drupal\lectures\Form\LectureForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "lectures",
- *   data_table = "lectures_field_data",
- *   translatable = TRUE,
- *   fieldable = FALSE,
- *   admin_permission = "administer courses",
- *   cascade_delete = TRUE,
- *   entity_keys = {
- *     "id" = "id",
- *     "langcode" = "langcode",
- *     "label" = "title",
- *     "owner" = "uid",
- *     "published" = "status",
- *     "uuid" = "uuid",
- *     "parent" = "course",
- *     "weight" = "weight"
- *   },
- *   links = {
- *     "add-form" = "/academy/co/{course}/le/add",
- *     "edit-form" = "/academy/co/{course}/le/{lecture}",
- *     "delete-form" = "/academy/co/{course}/le/{lecture}/delete",
- *     "collection" = "/academy"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'lecture',
+  label: new TranslatableMarkup('Lecture'),
+  label_collection: new TranslatableMarkup('Academy'),
+  label_singular: new TranslatableMarkup('Lecture'),
+  handlers: [
+    'access' => 'Drupal\child_entities\ChildEntityAccessControlHandler',
+    'list_builder' => 'Drupal\lectures\LectureListBuilder',
+    'form' => [
+      'add' => 'Drupal\lectures\Form\LectureForm',
+      'edit' => 'Drupal\lectures\Form\LectureForm',
+      'delete' => 'Drupal\Core\Entity\ContentEntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'lectures',
+  data_table: 'lectures_field_data',
+  translatable: TRUE,
+  admin_permission: 'administer courses',
+  entity_keys: [
+    'id' => 'id',
+    'langcode' => 'langcode',
+    'label' => 'title',
+    'owner' => 'uid',
+    'published' => 'status',
+    'uuid' => 'uuid',
+    'parent' => 'course',
+    'weight' => 'weight',
+  ],
+  links: [
+    'add-form' => '/academy/co/{course}/le/add',
+    'edit-form' => '/academy/co/{course}/le/{lecture}',
+    'delete-form' => '/academy/co/{course}/le/{lecture}/delete',
+    'collection' => '/academy',
+  ],
+  additional: [
+    'fieldable' => FALSE,
+    'cascade_delete' => TRUE,
+  ],
+)]
 class Lecture extends ContentEntityBase implements ChildEntityInterface, AcademicFormatInterface {
 
   use EntityChangedTrait;

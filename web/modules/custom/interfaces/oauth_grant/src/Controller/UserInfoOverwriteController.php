@@ -2,6 +2,7 @@
 
 namespace Drupal\oauth_grant\Controller;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\simple_oauth\Authentication\TokenAuthUser;
@@ -23,6 +24,7 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
   public function __construct(
     protected AccountProxyInterface $currentUser,
     protected SerializerInterface $serializer,
+    protected ConfigFactoryInterface $configFactory,
   ) {}
 
   /**
@@ -31,7 +33,8 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('current_user'),
-      $container->get('serializer')
+      $container->get('serializer'),
+      $container->get('config.factory'),
     );
   }
 
@@ -63,7 +66,9 @@ class UserInfoOverwriteController implements ContainerInjectionInterface {
       unset($data['email_verified']);
     }
 
-    $data['profile'] = 'https://www.youvo.org/kreative/' . $identifier;
+    // The profile of the creative on the website, for now the old website.
+    $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
+    $data['profile'] = $website_url . '/kreative/' . $identifier;
     if ($user->hasField('field_name')) {
       $data['name'] = $user->get('field_name')->value;
     }

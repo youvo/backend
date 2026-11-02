@@ -8,9 +8,11 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\questionnaire\Entity\Question;
 use Drupal\questionnaire\Entity\QuestionSubmission;
 use Drupal\questionnaire\SubmissionManager;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -24,15 +26,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Question Submission Resource.
- *
- * @RestResource(
- *   id = "question:submission",
- *   label = @Translation("Question Submission Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/questions/{question}/submission"
- *   }
- * )
  */
+#[RestResource(
+  id: 'question:submission',
+  label: new TranslatableMarkup('Question Submission Resource'),
+  uri_paths: [
+    'canonical' => '/api/questions/{question}/submission',
+  ],
+)]
 class QuestionSubmissionResource extends ResourceBase {
 
   /**

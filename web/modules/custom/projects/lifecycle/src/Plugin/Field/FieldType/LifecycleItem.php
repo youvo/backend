@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\lifecycle\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\OptionsProviderInterface;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -18,17 +20,16 @@ use Drupal\workflows\WorkflowInterface;
 /**
  * Provides a lifecyle workflow state field item.
  *
- * @FieldType(
- *   id = "lifecycle_item",
- *   label = @Translation("Lifecycle"),
- *   description = @Translation("Allows you to store a lifecycle workflow state."),
- *   constraints = {"LifecycleConstraint" = {}},
- *   default_formatter = "lifecycle_state_list",
- *   default_widget = "options_select"
- * )
- *
  * @property string|null $value
  */
+#[FieldType(
+  id: 'lifecycle_item',
+  label: new TranslatableMarkup('Lifecycle'),
+  description: new TranslatableMarkup('Allows you to store a lifecycle workflow state.'),
+  constraints: ['LifecycleConstraint' => []],
+  default_formatter: 'lifecycle_state_list',
+  default_widget: 'options_select',
+)]
 class LifecycleItem extends FieldItemBase implements OptionsProviderInterface {
 
   /**

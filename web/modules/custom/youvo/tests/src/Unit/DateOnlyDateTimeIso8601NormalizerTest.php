@@ -8,13 +8,15 @@ use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Drupal\serialization\Normalizer\DateTimeIso8601Normalizer;
 use Drupal\Tests\UnitTestCase;
 use Drupal\youvo\Normalizer\DateOnlyDateTimeIso8601Normalizer;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the denormalization of date-only fields.
- *
- * @coversDefaultClass \Drupal\youvo\Normalizer\DateOnlyDateTimeIso8601Normalizer
- * @group youvo
  */
+#[CoversClass(DateOnlyDateTimeIso8601Normalizer::class)]
+#[Group('youvo')]
 class DateOnlyDateTimeIso8601NormalizerTest extends UnitTestCase {
 
   /**
@@ -37,10 +39,8 @@ class DateOnlyDateTimeIso8601NormalizerTest extends UnitTestCase {
 
   /**
    * Tests that date-only fields accept dates and datetimes.
-   *
-   * @covers ::denormalize
-   * @dataProvider provideDates
    */
+  #[DataProvider('provideDates')]
   public function testDateOnly(string $value, string $expected): void {
     $this->assertSame($expected, $this->denormalize($value, 'date'));
   }
@@ -59,8 +59,6 @@ class DateOnlyDateTimeIso8601NormalizerTest extends UnitTestCase {
 
   /**
    * Tests that datetime fields are not affected.
-   *
-   * @covers ::denormalize
    */
   public function testDatetimeFieldIsUnchanged(): void {
     $this->assertSame('2026-10-28T23:00:00', $this->denormalize('2026-10-28T23:00:00+0000', 'datetime'));

@@ -274,7 +274,7 @@ class LogPatternForm extends BundleEntityFormBase {
     // Remove empty values from tokens.
     /** @var array $token_values */
     $token_values = $form_state->getValue('tokens');
-    $form_state->setValue('tokens', array_filter($token_values, static fn($t) => !empty($t['token'])));
+    $form_state->setValue('tokens', array_values(array_filter($token_values, static fn($t) => !empty($t['token']))));
     parent::submitForm($form, $form_state);
   }
 

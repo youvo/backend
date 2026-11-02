@@ -2,26 +2,27 @@
 
 namespace Drupal\progress\Entity;
 
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the CourseProgress entity class.
- *
- * @ContentEntityType(
- *   id = "course_progress",
- *   label = @Translation("Course Progress"),
- *   label_collection = @Translation("Course Progress"),
- *   base_table = "course_progress",
- *   admin_permission = "administer progress",
- *   entity_keys = {
- *     "id" = "id",
- *     "uuid" = "uuid",
- *     "course" = "course",
- *     "owner" = "uid"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'course_progress',
+  label: new TranslatableMarkup('Course Progress'),
+  label_collection: new TranslatableMarkup('Course Progress'),
+  base_table: 'course_progress',
+  admin_permission: 'administer progress',
+  entity_keys: [
+    'id' => 'id',
+    'uuid' => 'uuid',
+    'course' => 'course',
+    'owner' => 'uid',
+  ],
+)]
 class CourseProgress extends Progress {
 
   /**

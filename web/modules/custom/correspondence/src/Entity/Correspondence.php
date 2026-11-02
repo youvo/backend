@@ -3,37 +3,40 @@
 namespace Drupal\correspondence\Entity;
 
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\correspondence\CorrespondenceInterface;
 
 /**
  * Defines the correspondence entity.
- *
- * @ContentEntityType(
- *   id = "correspondence",
- *   label = @Translation("Correspondence"),
- *   label_collection = @Translation("Correspondence"),
- *   bundle_label = @Translation("Correspondence type"),
- *   handlers = {
- *     "access" = "Drupal\correspondence\CorrespondenceAccessControlHandler",
- *   },
- *   base_table = "correspondence",
- *   admin_permission = "administer correspondence",
- *   translatable = FALSE,
- *   entity_keys = {
- *     "id" = "id",
- *     "bundle" = "type",
- *     "label" = "subject",
- *     "uuid" = "uuid",
- *     "parent" = "project",
- *     "weight" = "weight",
- *   },
- *   bundle_entity_type = "correspondence_type",
- *   cascade_delete = TRUE,
- * )
  */
+#[ContentEntityType(
+  id: 'correspondence',
+  label: new TranslatableMarkup('Correspondence'),
+  label_collection: new TranslatableMarkup('Correspondence'),
+  bundle_label: new TranslatableMarkup('Correspondence type'),
+  handlers: [
+    'access' => 'Drupal\correspondence\CorrespondenceAccessControlHandler',
+  ],
+  base_table: 'correspondence',
+  admin_permission: 'administer correspondence',
+  translatable: FALSE,
+  entity_keys: [
+    'id' => 'id',
+    'bundle' => 'type',
+    'label' => 'subject',
+    'uuid' => 'uuid',
+    'parent' => 'project',
+    'weight' => 'weight',
+  ],
+  bundle_entity_type: 'correspondence_type',
+  additional: [
+    'cascade_delete' => TRUE,
+  ],
+)]
 class Correspondence extends ContentEntityBase implements CorrespondenceInterface {
 
   use ChildEntityTrait;

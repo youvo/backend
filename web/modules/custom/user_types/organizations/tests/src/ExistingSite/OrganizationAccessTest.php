@@ -4,18 +4,14 @@ namespace Drupal\Tests\organizations\ExistingSite;
 
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Access\OrganizationEntityAccess;
-use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\organizations\Entity\Organization;
 use Drupal\user\UserInterface;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use weitzman\DrupalTestTraits\ExistingSiteBase;
 
 /**
  * Tests the organization field and manage access with the site roles.
  */
-#[CoversClass(OrganizationFieldAccess::class)]
-#[CoversClass(OrganizationEntityAccess::class)]
 #[Group('organizations')]
 class OrganizationAccessTest extends ExistingSiteBase {
 

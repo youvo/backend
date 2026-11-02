@@ -4,6 +4,7 @@ namespace Drupal\projects\Entity;
 
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
@@ -12,6 +13,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectCreateEvent;
@@ -30,58 +32,59 @@ use Drupal\user_types\Utility\Profile;
  *
  * The published key (status) means active: an unpublished project is
  * archived. Hidden projects are active, but not listed publicly.
- *
- * @ContentEntityType(
- *   id = "project",
- *   label = @Translation("Project"),
- *   label_collection = @Translation("Projects"),
- *   label_singular = @Translation("project"),
- *   label_plural = @Translation("projects"),
- *   label_count = @PluralTranslation(
- *     singular = "@count project",
- *     plural = "@count projects"
- *   ),
- *   handlers = {
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "access" = "Drupal\projects\Access\ProjectEntityAccess",
- *     "query_access" = "\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler",
- *     "permission_provider" = "\Drupal\entity\EntityPermissionProvider",
- *     "list_builder" = "Drupal\projects\ProjectListBuilder",
- *     "form" = {
- *       "add" = "Drupal\projects\Form\ProjectAddForm",
- *       "edit" = "Drupal\projects\Form\ProjectForm",
- *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\projects\Routing\ProjectHtmlRouteProvider",
- *     },
- *    "views_data" = "Drupal\views\EntityViewsData"
- *   },
- *   base_table = "project",
- *   data_table = "project_field_data",
- *   translatable = TRUE,
- *   fieldable = TRUE,
- *   admin_permission = "administer projects",
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "title",
- *     "langcode" = "langcode",
- *     "uuid" = "uuid",
- *     "status" = "status",
- *     "published" = "status",
- *     "uid" = "uid",
- *     "owner" = "uid"
- *   },
- *   links = {
- *     "canonical" = "/projects/{project}",
- *     "add-form" = "/projects/add",
- *     "edit-form" = "/projects/{project}/edit",
- *     "delete-form" = "/projects/{project}/delete",
- *     "collection" = "/projects"
- *   },
- *   field_ui_base_route = "entity.project.settings"
- * )
  */
+#[ContentEntityType(
+  id: 'project',
+  label: new TranslatableMarkup('Project'),
+  label_collection: new TranslatableMarkup('Projects'),
+  label_singular: new TranslatableMarkup('project'),
+  label_plural: new TranslatableMarkup('projects'),
+  label_count: [
+    'singular' => '@count project',
+    'plural' => '@count projects',
+  ],
+  handlers: [
+    'view_builder' => 'Drupal\Core\Entity\EntityViewBuilder',
+    'access' => 'Drupal\projects\Access\ProjectEntityAccess',
+    'query_access' => '\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler',
+    'permission_provider' => '\Drupal\entity\EntityPermissionProvider',
+    'list_builder' => 'Drupal\projects\ProjectListBuilder',
+    'form' => [
+      'add' => 'Drupal\projects\Form\ProjectAddForm',
+      'edit' => 'Drupal\projects\Form\ProjectForm',
+      'delete' => 'Drupal\Core\Entity\EntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\projects\Routing\ProjectHtmlRouteProvider',
+    ],
+    'views_data' => 'Drupal\views\EntityViewsData',
+  ],
+  base_table: 'project',
+  data_table: 'project_field_data',
+  translatable: TRUE,
+  admin_permission: 'administer projects',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'title',
+    'langcode' => 'langcode',
+    'uuid' => 'uuid',
+    'status' => 'status',
+    'published' => 'status',
+    'uid' => 'uid',
+    'owner' => 'uid',
+  ],
+  links: [
+    'canonical' => '/projects/{project}',
+    'add-form' => '/projects/add',
+    'edit-form' => '/projects/{project}/edit',
+    'delete-form' => '/projects/{project}/delete',
+    'collection' => '/projects',
+  ],
+  field_ui_base_route: 'entity.project.settings',
+  additional: [
+    'fieldable' => TRUE,
+  ],
+)]
 class Project extends ContentEntityBase implements ProjectInterface {
 
   use EntityOwnerTrait;
@@ -96,6 +99,16 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * @var \Drupal\projects\Service\ProjectLifecycleInterface
    */
   protected ProjectLifecycleInterface $lifecycle;
+
+  /**
+   * {@inheritdoc}
+   *
+   * The lifecycle is a non-shared service, which can't be serialized by
+   * reference. It is created again on the next call of lifecycle().
+   */
+  public function __sleep(): array {
+    return array_diff(parent::__sleep(), ['lifecycle']);
+  }
 
   /**
    * Calls project lifecycle service which holds/manipulates the state.

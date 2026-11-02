@@ -2,32 +2,33 @@
 
 namespace Drupal\questionnaire\Entity;
 
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the question submission entity class.
- *
- * @ContentEntityType(
- *   id = "question_submission",
- *   label = @Translation("Question Submission"),
- *   label_collection = @Translation("Question Submissions"),
- *   base_table = "question_submissions",
- *   admin_permission = "administer courses",
- *   entity_keys = {
- *     "id" = "sid",
- *     "uuid" = "uuid",
- *     "question" = "question",
- *     "uid" = "uid"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'question_submission',
+  label: new TranslatableMarkup('Question Submission'),
+  label_collection: new TranslatableMarkup('Question Submissions'),
+  base_table: 'question_submissions',
+  admin_permission: 'administer courses',
+  entity_keys: [
+    'id' => 'sid',
+    'uuid' => 'uuid',
+    'question' => 'question',
+    'uid' => 'uid',
+  ],
+)]
 class QuestionSubmission extends ContentEntityBase implements EntityChangedInterface, EntityOwnerInterface {
 
   use EntityChangedTrait;

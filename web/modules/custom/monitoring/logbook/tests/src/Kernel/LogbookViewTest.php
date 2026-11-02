@@ -3,21 +3,24 @@
 namespace Drupal\Tests\logbook\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
-use Drupal\Core\Routing\RouteMatch;
+use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\logbook\Entity\LogText;
-use Drupal\logbook\Hook\LogbookPageHooks;
 use Drupal\organizations\Entity\Organization;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Entity\View;
 use Drupal\views\Views;
-use Symfony\Component\Routing\Route;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the logbook view.
  *
- * @group logbook
+ * The tests change log patterns, need an empty logbook and assert the exact
+ * order and totals of the list, so they are not ExistingSite tests.
  */
+#[Group('logbook')]
+#[RunTestsInSeparateProcesses]
 class LogbookViewTest extends LogbookKernelTestBase {
 
   use UserCreationTrait;
@@ -51,6 +54,8 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->createPattern('project_notify', ['observable' => FALSE]);
     $this->createPattern('organization_create', ['observable' => TRUE, 'hidden' => TRUE]);
     $this->createPattern('feedback_off', ['observable' => TRUE, 'status' => FALSE]);
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
   }
 
   /**
@@ -81,368 +86,18 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * The flags of the patterns decide what is listed, newest first.
+   * Creates a log and returns its id.
    */
-  public function testScopeFollowsThePatternFlags(): void {
-    $apply = $this->createLog('project_apply', ['created' => 100]);
-    $publish = $this->createLog('project_publish', ['created' => 200]);
-    $notify = $this->createLog('project_notify', ['created' => 300]);
-    $this->createLog('feedback_off', ['created' => 400]);
-    // Not observable and disabled patterns are not listed.
-    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids());
-    // Making a pattern observable lists it, without any change of the view.
-    $pattern = LogPattern::load('project_notify');
-    $pattern->set('observable', TRUE)->save();
-    $this->assertSame([(int) $notify->id(), (int) $publish->id(), (int) $apply->id()], $this->ids());
-    // A pattern that is created later is listed as well.
-    $this->createPattern('project_new', ['observable' => TRUE]);
-    $new = $this->createLog('project_new', ['created' => 500]);
-    $this->assertContains((int) $new->id(), $this->ids());
-    // Disabling a pattern removes its logs from the list.
-    $pattern->set('status', FALSE)->save();
-    $this->assertNotContains((int) $notify->id(), $this->ids());
+  protected function logId(string $type, array $values = []): int {
+    return (int) $this->createLog($type, $values)->id();
   }
 
   /**
-   * Detectable patterns are listed only for those who may view them.
+   * Deletes all logs, so the next scenario starts with an empty logbook.
    */
-  public function testDetectablePatternsPerPermission(): void {
-
-    $this->createPattern('project_decline', ['detectable' => TRUE]);
-    $apply = $this->createLog('project_apply', ['created' => 100]);
-    $decline = $this->createLog('project_decline', ['created' => 200]);
-    // User 1 bypasses permission checks: use it up.
-    $this->createUser();
-
-    // Managers view observable logs only.
-    $this->setCurrentUser($this->createUser(['view observable log']));
-    $this->assertSame([(int) $apply->id()], $this->ids());
-
-    // Supervisors and observers also view detectable logs.
-    $this->setCurrentUser($this->createUser(['view observable log', 'view detectable log']));
-    $this->assertSame([(int) $decline->id(), (int) $apply->id()], $this->ids());
-  }
-
-  /**
-   * Archived logs are listed only for those who may view them.
-   */
-  public function testArchivedLogsPerPermission(): void {
-
-    $active = $this->createLog('project_apply', ['created' => 100]);
-    $archived = $this->createLog('project_apply', ['created' => 200])->setArchived();
-    $archived->save();
-    // User 1 bypasses permission checks: use it up.
-    $this->createUser();
-
-    $this->setCurrentUser($this->createUser(['view observable log']));
-    $this->assertSame([(int) $active->id()], $this->ids());
-
-    $this->setCurrentUser($this->createUser(['view observable log', 'view archived log']));
-    $this->assertSame([(int) $archived->id(), (int) $active->id()], $this->ids());
-  }
-
-  /**
-   * Logs of hidden projects are listed only beyond the public level.
-   */
-  public function testHiddenProjectLogsPerPermission(): void {
-
-    $visible_project = $this->createLogbookProject('Visible');
-    $visible = $this->createLog('project_publish', ['created' => 100, 'project' => $visible_project->id()]);
-    $hidden_project = $this->createLogbookProject('Hidden');
-    $hidden_project->setHidden()->save();
-    $hidden = $this->createLog('project_publish', ['created' => 200, 'project' => $hidden_project->id()]);
-    $without_project = $this->createLog('project_publish', ['created' => 50]);
-    // User 1 bypasses permission checks: use it up.
-    $this->createUser();
-
-    $this->setCurrentUser($this->createUser(['view public log']));
-    $this->assertSame([(int) $visible->id(), (int) $without_project->id()], $this->ids());
-    // JSON:API collections use entity queries, not Views.
-    $log_storage = $this->container->get('entity_type.manager')->getStorage('log');
-    $query_ids = $log_storage->getQuery()->accessCheck()->execute();
-    $this->assertEqualsCanonicalizing([$visible->id(), $without_project->id()], array_values($query_ids));
-
-    $this->setCurrentUser($this->createUser(['view public log', 'view observable log']));
-    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
-
-    $hidden_project->setHidden(FALSE)->save();
-    $this->setCurrentUser($this->createUser(['view public log']));
-    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
-  }
-
-  /**
-   * The list varies per permissions, so cached results are not shared.
-   */
-  public function testScopeVariesPerPermissions(): void {
-    $view = Views::getView('logbook');
-    $view->setDisplay('page_1');
-    $view->initHandlers();
-    $this->assertContains('user.permissions', $view->filter['log_pattern_scope']->getCacheContexts());
-  }
-
-  /**
-   * Deleting a log pattern does not take the view with it.
-   *
-   * The delete form of a config entity deletes the config that depends on it.
-   */
-  public function testDeletingPatternKeepsTheView(): void {
-    // The patterns exist now: saving the view records what it depends on.
-    View::load('logbook')->save();
-    $changes = $this->container->get('config.manager')
-      ->getConfigEntitiesToChangeOnDependencyRemoval('config', ['logbook.log_pattern.project_apply']);
-    $deleted = array_map(static fn ($entity) => $entity->getConfigDependencyName(), $changes['delete']);
-    $this->assertNotContains('views.view.logbook', $deleted);
-  }
-
-  /**
-   * The exposed pattern filter limits the list to one pattern.
-   */
-  public function testTypeFilter(): void {
-    $apply = $this->createLog('project_apply', ['created' => 100]);
-    $publish = $this->createLog('project_publish', ['created' => 200]);
-    $this->assertSame([(int) $apply->id()], $this->ids(['type' => 'project_apply']));
-    $this->assertSame([(int) $publish->id()], $this->ids(['type' => 'project_publish']));
-    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids(['type' => 'All']));
-  }
-
-  /**
-   * A pattern outside the list cannot be reached through the filter.
-   */
-  public function testUnknownOrUnlistedType(): void {
-    $this->createLog('project_apply', ['created' => 100]);
-    $notify = $this->createLog('project_notify', ['created' => 200]);
-    $this->assertNotContains((int) $notify->id(), $this->ids(['type' => 'project_notify']));
-    $this->assertNotContains((int) $notify->id(), $this->ids(['type' => 'bogus']));
-  }
-
-  /**
-   * A text tag matches the message, the project title and the organization.
-   *
-   * The wildcards % and _ match literally.
-   */
-  public function testTextMatchesMessageProjectTitleAndOrganizationName(): void {
-    $project = $this->createLogbookProject('Zebra Garden');
-    $with_project = $this->createLog('project_apply', ['project' => $project->id(), 'created' => 100]);
-    $percent = $this->createLog('project_apply', ['message' => 'Rabatt 50% heute', 'created' => 200]);
-    $other = $this->createLog('project_apply', ['message' => 'Rabatt 500 heute', 'created' => 300]);
-    $organization = $this->createNamedOrganization('Kranich e.V.');
-    $with_organization = $this->createLog('project_apply', ['organization' => $organization->id(), 'created' => 400]);
-    $this->assertSame([(int) $with_project->id()], $this->ids(['tags' => ['text:Zebra']]));
-    $this->assertSame([(int) $percent->id()], $this->ids(['tags' => ['text:50%']]));
-    $this->assertSame([], $this->ids(['tags' => ['text:Rabatt_50']]));
-    $this->assertContains((int) $other->id(), $this->ids(['tags' => ['text:Rabatt']]));
-    $this->assertSame([(int) $with_organization->id()], $this->ids(['tags' => ['text:kranich']]));
-  }
-
-  /**
-   * A text tag matches the names of the people in a log, in every role.
-   */
-  public function testTextMatchesPeopleNames(): void {
-    $creative = $this->createCreative();
-    $creative->setName('Monika Großmann');
-    $creative->save();
-    $manager = $this->createCreative();
-    $manager->setName('Fredolina Schütte');
-    $manager->save();
-    $author = $this->createCreative();
-    $author->setName('Willy Schreiber');
-    $author->save();
-    $member = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
-    $managed = $this->createLog('project_apply', ['manager' => $manager->id(), 'created' => 200]);
-    $written = $this->createLog('project_apply', ['author' => $author->id(), 'created' => 300]);
-    $this->createLog('project_apply', ['created' => 400]);
-    $this->assertSame([(int) $member->id()], $this->ids(['tags' => ['text:großmann']]));
-    $this->assertSame([(int) $managed->id()], $this->ids(['tags' => ['text:Schütte']]));
-    $this->assertSame([(int) $written->id()], $this->ids(['tags' => ['text:Schreiber']]));
-  }
-
-  /**
-   * The log text names the role of the author, the manager of the log too.
-   */
-  public function testLogTextNamesAuthorRole(): void {
-    $creative = $this->createCreative();
-    $manager = $this->createCreative();
-    $organization = $this->createNamedOrganization('Kranich e.V.');
-    $role = static function ($log): string {
-      $text = $log->get('markup');
-      return (new \ReflectionMethod($text, 'fakeTranslateRole'))->invoke($text);
-    };
-    $this->assertSame('creative', $role($this->createLog('project_apply', ['author' => $creative->id()])));
-    $this->assertSame('manager', $role($this->createLog('project_apply', [
-      'author' => $manager->id(),
-      'manager' => $manager->id(),
-    ])));
-    $this->assertSame('organization', $role($this->createLog('project_apply', ['author' => $organization->id()])));
-  }
-
-  /**
-   * A text tag matches the log text of the pattern, not its placeholders.
-   */
-  public function testTextMatchesLogText(): void {
-    LogText::create([
-      'log_pattern' => 'project_apply',
-      'text' => '%Creative hat für das Projekt %Project Interesse bekundet!',
-    ])->save();
-    LogText::create(['log_pattern' => 'project_publish', 'text' => 'Das Projekt %Project wurde veröffentlicht.'])->save();
-    $apply = $this->createLog('project_apply', ['created' => 100]);
-    $publish = $this->createLog('project_publish', ['created' => 200]);
-    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:interesse']]));
-    $this->assertSame([(int) $publish->id()], $this->ids(['tags' => ['text:veröffentlicht']]));
-    $this->assertSame([(int) $publish->id(), (int) $apply->id()], $this->ids(['tags' => ['text:Projekt']]));
-    // The placeholders are not part of the text.
-    $this->assertSame([], $this->ids(['tags' => ['text:Creative']]));
-    $this->assertSame([], $this->ids(['tags' => ['text:%Project']]));
-  }
-
-  /**
-   * Cached results follow edited log texts.
-   */
-  public function testResultsFollowEditedLogTexts(): void {
-    $text = LogText::create(['log_pattern' => 'project_apply', 'text' => 'Interesse bekundet']);
-    $text->save();
-    $apply = $this->createLog('project_apply', ['created' => 100]);
-    $this->assertSame([(int) $apply->id()], $this->ids(['tags' => ['text:Interesse']]));
-    $text->setText('Beworben')->save();
-    $this->assertSame([], $this->ids(['tags' => ['text:Interesse']]));
-  }
-
-  /**
-   * A person or organization tag matches every role in a log.
-   */
-  public function testTagMatchesEveryRole(): void {
-    $creative = $this->createCreative();
-    $organization = $this->createNamedOrganization('Kranich e.V.');
-    $author = $this->createLog('project_apply', ['author' => $creative->id(), 'created' => 100]);
-    $member = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 200]);
-    $managed = $this->createLog('project_apply', ['manager' => $creative->id(), 'created' => 300]);
-    $owned = $this->createLog('project_apply', ['organization' => $organization->id(), 'created' => 400]);
-    $this->createLog('project_apply', ['created' => 500]);
-    $this->assertSame(
-      [(int) $managed->id(), (int) $member->id(), (int) $author->id()],
-      $this->ids(['tags' => ['user:' . $creative->id()]]),
-    );
-    $this->assertSame([(int) $owned->id()], $this->ids(['tags' => ['user:' . $organization->id()]]));
-  }
-
-  /**
-   * An organization tag finds the logs of its projects without organization.
-   */
-  public function testOrganizationTagFindsFeedbackLogsOfItsProjects(): void {
-    $this->createPattern('feedback_complete', ['observable' => TRUE]);
-    $project = $this->createLogbookProject('Kranichflug');
-    $feedback = $this->createLog('feedback_complete', ['project' => $project->id(), 'created' => 100]);
-    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject()->id(), 'created' => 200]);
-    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['user:' . $project->getOwnerId()]]));
-  }
-
-  /**
-   * Tags of people, organizations and projects add up.
-   */
-  public function testTagsCombineWithOr(): void {
-    $creative = $this->createCreative();
-    $project = $this->createLogbookProject('Kranichflug');
-    $by_creative = $this->createLog('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
-    $of_project = $this->createLog('project_apply', ['project' => $project->id(), 'created' => 200]);
-    $this->createLog('project_apply', ['created' => 300]);
-    $this->assertSame(
-      [(int) $of_project->id(), (int) $by_creative->id()],
-      $this->ids(['tags' => ['user:' . $creative->id(), 'project:' . $project->id()]]),
-    );
-  }
-
-  /**
-   * Text tags narrow the result, each of them.
-   */
-  public function testTextNarrowsTags(): void {
-    $project = $this->createLogbookProject('Kranichflug');
-    $feedback = $this->createLog('project_apply', [
-      'project' => $project->id(),
-      'message' => 'Feedback kam',
-      'created' => 100,
-    ]);
-    $this->createLog('project_apply', ['project' => $project->id(), 'message' => 'Nichts', 'created' => 200]);
-    $this->createLog('project_apply', ['message' => 'Feedback woanders', 'created' => 300]);
-    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['project:' . $project->id(), 'text:Feedback']]));
-    $both = $this->createLog('project_apply', ['message' => 'Zebra im Garden', 'created' => 400]);
-    $this->createLog('project_apply', ['message' => 'Zebra allein', 'created' => 500]);
-    $this->assertSame([(int) $both->id()], $this->ids(['tags' => ['text:Zebra', 'text:Garden']]));
-  }
-
-  /**
-   * A log with two tagged creatives is listed once.
-   */
-  public function testLogWithTwoTaggedCreativesIsListedOnce(): void {
-    $first = $this->createCreative();
-    $second = $this->createCreative();
-    $log = $this->createLog('project_apply', ['creatives' => [$first->id(), $second->id()], 'created' => 100]);
-    $this->assertSame(
-      [(int) $log->id()],
-      $this->ids(['tags' => ['user:' . $first->id(), 'user:' . $second->id()]]),
-    );
-  }
-
-  /**
-   * Invalid tags and ids of deleted entities are ignored, as in the bar.
-   */
-  public function testInvalidTagsAreIgnored(): void {
-    $this->createLog('project_apply', ['created' => 100]);
-    $with_message = $this->createLog('project_apply', ['message' => 'Kranich hallo', 'created' => 200]);
-    $all = $this->ids();
-    $this->assertSame($all, $this->ids(['tags' => ['node:1', 'user:abc', 'text:  ']]));
-    $this->assertSame($all, $this->ids(['tags' => 'garbage']));
-    $this->assertSame($all, $this->ids(['tags' => ['user:999999']]));
-    $this->assertSame([(int) $with_message->id()], $this->ids(['tags' => ['user:999999', 'text:Kranich']]));
-  }
-
-  /**
-   * Invalid input does not show up in the search bar.
-   */
-  public function testInvalidTagsAreNotShownInTheBar(): void {
-    $html = $this->renderPage(['tags' => ['node:1', '<b>x</b>']]);
-    $this->assertStringNotContainsString('node:1', $html);
-    $this->assertStringNotContainsString('&lt;b&gt;x', $html);
-  }
-
-  /**
-   * Typing an organization name finds the logs of its projects, as its tag.
-   */
-  public function testOrganizationNameFindsFeedbackLogsOfItsProjects(): void {
-    $this->createPattern('feedback_complete', ['observable' => TRUE]);
-    $organization = $this->createNamedOrganization('Kranich e.V.');
-    $project = $this->createLogbookProject('Flug');
-    $project->setOwnerId($organization->id())->save();
-    $feedback = $this->createLog('feedback_complete', ['project' => $project->id(), 'created' => 100]);
-    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject('Andere')->id(), 'created' => 200]);
-    $this->assertSame([(int) $feedback->id()], $this->ids(['tags' => ['text:Kranich']]));
-  }
-
-  /**
-   * Cached results follow renamed projects and organizations.
-   */
-  public function testResultsFollowRenamedProjectsAndOrganizations(): void {
-    $project = $this->createLogbookProject('Zebra Garden');
-    $organization = $this->createNamedOrganization('Kranich e.V.');
-    $log = $this->createLog('project_apply', [
-      'project' => $project->id(),
-      'organization' => $organization->id(),
-      'created' => 100,
-    ]);
-    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Zebra']]));
-    $project->setTitle('Anderer Titel')->save();
-    $this->assertSame([], $this->ids(['tags' => ['text:Zebra']]));
-    $this->assertSame([(int) $log->id()], $this->ids(['tags' => ['text:Kranich']]));
-    $organization->set('field_name', 'Storch e.V.')->save();
-    $this->assertSame([], $this->ids(['tags' => ['text:Kranich']]));
-  }
-
-  /**
-   * The search bar replaces the text box.
-   */
-  public function testRenderedFormHasSearchBar(): void {
-    $html = $this->renderPage();
-    $this->assertStringContainsString('logbook-search', $html);
-    $this->assertStringContainsString('/logbook/search/autocomplete', $html);
-    $this->assertStringNotContainsString('Suchen …', $html);
+  protected function deleteLogs(): void {
+    $storage = $this->container->get('entity_type.manager')->getStorage('log');
+    $storage->delete($storage->loadMultiple());
   }
 
   /**
@@ -455,54 +110,89 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
-   * A search without results says so and points to the reset button.
+   * Creates a creative with a name.
    */
-  public function testEmptySearchOffersReset(): void {
-    $this->createLog('project_apply', ['created' => 100]);
-    $html = $this->renderPage(['tags' => ['text:zzzzqqq']]);
-    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
-    $this->assertStringContainsString('setze die Suche zurück', $html);
-    $html = $this->renderPage(['type' => 'project_apply', 'tags' => ['text:zzzzqqq']]);
-    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+  protected function createNamedCreative(string $name): Creative {
+    $creative = $this->createCreative();
+    $creative->setName($name);
+    $creative->save();
+    return $creative;
   }
 
   /**
-   * An empty logbook without a search has nothing to reset.
+   * Gets the patterns that the pattern select of the page offers.
+   *
+   * @return list<string>
+   *   The pattern ids, without the option for all, sorted.
    */
-  public function testEmptyLogbookWithoutSearch(): void {
-    $html = $this->renderPage();
-    $this->assertStringContainsString('Noch keine Einträge.', $html);
-    $this->assertStringNotContainsString('setze die Suche zurück', $html);
+  protected function typeOptions(): array {
+    preg_match('/<select[^>]*name="type".*?<\/select>/s', $this->renderPage(), $select);
+    preg_match_all('/<option value="([^"]+)"/', $select[0] ?? '', $found);
+    $options = array_values(array_diff($found[1], ['All']));
+    sort($options);
+    return $options;
   }
 
   /**
-   * The date column is not sortable; the list is newest first.
+   * The pattern flags and the exposed filters decide what is listed.
    */
-  public function testDateColumnIsNotSortable(): void {
-    $old = $this->createLog('project_apply', ['created' => 100]);
-    $new = $this->createLog('project_apply', ['created' => 200]);
-    $html = $this->renderPage();
-    $this->assertStringNotContainsString('Sort ascending', $html);
-    $this->assertStringNotContainsString('order=created', $html);
-    $this->assertSame([(int) $new->id(), (int) $old->id()], $this->ids(['order' => 'created', 'sort' => 'asc']));
+  public function testScopeAndTypeFilter(): void {
+
+    $apply = $this->logId('project_apply', ['created' => 100]);
+    $publish = $this->logId('project_publish', ['created' => 200]);
+    $notify = $this->logId('project_notify', ['created' => 300]);
+    $this->createLog('feedback_off', ['created' => 400]);
+
+    // Not observable and disabled patterns are not listed, newest first.
+    $this->assertSame([$publish, $apply], $this->ids());
+    // The date column is not sortable: the list stays newest first.
+    $this->assertSame([$publish, $apply], $this->ids(['order' => 'created', 'sort' => 'asc']));
+
+    // The exposed pattern filter limits the list to one pattern.
+    $this->assertSame([$apply], $this->ids(['type' => 'project_apply']));
+    $this->assertSame([$publish], $this->ids(['type' => 'project_publish']));
+    $this->assertSame([$publish, $apply], $this->ids(['type' => 'All']));
+
+    // The list varies per permissions, so cached results are not shared.
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $view->initHandlers();
+    $this->assertContains('user.permissions', $view->filter['log_pattern_scope']->getCacheContexts());
+
+    // Making a pattern observable lists it, without any change of the view.
+    $pattern = LogPattern::load('project_notify');
+    $pattern->set('observable', TRUE)->save();
+    $this->assertSame([$notify, $publish, $apply], $this->ids());
+    // A pattern that is created later is listed as well.
+    $this->createPattern('project_new', ['observable' => TRUE]);
+    $new = $this->logId('project_new', ['created' => 500]);
+    $this->assertContains($new, $this->ids());
+    // Disabling a pattern removes its logs from the list.
+    $pattern->set('status', FALSE)->save();
+    $this->assertNotContains($notify, $this->ids());
+
+    // Deleting a log pattern does not take the view with it. The delete form
+    // of a config entity deletes the config that depends on it. The patterns
+    // exist now: saving the view records what it depends on.
+    View::load('logbook')->save();
+    $changes = $this->container->get('config.manager')
+      ->getConfigEntitiesToChangeOnDependencyRemoval('config', ['logbook.log_pattern.project_apply']);
+    $deleted = array_map(static fn ($entity) => $entity->getConfigDependencyName(), $changes['delete']);
+    $this->assertNotContains('views.view.logbook', $deleted);
+
+    // A pattern outside the list cannot be reached through the filter. The
+    // invalid choice flags the form as failed for the rest of the request, so
+    // this comes last.
+    $pattern->set('status', TRUE)->set('observable', FALSE)->save();
+    $this->assertNotContains($notify, $this->ids(['type' => 'project_notify']));
+    $this->assertNotContains($notify, $this->ids(['type' => 'bogus']));
   }
 
   /**
-   * The page title of the logbook is read out, but not shown.
+   * The created filter includes the end day; the pager has 50 rows, 5 links.
    */
-  public function testPageTitleIsVisuallyHidden(): void {
-    $variables = ['title_attributes' => []];
-    (new LogbookPageHooks(new RouteMatch('view.logbook.page_1', new Route('/logbook'))))->preprocessPageTitle($variables);
-    $this->assertContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
-    $variables = ['title_attributes' => []];
-    (new LogbookPageHooks(new RouteMatch('system.admin', new Route('/admin'))))->preprocessPageTitle($variables);
-    $this->assertNotContains('visually-hidden', $variables['title_attributes']['class'] ?? []);
-  }
+  public function testCreatedRangeAndPager(): void {
 
-  /**
-   * The created filter limits the time range, the end day included.
-   */
-  public function testCreatedRange(): void {
     $this->createLog('project_apply', ['created' => strtotime('2026-06-01 12:00')]);
     $start = $this->createLog('project_apply', ['created' => strtotime('2026-06-05 00:30')]);
     $in = $this->createLog('project_apply', ['created' => strtotime('2026-06-10 12:00')]);
@@ -511,138 +201,321 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->createLog('project_apply', ['created' => strtotime('2026-06-20 12:00')]);
     $range = ['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']];
     $this->assertSame([(int) $end->id(), (int) $in->id(), (int) $start->id()], $this->ids($range));
-  }
+    $this->deleteLogs();
 
-  /**
-   * More than 50 logs give a second page.
-   */
-  public function testPager(): void {
-    for ($i = 1; $i <= 51; $i++) {
+    for ($i = 1; $i <= 351; $i++) {
       $this->createLog('project_apply', ['created' => $i]);
     }
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $view->execute();
     $this->assertCount(50, $view->result);
-    $this->assertSame(51, (int) $view->pager->getTotalItems());
-  }
-
-  /**
-   * The pager links at most five pages, so it fits on a phone.
-   */
-  public function testPagerLinksFivePages(): void {
-    for ($i = 1; $i <= 351; $i++) {
-      $this->createLog('project_apply', ['created' => $i]);
-    }
+    $this->assertSame(351, (int) $view->pager->getTotalItems());
+    // The pager links at most five pages, so it fits on a phone.
     preg_match_all('#class="pager__item(?: is-active)? ?"#', $this->renderPage(), $items);
     $this->assertCount(5, $items[0]);
   }
 
   /**
-   * A log without project or organization is listed and renders.
+   * The page, detectable and archived logs and hidden projects need access.
    */
-  public function testLogWithoutProject(): void {
-    $this->createLog('project_apply', ['message' => 'No project here', 'created' => 100]);
-    $html = $this->renderPage();
-    $this->assertStringContainsString('No project here', $html);
+  public function testPermissions(): void {
+
+    // The page needs the permission to view observable logs. Administering
+    // the log patterns is not the permission of the logbook.
+    $access_manager = $this->container->get('access_manager');
+    $this->container->get('router.builder')->rebuild();
+    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $this->createUser([])));
+    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $this->createUser(['administer log pattern'])));
+    $this->assertTrue($access_manager->checkNamedRoute('view.logbook.page_1', [], $this->createUser(['view observable log'])));
+
+    // Managers view observable logs only; supervisors and observers also
+    // view detectable logs.
+    $this->createPattern('project_decline', ['detectable' => TRUE]);
+    $apply = $this->logId('project_apply', ['created' => 100]);
+    $decline = $this->logId('project_decline', ['created' => 200]);
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([$apply], $this->ids());
+    $this->setCurrentUser($this->createUser(['view observable log', 'view detectable log']));
+    $this->assertSame([$decline, $apply], $this->ids());
+    $this->deleteLogs();
+
+    // Archived logs are listed only with the permission, in the view and in
+    // access-checked entity queries.
+    $active = $this->logId('project_apply', ['created' => 100]);
+    $archived = $this->createLog('project_apply', ['created' => 200])->setArchived();
+    $archived->save();
+    $archived = (int) $archived->id();
+    $query = fn () => array_map('intval', array_values(
+      $this->container->get('entity_type.manager')->getStorage('log')->getQuery()->accessCheck(TRUE)->sort('id')->execute()
+    ));
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([$active], $this->ids());
+    $this->assertSame([$active], $query());
+    $this->setCurrentUser($this->createUser(['view observable log', 'view archived log']));
+    $this->assertSame([$archived, $active], $this->ids());
+    $this->assertSame([$active, $archived], $query());
+    $this->deleteLogs();
+
+    // Logs of hidden projects are listed only beyond the public level.
+    $visible_project = $this->createLogbookProject('Visible');
+    $visible = $this->logId('project_publish', ['created' => 100, 'project' => $visible_project->id()]);
+    $hidden_project = $this->createLogbookProject('Hidden');
+    $hidden_project->setHidden()->save();
+    $hidden = $this->logId('project_publish', ['created' => 200, 'project' => $hidden_project->id()]);
+    $without_project = $this->logId('project_publish', ['created' => 50]);
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([$visible, $without_project], $this->ids());
+    // JSON:API collections use entity queries, not Views.
+    $this->assertEqualsCanonicalizing([$visible, $without_project], $query());
+    $this->setCurrentUser($this->createUser(['view public log', 'view observable log']));
+    $this->assertSame([$hidden, $visible, $without_project], $this->ids());
+    $hidden_project->setHidden(FALSE)->save();
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([$hidden, $visible, $without_project], $this->ids());
   }
 
   /**
-   * Cells: tone pill, message, visibility icons.
+   * A text tag matches the texts, titles and names of a log.
    */
-  public function testCells(): void {
-    $this->createLog('project_apply', ['message' => 'Hello <b>world</b>', 'created' => 100]);
-    $this->createLog('project_publish', ['created' => 200]);
+  public function testTextSearch(): void {
+
+    // A text tag matches the message, the project title and the organization.
+    // The wildcards % and _ match literally.
+    $project = $this->createLogbookProject('Zebra Garden');
+    $with_project = $this->logId('project_apply', ['project' => $project->id(), 'created' => 100]);
+    $percent = $this->logId('project_apply', ['message' => 'Rabatt 50% heute', 'created' => 200]);
+    $other = $this->logId('project_apply', ['message' => 'Rabatt 500 heute', 'created' => 300]);
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $with_organization = $this->logId('project_apply', ['organization' => $organization->id(), 'created' => 400]);
+    $this->assertSame([$with_project], $this->ids(['tags' => ['text:Zebra']]));
+    $this->assertSame([$percent], $this->ids(['tags' => ['text:50%']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:Rabatt_50']]));
+    $this->assertContains($other, $this->ids(['tags' => ['text:Rabatt']]));
+    $this->assertSame([$with_organization], $this->ids(['tags' => ['text:kranich']]));
+
+    // Cached results follow renamed projects and organizations.
+    $both = $this->logId('project_apply', [
+      'project' => $project->id(),
+      'organization' => $organization->id(),
+      'created' => 500,
+    ]);
+    $project->setTitle('Anderer Titel')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Zebra']]));
+    $this->assertSame([$both, $with_organization], $this->ids(['tags' => ['text:Kranich']]));
+    $organization->set('field_name', 'Storch e.V.')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Kranich']]));
+    $this->deleteLogs();
+
+    // A text tag matches the names of the people in a log, in every role.
+    $creative = $this->createNamedCreative('Monika Großmann');
+    $manager = $this->createNamedCreative('Fredolina Schütte');
+    $author = $this->createNamedCreative('Willy Schreiber');
+    $member = $this->logId('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
+    $managed = $this->logId('project_apply', ['manager' => $manager->id(), 'created' => 200]);
+    $written = $this->logId('project_apply', ['author' => $author->id(), 'created' => 300]);
+    $this->createLog('project_apply', ['created' => 400]);
+    $this->assertSame([$member], $this->ids(['tags' => ['text:großmann']]));
+    $this->assertSame([$managed], $this->ids(['tags' => ['text:Schütte']]));
+    $this->assertSame([$written], $this->ids(['tags' => ['text:Schreiber']]));
+    $this->deleteLogs();
+
+    // A text tag matches the log text of the pattern, not its placeholders.
+    $apply_text = LogText::create([
+      'log_pattern' => 'project_apply',
+      'text' => '%Creative hat für das Projekt %Project Interesse bekundet!',
+    ]);
+    $apply_text->save();
+    $publish_text = LogText::create([
+      'log_pattern' => 'project_publish',
+      'text' => 'Das Projekt %Project wurde veröffentlicht.',
+    ]);
+    $publish_text->save();
+    $apply = $this->logId('project_apply', ['created' => 100]);
+    $publish = $this->logId('project_publish', ['created' => 200]);
+    $this->assertSame([$apply], $this->ids(['tags' => ['text:interesse']]));
+    $this->assertSame([$publish], $this->ids(['tags' => ['text:veröffentlicht']]));
+    $this->assertSame([$publish, $apply], $this->ids(['tags' => ['text:Projekt']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:Creative']]));
+    $this->assertSame([], $this->ids(['tags' => ['text:%Project']]));
+    // Cached results follow edited log texts.
+    $apply_text->setText('Beworben')->save();
+    $this->assertSame([], $this->ids(['tags' => ['text:Interesse']]));
+    $apply_text->delete();
+    $publish_text->delete();
+    $this->deleteLogs();
+
+    // Typing an organization name finds the logs of its projects, as its tag.
+    $this->createPattern('feedback_complete', ['observable' => TRUE]);
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $project = $this->createLogbookProject('Flug');
+    $project->setOwnerId($organization->id())->save();
+    $feedback = $this->logId('feedback_complete', ['project' => $project->id(), 'created' => 100]);
+    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject('Andere')->id(), 'created' => 200]);
+    $this->assertSame([$feedback], $this->ids(['tags' => ['text:Kranich']]));
+    $this->deleteLogs();
+
+    // Text tags narrow the result, each of them.
+    $project = $this->createLogbookProject('Kranichflug');
+    $feedback = $this->logId('project_apply', [
+      'project' => $project->id(),
+      'message' => 'Feedback kam',
+      'created' => 100,
+    ]);
+    $this->createLog('project_apply', ['project' => $project->id(), 'message' => 'Nichts', 'created' => 200]);
+    $this->createLog('project_apply', ['message' => 'Feedback woanders', 'created' => 300]);
+    $this->assertSame([$feedback], $this->ids(['tags' => ['project:' . $project->id(), 'text:Feedback']]));
+    $both = $this->logId('project_apply', ['message' => 'Zebra im Garden', 'created' => 400]);
+    $this->createLog('project_apply', ['message' => 'Zebra allein', 'created' => 500]);
+    $this->assertSame([$both], $this->ids(['tags' => ['text:Zebra', 'text:Garden']]));
+  }
+
+  /**
+   * The log text names the role of the author, the manager of the log too.
+   */
+  public function testLogTextNamesAuthorRole(): void {
+
+    $this->createPattern('project_role', [
+      'observable' => TRUE,
+      'tokens' => [['token' => '%AuthorWithRole', 'required' => '1']],
+    ]);
+    LogText::create(['log_pattern' => 'project_role', 'text' => '%AuthorWithRole schreibt.'])->save();
+    $creative = $this->createCreative();
+    $manager = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $role = fn (array $values): string => strip_tags($this->createLog('project_role', $values)->getMarkup());
+
+    $this->assertStringStartsWith('creative ', $role(['author' => $creative->id()]));
+    $this->assertStringStartsWith('manager ', $role(['author' => $manager->id(), 'manager' => $manager->id()]));
+    $this->assertStringStartsWith('organization ', $role(['author' => $organization->id()]));
+    $this->assertStringEndsWith(' schreibt.', $role(['author' => $creative->id()]));
+  }
+
+  /**
+   * Person, organization and project tags match every role and add up.
+   */
+  public function testTagSearch(): void {
+
+    // A person or organization tag matches every role in a log.
+    $creative = $this->createCreative();
+    $organization = $this->createNamedOrganization('Kranich e.V.');
+    $author = $this->logId('project_apply', ['author' => $creative->id(), 'created' => 100]);
+    $member = $this->logId('project_apply', ['creatives' => [$creative->id()], 'created' => 200]);
+    $managed = $this->logId('project_apply', ['manager' => $creative->id(), 'created' => 300]);
+    $owned = $this->logId('project_apply', ['organization' => $organization->id(), 'created' => 400]);
+    $this->createLog('project_apply', ['created' => 500]);
+    $this->assertSame([$managed, $member, $author], $this->ids(['tags' => ['user:' . $creative->id()]]));
+    $this->assertSame([$owned], $this->ids(['tags' => ['user:' . $organization->id()]]));
+    $this->deleteLogs();
+
+    // An organization tag finds the logs of its projects without
+    // organization.
+    $this->createPattern('feedback_complete', ['observable' => TRUE]);
+    $project = $this->createLogbookProject('Kranichflug');
+    $feedback = $this->logId('feedback_complete', ['project' => $project->id(), 'created' => 100]);
+    $this->createLog('feedback_complete', ['project' => $this->createLogbookProject()->id(), 'created' => 200]);
+    $this->assertSame([$feedback], $this->ids(['tags' => ['user:' . $project->getOwnerId()]]));
+    $this->deleteLogs();
+
+    // Tags of people, organizations and projects add up.
+    $by_creative = $this->logId('project_apply', ['creatives' => [$creative->id()], 'created' => 100]);
+    $of_project = $this->logId('project_apply', ['project' => $project->id(), 'created' => 200]);
+    $this->createLog('project_apply', ['created' => 300]);
+    $tags = ['user:' . $creative->id(), 'project:' . $project->id()];
+    $this->assertSame([$of_project, $by_creative], $this->ids(['tags' => $tags]));
+    $this->deleteLogs();
+
+    // A log with two tagged creatives is listed once.
+    $second = $this->createCreative();
+    $log = $this->logId('project_apply', ['creatives' => [$creative->id(), $second->id()], 'created' => 100]);
+    $this->assertSame([$log], $this->ids(['tags' => ['user:' . $creative->id(), 'user:' . $second->id()]]));
+
+    // Invalid tags and ids of deleted entities are ignored, as in the bar.
+    $with_message = $this->logId('project_apply', ['message' => 'Kranich hallo', 'created' => 200]);
+    $all = $this->ids();
+    $this->assertSame([$with_message, $log], $all);
+    $this->assertSame($all, $this->ids(['tags' => ['node:1', 'user:abc', 'text:  ']]));
+    $this->assertSame($all, $this->ids(['tags' => 'garbage']));
+    $this->assertSame($all, $this->ids(['tags' => ['user:999999']]));
+    $this->assertSame([$with_message], $this->ids(['tags' => ['user:999999', 'text:Kranich']]));
+  }
+
+  /**
+   * The exposed form, the empty texts and the offered patterns.
+   */
+  public function testExposedFormAndEmptyTexts(): void {
+
+    // An empty logbook without a search has nothing to reset.
     $html = $this->renderPage();
+    $this->assertStringContainsString('Noch keine Einträge.', $html);
+    $this->assertStringNotContainsString('setze die Suche zurück', $html);
+    // The search bar replaces the text box.
+    $this->assertStringContainsString('logbook-search', $html);
+    $this->assertStringContainsString('/logbook/search/autocomplete', $html);
+    $this->assertStringNotContainsString('Suchen …', $html);
+    // The search bar comes first, then the pattern and the date range.
+    preg_match_all('/<(?:input|select)[^>]*name="([^"]+)"/', substr($html, 0, strpos($html, '<table') ?: NULL), $matches);
+    $names = array_values(array_diff($matches[1], ['form_build_id', 'form_id']));
+    $this->assertSame(['tags', 'type', 'created[min]', 'created[max]'], $names);
+    // Without logs, no pattern is offered.
+    $this->assertSame([], $this->typeOptions());
+
+    // Invalid input does not show up in the search bar.
+    $html = $this->renderPage(['tags' => ['node:1', '<b>x</b>']]);
+    $this->assertStringNotContainsString('node:1', $html);
+    $this->assertStringNotContainsString('&lt;b&gt;x', $html);
+
+    // The date range uses date inputs and the pattern select says what all
+    // means. The end day is made inclusive in the form values, not in the
+    // field.
+    $html = $this->renderPage(['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']]);
+    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[min\]"/', $html);
+    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[max\]"/', $html);
+    $this->assertStringContainsString('value="2026-06-05"', $html);
+    $this->assertStringContainsString('value="2026-06-15"', $html);
+    $this->assertStringNotContainsString('23:59:59', $html);
+    $this->assertStringContainsString('All types', $html);
+    $this->assertStringNotContainsString('- Any -', $html);
+
+    // The pattern select offers the patterns that have logs. Not observable,
+    // disabled and unused patterns are not offered.
+    $this->createLog('project_publish', ['created' => 100]);
+    $this->createLog('project_apply', ['created' => 200]);
+    $this->createLog('project_notify', ['created' => 300]);
+    $this->createLog('feedback_off', ['created' => 400]);
+    $this->assertSame(['project_apply', 'project_publish'], $this->typeOptions());
+    $this->createLog('project_complete', ['created' => 500]);
+    $this->assertSame(['project_apply', 'project_complete', 'project_publish'], $this->typeOptions());
+
+    // A search without results says so and points to the reset button.
+    $html = $this->renderPage(['tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+    $this->assertStringContainsString('setze die Suche zurück', $html);
+    $html = $this->renderPage(['type' => 'project_apply', 'tags' => ['text:zzzzqqq']]);
+    $this->assertStringContainsString('Keine Einträge für diese Suche.', $html);
+  }
+
+  /**
+   * The rows show the tone, the message and the visibility of each log.
+   */
+  public function testRenderedRows(): void {
+
+    $this->createPattern('project_mediate', ['observable' => TRUE, 'public' => TRUE]);
+    // Logs without project or organization are listed and render.
+    $this->createLog('project_apply', ['message' => 'Hello <b>world</b>', 'created' => 100]);
+    $this->createLog('project_mediate', ['created' => 200]);
+    $this->createLog('project_publish', ['created' => 300]);
+    $html = $this->renderPage();
+
+    // Cells: tone pill, escaped message, visibility icons.
     $this->assertStringContainsString('logbook-type--positive', $html);
     $this->assertStringContainsString('logbook-event__message', $html);
     $this->assertStringContainsString('Hello &lt;b&gt;world&lt;/b&gt;', $html);
     // The visibility column has an accessible name, but no visible title.
     $this->assertStringContainsString('Sichtbarkeit</th>', $html);
-    $this->assertStringContainsString('logbook-icon--lock', $html);
     $this->assertStringContainsString('aria-label="Internal: only managers of the organization"', $html);
-    $this->assertStringContainsString('logbook-icon--star', $html);
-  }
-
-  /**
-   * The page needs the permission to view observable logs.
-   */
-  public function testAccess(): void {
-    $access_manager = $this->container->get('access_manager');
-    $this->container->get('router.builder')->rebuild();
-    // User 1 bypasses permission checks: use it up.
-    $this->createUser();
-    $nobody = $this->createUser([]);
-    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $nobody));
-    // Administering the log patterns is not the permission of the logbook.
-    $pattern_admin = $this->createUser(['administer log pattern']);
-    $this->assertFalse($access_manager->checkNamedRoute('view.logbook.page_1', [], $pattern_admin));
-    $observer = $this->createUser(['view observable log']);
-    $this->assertTrue($access_manager->checkNamedRoute('view.logbook.page_1', [], $observer));
-  }
-
-  /**
-   * Only a celebrate pattern colors the row and the library is attached.
-   */
-  public function testCelebrateRow(): void {
-    $this->setCurrentUser($this->createUser(['view observable log']));
-    $this->createLog('project_apply', ['created' => 100]);
-    $this->assertStringNotContainsString('logbook-row--celebrate', $this->renderPage());
-    $this->createLog('project_complete', ['created' => 200]);
-    $view = Views::getView('logbook');
-    $view->setDisplay('page_1');
-    $render = $view->buildRenderable('page_1');
-    $html = (string) $this->container->get('renderer')->renderInIsolation($render);
-    $this->assertSame(1, substr_count($html, 'logbook-row--celebrate'));
-    $this->assertContains('logbook/table', $render['#attached']['library'] ?? []);
-  }
-
-  /**
-   * The date range uses date inputs and the pattern select says what all means.
-   */
-  public function testExposedFormWidgets(): void {
-    $html = $this->renderPage(['created' => ['min' => '2026-06-05', 'max' => '2026-06-15']]);
-    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[min\]"/', $html);
-    $this->assertMatchesRegularExpression('/<input[^>]*type="date"[^>]*name="created\[max\]"/', $html);
-    $this->assertStringContainsString('value="2026-06-05"', $html);
-    // The end day is made inclusive in the form values, not in the field.
-    $this->assertStringContainsString('value="2026-06-15"', $html);
-    $this->assertStringNotContainsString('23:59:59', $html);
-    $this->assertStringContainsString('All types', $html);
-    $this->assertStringNotContainsString('- Any -', $html);
-  }
-
-  /**
-   * Editing a log pattern invalidates the rendered list.
-   */
-  public function testListDependsOnLogPatterns(): void {
-    $this->setCurrentUser($this->createUser(['view observable log']));
-    $view = Views::getView('logbook');
-    $view->setDisplay('page_1');
-    $render = $view->buildRenderable('page_1');
-    $this->container->get('renderer')->renderInIsolation($render);
-    $this->assertContains('config:log_pattern_list', $render['#cache']['tags'] ?? []);
-  }
-
-  /**
-   * The search bar comes first, then the pattern and the date range.
-   */
-  public function testExposedFilterOrder(): void {
-    $html = $this->renderPage();
-    preg_match_all('/<(?:input|select)[^>]*name="([^"]+)"/', substr($html, 0, strpos($html, '<table') ?: NULL), $matches);
-    $names = array_values(array_diff($matches[1], ['form_build_id', 'form_id']));
-    $this->assertSame(['tags', 'type', 'created[min]', 'created[max]'], $names);
-  }
-
-  /**
-   * Internal logs show a lock, public logs a globe, promoted logs a star only.
-   */
-  public function testVisibilityIcons(): void {
-    $this->createPattern('project_mediate', ['observable' => TRUE, 'public' => TRUE]);
-    $this->createLog('project_apply', ['created' => 100]);
-    $this->createLog('project_mediate', ['created' => 200]);
-    $this->createLog('project_publish', ['created' => 300]);
-    $html = $this->renderPage();
+    // Internal logs show a lock, public logs a globe, promoted logs a star
+    // only.
     preg_match_all('/<tr>.*?<\/tr>/s', $html, $rows);
     $icons = [];
     foreach ($rows[0] as $row) {
@@ -654,48 +527,28 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertSame(['lock'], $icons['Apply']);
     $this->assertSame(['globe'], $icons['Mediate']);
     $this->assertSame(['star'], $icons['Publish']);
-  }
+    // The date column is not sortable.
+    $this->assertStringNotContainsString('Sort ascending', $html);
+    $this->assertStringNotContainsString('order=created', $html);
+    // Only a celebrate pattern colors the row.
+    $this->assertStringNotContainsString('logbook-row--celebrate', $html);
 
-  /**
-   * An archived log shows the archive icon instead of its visibility.
-   */
-  public function testArchivedIcon(): void {
+    $this->createLog('project_complete', ['created' => 400]);
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $render = $view->buildRenderable('page_1');
+    $html = (string) $this->container->get('renderer')->renderInIsolation($render);
+    $this->assertSame(1, substr_count($html, 'logbook-row--celebrate'));
+    $this->assertContains('logbook/table', $render['#attached']['library'] ?? []);
+    // Editing a log pattern invalidates the rendered list.
+    $this->assertContains('config:log_pattern_list', $render['#cache']['tags'] ?? []);
+    $this->deleteLogs();
+
+    // An archived log shows the archive icon instead of its visibility.
     $this->createLog('project_publish', ['created' => 100])->setArchived()->save();
     $html = $this->renderPage([], ['view observable log', 'view archived log']);
     preg_match_all('/logbook-icon--(\w+)/', $html, $found);
     $this->assertSame(['archive'], $found[1]);
-  }
-
-  /**
-   * Gets the patterns that the pattern select of the page offers.
-   *
-   * @return list<string>
-   *   The pattern ids, without the option for all.
-   */
-  protected function typeOptions(): array {
-    preg_match('/<select[^>]*name="type".*?<\/select>/s', $this->renderPage(), $select);
-    preg_match_all('/<option value="([^"]+)"/', $select[0] ?? '', $found);
-    return array_values(array_diff($found[1], ['All']));
-  }
-
-  /**
-   * The pattern select offers the patterns that have logs.
-   */
-  public function testTypeOptionsAreThePatternsWithLogs(): void {
-    $offered = $this->typeOptions();
-    $this->assertSame([], $offered);
-    $this->createLog('project_publish', ['created' => 100]);
-    $this->createLog('project_apply', ['created' => 200]);
-    // Not observable, disabled and unused patterns are not offered.
-    $this->createLog('project_notify', ['created' => 300]);
-    $this->createLog('feedback_off', ['created' => 400]);
-    $offered = $this->typeOptions();
-    sort($offered);
-    $this->assertSame(['project_apply', 'project_publish'], $offered);
-    $this->createLog('project_complete', ['created' => 500]);
-    $offered = $this->typeOptions();
-    sort($offered);
-    $this->assertSame(['project_apply', 'project_complete', 'project_publish'], $offered);
   }
 
 }

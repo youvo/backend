@@ -7,13 +7,13 @@ label: 'Project Promote'
 tokens:
   -
     token: '%Project'
-    required: '1'
+    required: true
   -
     token: '%AuthorWithRole'
-    required: 0
+    required: false
   -
     token: '%Author'
-    required: 0
+    required: false
 detectable: true
 observable: false
 public: false

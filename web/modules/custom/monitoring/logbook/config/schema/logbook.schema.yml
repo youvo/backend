@@ -13,15 +13,18 @@ logbook.log_pattern.*:
       type: text
       label: 'Public Text'
     tokens:
-      type: mapping
+      type: sequence
       label: 'Tokens'
-      mapping:
-        token:
-          type: string
-          label: 'Token'
-        required:
-          type: boolean
-          label: 'Required'
+      sequence:
+        type: mapping
+        label: 'Token'
+        mapping:
+          token:
+            type: string
+            label: 'Token'
+          required:
+            type: boolean
+            label: 'Required'
     status:
       type: boolean
       label: 'Enabled'

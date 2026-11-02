@@ -5,9 +5,11 @@ namespace Drupal\lifecycle\Plugin\Field\FieldFormatter;
 use Drupal\Component\Assertion\Inspector;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Drupal\workflows\StateInterface;
 use Drupal\workflows\WorkflowInterface;
@@ -15,15 +17,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'lifecycle_state_list' formatter.
- *
- * @FieldFormatter(
- *   id = "lifecycle_state_list",
- *   label = @Translation("States list"),
- *   field_types = {
- *     "lifecycle_item"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'lifecycle_state_list',
+  label: new TranslatableMarkup('States list'),
+  field_types: ['lifecycle_item'],
+)]
 class StatesListFormatter extends FormatterBase {
 
   /**

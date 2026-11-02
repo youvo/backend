@@ -4,15 +4,12 @@ namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\Routing\ProjectHtmlRouteProvider;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that the project admin pages are for administrators only.
  */
-#[CoversClass(ProjectHtmlRouteProvider::class)]
 #[Group('projects')]
 class ProjectAdminRouteAccessTest extends ProjectResourceTestBase {
 

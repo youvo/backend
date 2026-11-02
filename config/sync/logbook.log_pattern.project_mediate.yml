@@ -9,13 +9,13 @@ label: 'Project Mediate'
 tokens:
   -
     token: '%Project'
-    required: '1'
+    required: true
   -
     token: '%Creatives'
-    required: 0
+    required: false
   -
     token: '%AuthorWithRole'
-    required: 0
+    required: false
 detectable: true
 observable: true
 public: true

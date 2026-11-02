@@ -2,9 +2,11 @@
 
 namespace Drupal\feedback\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Plugin implementation of the 'feedback_options' formatter.
@@ -12,15 +14,12 @@ use Drupal\Core\Form\FormStateInterface;
  * The feedback stores the answers of radios and checkboxes as plain integers.
  * The values are the option indexes posted by the frontend. This formatter
  * maps them to labels configured in the formatter settings.
- *
- * @FieldFormatter(
- *   id = "feedback_options",
- *   label = @Translation("Feedback options"),
- *   field_types = {
- *     "integer"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'feedback_options',
+  label: new TranslatableMarkup('Feedback options'),
+  field_types: ['integer'],
+)]
 class FeedbackOptionsFormatter extends FormatterBase {
 
   /**

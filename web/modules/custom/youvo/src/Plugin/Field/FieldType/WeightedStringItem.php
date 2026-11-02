@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -9,16 +10,15 @@ use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Defines the 'weighted string' field type.
- *
- * @FieldType(
- *   id = "weighted_string",
- *   label = @Translation("Weighted Text (plain)"),
- *   description = @Translation("A field containing a plain weighted string value."),
- *   no_ui = TRUE,
- *   default_widget = "string_textfield",
- *   default_formatter = "string"
- * )
  */
+#[FieldType(
+  id: 'weighted_string',
+  label: new TranslatableMarkup('Weighted Text (plain)'),
+  description: new TranslatableMarkup('A field containing a plain weighted string value.'),
+  no_ui: TRUE,
+  default_widget: 'string_textfield',
+  default_formatter: 'string',
+)]
 class WeightedStringItem extends StringItem {
 
   /**

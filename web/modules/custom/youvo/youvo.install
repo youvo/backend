@@ -165,3 +165,17 @@ function youvo_install(): void {
     ->condition('name', 'views.view.user_admin_people')
     ->execute();
 }
+
+/**
+ * Moves the hub URL from the mailer settings to the youvo settings.
+ */
+function youvo_update_11001(): void {
+  $config_factory = \Drupal::configFactory();
+  $hub_url = $config_factory->get('mailer.settings')->get('hub_url') ?: 'https://hub.youvo.org';
+  $config_factory->getEditable('youvo.settings')
+    ->set('hub_url', $hub_url)
+    ->set('app_url', 'https://app.youvo.org')
+    ->set('website_url', 'https://youvo.org')
+    ->save();
+  $config_factory->getEditable('mailer.settings')->delete();
+}

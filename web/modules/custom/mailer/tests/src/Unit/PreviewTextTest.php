@@ -4,12 +4,14 @@ namespace Drupal\Tests\mailer\Unit;
 
 use Drupal\mailer\PreviewText;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the inbox preview text derived from a mail body.
- *
- * @group mailer
  */
+#[CoversClass(PreviewText::class)]
+#[Group('mailer')]
 class PreviewTextTest extends UnitTestCase {
 
   /**

@@ -6,25 +6,26 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 
 /**
  * Provides project notify resource.
- *
- * @RestResource(
- *   id = "project:notify",
- *   label = @Translation("Project Notify Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/notify"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:notify',
+  label: new TranslatableMarkup('Project Notify Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/notify',
+  ],
+)]
 class ProjectNotifyResource extends ProjectResourceBase {
 
   /**

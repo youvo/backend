@@ -5,11 +5,10 @@ namespace Drupal\Tests\projects\ExistingSite\Resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\Event\ProjectDeclineEvent;
-use Drupal\projects\Plugin\rest\resource\Transition\ProjectDeclineResource;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversClass;
+use Drupal\projects\ProjectTransition;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Tests the project decline resource.
  */
-#[CoversClass(ProjectDeclineResource::class)]
 #[Group('projects')]
 class ProjectDeclineResourceTest extends ProjectResourceTestBase {
 
@@ -30,15 +28,6 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
     $request->headers->set('Content-Type', 'application/json');
     $this->authenticateRequest($request, $account);
     return $this->doRequest($request);
-  }
-
-  /**
-   * Reloads the project from storage.
-   */
-  protected function reload(ProjectInterface $project): ProjectInterface {
-    /** @var \Drupal\projects\ProjectInterface $reloaded */
-    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
-    return $reloaded;
   }
 
   /**
@@ -80,6 +69,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
   public function testDeclineWithMail(): void {
 
     $project = $this->createProject(ProjectState::Pending);
+    $project->setPromoted(TRUE)->save();
     $manager = $project->getOwner()->getManager();
     $this->captureEvents();
     $response = $this->request($project, $manager, 'POST', [
@@ -89,7 +79,11 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
     ]);
 
     $this->assertSame(200, $response->getStatusCode());
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
+    // Declining removes the promotion, but keeps the project published.
+    $stored = $this->reloadProject($project);
+    $this->assertLastTransition($stored, ProjectTransition::Decline, ProjectState::Pending, ProjectState::Declined);
+    $this->assertFalse($stored->isPromoted());
+    $this->assertTrue($stored->isPublished());
     $this->assertCount(1, $this->events);
     $this->assertSame(ProjectDeclineReason::Deadline, $this->events[0]->getReason());
     $this->assertSame('Your project', $this->events[0]->getSubject());
@@ -107,10 +101,22 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
     $response = $this->request($project, $project->getOwner()->getManager(), 'POST', []);
 
     $this->assertSame(200, $response->getStatusCode());
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isDeclined());
     $this->assertSame(ProjectDeclineReason::Custom, $this->events[0]->getReason());
     $this->assertNull($this->events[0]->getSubject());
     $this->assertNull($this->events[0]->getSender());
+  }
+
+  /**
+   * Tests that the manager declines the draft of a prospect.
+   */
+  public function testDeclineDraftOfProspect(): void {
+
+    $project = $this->createProject(ProjectState::Draft, 'prospect');
+    $response = $this->request($project, $project->getOwner()->getManager(), 'POST', []);
+
+    $this->assertSame(200, $response->getStatusCode());
+    $this->assertLastTransition($this->reloadProject($project), ProjectTransition::Decline, ProjectState::Draft, ProjectState::Declined);
   }
 
   /**
@@ -128,7 +134,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
     foreach ($cases as $label => $content) {
       $this->assertSame(400, $this->request($project, $manager, 'POST', $content)->getStatusCode(), $label);
     }
-    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isPending());
   }
 
   /**
@@ -141,6 +147,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
 
     $this->assertSame(409, $response->getStatusCode());
     $this->assertSame('Project can not be declined.', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOpen());
   }
 
   /**
@@ -152,11 +159,11 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
     foreach ([$this->createManager(), $this->createCreative(), $project->getOwner()] as $account) {
       $this->assertSame(403, $this->request($project, $account, 'POST', [])->getStatusCode());
     }
-    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isPending());
 
     // Supervisors decline any project.
     $this->assertSame(200, $this->request($project, $this->createSupervisor(), 'POST', [])->getStatusCode());
-    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isDeclined());
   }
 
 }

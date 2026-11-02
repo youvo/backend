@@ -53,7 +53,7 @@ class TokenExpiryTriggerHandler implements TokenExpiryTriggerHandlerInterface {
    * Checks if the password, the roles or the status of the user changed.
    */
   protected function isSecurityRelevantChange(UserInterface $user): bool {
-    $original = $user->original ?? NULL;
+    $original = $user->getOriginal();
     // Without the original we can not tell what changed. Stay on the safe side.
     if (!$original instanceof UserInterface) {
       return TRUE;

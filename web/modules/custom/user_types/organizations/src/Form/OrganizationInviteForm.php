@@ -186,7 +186,8 @@ final class OrganizationInviteForm extends FormBase {
         $redirect_url = Url::fromUri('http://localhost:3000' . $path)->toString();
       }
       else {
-        $redirect_url = Url::fromUri('https://hub.dev.youvo.org' . $path)->toString();
+        $hub_url = rtrim((string) $this->config('youvo.settings')->get('hub_url'), '/');
+        $redirect_url = Url::fromUri($hub_url . $path)->toString();
       }
       $response = new TrustedRedirectResponse($redirect_url);
       $form_state->setResponse($response);

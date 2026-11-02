@@ -2,6 +2,7 @@
 
 namespace Drupal\youvo\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -10,18 +11,17 @@ use Drupal\youvo\Plugin\DataType\CacheableIntegerData;
 
 /**
  * Defines the 'entity reference' field type with cacheability metadata.
- *
- * @FieldType(
- *   id = "cacheable_entity_reference",
- *   label = @Translation("Cacheable Entity Reference Item"),
- *   description = @Translation("A field containing an entity reference value and cacheability metadata."),
- *   no_ui = TRUE,
- *   category = "reference",
- *   default_widget = "entity_reference_autocomplete",
- *   default_formatter = "entity_reference_label",
- *   list_class = "\Drupal\Core\Field\EntityReferenceFieldItemList"
- * )
  */
+#[FieldType(
+  id: 'cacheable_entity_reference',
+  label: new TranslatableMarkup('Cacheable Entity Reference Item'),
+  description: new TranslatableMarkup('A field containing an entity reference value and cacheability metadata.'),
+  no_ui: TRUE,
+  category: 'reference',
+  default_widget: 'entity_reference_autocomplete',
+  default_formatter: 'entity_reference_label',
+  list_class: '\Drupal\Core\Field\EntityReferenceFieldItemList',
+)]
 class CacheableEntityReferenceItem extends EntityReferenceItem {
 
   /**

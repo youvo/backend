@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -17,6 +18,7 @@ use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -26,15 +28,14 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project decline resource.
- *
- * @RestResource(
- *   id = "project:decline",
- *   label = @Translation("Project Decline Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/decline"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:decline',
+  label: new TranslatableMarkup('Project Decline Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/decline',
+  ],
+)]
 class ProjectDeclineResource extends ProjectResourceBase {
 
   use ProjectMailRequestTrait;

@@ -52,7 +52,7 @@ class MailVariables {
     return [
       'creative_name' => $creative->getName() ?: (string) $this->t('Kreative'),
       'creative_email' => $creative->getEmail() ?? '',
-      'creative_link' => 'https://hub.youvo.org/users/' . $creative->uuid(),
+      'creative_link' => rtrim((string) $this->configFactory->get('youvo.settings')->get('hub_url'), '/') . '/users/' . $creative->uuid(),
       // Filled by the mailer that applies the creative variables.
       'creative_phone' => '',
     ];

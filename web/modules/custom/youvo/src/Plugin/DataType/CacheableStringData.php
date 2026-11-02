@@ -5,16 +5,17 @@ namespace Drupal\youvo\Plugin\DataType;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
 use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\TypedData\Attribute\DataType;
 use Drupal\Core\TypedData\Plugin\DataType\StringData;
 
 /**
  * The cacheable string data type.
- *
- * @DataType(
- *   id = "cacheable_string",
- *   label = @Translation("Cacheable string")
- * )
  */
+#[DataType(
+  id: 'cacheable_string',
+  label: new TranslatableMarkup('Cacheable string'),
+)]
 class CacheableStringData extends StringData implements RefinableCacheableDependencyInterface {
 
   use RefinableCacheableDependencyTrait;

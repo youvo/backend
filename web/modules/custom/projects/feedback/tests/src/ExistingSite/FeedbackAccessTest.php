@@ -4,19 +4,16 @@ namespace Drupal\Tests\feedback\ExistingSite;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\creatives\Entity\Creative;
-use Drupal\feedback\Access\FeedbackEntityAccess;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
 use Drupal\user\UserInterface;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the feedback entity access with the site roles.
  */
-#[CoversClass(FeedbackEntityAccess::class)]
 #[Group('feedback')]
 class FeedbackAccessTest extends ProjectResourceTestBase {
 
@@ -79,6 +76,21 @@ class FeedbackAccessTest extends ProjectResourceTestBase {
     foreach ($accounts as $account) {
       $this->assertAccess($account, TRUE, FALSE);
     }
+  }
+
+  /**
+   * Tests that the author may not edit the fields set by the backend.
+   */
+  public function testFieldAccess(): void {
+
+    foreach (['author', 'completed', 'created', 'project'] as $field_name) {
+      $this->assertFalse($this->feedback->get($field_name)->access('edit', $this->author), "The author may edit $field_name.");
+      $this->assertTrue($this->feedback->get($field_name)->access('view', $this->author), "The author may not view $field_name.");
+    }
+    foreach (['project_comment', 'step'] as $field_name) {
+      $this->assertTrue($this->feedback->get($field_name)->access('edit', $this->author), "The author may not edit $field_name.");
+    }
+    $this->assertTrue($this->feedback->get('project')->access('edit', $this->createCreative('administrator')));
   }
 
   /**

@@ -4,17 +4,14 @@ namespace Drupal\Tests\logbook\ExistingSite;
 
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\logbook\Entity\Log;
-use Drupal\logbook\LogAccessControlHandler;
 use Drupal\logbook\LogInterface;
 use Drupal\projects\ProjectInterface;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the log entity access with the site roles and log patterns.
  */
-#[CoversClass(LogAccessControlHandler::class)]
 #[Group('logbook')]
 class LogAccessTest extends ProjectResourceTestBase {
 
@@ -37,19 +34,23 @@ class LogAccessTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the access to a detectable and observable log of a project.
+   * Tests the access to detectable and observable logs of a project.
+   *
+   * The patterns project_submit and project_reset are detectable and
+   * observable, not public. Both are visible beyond the manager of the
+   * organization.
    */
   public function testObservableProjectLog(): void {
 
-    // The pattern project_submit is detectable and observable, not public.
     $project = $this->createProject();
-    $log = $this->createLog('project_submit', $project);
-
-    $this->assertTrue($log->access('view', $project->getOwner()->getManager()));
-    $this->assertTrue($log->access('view', $this->createSupervisor()));
-    $this->assertTrue($log->access('view', $this->createCreative('observer')));
-    $this->assertFalse($log->access('view', $this->createManager()));
-    $this->assertFalse($log->access('view', $this->createCreative()));
+    foreach (['project_submit', 'project_reset'] as $type) {
+      $log = $this->createLog($type, $project);
+      $this->assertTrue($log->access('view', $project->getOwner()->getManager()), $type);
+      $this->assertTrue($log->access('view', $this->createSupervisor()), $type);
+      $this->assertTrue($log->access('view', $this->createCreative('observer')), $type);
+      $this->assertFalse($log->access('view', $this->createManager()), $type);
+      $this->assertFalse($log->access('view', $this->createCreative()), $type);
+    }
   }
 
   /**
@@ -68,21 +69,6 @@ class LogAccessTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests that reset logs are visible beyond the manager of the organization.
-   */
-  public function testResetLog(): void {
-
-    // The pattern project_reset is detectable and observable.
-    $project = $this->createProject();
-    $log = $this->createLog('project_reset', $project);
-
-    $this->assertTrue($log->access('view', $project->getOwner()->getManager()));
-    $this->assertTrue($log->access('view', $this->createSupervisor()));
-    $this->assertTrue($log->access('view', $this->createCreative('observer')));
-    $this->assertFalse($log->access('view', $this->createManager()));
-  }
-
-  /**
    * Tests that only supervisors view archived logs.
    */
   public function testArchivedLog(): void {
@@ -90,10 +76,20 @@ class LogAccessTest extends ProjectResourceTestBase {
     $project = $this->createProject();
     $log = $this->createLog('project_submit', $project)->setArchived();
     $log->save();
+    $observer = $this->createCreative('observer');
 
     $this->assertTrue($log->access('view', $this->createSupervisor()));
-    $this->assertFalse($log->access('view', $this->createCreative('observer')));
     $this->assertFalse($log->access('view', $project->getOwner()->getManager()));
+    $result = $log->access('view', $observer, TRUE);
+    $this->assertTrue($result->isForbidden());
+    $this->assertInstanceOf(CacheableDependencyInterface::class, $result);
+    $this->assertContains('user.permissions', $result->getCacheContexts());
+    $this->assertContains('log:' . $log->id(), $result->getCacheTags());
+
+    // Active again, the log follows the pattern flags.
+    $log->setArchived(FALSE)->save();
+    $this->container->get('entity_type.manager')->getAccessControlHandler('log')->resetCache();
+    $this->assertTrue($log->access('view', $observer));
   }
 
   /**
