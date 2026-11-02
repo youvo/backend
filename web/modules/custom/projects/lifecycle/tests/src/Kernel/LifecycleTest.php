@@ -22,6 +22,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function testOptionsProvider(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -65,6 +66,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   public function testOptionsProviderFilteredByUser(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -93,6 +95,7 @@ class LifecycleTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testFieldType(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',

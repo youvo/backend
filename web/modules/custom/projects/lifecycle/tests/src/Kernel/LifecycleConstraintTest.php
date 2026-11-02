@@ -22,6 +22,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testValidTransitionsNoViolations(): void {
+
     $user = $this->createUser([
       'use bureaucracy_workflow transition approved_project',
       'use bureaucracy_workflow transition ready_for_planning',
@@ -52,6 +53,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testInvalidTransition(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',
@@ -72,6 +74,7 @@ class LifecycleConstraintTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testNotAllowedTransition(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',

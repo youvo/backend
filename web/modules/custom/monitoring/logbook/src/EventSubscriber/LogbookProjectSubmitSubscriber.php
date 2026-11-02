@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectSubmitEvent;
  */
 class LogbookProjectSubmitSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_CLASS = ProjectSubmitEvent::class;
-  const LOG_PATTERN = 'project_submit';
+  const string EVENT_CLASS = ProjectSubmitEvent::class;
+  const string LOG_PATTERN = 'project_submit';
 
 }

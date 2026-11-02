@@ -183,9 +183,9 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     foreach ([[ProjectState::Draft, TRUE], [ProjectState::Pending, FALSE]] as [$state, $prospect]) {
       $project = $this->actAsManagerOf($state, $prospect);
       $build = $this->transitionBuild($project);
-      $this->assertArrayHasKey('decline', $build['content'], $state->value);
-      $this->assertSame('decline', $build['content']['decline']['#attributes']['data-pane-view']);
-      $this->assertSame('Decline', (string) $build['content']['decline']['#title']);
+      $this->assertArrayHasKey('decline', $build['content']['actions'], $state->value);
+      $this->assertSame('decline', $build['content']['actions']['decline']['button']['#attributes']['data-pane-view']);
+      $this->assertSame('Decline', (string) $build['content']['actions']['decline']['button']['#title']);
     }
   }
 
@@ -193,6 +193,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * Denied cases show no link, and a POST sends nothing and declines nothing.
    */
   public function testDeclineDeniedCases(): void {
+
     $allowed = $this->actAsManagerOf(ProjectState::Pending);
     $manager = $this->container->get('current_user')->getAccount();
     $query = ['view' => 'decline', 'reason' => 'custom'];
@@ -239,7 +240,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
       $this->container->get('current_user')->setAccount($account);
       $state = $project->get('field_lifecycle')->value;
       $build = $this->transitionBuild($project);
-      $this->assertArrayNotHasKey('decline', $build['content'] ?? [], $label);
+      $this->assertArrayNotHasKey('decline', $build['content']['actions'] ?? [], $label);
       foreach ([NULL, $post] as $body) {
         $html = $this->pane($project, $query, $body);
         $this->assertStringNotContainsString('<form', $html, $label);
@@ -255,6 +256,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * Without a reason the view opens the custom decline with all reason links.
    */
   public function testDeclineDefaultReason(): void {
+
     $project = $this->actAsManagerOf(ProjectState::Draft, TRUE);
     $preview = $this->container->get(ManagerMailerInterface::class)->preview($project, 'decline_custom');
     $this->assertNotNull($preview);
@@ -278,6 +280,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * The mail pane never offers or sends a decline mail.
    */
   public function testMailPaneRefusesDeclineMails(): void {
+
     $project = $this->actAsManagerOf(ProjectState::Draft, TRUE);
     $mail = ['type' => 'mail', 'view' => 'mail', 'subtype' => 'decline_custom'];
     $html = $this->pane($project, $mail);
@@ -298,6 +301,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * Only the project:decline resource declines; the pane script posts to it.
    */
   public function testFormPostDoesNothing(): void {
+
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'deadline'];
     $html = $this->pane($project, $query);

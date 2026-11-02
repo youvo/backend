@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectCreateEvent;
  */
 class LogbookProjectCreateSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_CLASS = ProjectCreateEvent::class;
-  const LOG_PATTERN = 'project_create';
+  const string EVENT_CLASS = ProjectCreateEvent::class;
+  const string LOG_PATTERN = 'project_create';
 
 }

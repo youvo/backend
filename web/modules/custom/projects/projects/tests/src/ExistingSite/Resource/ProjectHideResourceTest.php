@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
+use Drupal\projects\Event\ProjectHideEvent;
 use Drupal\projects\Plugin\rest\resource\Action\ProjectHideResource;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
@@ -34,6 +35,29 @@ class ProjectHideResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project hidden."', $response->getContent());
+  }
+
+  /**
+   * Tests that an unexpected failure is logged and not answered as conflict.
+   */
+  public function testProjectHideUnexpectedFailure(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $supervisor = $this->createSupervisor();
+    $this->container->get('event_dispatcher')->addListener(ProjectHideEvent::class, static function (): void {
+      throw new \LogicException('Exception thrown for testing purposes.');
+    }, 2000);
+
+    $path = '/api/projects/' . $project->uuid() . '/hide';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(200, $response->getStatusCode());
+    /** @var \Drupal\projects\ProjectInterface $stored */
+    $stored = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
+    $this->assertFalse($stored->isHidden());
   }
 
   /**

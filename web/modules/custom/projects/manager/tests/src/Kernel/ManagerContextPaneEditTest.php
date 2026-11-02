@@ -109,6 +109,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
    * A supervisor sees the actions the resources allow in each state.
    */
   public function testSupervisorActionsPerState(): void {
+
     $this->actAsSupervisor();
 
     $this->assertSame(['promote', 'notify', 'reset'], $this->actions($this->project(ProjectState::Draft)));
@@ -133,6 +134,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
    * A manager only notifies drafts of their organizations.
    */
   public function testManagerActions(): void {
+
     $draft = $this->project(ProjectState::Draft);
     $this->actAsManagerOf($draft);
     $this->assertSame(['notify'], $this->actions($draft));
@@ -146,6 +148,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
    * The buttons post their action and explain what happens.
    */
   public function testButtonsAndDescriptions(): void {
+
     $this->actAsSupervisor();
     $project = $this->project(ProjectState::Open);
     $actions = $this->container->get('plugin.manager.manager_context_panes')->createInstance('edit')->build($project)['content']['actions'];

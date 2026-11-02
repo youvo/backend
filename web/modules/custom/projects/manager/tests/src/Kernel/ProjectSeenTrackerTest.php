@@ -15,6 +15,7 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
    * The unfinished projects of the managed organizations are listed.
    */
   public function testManagedProjects(): void {
+
     $open = $this->createMailableProject(ProjectState::Open);
     $organization = $open->getOwner();
     $manager = $this->managerOf($open);
@@ -205,6 +206,7 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
    * Archived logs neither count as activity nor show as events.
    */
   public function testArchivedLogsDoNotCount(): void {
+
     $project = $this->createMailableProject(ProjectState::Open);
     $manager = $this->managerOf($project);
     $tracker = $this->container->get('manager.project_seen');

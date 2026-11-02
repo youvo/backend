@@ -2,8 +2,6 @@
 
 namespace Drupal\projects\Plugin\rest\resource\Transition;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Access\AccessResult;
@@ -15,9 +13,11 @@ use Drupal\creatives\Entity\Creative;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectMediateEvent;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +35,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectMediateResource extends ProjectTransitionResourceBase {
+class ProjectMediateResource extends ProjectResourceBase {
 
   /**
    * {@inheritdoc}
@@ -43,15 +43,14 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
     // Archived projects don't transition, also not for administrators.
-    if (!$project->isActive()) {
+    if ($project->isArchived()) {
       return AccessResult::forbidden('The project is archived.')
         ->addCacheableDependency($project);
     }
 
     // The user may be permitted to bypass access control.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    if ($account->hasPermission($bybass_permission)) {
+    if ($account->hasPermission(WorkflowPermissions::bypassTransition($workflow_id))) {
       return AccessResult::allowed()
         ->addCacheableDependency($project)
         ->cachePerPermissions();
@@ -61,10 +60,9 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Mediate->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    // The resource should define project-dependent access conditions.
+    // The author and the manager mediate the project.
     $organization = $project->getOwner();
-    $project_condition = $project->isAuthor($account) || $organization->isManager($account);
-    $access_project = AccessResult::allowedIf($project_condition)
+    $access_project = AccessResult::allowedIf($project->isAuthor($account) || $organization->isManager($account))
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization)
       ->cachePerUser();
@@ -76,11 +74,10 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
   }
 
   /**
-   * Responds to GET requests.
+   * Responds to GET requests with the applicants, except the manager.
    */
   public function get(ProjectInterface $project): ResourceResponseInterface {
 
-    // Fetch applicants in desired structure.
     $applicants = [];
     $manager = $project->getOwner()->getManager();
     foreach ($project->getApplicants() as $applicant) {
@@ -93,7 +90,6 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       }
     }
 
-    // Compile response with structured data.
     $response = new ResourceResponse([
       'resource' => str_replace(':', '.', $this->pluginId),
       'data' => [
@@ -106,8 +102,6 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
         'selected_creatives' => 'Array of uuid\'s of creatives.',
       ],
     ]);
-
-    // Add cacheable dependency to refresh response when project is updated.
     $response->addCacheableDependency($project);
 
     return $response;
@@ -119,15 +113,18 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent()) ?? [];
+    if (!is_array($content)) {
+      throw new BadRequestHttpException('The request body is malformed.');
+    }
     $this->validateRequestContent($content);
 
+    $event = new ProjectMediateEvent($project);
+    $event->setCreatives($this->loadSelectedCreatives($content));
+
     try {
-      $selected_creatives = $this->loadSelectedCreatives($content);
-      $event = new ProjectMediateEvent($project);
-      $event->setCreatives($selected_creatives);
       $this->eventDispatcher->dispatch($event);
     }
-    catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
+    catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be mediated.');
     }
     catch (\Throwable $e) {
@@ -135,13 +132,11 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       $this->logger->error('Project mediate failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
-    return new ResourceResponse('Project mediated.');
+    return new ModifiedResourceResponse('Project mediated.');
   }
 
   /**
    * Validates the request content.
-   *
-   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
 
@@ -150,8 +145,12 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       throw new BadRequestHttpException('Request body does not specify selected_creatives.');
     }
 
-    // Set preliminary selected_creatives variable.
-    $selected_creatives = array_unique($content['selected_creatives'] ?? []);
+    // Checked before array_unique(), which needs strings.
+    $selected_creatives = $content['selected_creatives'];
+    if (!is_array($selected_creatives) || array_filter($selected_creatives, static fn($uuid) => !is_string($uuid))) {
+      throw new BadRequestHttpException('The selected_creatives in the request body are not an array of strings.');
+    }
+    $selected_creatives = array_unique($selected_creatives);
 
     // Force at least one selected creative.
     if (empty($selected_creatives)) {

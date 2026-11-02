@@ -23,6 +23,7 @@ class ProjectLifecycleRepeatTest extends ProjectEventSubscriberTestBase {
    */
   #[DataProvider('transitionProvider')]
   public function testTransitionRefusedInTargetState(ProjectTransition $transition, ProjectState $target): void {
+
     // A prospect owner and a participant satisfy the other conditions.
     $project = $this->createProject($target, TRUE);
     $project->appendParticipant($this->createCreative());
@@ -44,6 +45,7 @@ class ProjectLifecycleRepeatTest extends ProjectEventSubscriberTestBase {
    */
   #[DataProvider('stateProvider')]
   public function testUnchangedStateIsValid(ProjectState $state): void {
+
     $project = $this->createProject($state);
     $project->save();
     $project->setTitle($this->randomString());

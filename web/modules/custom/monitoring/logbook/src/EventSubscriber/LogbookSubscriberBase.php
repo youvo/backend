@@ -22,9 +22,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 abstract class LogbookSubscriberBase implements EventSubscriberInterface {
 
-  const EVENT_CLASS = NULL;
-  const LOG_PATTERN = NULL;
-  const PRIORITY = 0;
+  const ?string EVENT_CLASS = NULL;
+  const ?string LOG_PATTERN = NULL;
+  const int PRIORITY = 0;
 
   /**
    * Constructs a LogbookSubscriberBase object.

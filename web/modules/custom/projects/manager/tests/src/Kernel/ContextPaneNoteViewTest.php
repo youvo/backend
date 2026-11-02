@@ -276,6 +276,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A valid add POST saves one note as plain text and returns to the index.
    */
   public function testAddPostSavesNote(): void {
+
     $query = ['view' => 'note_add'];
     $post = $this->notePost($this->pane('logbook', $query), 'Anruf <b>1</b>', "Rückruf <script>x</script>\nzweite Zeile");
     $html = $this->pane('logbook', $query, $post);
@@ -446,6 +447,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A valid edit POST changes the note and returns to the timeline.
    */
   public function testEditPostChangesNote(): void {
+
     $note = $this->createNote();
     $query = ['view' => 'note_edit', 'id' => $note->id()];
     $post = $this->notePost($this->pane('logbook', $query), 'Neu <b>', '<script>y</script>', '2026-04-05');
@@ -630,6 +632,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * A delete POST removes the note and returns to the timeline.
    */
   public function testDeletePostRemovesNote(): void {
+
     $note = $this->createNote('Weg damit');
     $keep = $this->createNote('Bleibt');
     $query = ['view' => 'note_delete', 'id' => $note->id()];
@@ -669,6 +672,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * The timeline links are in-pane links, only for accounts that may use them.
    */
   public function testTimelineLinks(): void {
+
     $note = $this->createNote();
     Correspondence::create(['type' => 'mail', 'project' => $this->project->id(), 'subject' => 'M'])->save();
     $html = $this->pane('logbook');

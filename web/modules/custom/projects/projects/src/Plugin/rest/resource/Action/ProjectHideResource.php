@@ -8,6 +8,8 @@ use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectHideEvent;
+use Drupal\projects\Exception\ProjectActionException;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -24,21 +26,26 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectHideResource extends ProjectActionResourceBase {
+class ProjectHideResource extends ProjectResourceBase {
 
   /**
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
+    // Archived projects don't change, also not for administrators.
+    if ($project->isArchived()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // The user requires the permission to do this action.
     $access_result = AccessResult::allowedIfHasPermission($account, 'administer projects');
 
-    // Only active open, ongoing or completed projects are hidden.
-    $access_project = AccessResult::allowedIf(
-      $project->isActive() &&
-      ($project->lifecycle()->isOpen() || $project->lifecycle()->isOngoing() || $project->lifecycle()->isCompleted())
-    )->addCacheableDependency($project);
+    // Only open, ongoing or completed projects are hidden.
+    $lifecycle = $project->lifecycle();
+    $access_project = AccessResult::allowedIf($lifecycle->isOpen() || $lifecycle->isOngoing() || $lifecycle->isCompleted())
+      ->addCacheableDependency($project);
     if ($access_project instanceof AccessResultReasonInterface) {
       $access_project->setReason('The project conditions for this action are not met.');
     }
@@ -50,16 +57,18 @@ class ProjectHideResource extends ProjectActionResourceBase {
    * Responds to POST requests.
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
+
     try {
       $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
     }
-    catch (\LogicException) {
+    catch (ProjectActionException) {
       throw new ConflictHttpException('Project can not be hidden.');
     }
     catch (\Throwable $e) {
       $variables = Error::decodeException($e);
       $this->logger->error('Project hide failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
+
     return new ModifiedResourceResponse('Project hidden.');
   }
 

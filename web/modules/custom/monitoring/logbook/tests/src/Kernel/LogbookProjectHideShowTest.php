@@ -8,6 +8,7 @@ use Drupal\logbook\EventSubscriber\LogbookProjectHideSubscriber;
 use Drupal\logbook\EventSubscriber\LogbookProjectShowSubscriber;
 use Drupal\projects\Event\ProjectHideEvent;
 use Drupal\projects\Event\ProjectShowEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -35,6 +36,7 @@ class LogbookProjectHideShowTest extends LogbookKernelTestBase {
    * Hide and show are logged as detectable only logs of the project.
    */
   public function testHideAndShowAreLogged(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $project->save();
     $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
@@ -59,7 +61,7 @@ class LogbookProjectHideShowTest extends LogbookKernelTestBase {
     try {
       $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
     }
-    catch (\LogicException) {
+    catch (ProjectActionException) {
       // Expected: drafts can not be hidden.
     }
     $this->assertSame([], Log::loadMultiple());

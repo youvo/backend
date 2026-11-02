@@ -40,7 +40,7 @@ class ProjectArchivedTest extends ProjectResourceTestBase {
   /**
    * The action resources that refuse archived projects in access().
    */
-  protected const array ACTIONS = ['hide', 'show', 'promote', 'demote'];
+  protected const array ACTIONS = ['hide', 'show', 'promote', 'demote', 'archive'];
 
   /**
    * Creates an archived project.
@@ -115,13 +115,16 @@ class ProjectArchivedTest extends ProjectResourceTestBase {
     foreach (static::ACTIONS as $action) {
       $response = $this->post($this->createArchivedProject(ProjectState::Open), $action, $supervisor);
       $this->assertSame(403, $response->getStatusCode(), $action);
+      $this->assertSame('The project is archived.', $response->getContent(), $action);
     }
 
     $response = $this->post($this->createArchivedProject(ProjectState::Draft), 'notify', $supervisor);
     $this->assertSame(403, $response->getStatusCode(), 'notify');
+    $this->assertSame('The project is archived.', $response->getContent(), 'notify');
 
     $response = $this->post($this->createArchivedProject(ProjectState::Open), 'apply', $this->createCreative());
     $this->assertSame(403, $response->getStatusCode(), 'apply');
+    $this->assertSame('The project is archived.', $response->getContent(), 'apply');
   }
 
   /**

@@ -101,12 +101,16 @@ class ManagerHooks {
         'base hook' => 'context_pane',
       ];
     }
-    // The decline and archive views of the transition pane.
+    // The action panes share one template, so do their mail editors.
+    $hooks['context_pane__edit']['template'] = 'context-pane--actions';
+    $hooks['context_pane__transition']['template'] = 'context-pane--actions';
     $hooks['context_pane__decline'] = [
       'base hook' => 'context_pane',
+      'template' => 'context-pane--mail-action',
     ];
     $hooks['context_pane__archive'] = [
       'base hook' => 'context_pane',
+      'template' => 'context-pane--mail-action',
     ];
 
     return $hooks;
@@ -174,6 +178,7 @@ class ManagerHooks {
    */
   #[Hook('preprocess_views_view_table')]
   public function preprocessViewsViewTable(array &$variables): void {
+
     if ($variables['view']->id() !== 'project_manager') {
       return;
     }

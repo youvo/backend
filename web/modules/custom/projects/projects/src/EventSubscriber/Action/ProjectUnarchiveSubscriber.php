@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber\Action;
 
 use Drupal\projects\Event\ProjectUnarchiveEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,11 +15,12 @@ class ProjectUnarchiveSubscriber implements EventSubscriberInterface {
    * Listens to the project unarchive event.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\projects\Exception\ProjectActionException
    */
   public function onProjectUnarchive(ProjectUnarchiveEvent $event): void {
     $project = $event->getProject();
     if (!$project->isArchived()) {
-      throw new \LogicException('The project is not archived.');
+      throw new ProjectActionException('Cannot unarchive an active project.');
     }
     $project->setArchived(FALSE);
     $project->save();

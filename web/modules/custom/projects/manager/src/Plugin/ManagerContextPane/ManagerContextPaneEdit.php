@@ -46,12 +46,14 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
    * {@inheritdoc}
    */
   public function build(Project $project): array {
+
     $build = [
       '#theme' => 'context_pane',
       '#type' => 'edit',
       '#project' => $project,
       'content' => [],
     ];
+
     foreach ($this->permittedActions($project) as $action) {
       $build['content']['actions'][$action] = [
         'button' => [
@@ -65,14 +67,25 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
         'description' => $this->description($project, $action),
       ];
     }
-    $archive = $this->buildMailActionLink($project, 'archive', $this->t('Archive'));
-    if ($archive) {
+
+    if ($archive = $this->buildMailActionLink($project, 'archive', $this->label($project, 'archive'))) {
       $build['content']['actions']['archive'] = [
         'button' => $archive,
         'description' => $this->description($project, 'archive'),
       ];
     }
+
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildView(Project $project, Request $request): array {
+    if ($request->query->get('view') !== 'archive') {
+      return $this->build($project);
+    }
+    return $this->buildMailActionView($project, 'archive', $request);
   }
 
   /**
@@ -92,16 +105,6 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function buildView(Project $project, Request $request): array {
-    if ($request->query->get('view') !== 'archive') {
-      return $this->build($project);
-    }
-    return $this->buildMailActionView($project, 'archive', $request);
-  }
-
-  /**
    * Gets the button label of an action.
    */
   protected function label(Project $project, string $action): TranslatableMarkup {
@@ -111,7 +114,9 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
       'hide' => $this->t('Hide'),
       'show' => $this->t('Show'),
       'notify' => $project->getOwner()->hasRoleProspect() ? $this->t('Invite') : $this->t('Notify'),
-      default => $this->t('Reset'),
+      'reset' => $this->t('Reset'),
+      'archive' => $this->t('Archive'),
+      default => throw new \InvalidArgumentException('Unknown action ' . $action . '.'),
     };
   }
 
@@ -145,10 +150,11 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
         $this->t('The earlier logs are archived.'),
         $this->t('Nobody receives an email.'),
       ],
-      default => [
+      'archive' => [
         $this->t('The project goes offline; only administrators can unarchive it.'),
         $this->t('The organization receives the edited email.'),
       ],
+      default => throw new \InvalidArgumentException('Unknown action ' . $action . '.'),
     };
     return ['#theme' => 'item_list', '#items' => $items];
   }

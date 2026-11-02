@@ -10,8 +10,8 @@ use Drupal\organizations\Event\OrganizationManageEvent;
  */
 class LogbookOrganizationManageSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = OrganizationManageEvent::class;
-  const LOG_PATTERN = 'organization_manage';
+  const string EVENT_CLASS = OrganizationManageEvent::class;
+  const string LOG_PATTERN = 'organization_manage';
 
   /**
    * {@inheritdoc}

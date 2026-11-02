@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectInviteEvent;
  */
 class LogbookProjectInviteSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_CLASS = ProjectInviteEvent::class;
-  const LOG_PATTERN = 'project_invite';
+  const string EVENT_CLASS = ProjectInviteEvent::class;
+  const string LOG_PATTERN = 'project_invite';
 
 }

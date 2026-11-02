@@ -28,6 +28,7 @@ class BlockerModeTest extends UnitTestCase {
    */
   #[DataProvider('exemptProvider')]
   public function testExempt(array $permissions, string $path, bool $expected): void {
+
     $account = $this->createMock(AccountInterface::class);
     $account->method('hasPermission')->willReturnCallback(
       fn (string $permission) => in_array($permission, $permissions, TRUE)

@@ -20,6 +20,7 @@ class LogbookEventTimestampTest extends LogbookKernelTestBase {
    * A creative registered at a given time is logged at that time.
    */
   public function testCreativeRegisterLog(): void {
+
     $this->createPattern('creative_register');
     $creative = $this->createCreative();
     $this->eventDispatcher->dispatch(new CreativeRegisterEvent($creative, 'https://example.com', 1000));
@@ -36,6 +37,7 @@ class LogbookEventTimestampTest extends LogbookKernelTestBase {
    * A feedback completed at a given time is logged at that time.
    */
   public function testFeedbackCompleteLog(): void {
+
     $this->createPattern('feedback_complete');
     $project = $this->createLogbookProject();
     $feedback = $this->createMock(FeedbackInterface::class);

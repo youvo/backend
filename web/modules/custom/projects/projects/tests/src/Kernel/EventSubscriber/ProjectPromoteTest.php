@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectPromoteEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectPromoteSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -40,7 +41,7 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
     $project = $this->createProject(ProjectState::Declined);
     $project->setPromoted(FALSE);
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
   }
 
@@ -55,7 +56,7 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
         $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
         $this->fail("A $flag project was promoted.");
       }
-      catch (\LogicException) {
+      catch (ProjectActionException) {
         $this->assertFalse($project->isPromoted(), $flag);
       }
     }

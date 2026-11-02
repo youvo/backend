@@ -22,6 +22,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests that only administrators view logs without any visibility.
    */
   public function testHiddenLog(): void {
+
     // The pattern feedback_create is neither public, detectable nor
     // observable.
     $log = $this->createLog('feedback_create');
@@ -39,6 +40,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests the access to a detectable and observable log of a project.
    */
   public function testObservableProjectLog(): void {
+
     // The pattern project_submit is detectable and observable, not public.
     $project = $this->createProject();
     $log = $this->createLog('project_submit', $project);
@@ -54,6 +56,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests that supervisors and observers view decline logs, managers do not.
    */
   public function testDeclineLog(): void {
+
     // The pattern project_decline is detectable only.
     $project = $this->createProject();
     $log = $this->createLog('project_decline', $project);
@@ -68,6 +71,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests that reset logs are visible beyond the manager of the organization.
    */
   public function testResetLog(): void {
+
     // The pattern project_reset is detectable and observable.
     $project = $this->createProject();
     $log = $this->createLog('project_reset', $project);
@@ -82,6 +86,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests that only supervisors view archived logs.
    */
   public function testArchivedLog(): void {
+
     $project = $this->createProject();
     $log = $this->createLog('project_submit', $project)->setArchived();
     $log->save();
@@ -95,6 +100,7 @@ class LogAccessTest extends ProjectResourceTestBase {
    * Tests that public logs of hidden projects are not public.
    */
   public function testHiddenProjectLog(): void {
+
     // The pattern project_publish is public, detectable and observable.
     $project = $this->createProject();
     $log = $this->createLog('project_publish', $project);

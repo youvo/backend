@@ -2,10 +2,10 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
-use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\manager\Form\ProjectNoteForm;
+use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -15,18 +15,16 @@ use Symfony\Component\HttpFoundation\Request;
  * The note forms read the pane arguments from a request attribute and check
  * them against the cached build info of a POST (see
  * NoteFormAuthorizationTrait); the pane compares the build info of the form it
- * actually got as well.
+ * actually got as well. The using pane provides $formBuilder.
  */
 trait NotePaneFormTrait {
 
   /**
    * Builds the form (and processes it on a POST).
    *
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder.
    * @param class-string $form_class
    *   The form class.
-   * @param \Drupal\projects\ProjectInterface $project
+   * @param \Drupal\projects\Entity\Project $project
    *   The project of the pane.
    * @param \Drupal\correspondence\CorrespondenceInterface|null $entry
    *   The note, NULL for the add form.
@@ -43,7 +41,8 @@ trait NotePaneFormTrait {
    *   The outcome ('denied', 'already', 'done', 'failed' or 'form') and the
    *   form render array.
    */
-  protected function processNoteForm(FormBuilderInterface $form_builder, string $form_class, ProjectInterface $project, ?CorrespondenceInterface $entry, Request $request, string $done_flag, string $failed_flag, string $denied_flag): array {
+  protected function processNoteForm(string $form_class, Project $project, ?CorrespondenceInterface $entry, Request $request, string $done_flag, string $failed_flag, string $denied_flag): array {
+
     $form_state = new FormState();
     // Without this the form API would try to produce a redirect response.
     $form_state->disableRedirect();
@@ -52,7 +51,8 @@ trait NotePaneFormTrait {
     // A POST with a form_build_id restores the build info of an earlier
     // build: tell the form which project and note this request is for.
     $request->attributes->set(ProjectNoteForm::PANE_ATTRIBUTE, $expected);
-    $form = $form_builder->buildForm($form_class, $form_state);
+    $form = $this->formBuilder->buildForm($form_class, $form_state);
+
     $args = $form_state->getBuildInfo()['args'] ?? [];
     $built = [
       ($args[0] ?? NULL) instanceof ProjectInterface ? (string) $args[0]->id() : '',
@@ -67,7 +67,10 @@ trait NotePaneFormTrait {
     if ($form_state->get($done_flag)) {
       return ['done', []];
     }
-    return [$form_state->get($failed_flag) ? 'failed' : 'form', $form];
+    if ($form_state->get($failed_flag)) {
+      return ['failed', $form];
+    }
+    return ['form', $form];
   }
 
 }

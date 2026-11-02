@@ -67,6 +67,21 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests the project complete resource - malformed bodies answer 400.
+   */
+  public function testProjectCompleteMalformed(): void {
+    $project = $this->createProject(ProjectState::Ongoing);
+    $project->appendParticipant($this->createCreative());
+    $project->save();
+    foreach (['"x"', '{"results":"x"}', '{"results":["x"]}'] as $body) {
+      $request = Request::create('/api/projects/' . $project->uuid() . '/complete', 'POST', [], [], [], [], $body);
+      $request->headers->set('Content-Type', 'application/json');
+      $this->authenticateRequest($request, $project->getOwner());
+      $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
+    }
+  }
+
+  /**
    * Tests the project complete resource - manager.
    *
    * @covers ::access

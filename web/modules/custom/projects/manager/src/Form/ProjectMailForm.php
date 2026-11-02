@@ -24,6 +24,11 @@ class ProjectMailForm extends FormBase {
   use FieldErrorsTrait;
 
   /**
+   * The name of the request attribute the pane puts its arguments in.
+   */
+  public const string PANE_ATTRIBUTE = 'manager_pane_mail';
+
+  /**
    * Constructs the form.
    */
   public function __construct(
@@ -58,6 +63,7 @@ class ProjectMailForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, string $subtype = ''): array {
+
     $form['#attributes']['class'][] = 'manager-pane-form';
 
     // Render the preview once; later builds (rebuilds after a failed send or
@@ -154,50 +160,6 @@ class ProjectMailForm extends FormBase {
   }
 
   /**
-   * Gets the project to mail if the current user may send this mail now.
-   *
-   * A POST that carries a form_build_id restores the build info (the project
-   * and subtype) of the earlier GET, so neither the serialized project nor
-   * the cached subtype can be trusted: the project is reloaded from storage,
-   * access is checked again on these actual values, and, if the pane put the
-   * project id and subtype of the current request on the request, they must
-   * match the cached ones.
-   *
-   * @return \Drupal\projects\ProjectInterface|null
-   *   The freshly loaded project, or NULL if the mail must not be sent.
-   */
-  protected function authorizedProject(FormStateInterface $form_state): ?ProjectInterface {
-    $args = $form_state->getBuildInfo()['args'] ?? [];
-    $cached = $args[0] ?? NULL;
-    $subtype = $args[1] ?? NULL;
-    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '' || !$this->acceptsSubtype($subtype)) {
-      return NULL;
-    }
-    $expected = $this->getRequest()->attributes->get('manager_pane_mail');
-    if (is_array($expected) && ($expected !== [(string) $cached->id(), $subtype])) {
-      return NULL;
-    }
-    $project = $this->entityTypeManager->getStorage('project')->load($cached->id());
-    if (!$project instanceof ProjectInterface) {
-      return NULL;
-    }
-    if (!$this->access->access($this->currentUser(), $project, $subtype)->isAllowed()) {
-      return NULL;
-    }
-    return $project;
-  }
-
-  /**
-   * Whether the form sends mails of this subtype.
-   *
-   * Decline and archive mails are only sent by their REST resources, together
-   * with the decline or archive.
-   */
-  protected function acceptsSubtype(string $subtype): bool {
-    return ManagerMailRegistry::declineReason($subtype) === NULL && ManagerMailRegistry::archiveReason($subtype) === NULL;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
@@ -233,6 +195,50 @@ class ProjectMailForm extends FormBase {
     }
     // The pane shows the confirmation when it sees this flag.
     $form_state->set('sent', TRUE);
+  }
+
+  /**
+   * Gets the project to mail if the current user may send this mail now.
+   *
+   * A POST that carries a form_build_id restores the build info (the project
+   * and subtype) of the earlier GET, so neither the serialized project nor
+   * the cached subtype can be trusted: the project is reloaded from storage,
+   * access is checked again on these actual values, and, if the pane put the
+   * project id and subtype of the current request on the request, they must
+   * match the cached ones.
+   *
+   * @return \Drupal\projects\ProjectInterface|null
+   *   The freshly loaded project, or NULL if the mail must not be sent.
+   */
+  protected function authorizedProject(FormStateInterface $form_state): ?ProjectInterface {
+    $args = $form_state->getBuildInfo()['args'] ?? [];
+    $cached = $args[0] ?? NULL;
+    $subtype = $args[1] ?? NULL;
+    if (!$cached instanceof ProjectInterface || !is_string($subtype) || $subtype === '' || !$this->acceptsSubtype($subtype)) {
+      return NULL;
+    }
+    $expected = $this->getRequest()->attributes->get(static::PANE_ATTRIBUTE);
+    if (is_array($expected) && ($expected !== [(string) $cached->id(), $subtype])) {
+      return NULL;
+    }
+    $project = $this->entityTypeManager->getStorage('project')->load($cached->id());
+    if (!$project instanceof ProjectInterface) {
+      return NULL;
+    }
+    if (!$this->access->access($this->currentUser(), $project, $subtype)->isAllowed()) {
+      return NULL;
+    }
+    return $project;
+  }
+
+  /**
+   * Whether the form sends mails of this subtype.
+   *
+   * Decline and archive mails are only sent by their REST resources, together
+   * with the decline or archive.
+   */
+  protected function acceptsSubtype(string $subtype): bool {
+    return ManagerMailRegistry::declineReason($subtype) === NULL && ManagerMailRegistry::archiveReason($subtype) === NULL;
   }
 
 }

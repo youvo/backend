@@ -20,7 +20,7 @@ class ProjectSeenController extends ControllerBase {
   /**
    * Where the user returns to if the destination is not a local path.
    */
-  protected const DEFAULT_DESTINATION = '/admin/dashboard';
+  protected const string DEFAULT_DESTINATION = '/admin/dashboard';
 
   public function __construct(protected ProjectSeenTracker $tracker) {}
 
@@ -64,7 +64,7 @@ class ProjectSeenController extends ControllerBase {
     $local = str_starts_with($destination, '/')
       && !str_starts_with($destination, '//')
       && !preg_match('/[\x00-\x1F\x7F\\\\]/', $destination);
-    return new RedirectResponse($local ? $destination : self::DEFAULT_DESTINATION);
+    return new RedirectResponse($local ? $destination : static::DEFAULT_DESTINATION);
   }
 
 }

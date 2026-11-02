@@ -85,6 +85,7 @@ class ProjectDeclineAccessTest extends ProjectEventSubscriberTestBase {
    */
   #[DataProvider('applicantsAndParticipantsProvider')]
   public function testDeclinedHidesApplicantFields(string $field_name): void {
+
     $project = $this->createProject(ProjectState::Declined);
     $organization = $project->getOwner();
     $field = $project->getFieldDefinition($field_name);

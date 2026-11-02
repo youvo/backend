@@ -2,14 +2,16 @@
 
 namespace Drupal\projects\Form;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
- * The project complete form provides a simple UI to change the lifecycle state.
+ * Lets administrators complete an ongoing project, without results.
  */
-class ProjectCompleteForm extends ProjectTransitionFormBase {
+class ProjectCompleteForm extends ProjectEventFormBase {
 
   /**
    * {@inheritdoc}
@@ -21,44 +23,22 @@ class ProjectCompleteForm extends ProjectTransitionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL): array {
-
-    // Set title for form.
-    $form['#title'] = $this->t('Complete Project: %s', [
-      '%s' => $project?->getTitle() ?? '',
-    ]);
-
-    // Store project for submit handler.
-    $form['project'] = [
-      '#type' => 'value',
-      '#value' => $project,
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Complete Project'),
-    ];
-
-    return $form;
+  protected function label(): TranslatableMarkup {
+    return $this->t('Complete Project');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
+  protected function successMessage(): TranslatableMarkup {
+    return $this->t('Project was completed successfully.');
+  }
 
-    /** @var \Drupal\projects\Entity\Project $project */
-    $project = $form_state->getValues()['project'];
-
-    try {
-      $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
-      $this->messenger()->addMessage($this->t('Project was completed successfully.'));
-    }
-    catch (\Throwable $e) {
-      $this->messenger()->addError($e->getMessage());
-    }
-
-    $form_state->setRedirect('entity.project.edit_form', ['project' => $project->id()]);
+  /**
+   * {@inheritdoc}
+   */
+  protected function event(ProjectInterface $project, FormStateInterface $form_state): Event {
+    return new ProjectCompleteEvent($project);
   }
 
 }

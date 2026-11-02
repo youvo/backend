@@ -10,8 +10,8 @@ use Drupal\creatives\Event\CreativeRegisterEvent;
  */
 class LogbookCreativeRegisterSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = CreativeRegisterEvent::class;
-  const LOG_PATTERN = 'creative_register';
+  const string EVENT_CLASS = CreativeRegisterEvent::class;
+  const string LOG_PATTERN = 'creative_register';
 
   /**
    * {@inheritdoc}

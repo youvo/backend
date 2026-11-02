@@ -20,6 +20,7 @@ class LogbookProjectUnarchiveSubscriber extends LogbookSubscriberBase {
    * {@inheritdoc}
    */
   public function log(Event $event): void {
+
     // Re-activate the logs from the latest reset on; earlier logs stay
     // archived.
     /** @var \Drupal\projects\Event\ProjectUnarchiveEvent $event */

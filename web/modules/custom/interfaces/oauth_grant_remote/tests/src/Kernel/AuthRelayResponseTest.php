@@ -61,6 +61,7 @@ class AuthRelayResponseTest extends KernelTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+
     parent::setUp();
     $this->installEntitySchema('path_alias');
 
@@ -90,6 +91,7 @@ class AuthRelayResponseTest extends KernelTestBase {
    * Tests that a relayed organization is sent back to the Auth Relay.
    */
   public function testRelayedOrganizationIsRedirected(): void {
+
     $this->mockAuthRelay(['uid' => 5, 'roles' => [2 => 'authenticated user', 4 => 'organisation']]);
 
     $request = Request::create('/oauth/authorize', 'GET', ['client_id' => 'client']);

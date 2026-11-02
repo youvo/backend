@@ -114,6 +114,7 @@ class ManagerMailerTest extends MailerKernelTestBase {
    * The edited text replaces the policy text and is recorded.
    */
   public function testSendEditedText(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $manager = $project->getOwner()->getManager();
     $mailer = $this->mailer();

@@ -32,17 +32,17 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
   /**
    * The earliest accepted time (1970-01-02), so the value is positive.
    */
-  protected const MIN_TIMESTAMP = 86400;
-
-  /**
-   * The name of the request attribute that gets the id of the saved note.
-   */
-  public const SAVED_ATTRIBUTE = 'manager_pane_saved_note';
+  protected const int MIN_TIMESTAMP = 86400;
 
   /**
    * The latest accepted time (2037-12-31), within a 32 bit integer column.
    */
-  protected const MAX_TIMESTAMP = 2145916799;
+  protected const int MAX_TIMESTAMP = 2145916799;
+
+  /**
+   * The name of the request attribute that gets the id of the saved note.
+   */
+  public const string SAVED_ATTRIBUTE = 'manager_pane_saved_note';
 
   /**
    * Constructs the form.
@@ -94,6 +94,7 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL, ?CorrespondenceInterface $correspondence = NULL): array {
+
     $form['#attributes']['class'][] = 'manager-pane-form';
 
     $timezone = $this->siteTimezone();
@@ -186,7 +187,7 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
     if ($occurred === NULL) {
       $form_state->setErrorByName('occurred', $this->t('The date and time are required.'));
     }
-    elseif ($occurred < self::MIN_TIMESTAMP || $occurred > self::MAX_TIMESTAMP) {
+    elseif ($occurred < static::MIN_TIMESTAMP || $occurred > static::MAX_TIMESTAMP) {
       $form_state->setErrorByName('occurred', $this->t('The date must be between 1970 and 2037.'));
     }
     $this->showFieldErrors($form, $form_state, ['subject', 'body', 'occurred']);
@@ -237,7 +238,7 @@ class ProjectNoteForm extends FormBase implements TrustedCallbackInterface {
         }
         $note->save();
         // The pane highlights the saved note in the timeline.
-        $this->getRequest()->attributes->set(self::SAVED_ATTRIBUTE, (int) $note->id());
+        $this->getRequest()->attributes->set(static::SAVED_ATTRIBUTE, (int) $note->id());
         return TRUE;
       }
       catch (EntityStorageException $exception) {

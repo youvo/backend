@@ -2,15 +2,17 @@
 
 namespace Drupal\projects\Form;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Checkboxes;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
- * The ProjectMediateForm provides a simple UI for changing lifecycle state.
+ * Lets administrators mediate an open project to selected applicants.
  */
-class ProjectMediateForm extends ProjectTransitionFormBase {
+class ProjectMediateForm extends ProjectEventFormBase {
 
   /**
    * {@inheritdoc}
@@ -22,35 +24,33 @@ class ProjectMediateForm extends ProjectTransitionFormBase {
   /**
    * {@inheritdoc}
    */
+  protected function label(): TranslatableMarkup {
+    return $this->t('Mediate Project');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function successMessage(): TranslatableMarkup {
+    return $this->t('Project was mediated successfully.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL): array {
 
-    // Set title for form.
-    $form['#title'] = $this->t('Mediate Project: %s', [
-      '%s' => $project?->getTitle() ?? '',
-    ]);
-
-    // Store project for submit handler.
-    $form['project'] = [
-      '#type' => 'value',
-      '#value' => $project,
-    ];
+    $form = parent::buildForm($form, $form_state, $project);
 
     $options = [];
-    $applicants = $project?->getApplicants() ?? [];
-    foreach ($applicants as $applicant) {
-      $options[$applicant->id()] = $applicant->get('field_name')->value;
+    foreach ($project?->getApplicants() ?? [] as $id => $applicant) {
+      $options[$id] = $applicant->get('field_name')->value;
     }
-
     $form['select_participants'] = [
       '#type' => 'checkboxes',
       '#options' => $options,
       '#title' => $this->t('Select Participants'),
-      '#required' => 1,
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Mediate Project'),
+      '#required' => TRUE,
     ];
 
     return $form;
@@ -59,23 +59,11 @@ class ProjectMediateForm extends ProjectTransitionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
-
-    /** @var \Drupal\projects\Entity\Project $project */
-    $project = $form_state->getValues()['project'];
-    $selected_creatives = Checkboxes::getCheckedCheckboxes($form_state->getValues()['select_participants']);
-
-    try {
-      $event = new ProjectMediateEvent($project);
-      $event->setCreatives($selected_creatives);
-      $this->eventDispatcher->dispatch($event);
-      $this->messenger()->addMessage($this->t('Project was mediated successfully.'));
-    }
-    catch (\Throwable $e) {
-      $this->messenger()->addError($e->getMessage());
-    }
-
-    $form_state->setRedirect('entity.project.edit_form', ['project' => $project->id()]);
+  protected function event(ProjectInterface $project, FormStateInterface $form_state): Event {
+    $selected = Checkboxes::getCheckedCheckboxes($form_state->getValue('select_participants'));
+    $event = new ProjectMediateEvent($project);
+    $event->setCreatives(array_intersect_key($project->getApplicants(), array_flip($selected)));
+    return $event;
   }
 
 }

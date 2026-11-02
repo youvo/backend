@@ -33,7 +33,7 @@ class FormOnceGuard {
    * re-checks access and state on every request anyway. The TTL only needs to
    * cover double submits, second tabs and retries after a lost response.
    */
-  protected const TTL = 3600;
+  protected const int TTL = 3600;
 
   /**
    * The key value store.
@@ -68,7 +68,7 @@ class FormOnceGuard {
       if ($this->store->has($form_build_id)) {
         return FALSE;
       }
-      $this->store->setWithExpire($form_build_id, TRUE, self::TTL);
+      $this->store->setWithExpire($form_build_id, TRUE, static::TTL);
       return TRUE;
     }
     finally {

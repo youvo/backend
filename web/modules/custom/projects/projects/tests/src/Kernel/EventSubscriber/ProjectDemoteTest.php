@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectDemoteEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectDemoteSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -40,7 +41,7 @@ class ProjectDemoteTest extends ProjectEventSubscriberTestBase {
     $project = $this->createProject(ProjectState::Declined);
     $project->setPromoted(FALSE);
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
   }
 

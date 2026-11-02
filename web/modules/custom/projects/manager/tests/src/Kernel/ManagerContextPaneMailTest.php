@@ -94,6 +94,7 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
    * The empty text shows for an account with access only.
    */
   public function testEmptyTextOnlyWithAccess(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Completed);
     $this->assertInstanceOf(Project::class, $project);

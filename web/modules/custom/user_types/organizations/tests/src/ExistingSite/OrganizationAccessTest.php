@@ -42,6 +42,7 @@ class OrganizationAccessTest extends ExistingSiteBase {
    * Tests the field access per role.
    */
   public function testFieldAccess(): void {
+
     $other_manager = $this->createCreative(['creative', 'manager']);
     $supervisor = $this->createCreative(['supervisor']);
 
@@ -66,6 +67,7 @@ class OrganizationAccessTest extends ExistingSiteBase {
    * Tests the manage access per role.
    */
   public function testManageAccess(): void {
+
     $access = new OrganizationEntityAccess();
     $supervisor = $this->createCreative(['supervisor']);
     $creative = $this->createCreative(['creative']);

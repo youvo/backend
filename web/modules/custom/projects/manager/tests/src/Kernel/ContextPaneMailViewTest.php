@@ -204,6 +204,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * A valid POST sends one mail, records it and shows the index.
    */
   public function testValidPostSendsOnceAndShowsIndex(): void {
+
     $this->actAsManager();
     $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
     $post = ['subject' => 'Edited subject', 'body' => "Hello\n\n[mail:project_link]"] + $this->hiddenValues($this->pane($query));
@@ -246,6 +247,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * An account that does not manage the project gets nothing and sends nothing.
    */
   public function testPostByNonManagerRendersNothing(): void {
+
     $this->actAsManager();
     $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
     $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($query));
@@ -293,6 +295,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * A POST without a valid form token is rejected by the form API.
    */
   public function testPostWithoutValidTokenSendsNothing(): void {
+
     $this->actAsManager();
     $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
     $valid = $this->hiddenValues($this->pane($query));
@@ -320,6 +323,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * A failed send shows the form with the error and the text; a retry sends.
    */
   public function testFailedSendShowsFormAndRetrySends(): void {
+
     $this->actAsManager();
     $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
     $post = ['subject' => 'Edited subject', 'body' => 'Edited body'] + $this->hiddenValues($this->pane($query));
@@ -402,6 +406,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * Replaying a successful POST (same form_build_id) sends nothing more.
    */
   public function testReplayedPostSendsOnlyOnce(): void {
+
     $this->actAsManager();
     $query = ['view' => 'mail', 'subtype' => 'reminder_draft'];
     $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($query));

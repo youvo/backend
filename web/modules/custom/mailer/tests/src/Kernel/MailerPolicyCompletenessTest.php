@@ -37,6 +37,7 @@ class MailerPolicyCompletenessTest extends KernelTestBase {
    * Every declared subtype has a policy with subject, body and known variables.
    */
   public function testPoliciesAreComplete(): void {
+
     $mailers = array_filter(
       $this->container->getParameter('symfony_mailer.mailers'),
       static fn (array $definition): bool => str_starts_with($definition['base_tag'], 'mailer.'),

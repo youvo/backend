@@ -179,6 +179,7 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
    * The organization create event notifies the staff and the organization.
    */
   public function testSubscriberSendsOnOrganizationCreate(): void {
+
     $this->config('system.site')->set('mail', 'team@example.com')->save();
     $project = $this->createMailableProject(ProjectState::Draft);
     // The projects module creates a project from the request on this event,

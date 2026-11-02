@@ -34,6 +34,7 @@ class MailerProjectArchiveSubscriberTest extends MailerKernelTestBase {
    * The edited mail is sent after the project was archived.
    */
   public function testEditedMail(): void {
+
     $project = $this->createMailableProject(ProjectState::Open);
     $this->archive($project, 'Edited subject', 'Edited body');
 
@@ -52,6 +53,7 @@ class MailerProjectArchiveSubscriberTest extends MailerKernelTestBase {
    * Without edited text no mail is sent.
    */
   public function testNoMailWithoutText(): void {
+
     $project = $this->createMailableProject(ProjectState::Open);
     $this->archive($project);
 
@@ -64,6 +66,7 @@ class MailerProjectArchiveSubscriberTest extends MailerKernelTestBase {
    * Archiving a pending project sends no mail, even with edited text.
    */
   public function testNoMailForOtherStates(): void {
+
     $project = $this->createMailableProject(ProjectState::Pending);
     $this->archive($project, 'S', 'B');
 
@@ -76,6 +79,7 @@ class MailerProjectArchiveSubscriberTest extends MailerKernelTestBase {
    * A failed mail is recorded as failed, the project stays archived.
    */
   public function testFailedMail(): void {
+
     $project = $this->createMailableProject(ProjectState::Open);
     $this->useFailingTransport();
     $this->archive($project, 'S', 'B');

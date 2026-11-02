@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectPromoteEvent;
  */
 class LogbookProjectPromoteSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_CLASS = ProjectPromoteEvent::class;
-  const LOG_PATTERN = 'project_promote';
+  const string EVENT_CLASS = ProjectPromoteEvent::class;
+  const string LOG_PATTERN = 'project_promote';
 
 }

@@ -11,7 +11,6 @@ project.submit:
   defaults:
     _form: '\Drupal\projects\Form\ProjectSubmitForm'
     _title: 'Submit Project'
-    transition: 'submit'
   requirements:
     _permission: 'access project admin forms'
     project: \d+
@@ -26,7 +25,6 @@ project.publish:
   defaults:
     _form: '\Drupal\projects\Form\ProjectPublishForm'
     _title: 'Publish Project'
-    transition: 'publish'
   requirements:
     _permission: 'access project admin forms'
     project: \d+
@@ -41,7 +39,6 @@ project.mediate:
   defaults:
     _form: '\Drupal\projects\Form\ProjectMediateForm'
     _title: 'Mediate Project'
-    transition: 'mediate'
   requirements:
     _permission: 'access project admin forms'
     project: \d+
@@ -56,7 +53,6 @@ project.complete:
   defaults:
     _form: '\Drupal\projects\Form\ProjectCompleteForm'
     _title: 'Complete Project'
-    transition: 'complete'
   requirements:
     _permission: 'access project admin forms'
     project: \d+
@@ -71,7 +67,6 @@ project.reset:
   defaults:
     _form: '\Drupal\projects\Form\ProjectResetForm'
     _title: 'Reset Project'
-    transition: 'reset'
   requirements:
     _permission: 'access project admin forms'
     project: \d+

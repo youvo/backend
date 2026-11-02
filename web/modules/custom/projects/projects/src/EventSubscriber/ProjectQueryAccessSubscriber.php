@@ -22,6 +22,7 @@ class ProjectQueryAccessSubscriber implements EventSubscriberInterface {
    * Leaves out archived projects and hidden ones of other organizations.
    */
   public function onQueryAccess(QueryAccessEvent $event): void {
+
     $account = $event->getAccount();
     $conditions = $event->getConditions();
     $conditions->addCacheContexts(['user.permissions']);

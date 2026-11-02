@@ -12,13 +12,14 @@ use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectDeclineEvent;
 use Drupal\projects\Plugin\rest\resource\ProjectMailRequestTrait;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -34,23 +35,9 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectDeclineResource extends ProjectTransitionResourceBase {
+class ProjectDeclineResource extends ProjectResourceBase {
 
   use ProjectMailRequestTrait;
-
-  /**
-   * The current user.
-   */
-  protected AccountInterface $currentUser;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, ...$defaults) {
-    $instance = parent::create($container, ...$defaults);
-    $instance->currentUser = $container->get('current_user');
-    return $instance;
-  }
 
   /**
    * {@inheritdoc}
@@ -58,7 +45,7 @@ class ProjectDeclineResource extends ProjectTransitionResourceBase {
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
     // Archived projects don't transition, also not for administrators.
-    if (!$project->isActive()) {
+    if ($project->isArchived()) {
       return AccessResult::forbidden('The project is archived.')
         ->addCacheableDependency($project);
     }
@@ -77,8 +64,7 @@ class ProjectDeclineResource extends ProjectTransitionResourceBase {
 
     // Only the manager of the organization declines its projects.
     $organization = $project->getOwner();
-    $project_condition = $organization->isManager($account);
-    $access_project = AccessResult::allowedIf($project_condition)
+    $access_project = AccessResult::allowedIf($organization->isManager($account))
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization)
       ->cachePerUser();
@@ -147,7 +133,7 @@ class ProjectDeclineResource extends ProjectTransitionResourceBase {
       $this->logger->error('Project decline failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
-    return new ResourceResponse('Project declined.');
+    return new ModifiedResourceResponse('Project declined.');
   }
 
   /**

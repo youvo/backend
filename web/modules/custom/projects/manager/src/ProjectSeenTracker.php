@@ -24,17 +24,17 @@ class ProjectSeenTracker {
   /**
    * The table of the confirmations.
    */
-  public const TABLE = 'manager_project_seen';
+  public const string TABLE = 'manager_project_seen';
 
   /**
    * The lifecycle states of the projects a manager follows.
    */
-  public const UNFINISHED = ['draft', 'pending', 'open', 'ongoing'];
+  public const array UNFINISHED = ['draft', 'pending', 'open', 'ongoing'];
 
   /**
    * The number of events that the list of all events returns at most.
    */
-  public const EVENTS_LIMIT = 100;
+  public const int EVENTS_LIMIT = 100;
 
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -74,7 +74,7 @@ class ProjectSeenTracker {
     $project_ids = array_map('intval', array_values($storage->getQuery()
       ->accessCheck(FALSE)
       ->condition('uid', array_values($organization_ids), 'IN')
-      ->condition('field_lifecycle', self::UNFINISHED, 'IN')
+      ->condition('field_lifecycle', static::UNFINISHED, 'IN')
       ->execute()));
     if (!$project_ids) {
       return [];
@@ -196,11 +196,11 @@ class ProjectSeenTracker {
       return FALSE;
     }
     $uid = (int) Profile::id($account);
-    $this->database->merge(self::TABLE)
+    $this->database->merge(static::TABLE)
       ->keys(['uid' => $uid, 'project_id' => (int) $project->id()])
       ->fields(['log_id' => $this->maxLogId(), 'confirmed' => $this->time->getRequestTime()])
       ->execute();
-    $this->cacheTagsInvalidator->invalidateTags([self::cacheTag($uid)]);
+    $this->cacheTagsInvalidator->invalidateTags([static::cacheTag($uid)]);
     return TRUE;
   }
 
@@ -217,15 +217,15 @@ class ProjectSeenTracker {
    * Deletes the confirmations of a project.
    */
   public function deleteForProject(int|string $project_id): void {
-    $this->database->delete(self::TABLE)->condition('project_id', $project_id)->execute();
+    $this->database->delete(static::TABLE)->condition('project_id', $project_id)->execute();
   }
 
   /**
    * Deletes the confirmations of a user.
    */
   public function deleteForUser(int|string $uid): void {
-    $this->database->delete(self::TABLE)->condition('uid', $uid)->execute();
-    $this->cacheTagsInvalidator->invalidateTags([self::cacheTag($uid)]);
+    $this->database->delete(static::TABLE)->condition('uid', $uid)->execute();
+    $this->cacheTagsInvalidator->invalidateTags([static::cacheTag($uid)]);
   }
 
   /**
@@ -247,7 +247,7 @@ class ProjectSeenTracker {
    *   The log ids keyed by project id.
    */
   protected function loadSeen(int $uid, array $project_ids): array {
-    $rows = $this->database->select(self::TABLE, 's')
+    $rows = $this->database->select(static::TABLE, 's')
       ->fields('s', ['project_id', 'log_id'])
       ->condition('uid', $uid)
       ->condition('project_id', $project_ids, 'IN')

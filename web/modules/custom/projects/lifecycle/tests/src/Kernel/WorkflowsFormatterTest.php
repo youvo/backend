@@ -19,6 +19,7 @@ class WorkflowsFormatterTest extends WorkflowsTestBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function testStatesListFormatter(): void {
+
     $node = Node::create([
       'title' => 'Foo',
       'type' => 'project',

@@ -50,6 +50,7 @@ class FeedbackAccessTest extends ProjectResourceTestBase {
    * Tests that the author views and edits until the feedback is completed.
    */
   public function testAuthorAccess(): void {
+
     $this->assertAccess($this->author, TRUE, TRUE);
 
     $this->feedback->complete()->save();

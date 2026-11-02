@@ -1174,6 +1174,39 @@ function refreshProjectViews() {
 }
 
 /**
+ * Posts an action to the REST resource of the project of a pane row.
+ *
+ * Refreshes the project list on success, shows the error in the pane
+ * otherwise.
+ *
+ * @return {Promise<boolean>} Whether the action succeeded.
+ */
+async function postProjectAction(row, action, body) {
+  lastScrollPosition = window.scrollY;
+  try {
+    const response = await fetch(
+      `/api/projects/${row.dataset.projectId}/${action}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': await getCsrfToken(),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      }
+    );
+    if (response.ok) {
+      refreshProjectViews();
+      return true;
+    }
+    showPaneError(row, paneErrorText(`HTTP ${response.status}`));
+  } catch (err) {
+    showPaneError(row, paneErrorText(err.message));
+  }
+  return false;
+}
+
+/**
  * Posts an action of the edit pane (promote, hide, notify, reset, …).
  */
 function initActionButton() {
@@ -1182,32 +1215,41 @@ function initActionButton() {
 
   document.body.addEventListener('click', async function (e) {
     const btn = e.target.closest(SELECTORS.actionButton);
-    if (!btn) return;
-    const row = btn.closest('.js-context-pane');
-    if (!row) return;
-    const projectId = row.getAttribute('data-project-id');
-    if (!projectId) return;
+    const row = btn?.closest('.js-context-pane');
+    if (!row?.dataset.projectId) return;
     btn.disabled = true;
-    try {
-      lastScrollPosition = window.scrollY;
-      const csrfToken = await getCsrfToken();
-      const action = btn.getAttribute('data-action');
-      const response = await fetch(`/api/projects/${projectId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-      });
-      if (response.ok) {
-        refreshProjectViews();
-      } else {
-        btn.disabled = false;
-        showPaneError(row, paneErrorText(`HTTP ${response.status}`));
-      }
-    } catch (err) {
+    if (!(await postProjectAction(row, btn.dataset.action))) {
       btn.disabled = false;
-      showPaneError(row, paneErrorText(err.message));
+    }
+  });
+}
+
+/**
+ * Posts the next transition of the transition pane (submit, mediate, …).
+ */
+function initTransitionButton() {
+  if (window._transitionBtnHandlerAttached) return;
+  window._transitionBtnHandlerAttached = true;
+
+  document.body.addEventListener('click', async function (e) {
+    const btn = e.target.closest(SELECTORS.transitionButton);
+    const row = btn?.closest('.js-context-pane');
+    if (!row?.dataset.projectId) return;
+    const action = btn.dataset.action;
+    let body;
+    if (action === 'mediate') {
+      const checked = row.querySelectorAll(
+        `${SELECTORS.transitionCheckbox}:checked`
+      );
+      if (checked.length === 0) {
+        showPaneError(row, Drupal.t('Please select at least one applicant.'));
+        return;
+      }
+      body = { selected_creatives: Array.from(checked, cb => cb.value) };
+    }
+    btn.disabled = true;
+    if (!(await postProjectAction(row, action, body))) {
+      btn.disabled = false;
     }
   });
 }
@@ -1221,149 +1263,50 @@ async function submitActionForm(form) {
   const row = form.closest('.js-context-pane');
   if (!row || form.dataset.paneBusy || !form.reportValidity()) return;
   const buttons = form.querySelectorAll('[type="submit"]');
-  const release = () => {
-    delete form.dataset.paneBusy;
-    delete row.dataset.paneBusy;
-    buttons.forEach(button => {
-      button.disabled = false;
-    });
-  };
   form.dataset.paneBusy = '1';
   row.dataset.paneBusy = '1';
   buttons.forEach(button => {
     button.disabled = true;
   });
-  try {
-    lastScrollPosition = window.scrollY;
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(
-      `/api/projects/${row.dataset.projectId}/${form.dataset.restAction}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({
-          reason: form.dataset.reason,
-          subject: form.elements.subject.value,
-          body: form.elements.body.value,
-        }),
-      }
-    );
-    if (response.ok) {
-      release();
-      refreshProjectViews();
-    } else {
-      release();
-      showPaneError(row, paneErrorText(`HTTP ${response.status}`));
-    }
-  } catch (err) {
-    release();
-    showPaneError(row, paneErrorText(err.message));
-  }
+  await postProjectAction(row, form.dataset.restAction, {
+    reason: form.dataset.reason,
+    subject: form.elements.subject.value,
+    body: form.elements.body.value,
+  });
+  delete form.dataset.paneBusy;
+  delete row.dataset.paneBusy;
+  buttons.forEach(button => {
+    button.disabled = false;
+  });
 }
 
+/**
+ * Enables the mediate button only while an applicant is selected.
+ */
 function initCheckboxHandlers(context) {
-  const checkboxes = (context || document).querySelectorAll(
-    SELECTORS.transitionCheckbox
-  );
+  const root = context || document;
+  const checkboxes = root.querySelectorAll(SELECTORS.transitionCheckbox);
   if (checkboxes.length === 0) {
-    (context || document)
-      .querySelectorAll('.js-transition-btn[data-action="mediate"]')
+    root
+      .querySelectorAll(`${SELECTORS.transitionButton}[data-action="mediate"]`)
       .forEach(btn => {
         btn.disabled = true;
       });
     return;
   }
-
-  checkboxes.forEach(checkbox => {
-    const row = checkbox.closest('.js-context-pane');
-    if (row) {
-      const transitionBtn = row.querySelector('.js-transition-btn');
-      if (transitionBtn) {
-        const checkedBoxes = row.querySelectorAll(
-          '.js-transition-checkbox:checked'
-        );
-        transitionBtn.disabled = checkedBoxes.length === 0;
-      }
+  const update = row => {
+    const btn = row?.querySelector(SELECTORS.transitionButton);
+    if (btn) {
+      btn.disabled =
+        row.querySelectorAll(`${SELECTORS.transitionCheckbox}:checked`)
+          .length === 0;
     }
-
+  };
+  checkboxes.forEach(checkbox => {
+    update(checkbox.closest('.js-context-pane'));
     checkbox.addEventListener('change', function () {
-      const row = this.closest('.js-context-pane');
-      if (!row) return;
-
-      const transitionBtn = row.querySelector('.js-transition-btn');
-      if (!transitionBtn) return;
-
-      const checkedBoxes = row.querySelectorAll(
-        '.js-transition-checkbox:checked'
-      );
-      transitionBtn.disabled = checkedBoxes.length === 0;
+      update(this.closest('.js-context-pane'));
     });
-  });
-}
-
-function initTransitionButton() {
-  if (window._transitionBtnHandlerAttached) return;
-  window._transitionBtnHandlerAttached = true;
-
-  document.body.addEventListener('click', async function (e) {
-    const btn = e.target.closest('.js-transition-btn');
-    if (!btn) return;
-    const row = btn.closest('.js-context-pane');
-    if (!row) return;
-    const projectId = row.getAttribute('data-project-id');
-    if (!projectId) return;
-    btn.disabled = true;
-    try {
-      lastScrollPosition = window.scrollY;
-      const csrfToken = await getCsrfToken();
-      const action = btn.getAttribute('data-action');
-
-      // Prepare request body
-      let requestBody = {};
-
-      // For mediate action, collect selected applicants from checkboxes
-      if (action === 'mediate') {
-        const checkboxes = row.querySelectorAll(
-          '.js-transition-checkbox:checked'
-        );
-        const selectedCreatives = Array.from(checkboxes).map(cb => cb.value);
-
-        if (selectedCreatives.length === 0) {
-          alert('Please select at least one applicant.');
-          btn.disabled = true;
-          return;
-        }
-
-        requestBody = {
-          selected_creatives: selectedCreatives,
-        };
-      }
-
-      const response = await fetch(`/api/projects/${projectId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body:
-          Object.keys(requestBody).length > 0
-            ? JSON.stringify(requestBody)
-            : undefined,
-      });
-      if (response.status === 200) {
-        refreshProjectViews();
-      } else if (response.status === 403) {
-        alert('You do not have permission to transition this project.');
-      } else if (response.status === 400) {
-        const errorData = await response.json();
-        alert(
-          errorData.message || 'Invalid request. Please check your selection.'
-        );
-      }
-    } catch (err) {}
   });
 }
 

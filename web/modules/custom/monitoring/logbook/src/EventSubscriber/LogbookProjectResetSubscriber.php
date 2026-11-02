@@ -10,13 +10,14 @@ use Drupal\projects\Event\ProjectResetEvent;
  */
 class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectResetEvent::class;
-  const LOG_PATTERN = 'project_reset';
+  const string EVENT_CLASS = ProjectResetEvent::class;
+  const string LOG_PATTERN = 'project_reset';
 
   /**
    * {@inheritdoc}
    */
   public function log(Event $event): void {
+
     // Archive the earlier logs of the project. The reset log is created
     // afterwards and stays active.
     /** @var \Drupal\projects\Event\ProjectResetEvent $event */

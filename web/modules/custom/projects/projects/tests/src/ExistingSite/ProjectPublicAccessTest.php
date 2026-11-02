@@ -60,6 +60,7 @@ class ProjectPublicAccessTest extends ProjectResourceTestBase {
    * Tests the access-checked project queries per account.
    */
   public function testQueryAccess(): void {
+
     $visible = $this->createProject(ProjectState::Open);
     $hidden = $this->createProject(ProjectState::Open);
     $hidden->setHidden()->save();

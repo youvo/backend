@@ -53,7 +53,22 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"Application completed."', $response->getContent());
+    $this->assertEquals('"Project applied."', $response->getContent());
+  }
+
+  /**
+   * Tests the project apply resource - malformed bodies answer 400.
+   */
+  public function testProjectApplyMalformed(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $creative = $this->createCreative();
+    foreach (['"x"', '{"message":["x"]}', '{"phone":1}'] as $body) {
+      $request = Request::create('/api/projects/' . $project->uuid() . '/apply', 'POST', [], [], [], [], $body);
+      $request->headers->set('Content-Type', 'application/json');
+      $this->authenticateRequest($request, $creative);
+      $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
+    }
+    $this->assertFalse($project->isApplicant($creative));
   }
 
   /**
@@ -137,7 +152,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**
