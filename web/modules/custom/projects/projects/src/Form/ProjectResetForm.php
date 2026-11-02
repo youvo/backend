@@ -58,7 +58,7 @@ class ProjectResetForm extends ProjectTransitionFormBase {
       $this->messenger()->addError($e->getMessage());
     }
 
-    $form_state->setRedirect('entity.node.canonical', ['node' => $project->id()]);
+    $form_state->setRedirect('entity.project.edit_form', ['project' => $project->id()]);
   }
 
 }

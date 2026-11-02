@@ -50,7 +50,7 @@ use Drupal\user_types\Utility\Profile;
  *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\projects\Routing\ProjectHtmlRouteProvider",
  *     },
  *    "views_data" = "Drupal\views\EntityViewsData"
  *   },
