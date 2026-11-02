@@ -44,4 +44,15 @@ class ProjectShowTest extends ProjectEventSubscriberTestBase {
     $this->eventDispatcher->dispatch(new ProjectShowEvent($project));
   }
 
+  /**
+   * Tests that declined projects can not be shown.
+   */
+  public function testProjectShowDeclined(): void {
+    $project = $this->createProject(ProjectState::Declined);
+    $project->setHidden();
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectShowEvent($project));
+  }
+
 }

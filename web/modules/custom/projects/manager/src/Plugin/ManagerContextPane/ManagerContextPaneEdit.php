@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
  * the mail editor (view 'archive').
  */
 #[ManagerContextPane(id: "edit")]
-class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
+class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerContextPaneActionInterface, ManagerContextPaneViewInterface {
 
   use ProjectActionPaneTrait;
   use StringTranslationTrait;
@@ -37,6 +37,14 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * {@inheritdoc}
    */
+  public function hasActions(Project $project): bool {
+    return $this->permittedActions($project) !== []
+      || $this->mayMail($project, 'archive', 'archive_custom');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build(Project $project): array {
     $build = [
       '#theme' => 'context_pane',
@@ -44,26 +52,18 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
       '#project' => $project,
       'content' => [],
     ];
-    $actions = [
-      $project->isPromoted() ? 'demote' : 'promote',
-      $project->isHidden() ? 'show' : 'hide',
-      'notify',
-      'reset',
-    ];
-    foreach ($actions as $action) {
-      if ($this->mayPost($project, $action)) {
-        $build['content']['actions'][$action] = [
-          'button' => [
-            '#type' => 'button',
-            '#value' => $this->label($project, $action),
-            '#attributes' => [
-              'class' => ['button', 'button--small', 'js-action-btn'],
-              'data-action' => $action,
-            ],
+    foreach ($this->permittedActions($project) as $action) {
+      $build['content']['actions'][$action] = [
+        'button' => [
+          '#type' => 'button',
+          '#value' => $this->label($project, $action),
+          '#attributes' => [
+            'class' => ['button', 'button--small', 'js-action-btn'],
+            'data-action' => $action,
           ],
-          'description' => $this->description($project, $action),
-        ];
-      }
+        ],
+        'description' => $this->description($project, $action),
+      ];
     }
     $archive = $this->buildMailActionLink($project, 'archive', $this->t('Archive'));
     if ($archive) {
@@ -73,6 +73,22 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
       ];
     }
     return $build;
+  }
+
+  /**
+   * Gets the actions without mail editor that the current user may post.
+   *
+   * @return string[]
+   *   The actions, as in project:<action>.
+   */
+  protected function permittedActions(Project $project): array {
+    $actions = [
+      $project->isPromoted() ? 'demote' : 'promote',
+      $project->isHidden() ? 'show' : 'hide',
+      'notify',
+      'reset',
+    ];
+    return array_values(array_filter($actions, fn(string $action): bool => $this->mayPost($project, $action)));
   }
 
   /**

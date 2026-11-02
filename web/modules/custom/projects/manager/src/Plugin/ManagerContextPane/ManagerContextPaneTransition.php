@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
  * (view 'decline') with the mail editor.
  */
 #[ManagerContextPane(id: "transition")]
-class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
+class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneActionInterface, ManagerContextPaneViewInterface {
 
   use ProjectActionPaneTrait;
   use StringTranslationTrait;
@@ -45,12 +45,17 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * {@inheritdoc}
    */
+  public function hasActions(Project $project): bool {
+    return $this->permittedTransition($project) !== NULL
+      || $this->mayMail($project, 'decline', 'decline_custom');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build(Project $project): array {
 
-    $transition = $this->getNextTransition($project);
-    if (!$transition instanceof ProjectTransition || !$this->mayPost($project, $transition->value)) {
-      $transition = NULL;
-    }
+    $transition = $this->permittedTransition($project);
     $decline = $this->buildMailActionLink($project, 'decline', $this->t('Decline'));
     if (!$transition && !$decline) {
       return [];
@@ -188,6 +193,14 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
       '    <li>' . $this->t('The organization receives an email.') . '</li>' .
       '  </ul>',
     ];
+  }
+
+  /**
+   * Gets the next transition, if the current user may post it.
+   */
+  protected function permittedTransition(Project $project): ?ProjectTransition {
+    $transition = $this->getNextTransition($project);
+    return $transition && $this->mayPost($project, $transition->value) ? $transition : NULL;
   }
 
   /**

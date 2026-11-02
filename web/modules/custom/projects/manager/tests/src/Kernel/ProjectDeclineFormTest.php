@@ -158,7 +158,11 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * Builds the default view of the transition pane.
    */
   protected function transitionBuild(Project $project): array {
-    return $this->container->get('plugin.manager.manager_context_panes')->createInstance('transition')->build($project);
+    $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('transition');
+    $build = $pane->build($project);
+    // The cheap check of the project list agrees with the built pane.
+    $this->assertSame(!empty($build['content']), $pane->hasActions($project));
+    return $build;
   }
 
   /**

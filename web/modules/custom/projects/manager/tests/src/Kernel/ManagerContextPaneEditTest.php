@@ -98,8 +98,11 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
    *   The actions.
    */
   protected function actions(Project $project): array {
-    $build = $this->container->get('plugin.manager.manager_context_panes')->createInstance('edit')->build($project);
-    return array_keys($build['content']['actions'] ?? []);
+    $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('edit');
+    $actions = array_keys($pane->build($project)['content']['actions'] ?? []);
+    // The cheap check of the project list agrees with the built pane.
+    $this->assertSame($actions !== [], $pane->hasActions($project));
+    return $actions;
   }
 
   /**

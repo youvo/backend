@@ -190,8 +190,8 @@ class ProjectMailForm extends FormBase {
   /**
    * Whether the form sends mails of this subtype.
    *
-   * Decline and archive mails are only sent by their forms, which also
-   * decline or archive the project.
+   * Decline and archive mails are only sent by their REST resources, together
+   * with the decline or archive.
    */
   protected function acceptsSubtype(string $subtype): bool {
     return ManagerMailRegistry::declineReason($subtype) === NULL && ManagerMailRegistry::archiveReason($subtype) === NULL;
