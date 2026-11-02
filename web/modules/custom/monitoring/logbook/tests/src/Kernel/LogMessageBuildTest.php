@@ -10,12 +10,13 @@ namespace Drupal\Tests\logbook\Kernel;
 class LogMessageBuildTest extends LogbookKernelTestBase {
 
   /**
-   * A plain message is escaped plain text.
+   * A plain message is escaped and keeps its line breaks.
    */
   public function testPlainMessage(): void {
     $this->createPattern('project_apply', ['observable' => TRUE]);
-    $log = $this->createLog('project_apply', ['message' => '<b>Hello</b>']);
-    $this->assertSame(['#plain_text' => '<b>Hello</b>'], $log->buildMessage());
+    $log = $this->createLog('project_apply', ['message' => "<b>Hello</b>\nWorld"]);
+    $build = $log->buildMessage();
+    $this->assertSame("&lt;b&gt;Hello&lt;/b&gt;<br />\nWorld", (string) $this->container->get('renderer')->renderInIsolation($build));
   }
 
   /**
