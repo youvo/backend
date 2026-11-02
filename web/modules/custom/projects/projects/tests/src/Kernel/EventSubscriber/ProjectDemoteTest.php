@@ -32,4 +32,16 @@ class ProjectDemoteTest extends ProjectEventSubscriberTestBase {
     $this->assertFalse($project->isPromoted());
   }
 
+  /**
+   * Tests that declined projects can not be demoted.
+   */
+  public function testProjectDemoteDeclined(): void {
+
+    $project = $this->createProject(ProjectState::Declined);
+    $project->setPromoted(FALSE);
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
+  }
+
 }

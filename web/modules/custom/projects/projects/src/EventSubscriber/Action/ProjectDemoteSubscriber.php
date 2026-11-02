@@ -17,6 +17,9 @@ class ProjectDemoteSubscriber implements EventSubscriberInterface {
    */
   public function onProjectDemote(ProjectDemoteEvent $event): void {
     $project = $event->getProject();
+    if ($project->lifecycle()->isDeclined()) {
+      throw new \LogicException('Cannot demote a declined project.');
+    }
     $project->setPromoted(FALSE);
     $project->save();
   }
