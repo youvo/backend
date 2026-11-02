@@ -14,6 +14,7 @@ dependencies:
     - rest.resource.project.publish
     - rest.resource.question.submission
   module:
+    - blocker_mode
     - correspondence
     - courses
     - dashboard
@@ -32,6 +33,7 @@ weight: 7
 is_admin: false
 permissions:
   - 'access content'
+  - 'access site'
   - 'create project'
   - 'delete any project'
   - 'general manager access'
