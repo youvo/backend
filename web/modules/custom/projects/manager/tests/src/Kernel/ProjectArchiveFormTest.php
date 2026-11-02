@@ -6,8 +6,8 @@ use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\manager\Controller\ContextPaneController;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectArchiveEvent;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\rest\Entity\RestResourceConfig;
 use Drupal\rest\RestResourceConfigInterface;
@@ -72,13 +72,12 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   /**
    * Creates a saved project whose owner and manager have a mail address.
    */
-  protected function createArchivableProject(ProjectState $state): Project {
+  protected function createArchivableProject(ProjectState $state): ProjectInterface {
     $project = $this->createProject($state);
     $organization = $project->getOwner();
     $organization->set('mail', 'organization@example.com')->set('field_contact', 'Olga Org')->save();
     $organization->getManager()->set('mail', 'manager@example.com')->set('field_name', 'Manu Manager')->save();
     $project->save();
-    $this->assertInstanceOf(Project::class, $project);
     return $project;
   }
 
@@ -99,7 +98,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   /**
    * Creates a project and logs in a supervisor.
    */
-  protected function actAsSupervisorOf(ProjectState $state): Project {
+  protected function actAsSupervisorOf(ProjectState $state): ProjectInterface {
     $project = $this->createArchivableProject($state);
     $this->container->get('current_user')->setAccount($this->archiver($this->createMailableCreative('Supervisor ' . $this->randomMachineName())));
     return $project;
@@ -108,7 +107,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   /**
    * Runs the pane controller for a request and returns the HTML.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project of the pane URL.
    * @param array<string, string> $query
    *   Query parameters besides the pane type.
@@ -118,7 +117,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
    * @return string
    *   The response body.
    */
-  protected function pane(Project $project, array $query = [], ?array $post = NULL): string {
+  protected function pane(ProjectInterface $project, array $query = [], ?array $post = NULL): string {
     $uri = '/project/manage/context/' . $project->id() . '?' . http_build_query($query + ['type' => 'edit']);
     $request = Request::create($uri, $post === NULL ? 'GET' : 'POST', $post ?? []);
     $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
@@ -154,7 +153,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   /**
    * Gets the archive entry of the edit pane, if offered.
    */
-  protected function archiveEntry(Project $project): ?array {
+  protected function archiveEntry(ProjectInterface $project): ?array {
     $build = $this->container->get('plugin.manager.manager_context_panes')->createInstance('edit')->build($project);
     return $build['content']['actions']['archive']['button'] ?? NULL;
   }
@@ -162,11 +161,11 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   /**
    * Reloads a project from storage.
    */
-  protected function reload(Project $project): Project {
+  protected function reload(ProjectInterface $project): ProjectInterface {
     $storage = $this->container->get('entity_type.manager')->getStorage('project');
     $storage->resetCache([$project->id()]);
     $fresh = $storage->load($project->id());
-    $this->assertInstanceOf(Project::class, $fresh);
+    $this->assertInstanceOf(ProjectInterface::class, $fresh);
     return $fresh;
   }
 

@@ -11,7 +11,7 @@ use Drupal\correspondence\Entity\Correspondence;
 use Drupal\manager\Controller\ContextPaneController;
 use Drupal\manager\Form\ProjectNoteDeleteForm;
 use Drupal\manager\Form\ProjectNoteForm;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\UserInterface;
@@ -47,7 +47,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   /**
    * The project under test.
    */
-  protected Project $project;
+  protected ProjectInterface $project;
 
   /**
    * The assigned manager, who may manage notes.
@@ -69,7 +69,6 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
     // User 1 bypasses all permission checks: use it up.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $this->project = $project;
     $this->manager = $this->accountWith($project->getOwner()->getManager(), self::PERMISSIONS);
     $this->actAs($this->manager);
@@ -91,13 +90,13 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    *   Query parameters besides the pane type.
    * @param array<string, mixed>|null $post
    *   POST values, or NULL for a GET request.
-   * @param \Drupal\projects\Entity\Project|null $project
+   * @param \Drupal\projects\ProjectInterface|null $project
    *   The project of the pane URL, defaults to the project under test.
    *
    * @return string
    *   The response body.
    */
-  protected function pane(string $type, array $query = [], ?array $post = NULL, ?Project $project = NULL): string {
+  protected function pane(string $type, array $query = [], ?array $post = NULL, ?ProjectInterface $project = NULL): string {
     $project ??= $this->project;
     $uri = '/project/manage/context/' . $project->id() . '?' . http_build_query(['type' => $type] + $query);
     $request = Request::create($uri, $post === NULL ? 'GET' : 'POST', $post ?? []);
@@ -157,7 +156,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * @return \Drupal\correspondence\CorrespondenceInterface[]
    *   The notes.
    */
-  protected function notes(?Project $project = NULL): array {
+  protected function notes(?ProjectInterface $project = NULL): array {
     $project ??= $this->project;
     return array_values(array_filter(
       $this->loadEntries($project->id()),
@@ -168,7 +167,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   /**
    * Creates a note on a project.
    */
-  protected function createNote(string $subject = 'Anruf', string $body = 'Rückruf vereinbart', ?Project $project = NULL): CorrespondenceInterface {
+  protected function createNote(string $subject = 'Anruf', string $body = 'Rückruf vereinbart', ?ProjectInterface $project = NULL): CorrespondenceInterface {
     $note = Correspondence::create([
       'type' => 'note',
       'project' => ($project ?? $this->project)->id(),
@@ -205,7 +204,7 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
    * @return string
    *   The form_build_id of the cached form.
    */
-  protected function cachedBuildId(Project $project, ?CorrespondenceInterface $note, string $form_class = ProjectNoteForm::class): string {
+  protected function cachedBuildId(ProjectInterface $project, ?CorrespondenceInterface $note, string $form_class = ProjectNoteForm::class): string {
     $request = Request::create('/', 'POST');
     $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
     $this->container->get('request_stack')->push($request);
@@ -408,7 +407,6 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   public function testAddBuildIdOfOtherProjectIsDenied(): void {
     $x = $this->project;
     $y = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $y);
     $admin = $this->accountWith($this->manager, [...self::PERMISSIONS, 'administer projects']);
     $this->actAs($admin);
     $query = ['view' => 'note_add'];
@@ -494,7 +492,6 @@ class ContextPaneNoteViewTest extends MailerKernelTestBase {
   public function testMismatchingProjectAndNoteIsRejected(): void {
     $own = $this->createNote('Own', 'x');
     $y = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $y);
     $foreign = $this->createNote('Foreign', 'x', $y);
     $mail = Correspondence::create(['type' => 'mail', 'project' => $this->project->id(), 'subject' => 'M']);
     $mail->save();

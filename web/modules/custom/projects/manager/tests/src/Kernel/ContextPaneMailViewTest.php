@@ -5,7 +5,7 @@ namespace Drupal\Tests\manager\Kernel;
 use Drupal\Core\Form\FormState;
 use Drupal\manager\Controller\ContextPaneController;
 use Drupal\manager\Form\ProjectMailForm;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\UserInterface;
@@ -33,7 +33,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
   /**
    * The project under test.
    */
-  protected Project $project;
+  protected ProjectInterface $project;
 
   /**
    * The assigned manager, who may send mails.
@@ -60,7 +60,6 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    */
   protected function actAsManager(ProjectState $state = ProjectState::Draft): void {
     $project = $this->createMailableProject($state);
-    $this->assertInstanceOf(Project::class, $project);
     $this->project = $project;
     $this->manager = $this->accountWith($project->getOwner()->getManager(), [
       'general manager access',
@@ -77,13 +76,13 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    *   Query parameters besides the pane type.
    * @param array<string, string>|null $post
    *   POST values, or NULL for a GET request.
-   * @param \Drupal\projects\Entity\Project|null $project
+   * @param \Drupal\projects\ProjectInterface|null $project
    *   The project of the pane URL, defaults to the project under test.
    *
    * @return string
    *   The response body.
    */
-  protected function pane(array $query = [], ?array $post = NULL, ?Project $project = NULL): string {
+  protected function pane(array $query = [], ?array $post = NULL, ?ProjectInterface $project = NULL): string {
     $project ??= $this->project;
     $uri = '/project/manage/context/' . $project->id() . '?' . http_build_query(['type' => 'mail'] + $query);
     $request = Request::create($uri, $post === NULL ? 'GET' : 'POST', $post ?? []);
@@ -118,7 +117,7 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
    * @return string
    *   The form_build_id of the cached form.
    */
-  protected function cachedBuildId(Project $project, string $subtype): string {
+  protected function cachedBuildId(ProjectInterface $project, string $subtype): string {
     // Caching a form state is only allowed on non-GET requests.
     $request = Request::create('/', 'POST');
     $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
@@ -386,7 +385,6 @@ class ContextPaneMailViewTest extends MailerKernelTestBase {
     $this->actAsManager();
     $x = $this->project;
     $y = $this->createMailableProject(ProjectState::Draft);
-    $this->assertInstanceOf(Project::class, $y);
     $admin = $this->accountWith($this->manager, [
       'general manager access',
       'send project mails',

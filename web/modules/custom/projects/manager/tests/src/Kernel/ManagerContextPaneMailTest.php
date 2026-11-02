@@ -3,7 +3,6 @@
 namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneMail;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\Entity\Role;
@@ -30,7 +29,6 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
    */
   public function testListsMailsForState(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
-    $this->assertInstanceOf(Project::class, $project);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $build = $this->pane()->build($project);
     $this->assertSame('mail', $build['#type']);
@@ -50,7 +48,6 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
    */
   public function testNoAccessNoContent(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
-    $this->assertInstanceOf(Project::class, $project);
     $this->container->get('current_user')->setAccount($this->createMailableCreative('Other'));
     $this->assertSame([], $this->pane()->build($project)['content'] ?? []);
   }
@@ -60,7 +57,6 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
    */
   public function testLastSentLine(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
-    $this->assertInstanceOf(Project::class, $project);
     $manager = $project->getOwner()->getManager();
     $role = Role::create(['id' => 'manager', 'label' => 'Manager']);
     $role->grantPermission('send project mails')->grantPermission('view correspondence')->save();
@@ -81,7 +77,6 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
     $this->createMailableCreative('Root');
     foreach ([ProjectState::Draft, ProjectState::Pending] as $state) {
       $project = $this->createMailableProject($state);
-      $this->assertInstanceOf(Project::class, $project);
       $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails', 'view correspondence']);
       $this->container->get('current_user')->setAccount($manager);
       $this->container->get('mailer.correspondence_recorder')
@@ -97,7 +92,6 @@ class ManagerContextPaneMailTest extends MailerKernelTestBase {
 
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Completed);
-    $this->assertInstanceOf(Project::class, $project);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['send project mails']);
     $this->container->get('current_user')->setAccount($manager);
     $build = $this->pane()->build($project);

@@ -4,7 +4,7 @@ namespace Drupal\Tests\manager\Kernel;
 
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneEdit;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\Entity\RestResourceConfig;
@@ -72,7 +72,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
   /**
    * Logs in the manager of the project's organization.
    */
-  protected function actAsManagerOf(Project $project): UserInterface {
+  protected function actAsManagerOf(ProjectInterface $project): UserInterface {
     $manager = $this->accountWith($project->getOwner()->getManager(), [
       'general manager access',
       'send project mails',
@@ -85,9 +85,8 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
   /**
    * Creates a saved project.
    */
-  protected function project(ProjectState $state): Project {
+  protected function project(ProjectState $state): ProjectInterface {
     $project = $this->createMailableProject($state);
-    $this->assertInstanceOf(Project::class, $project);
     return $project;
   }
 
@@ -97,7 +96,7 @@ class ManagerContextPaneEditTest extends MailerKernelTestBase {
    * @return string[]
    *   The actions.
    */
-  protected function actions(Project $project): array {
+  protected function actions(ProjectInterface $project): array {
     $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('edit');
     $actions = array_keys($pane->build($project)['content']['actions'] ?? []);
     // The cheap check of the project list agrees with the built pane.
