@@ -11,7 +11,7 @@ use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Form\ProjectArchiveForm;
 use Drupal\manager\Form\ProjectDeclineForm;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -61,7 +61,7 @@ trait ProjectActionPaneTrait {
    *
    * The route checks the REST permission besides the resource's access().
    */
-  protected function mayPost(Project $project, string $action): bool {
+  protected function mayPost(ProjectInterface $project, string $action): bool {
     if (!$this->currentUser->hasPermission('restful post project:' . $action)) {
       return FALSE;
     }
@@ -74,7 +74,7 @@ trait ProjectActionPaneTrait {
    *
    * The editor needs the mail preview, which the mail access guards.
    */
-  protected function mayMail(Project $project, string $action, string $subtype): bool {
+  protected function mayMail(ProjectInterface $project, string $action, string $subtype): bool {
     return $this->mayPost($project, $action)
       && $this->access->access($this->currentUser, $project, $subtype)->isAllowed();
   }
@@ -82,7 +82,7 @@ trait ProjectActionPaneTrait {
   /**
    * Builds the link that opens the mail editor of an action, if permitted.
    */
-  protected function buildMailActionLink(Project $project, string $action, TranslatableMarkup $title): ?array {
+  protected function buildMailActionLink(ProjectInterface $project, string $action, TranslatableMarkup $title): ?array {
     if (!$this->mayMail($project, $action, $action . '_custom')) {
       return NULL;
     }
@@ -102,7 +102,7 @@ trait ProjectActionPaneTrait {
   /**
    * Builds the mail editor view of an action; access is checked every time.
    */
-  protected function buildMailActionView(Project $project, string $action, Request $request): array {
+  protected function buildMailActionView(ProjectInterface $project, string $action, Request $request): array {
     // The mail subtypes are '<action>_<reason>': the access refuses unknown
     // reasons.
     $subtype = $action . '_' . $request->query->get('reason', 'custom');

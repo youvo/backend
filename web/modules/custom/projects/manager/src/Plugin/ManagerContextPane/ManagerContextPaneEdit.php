@@ -5,7 +5,7 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\manager\Attribute\ManagerContextPane;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -37,7 +37,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * {@inheritdoc}
    */
-  public function hasActions(Project $project): bool {
+  public function hasActions(ProjectInterface $project): bool {
     return $this->permittedActions($project) !== []
       || $this->mayMail($project, 'archive', 'archive_custom');
   }
@@ -45,7 +45,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function build(ProjectInterface $project): array {
 
     $build = [
       '#theme' => 'context_pane',
@@ -81,7 +81,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * {@inheritdoc}
    */
-  public function buildView(Project $project, Request $request): array {
+  public function buildView(ProjectInterface $project, Request $request): array {
     if ($request->query->get('view') !== 'archive') {
       return $this->build($project);
     }
@@ -94,7 +94,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
    * @return string[]
    *   The actions, as in project:<action>.
    */
-  protected function permittedActions(Project $project): array {
+  protected function permittedActions(ProjectInterface $project): array {
     $actions = [
       $project->isPromoted() ? 'demote' : 'promote',
       $project->isHidden() ? 'show' : 'hide',
@@ -107,7 +107,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * Gets the button label of an action.
    */
-  protected function label(Project $project, string $action): TranslatableMarkup {
+  protected function label(ProjectInterface $project, string $action): TranslatableMarkup {
     return match ($action) {
       'promote' => $this->t('Promote'),
       'demote' => $this->t('Demote'),
@@ -123,7 +123,7 @@ class ManagerContextPaneEdit extends ManagerContextPaneBase implements ManagerCo
   /**
    * Builds the description of an action: what happens when it is used.
    */
-  protected function description(Project $project, string $action): array {
+  protected function description(ProjectInterface $project, string $action): array {
     $items = match ($action) {
       'promote' => [
         $this->t('The project is promoted to the front page.'),

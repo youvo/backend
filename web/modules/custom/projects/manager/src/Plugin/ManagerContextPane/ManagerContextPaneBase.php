@@ -4,7 +4,7 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,6 +22,6 @@ abstract class ManagerContextPaneBase extends PluginBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  abstract public function build(Project $project): array;
+  abstract public function build(ProjectInterface $project): array;
 
 }

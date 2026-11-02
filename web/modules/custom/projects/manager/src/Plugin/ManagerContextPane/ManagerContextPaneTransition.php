@@ -6,7 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\manager\Attribute\ManagerContextPane;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,7 +45,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * {@inheritdoc}
    */
-  public function hasActions(Project $project): bool {
+  public function hasActions(ProjectInterface $project): bool {
     return $this->permittedTransition($project) !== NULL
       || $this->mayMail($project, 'decline', 'decline_custom');
   }
@@ -53,7 +53,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function build(ProjectInterface $project): array {
 
     $build = [
       '#theme' => 'context_pane',
@@ -92,7 +92,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * {@inheritdoc}
    */
-  public function buildView(Project $project, Request $request): array {
+  public function buildView(ProjectInterface $project, Request $request): array {
     if ($request->query->get('view') !== 'decline') {
       return $this->build($project);
     }
@@ -102,7 +102,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * Gets the next transition, if the current user may post it.
    */
-  protected function permittedTransition(Project $project): ?ProjectTransition {
+  protected function permittedTransition(ProjectInterface $project): ?ProjectTransition {
     $transition = $this->nextTransition($project);
     return $transition && $this->mayPost($project, $transition->value) ? $transition : NULL;
   }
@@ -110,7 +110,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * Gets the next transition of the linear flow, without checking it.
    */
-  protected function nextTransition(Project $project): ?ProjectTransition {
+  protected function nextTransition(ProjectInterface $project): ?ProjectTransition {
     $lifecycle = $project->lifecycle();
     return match (TRUE) {
       $lifecycle->isDraft() => ProjectTransition::Submit,
@@ -175,7 +175,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * Builds the applicants to select for the mediation.
    */
-  protected function buildApplicantOptions(Project $project): array {
+  protected function buildApplicantOptions(ProjectInterface $project): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('user');
     foreach ($project->getApplicants() as $applicant) {
       $options[$applicant->uuid()] = $view_builder->view($applicant, 'option');
@@ -186,7 +186,7 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   /**
    * Builds the participants that the completion mails.
    */
-  protected function buildParticipantUsers(Project $project): array {
+  protected function buildParticipantUsers(ProjectInterface $project): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('user');
     foreach ($project->getParticipants('Creative') as $participant) {
       $users[$participant->uuid()] = $view_builder->view($participant, 'option');

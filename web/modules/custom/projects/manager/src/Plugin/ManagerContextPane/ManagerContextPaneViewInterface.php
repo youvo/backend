@@ -2,7 +2,7 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -18,7 +18,7 @@ interface ManagerContextPaneViewInterface extends ManagerContextPaneInterface {
   /**
    * Builds the render array for the view requested by the request.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project entity.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request (GET or POST).
@@ -26,6 +26,6 @@ interface ManagerContextPaneViewInterface extends ManagerContextPaneInterface {
    * @return array
    *   A render array for the context pane.
    */
-  public function buildView(Project $project, Request $request): array;
+  public function buildView(ProjectInterface $project, Request $request): array;
 
 }
