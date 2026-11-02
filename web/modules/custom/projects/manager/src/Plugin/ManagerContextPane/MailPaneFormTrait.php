@@ -5,6 +5,7 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\manager\Form\ProjectMailForm;
 use Drupal\projects\Entity\Project;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -45,7 +46,7 @@ trait MailPaneFormTrait {
     $form_state->addBuildInfo('args', [$project, $subtype]);
     // A POST with a form_build_id restores the build info of the earlier GET:
     // tell the form which project and subtype this request is for.
-    $request->attributes->set('manager_pane_mail', [(string) $project->id(), $subtype]);
+    $request->attributes->set(ProjectMailForm::PANE_ATTRIBUTE, [(string) $project->id(), $subtype]);
     $form = $form_builder->buildForm($form_class, $form_state);
     $args = $form_state->getBuildInfo()['args'] ?? [];
     $built_for = ($args[0] ?? NULL) instanceof Project ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;

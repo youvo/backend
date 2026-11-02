@@ -19,7 +19,7 @@ trait NoteFormAuthorizationTrait {
   /**
    * The name of the request attribute the pane puts its arguments in.
    */
-  public const PANE_ATTRIBUTE = 'manager_pane_note';
+  public const string PANE_ATTRIBUTE = 'manager_pane_note';
 
   /**
    * Gets the project and the note from the (cached) build arguments.
@@ -59,7 +59,7 @@ trait NoteFormAuthorizationTrait {
     if (($operation === 'create') === ($cached_entry instanceof CorrespondenceInterface)) {
       return NULL;
     }
-    $expected = $this->getRequest()->attributes->get(self::PANE_ATTRIBUTE);
+    $expected = $this->getRequest()->attributes->get(static::PANE_ATTRIBUTE);
     if (is_array($expected) && $expected !== [(string) $cached_project?->id(), (string) $cached_entry?->id()]) {
       return NULL;
     }
