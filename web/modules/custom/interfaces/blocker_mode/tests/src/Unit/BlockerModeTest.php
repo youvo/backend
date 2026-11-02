@@ -20,17 +20,17 @@ use Symfony\Component\Routing\Route;
 class BlockerModeTest extends UnitTestCase {
 
   /**
-   * Tests the exemption per account and path.
+   * Tests the exemption per permissions and path.
    *
    * Staff roles (manager, supervisor, observer) hold 'access site', so they
    * reach the manager pane, the logbook and the dashboard, but no /user path.
+   * Only administrators hold 'bypass blocker mode'.
    */
   #[DataProvider('exemptProvider')]
-  public function testExempt(array $roles, bool $access_site, string $path, bool $expected): void {
+  public function testExempt(array $permissions, string $path, bool $expected): void {
     $account = $this->createMock(AccountInterface::class);
-    $account->method('getRoles')->willReturn($roles);
     $account->method('hasPermission')->willReturnCallback(
-      fn (string $permission) => $access_site && $permission === 'access site'
+      fn (string $permission) => in_array($permission, $permissions, TRUE)
     );
     $route_match = new RouteMatch('test', new Route($path));
 
@@ -39,16 +39,18 @@ class BlockerModeTest extends UnitTestCase {
   }
 
   /**
-   * Provides roles, the access site permission, a path and the exemption.
+   * Provides permissions, a path and the exemption.
    */
   public static function exemptProvider(): array {
     $pane = '/project/manage/context/{project}';
+    $staff = ['access site'];
+    $admin = ['access site', 'bypass blocker mode'];
     return [
-      'manager on the manager pane' => [['authenticated', 'manager'], TRUE, $pane, TRUE],
-      'manager on the logbook' => [['authenticated', 'manager'], TRUE, '/logbook', TRUE],
-      'manager on a user path' => [['authenticated', 'manager'], TRUE, '/user/{user}', FALSE],
-      'organization on the manager pane' => [['authenticated', 'organization'], FALSE, $pane, FALSE],
-      'administrator on a user path' => [['authenticated', 'administrator'], FALSE, '/user/{user}', TRUE],
+      'staff on the manager pane' => [$staff, $pane, TRUE],
+      'staff on the logbook' => [$staff, '/logbook', TRUE],
+      'staff on a user path' => [$staff, '/user/{user}', FALSE],
+      'organization on the manager pane' => [[], $pane, FALSE],
+      'administrator on a user path' => [$admin, '/user/{user}', TRUE],
     ];
   }
 

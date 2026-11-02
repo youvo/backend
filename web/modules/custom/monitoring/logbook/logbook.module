@@ -127,7 +127,7 @@ function logbook_user_delete(AccountInterface $account): void {
     if ($log->getOwnerId() == $uid) {
       $log->setOwner($anonymous);
     }
-    if ($log->getManager()->id() == $uid) {
+    if ($log->getManager()?->id() == $uid) {
       $log->setManager($anonymous);
     }
     if (
