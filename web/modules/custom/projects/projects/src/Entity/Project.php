@@ -94,11 +94,9 @@ class Project extends ContentEntityBase implements ProjectInterface {
   use EntityPublishedTrait;
 
   /**
-   * The project lifecycle.
-   *
-   * @var \Drupal\projects\Service\ProjectLifecycleInterface
+   * The project lifecycle, created on the first call of lifecycle().
    */
-  protected ProjectLifecycleInterface $lifecycle;
+  protected ?ProjectLifecycleInterface $lifecycle = NULL;
 
   /**
    * {@inheritdoc}
@@ -108,6 +106,17 @@ class Project extends ContentEntityBase implements ProjectInterface {
    */
   public function __sleep(): array {
     return array_diff(parent::__sleep(), ['lifecycle']);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * A clone gets its own lifecycle; the one of the original points to the
+   * original.
+   */
+  public function __clone() {
+    parent::__clone();
+    $this->lifecycle = NULL;
   }
 
   /**

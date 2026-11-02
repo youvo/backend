@@ -58,6 +58,12 @@ class ProjectLifecycleMatrixTest extends ProjectResourceTestBase {
     $draft->lifecycle();
     $this->assertTrue($open->lifecycle()->isOpen());
     $this->assertTrue($draft->lifecycle()->isDraft());
+
+    // A clone, as entity forms build it, follows its own state.
+    $clone = clone $open;
+    $clone->set(ProjectLifecycle::LIFECYCLE_FIELD, ProjectState::Draft->value);
+    $this->assertTrue($clone->lifecycle()->isDraft());
+    $this->assertTrue($open->lifecycle()->isOpen());
   }
 
   /**
