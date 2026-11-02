@@ -66,13 +66,15 @@ class LogbookProjectArchiveTest extends LogbookKernelTestBase {
     $after_reset = $this->createLog('project_apply', ['project' => $project->id()]);
     $other = $this->createLog('project_apply', ['project' => $this->createLogbookProject('Other')->id()]);
 
-    $event = (new ProjectArchiveEvent($project))->setReason(ProjectArchiveReason::Unattractive);
+    $event = (new ProjectArchiveEvent($project))->setReason(ProjectArchiveReason::Unattractive)
+      ->setMail('Archiviert', 'Das Projekt wird archiviert.');
     $this->eventDispatcher->dispatch($event);
 
     $archive_logs = $this->logsOfType('project_archive');
     $this->assertCount(1, $archive_logs);
     $archive_log = reset($archive_logs);
     $this->assertSame(['reason' => 'unattractive'], $archive_log->getMisc());
+    $this->assertSame("Archiviert\n\nDas Projekt wird archiviert.", $archive_log->getMessage());
     $this->assertTrue($archive_log->getPattern()->isDetectable());
     $this->assertFalse($archive_log->getPattern()->isPublic());
     $archived = $this->archivedById();

@@ -20,8 +20,9 @@ class ProjectShowSubscriber implements EventSubscriberInterface {
     if ($project->isArchived()) {
       throw new \LogicException('Cannot show an archived project.');
     }
-    if ($project->lifecycle()->isDraft() || $project->lifecycle()->isPending()) {
-      throw new \LogicException('Cannot show a project in a draft or pending state.');
+    // Like the resource: only open, ongoing or completed projects are shown.
+    if (!$project->lifecycle()->isOpen() && !$project->lifecycle()->isOngoing() && !$project->lifecycle()->isCompleted()) {
+      throw new \LogicException('Cannot show a project in a draft, pending or declined state.');
     }
     $project->setHidden(FALSE);
     $project->save();

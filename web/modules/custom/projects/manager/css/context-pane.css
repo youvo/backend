@@ -418,6 +418,11 @@
   color: var(--pane-muted);
 }
 
+/* The edit pane lists several actions, each with its description. */
+.context-pane-action + .context-pane-action {
+  margin-top: 1.25em;
+}
+
 /* =========================
    Status Overview
    ========================= */

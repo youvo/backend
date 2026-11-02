@@ -27,6 +27,11 @@ class LogbookProjectDeclineSubscriber extends LogbookSubscriberBase {
       $log->setManager($manager);
     }
     $log->setMisc(['reason' => $event->getReason()->value]);
+    // Keeps the mail even if sending fails or never happens: the subject in
+    // the first line, then the body.
+    if ($body = $event->getBody()) {
+      $log->setMessage(trim($event->getSubject() . "\n\n" . $body));
+    }
     $log->save();
   }
 

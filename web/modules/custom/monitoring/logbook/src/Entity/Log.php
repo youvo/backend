@@ -3,6 +3,7 @@
 namespace Drupal\logbook\Entity;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -237,7 +238,9 @@ class Log extends ContentEntityBase implements LogInterface {
       return ['#markup' => Link::createFromRoute(new TranslatableMarkup('Feedback ansehen'), 'entity.feedback.canonical', ['feedback' => $feedback_id])->toString()];
     }
     $message = $this->getMessage();
-    return $message === '' ? [] : ['#plain_text' => $message];
+    // Escaped like plain text, but keeps the line breaks of mails and
+    // applications.
+    return $message === '' ? [] : ['#markup' => nl2br(Html::escape($message))];
   }
 
   /**

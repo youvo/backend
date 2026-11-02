@@ -63,7 +63,7 @@ resourceFields:
     enhancer:
       id: ''
   message:
-    disabled: false
+    disabled: true
     fieldName: message
     publicName: message
     enhancer:

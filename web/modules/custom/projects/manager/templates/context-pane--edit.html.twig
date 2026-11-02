@@ -1,10 +1,12 @@
 <tr class="context-pane" {{ attributes }}>
   <td colspan="100%">
-    {{ content.button }}
-    {% if content.description %}
-      <div class="transition-description">
-        {{ content.description }}
+    {% for action in content.actions|filter((value, key) => key|first != '#') %}
+      <div class="context-pane-action">
+        {{ action.button }}
+        <div class="transition-description">
+          {{ action.description }}
+        </div>
       </div>
-    {% endif %}
+    {% endfor %}
   </td>
 </tr>
