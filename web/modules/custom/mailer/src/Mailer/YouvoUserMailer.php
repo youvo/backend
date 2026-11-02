@@ -64,12 +64,9 @@ class YouvoUserMailer extends YouvoMailerBase implements YouvoUserMailerInterfac
    * {@inheritdoc}
    */
   public function confirmOrganizationProposal(Organization $organization): bool {
-    $name = $organization->getName();
-    $email = $this->newEmail('register_organization')->setVariables([
-      'organization_name' => $name,
-      // The name of the organization is the neutral choice for the contact.
-      'organization_contact' => $organization->getContact() ?: $name,
-    ]);
+    // The address is not verified: the mail carries no text of the proposal,
+    // so nobody can send their own words to someone else through youvo.org.
+    $email = $this->newEmail('register_organization');
     return $this->deliver($email, NULL, 'register_organization', $organization->getEmail());
   }
 

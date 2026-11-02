@@ -136,10 +136,12 @@ class CreativeRegisterResource extends ResourceBase {
    */
   public function post(Request $request): ResourceResponseInterface {
 
-    // Each accepted request mails an unverified address: limit them per IP.
+    // Each request may mail an unverified address: limit them per IP. Count
+    // the request before any work, so parallel requests cannot all pass.
     if (!$this->flood->isAllowed(static::FLOOD_EVENT, static::FLOOD_THRESHOLD, static::FLOOD_WINDOW)) {
       return new ModifiedResourceResponse('Too many requests.', 429);
     }
+    $this->flood->register(static::FLOOD_EVENT, static::FLOOD_WINDOW);
     try {
       [$attributes, $skills_ids] = $this->validateAndShiftRequest($request);
       $creative = Creative::create([
@@ -173,7 +175,6 @@ class CreativeRegisterResource extends ResourceBase {
         ]
       )->toString();
       $this->eventDispatcher->dispatch(new CreativeRegisterEvent($creative, $link));
-      $this->flood->register(static::FLOOD_EVENT, static::FLOOD_WINDOW);
     }
     catch (FieldAwareHttpException $e) {
       return new ModifiedResourceResponse([
