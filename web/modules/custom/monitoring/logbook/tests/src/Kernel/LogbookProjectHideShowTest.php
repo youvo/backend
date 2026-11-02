@@ -36,6 +36,7 @@ class LogbookProjectHideShowTest extends LogbookKernelTestBase {
    * Hide and show are logged as detectable only logs of the project.
    */
   public function testHideAndShowAreLogged(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $project->save();
     $this->eventDispatcher->dispatch(new ProjectHideEvent($project));

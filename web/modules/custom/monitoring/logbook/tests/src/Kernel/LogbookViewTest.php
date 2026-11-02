@@ -107,6 +107,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
    * Detectable patterns are listed only for those who may view them.
    */
   public function testDetectablePatternsPerPermission(): void {
+
     $this->createPattern('project_decline', ['detectable' => TRUE]);
     $apply = $this->createLog('project_apply', ['created' => 100]);
     $decline = $this->createLog('project_decline', ['created' => 200]);
@@ -126,6 +127,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
    * Archived logs are listed only for those who may view them.
    */
   public function testArchivedLogsPerPermission(): void {
+
     $active = $this->createLog('project_apply', ['created' => 100]);
     $archived = $this->createLog('project_apply', ['created' => 200])->setArchived();
     $archived->save();
@@ -143,6 +145,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
    * Logs of hidden projects are listed only beyond the public level.
    */
   public function testHiddenProjectLogsPerPermission(): void {
+
     $visible_project = $this->createLogbookProject('Visible');
     $visible = $this->createLog('project_publish', ['created' => 100, 'project' => $visible_project->id()]);
     $hidden_project = $this->createLogbookProject('Hidden');

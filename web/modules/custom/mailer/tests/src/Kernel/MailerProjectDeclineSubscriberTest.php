@@ -34,6 +34,7 @@ class MailerProjectDeclineSubscriberTest extends MailerKernelTestBase {
    * The edited mail is sent after the project was declined.
    */
   public function testEditedMail(): void {
+
     $project = $this->createMailableProject(ProjectState::Pending);
     $this->decline($project, 'Edited subject', 'Edited body');
 
@@ -52,6 +53,7 @@ class MailerProjectDeclineSubscriberTest extends MailerKernelTestBase {
    * Without edited text no mail is sent.
    */
   public function testNoMailWithoutText(): void {
+
     $project = $this->createMailableProject(ProjectState::Pending);
     $this->decline($project);
 
@@ -81,6 +83,7 @@ class MailerProjectDeclineSubscriberTest extends MailerKernelTestBase {
    * A failed mail is recorded as failed, the project stays declined.
    */
   public function testFailedMail(): void {
+
     $project = $this->createMailableProject(ProjectState::Pending);
     $this->useFailingTransport();
     $this->decline($project, 'S', 'B');

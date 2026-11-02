@@ -197,6 +197,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
    * Denied cases show no link, and a POST sends nothing and archives nothing.
    */
   public function testArchiveDeniedCases(): void {
+
     $allowed = $this->actAsSupervisorOf(ProjectState::Open);
     $supervisor = $this->container->get('current_user')->getAccount();
     $query = ['view' => 'archive', 'reason' => 'custom'];
@@ -239,6 +240,7 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
    * Only the project:archive resource archives; the pane script posts to it.
    */
   public function testFormPostDoesNothing(): void {
+
     $project = $this->actAsSupervisorOf(ProjectState::Completed);
     $query = ['view' => 'archive', 'reason' => 'external'];
     $html = $this->pane($project, $query);

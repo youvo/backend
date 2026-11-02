@@ -24,6 +24,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    */
   #[DataProvider('stateProvider')]
   public function testOrganizationAccess(ProjectState $state): void {
+
     $project = $this->createProject($state);
     $organization = $project->getOwner();
 
@@ -38,6 +39,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    * Tests that prospects view, but neither edit nor delete their projects.
    */
   public function testProspectAccess(): void {
+
     $project = $this->createProject(ProjectState::Draft, 'prospect');
     $prospect = $project->getOwner();
 
@@ -51,6 +53,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    */
   #[DataProvider('stateProvider')]
   public function testManagerAccess(ProjectState $state): void {
+
     $project = $this->createProject($state);
     $manager = $project->getOwner()->getManager();
     $other_manager = $this->createManager();
@@ -71,6 +74,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    * Tests that managers view drafts of organizations without a manager.
    */
   public function testManagerViewsUnmanagedDraft(): void {
+
     $project = $this->createProject();
     $project->getOwner()->set('field_manager', NULL)->save();
     $manager = $this->createManager();
@@ -85,6 +89,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    */
   #[DataProvider('stateProvider')]
   public function testSupervisorAndAdministratorAccess(ProjectState $state): void {
+
     $project = $this->createProject($state);
     $supervisor = $this->createSupervisor();
     $administrator = $this->createCreative('administrator');
@@ -104,6 +109,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    * Tests that only supervisors access unpublished projects.
    */
   public function testUnpublishedAccess(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $project->setUnpublished()->save();
 
@@ -132,6 +138,7 @@ class ProjectEntityAccessTest extends ProjectResourceTestBase {
    * Tests the result upload access per role.
    */
   public function testResultUploadAccess(): void {
+
     $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('project_result');
     $context = ['entity_type_id' => 'project_result'];
     foreach ([$this->createCreative(), $this->createOrganization(), $this->createManager(), $this->createSupervisor()] as $account) {

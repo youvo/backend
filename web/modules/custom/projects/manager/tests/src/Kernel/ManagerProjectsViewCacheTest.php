@@ -35,6 +35,7 @@ class ManagerProjectsViewCacheTest extends ProjectSeenKernelTestBase {
    * The view follows the user and the organizations of its projects.
    */
   public function testFollowsTheOrganizations(): void {
+
     $first = $this->createMailableProject(ProjectState::Open);
     $second = $this->createMailableProject(ProjectState::Draft);
     $this->assertNotSame($first->getOwner()->id(), $second->getOwner()->id());

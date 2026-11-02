@@ -88,6 +88,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Adding creates a note of the current user with the chosen time.
    */
   public function testAddCreatesNote(): void {
+
     $project = $this->projectWithManager();
     $form_object = ProjectNoteForm::create($this->container);
     $form = $this->build($form_object, [$project, NULL]);
@@ -114,6 +115,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Editing prefills the form and changes subject, body and time.
    */
   public function testEditChangesNote(): void {
+
     $project = $this->projectWithManager();
     $form_object = ProjectNoteForm::create($this->container);
     $this->submit($form_object, [$project, NULL], $this->values('Alt', 'Alter Text'));
@@ -140,6 +142,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Deleting removes the note.
    */
   public function testDeleteRemovesNote(): void {
+
     $project = $this->projectWithManager();
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'B'));
     $note = $this->notes($project)[0];
@@ -158,6 +161,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * A user without the permission cannot delete or edit through the forms.
    */
   public function testFormsDenyWithoutPermission(): void {
+
     $project = $this->projectWithManager();
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'B'));
     $note = $this->notes($project)[0];
@@ -226,6 +230,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * state; replayed requests are rejected by Drupal's form cache.
    */
   public function testSaveHappensOnceInSubmit(): void {
+
     $project = $this->projectWithManager();
     $form_object = ProjectNoteForm::create($this->container);
     $form_state = (new FormState())->setValues([
@@ -251,6 +256,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * A later validator that fails prevents the save.
    */
   public function testLaterValidatorFailureSavesNothing(): void {
+
     $project = $this->projectWithManager();
     $form_object = new class($this->container->get('entity_type.manager'), $this->container->get('mailer.manager_mail_access'), $this->container->get('manager.form_once')) extends ProjectNoteForm {
 
@@ -272,6 +278,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Only the project's manager with the permission may manage its notes.
    */
   public function testAccessOfManagers(): void {
+
     $project = $this->projectWithManager();
     $manager = $project->getOwner()->getManager();
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
@@ -316,6 +323,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * checks in the forms are the protection under test.
    */
   public function testFormsDenyManagerOfAnotherOrganization(): void {
+
     $project = $this->projectWithManager();
     $note = $this->createNoteOf($project);
     $other_project = $this->createMailableProject(ProjectState::Open);
@@ -348,6 +356,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * An administrator of projects can add, edit and delete notes.
    */
   public function testAdministratorCanManageNotes(): void {
+
     $project = $this->projectWithManager();
     $note = $this->createNoteOf($project);
     $permissions = [...self::NOTE_PERMISSIONS, 'administer projects'];
@@ -432,6 +441,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * The note access checks the panes rely on.
    */
   public function testNoteAccess(): void {
+
     $project = $this->projectWithManager();
     $manager = $project->getOwner()->getManager();
     $this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $this->values('S', 'x'));
@@ -476,6 +486,7 @@ class ProjectNoteFormTest extends MailerKernelTestBase {
    * Replaying a submit (same form_build_id) saves and deletes only once.
    */
   public function testReplayedSubmitActsOnlyOnce(): void {
+
     $project = $this->projectWithManager();
     $add = ['form_build_id' => 'form-replay-add'] + $this->values('S', 'x');
     $this->assertTrue($this->submit(ProjectNoteForm::create($this->container), [$project, NULL], $add)->get('saved'));

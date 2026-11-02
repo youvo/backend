@@ -70,6 +70,7 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
    * Decline mails are offered for submitted or prospect projects only.
    */
   public function testDeclineMailsByState(): void {
+
     $registry = $this->container->get('mailer.manager_mail_registry');
     $subtypes = static fn (array $definitions) => array_map(static fn ($d) => $d->subtype, $definitions);
 
@@ -127,6 +128,7 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
    * Archive mails are offered for active open, ongoing and completed projects.
    */
   public function testArchiveMailsByState(): void {
+
     $registry = $this->container->get('mailer.manager_mail_registry');
     foreach (ProjectState::cases() as $state) {
       $project = $this->createProject($state);

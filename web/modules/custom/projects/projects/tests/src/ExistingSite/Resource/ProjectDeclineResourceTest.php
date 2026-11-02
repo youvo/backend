@@ -45,6 +45,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
    * Tests that the manager gets the decline reasons.
    */
   public function testGetReasons(): void {
+
     $project = $this->createProject(ProjectState::Pending);
     $response = $this->request($project, $project->getOwner()->getManager(), 'GET');
 
@@ -77,6 +78,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
    * Tests that the manager declines with an edited mail.
    */
   public function testDeclineWithMail(): void {
+
     $project = $this->createProject(ProjectState::Pending);
     $manager = $project->getOwner()->getManager();
     $this->captureEvents();
@@ -99,6 +101,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
    * Tests that a decline without subject and body carries no mail.
    */
   public function testDeclineWithoutMail(): void {
+
     $project = $this->createProject(ProjectState::Pending);
     $this->captureEvents();
     $response = $this->request($project, $project->getOwner()->getManager(), 'POST', []);
@@ -132,6 +135,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
    * Tests that an open project cannot be declined.
    */
   public function testDeclineOpenProject(): void {
+
     $project = $this->createProject(ProjectState::Open);
     $response = $this->request($project, $project->getOwner()->getManager(), 'POST', []);
 
@@ -143,6 +147,7 @@ class ProjectDeclineResourceTest extends ProjectResourceTestBase {
    * Tests the access per role.
    */
   public function testAccess(): void {
+
     $project = $this->createProject(ProjectState::Pending);
     foreach ([$this->createManager(), $this->createCreative(), $project->getOwner()] as $account) {
       $this->assertSame(403, $this->request($project, $account, 'POST', [])->getStatusCode());

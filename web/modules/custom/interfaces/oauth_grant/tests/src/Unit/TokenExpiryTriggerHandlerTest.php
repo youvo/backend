@@ -33,6 +33,7 @@ class TokenExpiryTriggerHandlerTest extends UnitTestCase {
    * @dataProvider provideChanges
    */
   public function testHandleUserUpdate(array $original, array $updated, bool $revoked): void {
+
     $inner = $this->createMock(TokenExpiryTriggerHandlerInterface::class);
     $inner->expects($revoked ? $this->once() : $this->never())
       ->method('handleUserUpdate');
@@ -63,6 +64,7 @@ class TokenExpiryTriggerHandlerTest extends UnitTestCase {
    * @covers ::handleUserUpdate
    */
   public function testMissingOriginal(): void {
+
     $inner = $this->createMock(TokenExpiryTriggerHandlerInterface::class);
     $inner->expects($this->once())->method('handleUserUpdate');
 

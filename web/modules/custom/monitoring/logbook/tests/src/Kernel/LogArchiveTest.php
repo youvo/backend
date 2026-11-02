@@ -41,6 +41,7 @@ class LogArchiveTest extends LogbookKernelTestBase {
    * Reset archives the earlier logs of the project, not its own log.
    */
   public function testResetArchivesEarlierLogs(): void {
+
     $project = $this->createLogbookProject();
     $earlier = $this->createLog('project_apply', ['project' => $project->id()]);
     $other = $this->createLog('project_apply', ['project' => $this->createLogbookProject('Other')->id()]);
@@ -63,6 +64,7 @@ class LogArchiveTest extends LogbookKernelTestBase {
    * Archived logs are only accessible with the permission.
    */
   public function testArchivedLogAccess(): void {
+
     $log = $this->createLog('project_apply')->setArchived();
     $log->save();
     $observer = $this->createUser(['view detectable log']);
@@ -85,6 +87,7 @@ class LogArchiveTest extends LogbookKernelTestBase {
    * Access-checked queries leave out archived logs without the permission.
    */
   public function testQueryAccess(): void {
+
     $active = $this->createLog('project_apply');
     $archived = $this->createLog('project_apply')->setArchived();
     $archived->save();

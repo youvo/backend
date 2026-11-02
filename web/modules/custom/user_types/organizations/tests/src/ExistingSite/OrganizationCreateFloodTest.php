@@ -41,6 +41,7 @@ class OrganizationCreateFloodTest extends ExistingSiteBase {
    * Tests that the sixth proposal within an hour is refused.
    */
   public function testSixthRequestIsRefused(): void {
+
     $flood = $this->container->get('flood');
     for ($i = 0; $i < 5; $i++) {
       $flood->register(static::EVENT, 3600, static::IP);

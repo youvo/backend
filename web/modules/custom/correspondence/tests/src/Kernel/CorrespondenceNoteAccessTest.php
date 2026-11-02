@@ -110,6 +110,7 @@ class CorrespondenceNoteAccessTest extends ProjectEventSubscriberTestBase {
    * Notes are manageable with their own permission; mails stay admin-only.
    */
   public function testNoteAccess(): void {
+
     $note = $this->createNote();
     $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('correspondence');
     $user = $this->managerOf($note, ['view correspondence', 'manage correspondence notes', 'access content']);
@@ -143,6 +144,7 @@ class CorrespondenceNoteAccessTest extends ProjectEventSubscriberTestBase {
    * The assigned manager and administrators pass, other managers do not.
    */
   public function testOnlyTheAssignedManagerOrAdministratorHasAccess(): void {
+
     $note = $this->createNote();
     $mail = $this->createMail($note);
     $permissions = ['view correspondence', 'manage correspondence notes', 'access content'];
@@ -190,6 +192,7 @@ class CorrespondenceNoteAccessTest extends ProjectEventSubscriberTestBase {
    * Access does not depend on the project being viewable (unpublished states).
    */
   public function testManagerAccessOnUnpublishedProjects(): void {
+
     $permissions = ['view correspondence', 'manage correspondence notes', 'access content'];
     foreach ([ProjectState::Draft, ProjectState::Pending, ProjectState::Open] as $state) {
       $name = $state->name;

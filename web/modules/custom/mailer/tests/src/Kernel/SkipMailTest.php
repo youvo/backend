@@ -21,6 +21,7 @@ class SkipMailTest extends MailerKernelTestBase {
    * A skipped mail counts as handled, but nothing is sent or recorded.
    */
   public function testSkipExceptionPreventsSend(): void {
+
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $this->captureMails($mailer);
@@ -40,6 +41,7 @@ class SkipMailTest extends MailerKernelTestBase {
    * creation of the project are not affected.
    */
   public function testInstallerSkipsMail(): void {
+
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $this->captureMails($mailer);
@@ -61,6 +63,7 @@ class SkipMailTest extends MailerKernelTestBase {
    * Without the skip callback the same mail is sent and recorded.
    */
   public function testMailIsSentWithoutSkip(): void {
+
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $this->captureMails($mailer);

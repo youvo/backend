@@ -52,6 +52,7 @@ class LifecycleHistoryItemTest extends EntityKernelTestBase {
    * @covers ::isEmpty
    */
   public function testEmptyItemsAreNotStored(): void {
+
     $entity = EntityTest::create([
       'field_history' => [
         [

@@ -19,6 +19,7 @@ class LogbookProjectDeclineTest extends LogbookKernelTestBase {
    * The decline log keeps the reason and the mail text and is detectable only.
    */
   public function testDeclineLog(): void {
+
     $values = Yaml::decode(file_get_contents(__DIR__ . '/../../../config/install/logbook.log_pattern.project_decline.yml'));
     $this->createPattern('project_decline', array_diff_key($values, ['tokens' => 1]));
 

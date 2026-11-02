@@ -19,6 +19,7 @@ class ManagerMailAccessTest extends MailerKernelTestBase {
    * A subtype that is not offered in the current state is denied.
    */
   public function testAccess(): void {
+
     // User 1 bypasses all permission checks, so do not let the manager be it.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -43,6 +44,7 @@ class ManagerMailAccessTest extends MailerKernelTestBase {
    * Each missing condition denies on its own.
    */
   public function testEachConditionIsRequired(): void {
+
     // User 1 bypasses all permission checks.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -96,6 +98,7 @@ class ManagerMailAccessTest extends MailerKernelTestBase {
    * Decline subtypes are allowed for the manager of a pending project only.
    */
   public function testDeclineSubtypeAccess(): void {
+
     $this->createMailableCreative('Root');
     $access = $this->container->get('mailer.manager_mail_access');
 

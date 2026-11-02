@@ -47,6 +47,7 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
    * Apply sends one mail to the organization and one to the creative.
    */
   public function testApplySendsTwoMails(): void {
+
     $project = $this->createMailableProject();
     $creative = $this->createMailableCreative('Kim');
     $this->assertTrue($this->mailer()->apply($project, $creative, 'Hallo', '0123 456'));
@@ -92,6 +93,7 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
    * The apply mails have the site From and the manager or site mail reply-to.
    */
   public function testApplyHeaders(): void {
+
     $project = $this->createMailableProject();
     $creative = $this->createMailableCreative('Kim');
     $headers = [];
@@ -215,6 +217,7 @@ class ProjectActionMailerTest extends MailerKernelTestBase {
    * Asserts that the sent mail has the link and the recorded one does not.
    */
   protected function assertLinkIsNotRecorded(callable $send, string $link, string $subtype): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $mailer = $this->mailer();
     $this->captureMails($mailer);

@@ -38,6 +38,7 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
    * The yv wrapper is rendered around the policy body of a real mail.
    */
   public function testWrapperAppliedToMail(): void {
+
     $this->container->get('theme_installer')->install(['gin', 'yv']);
     $this->config('system.theme')->set('default', 'yv')->save();
 
@@ -74,6 +75,7 @@ class EmailWrapTemplateTest extends MailerKernelTestBase {
    * The sent mail carries the full wrapped document.
    */
   public function testRecordedBodyHasNoWrapper(): void {
+
     $this->container->get('theme_installer')->install(['gin', 'yv']);
     $this->config('system.theme')->set('default', 'yv')->save();
 

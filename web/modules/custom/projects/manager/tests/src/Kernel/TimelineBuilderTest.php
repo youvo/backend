@@ -82,6 +82,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Logs, mails and notes are merged newest first.
    */
   public function testMergedOrder(): void {
+
     // User 1 bypasses permission checks: use it up.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
@@ -133,6 +134,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Logs follow the log access: archived logs need the permission.
    */
   public function testLogsFollowLogAccess(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
@@ -182,6 +184,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Mails and notes are only listed for those who may view them.
    */
   public function testHidesEntriesWithoutAccess(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
@@ -242,6 +245,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * The rendered timeline is cached and invalidated by changes of the project.
    */
   public function testTimelineIsRenderCached(): void {
+
     $this->installEntitySchema('log_text');
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
@@ -315,6 +319,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Notes get edit and delete links for those who may manage them.
    */
   public function testNoteActions(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);

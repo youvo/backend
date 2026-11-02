@@ -28,6 +28,7 @@ class ProjectSeenUpdateTest extends MailerKernelTestBase {
    * Existing manager and project pairs are marked as seen, only unfinished.
    */
   public function testUpdateSeedsExistingPairs(): void {
+
     $this->installEntitySchema('log');
     // The table does not exist yet, as on a site before the update.
     $this->createMailableCreative('Root');
