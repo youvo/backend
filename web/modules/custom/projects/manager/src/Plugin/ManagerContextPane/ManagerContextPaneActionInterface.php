@@ -2,7 +2,7 @@
 
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 
 /**
  * Defines a context pane that offers the user actions on the project.
@@ -16,6 +16,6 @@ interface ManagerContextPaneActionInterface extends ManagerContextPaneInterface 
    *
    * Checks only the access, without building the pane content.
    */
-  public function hasActions(Project $project): bool;
+  public function hasActions(ProjectInterface $project): bool;
 
 }

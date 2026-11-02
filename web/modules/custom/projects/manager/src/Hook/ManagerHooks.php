@@ -13,7 +13,6 @@ use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneActionInterface;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
 use Drupal\manager\ProjectSeenTracker;
 use Drupal\manager\Timeline\TimelineBuilder;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
 use Drupal\views\ViewExecutable;
@@ -187,7 +186,7 @@ class ManagerHooks {
 
       $project = $result[$key]->_entity;
 
-      if ($project instanceof Project) {
+      if ($project instanceof ProjectInterface) {
 
         $rules = $this->managerRules->getRules($project);
         $status = &$row['columns']['field_lifecycle'];

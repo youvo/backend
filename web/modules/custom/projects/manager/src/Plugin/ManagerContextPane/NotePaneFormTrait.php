@@ -5,7 +5,6 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Form\FormState;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\manager\Form\ProjectNoteForm;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -24,7 +23,7 @@ trait NotePaneFormTrait {
    *
    * @param class-string $form_class
    *   The form class.
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project of the pane.
    * @param \Drupal\correspondence\CorrespondenceInterface|null $entry
    *   The note, NULL for the add form.
@@ -41,7 +40,7 @@ trait NotePaneFormTrait {
    *   The outcome ('denied', 'already', 'done', 'failed' or 'form') and the
    *   form render array.
    */
-  protected function processNoteForm(string $form_class, Project $project, ?CorrespondenceInterface $entry, Request $request, string $done_flag, string $failed_flag, string $denied_flag): array {
+  protected function processNoteForm(string $form_class, ProjectInterface $project, ?CorrespondenceInterface $entry, Request $request, string $done_flag, string $failed_flag, string $denied_flag): array {
 
     $form_state = new FormState();
     // Without this the form API would try to produce a redirect response.

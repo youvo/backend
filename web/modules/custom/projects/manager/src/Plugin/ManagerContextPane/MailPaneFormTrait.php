@@ -5,7 +5,7 @@ namespace Drupal\manager\Plugin\ManagerContextPane;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\manager\Form\ProjectMailForm;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -24,7 +24,7 @@ trait MailPaneFormTrait {
    *
    * @param class-string $form_class
    *   The form class.
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project of the pane.
    * @param string $subtype
    *   The mail subtype.
@@ -35,7 +35,7 @@ trait MailPaneFormTrait {
    *   The outcome ('denied', 'already', 'done', 'failed' or 'form') and the
    *   form render array.
    */
-  protected function processMailForm(string $form_class, Project $project, string $subtype, Request $request): array {
+  protected function processMailForm(string $form_class, ProjectInterface $project, string $subtype, Request $request): array {
 
     $form_state = new FormState();
     // Without this the form API would try to produce a redirect response.
@@ -48,7 +48,7 @@ trait MailPaneFormTrait {
     $form = $this->formBuilder->buildForm($form_class, $form_state);
 
     $args = $form_state->getBuildInfo()['args'] ?? [];
-    $built = ($args[0] ?? NULL) instanceof Project ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;
+    $built = ($args[0] ?? NULL) instanceof ProjectInterface ? [(string) $args[0]->id(), $args[1] ?? NULL] : NULL;
     if (($built !== NULL && $built !== $expected) || $form_state->get('send_denied')) {
       return ['denied', []];
     }

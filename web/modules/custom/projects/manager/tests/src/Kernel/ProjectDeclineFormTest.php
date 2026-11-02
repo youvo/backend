@@ -8,8 +8,8 @@ use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\manager\Controller\ContextPaneController;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectDeclineEvent;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
@@ -76,13 +76,12 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   /**
    * Creates a saved project whose owner and manager have a mail address.
    */
-  protected function createDeclinableProject(ProjectState $state, bool $prospect = FALSE): Project {
+  protected function createDeclinableProject(ProjectState $state, bool $prospect = FALSE): ProjectInterface {
     $project = $this->createProject($state, $prospect);
     $organization = $project->getOwner();
     $organization->set('mail', 'organization@example.com')->set('field_contact', 'Olga Org')->save();
     $organization->getManager()->set('mail', 'manager@example.com')->set('field_name', 'Manu Manager')->save();
     $project->save();
-    $this->assertInstanceOf(Project::class, $project);
     return $project;
   }
 
@@ -102,7 +101,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   /**
    * Creates a project and logs in its manager as a decliner.
    */
-  protected function actAsManagerOf(ProjectState $state, bool $prospect = FALSE): Project {
+  protected function actAsManagerOf(ProjectState $state, bool $prospect = FALSE): ProjectInterface {
     $project = $this->createDeclinableProject($state, $prospect);
     $this->container->get('current_user')->setAccount($this->decliner($project->getOwner()->getManager()));
     return $project;
@@ -111,7 +110,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   /**
    * Runs the pane controller for a request and returns the HTML.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project of the pane URL.
    * @param array<string, string> $query
    *   Query parameters besides the pane type.
@@ -121,7 +120,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
    * @return string
    *   The response body.
    */
-  protected function pane(Project $project, array $query = [], ?array $post = NULL): string {
+  protected function pane(ProjectInterface $project, array $query = [], ?array $post = NULL): string {
     $uri = '/project/manage/context/' . $project->id() . '?' . http_build_query($query + ['type' => 'transition']);
     $request = Request::create($uri, $post === NULL ? 'GET' : 'POST', $post ?? []);
     $request->setSession($this->session ??= new Session(new MockArraySessionStorage()));
@@ -157,7 +156,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   /**
    * Builds the default view of the transition pane.
    */
-  protected function transitionBuild(Project $project): array {
+  protected function transitionBuild(ProjectInterface $project): array {
     $pane = $this->container->get('plugin.manager.manager_context_panes')->createInstance('transition');
     $build = $pane->build($project);
     // The cheap check of the project list agrees with the built pane.
@@ -168,11 +167,11 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   /**
    * Reloads a project from storage.
    */
-  protected function reload(Project $project): Project {
+  protected function reload(ProjectInterface $project): ProjectInterface {
     $storage = $this->container->get('entity_type.manager')->getStorage('project');
     $storage->resetCache([$project->id()]);
     $fresh = $storage->load($project->id());
-    $this->assertInstanceOf(Project::class, $fresh);
+    $this->assertInstanceOf(ProjectInterface::class, $fresh);
     return $fresh;
   }
 

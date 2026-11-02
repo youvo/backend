@@ -15,7 +15,7 @@ use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\manager\Form\ProjectNoteDeleteForm;
 use Drupal\manager\Form\ProjectNoteForm;
 use Drupal\manager\Timeline\TimelineBuilder;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -83,14 +83,14 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function build(ProjectInterface $project): array {
     return $this->buildIndex($project);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildView(Project $project, Request $request): array {
+  public function buildView(ProjectInterface $project, Request $request): array {
     $view = $request->query->get('view');
     if ($view === 'note_add') {
       return $this->buildAddView($project, $request);
@@ -104,14 +104,14 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
   /**
    * Builds the empty pane.
    */
-  protected function emptyPane(Project $project): array {
+  protected function emptyPane(ProjectInterface $project): array {
     return ['#theme' => 'context_pane', '#type' => 'logbook', '#project' => $project, 'content' => []];
   }
 
   /**
    * Builds the timeline view.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    * @param bool $messages
    *   TRUE to render the status messages above the timeline.
@@ -123,7 +123,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    *   The form to show in the row of a note, keyed by the note id: 'edit' or
    *   'delete' and the form.
    */
-  protected function buildIndex(Project $project, bool $messages = FALSE, ?array $add_form = NULL, ?int $highlight = NULL, array $note_forms = []): array {
+  protected function buildIndex(ProjectInterface $project, bool $messages = FALSE, ?array $add_form = NULL, ?int $highlight = NULL, array $note_forms = []): array {
     $build = $this->emptyPane($project);
     if ($messages) {
       $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
@@ -174,7 +174,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
   /**
    * Checks if the current user may add a note to the project.
    */
-  protected function mayAdd(Project $project): bool {
+  protected function mayAdd(ProjectInterface $project): bool {
     return $this->entityTypeManager->getAccessControlHandler('correspondence')->createAccess('note', $this->currentUser)
       && $this->access->noteAccess($this->currentUser, $project)->isAllowed();
   }
@@ -182,7 +182,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
   /**
    * Builds the ghost row that opens the add note form in place.
    */
-  protected function buildAddRow(Project $project): array {
+  protected function buildAddRow(ProjectInterface $project): array {
     $label = $this->t('Add note');
     return [
       '#type' => 'link',
@@ -213,7 +213,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    * timeline with a confirmation; a failed save returns the timeline with the
    * form again.
    */
-  protected function buildAddView(Project $project, Request $request): array {
+  protected function buildAddView(ProjectInterface $project, Request $request): array {
     if (!$this->mayAdd($project)) {
       return $this->emptyPane($project);
     }
@@ -242,7 +242,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
   /**
    * Loads the note of the request if it may be used in this view.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project of the pane URL.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request, its 'id' query parameter is the note id.
@@ -253,7 +253,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    *   The note, or NULL if the id is missing, the note does not exist or
    *   belongs to another project, or the account may not change it.
    */
-  protected function loadNote(Project $project, Request $request, string $operation): ?CorrespondenceInterface {
+  protected function loadNote(ProjectInterface $project, Request $request, string $operation): ?CorrespondenceInterface {
     $id = $request->query->get('id');
     if (!is_string($id) || !ctype_digit($id)) {
       return NULL;
@@ -278,7 +278,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
    * returns the timeline with a confirmation; a failed action returns the form
    * again.
    */
-  protected function buildNoteView(Project $project, Request $request, string $view): array {
+  protected function buildNoteView(ProjectInterface $project, Request $request, string $view): array {
     $delete = $view === 'note_delete';
     $entry = $this->loadNote($project, $request, $delete ? 'delete' : 'update');
     if ($entry === NULL) {

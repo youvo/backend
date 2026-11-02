@@ -10,7 +10,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\manager\ManagerRules;
 use Drupal\organizations\Entity\Organization;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
@@ -60,7 +59,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function build(ProjectInterface $project): array {
     return [
       '#theme' => 'context_pane',
       '#type' => 'status',
@@ -83,7 +82,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project lifecycle progression.
    */
-  protected function buildProgression(Project $project): array {
+  protected function buildProgression(ProjectInterface $project): array {
 
     $user_storage = $this->entityTypeManager->getStorage('user');
     $states = array_filter(
@@ -137,7 +136,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project overview for draft project.
    */
-  protected function buildOverviewDraft(Project $project): array {
+  protected function buildOverviewDraft(ProjectInterface $project): array {
 
     $organization = $project->getOwner();
     if (!$organization instanceof Organization) {
@@ -194,7 +193,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project overview for pending project.
    */
-  protected function buildOverviewPending(Project $project): array {
+  protected function buildOverviewPending(ProjectInterface $project): array {
 
     $organization = $project->getOwner();
     if (!$organization instanceof Organization) {
@@ -259,7 +258,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project overview for open project.
    */
-  protected function buildOverviewOpen(Project $project): array {
+  protected function buildOverviewOpen(ProjectInterface $project): array {
 
     $organization = $project->getOwner();
     if (!$organization instanceof Organization) {
@@ -323,7 +322,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project overview for ongoing project.
    */
-  protected function buildOverviewOngoing(Project $project): array {
+  protected function buildOverviewOngoing(ProjectInterface $project): array {
 
     $organization = $project->getOwner();
     if (!$organization instanceof Organization) {
@@ -401,7 +400,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project overview for completed project.
    */
-  protected function buildOverviewCompleted(Project $project): array {
+  protected function buildOverviewCompleted(ProjectInterface $project): array {
 
     $organization = $project->getOwner();
     if (!$organization instanceof Organization) {
@@ -464,7 +463,7 @@ class ManagerContextPaneStatus extends ManagerContextPaneBase {
   /**
    * Builds the project manager rules.
    */
-  protected function buildRules(Project $project): array {
+  protected function buildRules(ProjectInterface $project): array {
     foreach ($this->managerRules->getRules($project) as $rule) {
       $build[] = $rule->build($project);
     }

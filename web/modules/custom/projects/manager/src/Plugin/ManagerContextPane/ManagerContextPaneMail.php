@@ -14,7 +14,7 @@ use Drupal\mailer\Manager\ManagerMailAccess;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\manager\Attribute\ManagerContextPane;
 use Drupal\manager\Form\ProjectMailForm;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -81,14 +81,14 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function build(ProjectInterface $project): array {
     return $this->buildIndex($project);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildView(Project $project, Request $request): array {
+  public function buildView(ProjectInterface $project, Request $request): array {
     // The pane opens straight into the form of a mail; the index (the mail
     // types without a form) only follows a sent mail.
     if ($request->query->get('view') === 'index') {
@@ -107,7 +107,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
   /**
    * Builds the empty pane.
    */
-  protected function emptyPane(Project $project): array {
+  protected function emptyPane(ProjectInterface $project): array {
     return ['#theme' => 'context_pane', '#type' => 'mail', '#project' => $project, 'content' => []];
   }
 
@@ -117,7 +117,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * A valid POST sends the mail in the form's submit handler and returns the
    * index view with a confirmation; a failed send returns the form again.
    */
-  protected function buildMailView(Project $project, string $subtype, Request $request): array {
+  protected function buildMailView(ProjectInterface $project, string $subtype, Request $request): array {
     // Decline and archive mails are sent from their editors, which also
     // decline or archive.
     if ($subtype === ''
@@ -152,7 +152,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
   /**
    * Builds the index view: the mails of the state and the last sent.
    */
-  protected function buildIndex(Project $project): array {
+  protected function buildIndex(ProjectInterface $project): array {
     $build = $this->emptyPane($project);
     $may_mail = $this->access->access($this->currentUser, $project)->isAllowed();
     if (!$may_mail) {
@@ -167,7 +167,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
   /**
    * Adds the line with the time of the latest sent mail.
    */
-  protected function buildLastSent(array &$build, Project $project): void {
+  protected function buildLastSent(array &$build, ProjectInterface $project): void {
     if ($last = $this->lastSent($project)) {
       $build['content']['last'] = [
         '#type' => 'html_tag',
@@ -185,12 +185,12 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    *
    * @param array $build
    *   The pane build.
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    * @param string|null $active
    *   The subtype whose form is open, which is marked as current.
    */
-  protected function buildMails(array &$build, Project $project, ?string $active = NULL): void {
+  protected function buildMails(array &$build, ProjectInterface $project, ?string $active = NULL): void {
     foreach ($this->registry->available($project) as $definition) {
       $is_active = $definition->subtype === $active;
       $build['content']['mails'][$definition->subtype] = [
@@ -222,7 +222,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
    * @return int|null
    *   The timestamp, or NULL if there is none or it is not viewable.
    */
-  protected function lastSent(Project $project): ?int {
+  protected function lastSent(ProjectInterface $project): ?int {
     $storage = $this->entityTypeManager->getStorage('correspondence');
     $ids = $storage->getQuery()
       ->accessCheck(FALSE)
