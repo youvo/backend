@@ -1,0 +1,23 @@
+uuid: 4ddc2238-37bc-4541-bc10-1454c0ca22f0
+langcode: de
+status: true
+dependencies: {  }
+id: project_archive
+label: 'Project Archive'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''
+tone: ''

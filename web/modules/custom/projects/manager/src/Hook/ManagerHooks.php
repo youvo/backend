@@ -6,7 +6,9 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\AdminContext;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Site\Settings;
+use Drupal\manager\Form\ProjectArchiveForm;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
@@ -26,6 +28,7 @@ class ManagerHooks {
     protected ManagerRules $managerRules,
     protected AdminContext $adminContext,
     protected ProjectSeenTracker $projectSeenTracker,
+    protected AccountProxyInterface $currentUser,
   ) {}
 
   /**
@@ -43,6 +46,7 @@ class ManagerHooks {
       'manager_project_note_form',
       'manager_project_mail_form',
       'manager_project_decline_form',
+      'manager_project_archive_form',
     ];
   }
 
@@ -98,8 +102,11 @@ class ManagerHooks {
         'base hook' => 'context_pane',
       ];
     }
-    // The decline view of the transition pane.
+    // The decline and archive views of the transition pane.
     $hooks['context_pane__decline'] = [
+      'base hook' => 'context_pane',
+    ];
+    $hooks['context_pane__archive'] = [
       'base hook' => 'context_pane',
     ];
 
@@ -179,7 +186,13 @@ class ManagerHooks {
           }
         }
 
-        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isDeclined()) {
+        // The transition pane offers the next transition and Archive.
+        $lifecycle = $project->lifecycle();
+        if (
+          $project->isArchived() ||
+          $lifecycle->isDeclined() ||
+          ($lifecycle->isCompleted() && !ProjectArchiveForm::mayArchive($this->currentUser))
+        ) {
           $action_transition = &$row['columns']['nothing_2'];
           $action_transition['attributes']->offsetUnset('class');
           unset($action_transition['content']);

@@ -14,3 +14,14 @@ upload project result files:
 view hidden projects:
   title: 'View hidden projects'
   description: 'List the hidden projects of all organizations.'
+archive projects:
+  title: 'Archive projects'
+  description: 'Archive open, ongoing and completed projects in the manager pane, with a mail to the organization.'
+archive projects in any state:
+  title: 'Archive projects in any state'
+  description: 'Also archive draft, pending and declined projects, without a mail.'
+  restrict access: true
+unarchive projects:
+  title: 'Unarchive projects'
+  description: 'Make archived projects active again in the backend form.'
+  restrict access: true

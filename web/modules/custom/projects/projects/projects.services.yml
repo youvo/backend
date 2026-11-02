@@ -44,6 +44,14 @@ services:
     class: Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber
     tags:
       - { name: event_subscriber }
+  projects.project_archive.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectArchiveSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_unarchive.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectUnarchiveSubscriber
+    tags:
+      - { name: event_subscriber }
   projects.project_demote.event_subscriber:
     class: Drupal\projects\EventSubscriber\Action\ProjectDemoteSubscriber
     tags:

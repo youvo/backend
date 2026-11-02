@@ -3,8 +3,6 @@
 namespace Drupal\logbook\EventSubscriber;
 
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\projects\Event\ProjectResetEvent;
 
 /**
@@ -22,22 +20,7 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
     // Archive the earlier logs of the project. The reset log is created
     // afterwards and stays active.
     /** @var \Drupal\projects\Event\ProjectResetEvent $event */
-    try {
-      $log_storage = $this->entityTypeManager->getStorage('log');
-      $log_ids = $log_storage->getQuery()
-        ->accessCheck(FALSE)
-        ->condition('project', $event->getProject()->id())
-        ->execute();
-      $logs = $log_storage->loadMultiple($log_ids);
-      /** @var \Drupal\logbook\LogInterface $log */
-      foreach ($logs as $log) {
-        $log->setArchived();
-        $log->save();
-      }
-    }
-    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
-      $this->logger->error('Unable to reset logs for project %id', ['%id' => $event->getProject()->id()]);
-    }
+    $this->setProjectLogsArchived($event->getProject());
 
     // Log reset of project.
     if (!$log = $this->createLog($event)) {

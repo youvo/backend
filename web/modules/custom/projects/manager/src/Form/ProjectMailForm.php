@@ -190,11 +190,11 @@ class ProjectMailForm extends FormBase {
   /**
    * Whether the form sends mails of this subtype.
    *
-   * Decline mails are only sent by the decline form, which also declines the
-   * project.
+   * Decline and archive mails are only sent by their forms, which also
+   * decline or archive the project.
    */
   protected function acceptsSubtype(string $subtype): bool {
-    return ManagerMailRegistry::declineReason($subtype) === NULL;
+    return ManagerMailRegistry::declineReason($subtype) === NULL && ManagerMailRegistry::archiveReason($subtype) === NULL;
   }
 
   /**

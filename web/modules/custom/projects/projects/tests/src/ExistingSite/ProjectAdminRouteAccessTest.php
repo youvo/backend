@@ -30,6 +30,7 @@ class ProjectAdminRouteAccessTest extends ProjectResourceTestBase {
     'project.mediate',
     'project.complete',
     'project.reset',
+    'project.unarchive',
   ];
 
   /**

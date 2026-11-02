@@ -1,0 +1,14 @@
+uuid: ac07745f-ef3d-4f9b-82a6-dc1b18f34d65
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.archive_external
+configuration:
+  email_subject:
+    value: 'Euer Projekt „{{ project_title }}“ auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>wie besprochen habt Ihr für Euer Projekt „{{ project_title }}“ inzwischen Unterstützung außerhalb von youvo gefunden. Das freut uns! Wir haben das Projekt deshalb archiviert; es ist nicht mehr online und nimmt keine Bewerbungen mehr an.</p><p>Wenn Ihr wieder kreative Unterstützung sucht, sind wir gern für Euch da.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html
