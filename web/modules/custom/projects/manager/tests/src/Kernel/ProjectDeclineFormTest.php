@@ -242,25 +242,27 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * A valid POST sends the edited mail once, then declines with the reason.
+   * A valid POST declines with the reason, then the edited mail is sent once.
    */
-  public function testDeclineSendsThenDeclines(): void {
+  public function testDeclineThenMail(): void {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'deadline'];
     $post = ['subject' => 'Edited subject', 'body' => "Edited body\n\n[mail:project_link]"] + $this->hiddenValues($this->pane($project, $query));
-    // The form renders a preview before it sends: register the capture on the
-    // mailer right before the send.
+    // The form renders a preview before it declines: register the capture on
+    // the mailer right before the mail is sent.
     $real = $this->container->get(ManagerMailerInterface::class);
     $mailer = $this->createMock(ManagerMailerInterface::class);
     $mailer->method('preview')->willReturnCallback(static fn (ProjectInterface $p, string $subtype) => $real->preview($p, $subtype));
-    $mailer->method('send')->willReturnCallback(function (...$args) use ($real): bool {
+    $mailer->method('send')->willReturnCallback(function (...$args) use ($real, $project): bool {
+      // The project is declined and saved before the mail is sent.
+      $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
       $this->captureMails($real);
       return $real->send(...$args);
     });
     $this->container->set(ManagerMailerInterface::class, $mailer);
     $html = $this->pane($project, $query, $post);
 
-    $this->assertStringContainsString('The project was declined and the mail was sent.', $html);
+    $this->assertStringContainsString('The project was declined.', $html);
     $this->assertStringNotContainsString('<form', $html);
     $this->assertCount(1, $this->capturedMails);
     $this->assertSame('Edited subject', $this->capturedMails[0]['subject']);
@@ -278,50 +280,53 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * A failed send keeps the state and shows the form with the input.
+   * A failed mail leaves the project declined and is recorded as failed.
    */
-  public function testDeclineMailFailureKeepsState(): void {
+  public function testMailFailureAfterDecline(): void {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'deadline'];
     $post = ['subject' => 'Edited subject', 'body' => 'Edited body'] + $this->hiddenValues($this->pane($project, $query));
     $this->useFailingTransport();
     $html = $this->pane($project, $query, $post);
 
-    $this->assertStringContainsString('The mail could not be sent. The project was not declined.', $html);
-    $this->assertStringContainsString('<form', $html);
-    $this->assertStringContainsString('Edited subject', $html);
-    $this->assertStringContainsString('Edited body', $html);
+    $this->assertStringContainsString('The project was declined.', $html);
+    $this->assertStringNotContainsString('<form', $html);
     $this->assertStringNotContainsString('127.0.0.1', $html);
-    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
-    $this->assertSame(0, $this->declineEvents);
+    $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
+    $this->assertSame(1, $this->declineEvents);
+    $entries = array_values($this->loadEntries($project->id()));
+    $this->assertCount(1, $entries);
+    $this->assertFalse($entries[0]->isSent());
   }
 
   /**
-   * A failed decline after the sent mail is reported to the manager.
+   * A failed decline sends no mail and shows the form with the input.
    */
-  public function testDeclineFailureAfterSend(): void {
+  public function testDeclineFailureSendsNothing(): void {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'custom'];
-    $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
+    $post = ['subject' => 'Edited subject', 'body' => 'Edited body'] + $this->hiddenValues($this->pane($project, $query));
     $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
       throw new \RuntimeException('boom');
     }, 3000);
     $html = $this->pane($project, $query, $post);
 
-    $this->assertStringContainsString('The mail was sent, but the project could not be declined. Please contact a supervisor.', $html);
-    $this->assertStringNotContainsString('<form', $html);
+    $this->assertStringContainsString('The project could not be declined. No mail was sent.', $html);
+    $this->assertStringContainsString('<form', $html);
+    $this->assertStringContainsString('Edited subject', $html);
     $this->assertTrue($this->reload($project)->lifecycle()->isPending());
-    $this->assertCount(1, $this->loadEntries($project->id()));
+    $this->assertSame([], $this->loadEntries($project->id()));
   }
 
   /**
-   * A listener failing after the decline is logged, but not reported.
+   * A failing listener after the decline is logged; the project stays declined.
    */
   public function testListenerFailureAfterDecline(): void {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'custom'];
     $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    // Runs after the decline subscriber (priority 1000) saved the project.
+    // Runs after the decline subscriber (priority 1000) saved the project and
+    // before the mailer (-100), so no mail is sent.
     $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
       throw new \RuntimeException('boom');
     }, 500);
@@ -345,11 +350,11 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     $this->container->get('logger.factory')->addLogger($logger);
     $html = $this->pane($project, $query, $post);
 
-    $this->assertStringContainsString('The project was declined and the mail was sent.', $html);
+    $this->assertStringContainsString('The project was declined.', $html);
     $this->assertStringNotContainsString('could not be declined', $html);
     $this->assertTrue($this->reload($project)->lifecycle()->isDeclined());
     $this->assertSame(1, $this->declineEvents);
-    $this->assertCount(1, $this->loadEntries($project->id()));
+    $this->assertSame([], $this->loadEntries($project->id()));
     $errors = array_values(array_filter($logger->records, static fn (array $record) => ($record[2]['@message'] ?? NULL) === 'boom'));
     $this->assertCount(1, $errors);
     $this->assertSame(RfcLogLevel::ERROR, $errors[0][0]);
@@ -358,26 +363,26 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
   }
 
   /**
-   * Replaying a POST after a failed decline does not send a second mail.
+   * After a failed decline, the same form can be submitted again.
    *
-   * The project stays pending, so only the form guard prevents the replay.
+   * Nothing happened, so the form guard releases the form.
    */
-  public function testDeclineReplayAfterFailedDecline(): void {
+  public function testRetryAfterFailedDecline(): void {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'custom'];
     $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    $this->container->get('event_dispatcher')->addListener(ProjectDeclineEvent::class, static function (): void {
+    $dispatcher = $this->container->get('event_dispatcher');
+    $failing = static function (): void {
       throw new \RuntimeException('boom');
-    }, 3000);
-    $html = $this->pane($project, $query, $post);
-    $this->assertStringContainsString('The mail was sent, but the project could not be declined.', $html);
+    };
+    $dispatcher->addListener(ProjectDeclineEvent::class, $failing, 3000);
+    $this->assertStringContainsString('The project could not be declined.', $this->pane($project, $query, $post));
 
+    $dispatcher->removeListener(ProjectDeclineEvent::class, $failing);
     $html = $this->pane($this->reload($project), $query, $post);
-    $this->assertStringContainsString('This form was already submitted.', $html);
-    $this->assertStringNotContainsString('The mail was sent', $html);
+    $this->assertStringContainsString('The project was declined.', $html);
     $this->assertCount(1, $this->loadEntries($project->id()));
-    $this->assertTrue($this->reload($project)->lifecycle()->isPending());
-    $this->assertSame(0, $this->declineHistoryCount($project));
+    $this->assertSame(1, $this->declineHistoryCount($project));
   }
 
   /**
@@ -387,10 +392,10 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     $project = $this->actAsManagerOf(ProjectState::Pending);
     $query = ['view' => 'decline', 'reason' => 'custom'];
     $post = ['subject' => 'S', 'body' => 'B'] + $this->hiddenValues($this->pane($project, $query));
-    $this->assertStringContainsString('The project was declined and the mail was sent.', $this->pane($project, $query, $post));
+    $this->assertStringContainsString('The project was declined.', $this->pane($project, $query, $post));
 
     $html = $this->pane($this->reload($project), $query, $post);
-    $this->assertStringNotContainsString('The project was declined and the mail was sent.', $html);
+    $this->assertStringNotContainsString('The project was declined.', $html);
     $this->assertCount(1, $this->loadEntries($project->id()));
     $this->assertSame(1, $this->declineHistoryCount($project));
     $this->assertSame(1, $this->declineEvents);
