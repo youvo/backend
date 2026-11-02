@@ -20,6 +20,9 @@ class ProjectDemoteSubscriber implements EventSubscriberInterface {
     if ($project->lifecycle()->isDeclined()) {
       throw new \LogicException('Cannot demote a declined project.');
     }
+    if ($project->isArchived()) {
+      throw new \LogicException('Cannot demote an archived project.');
+    }
     $project->setPromoted(FALSE);
     $project->save();
   }

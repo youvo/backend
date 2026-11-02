@@ -97,14 +97,14 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project submit resource - not published.
+   * Tests the for the project submit resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectSubmitNotPublished(): void {
+  public function testProjectSubmitArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $organization = $project->getOwner();
 
@@ -115,7 +115,7 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

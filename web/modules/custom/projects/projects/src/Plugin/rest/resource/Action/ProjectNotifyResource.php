@@ -35,8 +35,8 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
     $permission = 'restful post project:notify';
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    // Only drafts can be notified, also by administrators.
-    $access_state = AccessResult::allowedIf($project->lifecycle()->isDraft())
+    // Only active drafts can be notified, also by administrators.
+    $access_state = AccessResult::allowedIf($project->isActive() && $project->lifecycle()->isDraft())
       ->addCacheableDependency($project);
     if ($access_state instanceof AccessResultReasonInterface) {
       $access_state->setReason('The project conditions for this action are not met.');
@@ -48,7 +48,7 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
     }
 
     $organization = $project->getOwner();
-    $access_manager = AccessResult::allowedIf($project->isPublished() && $organization->isManager($account))
+    $access_manager = AccessResult::allowedIf($organization->isManager($account))
       ->addCacheableDependency($organization)
       ->addCacheableDependency($project)
       ->cachePerUser();

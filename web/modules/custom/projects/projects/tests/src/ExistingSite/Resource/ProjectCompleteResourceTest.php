@@ -215,14 +215,14 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project complete resource - not published (status).
+   * Tests the project complete resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectCompleteNotPublished(): void {
+  public function testProjectCompleteArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $organization = $project->getOwner();
 
@@ -233,7 +233,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

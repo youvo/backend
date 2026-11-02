@@ -31,14 +31,25 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       throw new AccessException('The ProjectEntityAccess was called by an entity that is not a Project.');
     }
 
+    // Archived projects are read-only, except for administrators.
+    if (
+      ($operation === 'edit' || $operation === 'update') &&
+      $entity->isArchived() &&
+      !$account->hasPermission('access project admin forms')
+    ) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
+    }
+
     // Administrators skip the access checks.
     $admin_permission = $operation === 'delete' ? 'delete any project' : 'administer projects';
     if ($account->hasPermission($admin_permission)) {
       return AccessResult::allowed()->cachePerPermissions();
     }
 
-    // Unpublished projects are not accessible.
-    if (!$entity->isPublished()) {
+    // Archived projects are not accessible.
+    if ($entity->isArchived()) {
       return AccessResult::forbidden()
         ->addCacheableDependency($entity)
         ->cachePerPermissions();

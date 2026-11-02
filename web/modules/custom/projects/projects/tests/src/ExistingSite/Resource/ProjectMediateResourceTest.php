@@ -173,14 +173,14 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project mediate resource - not published (status).
+   * Tests the project mediate resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectMediateNotPublished(): void {
+  public function testProjectMediateArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $organization = $project->getOwner();
 
@@ -191,7 +191,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**
