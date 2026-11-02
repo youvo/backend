@@ -116,7 +116,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
     $this->assertInstanceOf(Project::class, $project);
-    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
     $this->createLog($project, 5000);
     $mail = $this->createEntry($project, 'mail', 5000, 'mail');
     $first = $this->createEntry($project, 'note', 5000, 'first');
@@ -127,6 +127,36 @@ class TimelineBuilderTest extends MailerKernelTestBase {
       ['note:' . $second->id(), 'note:' . $first->id(), 'mail:' . $mail->id(), 'log'],
       $order
     );
+  }
+
+  /**
+   * Logs follow the log access: archived logs need the permission.
+   */
+  public function testLogsFollowLogAccess(): void {
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $this->assertInstanceOf(Project::class, $project);
+    $active = $this->createLog($project, 1000);
+    $archived = $this->createLog($project, 2000)->setArchived();
+    $archived->save();
+    $logs = static fn (array $rows): array => array_map(
+      static fn (array $row): int => (int) $row['build']['#log']->id(),
+      array_values(array_filter($rows, static fn (array $row): bool => $row['type'] === 'log')),
+    );
+    $builder = $this->container->get('manager.timeline_builder');
+
+    // The manager of the organization sees the active log only.
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view observable log']);
+    $this->assertSame([(int) $active->id()], $logs($builder->build($project, $manager)));
+
+    // Without a log permission, no log is shown.
+    $other = $this->accountWith($this->createMailableCreative('Other'), ['view correspondence']);
+    $this->assertSame([], $logs($builder->build($project, $other)));
+
+    // Supervisors see the archived log as well.
+    $permissions = ['view detectable log', 'view archived log'];
+    $supervisor = $this->accountWith($this->createMailableCreative('Super'), $permissions);
+    $this->assertSame([(int) $archived->id(), (int) $active->id()], $logs($builder->build($project, $supervisor)));
   }
 
   /**

@@ -16,6 +16,16 @@ use Drupal\user\EntityOwnerInterface;
 interface LogInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface {
 
   /**
+   * Determines whether the log is archived.
+   */
+  public function isArchived(): bool;
+
+  /**
+   * Archives the log, or makes it active again.
+   */
+  public function setArchived(bool $archived = TRUE): static;
+
+  /**
    * Gets the log creation timestamp.
    */
   public function getCreatedTime(): int;

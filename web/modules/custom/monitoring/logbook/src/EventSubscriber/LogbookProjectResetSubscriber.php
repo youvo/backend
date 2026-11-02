@@ -19,7 +19,8 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
    * {@inheritdoc}
    */
   public function log(Event $event): void {
-    // Reset logs related to project.
+    // Archive the earlier logs of the project. The reset log is created
+    // afterwards and stays active.
     /** @var \Drupal\projects\Event\ProjectResetEvent $event */
     try {
       $log_storage = $this->entityTypeManager->getStorage('log');
@@ -30,7 +31,7 @@ class LogbookProjectResetSubscriber extends LogbookSubscriberBase {
       $logs = $log_storage->loadMultiple($log_ids);
       /** @var \Drupal\logbook\LogInterface $log */
       foreach ($logs as $log) {
-        $log->setUnpublished();
+        $log->setArchived();
         $log->save();
       }
     }
