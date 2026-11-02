@@ -16,6 +16,7 @@ dependencies:
     - consumer_permissions
     - courses
     - lifecycle
+    - projects
     - rest
     - simple_oauth
     - user_types
@@ -42,5 +43,6 @@ permissions:
   - 'restful post project:apply'
   - 'restful post project:complete'
   - 'restful post question:submission'
+  - 'upload project result files'
   - 'use project_lifecycle transition complete'
   - 'view courses'

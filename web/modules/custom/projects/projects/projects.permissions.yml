@@ -8,3 +8,6 @@ access project admin forms:
   title: 'Access the project admin forms'
   description: 'Add, edit and delete projects, list them and change their state in the Drupal backend forms, bypassing the actions. Projects are managed through the frontend and the manager pane.'
   restrict access: true
+upload project result files:
+  title: 'Upload project result files'
+  description: 'Upload files for project results.'
