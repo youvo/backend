@@ -2,8 +2,6 @@
 
 namespace Drupal\projects\Plugin\rest\resource\Transition;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Access\AccessResult;
@@ -119,6 +117,9 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent()) ?? [];
+    if (!is_array($content)) {
+      throw new BadRequestHttpException('The request body is malformed.');
+    }
     $this->validateRequestContent($content);
 
     try {
@@ -127,7 +128,7 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       $event->setCreatives($selected_creatives);
       $this->eventDispatcher->dispatch($event);
     }
-    catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
+    catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be mediated.');
     }
     catch (\Throwable $e) {
@@ -140,8 +141,6 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
 
   /**
    * Validates the request content.
-   *
-   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
 
@@ -150,8 +149,12 @@ class ProjectMediateResource extends ProjectTransitionResourceBase {
       throw new BadRequestHttpException('Request body does not specify selected_creatives.');
     }
 
-    // Set preliminary selected_creatives variable.
-    $selected_creatives = array_unique($content['selected_creatives'] ?? []);
+    // Checked before array_unique(), which needs strings.
+    $selected_creatives = $content['selected_creatives'];
+    if (!is_array($selected_creatives) || array_filter($selected_creatives, static fn($uuid) => !is_string($uuid))) {
+      throw new BadRequestHttpException('The selected_creatives in the request body are not an array of strings.');
+    }
+    $selected_creatives = array_unique($selected_creatives);
 
     // Force at least one selected creative.
     if (empty($selected_creatives)) {

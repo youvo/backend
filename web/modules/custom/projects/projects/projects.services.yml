@@ -20,6 +20,7 @@ services:
       - { name: event_subscriber }
   projects.project_complete.event_subscriber:
     class: Drupal\projects\EventSubscriber\Transition\ProjectCompleteSubscriber
+    arguments: ['@database']
     tags:
       - { name: event_subscriber }
   projects.project_mediate.event_subscriber:

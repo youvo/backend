@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
@@ -64,13 +65,16 @@ class ProjectNotifyResource extends ProjectActionResourceBase {
    */
   public function post(Project $project): ResourceResponseInterface {
 
-    if ($project->getOwner()->hasRoleProspect()) {
-      $this->eventDispatcher->dispatch(new ProjectInviteEvent($project));
-      return new ModifiedResourceResponse('The organization was invited.');
+    $invite = $project->getOwner()->hasRoleProspect();
+    try {
+      $this->eventDispatcher->dispatch($invite ? new ProjectInviteEvent($project) : new ProjectNotifyEvent($project));
+    }
+    catch (\Throwable $e) {
+      $variables = Error::decodeException($e);
+      $this->logger->error('Project notify failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
-    $this->eventDispatcher->dispatch(new ProjectNotifyEvent($project));
-    return new ModifiedResourceResponse('The organization was notified.');
+    return new ModifiedResourceResponse($invite ? 'The organization was invited.' : 'The organization was notified.');
   }
 
 }

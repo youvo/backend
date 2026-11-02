@@ -32,7 +32,7 @@ class ProjectApplySubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    return [ProjectApplyEvent::class => 'onProjectApply'];
+    return [ProjectApplyEvent::class => ['onProjectApply', 1000]];
   }
 
 }

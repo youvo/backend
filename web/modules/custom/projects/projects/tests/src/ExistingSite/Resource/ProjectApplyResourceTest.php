@@ -57,6 +57,21 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests the project apply resource - malformed bodies answer 400.
+   */
+  public function testProjectApplyMalformed(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $creative = $this->createCreative();
+    foreach (['"x"', '{"message":["x"]}', '{"phone":1}'] as $body) {
+      $request = Request::create('/api/projects/' . $project->uuid() . '/apply', 'POST', [], [], [], [], $body);
+      $request->headers->set('Content-Type', 'application/json');
+      $this->authenticateRequest($request, $creative);
+      $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
+    }
+    $this->assertFalse($project->isApplicant($creative));
+  }
+
+  /**
    * Tests the project apply resource - already applied.
    *
    * @covers ::access

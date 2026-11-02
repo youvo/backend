@@ -14,6 +14,7 @@ use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Drupal\user_types\Utility\Profile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Provides project apply resource.
@@ -73,7 +74,10 @@ class ProjectApplyResource extends ProjectActionResourceBase {
    */
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
-    $content = Json::decode($request->getContent());
+    $content = Json::decode($request->getContent()) ?? [];
+    if (!is_array($content) || !is_string($content['message'] ?? '') || !is_string($content['phone'] ?? '')) {
+      throw new BadRequestHttpException('The request body is malformed.');
+    }
     $applicant = Profile::account($this->currentUser);
 
     // Safeguard against a current user that is not a creative.

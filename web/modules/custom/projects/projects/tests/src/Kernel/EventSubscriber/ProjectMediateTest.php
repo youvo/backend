@@ -42,4 +42,22 @@ class ProjectMediateTest extends ProjectEventSubscriberTestBase {
     $this->assertEquals(ProjectTransition::Mediate->value, $last->transition);
   }
 
+  /**
+   * A selected manager is a participant once, as manager.
+   */
+  public function testSelectedManagerOnce(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $manager = $project->getOwner()->getManager();
+    $creative = $this->createCreative();
+    $project->appendApplicant($creative);
+    $project->appendApplicant($manager);
+
+    $event = new ProjectMediateEvent($project);
+    $event->setCreatives([$creative, $manager]);
+    $this->eventDispatcher->dispatch($event);
+
+    $tasks = array_column($project->get('field_participants_tasks')->getValue(), 'value');
+    $this->assertSame(['Creative', 'Manager'], $tasks);
+  }
+
 }

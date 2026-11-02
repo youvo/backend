@@ -1332,8 +1332,8 @@ function initTransitionButton() {
         const selectedCreatives = Array.from(checkboxes).map(cb => cb.value);
 
         if (selectedCreatives.length === 0) {
-          alert('Please select at least one applicant.');
-          btn.disabled = true;
+          // The checkbox handler enables the button again on a selection.
+          showPaneError(row, Drupal.t('Please select at least one applicant.'));
           return;
         }
 
@@ -1353,17 +1353,16 @@ function initTransitionButton() {
             ? JSON.stringify(requestBody)
             : undefined,
       });
-      if (response.status === 200) {
+      if (response.ok) {
         refreshProjectViews();
-      } else if (response.status === 403) {
-        alert('You do not have permission to transition this project.');
-      } else if (response.status === 400) {
-        const errorData = await response.json();
-        alert(
-          errorData.message || 'Invalid request. Please check your selection.'
-        );
+      } else {
+        btn.disabled = false;
+        showPaneError(row, paneErrorText(`HTTP ${response.status}`));
       }
-    } catch (err) {}
+    } catch (err) {
+      btn.disabled = false;
+      showPaneError(row, paneErrorText(err.message));
+    }
   });
 }
 

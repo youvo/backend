@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber\Transition;
 
 use Drupal\projects\Event\ProjectMediateEvent;
+use Drupal\user_types\Utility\Profile;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -19,10 +20,13 @@ class ProjectMediateSubscriber implements EventSubscriberInterface {
   public function onProjectMediate(ProjectMediateEvent $event): void {
 
     $project = $event->getProject();
-    $selected_creatives = $event->getCreatives();
+    $manager = $project->getOwner()->getManager();
+    $manager_id = $manager ? Profile::id($manager) : NULL;
+    // The manager participates as manager, also if selected as creative.
+    $selected_creatives = array_filter($event->getCreatives(), static fn($creative) => Profile::id($creative) !== $manager_id);
     $project->setParticipants($selected_creatives);
 
-    if ($manager = $project->getOwner()->getManager()) {
+    if ($manager) {
       $project->appendParticipant($manager, 'Manager');
     }
 

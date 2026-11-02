@@ -184,6 +184,16 @@ class ProjectArchiveFormTest extends MailerKernelTestBase {
   }
 
   /**
+   * The mail pane shows no form for archive mails; only the editor sends them.
+   */
+  public function testMailPaneRefusesArchiveMails(): void {
+    $project = $this->actAsSupervisorOf(ProjectState::Open);
+    $html = $this->pane($project, ['type' => 'mail', 'view' => 'mail', 'subtype' => 'archive_custom']);
+    $this->assertStringNotContainsString('<form', $html);
+    $this->assertStringNotContainsString('This mail cannot be sent', $html);
+  }
+
+  /**
    * Denied cases show no link, and a POST sends nothing and archives nothing.
    */
   public function testArchiveDeniedCases(): void {

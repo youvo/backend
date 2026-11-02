@@ -2,8 +2,6 @@
 
 namespace Drupal\projects\Plugin\rest\resource\Transition;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Access\AccessResult;
@@ -81,6 +79,9 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
   public function post(ProjectInterface $project, Request $request): ResourceResponseInterface {
 
     $content = Json::decode($request->getContent()) ?? [];
+    if (!is_array($content)) {
+      throw new BadRequestHttpException('The request body is malformed.');
+    }
     $this->validateRequestContent($content);
 
     try {
@@ -92,7 +93,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       $event->setLinks($result_links);
       $this->eventDispatcher->dispatch($event);
     }
-    catch (LifecycleTransitionException | InvalidPluginDefinitionException | PluginNotFoundException) {
+    catch (LifecycleTransitionException) {
       throw new ConflictHttpException('Project can not be completed.');
     }
     catch (\Throwable $e) {
@@ -105,13 +106,15 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
 
   /**
    * Validates the request body.
-   *
-   * @codeCoverageIgnore
    */
   protected function validateRequestContent(array $content): void {
     $results = $content['results'] ?? [];
+    if (!is_array($results)) {
+      throw new BadRequestHttpException('Malformed request body. The results are not an array.');
+    }
     foreach ($results as $result) {
       if (
+        !is_array($result) ||
         !array_key_exists('type', $result) ||
         !array_key_exists('value', $result) ||
         !array_key_exists('description', $result)

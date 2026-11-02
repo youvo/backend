@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
@@ -53,6 +54,28 @@ class ProjectCompleteTest extends ProjectEventSubscriberTestBase {
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();
     $this->assertEquals(ProjectTransition::Complete->value, $last->transition);
+  }
+
+  /**
+   * The project stays ongoing if its results cannot be saved.
+   */
+  public function testProjectCompleteRollsBack(): void {
+    $project = $this->createProject(ProjectState::Ongoing);
+    $project->appendParticipant($this->createCreative());
+    $project->save();
+    // Without a result, saving the results fails after the project save.
+    $project->set('project_result', NULL);
+
+    try {
+      $this->eventDispatcher->dispatch(new ProjectCompleteEvent($project));
+      $this->fail('The complete event throws without a result.');
+    }
+    catch (EntityStorageException) {
+    }
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('project');
+    $storage->resetCache([$project->id()]);
+    $this->assertTrue($storage->load($project->id())->lifecycle()->isOngoing());
   }
 
 }
