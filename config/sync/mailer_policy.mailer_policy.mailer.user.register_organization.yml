@@ -1,0 +1,14 @@
+uuid: 2d452c4b-73c8-4874-9a4c-0b0c1b7a5011
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.user.register_organization
+configuration:
+  email_subject:
+    value: 'Danke für Euren Projektvorschlag'
+  email_body:
+    content:
+      value: '<p>Hallo {{ organization_contact }},</p><p>vielen Dank für den Projektvorschlag von {{ organization_name }}. Wir schauen ihn uns an und melden uns innerhalb der nächsten zwei Wochen bei Dir.</p>'
+      format: email_html

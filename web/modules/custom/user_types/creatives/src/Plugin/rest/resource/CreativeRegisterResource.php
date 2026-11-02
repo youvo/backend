@@ -9,6 +9,7 @@ use Drupal\Component\Utility\Random;
 use Drupal\Component\Uuid\Uuid;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
@@ -48,9 +49,29 @@ class CreativeRegisterResource extends ResourceBase {
   protected EmailValidatorInterface $emailValidator;
 
   /**
+   * The flood event of the registrations.
+   */
+  protected const string FLOOD_EVENT = 'creatives.register';
+
+  /**
+   * The number of registrations per IP address within the flood window.
+   */
+  protected const int FLOOD_THRESHOLD = 5;
+
+  /**
+   * The flood window in seconds.
+   */
+  protected const int FLOOD_WINDOW = 3600;
+
+  /**
    * The event dispatcher.
    */
   protected EventDispatcherInterface $eventDispatcher;
+
+  /**
+   * The flood service.
+   */
+  protected FloodInterface $flood;
 
   /**
    * The language manager.
@@ -78,6 +99,7 @@ class CreativeRegisterResource extends ResourceBase {
     $instance->languageManager = $container->get('language_manager');
     $instance->time = $container->get('datetime.time');
     $instance->oneTimeAuthentication = $container->get(OneTimeAuthentication::class);
+    $instance->flood = $container->get('flood');
     return $instance;
   }
 
@@ -113,6 +135,11 @@ class CreativeRegisterResource extends ResourceBase {
    * Responds to POST requests.
    */
   public function post(Request $request): ResourceResponseInterface {
+
+    // Each accepted request mails an unverified address: limit them per IP.
+    if (!$this->flood->isAllowed(static::FLOOD_EVENT, static::FLOOD_THRESHOLD, static::FLOOD_WINDOW)) {
+      return new ModifiedResourceResponse('Too many requests.', 429);
+    }
     try {
       [$attributes, $skills_ids] = $this->validateAndShiftRequest($request);
       $creative = Creative::create([
@@ -146,6 +173,7 @@ class CreativeRegisterResource extends ResourceBase {
         ]
       )->toString();
       $this->eventDispatcher->dispatch(new CreativeRegisterEvent($creative, $link));
+      $this->flood->register(static::FLOOD_EVENT, static::FLOOD_WINDOW);
     }
     catch (FieldAwareHttpException $e) {
       return new ModifiedResourceResponse([
