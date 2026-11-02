@@ -23,16 +23,27 @@ class ProjectHideTest extends ProjectEventSubscriberTestBase {
 
     $project = $this->createProject(ProjectState::Open);
     $project->setPromoted(TRUE);
-    $project->setPublished();
     $project->save();
     $this->assertTrue($project->isPromoted());
-    $this->assertTrue($project->isPublished());
+    $this->assertFalse($project->isHidden());
 
     $event = new ProjectHideEvent($project);
     $this->eventDispatcher->dispatch($event);
 
     $this->assertFalse($project->isPromoted());
-    $this->assertFalse($project->isPublished());
+    $this->assertTrue($project->isHidden());
+    $this->assertFalse($project->isArchived());
+  }
+
+  /**
+   * Tests that archived projects can not be hidden.
+   */
+  public function testProjectHideArchived(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $project->setArchived();
+
+    $this->expectException(\LogicException::class);
+    $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
   }
 
 }

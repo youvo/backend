@@ -20,20 +20,28 @@ use Drupal\logbook\Entity\LogText;
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function logbook_site_install_finished(): void {
+  logbook_import_log_texts();
+}
 
-  // Add the log pattern text as a content entity. We choose this way to avoid
-  // using Config Translation including Interface Translation at the moment.
-  //
-  // The files in the import folder follow the pattern logbook.log_text.*!
-  //
-  // Technically, these are not true configuration files because they will not
-  // be imported into the configuration of the platform.
-  //
-  // @todo Handle different languages.
-  $available_log_patterns = \Drupal::entityTypeManager()
-    ->getStorage('log_pattern')
-    ->loadMultiple();
-  $available_log_patterns = array_map(fn($e) => $e->id(), $available_log_patterns);
+/**
+ * Imports the log texts of the patterns that have none yet.
+ *
+ * The log pattern text is a content entity. We choose this way to avoid using
+ * Config Translation including Interface Translation at the moment. The files
+ * in the import folder follow the pattern logbook.log_text.*! Technically,
+ * these are not true configuration files because they will not be imported
+ * into the configuration of the platform.
+ *
+ * @todo Handle different languages.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function logbook_import_log_texts(): void {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $available_log_patterns = array_keys($entity_type_manager->getStorage('log_pattern')->loadMultiple());
+  $text_storage = $entity_type_manager->getStorage('log_text');
 
   $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/import/';
   $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
@@ -41,7 +49,7 @@ function logbook_site_install_finished(): void {
   foreach ($files as $file) {
     $import = Yaml::decode(file_get_contents($path . $file));
     $log_pattern = $import['id'] ?? '';
-    if (!in_array($log_pattern, $available_log_patterns)) {
+    if (!in_array($log_pattern, $available_log_patterns) || $text_storage->loadByProperties(['log_pattern' => $log_pattern])) {
       continue;
     }
     $log_text = LogText::create([

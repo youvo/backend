@@ -44,4 +44,21 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
     $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
   }
 
+  /**
+   * Tests that hidden and archived projects can not be promoted.
+   */
+  public function testProjectPromoteHiddenOrArchived(): void {
+    foreach (['hidden', 'archived'] as $flag) {
+      $project = $this->createProject(ProjectState::Open);
+      $flag === 'hidden' ? $project->setHidden() : $project->setArchived();
+      try {
+        $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
+        $this->fail("A $flag project was promoted.");
+      }
+      catch (\LogicException) {
+        $this->assertFalse($project->isPromoted(), $flag);
+      }
+    }
+  }
+
 }

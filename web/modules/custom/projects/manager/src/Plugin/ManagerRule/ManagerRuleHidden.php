@@ -24,7 +24,7 @@ class ManagerRuleHidden extends ManagerRuleBase {
    * {@inheritdoc}
    */
   public function applies(ProjectInterface $project): bool {
-    return $project->isPublished() === FALSE;
+    return $project->isHidden();
   }
 
   /**

@@ -17,10 +17,13 @@ class ProjectShowSubscriber implements EventSubscriberInterface {
    */
   public function onProjectShow(ProjectShowEvent $event): void {
     $project = $event->getProject();
+    if ($project->isArchived()) {
+      throw new \LogicException('Cannot show an archived project.');
+    }
     if ($project->lifecycle()->isDraft() || $project->lifecycle()->isPending()) {
       throw new \LogicException('Cannot show a project in a draft or pending state.');
     }
-    $project->setPublished();
+    $project->setHidden(FALSE);
     $project->save();
   }
 
