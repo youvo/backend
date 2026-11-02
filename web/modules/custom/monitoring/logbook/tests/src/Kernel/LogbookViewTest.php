@@ -99,6 +99,35 @@ class LogbookViewTest extends LogbookKernelTestBase {
   }
 
   /**
+   * Detectable patterns are listed only for those who may view them.
+   */
+  public function testDetectablePatternsPerPermission(): void {
+    $this->createPattern('project_decline', ['detectable' => TRUE]);
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $decline = $this->createLog('project_decline', ['created' => 200]);
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    // Managers view observable logs only.
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([(int) $apply->id()], $this->ids());
+
+    // Supervisors and observers also view detectable logs.
+    $this->setCurrentUser($this->createUser(['view observable log', 'view detectable log']));
+    $this->assertSame([(int) $decline->id(), (int) $apply->id()], $this->ids());
+  }
+
+  /**
+   * The list varies per permissions, so cached results are not shared.
+   */
+  public function testScopeVariesPerPermissions(): void {
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $view->initHandlers();
+    $this->assertContains('user.permissions', $view->filter['log_pattern_scope']->getCacheContexts());
+  }
+
+  /**
    * Deleting a log pattern does not take the view with it.
    *
    * The delete form of a config entity deletes the config that depends on it.

@@ -145,14 +145,14 @@ class LogPatternForm extends BundleEntityFormBase {
     $form['settings']['detectable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Detectable'),
-      '#description' => $this->t('This log is accessable in the administration logbook.'),
+      '#description' => $this->t('Supervisors and observers can view this log for all organizations (logbook, project timeline, API).'),
       '#default_value' => $this->entity->isDetectable(),
     ];
 
     $form['settings']['observable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Observable'),
-      '#description' => $this->t('This log is accessable for managers with respect to their organizations. The administration logbook lists the logs of enabled, observable patterns.'),
+      '#description' => $this->t('Managers can view this log for their organizations. Listed in the logbook.'),
       '#default_value' => $this->entity->isObservable(),
     ];
 

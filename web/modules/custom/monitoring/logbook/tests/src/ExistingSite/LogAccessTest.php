@@ -51,6 +51,34 @@ class LogAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that supervisors and observers view decline logs, managers do not.
+   */
+  public function testDeclineLog(): void {
+    // The pattern project_decline is detectable only.
+    $project = $this->createProject();
+    $log = $this->createLog('project_decline', $project);
+
+    $this->assertTrue($log->access('view', $this->createSupervisor()));
+    $this->assertTrue($log->access('view', $this->createCreative('observer')));
+    $this->assertFalse($log->access('view', $project->getOwner()->getManager()));
+    $this->assertFalse($log->access('view', $project->getOwner()));
+  }
+
+  /**
+   * Tests that reset logs are visible beyond the manager of the organization.
+   */
+  public function testResetLog(): void {
+    // The pattern project_reset is detectable and observable.
+    $project = $this->createProject();
+    $log = $this->createLog('project_reset', $project);
+
+    $this->assertTrue($log->access('view', $project->getOwner()->getManager()));
+    $this->assertTrue($log->access('view', $this->createSupervisor()));
+    $this->assertTrue($log->access('view', $this->createCreative('observer')));
+    $this->assertFalse($log->access('view', $this->createManager()));
+  }
+
+  /**
    * Creates a log of a pattern, optionally for a project.
    */
   protected function createLog(string $type, ?ProjectInterface $project = NULL): LogInterface {
