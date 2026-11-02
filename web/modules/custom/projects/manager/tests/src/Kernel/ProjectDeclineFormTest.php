@@ -183,9 +183,9 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
     foreach ([[ProjectState::Draft, TRUE], [ProjectState::Pending, FALSE]] as [$state, $prospect]) {
       $project = $this->actAsManagerOf($state, $prospect);
       $build = $this->transitionBuild($project);
-      $this->assertArrayHasKey('decline', $build['content'], $state->value);
-      $this->assertSame('decline', $build['content']['decline']['#attributes']['data-pane-view']);
-      $this->assertSame('Decline', (string) $build['content']['decline']['#title']);
+      $this->assertArrayHasKey('decline', $build['content']['actions'], $state->value);
+      $this->assertSame('decline', $build['content']['actions']['decline']['button']['#attributes']['data-pane-view']);
+      $this->assertSame('Decline', (string) $build['content']['actions']['decline']['button']['#title']);
     }
   }
 
@@ -239,7 +239,7 @@ class ProjectDeclineFormTest extends MailerKernelTestBase {
       $this->container->get('current_user')->setAccount($account);
       $state = $project->get('field_lifecycle')->value;
       $build = $this->transitionBuild($project);
-      $this->assertArrayNotHasKey('decline', $build['content'] ?? [], $label);
+      $this->assertArrayNotHasKey('decline', $build['content']['actions'] ?? [], $label);
       foreach ([NULL, $post] as $body) {
         $html = $this->pane($project, $query, $body);
         $this->assertStringNotContainsString('<form', $html, $label);

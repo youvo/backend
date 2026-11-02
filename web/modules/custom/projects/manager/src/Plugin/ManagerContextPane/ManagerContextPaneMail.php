@@ -126,7 +126,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
       || !$this->access->access($this->currentUser, $project, $subtype)->isAllowed()) {
       return $this->emptyPane($project);
     }
-    [$outcome, $form] = $this->processMailForm($this->formBuilder, $this->messenger, ProjectMailForm::class, $project, $subtype, $request);
+    [$outcome, $form] = $this->processMailForm(ProjectMailForm::class, $project, $subtype, $request);
     if ($outcome === 'denied') {
       return $this->emptyPane($project);
     }
@@ -134,7 +134,7 @@ class ManagerContextPaneMail extends ManagerContextPaneBase implements ManagerCo
       $this->messenger->addStatus($this->t('This form was already submitted.'));
       return $this->buildIndex($project);
     }
-    if ($outcome === 'sent') {
+    if ($outcome === 'done') {
       $this->messenger->addStatus($this->t('The mail was sent.'));
       return $this->buildIndex($project);
     }

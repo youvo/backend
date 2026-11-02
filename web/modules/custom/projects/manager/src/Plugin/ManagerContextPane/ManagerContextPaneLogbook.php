@@ -217,7 +217,7 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
     if (!$this->mayAdd($project)) {
       return $this->emptyPane($project);
     }
-    [$outcome, $form] = $this->processNoteForm($this->formBuilder, ProjectNoteForm::class, $project, NULL, $request, 'saved', 'save_failed', 'save_denied');
+    [$outcome, $form] = $this->processNoteForm(ProjectNoteForm::class, $project, NULL, $request, 'saved', 'save_failed', 'save_denied');
     if ($outcome === 'denied') {
       return $this->emptyPane($project);
     }
@@ -285,8 +285,8 @@ class ManagerContextPaneLogbook extends ManagerContextPaneBase implements Manage
       return $this->emptyPane($project);
     }
     [$outcome, $form] = $delete
-      ? $this->processNoteForm($this->formBuilder, ProjectNoteDeleteForm::class, $project, $entry, $request, 'deleted', 'delete_failed', 'delete_denied')
-      : $this->processNoteForm($this->formBuilder, ProjectNoteForm::class, $project, $entry, $request, 'saved', 'save_failed', 'save_denied');
+      ? $this->processNoteForm(ProjectNoteDeleteForm::class, $project, $entry, $request, 'deleted', 'delete_failed', 'delete_denied')
+      : $this->processNoteForm(ProjectNoteForm::class, $project, $entry, $request, 'saved', 'save_failed', 'save_denied');
     if ($outcome === 'denied') {
       return $this->emptyPane($project);
     }

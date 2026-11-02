@@ -52,6 +52,7 @@ class TimelineBuilder {
    *   The rows.
    */
   public function build(ProjectInterface $project, AccountInterface $account, ?CacheableMetadata $metadata = NULL): array {
+
     $rows = [];
     if ($metadata) {
       $this->addAccountCacheability($account, $metadata);
