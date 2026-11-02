@@ -164,7 +164,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * The publish event triggers the publish mail.
    */
   public function testSubscriberSendsOnPublish(): void {
-    $project = $this->createMailableProject();
+    $project = $this->createMailableProject(ProjectState::Pending);
     $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
     $entries = $this->loadEntries($project->id());
     $this->assertCount(1, $entries);
