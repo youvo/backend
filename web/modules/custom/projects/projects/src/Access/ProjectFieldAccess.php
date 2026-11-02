@@ -34,7 +34,6 @@ class ProjectFieldAccess extends FieldAccess {
 
   const PUBLIC_FIELDS = [
     'created',
-    'field_contact',
     'field_lifecycle',
     'hidden',
     'langcode',
@@ -58,6 +57,13 @@ class ProjectFieldAccess extends FieldAccess {
   ];
 
   const MANAGER_FIELDS_PERMISSION = 'view project manager fields';
+
+  /**
+   * Fields only logged-in users view.
+   */
+  const AUTHENTICATED_FIELDS = [
+    'field_contact',
+  ];
 
   /**
    * Fields only the actions and transitions change, and administrators.
@@ -132,6 +138,14 @@ class ProjectFieldAccess extends FieldAccess {
     // here on depend on the permissions of the account.
     if ($operation === 'view' &&
       self::isFieldOfGroup($field, array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Viewing the fields for logged-in users is handled downstream.
+    if ($operation === 'view' &&
+      self::isFieldOfGroup($field, self::AUTHENTICATED_FIELDS) &&
+      $account->hasPermission('view project')
     ) {
       return AccessResult::neutral()->cachePerPermissions();
     }

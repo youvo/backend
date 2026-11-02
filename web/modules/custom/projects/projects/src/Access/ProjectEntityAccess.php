@@ -90,11 +90,22 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
         ->cachePerUser();
     }
 
-    // Others can only view open, mediated or completed projects.
+    // Logged-in users can view open, mediated or completed projects, also
+    // hidden ones by link.
     if (
-      $project->lifecycle()->isOpen() ||
+      $account->hasPermission('view project') &&
+      ($project->lifecycle()->isOpen() ||
       $project->lifecycle()->isOngoing() ||
-      $project->lifecycle()->isCompleted()
+      $project->lifecycle()->isCompleted())
+    ) {
+      return AccessResult::allowed()->addCacheableDependency($project);
+    }
+
+    // Others can only view open or completed projects that are not hidden.
+    if (
+      !$project->isHidden() &&
+      ($project->lifecycle()->isOpen() ||
+      $project->lifecycle()->isCompleted())
     ) {
       return AccessResult::allowed()->addCacheableDependency($project);
     }

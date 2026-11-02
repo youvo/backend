@@ -65,6 +65,7 @@ permissions:
   - 'use project_lifecycle transition publish'
   - 'view correspondence'
   - 'view courses'
+  - 'view hidden projects'
   - 'view observable log'
   - 'view project manager fields'
   - 'view youvo dashboard'

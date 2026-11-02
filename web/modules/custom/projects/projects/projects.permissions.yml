@@ -11,3 +11,6 @@ access project admin forms:
 upload project result files:
   title: 'Upload project result files'
   description: 'Upload files for project results.'
+view hidden projects:
+  title: 'View hidden projects'
+  description: 'List the hidden projects of all organizations.'

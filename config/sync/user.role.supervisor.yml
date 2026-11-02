@@ -83,4 +83,5 @@ permissions:
   - 'view correspondence'
   - 'view courses'
   - 'view detectable log'
+  - 'view hidden projects'
   - 'view observable log'
