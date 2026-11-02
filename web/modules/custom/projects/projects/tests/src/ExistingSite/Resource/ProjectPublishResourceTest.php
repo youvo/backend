@@ -43,7 +43,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectPublishSupervisor(): void {
 
-    $project = $this->createProject(ProjectState::Open);
+    $project = $this->createProject(ProjectState::Pending);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';

@@ -252,13 +252,11 @@ class ProjectLifecycleTest extends UnitTestCase {
   /**
    * Tests that a declined project can not be declined again.
    *
-   * The remain transition of the declined state satisfies the state check.
-   *
    * @covers ::decline
    * @covers ::canTransition
    */
   public function testDeclineDeclinedThrows(): void {
-    $this->prophesizeWorkflow([ProjectState::Declined], [TRUE], FALSE, TRUE);
+    $this->prophesizeWorkflow([ProjectState::Declined], [FALSE], FALSE, TRUE);
     $this->expectException(LifecycleTransitionException::class);
     $this->lifecycle->decline();
   }
@@ -288,8 +286,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       'draft of organization' => [ProjectState::Draft, TRUE, FALSE, FALSE],
       'pending' => [ProjectState::Pending, TRUE, FALSE, TRUE],
       'open' => [ProjectState::Open, FALSE, TRUE, FALSE],
-      // The remain transition of the declined state satisfies the state check.
-      'declined' => [ProjectState::Declined, TRUE, TRUE, FALSE],
+      'declined' => [ProjectState::Declined, FALSE, TRUE, FALSE],
     ];
   }
 

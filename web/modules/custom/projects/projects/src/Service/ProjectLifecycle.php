@@ -188,11 +188,6 @@ class ProjectLifecycle implements ProjectLifecycleInterface {
       return $this->project()->hasParticipant('Creative') && $this->hasTransition($from, $to);
     }
     if ($transition === ProjectTransition::Decline) {
-      // The remain transition of the declined state satisfies the state check.
-      // Declined projects must not be declined again.
-      if ($from === ProjectState::Declined) {
-        return FALSE;
-      }
       // Drafts can only be declined if the organization is a prospect.
       // Otherwise, the organization has not submitted the project yet.
       if ($from === ProjectState::Draft) {
