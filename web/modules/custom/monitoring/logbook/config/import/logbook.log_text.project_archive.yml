@@ -1,0 +1,4 @@
+id: project_archive
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole archiviert.'
+public_text: 'Das Projekt %Project wurde von %Author archiviert.'

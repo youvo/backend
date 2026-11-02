@@ -1,5 +1,10 @@
 services:
 
+  projects.query_access.event_subscriber:
+    class: Drupal\projects\EventSubscriber\ProjectQueryAccessSubscriber
+    tags:
+      - { name: event_subscriber }
+
   project.lifecycle:
     class: Drupal\projects\Service\ProjectLifecycle
     arguments:
@@ -15,6 +20,7 @@ services:
       - { name: event_subscriber }
   projects.project_complete.event_subscriber:
     class: Drupal\projects\EventSubscriber\Transition\ProjectCompleteSubscriber
+    arguments: ['@database']
     tags:
       - { name: event_subscriber }
   projects.project_mediate.event_subscriber:
@@ -37,6 +43,14 @@ services:
   # Project action event subscribers.
   projects.project_apply.event_subscriber:
     class: Drupal\projects\EventSubscriber\Action\ProjectApplySubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_archive.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectArchiveSubscriber
+    tags:
+      - { name: event_subscriber }
+  projects.project_unarchive.event_subscriber:
+    class: Drupal\projects\EventSubscriber\Action\ProjectUnarchiveSubscriber
     tags:
       - { name: event_subscriber }
   projects.project_demote.event_subscriber:

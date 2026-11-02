@@ -35,13 +35,10 @@ use Drupal\youvo\Utility\FieldAccess;
  *
  * Note that the default access result is allowed.
  * See \Drupal\Core\Entity\EntityAccessControlHandler::checkFieldAccess().
- *
- * @todo Maybe introduce permissions and cache per permissions when the dust has
- *   settled.
  */
 class OrganizationFieldAccess extends FieldAccess {
 
-  const EDIT_OWNER_OR_MANAGER = [
+  const array EDIT_OWNER_OR_MANAGER = [
     'field_about',
     'field_aim',
     'field_avatar',
@@ -63,7 +60,7 @@ class OrganizationFieldAccess extends FieldAccess {
     'field_zip',
   ];
 
-  const VIEW_PUBLIC = [
+  const array VIEW_PUBLIC = [
     'created',
     'field_about',
     'field_aim',
@@ -82,7 +79,7 @@ class OrganizationFieldAccess extends FieldAccess {
     'uid',
   ];
 
-  const VIEW_PRIVATE = [
+  const array VIEW_PRIVATE = [
     'field_city',
     'field_count_fulltime',
     'field_count_volunteer',
@@ -96,7 +93,7 @@ class OrganizationFieldAccess extends FieldAccess {
     'name',
   ];
 
-  const ROLES = 'roles';
+  const string ROLES = 'roles';
 
   /**
    * {@inheritdoc}
@@ -113,39 +110,43 @@ class OrganizationFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
-    // Administrators and supervisors pass through. This also targets editing.
-    if (in_array('administrator', $account->getRoles(), TRUE) ||
-      in_array('supervisor', $account->getRoles(), TRUE)) {
-      return AccessResult::neutral()->cachePerUser();
+    // Administrators pass through, also for editing.
+    if ($account->hasPermission('bypass organization field access')) {
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
-    // Viewing public fields is handled downstream.
+    // Viewing the roles is allowed.
     if ($operation === 'view' && $field->getName() === self::ROLES) {
-      return AccessResult::allowed();
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
     // Viewing public fields is handled downstream.
     if ($operation === 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PUBLIC)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     // Viewing private fields when owner or manager is handled downstream.
     if ($operation === 'view' &&
       self::isFieldOfGroup($field, self::VIEW_PRIVATE) &&
       $entity->isOwnerOrManager($account)) {
-      return AccessResult::neutral()->cachePerUser();
+      return AccessResult::neutral()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions()
+        ->cachePerUser();
     }
 
     // Editing fields when owner or manager is handled downstream. Note that
     // edit permissions are handled by the organization access handler.
     if ($operation === 'edit' &&
       self::isFieldOfGroup($field, self::EDIT_OWNER_OR_MANAGER)) {
-      return AccessResult::neutral();
+      return AccessResult::neutral()->cachePerPermissions();
     }
 
     return AccessResult::forbidden()
-      ->addCacheableDependency($entity);
+      ->addCacheableDependency($entity)
+      ->cachePerPermissions()
+      ->cachePerUser();
   }
 
 }

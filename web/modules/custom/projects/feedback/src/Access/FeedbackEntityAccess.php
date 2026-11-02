@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\feedback\FeedbackInterface;
+use Drupal\user_types\Utility\Profile;
 
 /**
  * Access handler for feedback entities.
@@ -25,38 +26,33 @@ class FeedbackEntityAccess extends EntityAccessControlHandler {
       throw new AccessException('The FeedbackEntityAccess was called by an entity that is not a Feedback.');
     }
 
-    // Administrators and supervisors skip access checks.
-    // Discourage deleting feedbacks.
-    if (
-      in_array('supervisor', $account->getRoles(), TRUE) ||
-      in_array('administrator', $account->getRoles(), TRUE)
-    ) {
-      return AccessResult::allowedIf($operation !== 'delete')
-        ->cachePerUser();
-    }
-
-    // Check access for view action.
-    if ($operation === 'view') {
-      return AccessResult::allowedIf(
-        $entity->getOwnerId() == $account->id() &&
-        !$entity->isCompleted()
-      )->cachePerUser();
-    }
-
-    // Check access for edit action.
-    if ($operation === 'edit' || $operation === 'update') {
-      return AccessResult::allowedIf(
-        $entity->getOwnerId() == $account->id() &&
-        !$entity->isCompleted()
-      )->cachePerUser();
-    }
-
-    // Check access for delete action.
+    // Feedback is never deleted, also not by administrators.
     if ($operation === 'delete') {
       return AccessResult::forbidden();
     }
 
-    return AccessResult::neutral()->cachePerUser();
+    // Only the author edits the feedback, until it is completed.
+    $is_open_author = (int) $entity->getOwnerId() === Profile::id($account) && !$entity->isCompleted();
+    if ($operation === 'edit' || $operation === 'update') {
+      return AccessResult::allowedIf($is_open_author)
+        ->addCacheableDependency($entity)
+        ->cachePerUser();
+    }
+
+    // Administrators view any feedback.
+    if ($account->hasPermission('administer feedback')) {
+      return AccessResult::allowed()->cachePerPermissions();
+    }
+
+    // The author views the feedback until it is completed.
+    $access_result = $operation === 'view'
+      ? AccessResult::allowedIf($is_open_author)
+      : AccessResult::neutral();
+
+    return $access_result
+      ->addCacheableDependency($entity)
+      ->cachePerPermissions()
+      ->cachePerUser();
   }
 
   /**

@@ -30,7 +30,7 @@ class ProjectResultForm extends ContentEntityForm {
       $this->messenger()->addStatus($this->t('The project result %label has been updated.', $message_arguments));
     }
 
-    $form_state->setRedirect('entity.project.canonical', ['node' => $entity->getParentEntity()->id()]);
+    $form_state->setRedirect('entity.project.canonical', ['project' => $entity->getParentEntity()->id()]);
 
     return $result;
   }

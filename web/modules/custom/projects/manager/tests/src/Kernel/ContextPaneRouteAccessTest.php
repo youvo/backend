@@ -28,6 +28,7 @@ class ContextPaneRouteAccessTest extends MailerKernelTestBase {
    * Only accounts with the general manager access permission get the panes.
    */
   public function testContextPaneRequiresManagerAccess(): void {
+
     // User 1 bypasses all permission checks: use it up.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);

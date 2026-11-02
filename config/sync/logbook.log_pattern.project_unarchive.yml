@@ -1,0 +1,23 @@
+uuid: 8aa86470-d46f-40c4-a453-83c24c82c4c8
+langcode: de
+status: true
+dependencies: {  }
+id: project_unarchive
+label: 'Project Unarchive'
+tokens:
+  -
+    token: '%Project'
+    required: '1'
+  -
+    token: '%AuthorWithRole'
+    required: 0
+  -
+    token: '%Author'
+    required: 0
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''
+tone: ''

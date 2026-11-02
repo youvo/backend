@@ -37,6 +37,7 @@ class FeedbackViewTest extends ProjectEventSubscriberTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+
     parent::setUp();
     $this->installEntitySchema('feedback');
     $this->installConfig(['system', 'projects_result_test']);
@@ -133,6 +134,7 @@ class FeedbackViewTest extends ProjectEventSubscriberTestBase {
    * @covers ::alterBuild
    */
   public function testAnswersByStep(): void {
+
     $feedback = $this->createFeedback([
       'field_service_scale' => 4,
       'field_service_text' => 'Schneller antworten.',

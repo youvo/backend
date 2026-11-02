@@ -1,0 +1,12 @@
+id: project.archive
+plugin_id: 'project:archive'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2

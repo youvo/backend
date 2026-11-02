@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber\Action;
 
 use Drupal\projects\Event\ProjectPromoteEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,11 +15,15 @@ class ProjectPromoteSubscriber implements EventSubscriberInterface {
    * Listens to the project promote event.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\projects\Exception\ProjectActionException
    */
   public function onProjectPromote(ProjectPromoteEvent $event): void {
     $project = $event->getProject();
-    if ($project->lifecycle()->isDeclined()) {
-      throw new \LogicException('Cannot promote a declined project.');
+    if ($project->isArchived()) {
+      throw new ProjectActionException('Cannot promote an archived project.');
+    }
+    if ($project->isHidden() || $project->lifecycle()->isDeclined()) {
+      throw new ProjectActionException('Cannot promote a hidden or declined project.');
     }
     $project->setPromoted(TRUE);
     $project->save();

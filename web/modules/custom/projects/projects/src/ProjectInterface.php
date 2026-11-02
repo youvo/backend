@@ -165,6 +165,31 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   public function setCreatedTime(int $timestamp): static;
 
   /**
+   * Whether the project is active (published, not archived).
+   */
+  public function isActive(): bool;
+
+  /**
+   * Whether the project is archived (not published).
+   */
+  public function isArchived(): bool;
+
+  /**
+   * Archives the project, or makes it active again.
+   */
+  public function setArchived(bool $archived = TRUE): static;
+
+  /**
+   * Whether the project is hidden from public listings.
+   */
+  public function isHidden(): bool;
+
+  /**
+   * Hides the project, or shows it again.
+   */
+  public function setHidden(bool $hidden = TRUE): static;
+
+  /**
    * Returns the project promotion status.
    */
   public function isPromoted(): bool;

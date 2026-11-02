@@ -9,7 +9,7 @@ use Drupal\feedback\Event\FeedbackCreateEvent;
  */
 class LogbookFeedbackCreateSubscriber extends LogbookFeedbackCompleteSubscriber {
 
-  const EVENT_CLASS = FeedbackCreateEvent::class;
-  const LOG_PATTERN = 'feedback_create';
+  const string EVENT_CLASS = FeedbackCreateEvent::class;
+  const string LOG_PATTERN = 'feedback_create';
 
 }

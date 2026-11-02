@@ -27,12 +27,6 @@ type_settings:
       label: Declined
       weight: 5
   transitions:
-    remain_draft:
-      label: 'Project Remain Draft'
-      from:
-        - draft
-      to: draft
-      weight: 0
     decline:
       label: 'Project Decline'
       from:
@@ -40,12 +34,6 @@ type_settings:
         - pending
       to: declined
       weight: 10
-    remain_declined:
-      label: 'Project Remain Declined'
-      from:
-        - declined
-      to: declined
-      weight: 11
     complete:
       label: 'Project Complete'
       from:
@@ -64,30 +52,6 @@ type_settings:
         - pending
       to: open
       weight: 3
-    remain_completed:
-      label: 'Project Remain Completed'
-      from:
-        - completed
-      to: completed
-      weight: 8
-    remain_ongoing:
-      label: 'Project Remain Ongoing'
-      from:
-        - ongoing
-      to: ongoing
-      weight: 6
-    remain_open:
-      label: 'Project Remain Open'
-      from:
-        - open
-      to: open
-      weight: 4
-    remain_pending:
-      label: 'Project Remain Pending'
-      from:
-        - pending
-      to: pending
-      weight: 2
     reset:
       label: 'Project Reset'
       from:

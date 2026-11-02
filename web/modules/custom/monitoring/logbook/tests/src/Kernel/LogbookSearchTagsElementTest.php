@@ -71,6 +71,7 @@ class LogbookSearchTagsElementTest extends LogbookKernelTestBase {
    * The element renders a Tagify input fed by the logbook autocomplete.
    */
   public function testRendersTagifyInputWithLogbookRoute(): void {
+
     $form = $this->container->get('form_builder')->getForm(new class extends FormBase {
 
       /**

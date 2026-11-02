@@ -394,6 +394,14 @@
   mask-image: url('../assets/star.svg');
 }
 
+.logbook-icon--archive {
+  mask-image: url('../assets/archive.svg');
+}
+
+.logbook-icon--hidden {
+  mask-image: url('../assets/eye-off.svg');
+}
+
 /* A completed project is the ultimate log: the whole row is colored, with the
    sparkle pattern and the finish illustration of the old youvo.org logbook.
    The tint is set on the row, so the pattern runs across the cells. */

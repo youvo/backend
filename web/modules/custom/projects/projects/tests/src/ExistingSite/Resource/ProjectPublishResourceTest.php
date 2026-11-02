@@ -43,7 +43,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
    */
   public function testProjectPublishSupervisor(): void {
 
-    $project = $this->createProject(ProjectState::Open);
+    $project = $this->createProject(ProjectState::Pending);
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/publish';
@@ -97,14 +97,14 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project publish resource - not published (status).
+   * Tests the for the project publish resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectPublishNotPublished(): void {
+  public function testProjectPublishArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $manager = $project->getOwner()->getManager();
 
@@ -115,7 +115,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

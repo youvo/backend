@@ -25,6 +25,7 @@ class FeedbackCreateAccess {
     $rest_resource = str_replace('.', ':', $route->getDefault('_rest_resource_config'));
     return AccessResult::allowedIf(
       $account->hasPermission('restful ' . strtolower(reset($methods)) . ' ' . $rest_resource) &&
+      $project->isActive() &&
       $project->lifecycle()->isCompleted() &&
       ($project->isParticipant($account) || $project->getOwner()->isManager($account) || $project->getOwnerId() == $account->id())
     );

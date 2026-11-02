@@ -12,6 +12,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
 use Drupal\logbook\LogPatternInterface;
+use Drupal\projects\ProjectInterface;
 use Drupal\youvo\Event\TimestampedEventInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -21,9 +22,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 abstract class LogbookSubscriberBase implements EventSubscriberInterface {
 
-  const EVENT_CLASS = NULL;
-  const LOG_PATTERN = NULL;
-  const PRIORITY = 0;
+  const ?string EVENT_CLASS = NULL;
+  const ?string LOG_PATTERN = NULL;
+  const int PRIORITY = 0;
 
   /**
    * Constructs a LogbookSubscriberBase object.
@@ -65,6 +66,36 @@ abstract class LogbookSubscriberBase implements EventSubscriberInterface {
       'type' => static::LOG_PATTERN,
       'created' => $timestamp ?? $this->time->getCurrentTime(),
     ]);
+  }
+
+  /**
+   * Archives or re-activates the logs of a project.
+   *
+   * @param \Drupal\projects\ProjectInterface $project
+   *   The project.
+   * @param bool $archived
+   *   TRUE archives the active logs, FALSE re-activates the archived logs.
+   * @param int $from
+   *   Only logs from this id on.
+   */
+  protected function setProjectLogsArchived(ProjectInterface $project, bool $archived = TRUE, int $from = 0): void {
+    try {
+      $log_storage = $this->entityTypeManager->getStorage('log');
+      $log_ids = $log_storage->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('project', $project->id())
+        ->condition('status', (int) $archived)
+        ->condition('id', $from, '>=')
+        ->execute();
+      /** @var \Drupal\logbook\LogInterface $log */
+      foreach ($log_storage->loadMultiple($log_ids) as $log) {
+        $log->setArchived($archived);
+        $log->save();
+      }
+    }
+    catch (InvalidPluginDefinitionException | PluginNotFoundException) {
+      $this->logger->error('Unable to update the logs of project %id', ['%id' => $project->id()]);
+    }
   }
 
   /**

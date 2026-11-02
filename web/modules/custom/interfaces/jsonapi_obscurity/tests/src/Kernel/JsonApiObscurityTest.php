@@ -61,6 +61,7 @@ class JsonApiObscurityTest extends KernelTestBase {
    * @throws \Exception
    */
   protected function setUp(): void {
+
     parent::setUp();
 
     // Install schemas and configurations.

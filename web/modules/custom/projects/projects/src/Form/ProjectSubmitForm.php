@@ -2,14 +2,16 @@
 
 namespace Drupal\projects\Form;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 
 /**
- * The project submit form provides a simple UI to change the lifecycle state.
+ * Lets administrators submit a draft project.
  */
-class ProjectSubmitForm extends ProjectTransitionFormBase {
+class ProjectSubmitForm extends ProjectEventFormBase {
 
   /**
    * {@inheritdoc}
@@ -21,44 +23,22 @@ class ProjectSubmitForm extends ProjectTransitionFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ProjectInterface $project = NULL): array {
-
-    // Set title for form.
-    $form['#title'] = $this->t('Submit Project: %s', [
-      '%s' => $project?->getTitle() ?? '',
-    ]);
-
-    // Store project for submit handler.
-    $form['project'] = [
-      '#type' => 'value',
-      '#value' => $project,
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit Project'),
-    ];
-
-    return $form;
+  protected function label(): TranslatableMarkup {
+    return $this->t('Submit Project');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
+  protected function successMessage(): TranslatableMarkup {
+    return $this->t('Project was submitted successfully.');
+  }
 
-    /** @var \Drupal\projects\Entity\Project $project */
-    $project = $form_state->getValues()['project'];
-
-    try {
-      $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
-      $this->messenger()->addMessage($this->t('Project was submitted successfully.'));
-    }
-    catch (\Throwable $e) {
-      $this->messenger()->addError($e->getMessage());
-    }
-
-    $form_state->setRedirect('entity.node.canonical', ['node' => $project->id()]);
+  /**
+   * {@inheritdoc}
+   */
+  protected function event(ProjectInterface $project, FormStateInterface $form_state): Event {
+    return new ProjectSubmitEvent($project);
   }
 
 }

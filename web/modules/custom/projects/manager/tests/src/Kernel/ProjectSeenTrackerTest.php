@@ -15,6 +15,7 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
    * The unfinished projects of the managed organizations are listed.
    */
   public function testManagedProjects(): void {
+
     $open = $this->createMailableProject(ProjectState::Open);
     $organization = $open->getOwner();
     $manager = $this->managerOf($open);
@@ -199,6 +200,26 @@ class ProjectSeenTrackerTest extends ProjectSeenKernelTestBase {
     $activity = $tracker->getActivity($manager, [$project])[$project->id()];
     $this->assertFalse($activity['is_new']);
     $this->assertSame(0, $activity['count']);
+  }
+
+  /**
+   * Archived logs neither count as activity nor show as events.
+   */
+  public function testArchivedLogsDoNotCount(): void {
+
+    $project = $this->createMailableProject(ProjectState::Open);
+    $manager = $this->managerOf($project);
+    $tracker = $this->container->get('manager.project_seen');
+    $tracker->markSeen($manager, $project);
+    $active = $this->createProjectLog($project);
+    $this->createProjectLog($project)->setArchived()->save();
+
+    $activity = $tracker->getActivity($manager, [$project])[$project->id()];
+    $this->assertSame(1, $activity['count']);
+    $this->assertSame(1, $activity['total']);
+    $events = $tracker->getEvents($manager, $project);
+    $this->assertSame([(int) $active->id()], array_map(static fn (array $event) => (int) $event['log']->id(), $events['events']));
+    $this->assertSame(1, $events['total']);
   }
 
   /**

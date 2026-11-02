@@ -40,6 +40,9 @@ use Psr\Log\LoggerInterface;
     "decline_impact" => new TranslatableMarkup("Decline: Impact hard to communicate"),
     "decline_idea" => new TranslatableMarkup("Decline: Only an idea"),
     "decline_religious" => new TranslatableMarkup("Decline: Religious"),
+    "archive_custom" => new TranslatableMarkup("Archive: Custom reason"),
+    "archive_unattractive" => new TranslatableMarkup("Archive: Project unattractive"),
+    "archive_external" => new TranslatableMarkup("Archive: External mediation"),
   ],
   required_config: ["email_subject", "email_body"],
   variables: [
@@ -145,13 +148,6 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
    * {@inheritdoc}
    */
   public function send(ProjectInterface $project, string $subtype, string $subject, string $bodyText, AccountInterface $sender): bool {
-    if ($this->registry->find($project, $subtype) === NULL) {
-      $this->logger->warning('Manager mail %subtype is not offered for project @id.', [
-        '%subtype' => $subtype,
-        '@id' => $project->id(),
-      ]);
-      return FALSE;
-    }
     $subject = trim(preg_replace('/\s+/', ' ', $subject) ?? '');
     if ($subject === '' || trim($bodyText) === '') {
       $this->logger->warning('Manager mail %subtype for project @id has an empty subject or body.', [

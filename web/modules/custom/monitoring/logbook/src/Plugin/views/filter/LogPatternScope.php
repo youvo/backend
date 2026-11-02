@@ -2,8 +2,10 @@
 
 namespace Drupal\logbook\Plugin\views\filter;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\InOperator;
@@ -12,7 +14,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Filters the logs by the log patterns that the logbook lists.
  *
- * The logbook lists the logs of enabled, observable log patterns. The flags of
+ * The logbook lists the logs of enabled, observable log patterns, and of
+ * enabled, detectable log patterns for accounts that may view detectable logs.
+ * The list therefore varies per permissions. The flags of
  * the patterns decide, not a list of ids in the view: a pattern that is changed
  * or created later is picked up, and the view does not depend on any pattern,
  * so deleting a pattern does not delete the view.
@@ -32,6 +36,7 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
     $plugin_id,
     $plugin_definition,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected AccountInterface $currentUser,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -40,7 +45,7 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity_type.manager'));
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity_type.manager'), $container->get('current_user'));
   }
 
   /**
@@ -75,6 +80,13 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
       return;
     }
     $query->addWhere($this->options['group'], $alias . '.type', $ids, 'IN');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts(): array {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['user.permissions']);
   }
 
   /**
@@ -115,9 +127,14 @@ class LogPatternScope extends InOperator implements ContainerFactoryPluginInterf
    */
   protected function listedPatterns(): array {
     $options = [];
+    $detectable = $this->currentUser->hasPermission('view detectable log');
     /** @var \Drupal\logbook\LogPatternInterface $pattern */
     foreach ($this->entityTypeManager->getStorage('log_pattern')->loadMultiple() as $id => $pattern) {
-      if ($pattern instanceof LogPatternInterface && $pattern->isEnabled() && $pattern->isObservable()) {
+      if (
+        $pattern instanceof LogPatternInterface &&
+        $pattern->isEnabled() &&
+        ($pattern->isObservable() || ($detectable && $pattern->isDetectable()))
+      ) {
         $options[(string) $id] = trim(str_replace('Project ', '', (string) $pattern->label()));
       }
     }

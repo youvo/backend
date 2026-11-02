@@ -16,6 +16,7 @@ use Drupal\symfony_mailer\Attribute\MailerInfo;
   label: new TranslatableMarkup("User"),
   sub_defs: [
     "register_creative" => new TranslatableMarkup("Registration (creative)"),
+    "register_organization" => new TranslatableMarkup("Registration (organization)"),
     "register_organization_staff" => new TranslatableMarkup("Registration (organization, staff)"),
   ],
   required_config: ["email_subject", "email_body"],
@@ -57,6 +58,16 @@ class YouvoUserMailer extends YouvoMailerBase implements YouvoUserMailerInterfac
     ]);
     $to = (string) $this->configFactory->get('system.site')->get('mail');
     return $this->deliver($email, NULL, 'register_organization_staff', $to);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function confirmOrganizationProposal(Organization $organization): bool {
+    // The address is not verified: the mail carries no text of the proposal,
+    // so nobody can send their own words to someone else through youvo.org.
+    $email = $this->newEmail('register_organization');
+    return $this->deliver($email, NULL, 'register_organization', $organization->getEmail());
   }
 
 }

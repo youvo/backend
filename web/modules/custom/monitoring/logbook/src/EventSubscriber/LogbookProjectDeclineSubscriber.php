@@ -10,8 +10,8 @@ use Drupal\projects\Event\ProjectDeclineEvent;
  */
 class LogbookProjectDeclineSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectDeclineEvent::class;
-  const LOG_PATTERN = 'project_decline';
+  const string EVENT_CLASS = ProjectDeclineEvent::class;
+  const string LOG_PATTERN = 'project_decline';
 
   /**
    * {@inheritdoc}
@@ -27,6 +27,11 @@ class LogbookProjectDeclineSubscriber extends LogbookSubscriberBase {
       $log->setManager($manager);
     }
     $log->setMisc(['reason' => $event->getReason()->value]);
+    // Keeps the mail even if sending fails or never happens: the subject in
+    // the first line, then the body.
+    if ($body = $event->getBody()) {
+      $log->setMessage(trim($event->getSubject() . "\n\n" . $body));
+    }
     $log->save();
   }
 

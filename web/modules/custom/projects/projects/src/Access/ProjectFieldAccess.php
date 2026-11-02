@@ -8,6 +8,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\Routing\ProjectHtmlRouteProvider;
 use Drupal\youvo\Utility\FieldAccess;
 
 /**
@@ -33,8 +34,8 @@ class ProjectFieldAccess extends FieldAccess {
 
   const PUBLIC_FIELDS = [
     'created',
-    'field_contact',
     'field_lifecycle',
+    'hidden',
     'langcode',
     'promote',
     'status',
@@ -56,6 +57,26 @@ class ProjectFieldAccess extends FieldAccess {
   ];
 
   const MANAGER_FIELDS_PERMISSION = 'view project manager fields';
+
+  /**
+   * Fields only logged-in users view.
+   */
+  const AUTHENTICATED_FIELDS = [
+    'field_contact',
+  ];
+
+  /**
+   * Fields only the actions and transitions change, and administrators.
+   *
+   * The owner is one of them once the project exists.
+   */
+  const ACTION_FIELDS = [
+    'field_lifecycle',
+    'field_lifecycle_history',
+    'hidden',
+    'promote',
+    'status',
+  ];
 
   const RESULT_FIELDS = [
     'project_result',
@@ -88,6 +109,17 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral();
     }
 
+    // Only administrators edit the fields of the actions and transitions,
+    // also not those who administer projects.
+    if ($operation === 'edit' &&
+      (self::isFieldOfGroup($field, self::ACTION_FIELDS) || ($field->getName() === self::OWNER_FIELD && !$entity->isNew())) &&
+      !$account->hasPermission(ProjectHtmlRouteProvider::PERMISSION)
+    ) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
+    }
+
     // Administrators pass through.
     if ($account->hasPermission('administer projects')) {
       return AccessResult::neutral()->cachePerPermissions();
@@ -106,6 +138,14 @@ class ProjectFieldAccess extends FieldAccess {
     // here on depend on the permissions of the account.
     if ($operation === 'view' &&
       self::isFieldOfGroup($field, array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Viewing the fields for logged-in users is handled downstream.
+    if ($operation === 'view' &&
+      self::isFieldOfGroup($field, self::AUTHENTICATED_FIELDS) &&
+      $account->hasPermission('view project')
     ) {
       return AccessResult::neutral()->cachePerPermissions();
     }

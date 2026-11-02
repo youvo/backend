@@ -1,5 +1,11 @@
 services:
 
+  # Query access for logs.
+  logbook.log_query_access.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogQueryAccessSubscriber
+    tags:
+      - { name: event_subscriber }
+
   # Creative logs.
   logbook.creative_register.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookCreativeRegisterSubscriber
@@ -105,6 +111,30 @@ services:
       - { name: event_subscriber }
   logbook.project_promote.event_subscriber:
     class: Drupal\logbook\EventSubscriber\LogbookProjectPromoteSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_archive.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectArchiveSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_unarchive.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectUnarchiveSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_hide.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectHideSubscriber
+    arguments:
+      [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
+    tags:
+      - { name: event_subscriber }
+  logbook.project_show.event_subscriber:
+    class: Drupal\logbook\EventSubscriber\LogbookProjectShowSubscriber
     arguments:
       [ '@current_user', '@config.factory', '@entity_type.manager', '@logger.channel.logbook', '@datetime.time' ]
     tags:

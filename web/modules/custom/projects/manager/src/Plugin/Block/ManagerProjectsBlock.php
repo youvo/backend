@@ -31,7 +31,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
   /**
    * The number of projects the block shows at most.
    */
-  public const LIMIT = 20;
+  public const int LIMIT = 20;
 
   /**
    * Constructs the block.
@@ -74,10 +74,11 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function build(): array {
+
     $uid = (int) $this->currentUser->id();
     // One more than shown tells whether there are more, without loading all.
-    $projects = $this->tracker->getManagedProjects($this->currentUser, self::LIMIT + 1);
-    $shown = array_slice($projects, 0, self::LIMIT, TRUE);
+    $projects = $this->tracker->getManagedProjects($this->currentUser, static::LIMIT + 1);
+    $shown = array_slice($projects, 0, static::LIMIT, TRUE);
     $activity = $this->tracker->getActivity($this->currentUser, $shown);
     $destination = $this->requestStack->getCurrentRequest()?->getPathInfo() ?: '/admin/dashboard';
     $options = ['query' => ['destination' => $destination]];
@@ -114,7 +115,7 @@ class ManagerProjectsBlock extends BlockBase implements ContainerFactoryPluginIn
     return [
       '#theme' => 'manager_projects_block',
       '#cards' => $cards,
-      '#more_url' => count($projects) > self::LIMIT ? Url::fromUserInput('/projects/manage')->toString() : NULL,
+      '#more_url' => count($projects) > static::LIMIT ? Url::fromUserInput('/projects/manage')->toString() : NULL,
       '#seen_all_url' => $any_new ? Url::fromRoute('manager.project_seen_all', [], $options)->toString() : NULL,
       '#attached' => ['library' => ['manager/projects_block']],
       '#cache' => [

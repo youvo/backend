@@ -22,3 +22,7 @@ view public log:
 access log overview:
   description: 'Access to logs list.'
   title: 'Access logbook'
+
+view archived log:
+  description: 'Logs archived by a reset or an archived project.'
+  title: 'View archived log'

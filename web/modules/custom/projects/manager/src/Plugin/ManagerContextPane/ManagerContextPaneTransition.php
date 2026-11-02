@@ -3,17 +3,9 @@
 namespace Drupal\manager\Plugin\ManagerContextPane;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
-use Drupal\mailer\Manager\ManagerMailAccess;
-use Drupal\mailer\Manager\ManagerMailRegistry;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\manager\Attribute\ManagerContextPane;
-use Drupal\manager\Form\ProjectDeclineForm;
-use Drupal\projects\Entity\Project;
-use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -23,13 +15,12 @@ use Symfony\Component\HttpFoundation\Request;
  * Provides a project transition manager context pane.
  *
  * Besides the next transition, the pane offers to decline a project proposal
- * (view 'decline'): a form that sends the rejection mail and then declines.
+ * (view 'decline') with the mail editor.
  */
 #[ManagerContextPane(id: "transition")]
-class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneViewInterface {
+class ManagerContextPaneTransition extends ManagerContextPaneBase implements ManagerContextPaneActionInterface, ManagerContextPaneViewInterface {
 
-  use MailPaneFormTrait;
-  use PaneMessagesTrait;
+  use ProjectActionPaneTrait;
   use StringTranslationTrait;
 
   /**
@@ -38,216 +29,153 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * The current user.
-   */
-  protected AccountProxyInterface $currentUser;
-
-  /**
-   * The registry of manager mails.
-   */
-  protected ManagerMailRegistry $registry;
-
-  /**
-   * The access service of manager mails.
-   */
-  protected ManagerMailAccess $access;
-
-  /**
-   * The form builder.
-   */
-  protected FormBuilderInterface $formBuilder;
-
-  /**
-   * The messenger.
-   */
-  protected MessengerInterface $messenger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults): static {
     $instance = parent::create($container, ...$defaults);
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->currentUser = $container->get('current_user');
+    $instance->resourceManager = $container->get('plugin.manager.rest');
     $instance->registry = $container->get('mailer.manager_mail_registry');
     $instance->access = $container->get('mailer.manager_mail_access');
     $instance->formBuilder = $container->get('form_builder');
-    $instance->messenger = $container->get('messenger');
     return $instance;
-
   }
 
   /**
    * {@inheritdoc}
    */
-  public function build(Project $project): array {
+  public function hasActions(ProjectInterface $project): bool {
+    return $this->permittedTransition($project) !== NULL
+      || $this->mayMail($project, 'decline', 'decline_custom');
+  }
 
-    $transition = $this->getNextTransition($project);
-    if (!$transition instanceof ProjectTransition) {
-      return [];
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function build(ProjectInterface $project): array {
 
     $build = [
       '#theme' => 'context_pane',
       '#type' => 'transition',
       '#project' => $project,
-      'content' => [
-        'button' => [
-          '#type' => 'button',
-          // phpcs:ignore
-          '#value' => $this->t($transition->name),
-          '#attributes' => [
-            'class' => [
-              'button',
-              'button--primary',
-              'button--small',
-              'js-transition-btn',
-            ],
-            'data-action' => $transition->value,
-          ],
-        ],
-        'options' => match ($transition) {
-          ProjectTransition::Mediate => $this->buildMediateOptions($project),
-          default => NULL,
-        },
-        'users' => match ($transition) {
-          ProjectTransition::Complete => $this->buildCompleteUsers($project),
-          default => NULL,
-        },
-        // @todo Check the workflow and adjust descriptions.
-        'description' => match ($transition) {
-          ProjectTransition::Submit => $this->buildSubmitDescription($project),
-          ProjectTransition::Publish => $this->buildPublishDescription($project),
-          ProjectTransition::Mediate => $this->buildMediateDescription($project),
-          ProjectTransition::Complete => $this->buildCompleteDescription($project),
-          default => NULL,
-        },
-      ],
+      'content' => [],
     ];
 
-    $decline_subtype = ManagerMailRegistry::declineSubtype(ProjectDeclineReason::Custom);
-    if ($this->mayDecline($project, $decline_subtype)) {
-      $build['content']['decline'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Decline'),
-        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
-          'query' => ['type' => 'transition', 'view' => 'decline'],
-        ]),
-        '#attributes' => [
-          'class' => ['button', 'button--small', 'button--danger'],
-          'data-pane-view' => 'decline',
+    if ($transition = $this->permittedTransition($project)) {
+      $action = $transition->value;
+      $build['content']['actions'][$action] = [
+        'options' => $transition === ProjectTransition::Mediate ? $this->buildApplicantOptions($project) : NULL,
+        'users' => $transition === ProjectTransition::Complete ? $this->buildParticipantUsers($project) : NULL,
+        'button' => [
+          '#type' => 'button',
+          '#value' => $this->label($action),
+          '#attributes' => [
+            'class' => ['button', 'button--primary', 'button--small', 'js-transition-btn'],
+            'data-action' => $action,
+          ],
         ],
+        'description' => $this->description($action),
       ];
     }
 
-    return $build;
+    if ($decline = $this->buildMailActionLink($project, 'decline', $this->label('decline'))) {
+      $build['content']['actions']['decline'] = [
+        'button' => $decline,
+        'description' => $this->description('decline'),
+      ];
+    }
+
+    return empty($build['content']) ? [] : $build;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildView(Project $project, Request $request): array {
+  public function buildView(ProjectInterface $project, Request $request): array {
     if ($request->query->get('view') !== 'decline') {
       return $this->build($project);
     }
-    $reason = ProjectDeclineReason::tryFrom((string) $request->query->get('reason', ProjectDeclineReason::Custom->value));
-    if (!$reason instanceof ProjectDeclineReason) {
-      return $this->emptyDeclinePane($project);
-    }
-    return $this->buildDeclineView($project, ManagerMailRegistry::declineSubtype($reason), $request);
+    return $this->buildMailActionView($project, 'decline', $request);
   }
 
   /**
-   * Whether the current user may decline the project with the mail subtype.
+   * Gets the next transition, if the current user may post it.
    */
-  protected function mayDecline(Project $project, string $subtype): bool {
-    return ProjectDeclineForm::mayDecline($this->currentUser)
-      && $this->access->access($this->currentUser, $project, $subtype)->isAllowed();
+  protected function permittedTransition(ProjectInterface $project): ?ProjectTransition {
+    $transition = $this->nextTransition($project);
+    return $transition && $this->mayPost($project, $transition->value) ? $transition : NULL;
   }
 
   /**
-   * Builds the empty decline pane.
+   * Gets the next transition of the linear flow, without checking it.
    */
-  protected function emptyDeclinePane(Project $project): array {
-    return ['#theme' => 'context_pane', '#type' => 'decline', '#project' => $project, 'content' => []];
+  protected function nextTransition(ProjectInterface $project): ?ProjectTransition {
+    $lifecycle = $project->lifecycle();
+    return match (TRUE) {
+      $lifecycle->isDraft() => ProjectTransition::Submit,
+      $lifecycle->isPending() => ProjectTransition::Publish,
+      $lifecycle->isOpen() => ProjectTransition::Mediate,
+      $lifecycle->isOngoing() => ProjectTransition::Complete,
+      default => NULL,
+    };
   }
 
   /**
-   * Builds the decline form view; access is checked on every request.
-   *
-   * A valid POST sends the mail and then declines the project in the form's
-   * submit handler; the pane then only shows the outcome. A failed send
-   * returns the form again.
+   * Gets the button label of an action.
    */
-  protected function buildDeclineView(Project $project, string $subtype, Request $request): array {
-    if (!$this->mayDecline($project, $subtype)) {
-      return $this->emptyDeclinePane($project);
-    }
-    [$outcome, $form, $form_state] = $this->processMailForm($this->formBuilder, $this->messenger, ProjectDeclineForm::class, $project, $subtype, $request);
-    if ($outcome === 'denied') {
-      return $this->emptyDeclinePane($project);
-    }
-    $build = $this->emptyDeclinePane($project);
-    if ($outcome === 'already') {
-      $this->messenger->addStatus($this->t('This form was already submitted.'));
-      $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-      return $build;
-    }
-    if ($outcome === 'sent') {
-      if ($form_state->get('decline_failed')) {
-        $this->messenger->addError($this->t('The mail was sent, but the project could not be declined. Please contact a supervisor.'));
-      }
-      else {
-        $this->messenger->addStatus($this->t('The project was declined and the mail was sent.'));
-      }
-      $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-      return $build;
-    }
-    if ($outcome === 'failed') {
-      $this->messenger->addError($this->t('The mail could not be sent. The project was not declined.'));
-    }
-    $build['content']['messages'] = $this->buildPaneMessages($this->messenger);
-    $build['content']['form'] = $form;
-    $this->buildReasons($build, $project, $subtype);
-    return $build;
+  protected function label(string $action): TranslatableMarkup {
+    return match ($action) {
+      'submit' => $this->t('Submit'),
+      'publish' => $this->t('Publish'),
+      'mediate' => $this->t('Mediate'),
+      'complete' => $this->t('Complete'),
+      'decline' => $this->t('Decline'),
+      default => throw new \InvalidArgumentException('Unknown action ' . $action . '.'),
+    };
   }
 
   /**
-   * Adds the links of the decline reasons.
-   *
-   * @param array $build
-   *   The pane build.
-   * @param \Drupal\projects\Entity\Project $project
-   *   The project.
-   * @param string $active
-   *   The subtype whose form is open, which is marked as current.
+   * Builds the description of an action: what happens when it is used.
    */
-  protected function buildReasons(array &$build, Project $project, string $active): void {
-    foreach ($this->registry->availableDeclines($project) as $definition) {
-      $reason = ManagerMailRegistry::declineReason($definition->subtype);
-      if ($reason === NULL) {
-        continue;
-      }
-      $is_active = $definition->subtype === $active;
-      $build['content']['reasons'][$reason->value] = [
-        '#type' => 'link',
-        '#title' => $definition->label,
-        '#url' => Url::fromRoute('manager.context_pane', ['project' => $project->id()], [
-          'query' => ['type' => 'transition', 'view' => 'decline', 'reason' => $reason->value],
-        ]),
-        '#attributes' => [
-          'class' => $is_active ? ['manager-mail-type', 'is-active'] : ['manager-mail-type'],
-          'data-pane-view' => 'decline',
-          'data-pane-params' => http_build_query(['reason' => $reason->value]),
-        ] + ($is_active ? ['aria-current' => 'true'] : []),
-      ];
-    }
+  protected function description(string $action): array {
+    $items = match ($action) {
+      'submit' => [
+        $this->t('This action will submit the project for review.'),
+        $this->t('If the organization is a prospect, it will be promoted to a proper organization.'),
+        $this->t('The organization receives a notification.'),
+      ],
+      'publish' => [
+        $this->t('This action will publish the project.'),
+        $this->t('The project will appear in searches and be visible to creatives.'),
+        $this->t('Creatives can apply to the project.'),
+        $this->t('The organization receives a notification.'),
+      ],
+      'mediate' => [
+        $this->t('This action will mediate the project.'),
+        $this->t('The project will not appear in searches and will not be promoted anymore.'),
+        $this->t('Each selected applicant receives an email from the organization.'),
+        $this->t('The organization receives an email.'),
+      ],
+      'complete' => [
+        $this->t('This action will complete the project.'),
+        $this->t('The project will appear in searches.'),
+        $this->t('Each selected participant receives an email from the organization.'),
+        $this->t('The organization receives an email.'),
+      ],
+      'decline' => [
+        $this->t('The project proposal is declined; a reset makes it a draft again.'),
+        $this->t('The organization receives the edited email.'),
+      ],
+      default => throw new \InvalidArgumentException('Unknown action ' . $action . '.'),
+    };
+    return ['#theme' => 'item_list', '#items' => $items];
   }
 
   /**
-   * Buils the mediate transition options.
+   * Builds the applicants to select for the mediation.
    */
-  protected function buildMediateOptions(ProjectInterface $project): array {
+  protected function buildApplicantOptions(ProjectInterface $project): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('user');
     foreach ($project->getApplicants() as $applicant) {
       $options[$applicant->uuid()] = $view_builder->view($applicant, 'option');
@@ -256,87 +184,14 @@ class ManagerContextPaneTransition extends ManagerContextPaneBase implements Man
   }
 
   /**
-   * Buils the complete transition users.
+   * Builds the participants that the completion mails.
    */
-  protected function buildCompleteUsers(ProjectInterface $project): array {
+  protected function buildParticipantUsers(ProjectInterface $project): array {
     $view_builder = $this->entityTypeManager->getViewBuilder('user');
-    foreach ($project->getParticipants('Creative') as $applicant) {
-      $users[$applicant->uuid()] = $view_builder->view($applicant, 'option');
+    foreach ($project->getParticipants('Creative') as $participant) {
+      $users[$participant->uuid()] = $view_builder->view($participant, 'option');
     }
     return $users ?? [];
-  }
-
-  /**
-   * Builds the mediate transition description.
-   */
-  protected function buildMediateDescription(ProjectInterface $project): array {
-    return [
-      '#markup' => '<ul>' .
-      '    <li>' . $this->t('This action will mediate the project.') . '</li>' .
-      '    <li>' . $this->t('The project will not appear in searches and will not be promoted anymore.') . '</li>' .
-      '    <li>' . $this->t('Each selected applicant receives an email from the organization.') . '</li>' .
-      '    <li>' . $this->t('The organization receives an email.') . '</li>' .
-      '  </ul>',
-    ];
-  }
-
-  /**
-   * Builds the submit transition description.
-   */
-  protected function buildSubmitDescription(ProjectInterface $project): array {
-    return [
-      '#markup' => '<ul>' .
-      '    <li>' . $this->t('This action will submit the project for review.') . '</li>' .
-      '    <li>' . $this->t('If the organization is a prospect, it will be promoted to a proper organization.') . '</li>' .
-      '    <li>' . $this->t('The organization receives a notification.') . '</li>' .
-      '  </ul>',
-    ];
-  }
-
-  /**
-   * Builds the publish transition description.
-   */
-  protected function buildPublishDescription(ProjectInterface $project): array {
-    return [
-      '#markup' => '<ul>' .
-      '    <li>' . $this->t('This action will publish the project.') . '</li>' .
-      '    <li>' . $this->t('The project will appear in searches and be visible to creatives.') . '</li>' .
-      '    <li>' . $this->t('Creatives can apply to the project.') . '</li>' .
-      '    <li>' . $this->t('The organization receives a notification.') . '</li>' .
-      '  </ul>',
-    ];
-  }
-
-  /**
-   * Builds the complete transition description.
-   */
-  protected function buildCompleteDescription(ProjectInterface $project): array {
-    return [
-      '#markup' => '<ul>' .
-      '    <li>' . $this->t('This action will complete the project.') . '</li>' .
-      '    <li>' . $this->t('The project will appear in searches.') . '</li>' .
-      '    <li>' . $this->t('Each selected participant receives an email from the organization.') . '</li>' .
-      '    <li>' . $this->t('The organization receives an email.') . '</li>' .
-      '  </ul>',
-    ];
-  }
-
-  /**
-   * Gets next transition assuming linear transition flow.
-   *
-   * This method does not validate whether the transition is possible.
-   *
-   * @return \Drupal\projects\ProjectTransition|null
-   *   The project transition or NULL if not applicable.
-   */
-  protected function getNextTransition(ProjectInterface $project): ?ProjectTransition {
-    return match (TRUE) {
-      $project->lifecycle()->isDraft() => ProjectTransition::Submit,
-      $project->lifecycle()->isPending() => ProjectTransition::Publish,
-      $project->lifecycle()->isOpen() => ProjectTransition::Mediate,
-      $project->lifecycle()->isOngoing() => ProjectTransition::Complete,
-      default => NULL,
-    };
   }
 
 }

@@ -16,7 +16,7 @@ tokens:
   -
     token: '%Author'
     required: 0
-detectable: false
+detectable: true
 observable: true
 public: false
 promote: false

@@ -8,6 +8,7 @@ use Drupal\Component\Utility\Random;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Flood\FloodInterface;
 use Drupal\organizations\Access\OrganizationFieldAccess;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationCreateEvent;
@@ -48,9 +49,29 @@ class OrganizationCreateResource extends ResourceBase {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The flood event of the proposals.
+   */
+  protected const string FLOOD_EVENT = 'organizations.create_prospect';
+
+  /**
+   * The number of proposals per IP address within the flood window.
+   */
+  protected const int FLOOD_THRESHOLD = 5;
+
+  /**
+   * The flood window in seconds.
+   */
+  protected const int FLOOD_WINDOW = 3600;
+
+  /**
    * The event dispatcher.
    */
   protected EventDispatcherInterface $eventDispatcher;
+
+  /**
+   * The flood service.
+   */
+  protected FloodInterface $flood;
 
   /**
    * {@inheritdoc}
@@ -60,6 +81,7 @@ class OrganizationCreateResource extends ResourceBase {
     $instance->emailValidator = $container->get('email.validator');
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->eventDispatcher = $container->get('event_dispatcher');
+    $instance->flood = $container->get('flood');
     return $instance;
   }
 
@@ -103,6 +125,13 @@ class OrganizationCreateResource extends ResourceBase {
    * Responds to POST requests.
    */
   public function post(Request $request): ResourceResponseInterface {
+
+    // Each request may mail an unverified address: limit them per IP. Count
+    // the request before any work, so parallel requests cannot all pass.
+    if (!$this->flood->isAllowed(static::FLOOD_EVENT, static::FLOOD_THRESHOLD, static::FLOOD_WINDOW)) {
+      return new ModifiedResourceResponse('Too many requests.', 429);
+    }
+    $this->flood->register(static::FLOOD_EVENT, static::FLOOD_WINDOW);
 
     try {
       // Create new organization user.

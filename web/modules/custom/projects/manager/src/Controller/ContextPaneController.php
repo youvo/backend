@@ -7,7 +7,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneViewInterface;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,7 +37,7 @@ class ContextPaneController implements ContainerInjectionInterface {
   /**
    * Returns the context pane for a project and type.
    *
-   * @param \Drupal\projects\Entity\Project $project
+   * @param \Drupal\projects\ProjectInterface $project
    *   The project entity (adjust namespace if needed).
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request object.
@@ -45,7 +45,7 @@ class ContextPaneController implements ContainerInjectionInterface {
    * @return \Symfony\Component\HttpFoundation\Response
    *   A context pane response.
    */
-  public function contextPane(Project $project, Request $request): Response {
+  public function contextPane(ProjectInterface $project, Request $request): Response {
 
     $type = $request->query->get('type', '');
     if (!$this->managerContextPanes->hasDefinition($type)) {

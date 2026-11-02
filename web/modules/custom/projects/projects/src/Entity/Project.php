@@ -28,6 +28,9 @@ use Drupal\user_types\Utility\Profile;
 /**
  * Defines the project entity class.
  *
+ * The published key (status) means active: an unpublished project is
+ * archived. Hidden projects are active, but not listed publicly.
+ *
  * @ContentEntityType(
  *   id = "project",
  *   label = @Translation("Project"),
@@ -50,7 +53,7 @@ use Drupal\user_types\Utility\Profile;
  *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *       "html" = "Drupal\projects\Routing\ProjectHtmlRouteProvider",
  *     },
  *    "views_data" = "Drupal\views\EntityViewsData"
  *   },
@@ -357,6 +360,42 @@ class Project extends ContentEntityBase implements ProjectInterface {
   /**
    * {@inheritdoc}
    */
+  public function isActive(): bool {
+    return $this->isPublished();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isArchived(): bool {
+    return !$this->isActive();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setArchived(bool $archived = TRUE): static {
+    return $archived ? $this->setUnpublished() : $this->setPublished();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isHidden(): bool {
+    return (bool) $this->get('hidden')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setHidden(bool $hidden = TRUE): static {
+    $this->set('hidden', $hidden);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isPromoted(): bool {
     return (bool) $this->get('promote')->value;
   }
@@ -431,7 +470,10 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ]);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Published'))
+      ->setLabel(t('Archive status'))
+      ->setDescription(t("Archived projects are offline: only supervisors and administrators can see them, and they don't transition."))
+      ->setSetting('on_label', t('Active'))
+      ->setSetting('off_label', t('Archived'))
       ->setTranslatable(FALSE)
       ->setDefaultValue(TRUE)
       ->setDisplayOptions('form', [
@@ -473,6 +515,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
         'weight' => 15,
       ]);
 
+    $fields['hidden'] = static::hiddenFieldDefinition();
+
     $fields['project_result'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Project Result'))
       ->setSetting('target_type', 'project_result')
@@ -500,6 +544,17 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setClass(UserIsManagerFieldItemList::class);
 
     return $fields;
+  }
+
+  /**
+   * Gets the definition of the hidden field, shared with the update hook.
+   */
+  public static function hiddenFieldDefinition(): BaseFieldDefinition {
+    return BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Hidden'))
+      ->setDescription(t('Hidden projects are not listed publicly and take no applications. The organization still sees them.'))
+      ->setTranslatable(FALSE)
+      ->setDefaultValue(FALSE);
   }
 
 }

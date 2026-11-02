@@ -61,7 +61,7 @@ class OrganizationEntityAccess {
     if (!$organization instanceof Organization) {
       return AccessResult::neutral();
     }
-    return AccessResult::allowedIf(in_array('manager', $account->getRoles(), TRUE));
+    return AccessResult::allowedIfHasPermission($account, 'general manager access');
   }
 
   /**

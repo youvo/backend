@@ -101,22 +101,20 @@ class ManagerMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * A subtype not offered in the state has no preview and is not sent.
+   * A subtype not offered in the state has no preview.
+   *
+   * Sending is guarded by the access check of the caller (ManagerMailAccess).
    */
   public function testWrongState(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
-    $mailer = $this->mailer();
-    $this->assertNull($mailer->preview($project, 'reminder_ongoing'));
-    $this->captureMails($mailer);
-    $this->assertFalse($mailer->send($project, 'reminder_ongoing', 'S', 'Text', $project->getOwner()->getManager()));
-    $this->assertCount(0, $this->capturedMails);
-    $this->assertSame([], $this->loadEntries($project->id()));
+    $this->assertNull($this->mailer()->preview($project, 'reminder_ongoing'));
   }
 
   /**
    * The edited text replaces the policy text and is recorded.
    */
   public function testSendEditedText(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $manager = $project->getOwner()->getManager();
     $mailer = $this->mailer();

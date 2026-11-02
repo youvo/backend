@@ -68,6 +68,7 @@ class CorrespondenceRenderTest extends ProjectEventSubscriberTestBase {
    * Stored bodies are filtered when rendered; notes are escaped plain text.
    */
   public function testRenderIsSafe(): void {
+
     $html = $this->renderEntry($this->createMail('<p onclick="x()">Hi</p><script>alert(1)</script><a href="javascript:alert(1)">b</a>'));
     $this->assertStringContainsString('Hi', $html);
     $this->assertStringNotContainsString('<script', $html);

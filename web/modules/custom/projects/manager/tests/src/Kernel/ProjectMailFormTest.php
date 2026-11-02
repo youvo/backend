@@ -31,6 +31,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * The form is prefilled from the preview and sending records a manager mail.
    */
   public function testPrefillAndSend(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $manager = $project->getOwner()->getManager();
     $this->container->get('current_user')->setAccount($manager);
@@ -102,6 +103,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * A retry with a working transport sends and records a sent entry.
    */
   public function testFailedSendKeepsTextAndAllowsRetry(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $this->useFailingTransport();
@@ -140,6 +142,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * state; replayed requests are rejected by Drupal's form cache.
    */
   public function testSendHappensOnceInSubmit(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $form_object = ProjectMailForm::create($this->container);
@@ -163,6 +166,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * A later validator that fails prevents the send.
    */
   public function testLaterValidatorFailureSendsNothing(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $form_object = new class($this->container->get(ManagerMailerInterface::class), $this->container->get('mailer.late_tokens'), $this->container->get('mailer.manager_mail_access'), $this->container->get('entity_type.manager'), $this->container->get('manager.form_once')) extends ProjectMailForm {
@@ -189,6 +193,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * not be mailed.
    */
   public function testStaleProjectSendsNothing(): void {
+
     // User 1 bypasses all permission checks: use it up.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -243,6 +248,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * A subtype that is not offered shows no fields and sends nothing.
    */
   public function testUnavailablePreviewDoesNotSend(): void {
+
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->container->get('current_user')->setAccount($project->getOwner()->getManager());
     $form_object = ProjectMailForm::create($this->container);
@@ -260,6 +266,7 @@ class ProjectMailFormTest extends MailerKernelTestBase {
    * Mail access goes to the assigned manager in an offered state only.
    */
   public function testMailAccess(): void {
+
     // User 1 bypasses all permission checks, so do not let the manager be it.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Draft);

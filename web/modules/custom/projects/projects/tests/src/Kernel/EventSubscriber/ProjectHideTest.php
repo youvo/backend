@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectHideEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectHideSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -23,16 +24,39 @@ class ProjectHideTest extends ProjectEventSubscriberTestBase {
 
     $project = $this->createProject(ProjectState::Open);
     $project->setPromoted(TRUE);
-    $project->setPublished();
     $project->save();
     $this->assertTrue($project->isPromoted());
-    $this->assertTrue($project->isPublished());
+    $this->assertFalse($project->isHidden());
 
     $event = new ProjectHideEvent($project);
     $this->eventDispatcher->dispatch($event);
 
     $this->assertFalse($project->isPromoted());
-    $this->assertFalse($project->isPublished());
+    $this->assertTrue($project->isHidden());
+    $this->assertFalse($project->isArchived());
+  }
+
+  /**
+   * Tests that archived projects can not be hidden.
+   */
+  public function testProjectHideArchived(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $project->setArchived();
+
+    $this->expectException(ProjectActionException::class);
+    $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
+  }
+
+  /**
+   * Tests that declined projects can not be hidden.
+   */
+  public function testProjectHideDeclined(): void {
+
+    $project = $this->createProject(ProjectState::Declined);
+
+    $this->expectException(ProjectActionException::class);
+    $this->eventDispatcher->dispatch(new ProjectHideEvent($project));
   }
 
 }

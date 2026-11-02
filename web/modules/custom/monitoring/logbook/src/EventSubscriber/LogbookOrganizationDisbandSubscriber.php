@@ -9,7 +9,7 @@ use Drupal\organizations\Event\OrganizationDisbandEvent;
  */
 class LogbookOrganizationDisbandSubscriber extends LogbookOrganizationManageSubscriber {
 
-  const EVENT_CLASS = OrganizationDisbandEvent::class;
-  const LOG_PATTERN = 'organization_disband';
+  const string EVENT_CLASS = OrganizationDisbandEvent::class;
+  const string LOG_PATTERN = 'organization_disband';
 
 }

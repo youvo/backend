@@ -4,6 +4,7 @@ namespace Drupal\Tests\mailer\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\mailer\Manager\ManagerMailRegistry;
+use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectState;
 
@@ -69,6 +70,7 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
    * Decline mails are offered for submitted or prospect projects only.
    */
   public function testDeclineMailsByState(): void {
+
     $registry = $this->container->get('mailer.manager_mail_registry');
     $subtypes = static fn (array $definitions) => array_map(static fn ($d) => $d->subtype, $definitions);
 
@@ -119,6 +121,52 @@ class ManagerMailRegistryTest extends MailerKernelTestBase {
       $this->assertStringContainsString('{{ manager }}', $body, $file);
       $this->assertStringNotContainsString('%Kontakt', $body, $file);
       $this->assertStringNotContainsString('%Manager', $body, $file);
+    }
+  }
+
+  /**
+   * Archive mails are offered for active open, ongoing and completed projects.
+   */
+  public function testArchiveMailsByState(): void {
+
+    $registry = $this->container->get('mailer.manager_mail_registry');
+    foreach (ProjectState::cases() as $state) {
+      $project = $this->createProject($state);
+      $project->save();
+      $archives = $registry->availableArchives($project);
+      $offered = in_array($state, ManagerMailRegistry::ARCHIVE_MAIL_STATES, TRUE);
+      $this->assertCount($offered ? 3 : 0, $archives, $state->value);
+      $this->assertSame($offered, $registry->find($project, 'archive_external') !== NULL, $state->value);
+      $this->assertNotContains('archive_custom', array_map(static fn ($d) => $d->subtype, $registry->available($project)));
+    }
+
+    $project = $this->createProject(ProjectState::Open);
+    $project->setArchived()->save();
+    $this->assertSame([], $registry->availableArchives($project));
+  }
+
+  /**
+   * The archive subtype maps to its reason and back.
+   */
+  public function testArchiveSubtypeRoundTrip(): void {
+    foreach (ProjectArchiveReason::cases() as $reason) {
+      $this->assertSame($reason, ManagerMailRegistry::archiveReason(ManagerMailRegistry::archiveSubtype($reason)));
+    }
+    $this->assertNull(ManagerMailRegistry::archiveReason('decline_custom'));
+  }
+
+  /**
+   * Every archive policy has the shared subject and the contact variables.
+   */
+  public function testArchivePolicySubjects(): void {
+    $files = glob(DRUPAL_ROOT . '/../config/sync/mailer_policy.mailer_policy.mailer.manager.archive_*.yml');
+    $this->assertCount(count(ProjectArchiveReason::cases()), $files);
+    foreach ($files as $file) {
+      $values = Yaml::decode((string) file_get_contents($file));
+      $this->assertSame('Euer Projekt „{{ project_title }}“ auf youvo.org', $values['configuration']['email_subject']['value'], $file);
+      $body = $values['configuration']['email_body']['content']['value'];
+      $this->assertStringContainsString('{{ contact }}', $body, $file);
+      $this->assertStringContainsString('{{ manager }}', $body, $file);
     }
   }
 

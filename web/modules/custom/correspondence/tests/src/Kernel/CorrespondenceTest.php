@@ -94,6 +94,7 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
    * Viewing requires the view permission and the assigned manager.
    */
   public function testViewAccess(): void {
+
     $entry = $this->createEntry();
     // Everyone may view an open project, but not its correspondence.
     $project_only = $this->createUser();
@@ -124,6 +125,7 @@ class CorrespondenceTest extends ProjectEventSubscriberTestBase {
    * Update, delete and create require the administer permission.
    */
   public function testAdministerAccess(): void {
+
     $entry = $this->createEntry();
     $viewer = $this->createUser(['view correspondence']);
     $admin = $this->createUser(['administer correspondence']);

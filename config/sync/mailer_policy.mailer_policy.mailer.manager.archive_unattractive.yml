@@ -1,0 +1,14 @@
+uuid: 40a3e542-0630-4c0b-a2a8-6a00b0995729
+langcode: de
+status: true
+dependencies:
+  module:
+    - mailer
+id: mailer.manager.archive_unattractive
+configuration:
+  email_subject:
+    value: 'Euer Projekt „{{ project_title }}“ auf youvo.org'
+  email_body:
+    content:
+      value: '<p>Hallo {{ contact }},</p><p>leider hat sich für Euer Projekt „{{ project_title }}“ bisher keine passende Unterstützung gefunden. Wir haben es deshalb archiviert; es ist nicht mehr online und nimmt keine Bewerbungen mehr an.</p><p>Oft hilft es, ein Projekt kleiner zu schneiden oder die Aufgabe konkreter zu beschreiben. Wenn Ihr es mit einem überarbeiteten Vorschlag noch einmal versuchen möchtet, unterstützen wir Euch gern dabei.</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      format: email_html

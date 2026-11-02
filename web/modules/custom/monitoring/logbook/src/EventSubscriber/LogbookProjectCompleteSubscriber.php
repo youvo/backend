@@ -10,8 +10,8 @@ use Drupal\projects\Event\ProjectCompleteEvent;
  */
 class LogbookProjectCompleteSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectCompleteEvent::class;
-  const LOG_PATTERN = 'project_complete';
+  const string EVENT_CLASS = ProjectCompleteEvent::class;
+  const string LOG_PATTERN = 'project_complete';
 
   /**
    * {@inheritdoc}

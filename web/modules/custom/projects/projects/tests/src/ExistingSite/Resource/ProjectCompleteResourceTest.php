@@ -67,6 +67,21 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests the project complete resource - malformed bodies answer 400.
+   */
+  public function testProjectCompleteMalformed(): void {
+    $project = $this->createProject(ProjectState::Ongoing);
+    $project->appendParticipant($this->createCreative());
+    $project->save();
+    foreach (['"x"', '{"results":"x"}', '{"results":["x"]}'] as $body) {
+      $request = Request::create('/api/projects/' . $project->uuid() . '/complete', 'POST', [], [], [], [], $body);
+      $request->headers->set('Content-Type', 'application/json');
+      $this->authenticateRequest($request, $project->getOwner());
+      $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
+    }
+  }
+
+  /**
    * Tests the project complete resource - manager.
    *
    * @covers ::access
@@ -215,14 +230,14 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project complete resource - not published (status).
+   * Tests the project complete resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectCompleteNotPublished(): void {
+  public function testProjectCompleteArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $organization = $project->getOwner();
 
@@ -233,7 +248,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this transition are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

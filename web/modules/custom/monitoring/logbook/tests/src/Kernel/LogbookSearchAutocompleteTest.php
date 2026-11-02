@@ -47,6 +47,7 @@ class LogbookSearchAutocompleteTest extends LogbookKernelTestBase {
    * The typed text comes first, then people, organizations and projects.
    */
   public function testMatchesUsersOrganizationsAndProjects(): void {
+
     $creative = $this->createNamedCreative('Anna Berg');
     $organization = $this->createNamedOrganization('Berg e.V.');
     $project = $this->createLogbookProject('Bergwanderung');

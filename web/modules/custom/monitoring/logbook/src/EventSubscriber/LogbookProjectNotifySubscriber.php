@@ -10,8 +10,8 @@ use Drupal\projects\Event\ProjectNotifyEvent;
  */
 class LogbookProjectNotifySubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = ProjectNotifyEvent::class;
-  const LOG_PATTERN = 'project_notify';
+  const string EVENT_CLASS = ProjectNotifyEvent::class;
+  const string LOG_PATTERN = 'project_notify';
 
   /**
    * {@inheritdoc}

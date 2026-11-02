@@ -7,7 +7,7 @@ use Drupal\correspondence\Entity\Correspondence;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\Entity\LogPattern;
 use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneLogbook;
-use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\mailer\Kernel\MailerKernelTestBase;
 use Drupal\user\Entity\User;
@@ -51,7 +51,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   /**
    * Creates a log entry of the project.
    */
-  protected function createLog(Project $project, int $created): Log {
+  protected function createLog(ProjectInterface $project, int $created): Log {
     $log = Log::create(['type' => 'project_create', 'project' => $project->id(), 'created' => $created]);
     $log->save();
     return $log;
@@ -60,7 +60,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   /**
    * Creates a correspondence entry.
    */
-  protected function createEntry(Project $project, string $type, int $occurred, string $subject): Correspondence {
+  protected function createEntry(ProjectInterface $project, string $type, int $occurred, string $subject): Correspondence {
     $entry = Correspondence::create([
       'type' => $type,
       'project' => $project->id(),
@@ -82,10 +82,10 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Logs, mails and notes are merged newest first.
    */
   public function testMergedOrder(): void {
+
     // User 1 bypasses permission checks: use it up.
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $permissions = ['view correspondence', 'view observable log', 'access content'];
     $manager = $this->accountWith($project->getOwner()->getManager(), $permissions);
     $this->createLog($project, 1000);
@@ -115,8 +115,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   public function testDeterministicTieBreak(): void {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
-    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
     $this->createLog($project, 5000);
     $mail = $this->createEntry($project, 'mail', 5000, 'mail');
     $first = $this->createEntry($project, 'note', 5000, 'first');
@@ -130,13 +129,42 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   }
 
   /**
+   * Logs follow the log access: archived logs need the permission.
+   */
+  public function testLogsFollowLogAccess(): void {
+
+    $this->createMailableCreative('Root');
+    $project = $this->createMailableProject(ProjectState::Open);
+    $active = $this->createLog($project, 1000);
+    $archived = $this->createLog($project, 2000)->setArchived();
+    $archived->save();
+    $logs = static fn (array $rows): array => array_map(
+      static fn (array $row): int => (int) $row['build']['#log']->id(),
+      array_values(array_filter($rows, static fn (array $row): bool => $row['type'] === 'log')),
+    );
+    $builder = $this->container->get('manager.timeline_builder');
+
+    // The manager of the organization sees the active log only.
+    $manager = $this->accountWith($project->getOwner()->getManager(), ['view observable log']);
+    $this->assertSame([(int) $active->id()], $logs($builder->build($project, $manager)));
+
+    // Without a log permission, no log is shown.
+    $other = $this->accountWith($this->createMailableCreative('Other'), ['view correspondence']);
+    $this->assertSame([], $logs($builder->build($project, $other)));
+
+    // Supervisors see the archived log as well.
+    $permissions = ['view detectable log', 'view archived log'];
+    $supervisor = $this->accountWith($this->createMailableCreative('Super'), $permissions);
+    $this->assertSame([(int) $archived->id(), (int) $active->id()], $logs($builder->build($project, $supervisor)));
+  }
+
+  /**
    * The assigned manager sees mails and notes of unpublished projects.
    */
   public function testManagerSeesEntriesOfUnpublishedProjects(): void {
     $this->createMailableCreative('Root');
     foreach ([ProjectState::Draft, ProjectState::Pending] as $state) {
       $project = $this->createMailableProject($state);
-      $this->assertInstanceOf(Project::class, $project);
       $this->createEntry($project, 'mail', 2000, 'M');
       $this->createEntry($project, 'note', 3000, 'N');
       $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence']);
@@ -152,9 +180,9 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Mails and notes are only listed for those who may view them.
    */
   public function testHidesEntriesWithoutAccess(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $this->createLog($project, 1000);
     $this->createEntry($project, 'mail', 2000, 'M');
     $this->createEntry($project, 'note', 3000, 'N');
@@ -194,7 +222,6 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   public function testLogbookPane(): void {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
     $this->container->get('current_user')->setAccount($manager);
     $this->createLog($project, 1000);
@@ -212,10 +239,10 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * The rendered timeline is cached and invalidated by changes of the project.
    */
   public function testTimelineIsRenderCached(): void {
+
     $this->installEntitySchema('log_text');
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
     $this->container->get('current_user')->setAccount($manager);
     $note = $this->createEntry($project, 'note', 3000, 'First');
@@ -245,8 +272,7 @@ class TimelineBuilderTest extends MailerKernelTestBase {
     $this->assertStringContainsString('Sneaky', $html);
 
     // So does a new log, and the timeline of another project is kept.
-    $other = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $other);
+    $this->createMailableProject(ProjectState::Open);
     $this->createLog($project, 5000);
     $this->assertSame(substr_count($html, 'data-row-key'), substr_count($render(), 'data-row-key') - 1);
 
@@ -261,7 +287,6 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   public function testTimelineCacheVariesByUser(): void {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $manager = $this->accountWith($project->getOwner()->getManager(), ['view correspondence', 'view observable log']);
     $this->createEntry($project, 'note', 3000, 'Visible');
     $render = function () use ($project): string {
@@ -285,9 +310,9 @@ class TimelineBuilderTest extends MailerKernelTestBase {
    * Notes get edit and delete links for those who may manage them.
    */
   public function testNoteActions(): void {
+
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $mail = $this->createEntry($project, 'mail', 2000, 'M');
     $note = $this->createEntry($project, 'note', 3000, 'N');
     $builder = $this->container->get('manager.timeline_builder');
@@ -331,7 +356,6 @@ class TimelineBuilderTest extends MailerKernelTestBase {
   public function testPaneRendersNoteActions(): void {
     $this->createMailableCreative('Root');
     $project = $this->createMailableProject(ProjectState::Open);
-    $this->assertInstanceOf(Project::class, $project);
     $note = $this->createEntry($project, 'note', 3000, 'N');
     $this->createEntry($project, 'mail', 2000, 'M');
     $permissions = ['view correspondence', 'manage correspondence notes'];

@@ -6,8 +6,12 @@ use Drupal\projects\ProjectDeclineReason;
 
 /**
  * Defines a project decline event.
+ *
+ * Carries the reason and the edited mail.
  */
 class ProjectDeclineEvent extends ProjectEventBase {
+
+  use ProjectMailEventTrait;
 
   /**
    * The reason for declining the project.

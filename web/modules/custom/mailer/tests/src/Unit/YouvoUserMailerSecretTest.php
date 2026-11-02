@@ -18,6 +18,7 @@ class YouvoUserMailerSecretTest extends UnitTestCase {
    * The one-time link is passed to deliver() as a secret.
    */
   public function testRegisterCreativePassesLinkAsSecret(): void {
+
     $email = $this->createMock(EmailInterface::class);
     $email->method('setVariables')->willReturnSelf();
     $creative = $this->createMock(Creative::class);

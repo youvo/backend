@@ -9,7 +9,7 @@ use Drupal\projects\Event\ProjectDemoteEvent;
  */
 class LogbookProjectDemoteSubscriber extends LogbookProjectNotifySubscriber {
 
-  const EVENT_CLASS = ProjectDemoteEvent::class;
-  const LOG_PATTERN = 'project_demote';
+  const string EVENT_CLASS = ProjectDemoteEvent::class;
+  const string LOG_PATTERN = 'project_demote';
 
 }

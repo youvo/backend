@@ -53,7 +53,22 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"Application completed."', $response->getContent());
+    $this->assertEquals('"Project applied."', $response->getContent());
+  }
+
+  /**
+   * Tests the project apply resource - malformed bodies answer 400.
+   */
+  public function testProjectApplyMalformed(): void {
+    $project = $this->createProject(ProjectState::Open);
+    $creative = $this->createCreative();
+    foreach (['"x"', '{"message":["x"]}', '{"phone":1}'] as $body) {
+      $request = Request::create('/api/projects/' . $project->uuid() . '/apply', 'POST', [], [], [], [], $body);
+      $request->headers->set('Content-Type', 'application/json');
+      $this->authenticateRequest($request, $creative);
+      $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
+    }
+    $this->assertFalse($project->isApplicant($creative));
   }
 
   /**
@@ -119,14 +134,34 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project apply resource - not published (status).
+   * Tests the project apply resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectApplyNotPublished(): void {
+  public function testProjectApplyArchived(): void {
 
     $project = $this->createProject(ProjectState::Open);
-    $project->setUnpublished();
+    $project->setArchived();
+    $project->save();
+    $creative = $this->createCreative();
+
+    $path = '/api/projects/' . $project->uuid() . '/apply';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $creative);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project is archived.', $response->getContent());
+  }
+
+  /**
+   * Tests the for the project apply resource - hidden project.
+   */
+  public function testProjectApplyHidden(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $project->setHidden();
     $project->save();
     $creative = $this->createCreative();
 

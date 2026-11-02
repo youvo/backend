@@ -1,3 +1,7 @@
+administer feedback:
+  title: 'Administer feedback'
+  description: 'View all feedback. Only the author edits it.'
+  restrict access: true
 administer feedback types:
   title: 'Administer feedback types'
   description: 'Maintain the types of feedback entity.'

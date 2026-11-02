@@ -13,19 +13,8 @@ use Drupal\projects\ProjectInterface;
 
 /**
  * Access handler for project entities.
- *
- * @todo Translate role checks to permission checks and adjust caching, when
- *   dust has settled.
  */
 class ProjectEntityAccess extends EntityAccessControlHandler {
-
-  /**
-   * The cache contexts for the roles that skip the access checks.
-   */
-  private const array BYPASS_ROLE_CONTEXTS = [
-    'user.roles:supervisor',
-    'user.roles:administrator',
-  ];
 
   /**
    * {@inheritdoc}
@@ -42,71 +31,62 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       throw new AccessException('The ProjectEntityAccess was called by an entity that is not a Project.');
     }
 
-    // Administrators and supervisors skip access checks.
+    // Archived projects are read-only, except for administrators.
     if (
-      in_array('supervisor', $account->getRoles(), TRUE) ||
-      in_array('administrator', $account->getRoles(), TRUE)
+      ($operation === 'edit' || $operation === 'update') &&
+      $entity->isArchived() &&
+      !$account->hasPermission('access project admin forms')
     ) {
-      return AccessResult::allowed()->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
-    }
-
-    // Unpublished projects are not accessible.
-    // @todo Negotiate access handling in relation to hidden field.
-    if (!$entity->isPublished()) {
       return AccessResult::forbidden()
         ->addCacheableDependency($entity)
-        ->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
+        ->cachePerPermissions();
     }
 
-    // @todo Respect permissions when dust has settled.
-    // Note that the access is governed by the related permissions. Therefore,
-    // one should check the permissions first that are handled in the parent
-    // method. Then, we revoke access depending on the status of the project.
-    $access_result = AccessResult::neutral()
-      ->addCacheableDependency($entity)
-      ->addCacheContexts(self::BYPASS_ROLE_CONTEXTS);
-
-    // Check access for edit action.
-    if ($operation === 'view') {
-      $access_result = $this->checkViewAccess($entity, $account);
+    // Administrators skip the access checks.
+    $admin_permission = $operation === 'delete' ? 'delete any project' : 'administer projects';
+    if ($account->hasPermission($admin_permission)) {
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
-    // Check access for edit action.
-    if ($operation === 'edit' || $operation === 'update') {
-      $access_result = $this->checkEditAccess($entity, $account);
+    // Archived projects are not accessible.
+    if ($entity->isArchived()) {
+      return AccessResult::forbidden()
+        ->addCacheableDependency($entity)
+        ->cachePerPermissions();
     }
 
-    // Check access for delete action.
-    if ($operation === 'delete') {
-      $access_result = $this->checkDeleteAccess($entity, $account);
-    }
+    $access_result = match ($operation) {
+      'view' => $this->checkViewAccess($entity, $account),
+      'edit', 'update' => $this->checkEditAccess($entity, $account),
+      'delete' => $this->checkDeleteAccess($entity, $account),
+      default => AccessResult::neutral()->addCacheableDependency($entity),
+    };
 
-    return $access_result;
+    return $access_result->cachePerPermissions();
   }
 
   /**
    * Helps to check access for view operation.
    */
-  private function checkViewAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
+  protected function checkViewAccess(ProjectInterface $project, AccountInterface $account): AccessResult {
 
     $organization = $project->getOwner();
 
     // Managers can view draft projects of organizations without managers.
     if (
       !$organization->hasManager() &&
-      in_array('manager', $account->getRoles(), TRUE) &&
+      $account->hasPermission('general manager access') &&
       $project->lifecycle()->isDraft()
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($organization)
-        ->addCacheableDependency($project)
-        ->cachePerUser();
+        ->addCacheableDependency($project);
     }
 
     // Managers of the organization can view the project in any state.
     if (
-      $organization->isManager($account) &&
-      in_array('manager', $account->getRoles(), TRUE)
+      $account->hasPermission('general manager access') &&
+      $organization->isManager($account)
     ) {
       return AccessResult::allowed()
         ->addCacheableDependency($organization)
@@ -121,11 +101,22 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
         ->cachePerUser();
     }
 
-    // Others can only view open, mediated or completed projects.
+    // Logged-in users can view open, mediated or completed projects, also
+    // hidden ones by link.
     if (
-      $project->lifecycle()->isOpen() ||
+      $account->hasPermission('view project') &&
+      ($project->lifecycle()->isOpen() ||
       $project->lifecycle()->isOngoing() ||
-      $project->lifecycle()->isCompleted()
+      $project->lifecycle()->isCompleted())
+    ) {
+      return AccessResult::allowed()->addCacheableDependency($project);
+    }
+
+    // Others can only view open or completed projects that are not hidden.
+    if (
+      !$project->isHidden() &&
+      ($project->lifecycle()->isOpen() ||
+      $project->lifecycle()->isCompleted())
     ) {
       return AccessResult::allowed()->addCacheableDependency($project);
     }
@@ -139,11 +130,11 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * Helps to check access for edit operation.
    */
-  private function checkEditAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
+  protected function checkEditAccess(ProjectInterface $project, AccountInterface $account): AccessResult {
 
     // Managers of the organization can edit the project.
     if (
-      in_array('manager', $account->getRoles(), TRUE) &&
+      $account->hasPermission('general manager access') &&
       $project->getOwner()->isManager($account)
     ) {
       return AccessResult::allowed()
@@ -154,6 +145,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
 
     // The organization can only edit draft, pending or open projects.
     if (
+      $account->hasPermission('update own project') &&
       $project->isAuthor($account) &&
       ($project->lifecycle()->isDraft() ||
       $project->lifecycle()->isPending() ||
@@ -173,21 +165,11 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
   /**
    * Helps to check access for delete operation.
    */
-  private function checkDeleteAccess(ProjectInterface $project, AccountInterface $account): AccessResultInterface {
+  protected function checkDeleteAccess(ProjectInterface $project, AccountInterface $account): AccessResult {
 
-    // Managers of the organization can delete the project.
+    // The organization can only delete draft or pending projects.
     if (
-      in_array('manager', $account->getRoles(), TRUE) &&
-      $project->getOwner()->isManager($account)
-    ) {
-      return AccessResult::allowed()
-        ->addCacheableDependency($project->getOwner())
-        ->addCacheableDependency($project)
-        ->cachePerUser();
-    }
-
-    // The organization can only delete pending or draft projects.
-    if (
+      $account->hasPermission('delete own project') &&
       $project->isAuthor($account) &&
       ($project->lifecycle()->isPending() ||
       $project->lifecycle()->isDraft())
@@ -198,7 +180,6 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     }
 
     return AccessResult::neutral()
-      ->addCacheableDependency($project->getOwner())
       ->addCacheableDependency($project)
       ->cachePerUser();
   }
@@ -208,18 +189,12 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL): AccessResultInterface {
 
-    // Organizations, Manager, Supervisors and Administrators can create
-    // projects.
-    if (
-      in_array('organization', $account->getRoles(), TRUE) ||
-      in_array('manager', $account->getRoles(), TRUE) ||
-      in_array('supervisor', $account->getRoles(), TRUE) ||
-      in_array('administrator', $account->getRoles(), TRUE)
-    ) {
-      return AccessResult::allowed()->addCacheContexts(['user.roles']);
+    // Administrators skip the access checks.
+    if ($account->hasPermission('administer projects')) {
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
-    return AccessResult::neutral()->addCacheContexts(['user.roles']);
+    return AccessResult::allowedIfHasPermission($account, 'create project');
   }
 
 }

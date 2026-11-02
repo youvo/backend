@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectPromoteEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectPromoteSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -40,8 +41,25 @@ class ProjectPromoteTest extends ProjectEventSubscriberTestBase {
     $project = $this->createProject(ProjectState::Declined);
     $project->setPromoted(FALSE);
 
-    $this->expectException(\LogicException::class);
+    $this->expectException(ProjectActionException::class);
     $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
+  }
+
+  /**
+   * Tests that hidden and archived projects can not be promoted.
+   */
+  public function testProjectPromoteHiddenOrArchived(): void {
+    foreach (['hidden', 'archived'] as $flag) {
+      $project = $this->createProject(ProjectState::Open);
+      $flag === 'hidden' ? $project->setHidden() : $project->setArchived();
+      try {
+        $this->eventDispatcher->dispatch(new ProjectPromoteEvent($project));
+        $this->fail("A $flag project was promoted.");
+      }
+      catch (ProjectActionException) {
+        $this->assertFalse($project->isPromoted(), $flag);
+      }
+    }
   }
 
 }

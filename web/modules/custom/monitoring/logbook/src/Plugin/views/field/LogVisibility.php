@@ -14,7 +14,9 @@ use Drupal\views\ResultRow;
  * Shows who can see a log as an icon.
  *
  * A lock for internal logs, a globe for public ones and a star for promoted
- * ones, which are public as well.
+ * ones, which are public as well. Archived logs only show the archive icon:
+ * only supervisors and administrators see them, whatever the pattern allows.
+ * A crossed eye replaces the globe while the project is hidden.
  */
 #[ViewsField('log_visibility')]
 class LogVisibility extends FieldPluginBase {
@@ -35,10 +37,17 @@ class LogVisibility extends FieldPluginBase {
       return '';
     }
     $pattern = $log->getPattern();
-    // One icon: a promoted log is public by definition, so the star stands for
-    // both and the globe would be redundant.
-    if (!$pattern->isPublic()) {
+    // One icon: an archived log is only visible to supervisors and
+    // administrators, whatever the pattern allows. A promoted log is public by
+    // definition, so the star stands for both and the globe would be redundant.
+    if ($log->isArchived()) {
+      $icon = $this->icon('archive', $this->t('Archived: only supervisors and administrators'));
+    }
+    elseif (!$pattern->isPublic()) {
       $icon = $this->icon('lock', $this->t('Internal: only managers of the organization'));
+    }
+    elseif ($log->getProject()?->isHidden()) {
+      $icon = $this->icon('hidden', $this->t('Hidden project: not public while the project is hidden'));
     }
     elseif ($pattern->isPromoted()) {
       $icon = $this->icon('star', $this->t('Public and promoted: highlighted in the site-wide logbook'));

@@ -9,6 +9,7 @@ use Drupal\Core\Routing\AdminContext;
 use Drupal\Core\Site\Settings;
 use Drupal\manager\ManagerContextPanes;
 use Drupal\manager\ManagerRules;
+use Drupal\manager\Plugin\ManagerContextPane\ManagerContextPaneActionInterface;
 use Drupal\manager\Plugin\ManagerRule\RuleSeverity;
 use Drupal\manager\ProjectSeenTracker;
 use Drupal\manager\Timeline\TimelineBuilder;
@@ -43,6 +44,7 @@ class ManagerHooks {
       'manager_project_note_form',
       'manager_project_mail_form',
       'manager_project_decline_form',
+      'manager_project_archive_form',
     ];
   }
 
@@ -98,9 +100,16 @@ class ManagerHooks {
         'base hook' => 'context_pane',
       ];
     }
-    // The decline view of the transition pane.
+    // The action panes share one template, so do their mail editors.
+    $hooks['context_pane__edit']['template'] = 'context-pane--actions';
+    $hooks['context_pane__transition']['template'] = 'context-pane--actions';
     $hooks['context_pane__decline'] = [
       'base hook' => 'context_pane',
+      'template' => 'context-pane--mail-action',
+    ];
+    $hooks['context_pane__archive'] = [
+      'base hook' => 'context_pane',
+      'template' => 'context-pane--mail-action',
     ];
 
     return $hooks;
@@ -152,6 +161,14 @@ class ManagerHooks {
   public function viewsPreRender(ViewExecutable $view): void {
     if ($view->id() === 'project_manager') {
       $view->element['#attached']['library'][] = 'manager/core';
+      // The pane triggers depend on whether the user manages the organization,
+      // so they also follow the organizations of the listed projects.
+      $view->element['#cache']['contexts'][] = 'user';
+      foreach ($view->result as $row) {
+        if ($row->_entity instanceof ProjectInterface) {
+          $view->element['#cache']['tags'] = Cache::mergeTags($view->element['#cache']['tags'] ?? [], $row->_entity->getOwner()->getCacheTags());
+        }
+      }
     }
   }
 
@@ -160,6 +177,7 @@ class ManagerHooks {
    */
   #[Hook('preprocess_views_view_table')]
   public function preprocessViewsViewTable(array &$variables): void {
+
     if ($variables['view']->id() !== 'project_manager') {
       return;
     }
@@ -179,17 +197,15 @@ class ManagerHooks {
           }
         }
 
-        if ($project->lifecycle()->isCompleted() || $project->lifecycle()->isDeclined()) {
-          $action_transition = &$row['columns']['nothing_2'];
-          $action_transition['attributes']->offsetUnset('class');
-          unset($action_transition['content']);
-        }
-
-        // Promote and demote are not available for declined projects.
-        if ($project->lifecycle()->isDeclined()) {
-          $action_edit = &$row['columns']['nothing_3'];
-          $action_edit['attributes']->offsetUnset('class');
-          unset($action_edit['content']);
+        // A pane trigger only shows if the pane offers the user an action.
+        foreach (['nothing_2' => 'transition', 'nothing_3' => 'edit'] as $column => $pane) {
+          $instance = $this->managerContextPanes->createInstance($pane);
+          if ($instance instanceof ManagerContextPaneActionInterface && !$instance->hasActions($project)) {
+            $trigger = &$row['columns'][$column];
+            $trigger['attributes']->offsetUnset('class');
+            unset($trigger['content']);
+            unset($trigger);
+          }
         }
       }
 

@@ -7,6 +7,7 @@ use Drupal\projects\Access\ProjectFieldAccess;
 use Drupal\projects\Event\ProjectDeclineEvent;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\Kernel\EventSubscriber\ProjectEventSubscriberTestBase;
+use Drupal\user\Entity\Role;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -22,10 +23,21 @@ class ProjectDeclineAccessTest extends ProjectEventSubscriberTestBase {
   /**
    * {@inheritdoc}
    */
+  protected static $modules = [
+    'system',
+    'user_types',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     // The first user bypasses all permissions. Create it up front.
     $this->createCreative();
+    Role::create(['id' => 'manager', 'label' => 'Manager'])
+      ->grantPermission('general manager access')
+      ->save();
   }
 
   /**
@@ -73,6 +85,7 @@ class ProjectDeclineAccessTest extends ProjectEventSubscriberTestBase {
    */
   #[DataProvider('applicantsAndParticipantsProvider')]
   public function testDeclinedHidesApplicantFields(string $field_name): void {
+
     $project = $this->createProject(ProjectState::Declined);
     $organization = $project->getOwner();
     $field = $project->getFieldDefinition($field_name);

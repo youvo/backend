@@ -10,6 +10,7 @@ use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectSubmitEvent;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
@@ -28,27 +29,33 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectSubmitResource extends ProjectTransitionResourceBase {
+class ProjectSubmitResource extends ProjectResourceBase {
 
   /**
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
+    // Archived projects don't transition, also not for administrators.
+    if ($project->isArchived()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // The user may be permitted to bypass access control.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    if ($account->hasPermission($bybass_permission)) {
-      return AccessResult::allowed()->cachePerPermissions();
+    if ($account->hasPermission(WorkflowPermissions::bypassTransition($workflow_id))) {
+      return AccessResult::allowed()
+        ->addCacheableDependency($project)
+        ->cachePerPermissions();
     }
 
     // The user requires the permission to initiate this transition.
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Submit->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    // The resource should define project-dependent access conditions.
-    $project_condition = $project->isPublished() && $project->isAuthor($account);
-    $access_project = AccessResult::allowedIf($project_condition)
+    // Only the author submits the project.
+    $access_project = AccessResult::allowedIf($project->isAuthor($account))
       ->addCacheableDependency($project)
       ->cachePerUser();
     if ($access_project instanceof AccessResultReasonInterface) {
@@ -62,6 +69,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
    * Responds to POST requests.
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
+
     try {
       $this->eventDispatcher->dispatch(new ProjectSubmitEvent($project));
     }
@@ -72,6 +80,7 @@ class ProjectSubmitResource extends ProjectTransitionResourceBase {
       $variables = Error::decodeException($e);
       $this->logger->error('Project submit failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
+
     return new ModifiedResourceResponse('Project submitted.');
   }
 

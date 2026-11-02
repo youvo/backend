@@ -8,7 +8,7 @@ const SELECTORS = {
   contextPane: '.context-pane',
   contextTrigger: '[data-context-pane][data-project-id]',
   transitionCheckbox: '.js-transition-checkbox',
-  promoteButton: '.js-promote-btn',
+  actionButton: '.js-action-btn',
   transitionButton: '.js-transition-btn',
 };
 
@@ -969,6 +969,10 @@ function initPaneForms() {
       : null;
     if (!form || !form.closest('.js-context-pane')) return;
     e.preventDefault();
+    if (form.dataset.restAction) {
+      submitActionForm(form);
+      return;
+    }
     submitPaneForm(form, e.submitter);
   });
 
@@ -1163,149 +1167,146 @@ async function getCsrfToken() {
   return response.text();
 }
 
-function initPromoteButton() {
-  if (window._promoteBtnHandlerAttached) return;
-  window._promoteBtnHandlerAttached = true;
+function refreshProjectViews() {
+  document.querySelectorAll('.view-project-manager').forEach(el => {
+    el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
+  });
+}
 
-  document.body.addEventListener('click', async function (e) {
-    const btn = e.target.closest('.js-promote-btn');
-    if (!btn) return;
-    const row = btn.closest('.js-context-pane');
-    if (!row) return;
-    const projectId = row.getAttribute('data-project-id');
-    if (!projectId) return;
-    btn.disabled = true;
-    try {
-      lastScrollPosition = window.scrollY;
-      const csrfToken = await getCsrfToken();
-      const action = btn.getAttribute('data-action') || 'promote';
-      const response = await fetch(`/api/projects/${projectId}/${action}`, {
+/**
+ * Posts an action to the REST resource of the project of a pane row.
+ *
+ * Refreshes the project list on success, shows the error in the pane
+ * otherwise.
+ *
+ * @return {Promise<boolean>} Whether the action succeeded.
+ */
+async function postProjectAction(row, action, body) {
+  lastScrollPosition = window.scrollY;
+  try {
+    const response = await fetch(
+      `/api/projects/${row.dataset.projectId}/${action}`,
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
+          'X-CSRF-Token': await getCsrfToken(),
         },
-      });
-      if (response.status === 200) {
-        document
-          .querySelectorAll('.view-project-manager')
-          .forEach(function (el) {
-            el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
-          });
-      } else if (response.status === 403) {
-        alert('You do not have permission to promote/demote this project.');
-        btn.disabled = false;
+        body: body ? JSON.stringify(body) : undefined,
       }
-    } catch (err) {
+    );
+    if (response.ok) {
+      refreshProjectViews();
+      return true;
+    }
+    showPaneError(row, paneErrorText(`HTTP ${response.status}`));
+  } catch (err) {
+    showPaneError(row, paneErrorText(err.message));
+  }
+  return false;
+}
+
+/**
+ * Posts an action of the edit pane (promote, hide, notify, reset, …).
+ */
+function initActionButton() {
+  if (window._actionBtnHandlerAttached) return;
+  window._actionBtnHandlerAttached = true;
+
+  document.body.addEventListener('click', async function (e) {
+    const btn = e.target.closest(SELECTORS.actionButton);
+    const row = btn?.closest('.js-context-pane');
+    if (!row?.dataset.projectId) return;
+    btn.disabled = true;
+    if (!(await postProjectAction(row, btn.dataset.action))) {
       btn.disabled = false;
     }
   });
 }
 
-function initCheckboxHandlers(context) {
-  const checkboxes = (context || document).querySelectorAll(
-    SELECTORS.transitionCheckbox
-  );
-  if (checkboxes.length === 0) {
-    (context || document)
-      .querySelectorAll('.js-transition-btn[data-action="mediate"]')
-      .forEach(btn => {
-        btn.disabled = true;
-      });
-    return;
-  }
-
-  checkboxes.forEach(checkbox => {
-    const row = checkbox.closest('.js-context-pane');
-    if (row) {
-      const transitionBtn = row.querySelector('.js-transition-btn');
-      if (transitionBtn) {
-        const checkedBoxes = row.querySelectorAll(
-          '.js-transition-checkbox:checked'
-        );
-        transitionBtn.disabled = checkedBoxes.length === 0;
-      }
-    }
-
-    checkbox.addEventListener('change', function () {
-      const row = this.closest('.js-context-pane');
-      if (!row) return;
-
-      const transitionBtn = row.querySelector('.js-transition-btn');
-      if (!transitionBtn) return;
-
-      const checkedBoxes = row.querySelectorAll(
-        '.js-transition-checkbox:checked'
-      );
-      transitionBtn.disabled = checkedBoxes.length === 0;
-    });
-  });
-}
-
+/**
+ * Posts the next transition of the transition pane (submit, mediate, …).
+ */
 function initTransitionButton() {
   if (window._transitionBtnHandlerAttached) return;
   window._transitionBtnHandlerAttached = true;
 
   document.body.addEventListener('click', async function (e) {
-    const btn = e.target.closest('.js-transition-btn');
-    if (!btn) return;
-    const row = btn.closest('.js-context-pane');
-    if (!row) return;
-    const projectId = row.getAttribute('data-project-id');
-    if (!projectId) return;
+    const btn = e.target.closest(SELECTORS.transitionButton);
+    const row = btn?.closest('.js-context-pane');
+    if (!row?.dataset.projectId) return;
+    const action = btn.dataset.action;
+    let body;
+    if (action === 'mediate') {
+      const checked = row.querySelectorAll(
+        `${SELECTORS.transitionCheckbox}:checked`
+      );
+      if (checked.length === 0) {
+        showPaneError(row, Drupal.t('Please select at least one applicant.'));
+        return;
+      }
+      body = { selected_creatives: Array.from(checked, cb => cb.value) };
+    }
     btn.disabled = true;
-    try {
-      lastScrollPosition = window.scrollY;
-      const csrfToken = await getCsrfToken();
-      const action = btn.getAttribute('data-action');
+    if (!(await postProjectAction(row, action, body))) {
+      btn.disabled = false;
+    }
+  });
+}
 
-      // Prepare request body
-      let requestBody = {};
+/**
+ * Posts a mail editor (decline, archive) to the REST resource of its action.
+ *
+ * On failure the editor stays with the written text.
+ */
+async function submitActionForm(form) {
+  const row = form.closest('.js-context-pane');
+  if (!row || form.dataset.paneBusy || !form.reportValidity()) return;
+  const buttons = form.querySelectorAll('[type="submit"]');
+  form.dataset.paneBusy = '1';
+  row.dataset.paneBusy = '1';
+  buttons.forEach(button => {
+    button.disabled = true;
+  });
+  await postProjectAction(row, form.dataset.restAction, {
+    reason: form.dataset.reason,
+    subject: form.elements.subject.value,
+    body: form.elements.body.value,
+  });
+  delete form.dataset.paneBusy;
+  delete row.dataset.paneBusy;
+  buttons.forEach(button => {
+    button.disabled = false;
+  });
+}
 
-      // For mediate action, collect selected applicants from checkboxes
-      if (action === 'mediate') {
-        const checkboxes = row.querySelectorAll(
-          '.js-transition-checkbox:checked'
-        );
-        const selectedCreatives = Array.from(checkboxes).map(cb => cb.value);
-
-        if (selectedCreatives.length === 0) {
-          alert('Please select at least one applicant.');
-          btn.disabled = true;
-          return;
-        }
-
-        requestBody = {
-          selected_creatives: selectedCreatives,
-        };
-      }
-
-      const response = await fetch(`/api/projects/${projectId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body:
-          Object.keys(requestBody).length > 0
-            ? JSON.stringify(requestBody)
-            : undefined,
+/**
+ * Enables the mediate button only while an applicant is selected.
+ */
+function initCheckboxHandlers(context) {
+  const root = context || document;
+  const checkboxes = root.querySelectorAll(SELECTORS.transitionCheckbox);
+  if (checkboxes.length === 0) {
+    root
+      .querySelectorAll(`${SELECTORS.transitionButton}[data-action="mediate"]`)
+      .forEach(btn => {
+        btn.disabled = true;
       });
-      if (response.status === 200) {
-        document
-          .querySelectorAll('.view-project-manager')
-          .forEach(function (el) {
-            el.dispatchEvent(new CustomEvent('RefreshView', { bubbles: true }));
-          });
-      } else if (response.status === 403) {
-        alert('You do not have permission to transition this project.');
-      } else if (response.status === 400) {
-        const errorData = await response.json();
-        alert(
-          errorData.message || 'Invalid request. Please check your selection.'
-        );
-      }
-    } catch (err) {}
+    return;
+  }
+  const update = row => {
+    const btn = row?.querySelector(SELECTORS.transitionButton);
+    if (btn) {
+      btn.disabled =
+        row.querySelectorAll(`${SELECTORS.transitionCheckbox}:checked`)
+          .length === 0;
+    }
+  };
+  checkboxes.forEach(checkbox => {
+    update(checkbox.closest('.js-context-pane'));
+    checkbox.addEventListener('change', function () {
+      update(this.closest('.js-context-pane'));
+    });
   });
 }
 
@@ -1324,13 +1325,13 @@ function initTransitionButton() {
       revealNewRow(context);
       initPaneForms();
       initMailTokens(context);
-      initPromoteButton();
+      initActionButton();
       initTransitionButton();
 
       if (lastScrollPosition !== null) {
         window.scrollTo({ top: lastScrollPosition, behavior: 'auto' });
         lastScrollPosition = null;
-        document.querySelectorAll('.js-promote-btn:disabled').forEach(btn => {
+        document.querySelectorAll('.js-action-btn:disabled').forEach(btn => {
           btn.disabled = false;
         });
       }

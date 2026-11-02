@@ -52,6 +52,7 @@ class TimelineBuilder {
    *   The rows.
    */
   public function build(ProjectInterface $project, AccountInterface $account, ?CacheableMetadata $metadata = NULL): array {
+
     $rows = [];
     if ($metadata) {
       $this->addAccountCacheability($account, $metadata);
@@ -62,6 +63,11 @@ class TimelineBuilder {
       ->loadByProperties(['project' => $project->id()]);
     foreach ($logs as $log) {
       /** @var \Drupal\logbook\LogInterface $log */
+      $log_access = $log->access('view', $account, TRUE);
+      $metadata?->addCacheableDependency($log_access);
+      if (!$log_access->isAllowed()) {
+        continue;
+      }
       $rows[] = [
         'type' => 'log',
         'id' => (int) $log->id(),

@@ -24,10 +24,12 @@ class ProjectResetTest extends ProjectEventSubscriberTestBase {
   public function testProjectReset(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setHidden();
     $this->assertTrue($project->lifecycle()->isOpen());
     $event = new ProjectResetEvent($project);
     $this->eventDispatcher->dispatch($event);
     $this->assertTrue($project->lifecycle()->isDraft());
+    $this->assertFalse($project->isHidden());
 
     /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
     $last = $project->lifecycle()->history()->last();

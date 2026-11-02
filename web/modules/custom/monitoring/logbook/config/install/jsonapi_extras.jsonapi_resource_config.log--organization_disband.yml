@@ -32,10 +32,10 @@ resourceFields:
     publicName: author
     enhancer:
       id: ''
-  published:
+  status:
     disabled: true
-    fieldName: published
-    publicName: published
+    fieldName: status
+    publicName: status
     enhancer:
       id: ''
   created:

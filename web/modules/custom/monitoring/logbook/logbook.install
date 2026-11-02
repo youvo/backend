@@ -6,6 +6,8 @@
  */
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\logbook\Entity\LogText;
 
 /**
@@ -18,20 +20,28 @@ use Drupal\logbook\Entity\LogText;
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function logbook_site_install_finished(): void {
+  logbook_import_log_texts();
+}
 
-  // Add the log pattern text as a content entity. We choose this way to avoid
-  // using Config Translation including Interface Translation at the moment.
-  //
-  // The files in the import folder follow the pattern logbook.log_text.*!
-  //
-  // Technically, these are not true configuration files because they will not
-  // be imported into the configuration of the platform.
-  //
-  // @todo Handle different languages.
-  $available_log_patterns = \Drupal::entityTypeManager()
-    ->getStorage('log_pattern')
-    ->loadMultiple();
-  $available_log_patterns = array_map(fn($e) => $e->id(), $available_log_patterns);
+/**
+ * Imports the log texts of the patterns that have none yet.
+ *
+ * The log pattern text is a content entity. We choose this way to avoid using
+ * Config Translation including Interface Translation at the moment. The files
+ * in the import folder follow the pattern logbook.log_text.*! Technically,
+ * these are not true configuration files because they will not be imported
+ * into the configuration of the platform.
+ *
+ * @todo Handle different languages.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function logbook_import_log_texts(): void {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $available_log_patterns = array_keys($entity_type_manager->getStorage('log_pattern')->loadMultiple());
+  $text_storage = $entity_type_manager->getStorage('log_text');
 
   $path = \Drupal::moduleHandler()->getModule('logbook')->getPath() . '/config/import/';
   $files = preg_grep('~^logbook.log_text.*\.yml$~', scandir($path));
@@ -39,7 +49,7 @@ function logbook_site_install_finished(): void {
   foreach ($files as $file) {
     $import = Yaml::decode(file_get_contents($path . $file));
     $log_pattern = $import['id'] ?? '';
-    if (!in_array($log_pattern, $available_log_patterns)) {
+    if (!in_array($log_pattern, $available_log_patterns) || $text_storage->loadByProperties(['log_pattern' => $log_pattern])) {
       continue;
     }
     $log_text = LogText::create([
@@ -48,5 +58,38 @@ function logbook_site_install_finished(): void {
       'public_text' => $import['public_text'] ?? '',
     ]);
     $log_text->save();
+  }
+}
+
+/**
+ * Replaces the published field of logs with the status field.
+ *
+ * Active (1) or archived (0): the values of the published field are copied.
+ */
+function logbook_update_11001(): void {
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  if (!$update_manager->getFieldStorageDefinition('status', 'log')) {
+    $status = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Status'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setDefaultValue(TRUE)
+      ->setSetting('on_label', new TranslatableMarkup('Active'))
+      ->setSetting('off_label', new TranslatableMarkup('Archived'))
+      ->setInitialValueFromField('published');
+    $update_manager->installFieldStorageDefinition('status', 'log', 'logbook', $status);
+  }
+
+  $entity_type = $update_manager->getEntityType('log');
+  $keys = $entity_type->getKeys();
+  $keys['published'] = 'status';
+  $keys['status'] = 'status';
+  $entity_type->set('entity_keys', $keys);
+  $update_manager->updateEntityType($entity_type);
+
+  if ($published = $update_manager->getFieldStorageDefinition('published', 'log')) {
+    $update_manager->uninstallFieldStorageDefinition($published);
   }
 }

@@ -25,6 +25,11 @@ class LogbookViewTest extends LogbookKernelTestBase {
   /**
    * {@inheritdoc}
    */
+  protected static $modules = ['entity'];
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     // Rendering the view needs a theme and the date formats.
@@ -65,9 +70,9 @@ class LogbookViewTest extends LogbookKernelTestBase {
   /**
    * Renders the page to HTML.
    */
-  protected function renderPage(array $input = []): string {
+  protected function renderPage(array $input = [], array $permissions = ['view observable log']): string {
     // The view checks access: render as a user who may see it.
-    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->setCurrentUser($this->createUser($permissions));
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $view->setExposedInput($input);
@@ -96,6 +101,83 @@ class LogbookViewTest extends LogbookKernelTestBase {
     // Disabling a pattern removes its logs from the list.
     $pattern->set('status', FALSE)->save();
     $this->assertNotContains((int) $notify->id(), $this->ids());
+  }
+
+  /**
+   * Detectable patterns are listed only for those who may view them.
+   */
+  public function testDetectablePatternsPerPermission(): void {
+
+    $this->createPattern('project_decline', ['detectable' => TRUE]);
+    $apply = $this->createLog('project_apply', ['created' => 100]);
+    $decline = $this->createLog('project_decline', ['created' => 200]);
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    // Managers view observable logs only.
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([(int) $apply->id()], $this->ids());
+
+    // Supervisors and observers also view detectable logs.
+    $this->setCurrentUser($this->createUser(['view observable log', 'view detectable log']));
+    $this->assertSame([(int) $decline->id(), (int) $apply->id()], $this->ids());
+  }
+
+  /**
+   * Archived logs are listed only for those who may view them.
+   */
+  public function testArchivedLogsPerPermission(): void {
+
+    $active = $this->createLog('project_apply', ['created' => 100]);
+    $archived = $this->createLog('project_apply', ['created' => 200])->setArchived();
+    $archived->save();
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    $this->setCurrentUser($this->createUser(['view observable log']));
+    $this->assertSame([(int) $active->id()], $this->ids());
+
+    $this->setCurrentUser($this->createUser(['view observable log', 'view archived log']));
+    $this->assertSame([(int) $archived->id(), (int) $active->id()], $this->ids());
+  }
+
+  /**
+   * Logs of hidden projects are listed only beyond the public level.
+   */
+  public function testHiddenProjectLogsPerPermission(): void {
+
+    $visible_project = $this->createLogbookProject('Visible');
+    $visible = $this->createLog('project_publish', ['created' => 100, 'project' => $visible_project->id()]);
+    $hidden_project = $this->createLogbookProject('Hidden');
+    $hidden_project->setHidden()->save();
+    $hidden = $this->createLog('project_publish', ['created' => 200, 'project' => $hidden_project->id()]);
+    $without_project = $this->createLog('project_publish', ['created' => 50]);
+    // User 1 bypasses permission checks: use it up.
+    $this->createUser();
+
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([(int) $visible->id(), (int) $without_project->id()], $this->ids());
+    // JSON:API collections use entity queries, not Views.
+    $log_storage = $this->container->get('entity_type.manager')->getStorage('log');
+    $query_ids = $log_storage->getQuery()->accessCheck()->execute();
+    $this->assertEqualsCanonicalizing([$visible->id(), $without_project->id()], array_values($query_ids));
+
+    $this->setCurrentUser($this->createUser(['view public log', 'view observable log']));
+    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
+
+    $hidden_project->setHidden(FALSE)->save();
+    $this->setCurrentUser($this->createUser(['view public log']));
+    $this->assertSame([(int) $hidden->id(), (int) $visible->id(), (int) $without_project->id()], $this->ids());
+  }
+
+  /**
+   * The list varies per permissions, so cached results are not shared.
+   */
+  public function testScopeVariesPerPermissions(): void {
+    $view = Views::getView('logbook');
+    $view->setDisplay('page_1');
+    $view->initHandlers();
+    $this->assertContains('user.permissions', $view->filter['log_pattern_scope']->getCacheContexts());
   }
 
   /**
@@ -572,6 +654,16 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertSame(['lock'], $icons['Apply']);
     $this->assertSame(['globe'], $icons['Mediate']);
     $this->assertSame(['star'], $icons['Publish']);
+  }
+
+  /**
+   * An archived log shows the archive icon instead of its visibility.
+   */
+  public function testArchivedIcon(): void {
+    $this->createLog('project_publish', ['created' => 100])->setArchived()->save();
+    $html = $this->renderPage([], ['view observable log', 'view archived log']);
+    preg_match_all('/logbook-icon--(\w+)/', $html, $found);
+    $this->assertSame(['archive'], $found[1]);
   }
 
   /**

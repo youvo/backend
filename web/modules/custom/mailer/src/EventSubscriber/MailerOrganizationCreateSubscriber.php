@@ -7,7 +7,7 @@ use Drupal\organizations\Event\OrganizationCreateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Notifies the team when an organization is created.
+ * Sends the mails when an organization proposes a project.
  */
 class MailerOrganizationCreateSubscriber implements EventSubscriberInterface {
 
@@ -17,10 +17,12 @@ class MailerOrganizationCreateSubscriber implements EventSubscriberInterface {
   public function __construct(protected YouvoUserMailerInterface $mailer) {}
 
   /**
-   * Sends the notification mail to the site mail address.
+   * Notifies the staff and confirms the receipt to the organization.
    */
   public function mail(OrganizationCreateEvent $event): void {
-    $this->mailer->notifyOrganizationCreated($event->getOrganization());
+    $organization = $event->getOrganization();
+    $this->mailer->notifyOrganizationCreated($organization);
+    $this->mailer->confirmOrganizationProposal($organization);
   }
 
   /**

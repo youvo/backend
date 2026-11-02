@@ -33,7 +33,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was notified."', $response->getContent());
+    $this->assertEquals('"Project notified."', $response->getContent());
   }
 
   /**
@@ -53,7 +53,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was invited."', $response->getContent());
+    $this->assertEquals('"Project invited."', $response->getContent());
   }
 
   /**
@@ -73,7 +73,49 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was notified."', $response->getContent());
+    $this->assertEquals('"Project notified."', $response->getContent());
+  }
+
+  /**
+   * Tests the project notify resource - supervisor outside the draft state.
+   *
+   * @covers ::access
+   */
+  public function testProjectNotifySupervisorNotDraft(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/notify';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
+  }
+
+  /**
+   * Tests the project notify resource - supervisor on an archived draft.
+   *
+   * @covers ::access
+   */
+  public function testProjectNotifySupervisorArchived(): void {
+
+    $project = $this->createProject();
+    $project->setArchived();
+    $project->save();
+    $supervisor = $this->createSupervisor();
+
+    $path = '/api/projects/' . $project->uuid() . '/notify';
+    $request = Request::create($path, 'POST');
+    $request->headers->set('Content-Type', 'application/json');
+    $this->authenticateRequest($request, $supervisor);
+
+    $response = $this->doRequest($request);
+    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**
@@ -117,14 +159,14 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project notify resource - not published.
+   * Tests the for the project notify resource - archived.
    *
    * @covers ::access
    */
-  public function testProjectNotifyNotPublished(): void {
+  public function testProjectNotifyArchived(): void {
 
     $project = $this->createProject();
-    $project->setUnpublished();
+    $project->setArchived();
     $project->save();
     $manager = $project->getOwner()->getManager();
 
@@ -135,7 +177,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

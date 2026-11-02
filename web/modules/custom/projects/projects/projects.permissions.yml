@@ -4,3 +4,24 @@ administer projects:
 view project manager fields:
   title: 'View project fields used by the project manager'
   description: 'Grants read access to the project fields that the project manager page displays.'
+access project admin forms:
+  title: 'Access the project admin forms'
+  description: 'Add, edit and delete projects, list them and change their state in the Drupal backend forms, bypassing the actions. Projects are managed through the frontend and the manager pane.'
+  restrict access: true
+upload project result files:
+  title: 'Upload project result files'
+  description: 'Upload files for project results.'
+view hidden projects:
+  title: 'View hidden projects'
+  description: 'List the hidden projects of all organizations.'
+archive projects:
+  title: 'Archive projects'
+  description: 'Archive open, ongoing and completed projects in the manager pane, with a mail to the organization.'
+archive projects in any state:
+  title: 'Archive projects in any state'
+  description: 'Also archive draft, pending and declined projects, without a mail.'
+  restrict access: true
+unarchive projects:
+  title: 'Unarchive projects'
+  description: 'Make archived projects active again in the backend form.'
+  restrict access: true

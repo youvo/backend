@@ -3,6 +3,7 @@
 namespace Drupal\Tests\mailer\Kernel;
 
 use Drupal\creatives\Event\CreativeRegisterEvent;
+use Drupal\mailer\EventSubscriber\MailerOrganizationCreateSubscriber;
 use Drupal\mailer\Mailer\YouvoUserMailerInterface;
 use Drupal\organizations\Event\OrganizationCreateEvent;
 use Drupal\projects\ProjectState;
@@ -113,6 +114,27 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
   }
 
   /**
+   * The proposal mail thanks the organization without any text of the proposal.
+   */
+  public function testConfirmOrganizationProposal(): void {
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $organization = $project->getOwner();
+    $organization->set('field_name', 'Win 500 euros: www.scam.example')->save();
+    $mailer = $this->mailer();
+    $this->captureMails($mailer);
+    $this->assertTrue($mailer->confirmOrganizationProposal($organization));
+    $this->assertCount(1, $this->capturedMails);
+    $this->assertSame(['organization@example.com'], $this->capturedMails[0]['to']);
+    $this->assertSame('Danke für Euren Projektvorschlag', $this->capturedMails[0]['subject']);
+    $html = $this->capturedMails[0]['html'];
+    $this->assertStringContainsString('vielen Dank für Euren Projektvorschlag', $html);
+    $this->assertStringNotContainsString('scam', $html);
+    $this->assertStringNotContainsString('Olga Org', $html);
+    // Without a project the mail is not recorded.
+    $this->assertSame(0, $this->countCorrespondence());
+  }
+
+  /**
    * The user mails have the site From and the site mail as reply-to.
    */
   public function testHeaders(): void {
@@ -130,7 +152,10 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
     $mailer = $this->mailer();
     $mailer->addCallback($callback, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
     $this->assertTrue($mailer->notifyOrganizationCreated($project->getOwner()));
-    $this->assertCount(2, $headers);
+    // A callback only applies to the next mail of the mailer.
+    $mailer->addCallback($callback, EmailInterface::PHASE_POST_RENDER, 951, 'header_capture');
+    $this->assertTrue($mailer->confirmOrganizationProposal($project->getOwner()));
+    $this->assertCount(3, $headers);
     foreach ($headers as $header) {
       $this->assertSame(['noreply@youvo.org'], $header['from']);
       $this->assertSame(['noreply@youvo.org'], $header['reply_to']);
@@ -151,9 +176,10 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
   }
 
   /**
-   * The organization create event notifies the site mail address.
+   * The organization create event notifies the staff and the organization.
    */
   public function testSubscriberSendsOnOrganizationCreate(): void {
+
     $this->config('system.site')->set('mail', 'team@example.com')->save();
     $project = $this->createMailableProject(ProjectState::Draft);
     // The projects module creates a project from the request on this event,
@@ -161,8 +187,15 @@ class YouvoUserMailerTest extends MailerKernelTestBase {
     $this->eventDispatcher->removeSubscriber($this->container->get('project.organization_create.event_subscriber'));
     $this->captureMails($this->mailer());
     $this->eventDispatcher->dispatch(new OrganizationCreateEvent($project->getOwner(), new Request()));
+    // The capture only applies to the first mail, the staff mail.
     $this->assertCount(1, $this->capturedMails);
     $this->assertSame(['team@example.com'], $this->capturedMails[0]['to']);
+
+    // The subscriber sends both mails.
+    $mailer = $this->createMock(YouvoUserMailerInterface::class);
+    $mailer->expects($this->once())->method('notifyOrganizationCreated')->with($project->getOwner());
+    $mailer->expects($this->once())->method('confirmOrganizationProposal')->with($project->getOwner());
+    (new MailerOrganizationCreateSubscriber($mailer))->mail(new OrganizationCreateEvent($project->getOwner(), new Request()));
   }
 
 }

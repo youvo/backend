@@ -230,6 +230,11 @@ class FeedbackResourceTest extends ExistingSiteBase {
     $outsider = $this->createAccount(Creative::class, ['creative']);
     $response = $this->requestCreate($project, $outsider);
     $this->assertEquals(403, $response->getStatusCode());
+
+    $project = $this->createProject();
+    $project->setArchived()->save();
+    $response = $this->requestCreate($project, $this->getParticipant($project));
+    $this->assertEquals(403, $response->getStatusCode());
   }
 
   /**

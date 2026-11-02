@@ -22,6 +22,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * The publish mail is rendered from the policy and recorded.
    */
   public function testPublish(): void {
+
     $project = $this->createMailableProject();
     $mailer = $this->container->get(ProjectTransitionMailerInterface::class);
     $this->captureMails($mailer);
@@ -163,7 +164,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * The publish event triggers the publish mail.
    */
   public function testSubscriberSendsOnPublish(): void {
-    $project = $this->createMailableProject();
+    $project = $this->createMailableProject(ProjectState::Pending);
     $this->eventDispatcher->dispatch(new ProjectPublishEvent($project));
     $entries = $this->loadEntries($project->id());
     $this->assertCount(1, $entries);
@@ -307,6 +308,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * Complete sends one mail to the organization and one per participant.
    */
   public function testCompleteFansOut(): void {
+
     $project = $this->createMailableProject();
     $a = $this->createMailableCreative('a');
     $b = $this->createMailableCreative('b');
@@ -363,6 +365,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * An organization without mail address ends in FALSE and no exception.
    */
   public function testMissingRecipientDoesNotThrow(): void {
+
     // The organization and its manager have no mail address.
     $project = $this->createProject(ProjectState::Draft);
     $project->save();
@@ -379,6 +382,7 @@ class ProjectTransitionMailerTest extends MailerKernelTestBase {
    * An owner that is no organization does not make the mailer throw.
    */
   public function testOwnerWithoutOrganizationDoesNotThrow(): void {
+
     $owner = Creative::create(['name' => 'Admin', 'field_name' => 'Admin']);
     $owner->save();
     $project = $this->createMock(ProjectInterface::class);

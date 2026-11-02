@@ -111,6 +111,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $project = $this->prophesize(ProjectInterface::class);
     $value = (object) ['value' => $state->value];
     $project->get(Argument::any())->willReturn($value);
+    $project->isArchived()->willReturn(FALSE);
     $this->lifecycle->setProject($project->reveal());
   }
 
@@ -252,13 +253,11 @@ class ProjectLifecycleTest extends UnitTestCase {
   /**
    * Tests that a declined project can not be declined again.
    *
-   * The remain transition of the declined state satisfies the state check.
-   *
    * @covers ::decline
    * @covers ::canTransition
    */
   public function testDeclineDeclinedThrows(): void {
-    $this->prophesizeWorkflow([ProjectState::Declined], [TRUE], FALSE, TRUE);
+    $this->prophesizeWorkflow([ProjectState::Declined], [FALSE], FALSE, TRUE);
     $this->expectException(LifecycleTransitionException::class);
     $this->lifecycle->decline();
   }
@@ -288,8 +287,7 @@ class ProjectLifecycleTest extends UnitTestCase {
       'draft of organization' => [ProjectState::Draft, TRUE, FALSE, FALSE],
       'pending' => [ProjectState::Pending, TRUE, FALSE, TRUE],
       'open' => [ProjectState::Open, FALSE, TRUE, FALSE],
-      // The remain transition of the declined state satisfies the state check.
-      'declined' => [ProjectState::Declined, TRUE, TRUE, FALSE],
+      'declined' => [ProjectState::Declined, FALSE, TRUE, FALSE],
     ];
   }
 
@@ -335,6 +333,7 @@ class ProjectLifecycleTest extends UnitTestCase {
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_FIELD))->willReturn(...$values);
     $project->get(Argument::is(ProjectLifecycle::LIFECYCLE_HISTORY_FIELD))->willReturn($history);
     $project->set(Argument::any(), Argument::any())->willReturn(TRUE);
+    $project->isArchived()->willReturn(FALSE);
     $project->hasParticipant(Argument::is('Creative'))->willReturn($has_participant);
     $owner = $this->prophesize(Organization::class);
     $owner->hasRoleProspect()->willReturn($is_prospect);

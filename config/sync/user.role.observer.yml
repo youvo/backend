@@ -9,11 +9,13 @@ dependencies:
     - rest.resource.progress.lecture.complete
     - rest.resource.question.submission
   module:
+    - blocker_mode
     - contextual
     - courses
     - dashboard
     - logbook
     - navigation
+    - projects
     - rest
     - system
 _core:
@@ -26,6 +28,7 @@ permissions:
   - 'access content'
   - 'access contextual links'
   - 'access navigation'
+  - 'access site'
   - 'restful get progress:course:access'
   - 'restful get progress:lecture:access'
   - 'restful get progress:lecture:complete'
@@ -36,5 +39,6 @@ permissions:
   - 'restful post question:submission'
   - 'view courses'
   - 'view detectable log'
+  - 'view hidden projects'
   - 'view observable log'
   - 'view youvo dashboard'

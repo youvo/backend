@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\Kernel\EventSubscriber;
 
 use Drupal\projects\Event\ProjectDemoteEvent;
 use Drupal\projects\EventSubscriber\Action\ProjectDemoteSubscriber;
+use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
@@ -30,6 +31,18 @@ class ProjectDemoteTest extends ProjectEventSubscriberTestBase {
     $this->eventDispatcher->dispatch($event);
 
     $this->assertFalse($project->isPromoted());
+  }
+
+  /**
+   * Tests that declined projects can not be demoted.
+   */
+  public function testProjectDemoteDeclined(): void {
+
+    $project = $this->createProject(ProjectState::Declined);
+    $project->setPromoted(FALSE);
+
+    $this->expectException(ProjectActionException::class);
+    $this->eventDispatcher->dispatch(new ProjectDemoteEvent($project));
   }
 
 }

@@ -1,0 +1,23 @@
+uuid: 71f9246e-ad2b-442a-a962-155564c4b874
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - projects
+    - serialization
+    - simple_oauth
+    - user
+id: project.archive
+plugin_id: 'project:archive'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+  formats:
+    - json
+  authentication:
+    - basic_auth
+    - oauth2
+    - cookie

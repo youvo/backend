@@ -7,7 +7,9 @@ dependencies:
     - rest.resource.progress.course.access
     - rest.resource.progress.lecture.access
     - rest.resource.progress.lecture.complete
+    - rest.resource.project.archive
     - rest.resource.project.complete
+    - rest.resource.project.decline
     - rest.resource.project.demote
     - rest.resource.project.hide
     - rest.resource.project.mediate
@@ -19,13 +21,16 @@ dependencies:
     - rest.resource.project.submit
     - rest.resource.question.submission
   module:
+    - blocker_mode
     - contextual
     - correspondence
     - courses
+    - feedback
     - lifecycle
     - logbook
     - mailer
     - navigation
+    - organizations
     - projects
     - rest
     - system
@@ -40,10 +45,13 @@ permissions:
   - 'access content'
   - 'access contextual links'
   - 'access navigation'
+  - 'access site'
+  - 'administer feedback'
   - 'administer projects'
+  - 'archive projects'
+  - 'bypass organization field access'
   - 'bypass project_lifecycle transition access'
   - 'create project'
-  - 'delete any project'
   - 'general manager access'
   - 'manage correspondence notes'
   - 'restful delete organization:manage'
@@ -51,13 +59,17 @@ permissions:
   - 'restful get progress:course:access'
   - 'restful get progress:lecture:access'
   - 'restful get progress:lecture:complete'
+  - 'restful get project:archive'
+  - 'restful get project:decline'
   - 'restful get project:mediate'
   - 'restful get question:submission'
   - 'restful post organization:manage'
   - 'restful post progress:course:access'
   - 'restful post progress:lecture:access'
   - 'restful post progress:lecture:complete'
+  - 'restful post project:archive'
   - 'restful post project:complete'
+  - 'restful post project:decline'
   - 'restful post project:demote'
   - 'restful post project:hide'
   - 'restful post project:mediate'
@@ -70,7 +82,10 @@ permissions:
   - 'restful post question:submission'
   - 'send project mails'
   - 'update any project'
+  - 'upload project result files'
+  - 'view archived log'
   - 'view correspondence'
   - 'view courses'
   - 'view detectable log'
+  - 'view hidden projects'
   - 'view observable log'

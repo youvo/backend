@@ -3,6 +3,7 @@
 namespace Drupal\projects\EventSubscriber\Action;
 
 use Drupal\projects\Event\ProjectShowEvent;
+use Drupal\projects\Exception\ProjectActionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,13 +15,18 @@ class ProjectShowSubscriber implements EventSubscriberInterface {
    * Listens to the project show event.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\projects\Exception\ProjectActionException
    */
   public function onProjectShow(ProjectShowEvent $event): void {
     $project = $event->getProject();
-    if ($project->lifecycle()->isDraft() || $project->lifecycle()->isPending()) {
-      throw new \LogicException('Cannot show a project in a draft or pending state.');
+    if ($project->isArchived()) {
+      throw new ProjectActionException('Cannot show an archived project.');
     }
-    $project->setPublished();
+    $lifecycle = $project->lifecycle();
+    if (!$lifecycle->isOpen() && !$lifecycle->isOngoing() && !$lifecycle->isCompleted()) {
+      throw new ProjectActionException('Cannot show a draft, pending or declined project.');
+    }
+    $project->setHidden(FALSE);
     $project->save();
   }
 

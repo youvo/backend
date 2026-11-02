@@ -3,6 +3,7 @@
 namespace Drupal\logbook\Entity;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -37,6 +38,7 @@ use Drupal\user_types\Utility\Profile;
  *   bundle_label = @Translation("Log Pattern"),
  *   handlers = {
  *     "access" = "Drupal\logbook\LogAccessControlHandler",
+ *     "query_access" = "\Drupal\entity\QueryAccess\EventOnlyQueryAccessHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
@@ -56,7 +58,8 @@ use Drupal\user_types\Utility\Profile;
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
- *     "published" = "published",
+ *     "published" = "status",
+ *     "status" = "status",
  *     "label" = "id",
  *     "uuid" = "uuid",
  *     "owner" = "author"
@@ -89,6 +92,20 @@ class Log extends ContentEntityBase implements LogInterface {
   public function setCreatedTime(int $timestamp): static {
     $this->set('created', $timestamp);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isArchived(): bool {
+    return !$this->isPublished();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setArchived(bool $archived = TRUE): static {
+    return $archived ? $this->setUnpublished() : $this->setPublished();
   }
 
   /**
@@ -221,7 +238,9 @@ class Log extends ContentEntityBase implements LogInterface {
       return ['#markup' => Link::createFromRoute(new TranslatableMarkup('Feedback ansehen'), 'entity.feedback.canonical', ['feedback' => $feedback_id])->toString()];
     }
     $message = $this->getMessage();
-    return $message === '' ? [] : ['#plain_text' => $message];
+    // Escaped like plain text, but keeps the line breaks of mails and
+    // applications.
+    return $message === '' ? [] : ['#markup' => nl2br(Html::escape($message))];
   }
 
   /**
@@ -311,6 +330,14 @@ class Log extends ContentEntityBase implements LogInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
     $fields += static::ownerBaseFieldDefinitions($entity_type);
     $fields += static::publishedBaseFieldDefinitions($entity_type);
+
+    // The published key reads as active (1) or archived (0).
+    if ($fields['status'] instanceof BaseFieldDefinition) {
+      $fields['status']
+        ->setLabel(new TranslatableMarkup('Status'))
+        ->setSetting('on_label', new TranslatableMarkup('Active'))
+        ->setSetting('off_label', new TranslatableMarkup('Archived'));
+    }
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Triggered on'))

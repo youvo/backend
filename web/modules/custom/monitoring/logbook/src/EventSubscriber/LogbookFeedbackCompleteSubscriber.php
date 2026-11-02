@@ -10,8 +10,8 @@ use Drupal\feedback\Event\FeedbackCompleteEvent;
  */
 class LogbookFeedbackCompleteSubscriber extends LogbookSubscriberBase {
 
-  const EVENT_CLASS = FeedbackCompleteEvent::class;
-  const LOG_PATTERN = 'feedback_complete';
+  const string EVENT_CLASS = FeedbackCompleteEvent::class;
+  const string LOG_PATTERN = 'feedback_complete';
 
   /**
    * {@inheritdoc}

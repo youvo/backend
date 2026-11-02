@@ -9,6 +9,7 @@ use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectResetEvent;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\rest\ModifiedResourceResponse;
@@ -26,22 +27,30 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectResetResource extends ProjectTransitionResourceBase {
+class ProjectResetResource extends ProjectResourceBase {
 
   /**
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
-    // This resource may only be permitted for users with access control bypass.
-    $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    return AccessResult::allowedIfHasPermission($account, $bybass_permission);
+
+    // Archived projects don't transition, also not for administrators.
+    if ($project->isArchived()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
+    // Only users who bypass the transition access reset projects.
+    $permission = WorkflowPermissions::bypassTransition(ProjectLifecycle::WORKFLOW_ID);
+    return AccessResult::allowedIfHasPermission($account, $permission)
+      ->addCacheableDependency($project);
   }
 
   /**
    * Responds to POST requests.
    */
   public function post(ProjectInterface $project): ResourceResponseInterface {
+
     try {
       $this->eventDispatcher->dispatch(new ProjectResetEvent($project));
     }
@@ -55,6 +64,7 @@ class ProjectResetResource extends ProjectTransitionResourceBase {
       $variables = Error::decodeException($e);
       $this->logger->error('Project reset failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
+
     return new ModifiedResourceResponse('Project reset.');
   }
 
