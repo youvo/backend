@@ -32,7 +32,7 @@ class FeedbackEntityAccess extends EntityAccessControlHandler {
     }
 
     // Only the author edits the feedback, until it is completed.
-    $is_open_author = $entity->getOwnerId() === Profile::id($account) && !$entity->isCompleted();
+    $is_open_author = (int) $entity->getOwnerId() === Profile::id($account) && !$entity->isCompleted();
     if ($operation === 'edit' || $operation === 'update') {
       return AccessResult::allowedIf($is_open_author)
         ->addCacheableDependency($entity)

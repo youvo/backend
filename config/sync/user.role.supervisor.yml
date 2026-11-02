@@ -28,6 +28,7 @@ dependencies:
     - logbook
     - mailer
     - navigation
+    - organizations
     - projects
     - rest
     - system
@@ -45,6 +46,7 @@ permissions:
   - 'access site'
   - 'administer feedback'
   - 'administer projects'
+  - 'bypass organization field access'
   - 'bypass project_lifecycle transition access'
   - 'create project'
   - 'general manager access'

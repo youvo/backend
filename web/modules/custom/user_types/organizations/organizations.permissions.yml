@@ -1,0 +1,4 @@
+bypass organization field access:
+  title: 'Bypass organization field access'
+  description: 'View and edit all fields of organizations.'
+  restrict access: true
