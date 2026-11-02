@@ -57,8 +57,8 @@ class ProjectArchiveResourceTest extends ProjectResourceTestBase {
     $this->assertTrue($stored->lifecycle()->isOpen());
 
     $response = $this->request($project, $supervisor);
-    $this->assertSame(409, $response->getStatusCode());
-    $this->assertSame('Project can not be archived.', $response->getContent());
+    $this->assertSame(403, $response->getStatusCode());
+    $this->assertSame('The project is archived.', $response->getContent());
   }
 
   /**

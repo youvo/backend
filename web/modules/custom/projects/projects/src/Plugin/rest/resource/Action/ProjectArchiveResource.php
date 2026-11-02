@@ -10,6 +10,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Plugin\rest\resource\ProjectMailRequestTrait;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
@@ -30,7 +31,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectArchiveResource extends ProjectActionResourceBase {
+class ProjectArchiveResource extends ProjectResourceBase {
 
   use ProjectMailRequestTrait;
 
@@ -39,21 +40,31 @@ class ProjectArchiveResource extends ProjectActionResourceBase {
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
+    // Archived projects don't change, also not for administrators.
+    if ($project->isArchived()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
+    }
+
     // Administrators archive projects in any state.
     if ($account->hasPermission('archive projects in any state')) {
-      return AccessResult::allowed()->cachePerPermissions();
+      return AccessResult::allowed()
+        ->addCacheableDependency($project)
+        ->cachePerPermissions();
     }
+
+    // The user requires the permission to do this action.
+    $access_result = AccessResult::allowedIfHasPermission($account, 'archive projects');
 
     // Others archive open, ongoing or completed projects.
-    $access_result = AccessResult::allowedIfHasPermission($account, 'archive projects');
     $lifecycle = $project->lifecycle();
-    $access_state = AccessResult::allowedIf($lifecycle->isOpen() || $lifecycle->isOngoing() || $lifecycle->isCompleted())
+    $access_project = AccessResult::allowedIf($lifecycle->isOpen() || $lifecycle->isOngoing() || $lifecycle->isCompleted())
       ->addCacheableDependency($project);
-    if ($access_state instanceof AccessResultReasonInterface) {
-      $access_state->setReason('The project conditions for this action are not met.');
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this action are not met.');
     }
 
-    return $access_result->andIf($access_state);
+    return $access_result->andIf($access_project);
   }
 
   /**

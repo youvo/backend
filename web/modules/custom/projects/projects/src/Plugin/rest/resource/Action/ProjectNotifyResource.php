@@ -7,9 +7,9 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
-use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -25,56 +25,67 @@ use Drupal\rest\ResourceResponseInterface;
  *   }
  * )
  */
-class ProjectNotifyResource extends ProjectActionResourceBase {
+class ProjectNotifyResource extends ProjectResourceBase {
 
   /**
    * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
-    // The user requires the permission to do this action.
-    $permission = 'restful post project:notify';
-    $access_result = AccessResult::allowedIfHasPermission($account, $permission);
-
-    // Only active drafts can be notified, also by administrators.
-    $access_state = AccessResult::allowedIf($project->isActive() && $project->lifecycle()->isDraft())
-      ->addCacheableDependency($project);
-    if ($access_state instanceof AccessResultReasonInterface) {
-      $access_state->setReason('The project conditions for this action are not met.');
+    // Archived projects don't change, also not for administrators.
+    if ($project->isArchived()) {
+      return AccessResult::forbidden('The project is archived.')
+        ->addCacheableDependency($project);
     }
+
+    // The user requires the permission to do this action.
+    $access_result = AccessResult::allowedIfHasPermission($account, 'restful post project:notify');
+
+    // Only drafts are notified, also by administrators.
+    $access_project = AccessResult::allowedIf($project->lifecycle()->isDraft())
+      ->addCacheableDependency($project);
+    if ($access_project instanceof AccessResultReasonInterface) {
+      $access_project->setReason('The project conditions for this action are not met.');
+    }
+    $access_result = $access_result->andIf($access_project);
 
     // Administrators skip the manager check.
     if ($account->hasPermission('administer projects')) {
-      return $access_result->andIf($access_state);
+      return $access_result;
     }
 
+    // Only the manager of the organization notifies it.
     $organization = $project->getOwner();
     $access_manager = AccessResult::allowedIf($organization->isManager($account))
-      ->addCacheableDependency($organization)
       ->addCacheableDependency($project)
+      ->addCacheableDependency($organization)
       ->cachePerUser();
     if ($access_manager instanceof AccessResultReasonInterface) {
       $access_manager->setReason('The project conditions for this action are not met.');
     }
 
-    return $access_result->andIf($access_state)->andIf($access_manager);
+    return $access_result->andIf($access_manager);
   }
 
   /**
    * Responds to POST requests.
+   *
+   * Prospect organizations are invited, the others are notified.
    */
-  public function post(Project $project): ResourceResponseInterface {
+  public function post(ProjectInterface $project): ResourceResponseInterface {
 
     $invite = $project->getOwner()->hasRoleProspect();
+    $event = $invite ? new ProjectInviteEvent($project) : new ProjectNotifyEvent($project);
+
     try {
-      $this->eventDispatcher->dispatch($invite ? new ProjectInviteEvent($project) : new ProjectNotifyEvent($project));
+      $this->eventDispatcher->dispatch($event);
     }
     catch (\Throwable $e) {
       $variables = Error::decodeException($e);
       $this->logger->error('Project notify failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
     }
 
-    return new ModifiedResourceResponse($invite ? 'The organization was invited.' : 'The organization was notified.');
+    return new ModifiedResourceResponse($invite ? 'Project invited.' : 'Project notified.');
   }
 
 }

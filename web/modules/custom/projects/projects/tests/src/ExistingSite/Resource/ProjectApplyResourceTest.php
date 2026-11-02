@@ -53,7 +53,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"Application completed."', $response->getContent());
+    $this->assertEquals('"Project applied."', $response->getContent());
   }
 
   /**
@@ -152,7 +152,7 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

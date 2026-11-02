@@ -33,7 +33,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was notified."', $response->getContent());
+    $this->assertEquals('"Project notified."', $response->getContent());
   }
 
   /**
@@ -53,7 +53,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was invited."', $response->getContent());
+    $this->assertEquals('"Project invited."', $response->getContent());
   }
 
   /**
@@ -73,7 +73,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertEquals('"The organization was notified."', $response->getContent());
+    $this->assertEquals('"Project notified."', $response->getContent());
   }
 
   /**
@@ -115,7 +115,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**
@@ -177,7 +177,7 @@ class ProjectNotifyResourceTest extends ProjectResourceTestBase {
 
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project conditions for this action are not met.', $response->getContent());
+    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**

@@ -13,6 +13,7 @@ use Drupal\file\FileInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
 use Drupal\projects\Event\ProjectCompleteEvent;
+use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
@@ -33,23 +34,22 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  *   }
  * )
  */
-class ProjectCompleteResource extends ProjectTransitionResourceBase {
+class ProjectCompleteResource extends ProjectResourceBase {
 
   /**
-   * Handles custom access logic for the resource.
+   * {@inheritdoc}
    */
   public static function access(AccountInterface $account, ProjectInterface $project): AccessResultInterface {
 
     // Archived projects don't transition, also not for administrators.
-    if (!$project->isActive()) {
+    if ($project->isArchived()) {
       return AccessResult::forbidden('The project is archived.')
         ->addCacheableDependency($project);
     }
 
     // The user may be permitted to bypass access control.
     $workflow_id = ProjectLifecycle::WORKFLOW_ID;
-    $bybass_permission = WorkflowPermissions::bypassTransition($workflow_id);
-    if ($account->hasPermission($bybass_permission)) {
+    if ($account->hasPermission(WorkflowPermissions::bypassTransition($workflow_id))) {
       return AccessResult::allowed()
         ->addCacheableDependency($project)
         ->cachePerPermissions();
@@ -59,10 +59,13 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     $permission = WorkflowPermissions::useTransition($workflow_id, ProjectTransition::Complete->value);
     $access_result = AccessResult::allowedIfHasPermission($account, $permission);
 
-    // The resource should define project-dependent access conditions.
+    // The author, the participants and the manager complete the project.
     $organization = $project->getOwner();
-    $project_condition = $project->isAuthor($account) || $project->isParticipant($account) || $organization->isManager($account);
-    $access_project = AccessResult::allowedIf($project_condition)
+    $access_project = AccessResult::allowedIf(
+      $project->isAuthor($account) ||
+      $project->isParticipant($account) ||
+      $organization->isManager($account)
+    )
       ->addCacheableDependency($project)
       ->addCacheableDependency($organization)
       ->cachePerUser();
@@ -84,13 +87,14 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     }
     $this->validateRequestContent($content);
 
+    $results = $content['results'] ?? [];
+    $this->preloadFiles($results);
+    [$result_files, $result_links] = $this->shapeResults($results);
+    $event = new ProjectCompleteEvent($project);
+    $event->setFiles($result_files);
+    $event->setLinks($result_links);
+
     try {
-      $results = $content['results'] ?? [];
-      $this->preloadFiles($results);
-      [$result_files, $result_links] = $this->shapeResults($results);
-      $event = new ProjectCompleteEvent($project);
-      $event->setFiles($result_files);
-      $event->setLinks($result_links);
       $this->eventDispatcher->dispatch($event);
     }
     catch (LifecycleTransitionException) {
@@ -121,7 +125,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
       ) {
         throw new BadRequestHttpException('Malformed request body. A result does not define type, value or description.');
       }
-      if ($result['type'] === 'file' && !Uuid::isValid($result['value'])) {
+      if ($result['type'] === 'file' && (!is_string($result['value']) || !Uuid::isValid($result['value']))) {
         throw new BadRequestHttpException('Malformed request body. A file result has an invalid UUID.');
       }
       if ($result['type'] === 'link' && !is_string($result['value'])) {
@@ -134,7 +138,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
   }
 
   /**
-   * Preloads files in results array.
+   * Replaces the file UUIDs in the results with the loaded files.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -147,7 +151,7 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
     if (!empty($file_uuids)) {
       $files = $this->entityTypeManager
         ->getStorage('file')
-        ->loadByProperties(['uuid' => array_unique($file_uuids)]);
+        ->loadByProperties(['uuid' => $file_uuids]);
       foreach ($results as $delta => $result) {
         if ($result['type'] === 'file') {
           $matching_file = array_filter($files, static fn($f) => $f->uuid() === $result['value']);
@@ -163,7 +167,6 @@ class ProjectCompleteResource extends ProjectTransitionResourceBase {
   protected function shapeResults(array $results): array {
 
     foreach (array_values($results) as $delta => $result) {
-
       if ($result['type'] === 'file') {
         // Maybe file was not loaded correctly.
         if (!$result['value'] instanceof FileInterface) {
