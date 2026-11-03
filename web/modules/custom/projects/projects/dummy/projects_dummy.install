@@ -19,6 +19,7 @@ use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectDeclineEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
+use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectDeclineReason;
@@ -263,6 +264,12 @@ function projects_dummy_generate_content(): void {
         $decliner = $manager ?: $manager_ids[random_int(0, count($manager_ids) - 1)];
         projects_dummy_as((int) $decliner, fn () => $event_dispatcher->dispatch($decline_event));
       }
+      // The manager reminds the organization of half of its drafts. Not drawn
+      // with Faker, which would change the rest of the content.
+      if ($final_state === 'draft' && $manager && random_int(1, 2) === 1) {
+        $transition_time += $transition_increment;
+        projects_dummy_as($manager, fn () => $event_dispatcher->dispatch(new ProjectNotifyEvent($project, $transition_time)));
+      }
       // Attach the image with the final save only. File paths moves the file
       // when it is attached, and every further save of the project would
       // log a notice about the already attached file.
@@ -304,6 +311,9 @@ function projects_dummy_generate_content(): void {
       ],
       'langcode' => 'de',
       'uid' => $prospect_id,
+      // A prospect proposes its project when it registers, some time in the
+      // last month. The registration is dated by this project later.
+      'created' => random_int($current_time - 30 * 86400, $current_time - 86400),
       'field_lifecycle' => 'draft',
       'status' => 1,
       'promote' => 0,
