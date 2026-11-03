@@ -1,62 +1,73 @@
 // =============================================================================
 // FEEDBACK (FeedbackViewBuilder)
 // =============================================================================
-// The admin page of a feedback, in the look of the user profiles: cards,
-// one accent and chips with small corners as the project badges.
+// The admin page of a feedback, in the layout of the user profiles: the
+// answers in the main column, the details in a sidebar.
 
 @use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
 
 .feedback {
   --feedback-neutral: color-mix(in srgb, var(--yv-muted) 12%, var(--yv-surface));
 
   display: grid;
-  gap: var(--gin-spacing-xl);
-  max-width: 60rem;
+  gap: var(--gin-spacing-l);
+  align-items: start;
   color: var(--yv-text);
   hyphens: manual;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+  }
+}
+
+// As on the profiles, only keyboard focus shows Gin's focus ring.
+.feedback :focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.feedback-main {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  min-width: 0;
+}
+
+// First in the markup, so small screens show it above the answers.
+.feedback-side {
+  @include card;
+  @include card-padding;
+}
+
+@media (min-width: $breakpoint-wide) {
+  .feedback-main,
+  .feedback-side {
+    grid-row: 1;
+  }
+
+  .feedback-side {
+    grid-column: 2;
+  }
+}
+
+.feedback-side-title {
+  @include section-label;
+}
+
+.feedback-facts {
+  @include facts;
 }
 
 // Drupal's field classes are outside our naming pattern.
 // stylelint-disable selector-class-pattern
-.feedback-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gin-spacing-xxs) var(--gin-spacing-l);
-  color: var(--yv-muted);
-
-  .field {
-    display: flex;
-    gap: var(--gin-spacing-xs);
-    margin: 0;
-  }
-
-  .field__label {
-    font-weight: normal;
-
-    &::after {
-      content: ":";
-    }
-  }
-
-  .field__item {
-    color: var(--yv-text);
-  }
-}
-
-.feedback-type {
-  @include chip;
+.feedback-facts .field {
+  margin: 0;
 }
 
 .feedback-comment {
   @include card;
+  @include card-padding;
 
   margin: 0;
-  padding: var(--gin-spacing-m);
-
-  @media (min-width: 40rem) {
-    padding: var(--gin-spacing-l);
-  }
 
   figcaption {
     @include section-label;
@@ -84,7 +95,7 @@
   // distance to the edge as the sides.
   padding: 0 var(--gin-spacing-m);
 
-  @media (min-width: 40rem) {
+  @media (min-width: $breakpoint-medium) {
     padding: var(--gin-spacing-xs) var(--gin-spacing-l);
   }
 }
@@ -100,7 +111,7 @@
     border-top: 0;
   }
 
-  @media (min-width: 40rem) {
+  @media (min-width: $breakpoint-medium) {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }

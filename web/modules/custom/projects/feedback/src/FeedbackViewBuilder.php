@@ -76,11 +76,6 @@ class FeedbackViewBuilder extends EntityViewBuilder {
   ];
 
   /**
-   * The base fields shown above the answers.
-   */
-  const array META_FIELDS = ['project', 'author', 'created', 'completed'];
-
-  /**
    * {@inheritdoc}
    */
   protected function getBuildDefaults(EntityInterface $entity, $view_mode): array {
@@ -103,41 +98,72 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     $build['#theme_wrappers'][] = 'container';
     $build['#attributes']['class'][] = 'feedback';
 
-    // Who gave the feedback, for which project and when.
-    $build['meta'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['feedback-meta']],
+    // As on the profiles: the answers in the main column, who gave the
+    // feedback, for which project and when in a sidebar. The sidebar comes
+    // first, so small screens show it above the answers.
+    $build['side'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'aside',
+      '#attributes' => ['class' => ['feedback-side']],
       '#weight' => -100,
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h2',
+        '#value' => new TranslatableMarkup('Details'),
+        '#attributes' => ['class' => ['feedback-side-title']],
+      ],
+      'facts' => [
+        '#type' => 'html_tag',
+        '#tag' => 'dl',
+        '#attributes' => ['class' => ['feedback-facts']],
+      ],
     ];
-    $titles = [
+    $build['main'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['feedback-main']],
+    ];
+
+    // The author by name.
+    $owner = $entity->getOwner();
+    if (isset($build['author'][0]) && ($owner instanceof Creative || $owner instanceof Organization)) {
+      $build['author'][0] = $owner->toLink($owner->getName())->toRenderable();
+    }
+    $facts = [
+      'project' => NULL,
       'author' => new TranslatableMarkup('Author'),
+      'type' => new TranslatableMarkup('Type'),
       'created' => new TranslatableMarkup('Submitted'),
+      'completed' => NULL,
     ];
-    foreach (self::META_FIELDS as $name) {
-      if ($this->hasContent($build, $name)) {
-        $build['meta'][$name] = $build[$name];
-        $build['meta'][$name]['#title'] = $titles[$name] ?? $build[$name]['#title'] ?? '';
-        $build['meta'][$name]['#label_display'] = 'inline';
+    $build['type'] = [
+      '#plain_text' => $entity->get('bundle')->entity?->label(),
+    ];
+    foreach ($facts as $name => $title) {
+      if ($name === 'type' || $this->hasContent($build, $name)) {
+        $value = $build[$name];
+        $value['#label_display'] = 'hidden';
+        $build['side']['facts'][$name] = [
+          '#type' => 'html_tag',
+          '#tag' => 'div',
+          'title' => [
+            '#type' => 'html_tag',
+            '#tag' => 'dt',
+            '#value' => $title ?? $build[$name]['#title'] ?? '',
+          ],
+          'value' => [
+            '#type' => 'html_tag',
+            '#tag' => 'dd',
+            'value' => $value,
+          ],
+        ];
       }
       unset($build[$name]);
     }
-    // The author by name, with the type of feedback next to it.
-    $owner = $entity->getOwner();
-    if (isset($build['meta']['author'][0]) && ($owner instanceof Creative || $owner instanceof Organization)) {
-      $build['meta']['author'][0] = $owner->toLink($owner->getName())->toRenderable();
-    }
-    $build['meta']['type'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'span',
-      '#value' => $entity->get('bundle')->entity?->label(),
-      '#attributes' => ['class' => ['feedback-type']],
-      '#weight' => ($build['meta']['author']['#weight'] ?? 0) + 0.5,
-    ];
 
     // The public comment for the project, as a quote.
     if ($this->hasContent($build, 'project_comment')) {
       $build['project_comment']['#label_display'] = 'visually_hidden';
-      $build['comment'] = [
+      $build['main']['comment'] = [
         '#type' => 'html_tag',
         '#tag' => 'figure',
         '#attributes' => ['class' => ['feedback-comment']],
@@ -190,7 +216,7 @@ class FeedbackViewBuilder extends EntityViewBuilder {
         }
       }
       if ($rows) {
-        $build['section_' . $section] = [
+        $build['main']['section_' . $section] = [
           '#type' => 'html_tag',
           '#tag' => 'section',
           '#attributes' => [

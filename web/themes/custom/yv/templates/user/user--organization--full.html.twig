@@ -32,9 +32,8 @@
           </p>
         {% endif %}
         {% set causes = content.field_causes|field_value %}
-        {% if profile.links or causes %}
+        {% if causes %}
           <ul class="user-profile-tags">
-            {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
             {% for cause in causes %}
               <li><span class="user-profile-chip">#{{ cause }}</span></li>
             {% endfor %}
@@ -51,44 +50,56 @@
       <div class="user-profile-about">{{ content.field_about|field_value }}</div>
     {% endif %}
 
-    {% set manager = content.field_manager|field_value %}
-    {% if profile.contact or manager %}
-      <ul class="user-profile-people">
-        {% if profile.contact %}
-          <li>
-            <span class="user-profile-person">
-              <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
-              <span>
-                <span class="user-profile-person-name">{{ profile.contact }}</span>
-                <span class="user-profile-person-role">{{ 'Organization Contact'|t }}</span>
-              </span>
-            </span>
-          </li>
-        {% endif %}
-        {% if manager %}
-          <li>
-            {% set manager_pill %}
-              {{ manager }}
-              <span>
-                <span class="user-profile-person-name">{{ profile.manager_name }}</span>
-                <span class="user-profile-person-role">{{ 'Project Manager'|t }}</span>
-              </span>
-            {% endset %}
-            {% if profile.manager_url %}
-              <a class="user-profile-person" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
-            {% else %}
-              <span class="user-profile-person">{{ manager_pill }}</span>
-            {% endif %}
-          </li>
-        {% endif %}
-      </ul>
+    {% if content.field_budget|field_value %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Why there is no budget for creative work'|t }}</h2>
+        <p class="user-profile-budget">{{ content.field_budget|field_value }}</p>
+      </section>
     {% endif %}
 
-    {% if content.field_budget|field_value %}
-      <details class="user-profile-budget">
-        <summary>{{ 'Why there is no budget for creative work'|t }}</summary>
-        <p>{{ content.field_budget|field_value }}</p>
-      </details>
+    {% if profile.links %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Links'|t }}</h2>
+        <ul class="user-profile-tags">
+          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% set manager = content.field_manager|field_value %}
+    {% if profile.contact or manager %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Contacts'|t }}</h2>
+        <ul class="user-profile-people">
+          {% if profile.contact %}
+            <li>
+              <span class="user-profile-person">
+                <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
+                <span>
+                  <span class="user-profile-person-name">{{ profile.contact }}</span>
+                  <span class="user-profile-person-role">{{ 'Organization Contact'|t }}</span>
+                </span>
+              </span>
+            </li>
+          {% endif %}
+          {% if manager %}
+            <li>
+              {% set manager_pill %}
+                {{ manager }}
+                <span>
+                  <span class="user-profile-person-name">{{ profile.manager_name }}</span>
+                  <span class="user-profile-person-role">{{ 'Project Manager'|t }}</span>
+                </span>
+              {% endset %}
+              {% if profile.manager_url %}
+                <a class="user-profile-person" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
+              {% else %}
+                <span class="user-profile-person">{{ manager_pill }}</span>
+              {% endif %}
+            </li>
+          {% endif %}
+        </ul>
+      </section>
     {% endif %}
   </div>
 
