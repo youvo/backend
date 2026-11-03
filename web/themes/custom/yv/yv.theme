@@ -122,6 +122,19 @@ function yv_preprocess_user(array &$variables): void {
     'volunteer' => $value('field_count_volunteer'),
   ];
 
+  // The manager pill links to the profile of the manager.
+  $profile['manager_url'] = NULL;
+  $manager_access = $organization->get('field_manager')->access('view', NULL, TRUE);
+  $cache->addCacheableDependency($manager_access);
+  $manager = $manager_access->isAllowed() ? $organization->getManager() : NULL;
+  if ($manager) {
+    $access = $manager->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access)->addCacheableDependency($manager);
+    if ($access->isAllowed()) {
+      $profile['manager_url'] = $manager->toUrl()->toString();
+    }
+  }
+
   // Account data that only staff may see.
   $date_formatter = \Drupal::service('date.formatter');
   $account = [];

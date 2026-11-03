@@ -1,0 +1,283 @@
+// =============================================================================
+// AJAX THROBBER: Sam the flamingo
+// =============================================================================
+
+// Markup comes from js/ajax.js. A comet of four dashes (tail, trail, head and
+// a white spark core) zaps along the outline. Every dash uses
+// pathLength="100" and moves its leading edge one lap from the legs, so the
+// dashes stay aligned. The slower dashes start a little later, which stretches the
+// comet at full speed. When the comet is back at the legs, the outline flashes blue.
+
+@use "sass:map";
+@use "../abstracts/variables.scss" as *;
+$throbber-lap: 0.9s;
+$throbber-easing: cubic-bezier(0.5, 0.15, 0.5, 0.85);
+
+// Where the lap starts, in percent of the outline: where the standing leg
+// meets the body. The zap up that leg arrives there as the lap ends.
+$throbber-start: 79;
+
+// The dashes stay opaque and taper by width: translucent orange over the blue
+// outline turns mauve.
+$throbber-runners: (
+  tail: (length: 34, delay: 0.05s, color: $color-orange-light, width: 0.75),
+  trail: (length: 18, delay: 0.025s, color: $color-orange, width: 1),
+  head: (length: 8, delay: 0s, color: $color-orange, width: 1.4),
+  spark: (length: 3, delay: 0s, color: $color-white, width: 0.5),
+);
+
+.yv-throbber {
+  --yv-throbber-stroke: 20px;
+
+  display: inline-block;
+  flex: none;
+  width: 0.85rem;
+  height: 2rem;
+  margin-block: -0.4375rem;
+  color: var(--gin-color-primary);
+
+  svg {
+    display: block;
+    overflow: visible;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.yv-throbber-halo,
+.yv-throbber-track,
+.yv-throbber-beak,
+.yv-throbber-beak-tip,
+.yv-throbber-zap,
+.yv-throbber-run {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--yv-throbber-stroke);
+}
+
+// A soft cut-out behind the bird, so the outline reads over any content.
+.yv-throbber-halo {
+  opacity: 0.9;
+  fill: var(--gin-bg-app);
+  stroke: var(--gin-bg-app);
+  stroke-width: calc(var(--yv-throbber-stroke) * 3.5);
+}
+
+.yv-throbber-halo-legs {
+  fill: none;
+  stroke-width: calc(var(--yv-throbber-stroke) * 2.5);
+}
+
+.yv-throbber-ground {
+  opacity: 0.12;
+  fill: currentcolor;
+}
+
+.yv-throbber-track {
+  opacity: 0.6;
+  fill: none;
+  stroke: currentcolor;
+  animation: yv-throbber-charge $throbber-lap $throbber-easing infinite;
+}
+
+// The beak is outlined like the body, with its tip filled as in sam.svg.
+.yv-throbber-beak {
+  opacity: 0.6;
+  fill: none;
+  stroke: currentcolor;
+}
+
+.yv-throbber-beak-tip {
+  fill: currentcolor;
+  stroke: currentcolor;
+  stroke-width: calc(var(--yv-throbber-stroke) * 0.4);
+}
+
+.yv-throbber-knee {
+  r: calc(var(--yv-throbber-stroke) * 0.7);
+  fill: currentcolor;
+}
+
+// A spark zaps up the standing leg during the last quarter of each lap.
+.yv-throbber-zap {
+  fill: none;
+  stroke: $color-orange;
+  stroke-dasharray: 25 175;
+  stroke-dashoffset: 25;
+  filter: drop-shadow(0 0 4px rgb($color-orange, 0.9));
+  animation: yv-throbber-zap $throbber-lap ease-in infinite;
+}
+
+.yv-throbber-run {
+  fill: none;
+  animation-duration: $throbber-lap;
+  animation-timing-function: $throbber-easing;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+}
+
+.yv-throbber-run-head {
+  filter: drop-shadow(0 0 4px rgb($color-orange, 0.9));
+}
+
+@each $name, $runner in $throbber-runners {
+  $length: map.get($runner, length);
+
+  .yv-throbber-run-#{$name} {
+    stroke: map.get($runner, color);
+    stroke-dasharray: $length (100 - $length);
+    stroke-width: calc(var(--yv-throbber-stroke) * #{map.get($runner, width)});
+    animation-name: yv-throbber-#{$name};
+    animation-delay: map.get($runner, delay);
+  }
+
+  @keyframes yv-throbber-#{$name} {
+    from {
+      stroke-dashoffset: $length - $throbber-start;
+    }
+
+    to {
+      stroke-dashoffset: $length - $throbber-start - 100;
+    }
+  }
+}
+
+.yv-throbber-eye {
+  fill: currentcolor;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: yv-throbber-blink 3.6s ease-in-out infinite;
+}
+
+// Fullscreen: Sam floats freely over the page, without a bubble.
+.yv-throbber-fullscreen {
+  --yv-throbber-stroke: 9px;
+
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: 3.15rem;
+  height: 6rem;
+  margin: -3rem 0 0 -1.575rem;
+}
+
+.yv-throbber-sparkle {
+  fill: currentcolor;
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: yv-throbber-twinkle $throbber-lap ease-out infinite;
+
+  @for $i from 2 through 4 {
+    g:nth-of-type(#{$i}) > & {
+      animation-delay: $throbber-lap * ($i - 1) * 0.25;
+    }
+  }
+}
+
+// Remove the bubble Claro and Gin draw around the fullscreen and dialog
+// throbbers.
+// stylelint-disable selector-class-pattern
+[dir] .ajax-progress--fullscreen.yv-throbber-wrapper,
+[dir].gin--dark-mode .ajax-progress--fullscreen.yv-throbber-wrapper,
+[dir] .ui-dialog .ajax-progress--throbber.yv-throbber-wrapper {
+  width: 3.15rem;
+  height: 6rem;
+  margin: -3rem 0 0 -1.575rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+// Centre the fullscreen throbber on the content area, not the viewport:
+// Drupal publishes the space the sidebars take as displace offsets. Physical
+// left, because the offsets are physical too, also in right-to-left pages.
+// Dialog throbbers stay centred on the viewport, like the dialog.
+[dir] .ajax-progress--fullscreen.yv-throbber-wrapper,
+[dir].gin--dark-mode .ajax-progress--fullscreen.yv-throbber-wrapper {
+  inset: calc(50% + (var(--drupal-displace-offset-top, 0px) - var(--drupal-displace-offset-bottom, 0px)) / 2) auto auto
+    calc(50% + (var(--drupal-displace-offset-left, 0px) - var(--drupal-displace-offset-right, 0px)) / 2);
+}
+// stylelint-enable selector-class-pattern
+
+.ui-dialog .yv-throbber-wrapper .yv-throbber-inline {
+  --yv-throbber-stroke: 9px;
+
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+@keyframes yv-throbber-charge {
+  0% {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgb(var(--gin-color-primary-rgb), 0.9));
+  }
+
+  25%,
+  100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 0 rgb(var(--gin-color-primary-rgb), 0));
+  }
+}
+
+@keyframes yv-throbber-zap {
+  0%,
+  75% {
+    stroke-dashoffset: 25;
+  }
+
+  100% {
+    stroke-dashoffset: -75;
+  }
+}
+
+@keyframes yv-throbber-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes yv-throbber-twinkle {
+  0% {
+    transform: scale(0) rotate(0);
+  }
+
+  25% {
+    transform: scale(1.2) rotate(45deg);
+  }
+
+  60%,
+  100% {
+    transform: scale(0) rotate(90deg);
+  }
+}
+
+@keyframes yv-throbber-breathe {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yv-throbber-eye,
+  .yv-throbber-sparkle {
+    animation: none;
+  }
+
+  .yv-throbber-run,
+  .yv-throbber-zap {
+    display: none;
+  }
+
+  .yv-throbber-track {
+    animation: yv-throbber-breathe 2.4s ease-in-out infinite;
+  }
+}

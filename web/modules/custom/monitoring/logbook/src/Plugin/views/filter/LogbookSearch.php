@@ -4,12 +4,10 @@ namespace Drupal\logbook\Plugin\views\filter;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Condition;
-use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\Sql\DefaultTableMapping;
-use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\logbook\Plugin\views\LogMatchTrait;
 use Drupal\logbook\SearchTags;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
@@ -31,10 +29,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 #[ViewsFilter('logbook_search')]
 class LogbookSearch extends FilterPluginBase {
 
-  /**
-   * The fields of the log that hold the people and organizations in it.
-   */
-  protected const array PARTICIPANTS = ['author', 'manager', 'organization', 'creatives'];
+  use LogMatchTrait;
 
   /**
    * Constructs the filter.
@@ -125,31 +120,6 @@ class LogbookSearch extends FilterPluginBase {
   }
 
   /**
-   * Matches the logs of any of the people, organizations and projects.
-   *
-   * @param string $alias
-   *   The alias of the log table.
-   * @param int[] $users
-   *   The ids of the people and organizations.
-   * @param int[] $projects
-   *   The ids of the projects.
-   */
-  protected function entityCondition(string $alias, array $users, array $projects): Condition {
-    $or = new Condition('OR');
-    if ($users) {
-      foreach (self::PARTICIPANTS as $field) {
-        $this->logCondition($or, $alias, $field, $users, 'IN');
-      }
-      // The logs of the projects they own.
-      $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $users, 'IN'), 'IN');
-    }
-    if ($projects) {
-      $this->logCondition($or, $alias, 'project', $projects, 'IN');
-    }
-    return $or;
-  }
-
-  /**
    * Matches the logs that contain the text.
    *
    * @param string $alias
@@ -165,7 +135,7 @@ class LogbookSearch extends FilterPluginBase {
     // The names of the people and organizations in the log, in every role,
     // and the logs of the projects they own, as a tag of them would find.
     $names = $this->ids('user', 'field_name', $like, 'LIKE');
-    foreach (self::PARTICIPANTS as $field) {
+    foreach (static::PARTICIPANTS as $field) {
       $this->logCondition($or, $alias, $field, clone $names, 'IN');
     }
     $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $names, 'IN'), 'IN');
@@ -194,53 +164,6 @@ class LogbookSearch extends FilterPluginBase {
       }
     }
     return array_values(array_unique(array_filter($patterns)));
-  }
-
-  /**
-   * Adds a condition on a field of the log.
-   *
-   * A field in the base table is matched there, any other in a subquery.
-   */
-  protected function logCondition(Condition $condition, string $alias, string $field, mixed $value, string $operator): void {
-    [$table, $column] = $this->column('log', $field);
-    if ($table === $this->table) {
-      $condition->condition("$alias.$column", $value, $operator);
-      return;
-    }
-    $condition->condition("$alias.id", $this->ids('log', $field, $value, $operator), 'IN');
-  }
-
-  /**
-   * Selects the ids of the entities whose field matches.
-   */
-  protected function ids(string $entity_type_id, string $field, mixed $value, string $operator): SelectInterface {
-    [$table, $column, $id] = $this->column($entity_type_id, $field);
-    return $this->database->select($table, 't')
-      ->fields('t', [$id])
-      ->condition("t.$column", $value, $operator);
-  }
-
-  /**
-   * Gets where a field of an entity type is stored.
-   *
-   * @return string[]
-   *   The table, the column of the main property and the column of the
-   *   entity id in that table.
-   */
-  protected function column(string $entity_type_id, string $field): array {
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    assert($storage instanceof SqlEntityStorageInterface);
-    $mapping = $storage->getTableMapping();
-    assert($mapping instanceof DefaultTableMapping);
-    $definition = $this->entityFieldManager->getFieldStorageDefinitions($entity_type_id)[$field];
-    $id = $mapping->requiresDedicatedTableStorage($definition)
-      ? 'entity_id'
-      : (string) $storage->getEntityType()->getKey('id');
-    return [
-      $mapping->getFieldTableName($field),
-      $mapping->getFieldColumnName($definition, (string) $definition->getMainPropertyName()),
-      $id,
-    ];
   }
 
 }

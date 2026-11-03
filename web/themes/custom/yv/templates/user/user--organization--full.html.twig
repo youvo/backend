@@ -65,18 +65,29 @@
     {% if profile.contact or manager %}
       <ul class="organization-profile-people">
         {% if profile.contact %}
-          <li class="organization-profile-person">
-            <span class="organization-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
-            <span>
-              <span class="organization-profile-person-name">{{ profile.contact }}</span>
-              <span class="organization-profile-person-role">{{ 'Organization contact'|t }}</span>
+          <li>
+            <span class="organization-profile-person">
+              <span class="organization-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
+              <span>
+                <span class="organization-profile-person-name">{{ profile.contact }}</span>
+                <span class="organization-profile-person-role">{{ 'Organization contact'|t }}</span>
+              </span>
             </span>
           </li>
         {% endif %}
         {% if manager %}
-          <li class="organization-profile-person organization-profile-manager">
-            {{ manager }}
-            <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+          <li>
+            {% if profile.manager_url %}
+              <a class="organization-profile-person organization-profile-manager organization-profile-person-link" href="{{ profile.manager_url }}">
+                {{ manager }}
+                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+              </a>
+            {% else %}
+              <span class="organization-profile-person organization-profile-manager">
+                {{ manager }}
+                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+              </span>
+            {% endif %}
           </li>
         {% endif %}
       </ul>
@@ -150,7 +161,15 @@
     {% endif %}
   </aside>
 
-  {# Empty for viewers without access to the view. #}
+  {# Both sections are empty for viewers without access to their view. #}
+  {% set logbook = drupal_view('logbook', 'organization', user.id) %}
+  {% if logbook %}
+    <section class="organization-profile-projects organization-profile-logbook">
+      <h2 class="organization-profile-projects-title">{{ 'Logbook'|t }}</h2>
+      {{ logbook }}
+    </section>
+  {% endif %}
+
   {% set projects = drupal_view('organization_projects', 'block', user.id) %}
   {% if projects %}
     <section class="organization-profile-projects">
