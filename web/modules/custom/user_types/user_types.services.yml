@@ -1,0 +1,5 @@
+services:
+  user_types.route_subscriber:
+    class: Drupal\user_types\Routing\UserTypesRouteSubscriber
+    tags:
+      - { name: event_subscriber }

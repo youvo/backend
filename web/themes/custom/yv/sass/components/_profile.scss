@@ -1,5 +1,5 @@
 // =============================================================================
-// ORGANIZATION PROFILE (user--organization--full)
+// USER PROFILE (user--organization--full, user--user--full)
 // =============================================================================
 // Gin sets the look; the fallbacks are the values of the default Gin theme, as
 // in the manager's pane-ui.css.
@@ -7,7 +7,7 @@
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 
-.organization-profile {
+.user-profile {
   --op-ink: var(--gin-color-title, #222330);
   --op-text: var(--gin-color-text, #222330);
   --op-muted: var(--gin-color-text-light, #545560);
@@ -32,28 +32,28 @@
   }
 }
 
-.organization-profile-main,
-.organization-profile-side {
+.user-profile-main,
+.user-profile-side {
   padding: var(--gin-spacing-l, 1.5rem);
   border-radius: var(--op-radius-l);
   background: var(--op-surface);
   box-shadow: var(--op-shadow);
 }
 
-.organization-profile-main {
+.user-profile-main {
   display: grid;
   gap: var(--gin-spacing-m, 1rem);
 }
 
 // Header: avatar, name, links and causes.
 
-.organization-profile-header {
+.user-profile-header {
   display: flex;
   align-items: center;
   gap: var(--gin-spacing-m, 1rem);
 }
 
-.organization-profile-avatar {
+.user-profile-avatar {
   flex: none;
   display: grid;
   place-items: center;
@@ -74,26 +74,30 @@
   }
 }
 
-.organization-profile-heading {
+.user-profile-avatar-round {
+  border-radius: 50%;
+}
+
+.user-profile-heading {
   display: grid;
   gap: var(--gin-spacing-xs, 0.5rem);
   min-width: 0;
 }
 
-.organization-profile-name {
+.user-profile-name {
   margin: 0;
   color: var(--op-ink);
   font-size: var(--gin-font-size-h2, 1.75rem);
   line-height: 1.2;
 }
 
-.organization-profile-short-name {
+.user-profile-short-name {
   margin: 0;
   color: var(--op-muted);
   font-size: var(--op-text-s);
 }
 
-.organization-profile-tags {
+.user-profile-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -103,8 +107,8 @@
   list-style: none;
 }
 
-.organization-profile-link,
-.organization-profile-cause {
+.user-profile-link,
+.user-profile-cause {
   display: inline-block;
   padding: 0.15em 0.65em;
   border-radius: var(--op-radius-m);
@@ -115,7 +119,7 @@
   overflow-wrap: anywhere;
 }
 
-.organization-profile-link {
+.user-profile-link {
   text-decoration: none;
 
   &:hover,
@@ -126,14 +130,14 @@
 
 // Body: aim and about.
 
-.organization-profile-aim {
+.user-profile-aim {
   margin: 0;
   color: var(--op-ink);
   font-size: var(--gin-font-size-l, 1.125rem);
   font-weight: 600;
 }
 
-.organization-profile-about {
+.user-profile-about {
   line-height: 1.6;
 
   > :first-child {
@@ -145,9 +149,21 @@
   }
 }
 
+// Skills of a creative: the skill icons in a larger size.
+
+.user-profile-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs, 0.5rem);
+
+  .mini-skill {
+    @include icon-size(small);
+  }
+}
+
 // People: the organization contact and the project manager as pills.
 
-.organization-profile-people {
+.user-profile-people {
   display: flex;
   flex-wrap: wrap;
   gap: var(--gin-spacing-s, 0.75rem);
@@ -156,7 +172,7 @@
   list-style: none;
 }
 
-.organization-profile-person {
+.user-profile-person {
   display: inline-flex;
   align-items: center;
   gap: var(--gin-spacing-xs, 0.5rem);
@@ -170,7 +186,7 @@
   }
 }
 
-.organization-profile-initials {
+.user-profile-initials {
   @include icon-size(medium);
 
   place-items: center;
@@ -181,19 +197,19 @@
   font-weight: 600;
 }
 
-.organization-profile-person-name {
+.user-profile-person-name {
   color: var(--op-ink);
   font-weight: 600;
 }
 
-.organization-profile-person-role {
+.user-profile-person-role {
   color: var(--op-muted);
   font-size: var(--op-text-xs);
 }
 
 // A pill that links to a profile: the border and the name take the accent on
 // hover and focus.
-.organization-profile-person-link {
+.user-profile-person-link {
   color: inherit;
   text-decoration: none;
   transition: border-color var(--gin-transition-fast, 0.3s ease);
@@ -210,7 +226,7 @@
 
 // The manager is rendered in the user option view mode. Lay it out in a row,
 // with the role below the name.
-.organization-profile-manager {
+.user-profile-manager {
   display: inline-grid;
   grid-template-columns: auto 1fr;
   column-gap: var(--gin-spacing-xs, 0.5rem);
@@ -231,14 +247,14 @@
     text-align: start;
   }
 
-  .organization-profile-person-role {
+  .user-profile-person-role {
     grid-column: 2;
   }
 }
 
 // Budget: a disclosure like the frontend's.
 
-.organization-profile-budget {
+.user-profile-budget {
   border: 1px solid var(--op-line);
   border-radius: var(--op-radius-m);
 
@@ -260,17 +276,17 @@
 // Side card: contact options, account data and registration answers, grouped
 // in sections divided by a hairline.
 
-.organization-profile-side {
+.user-profile-side {
   display: grid;
   gap: var(--gin-spacing-m, 1rem);
 }
 
-.organization-profile-section + .organization-profile-section {
+.user-profile-section + .user-profile-section {
   padding-top: var(--gin-spacing-m, 1rem);
   border-top: 1px solid var(--op-line);
 }
 
-.organization-profile-section-title {
+.user-profile-section-title {
   margin: 0 0 var(--gin-spacing-xs, 0.5rem);
   color: var(--op-muted);
   font-size: var(--op-text-xs);
@@ -279,7 +295,7 @@
   text-transform: uppercase;
 }
 
-.organization-profile-contact {
+.user-profile-contact {
   display: grid;
   gap: 0.25rem;
   margin: 0;
@@ -293,7 +309,7 @@
 }
 
 // Short facts: label and value on one line.
-.organization-profile-facts {
+.user-profile-facts {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.25rem var(--gin-spacing-m, 1rem);
@@ -314,7 +330,7 @@
 }
 
 // Long answers: label above the text, in a smaller size.
-.organization-profile-answers {
+.user-profile-answers {
   display: grid;
   gap: var(--gin-spacing-s, 0.75rem);
   margin: 0;
@@ -335,19 +351,20 @@
 // Projects: the organization_projects view below both columns, as a grid of
 // project teasers.
 
-.organization-profile-projects {
+.user-profile-projects {
   @media (min-width: 64rem) {
     grid-column: 1 / -1;
   }
 }
 
-.organization-profile-projects-title {
+.user-profile-projects-title {
   margin: 0 0 var(--gin-spacing-s, 0.75rem);
   color: var(--op-ink);
   font-size: var(--gin-font-size-h3, 1.25rem);
 }
 
-.organization-projects .view-content {
+.organization-projects .view-content,
+.creative-projects .view-content {
   // Gin shows every view in a layer card; the teasers are cards themselves.
   padding: 0;
   border: 0;

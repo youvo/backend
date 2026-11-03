@@ -1,0 +1,132 @@
+{#
+/**
+ * @file
+ * Full view of a creative in the backend.
+ *
+ * Follows the profile page of the frontend: avatar, name, position, city and
+ * education on top, then about, skills and portfolio. The side card holds what
+ * only the backend shows: contact options, account data and preferences.
+ * Below come the logbook and the projects the creative takes part in. The
+ * plain values in "profile" come from yv_preprocess_user() and are set only
+ * when the viewer may see the field.
+ */
+#}
+{% set account = profile.account %}
+{% set facts = [profile.city, profile.education]|filter(fact => fact) %}
+
+{{ profile_cache }}
+<article{{ attributes.addClass('user-profile') }}>
+  <div class="user-profile-main">
+    <header class="user-profile-header">
+      <div class="user-profile-avatar user-profile-avatar-round">
+        {% if content.field_avatar|field_value %}
+          {{ content.field_avatar|field_value }}
+        {% else %}
+          <span aria-hidden="true">{{ profile.initials }}</span>
+        {% endif %}
+      </div>
+      <div class="user-profile-heading">
+        <h1 class="user-profile-name">{{ profile.name }}</h1>
+        {% if profile.position %}
+          <p class="user-profile-short-name">{{ profile.position }}</p>
+        {% endif %}
+        {% if facts %}
+          <p class="user-profile-short-name">{{ facts|join(' · ') }}</p>
+        {% endif %}
+      </div>
+    </header>
+
+    {% if content.field_about|field_value %}
+      <div class="user-profile-about">{{ content.field_about|field_value }}</div>
+    {% endif %}
+
+    {% set skills = content.field_skills|field_value %}
+    {% if skills %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Skills'|t }}</h2>
+        <div class="user-profile-skills">{{ skills }}</div>
+      </section>
+    {% endif %}
+
+    {% if profile.links %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Portfolio'|t }}</h2>
+        <ul class="user-profile-tags">
+          {% for link in profile.links %}
+            <li>
+              {% if link.url %}
+                <a class="user-profile-link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+              {% else %}
+                <span class="user-profile-link">{{ link.label }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  </div>
+
+  <aside class="user-profile-side">
+    {% if profile.mail or profile.phone %}
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Contact'|t }}</h2>
+        <ul class="user-profile-contact">
+          {% if profile.mail %}
+            <li><a href="mailto:{{ profile.mail }}">{{ profile.mail }}</a></li>
+          {% endif %}
+          {% if profile.phone %}
+            <li><a href="{{ profile.phone_uri }}">{{ profile.phone }}</a></li>
+          {% endif %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if account %}
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Account'|t }}</h2>
+        <dl class="user-profile-facts">
+          {% if account.status %}
+            <div><dt>{{ 'Status'|t }}</dt><dd>{{ account.status }}</dd></div>
+          {% endif %}
+          {% if account.roles %}
+            <div><dt>{{ 'Roles'|t }}</dt><dd>{{ account.roles }}</dd></div>
+          {% endif %}
+          {% if account.created %}
+            <div><dt>{{ 'Member since'|t }}</dt><dd>{{ account.created }}</dd></div>
+          {% endif %}
+          {% if account.login %}
+            <div><dt>{{ 'Last login'|t }}</dt><dd>{{ account.login }}</dd></div>
+          {% endif %}
+        </dl>
+      </section>
+    {% endif %}
+
+    {% if profile.preferences %}
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Preferences'|t }}</h2>
+        <dl class="user-profile-facts">
+          {% for preference in profile.preferences %}
+            <div><dt>{{ preference.label }}</dt><dd>{{ preference.value }}</dd></div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+  </aside>
+
+  {# Both sections are empty for viewers without access to their view. #}
+  {% set logbook = drupal_view('logbook', 'organization', user.id) %}
+  {% if logbook %}
+    <section class="user-profile-projects user-profile-logbook">
+      <h2 class="user-profile-projects-title">{{ 'Logbook'|t }}</h2>
+      {{ logbook }}
+    </section>
+  {% endif %}
+
+  {% set projects = drupal_view('creative_projects', 'block', user.id) %}
+  {% if projects %}
+    <section class="user-profile-projects">
+      <h2 class="user-profile-projects-title">{{ 'Projects'|t }}</h2>
+      {{ projects }}
+    </section>
+  {% endif %}
+</article>

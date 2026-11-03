@@ -22,10 +22,16 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
-    // Replacement for author.
+    // Replacement for author. A log without one is named by the platform
+    // alone, which fits the texts, since all role words are feminine.
     $author = $log->getOwner();
-    $replacements['%Author'] = $this->generateLink($author->getName(), $author);
-    $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ' . $replacements['%Author'];
+    if ($this->hasAuthor()) {
+      $replacements['%Author'] = $this->generateLink($author->getName(), $author);
+      $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ' . $replacements['%Author'];
+    }
+    else {
+      $replacements['%Author'] = $replacements['%AuthorWithRole'] = $this->fakeTranslateRole();
+    }
 
     // Replacement for manager.
     if ($manager = $log->getManager()) {

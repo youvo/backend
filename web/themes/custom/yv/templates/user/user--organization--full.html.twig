@@ -18,35 +18,35 @@
 {% set account = profile.account %}
 
 {{ profile_cache }}
-<article{{ attributes.addClass('organization-profile') }}>
-  <div class="organization-profile-main">
-    <header class="organization-profile-header">
-      <div class="organization-profile-avatar">
+<article{{ attributes.addClass('user-profile') }}>
+  <div class="user-profile-main">
+    <header class="user-profile-header">
+      <div class="user-profile-avatar">
         {% if content.field_avatar|field_value %}
           {{ content.field_avatar|field_value }}
         {% else %}
           <span aria-hidden="true">{{ profile.initials }}</span>
         {% endif %}
       </div>
-      <div class="organization-profile-heading">
-        <h1 class="organization-profile-name">{{ profile.name }}</h1>
+      <div class="user-profile-heading">
+        <h1 class="user-profile-name">{{ profile.name }}</h1>
         {% if profile.short_name and profile.short_name != profile.name %}
-          <p class="organization-profile-short-name">{{ profile.short_name }}</p>
+          <p class="user-profile-short-name">{{ profile.short_name }}</p>
         {% endif %}
         {% set causes = content.field_causes|field_value %}
         {% if profile.links or causes %}
-          <ul class="organization-profile-tags">
+          <ul class="user-profile-tags">
             {% for link in profile.links %}
               <li>
                 {% if link.url %}
-                  <a class="organization-profile-link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+                  <a class="user-profile-link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
                 {% else %}
-                  <span class="organization-profile-link">{{ link.label }}</span>
+                  <span class="user-profile-link">{{ link.label }}</span>
                 {% endif %}
               </li>
             {% endfor %}
             {% for cause in causes %}
-              <li class="organization-profile-cause">#{{ cause }}</li>
+              <li class="user-profile-cause">#{{ cause }}</li>
             {% endfor %}
           </ul>
         {% endif %}
@@ -54,23 +54,23 @@
     </header>
 
     {% if content.field_aim|field_value %}
-      <p class="organization-profile-aim">{{ content.field_aim|field_value }}</p>
+      <p class="user-profile-aim">{{ content.field_aim|field_value }}</p>
     {% endif %}
 
     {% if content.field_about|field_value %}
-      <div class="organization-profile-about">{{ content.field_about|field_value }}</div>
+      <div class="user-profile-about">{{ content.field_about|field_value }}</div>
     {% endif %}
 
     {% set manager = content.field_manager|field_value %}
     {% if profile.contact or manager %}
-      <ul class="organization-profile-people">
+      <ul class="user-profile-people">
         {% if profile.contact %}
           <li>
-            <span class="organization-profile-person">
-              <span class="organization-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
+            <span class="user-profile-person">
+              <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
               <span>
-                <span class="organization-profile-person-name">{{ profile.contact }}</span>
-                <span class="organization-profile-person-role">{{ 'Organization contact'|t }}</span>
+                <span class="user-profile-person-name">{{ profile.contact }}</span>
+                <span class="user-profile-person-role">{{ 'Organization contact'|t }}</span>
               </span>
             </span>
           </li>
@@ -78,14 +78,14 @@
         {% if manager %}
           <li>
             {% if profile.manager_url %}
-              <a class="organization-profile-person organization-profile-manager organization-profile-person-link" href="{{ profile.manager_url }}">
+              <a class="user-profile-person user-profile-manager user-profile-person-link" href="{{ profile.manager_url }}">
                 {{ manager }}
-                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+                <span class="user-profile-person-role">{{ 'Project manager'|t }}</span>
               </a>
             {% else %}
-              <span class="organization-profile-person organization-profile-manager">
+              <span class="user-profile-person user-profile-manager">
                 {{ manager }}
-                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+                <span class="user-profile-person-role">{{ 'Project manager'|t }}</span>
               </span>
             {% endif %}
           </li>
@@ -94,18 +94,18 @@
     {% endif %}
 
     {% if content.field_budget|field_value %}
-      <details class="organization-profile-budget">
+      <details class="user-profile-budget">
         <summary>{{ 'Why there is no budget for creative work'|t }}</summary>
         <p>{{ content.field_budget|field_value }}</p>
       </details>
     {% endif %}
   </div>
 
-  <aside class="organization-profile-side">
+  <aside class="user-profile-side">
     {% if profile.mail or profile.phone or profile.address %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Contact'|t }}</h2>
-        <ul class="organization-profile-contact">
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Contact'|t }}</h2>
+        <ul class="user-profile-contact">
           {% if profile.mail %}
             <li><a href="mailto:{{ profile.mail }}">{{ profile.mail }}</a></li>
           {% endif %}
@@ -120,9 +120,9 @@
     {% endif %}
 
     {% if profile.fulltime or profile.volunteer or account %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Account'|t }}</h2>
-        <dl class="organization-profile-facts">
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Account'|t }}</h2>
+        <dl class="user-profile-facts">
           {% if account.status %}
             <div><dt>{{ 'Status'|t }}</dt><dd>{{ account.status }}</dd></div>
           {% endif %}
@@ -147,9 +147,9 @@
 
     {% set answers = registration|filter(item => item.value|render|striptags|trim) %}
     {% if answers %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Registration'|t }}</h2>
-        <dl class="organization-profile-answers">
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Registration'|t }}</h2>
+        <dl class="user-profile-answers">
           {% for item in answers %}
             <div>
               <dt>{{ item.label }}</dt>
@@ -164,16 +164,16 @@
   {# Both sections are empty for viewers without access to their view. #}
   {% set logbook = drupal_view('logbook', 'organization', user.id) %}
   {% if logbook %}
-    <section class="organization-profile-projects organization-profile-logbook">
-      <h2 class="organization-profile-projects-title">{{ 'Logbook'|t }}</h2>
+    <section class="user-profile-projects user-profile-logbook">
+      <h2 class="user-profile-projects-title">{{ 'Logbook'|t }}</h2>
       {{ logbook }}
     </section>
   {% endif %}
 
   {% set projects = drupal_view('organization_projects', 'block', user.id) %}
   {% if projects %}
-    <section class="organization-profile-projects">
-      <h2 class="organization-profile-projects-title">{{ 'Projects'|t }}</h2>
+    <section class="user-profile-projects">
+      <h2 class="user-profile-projects-title">{{ 'Projects'|t }}</h2>
       {{ projects }}
     </section>
   {% endif %}
