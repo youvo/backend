@@ -125,13 +125,12 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     $build['#attributes']['class'][] = 'feedback';
 
     // As on the profiles: the answers in the main column, who gave the
-    // feedback, for which project and when in a sidebar. The sidebar comes
-    // first, so small screens show it above the answers.
+    // feedback, for which project and when in a sidebar after it.
     $build['side'] = [
       '#type' => 'html_tag',
       '#tag' => 'aside',
       '#attributes' => ['class' => ['feedback-side']],
-      '#weight' => -100,
+      '#weight' => 100,
       'details' => [
         '#type' => 'html_tag',
         '#tag' => 'section',

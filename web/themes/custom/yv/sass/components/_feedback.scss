@@ -32,8 +32,7 @@
   min-width: 0;
 }
 
-// First in the markup, so small screens show it above the answers. Its
-// sections are divided as in the sidebar of the profiles.
+// Its sections are divided as in the sidebar of the profiles.
 .feedback-side {
   @include card;
   @include card-padding;
@@ -45,17 +44,6 @@
 .feedback-side-section + .feedback-side-section {
   padding-top: var(--gin-spacing-m);
   border-top: 1px solid var(--yv-line);
-}
-
-@media (min-width: $breakpoint-wide) {
-  .feedback-main,
-  .feedback-side {
-    grid-row: 1;
-  }
-
-  .feedback-side {
-    grid-column: 2;
-  }
 }
 
 .feedback-side-title {
@@ -140,14 +128,22 @@
 }
 
 // A follow-up question belongs to the question above: no line between them,
-// and indented with a thin guide.
+// and indented with a thin guide. On small screens, the answer is below the
+// question, so the guide spans both.
 .feedback-row[data-follow-up] {
   padding-top: 0;
+  padding-inline-start: var(--gin-spacing-s);
   border-top: 0;
+  border-inline-start: 2px solid var(--yv-line);
 
-  .feedback-question {
-    padding-inline-start: var(--gin-spacing-s);
-    border-inline-start: 2px solid var(--yv-line);
+  @media (min-width: $breakpoint-medium) {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+
+    .feedback-question {
+      padding-inline-start: var(--gin-spacing-s);
+      border-inline-start: 2px solid var(--yv-line);
+    }
   }
 }
 

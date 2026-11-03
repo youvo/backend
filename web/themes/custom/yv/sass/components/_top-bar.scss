@@ -1,10 +1,15 @@
 @use "../abstracts/variables.scss" as *;
 
 // Gin's own offset for the content below its top bar requires an attribute
-// this header lacks, so the theme adds it.
+// this header lacks, so the theme adds it. The top bar is fixed only on wide
+// screens; on smaller ones, the content already follows it.
 // stylelint-disable-next-line selector-class-pattern
 header.gin--navigation-top-bar--offset {
-  margin-block-start: calc(var(--drupal-displace-offset-top, 54px) + var(--gin-spacing-s));
+  margin-block-start: var(--gin-spacing-s);
+
+  @media (min-width: $breakpoint-wide) {
+    margin-block-start: calc(var(--drupal-displace-offset-top, 54px) + var(--gin-spacing-s));
+  }
 }
 
 // On small screens, the breadcrumb wraps word by word next to the title. A
