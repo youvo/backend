@@ -136,12 +136,14 @@ function yv_preprocess_user(array &$variables): void {
       'volunteer' => $value('field_count_volunteer'),
     ];
 
-    // The manager pill links to the profile of the manager.
+    // The manager pill names the manager and links to their profile.
+    $profile['manager_name'] = NULL;
     $profile['manager_url'] = NULL;
     $manager_access = $user->get('field_manager')->access('view', NULL, TRUE);
     $cache->addCacheableDependency($manager_access);
     $manager = $manager_access->isAllowed() ? $user->getManager() : NULL;
     if ($manager) {
+      $profile['manager_name'] = $manager->getName();
       $access = $manager->access('view', NULL, TRUE);
       $cache->addCacheableDependency($access)->addCacheableDependency($manager);
       if ($access->isAllowed()) {

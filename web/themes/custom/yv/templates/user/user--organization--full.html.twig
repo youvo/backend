@@ -77,16 +77,18 @@
         {% endif %}
         {% if manager %}
           <li>
-            {% if profile.manager_url %}
-              <a class="user-profile-person user-profile-manager user-profile-person-link" href="{{ profile.manager_url }}">
-                {{ manager }}
-                <span class="user-profile-person-role">{{ 'Project manager'|t }}</span>
-              </a>
-            {% else %}
-              <span class="user-profile-person user-profile-manager">
-                {{ manager }}
+            {# The same pill as the contact, with the avatar of the manager. #}
+            {% set manager_pill %}
+              {{ manager }}
+              <span>
+                <span class="user-profile-person-name">{{ profile.manager_name }}</span>
                 <span class="user-profile-person-role">{{ 'Project manager'|t }}</span>
               </span>
+            {% endset %}
+            {% if profile.manager_url %}
+              <a class="user-profile-person user-profile-person-link" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
+            {% else %}
+              <span class="user-profile-person">{{ manager_pill }}</span>
             {% endif %}
           </li>
         {% endif %}

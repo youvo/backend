@@ -65,10 +65,11 @@ function youvo_dummy_site_install_finished(): void {
         printf("  %s: %.1fs\n", $name, microtime(TRUE) - $start);
       }
     }
-    // The registrations are dated by the first project logs of the creatives.
-    creatives_dummy_log_registrations();
     // The managers take over before the first logs of the organizations.
     organizations_dummy_log_management();
+    // The registrations are dated by the first logs of the creatives, so the
+    // managers register before they manage.
+    creatives_dummy_log_registrations();
   }
   finally {
     // Restore overrides from settings.php.

@@ -16,6 +16,7 @@
   --op-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
   --op-outline: var(--gin-border-color, #d4d4d8);
   --op-chip: color-mix(in srgb, var(--op-accent) 15%, var(--op-surface));
+  --op-chip-hover: color-mix(in srgb, var(--op-accent) 25%, var(--op-surface));
   --op-radius-m: var(--gin-border-m, 0.5rem);
   --op-radius-l: var(--gin-border-l, 1rem);
   --op-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 10%));
@@ -26,6 +27,9 @@
   gap: var(--gin-spacing-l, 1.5rem);
   align-items: start;
   color: var(--op-text);
+
+  // Names, links and the short texts read better unbroken.
+  hyphens: manual;
 
   @media (min-width: 64rem) {
     grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
@@ -119,12 +123,17 @@
   overflow-wrap: anywhere;
 }
 
-.user-profile-link {
+// Link chips darken on hover, like the chips of the manager panes. Focus
+// keeps Gin's focus ring.
+a.user-profile-link {
   text-decoration: none;
+  transition: background-color var(--gin-transition-fast, 0.3s ease);
 
   &:hover,
-  &:focus {
-    text-decoration: underline;
+  &:focus-visible {
+    background: var(--op-chip-hover);
+    color: var(--op-accent);
+    text-decoration: none;
   }
 }
 
@@ -215,41 +224,21 @@
   transition: border-color var(--gin-transition-fast, 0.3s ease);
 
   &:hover,
-  &:focus {
+  &:focus-visible {
     border-color: var(--op-accent);
 
-    .user-option span {
+    .user-profile-person-name {
       color: var(--op-accent);
     }
   }
 }
 
-// The manager is rendered in the user option view mode. Lay it out in a row,
-// with the role below the name.
-.user-profile-manager {
-  display: inline-grid;
-  grid-template-columns: auto 1fr;
-  column-gap: var(--gin-spacing-xs, 0.5rem);
+// The avatar of the manager, in the size of the contact's initials.
+.user-profile-person .user-avatar {
+  @include icon-size(medium);
 
-  .user-option {
-    display: contents;
-  }
-
-  .user-option img {
-    grid-row: span 2;
-    margin: 0;
-  }
-
-  .user-option span {
-    color: var(--op-ink);
-    font-size: inherit;
-    font-weight: 600;
-    text-align: start;
-  }
-
-  .user-profile-person-role {
-    grid-column: 2;
-  }
+  flex: none;
+  cursor: inherit;
 }
 
 // Budget: a disclosure like the frontend's.
@@ -260,9 +249,15 @@
 
   summary {
     padding: var(--gin-spacing-s, 0.75rem) var(--gin-spacing-m, 1rem);
+    border-radius: var(--op-radius-m);
     color: var(--op-ink);
     font-weight: 600;
     cursor: pointer;
+    transition: color var(--gin-transition-fast, 0.3s ease);
+
+    &:hover {
+      color: var(--op-accent);
+    }
   }
 
   p {

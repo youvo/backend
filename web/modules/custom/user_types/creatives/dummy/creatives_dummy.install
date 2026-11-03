@@ -124,10 +124,11 @@ function creatives_dummy_generate_content(): void {
 /**
  * Logs the registrations of the creatives.
  *
- * Called by youvo_dummy_site_install_finished() after the projects, so a
- * creative registers a few days before the first log with them, mostly an
- * application. Creatives without such a log register some time in the year of
- * the projects. The mail with the link is skipped while the dummy content is
+ * Called by youvo_dummy_site_install_finished() after the projects and the
+ * management of the organizations, so a creative registers a few days before
+ * the first log with them, mostly an application, and a manager before they
+ * manage. Creatives without such a log register some time in the year of the
+ * projects. The mail with the link is skipped while the dummy content is
  * generated.
  */
 function creatives_dummy_log_registrations(): void {
@@ -144,15 +145,20 @@ function creatives_dummy_log_registrations(): void {
       ->condition('roles', 'creative')
       ->execute();
     foreach (Creative::loadMultiple($creative_ids) as $id => $creative) {
-      $first = $log_storage->getQuery()
-        ->accessCheck(FALSE)
+      // The first log with the creative in any role: as creative, as manager
+      // or as author. A manager registers before managing anything.
+      $query = $log_storage->getQuery()->accessCheck(FALSE);
+      $involved = $query->orConditionGroup()
         ->condition('creatives', $id)
+        ->condition('manager', $id)
+        ->condition('author', $id);
+      $first = $query->condition($involved)
         ->sort('created')
         ->range(0, 1)
         ->execute();
       $first_log = $first ? $log_storage->load(reset($first)) : NULL;
       if ($first_log instanceof LogInterface) {
-        $registered = max($one_year_ago, $first_log->getCreatedTime() - random_int(86400, 14 * 86400));
+        $registered = $first_log->getCreatedTime() - random_int(86400, 14 * 86400);
       }
       else {
         $registered = random_int($one_year_ago, $current_time);
