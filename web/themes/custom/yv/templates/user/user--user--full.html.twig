@@ -49,11 +49,23 @@
     {% if profile.organizations %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Managed organizations'|t }}</h2>
+        {% set limit = 6 %}
         <ul class="user-profile-organizations">
-          {% for organization in profile.organizations %}
+          {% for organization in profile.organizations|slice(0, limit) %}
             <li>{{ organization }}</li>
           {% endfor %}
         </ul>
+        {% if profile.organizations|length > limit %}
+          {# Opens once and stays open: all organizations are already on the page. #}
+          <details class="user-profile-more">
+            <summary class="button button--small">{{ 'and @count more'|t({'@count': profile.organizations|length - limit}) }}</summary>
+            <ul class="user-profile-organizations">
+              {% for organization in profile.organizations|slice(limit) %}
+                <li>{{ organization }}</li>
+              {% endfor %}
+            </ul>
+          </details>
+        {% endif %}
       </section>
     {% endif %}
   </div>
