@@ -22,6 +22,14 @@
         {% if facts %}
           <p class="user-profile-subtitle">{{ facts|join(' · ') }}</p>
         {% endif %}
+        {% if profile.projects %}
+          <p class="user-profile-subtitle">
+            {{ 'Projects'|t }}:
+            {% for count in profile.projects %}
+              <span class="user-profile-count">{{ count }}</span>{{ not loop.last ? ' · ' }}
+            {% endfor %}
+          </p>
+        {% endif %}
       </div>
     </header>
 

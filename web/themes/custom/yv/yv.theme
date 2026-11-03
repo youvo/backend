@@ -191,6 +191,38 @@ function yv_preprocess_user(array &$variables): void {
     }
     $profile['organizations'] = $organizations;
 
+    // Counts only the projects the viewer may see, as the projects list does.
+    $project_storage = $entity_type_manager->getStorage('project');
+    $cache->addCacheTags(['project_list']);
+    $project_ids = $project_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition($project_storage->getQuery()->orConditionGroup()
+        ->condition('field_participants', $user->id())
+        ->condition('field_applicants', $user->id()))
+      ->execute();
+    $counts = ['completed' => 0, 'ongoing' => 0, 'applied' => 0];
+    /** @var \Drupal\projects\ProjectInterface $project */
+    foreach ($project_storage->loadMultiple($project_ids) as $project) {
+      $access = $project->access('view', NULL, TRUE);
+      $cache->addCacheableDependency($access)->addCacheableDependency($project);
+      if (!$access->isAllowed()) {
+        continue;
+      }
+      $lifecycle = $project->lifecycle();
+      $participant = $project->isParticipant($user);
+      match (TRUE) {
+        $participant && $lifecycle->isCompleted() => $counts['completed']++,
+        $participant && $lifecycle->isOngoing() => $counts['ongoing']++,
+        $project->isApplicant($user) && $lifecycle->isOpen() => $counts['applied']++,
+        default => NULL,
+      };
+    }
+    $profile['projects'] = array_filter([
+      $counts['completed'] ? \Drupal::translation()->formatPlural($counts['completed'], '1 completed', '@count completed') : NULL,
+      $counts['ongoing'] ? \Drupal::translation()->formatPlural($counts['ongoing'], '1 ongoing', '@count ongoing') : NULL,
+      $counts['applied'] ? \Drupal::translation()->formatPlural($counts['applied'], '1 application', '@count applications') : NULL,
+    ]);
+
     $profile['feedback'] = [];
     $profile['courses'] = [];
     $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
