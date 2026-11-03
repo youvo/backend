@@ -9,6 +9,7 @@ dependencies:
     - rest.resource.project.apply
     - rest.resource.project.complete
     - rest.resource.question.submission
+    - taxonomy.vocabulary.tags
   content:
     - 'consumer:consumer:7f56f1d5-154f-42c1-b591-45e4e2fd235e'
     - 'consumer:consumer:dd9ace1c-8879-45ae-b137-9cc06b4b5821'
@@ -19,6 +20,7 @@ dependencies:
     - projects
     - rest
     - simple_oauth
+    - taxonomy
     - user_types
 _core:
   default_config_hash: GG3KnHcurQb3RzOvsm6i2-ZB3ONndwp8cYwUY1BslX4
@@ -30,6 +32,7 @@ permissions:
   - 'access user profiles'
   - 'authorize with client 2'
   - 'authorize with client 3'
+  - 'create terms in tags'
   - 'general creative access'
   - 'grant simple_oauth codes'
   - 'restful get progress:course:access'

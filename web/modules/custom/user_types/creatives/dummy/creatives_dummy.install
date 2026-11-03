@@ -14,6 +14,7 @@ use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\logbook\LogInterface;
 use Drupal\user\Entity\User;
 use Faker\Factory;
+use Faker\Generator;
 
 /**
  * Implements hook_install().
@@ -106,6 +107,9 @@ function creatives_dummy_generate_content(): void {
     }
   }
 
+  // Drawn after the creatives, so their seeded content stays the same.
+  creatives_dummy_tag_creatives($faker);
+
   // Delete user with ID 14 for legacy user.
   try {
     if ($account = \Drupal::entityTypeManager()
@@ -117,6 +121,62 @@ function creatives_dummy_generate_content(): void {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
       ->error('An error occurred while deleting dummy creative. %type: @message in %function (line %line of %file).', $variables);
+  }
+}
+
+/**
+ * Creates tags per skill and tags the creatives with those of their skills.
+ */
+function creatives_dummy_tag_creatives(Generator $faker): void {
+
+  // Tags by skill ID, see youvo_site_install_finished().
+  $names = [
+    1 => ['social-media', 'online-marketing', 'wordpress', 'html', 'seo'],
+    2 => ['strategie', 'kampagnen', 'zielgruppen', 'workshops'],
+    3 => ['texten', 'lektorat', 'pressearbeit', 'storytelling'],
+    4 => ['photoshop', 'illustrator', 'logo-design', 'infografiken', 'ux'],
+    5 => ['after-effects', 'videoschnitt', 'animation', 'erklärfilm'],
+    6 => ['portraits', 'eventfotografie', 'lightroom', 'reportage'],
+  ];
+
+  try {
+    $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+    $tags = [];
+    foreach ($names as $skill_id => $skill_names) {
+      foreach ($skill_names as $name) {
+        $tag = $term_storage->create([
+          'vid' => 'tags',
+          'name' => $name,
+          'field_skills' => [['target_id' => $skill_id]],
+          'langcode' => 'de',
+        ]);
+        $tag->save();
+        $tags[$skill_id][] = $tag->id();
+      }
+    }
+
+    $creative_ids = \Drupal::entityQuery('user')
+      ->accessCheck(FALSE)
+      ->condition('roles', 'creative')
+      ->sort('uid')
+      ->execute();
+    foreach (Creative::loadMultiple($creative_ids) as $creative) {
+      $candidates = [];
+      foreach (array_column($creative->get('field_skills')->getValue(), 'target_id') as $skill_id) {
+        $candidates = array_merge($candidates, $tags[$skill_id] ?? []);
+      }
+      if (!$candidates || !$faker->boolean(80)) {
+        continue;
+      }
+      $picked = $faker->randomElements($candidates, $faker->numberBetween(1, min(6, count($candidates))));
+      $creative->set('field_tags', $picked);
+      $creative->save();
+    }
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while tagging dummy creatives. %type: @message in %function (line %line of %file).', $variables);
   }
 }
 

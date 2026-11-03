@@ -197,6 +197,12 @@ resourceFields:
     publicName: skills
     enhancer:
       id: ''
+  field_tags:
+    disabled: false
+    fieldName: field_tags
+    publicName: tags
+    enhancer:
+      id: ''
   field_url:
     disabled: false
     fieldName: field_url

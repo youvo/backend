@@ -45,6 +45,18 @@
       </section>
     {% endif %}
 
+    {% set tags = content.field_tags|field_value %}
+    {% if tags %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Tags'|t }}</h2>
+        <ul class="user-profile-tags">
+          {% for tag in tags %}
+            <li><span class="user-profile-chip">{{ tag }}</span></li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
     {% if profile.links %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Portfolio'|t }}</h2>
