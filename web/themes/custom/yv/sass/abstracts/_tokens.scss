@@ -16,4 +16,14 @@ body {
 
   // As the chips of the manager panes.
   --yv-chip-hover: color-mix(in srgb, var(--yv-accent) 22%, var(--yv-surface));
+
+  // The accent reaches only 3.8:1 on a chip; darkened, it passes 4.5:1 also
+  // on hover. Gin's dark accent is light enough as it is.
+  --yv-chip-text: color-mix(in srgb, var(--yv-accent) 80%, #000);
+}
+
+// Gin's dark mode class, outside our naming pattern.
+// stylelint-disable-next-line selector-class-pattern
+.gin--dark-mode body {
+  --yv-chip-text: var(--yv-accent);
 }

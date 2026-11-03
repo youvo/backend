@@ -99,7 +99,6 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     if (!$entity instanceof FeedbackInterface) {
       return;
     }
-    $build['#attached']['library'][] = 'feedback/feedback';
     // Without an entity template, a container carries the class of the page.
     $build['#theme_wrappers'][] = 'container';
     $build['#attributes']['class'][] = 'feedback';
@@ -107,7 +106,7 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     // Who gave the feedback, for which project and when.
     $build['meta'] = [
       '#type' => 'container',
-      '#attributes' => ['class' => ['feedback__meta']],
+      '#attributes' => ['class' => ['feedback-meta']],
       '#weight' => -100,
     ];
     $titles = [
@@ -131,7 +130,7 @@ class FeedbackViewBuilder extends EntityViewBuilder {
       '#type' => 'html_tag',
       '#tag' => 'span',
       '#value' => $entity->get('bundle')->entity?->label(),
-      '#attributes' => ['class' => ['feedback__type']],
+      '#attributes' => ['class' => ['feedback-type']],
       '#weight' => ($build['meta']['author']['#weight'] ?? 0) + 0.5,
     ];
 
@@ -141,7 +140,7 @@ class FeedbackViewBuilder extends EntityViewBuilder {
       $build['comment'] = [
         '#type' => 'html_tag',
         '#tag' => 'figure',
-        '#attributes' => ['class' => ['feedback__comment']],
+        '#attributes' => ['class' => ['feedback-comment']],
         '#weight' => -90,
         'caption' => [
           '#type' => 'html_tag',
@@ -194,17 +193,17 @@ class FeedbackViewBuilder extends EntityViewBuilder {
         $build['section_' . $section] = [
           '#type' => 'html_tag',
           '#tag' => 'section',
-          '#attributes' => ['class' => ['feedback__section']],
+          '#attributes' => ['class' => ['feedback-section']],
           '#weight' => $weight++,
           'title' => [
             '#type' => 'html_tag',
             '#tag' => 'h2',
             '#value' => $this->sectionTitle($section),
-            '#attributes' => ['class' => ['feedback__section-title']],
+            '#attributes' => ['class' => ['feedback-section-title']],
           ],
           'rows' => [
             '#type' => 'container',
-            '#attributes' => ['class' => ['feedback__rows']],
+            '#attributes' => ['class' => ['feedback-rows']],
           ] + $rows,
         ];
       }
@@ -228,31 +227,33 @@ class FeedbackViewBuilder extends EntityViewBuilder {
 
     $definition = $entity->getFieldDefinition($name);
     $question = (string) $definition?->getDescription() ?: (string) $definition?->getLabel();
-    $classes = ['feedback__answer', 'feedback__answer--' . ($field['#formatter'] ?? 'default')];
+    $row = ['class' => ['feedback-row']];
+    if ($follow_up) {
+      $row['data-follow-up'] = 'true';
+    }
+    $answer = [
+      'class' => ['feedback-answer'],
+      'data-format' => $field['#formatter'] ?? 'default',
+    ];
     if ($definition?->getFieldStorageDefinition()->isMultiple()) {
-      $classes[] = 'feedback__answer--multiple';
+      $answer['data-multiple'] = 'true';
     }
     if ($definition?->getType() === 'boolean') {
-      $classes[] = $entity->get($name)->value ? 'feedback__answer--yes' : 'feedback__answer--no';
+      $answer['data-answer'] = $entity->get($name)->value ? 'yes' : 'no';
     }
 
     return [
       '#type' => 'container',
-      '#attributes' => [
-        'class' => array_filter([
-          'feedback__row',
-          $follow_up ? 'feedback__row--follow-up' : NULL,
-        ]),
-      ],
+      '#attributes' => $row,
       'question' => [
         '#type' => 'html_tag',
         '#tag' => 'div',
         '#value' => $question,
-        '#attributes' => ['class' => ['feedback__question']],
+        '#attributes' => ['class' => ['feedback-question']],
       ],
       'answer' => [
         '#type' => 'container',
-        '#attributes' => ['class' => $classes],
+        '#attributes' => $answer,
         'field' => $field,
       ],
     ];

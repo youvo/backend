@@ -1,5 +1,0 @@
-feedback:
-  version: VERSION
-  css:
-    theme:
-      css/feedback.css: {}
