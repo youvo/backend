@@ -37,8 +37,9 @@
     </testsuite>
   </testsuites>
 
-  <!-- Report deprecations that Drupal triggers with @trigger_error(). -->
-  <source ignoreSuppressionOfDeprecations="true">
+  <!-- Report deprecations that Drupal triggers with @trigger_error(), but only
+       those our code or tests trigger, not contrib calling core or vendor. -->
+  <source ignoreSuppressionOfDeprecations="true" ignoreIndirectDeprecations="true">
     <include>
       <directory>./web/modules/custom</directory>
     </include>
@@ -46,6 +47,12 @@
       <directory>./web/modules/custom/*/tests</directory>
       <directory>./web/modules/custom/*/*/tests</directory>
     </exclude>
+    <!-- Drupal's BootstrapErrorHandler forwards errors to PHPUnit through call_user_func().
+         Skip both frames so PHPUnit classifies the trigger by the real caller. -->
+    <deprecationTrigger>
+      <function>call_user_func</function>
+      <method>Drupal\TestTools\ErrorHandler\BootstrapErrorHandler::__invoke</method>
+    </deprecationTrigger>
   </source>
 
 </phpunit>
