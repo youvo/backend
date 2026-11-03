@@ -29,7 +29,11 @@
 .user-profile-side {
   @include card;
 
-  padding: var(--gin-spacing-l);
+  padding: var(--gin-spacing-m);
+
+  @media (min-width: 40rem) {
+    padding: var(--gin-spacing-l);
+  }
 }
 
 .user-profile-main {
@@ -70,6 +74,11 @@
   margin: 0;
   color: var(--yv-muted);
   font-size: var(--gin-font-size-s);
+}
+
+// A line breaks between the counts, not within one.
+.user-profile-count {
+  white-space: nowrap;
 }
 
 .user-profile-tags {
