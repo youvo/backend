@@ -9,4 +9,5 @@ dependencies:
   - academy:academy
   - lectures:lectures
   - paragraphs:paragraphs
+  - progress:progress
   - youvo_dummy:youvo_dummy

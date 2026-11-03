@@ -14,8 +14,8 @@ dependencies:
     - rest.resource.project.hide
     - rest.resource.project.mediate
     - rest.resource.project.notify
-    - rest.resource.project.publish
     - rest.resource.project.promote
+    - rest.resource.project.publish
     - rest.resource.project.reset
     - rest.resource.project.show
     - rest.resource.project.submit
@@ -89,3 +89,5 @@ permissions:
   - 'view detectable log'
   - 'view hidden projects'
   - 'view observable log'
+  - 'view user email addresses'
+

@@ -1,0 +1,3 @@
+views.argument.project_creative:
+  type: views.argument.numeric
+  label: 'Projects of a creative'

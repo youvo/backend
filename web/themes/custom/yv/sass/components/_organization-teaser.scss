@@ -1,0 +1,38 @@
+// =============================================================================
+// ORGANIZATION TEASER (user--organization--teaser)
+// =============================================================================
+
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+
+.organization-teaser {
+  @include card-link(".organization-teaser-name a");
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-s);
+  height: 100%;
+  padding: var(--gin-spacing-s);
+  border: 1px solid var(--yv-outline);
+  border-radius: var(--gin-border-m);
+  background: var(--yv-surface);
+  transition: border-color var(--gin-transition-fast);
+
+  &:has(.organization-teaser-name a):hover {
+    border-color: var(--yv-accent);
+  }
+}
+
+.organization-teaser-avatar {
+  @include initials-avatar(to-rem(48), var(--gin-border-s));
+}
+
+.organization-teaser-name {
+  min-width: 0;
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}

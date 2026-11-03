@@ -20,3 +20,19 @@ function logbook_deploy_archive_log_texts(): void {
   \Drupal::moduleHandler()->loadInclude('logbook', 'install');
   logbook_import_log_texts();
 }
+
+/**
+ * Fixes the grammar of the log text of the project mediate pattern.
+ *
+ * The import only adds missing texts. A text someone edited is left alone.
+ */
+function logbook_deploy_mediate_log_text(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('log_text');
+  /** @var \Drupal\logbook\LogTextInterface $log_text */
+  foreach ($storage->loadByProperties(['log_pattern' => 'project_mediate']) as $log_text) {
+    if ($log_text->get('text')->value === 'Die %AuthorWithRole hat das Projekt %Project wurde an %Creatives vermittelt.') {
+      $log_text->set('text', 'Die %AuthorWithRole hat das Projekt %Project an %Creatives vermittelt.');
+      $log_text->save();
+    }
+  }
+}

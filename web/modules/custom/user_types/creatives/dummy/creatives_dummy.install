@@ -85,7 +85,8 @@ function creatives_dummy_generate_content(): void {
       'field_skills' => youvo_dummy_get_random_skills(),
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
-      'field_url' => 'https://www.' . $faker->optional(0.8)->domainName(),
+      // Drawn in place, so the seeded content after it stays the same.
+      'field_url' => ($domain = $faker->optional(0.8)->domainName()) ? 'https://www.' . $domain : NULL,
       'field_education' => $faker->optional(0.8)
         ->passthrough($faker->randomElement($schools) . ' ' . $faker->city()),
       'field_jobs' => $faker->boolean(),
@@ -122,49 +123,51 @@ function creatives_dummy_generate_content(): void {
 /**
  * Logs the registrations of the creatives.
  *
- * Called by youvo_dummy_site_install_finished() after the projects, so a
- * creative registers a few days before the first log with them, mostly an
- * application. Creatives without such a log register some time in the year of
- * the projects. The mail with the link is skipped while the dummy content is
- * generated.
+ * Runs after the projects and the organization management, so a creative
+ * registers before their first log. The registration mail is skipped while the
+ * dummy content is generated.
  */
 function creatives_dummy_log_registrations(): void {
   $current_time = \Drupal::time()->getRequestTime();
   $one_year_ago = $current_time - 31536000;
   /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
   $event_dispatcher = \Drupal::service('event_dispatcher');
+  /** @var \Drupal\Core\Session\AccountSwitcherInterface $account_switcher */
+  $account_switcher = \Drupal::service('account_switcher');
   try {
-    $database = \Drupal::database();
     $log_storage = \Drupal::entityTypeManager()->getStorage('log');
-    $user_storage = \Drupal::entityTypeManager()->getStorage('user');
     $creative_ids = \Drupal::entityQuery('user')
       ->accessCheck(FALSE)
       ->condition('roles', 'creative')
       ->execute();
     foreach (Creative::loadMultiple($creative_ids) as $id => $creative) {
-      $first = $log_storage->getQuery()
-        ->accessCheck(FALSE)
+      // A manager registers before managing anything.
+      $query = $log_storage->getQuery()->accessCheck(FALSE);
+      $involved = $query->orConditionGroup()
         ->condition('creatives', $id)
+        ->condition('manager', $id)
+        ->condition('author', $id);
+      $first = $query->condition($involved)
         ->sort('created')
         ->range(0, 1)
         ->execute();
       $first_log = $first ? $log_storage->load(reset($first)) : NULL;
       if ($first_log instanceof LogInterface) {
-        $registered = max($one_year_ago, $first_log->getCreatedTime() - random_int(86400, 14 * 86400));
+        $registered = $first_log->getCreatedTime() - random_int(86400, 14 * 86400);
       }
       else {
         $registered = random_int($one_year_ago, $current_time);
       }
-      // Saving the creative again makes filefield_paths log a notice for the
-      // avatar, which is already attached. The registration date is written
-      // directly instead.
-      $database->update('users_field_data')
-        ->fields(['created' => $registered])
-        ->condition('uid', $id)
-        ->execute();
-      $user_storage->resetCache([$id]);
+      youvo_dummy_set_account_times((int) $id, $registered);
       $creative->set('created', $registered);
-      $event_dispatcher->dispatch(new CreativeRegisterEvent($creative, 'https://www.youvo.org', $registered));
+      // Creatives register themselves, so they author the log.
+      $account_switcher->switchTo($creative);
+      try {
+        $event_dispatcher->dispatch(new CreativeRegisterEvent($creative, 'https://www.youvo.org', $registered));
+      }
+      finally {
+        $account_switcher->switchBack();
+      }
     }
   }
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {

@@ -38,7 +38,7 @@
           anchor.after(button);
 
           const setOpen = (open) => {
-            form.classList.toggle('logbook-filters--collapsed', !open);
+            form.classList.toggle('logbook-filters-collapsed', !open);
             button.setAttribute('aria-expanded', String(open));
           };
           button.addEventListener('click', () => {

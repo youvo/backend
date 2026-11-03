@@ -52,4 +52,18 @@ final class Profile {
     return static::account($account) instanceof Organization;
   }
 
+  /**
+   * Gets the name of a creative or an organization.
+   *
+   * @return string
+   *   The name, or an empty string for other accounts and missing names.
+   */
+  public static function name(AccountInterface $account): string {
+    $account = static::account($account);
+    if ($account instanceof Creative || $account instanceof Organization) {
+      return $account->getName();
+    }
+    return '';
+  }
+
 }

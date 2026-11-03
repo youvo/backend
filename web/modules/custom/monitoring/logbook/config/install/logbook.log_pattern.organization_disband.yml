@@ -2,7 +2,7 @@ langcode: de
 status: true
 dependencies: {  }
 id: organization_disband
-label: 'Organization Disband'
+label: Disband
 tokens:
   -
     token: '%AuthorWithRole'

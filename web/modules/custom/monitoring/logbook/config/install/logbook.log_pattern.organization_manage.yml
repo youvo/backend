@@ -2,7 +2,7 @@ langcode: de
 status: true
 dependencies: {  }
 id: organization_manage
-label: 'Organization Manage'
+label: Manage
 tokens:
   -
     token: '%AuthorWithRole'

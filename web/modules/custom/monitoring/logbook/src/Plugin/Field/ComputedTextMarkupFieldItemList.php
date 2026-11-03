@@ -22,28 +22,31 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
-    // Replacement for author.
+    // A log without an author names only the platform. The texts still fit,
+    // because all role words are feminine.
     $author = $log->getOwner();
-    $replacements['%Author'] = $this->generateLink($author->getName(), $author);
-    $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ' . $replacements['%Author'];
+    if ($this->hasAuthor()) {
+      $replacements['%Author'] = $this->generateLink($author->getName(), $author);
+      $replacements['%AuthorWithRole'] = $this->fakeTranslateRole() . ' ' . $replacements['%Author'];
+    }
+    else {
+      $replacements['%Author'] = $replacements['%AuthorWithRole'] = $this->fakeTranslateRole();
+    }
 
-    // Replacement for manager.
     if ($manager = $log->getManager()) {
       $replacements['%Manager'] = $this->generateLink($manager->getName(), $manager);
     }
 
-    // Replacement for project.
     $project = $log->getProject();
     if ($project) {
       $replacements['%Project'] = $this->generateLink($project->getTitle(), $project);
     }
 
-    // Replacement for organization. Organization logs have no project.
+    // Organization logs have no project.
     if ($organization = $log->getOrganization() ?? $project?->getOwner()) {
       $replacements['%Organization'] = $this->generateLink($organization->getName(), $organization);
     }
 
-    // Replacement for creatives.
     if ($creatives = $log->getCreatives()) {
       $names = [];
       foreach ($creatives as $creative) {

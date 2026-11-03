@@ -263,9 +263,29 @@ display:
       tags:
         - 'config:log_pattern_list'
         - log_list
-  organization:
-    id: organization
-    display_title: Organization
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: logbook
+      use_admin_theme: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags:
+        - 'config:log_pattern_list'
+        - log_list
+  profile:
+    id: profile
+    display_title: Profile
     display_plugin: block
     position: 2
     display_options:
@@ -350,34 +370,14 @@ display:
         arguments: false
         filters: false
         filter_groups: false
-      css_class: 'gin-layer-wrapper logbook-organization'
+      css_class: 'gin-layer-wrapper logbook-profile'
       use_ajax: true
-      display_description: 'The logs of an organization, on its profile.'
+      display_description: 'The logs of an organization or a creative, on their profile.'
       display_extenders: {  }
-      block_description: 'Organization logbook'
+      block_description: 'Profile logbook'
       block_hide_empty: false
       allow:
         items_per_page: false
-    cache_metadata:
-      max-age: -1
-      contexts:
-        - 'languages:language_content'
-        - 'languages:language_interface'
-        - url
-        - url.query_args
-        - user.permissions
-      tags:
-        - 'config:log_pattern_list'
-        - log_list
-  page_1:
-    id: page_1
-    display_title: Page
-    display_plugin: page
-    position: 1
-    display_options:
-      display_extenders: {  }
-      path: logbook
-      use_admin_theme: true
     cache_metadata:
       max-age: -1
       contexts:

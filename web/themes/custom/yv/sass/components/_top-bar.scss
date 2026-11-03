@@ -1,4 +1,6 @@
+// Gin's own offset for the content below its top bar requires an attribute
+// this header lacks, so the theme adds it.
 // stylelint-disable-next-line selector-class-pattern
 header.gin--navigation-top-bar--offset {
-  margin-block-start: calc(54px + var(--gin-spacing-s));
+  margin-block-start: calc(var(--drupal-displace-offset-top, 54px) + var(--gin-spacing-s));
 }

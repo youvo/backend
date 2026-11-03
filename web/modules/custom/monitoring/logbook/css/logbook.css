@@ -210,7 +210,7 @@
     flex-basis: 100%;
   }
 
-  .view-logbook .logbook-filters--collapsed > :is(.js-form-item-type, fieldset) {
+  .view-logbook .logbook-filters-collapsed > :is(.js-form-item-type, fieldset) {
     display: none;
   }
 }
@@ -298,6 +298,11 @@
   margin-top: 0;
 }
 
+/* Lines separate the logs; the card already closes the list. */
+.view-logbook tbody tr:last-child {
+  border-bottom: 0;
+}
+
 .view-logbook table {
   margin-bottom: 0;
 }
@@ -330,7 +335,7 @@
   max-width: 75ch;
 }
 
-.logbook-event__message {
+.logbook-event-message {
   color: var(--logbook-muted);
   font-size: var(--logbook-text-xs);
 }
@@ -346,20 +351,20 @@
   hyphens: manual;
 }
 
-.logbook-type--positive {
+.logbook-type[data-tone="positive"] {
   background: color-mix(in srgb, var(--logbook-green, #26a769) 28%, var(--logbook-surface, #fff));
 }
 
-.logbook-type--attention {
+.logbook-type[data-tone="attention"] {
   background: color-mix(in srgb, var(--logbook-yellow, #d8b234) 40%, var(--logbook-surface, #fff));
 }
 
-.logbook-type--celebrate {
+.logbook-type[data-tone="celebrate"] {
   background: color-mix(in srgb, var(--logbook-teal, #1da8a5) 40%, var(--logbook-surface, #fff));
 }
 
 /* On its tinted row, the pill would blend in: it is set off in white. */
-.view-logbook tr.logbook-row--celebrate .logbook-type--celebrate {
+.view-logbook tr.logbook-row-celebrate .logbook-type[data-tone="celebrate"] {
   background: var(--logbook-surface, #fff);
 }
 
@@ -382,47 +387,47 @@
   mask: no-repeat center / contain;
 }
 
-.logbook-icon--lock {
+.logbook-icon[data-icon="lock"] {
   mask-image: url('../assets/lock.svg');
 }
 
-.logbook-icon--globe {
+.logbook-icon[data-icon="globe"] {
   mask-image: url('../assets/globe.svg');
 }
 
-.logbook-icon--star {
+.logbook-icon[data-icon="star"] {
   mask-image: url('../assets/star.svg');
 }
 
-.logbook-icon--archive {
+.logbook-icon[data-icon="archive"] {
   mask-image: url('../assets/archive.svg');
 }
 
-.logbook-icon--hidden {
+.logbook-icon[data-icon="hidden"] {
   mask-image: url('../assets/eye-off.svg');
 }
 
 /* A completed project is the ultimate log: the whole row is colored, with the
    sparkle pattern and the finish illustration of the old youvo.org logbook.
    The tint is set on the row, so the pattern runs across the cells. */
-.view-logbook tr.logbook-row--celebrate {
+.view-logbook tr.logbook-row-celebrate {
   background-color: color-mix(in srgb, var(--logbook-teal) 26%, var(--logbook-surface));
   background-image: url('../assets/sparkle.svg');
   background-position: center;
   background-size: 420px auto;
 }
 
-.view-logbook tr.logbook-row--celebrate td {
+.view-logbook tr.logbook-row-celebrate td {
   position: relative;
   height: 84px;
   background: none;
 }
 
-.view-logbook tr.logbook-row--celebrate td.views-field-log-event-text {
+.view-logbook tr.logbook-row-celebrate td.views-field-log-event-text {
   padding-right: 150px;
 }
 
-.view-logbook tr.logbook-row--celebrate td.views-field-log-event-text::after {
+.view-logbook tr.logbook-row-celebrate td.views-field-log-event-text::after {
   content: '';
   position: absolute;
   right: 12px;
@@ -485,7 +490,7 @@
   /* The celebrated row is a tinted band, as on a wide screen: square and
      without lines above and below, as the tint sets it apart. The
      illustration would cover the text. */
-  .view-logbook tr.logbook-row--celebrate {
+  .view-logbook tr.logbook-row-celebrate {
     /* The band reaches the edges of the card, so its pill, text and icon
        stay on the lines of the other logs. */
     margin-inline: calc(-1 * var(--gin-spacing-s, 0.75rem));
@@ -499,24 +504,24 @@
     overflow: visible;
   }
 
-  .view-logbook tbody tr:has(+ tr.logbook-row--celebrate) {
+  .view-logbook tbody tr:has(+ tr.logbook-row-celebrate) {
     border-bottom-color: transparent;
   }
 
   /* Bands that follow each other are told apart by a line in their tint. */
-  .view-logbook tr.logbook-row--celebrate:has(+ tr.logbook-row--celebrate) {
+  .view-logbook tr.logbook-row-celebrate:has(+ tr.logbook-row-celebrate) {
     border-bottom: 1px solid color-mix(in srgb, var(--logbook-teal) 45%, var(--logbook-surface));
   }
 
-  .view-logbook tr.logbook-row--celebrate td {
+  .view-logbook tr.logbook-row-celebrate td {
     height: auto;
   }
 
-  .view-logbook tr.logbook-row--celebrate td.views-field-log-event-text {
+  .view-logbook tr.logbook-row-celebrate td.views-field-log-event-text {
     padding-right: 0;
   }
 
-  .view-logbook tr.logbook-row--celebrate td.views-field-log-event-text::after {
+  .view-logbook tr.logbook-row-celebrate td.views-field-log-event-text::after {
     display: none;
   }
 }
@@ -525,18 +530,18 @@
    list. */
 .view-logbook .logbook-empty {
   padding: var(--gin-spacing-l, 1.5rem);
-  border-radius: var(--gin-border-l, 1rem);
+  border-radius: var(--gin-border-l, 0.75rem);
   background: var(--logbook-surface);
-  box-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 0.05));
+  box-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 2%), 0 3px 4px rgb(0 0 0 / 3%), 0 5px 8px rgb(0 0 0 / 4%));
 }
 
-.view-logbook .logbook-empty__title {
+.view-logbook .logbook-empty-title {
   margin: 0;
   color: var(--logbook-ink);
   font-weight: 600;
 }
 
-.view-logbook .logbook-empty__hint {
+.view-logbook .logbook-empty-hint {
   margin: 0.25rem 0 0;
   color: var(--logbook-muted);
 }
@@ -549,41 +554,16 @@
   }
 }
 
-/* The organization logbook is one card with its button: Gin's card is on the
-   view, not on its content. */
-.logbook-organization .view-content.gin-layer-wrapper {
+/* Gin's card goes on the whole view, so it also holds the load more button. */
+.logbook-profile .view-content.gin-layer-wrapper {
   padding: 0;
   border: 0;
   background: none;
   box-shadow: none;
 }
 
-/* The load more button of the organization logbook, centred below the list.
-   Gin sets the margins of every item list, hence the longer selectors. */
-.item-list .logbook-load-more {
-  display: flex;
-  justify-content: center;
-  /* The same small gap above and below the button: the bottom margin takes
-     back part of the card's padding. */
+/* The bottom margin takes back part of the card's padding, so the gaps above
+   and below the button match. */
+.logbook-profile .item-list .logbook-load-more {
   margin: var(--gin-spacing-m, 1rem) 0 calc(var(--gin-spacing-m, 1rem) - var(--gin-spacing-l, 1.5rem));
-  padding: 0;
-  list-style: none;
-}
-
-.item-list .logbook-load-more li {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Gin gives every button a vertical margin; the list sets the gaps here. */
-.item-list .logbook-load-more .button {
-  margin-block: 0;
-}
-
-/* The first new log gets focus from the script after load more; it is read
-   out, not highlighted. */
-.logbook-organization tr[tabindex='-1']:focus {
-  outline: none;
-  box-shadow: none;
 }

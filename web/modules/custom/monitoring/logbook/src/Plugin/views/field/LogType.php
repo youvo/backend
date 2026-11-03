@@ -32,12 +32,10 @@ class LogType extends FieldPluginBase {
       return '';
     }
     $pattern = $log->getPattern();
-    $classes = 'logbook-type';
-    if ($tone = $pattern->getTone()) {
-      $classes .= ' logbook-type--' . Html::cleanCssIdentifier($tone);
-    }
+    $tone = $pattern->getTone();
+    $attribute = $tone ? ' data-tone="' . Html::cleanCssIdentifier($tone) . '"' : '';
     $label = trim(str_replace('Project ', '', (string) $pattern->label()));
-    return Markup::create('<span class="' . $classes . '">' . Html::escape($label) . '</span>');
+    return Markup::create('<span class="logbook-type"' . $attribute . '>' . Html::escape($label) . '</span>');
   }
 
 }

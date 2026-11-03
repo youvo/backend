@@ -10,6 +10,8 @@ use Drupal\courses\Entity\Course;
 use Drupal\file\FileInterface;
 use Drupal\lectures\Entity\Lecture;
 use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\progress\Entity\CourseProgress;
+use Drupal\progress\Entity\LectureProgress;
 use Drupal\questionnaire\Entity\Question;
 
 /**
@@ -394,4 +396,80 @@ function academy_dummy_get_stock_illustration(int $i): FileInterface {
  */
 function academy_dummy_get_test_file(): FileInterface {
   return youvo_dummy_get_file('academy_dummy', 'file/test.txt');
+}
+
+/**
+ * Generates the academy progress of the creatives.
+ *
+ * Runs after the registrations, so creatives take courses after registering.
+ * Uses random_int() instead of Faker: Faker is seeded, and extra calls would
+ * shift the generated content.
+ */
+function academy_dummy_generate_progress(): void {
+  $now = \Drupal::time()->getRequestTime();
+  $day = 86400;
+  $courses = array_values(array_filter(
+    Course::loadMultiple(),
+    static fn (Course $course) => $course->isPublished() && $course->getLectures(),
+  ));
+  if (!$courses) {
+    return;
+  }
+
+  $creative_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('roles', 'creative')
+    ->condition('uid', 1, '!=')
+    ->execute();
+  $user_storage = \Drupal::entityTypeManager()->getStorage('user');
+  foreach ($user_storage->loadMultiple($creative_ids) as $creative) {
+    if (random_int(1, 3) === 1) {
+      continue;
+    }
+
+    // Not shuffle(): it draws from the generator that Faker seeds.
+    $order = array_keys($courses);
+    for ($i = count($order) - 1; $i > 0; $i--) {
+      $j = random_int(0, $i);
+      [$order[$i], $order[$j]] = [$order[$j], $order[$i]];
+    }
+    $order = array_slice($order, 0, random_int(1, min(3, count($order))));
+
+    $time = random_int((int) $creative->getCreatedTime(), $now);
+    foreach ($order as $index) {
+      $course = $courses[$index];
+      $enrolled = $time;
+      $lectures = $course->getLectures();
+      $done = 0;
+      foreach (array_slice($lectures, 0, random_int(0, count($lectures))) as $lecture) {
+        $time += random_int(3600, 3 * $day);
+        if ($time > $now) {
+          break;
+        }
+        LectureProgress::create([
+          'uid' => $creative->id(),
+          'lecture' => $lecture->id(),
+          'langcode' => 'de',
+          'enrolled' => $time - random_int(600, 3600),
+          'accessed' => $time,
+          'completed' => $time,
+        ])->save();
+        $done++;
+      }
+      $time = min($time, $now);
+      CourseProgress::create([
+        'uid' => $creative->id(),
+        'course' => $course->id(),
+        'langcode' => 'de',
+        'enrolled' => $enrolled,
+        'accessed' => max($enrolled, $time),
+        'completed' => $done === count($lectures) ? $time : 0,
+      ])->save();
+
+      $time += random_int($day, 10 * $day);
+      if ($time > $now) {
+        break;
+      }
+    }
+  }
 }
