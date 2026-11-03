@@ -10,16 +10,9 @@
 {% set project = elements['#project'] %}
 {{ project_cache }}
 <article class="project-teaser">
-  {# The image repeats the title link, so it stays out of the tab order. #}
-  {% if url %}
-    <a class="project-teaser-image" href="{{ url }}" tabindex="-1" aria-hidden="true">
-      {{ elements.field_image|field_value }}
-    </a>
-  {% else %}
-    <div class="project-teaser-image">
-      {{ elements.field_image|field_value }}
-    </div>
-  {% endif %}
+  <div class="project-teaser-image">
+    {{ elements.field_image|field_value }}
+  </div>
   <div class="project-teaser-body">
     <div class="project-teaser-heading">
       <h3 class="project-teaser-title">
