@@ -43,7 +43,7 @@ class CorrespondenceRenderTest extends ProjectResourceTestBase {
     $this->assertStringNotContainsString('onclick', $html);
     $this->assertStringContainsString('logbook-timeline', $html);
     $this->assertStringContainsString('data-timeline-type="mail"', $html);
-    $this->assertStringContainsString('logbook-timeline--mail', $html);
+    $this->assertStringContainsString('data-timeline-type="mail"', $html);
     $this->assertStringContainsString('<details', $html);
     $this->assertStringContainsString('S &lt;i&gt;x&lt;/i&gt;', $html);
     $this->assertStringNotContainsString('logbook-timeline-failed', $html);

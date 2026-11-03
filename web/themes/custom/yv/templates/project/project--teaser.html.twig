@@ -27,13 +27,13 @@
       {% endif %}
     </div>
     <div class="project-teaser-meta">
-      <span class="project-teaser-status project-teaser-status-{{ project.field_lifecycle.value|clean_class }}">{{ elements.field_lifecycle|field_value }}</span>
+      <span class="project-teaser-badge" data-badge="{{ project.field_lifecycle.value|clean_class }}">{{ elements.field_lifecycle|field_value }}</span>
       {% set role_labels = {managed: 'Manager'|t, participant: 'Participant'|t, applied: 'Applied'|t} %}
       {% if creative_role %}
-        <span class="project-teaser-status project-teaser-{{ creative_role }}">{{ role_labels[creative_role] }}</span>
+        <span class="project-teaser-badge" data-badge="{{ creative_role }}">{{ role_labels[creative_role] }}</span>
       {% endif %}
       {% if not project.isPublished() %}
-        <span class="project-teaser-status project-teaser-hidden">{{ 'Hidden'|t }}</span>
+        <span class="project-teaser-badge" data-badge="hidden">{{ 'Hidden'|t }}</span>
       {% endif %}
       <span class="project-teaser-skills">{{ elements.field_skills|field_value }}</span>
     </div>

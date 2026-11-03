@@ -35,7 +35,7 @@
                 });
               }
               if (String(data.entity_id).startsWith(TEXT_PREFIX)) {
-                data.class = 'logbook-search__text';
+                data.class = 'logbook-search-text';
               }
             },
           });

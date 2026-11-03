@@ -17,3 +17,15 @@
 .item-list .logbook-load-more .button {
   margin-block: 0;
 }
+
+/* After load more, the script focuses the first new item. Keyboard users see
+   where they are; after a click the item is not highlighted. */
+.view :is(tr, .view-content > *)[tabindex='-1']:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+.view :is(tr, .view-content > *)[tabindex='-1']:focus-visible {
+  outline: 2px solid var(--gin-color-focus, #3f78b5);
+  outline-offset: -2px;
+}

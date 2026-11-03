@@ -1,31 +1,15 @@
 // =============================================================================
 // USER PROFILE (user--organization--full, user--user--full)
 // =============================================================================
-// Fallbacks are the default Gin theme values, as in the manager's pane-ui.css.
 
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 
 .user-profile {
-  --op-ink: var(--gin-color-title, #222330);
-  --op-text: var(--gin-color-text, #222330);
-  --op-muted: var(--gin-color-text-light, #545560);
-  --op-accent: var(--gin-color-primary, #3f78b5);
-  --op-surface: var(--gin-bg-layer, #fff);
-  --op-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
-  --op-outline: var(--gin-border-color, #d4d4d8);
-  --op-chip: color-mix(in srgb, var(--op-accent) 15%, var(--op-surface));
-  --op-chip-hover: color-mix(in srgb, var(--op-accent) 25%, var(--op-surface));
-  --op-radius-m: var(--gin-border-m, 0.5rem);
-  --op-radius-l: var(--gin-border-l, 1rem);
-  --op-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 10%));
-  --op-text-s: var(--gin-font-size-s, 0.875rem);
-  --op-text-xs: var(--gin-font-size-xs, 0.8125rem);
-
   display: grid;
-  gap: var(--gin-spacing-l, 1.5rem);
+  gap: var(--gin-spacing-l);
   align-items: start;
-  color: var(--op-text);
+  color: var(--yv-text);
 
   // Names, links and short texts read better unbroken.
   hyphens: manual;
@@ -43,106 +27,85 @@
 
 .user-profile-main,
 .user-profile-side {
-  padding: var(--gin-spacing-l, 1.5rem);
-  border-radius: var(--op-radius-l);
-  background: var(--op-surface);
-  box-shadow: var(--op-shadow);
+  @include card;
+
+  padding: var(--gin-spacing-l);
 }
 
 .user-profile-main {
   display: grid;
-  gap: var(--gin-spacing-m, 1rem);
+  gap: var(--gin-spacing-m);
 }
 
 .user-profile-header {
   display: flex;
   align-items: center;
-  gap: var(--gin-spacing-m, 1rem);
+  gap: var(--gin-spacing-m);
 }
 
 .user-profile-avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: to-rem(88);
-  height: to-rem(88);
-  overflow: hidden;
-  border-radius: var(--op-radius-m);
-  background: var(--op-chip);
-  color: var(--op-accent);
-  font-size: var(--gin-font-size-xl, 1.5rem);
-  font-weight: 600;
+  @include initials-avatar(to-rem(88), var(--gin-border-m));
 
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  font-size: var(--gin-font-size-xl);
+
+  &[data-shape="round"] {
+    border-radius: 50%;
   }
-}
-
-.user-profile-avatar-round {
-  border-radius: 50%;
 }
 
 .user-profile-heading {
   display: grid;
-  gap: var(--gin-spacing-xs, 0.5rem);
+  gap: var(--gin-spacing-xs);
   min-width: 0;
 }
 
 .user-profile-name {
   margin: 0;
-  color: var(--op-ink);
-  font-size: var(--gin-font-size-h2, 1.75rem);
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h2);
   line-height: 1.2;
 }
 
-.user-profile-short-name {
+.user-profile-subtitle {
   margin: 0;
-  color: var(--op-muted);
-  font-size: var(--op-text-s);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
 }
 
 .user-profile-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--gin-spacing-xs, 0.5rem);
+  gap: var(--gin-spacing-xs);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.user-profile-link,
-.user-profile-cause {
+.user-profile-chip {
+  @include chip(var(--gin-border-m));
+
   display: inline-block;
-  padding: 0.15em 0.65em;
-  border-radius: var(--op-radius-m);
-  background: var(--op-chip);
-  color: var(--op-accent);
-  font-size: var(--op-text-xs);
-  font-weight: 600;
   overflow-wrap: anywhere;
-}
 
-// Like the chips of the manager panes. Focus keeps Gin's focus ring.
-a.user-profile-link {
-  text-decoration: none;
-  transition: background-color var(--gin-transition-fast, 0.3s ease);
-
-  &:hover,
-  &:focus-visible {
-    background: var(--op-chip-hover);
-    color: var(--op-accent);
+  // Only links react. Focus keeps Gin's focus ring.
+  &[href] {
     text-decoration: none;
+    transition: background-color var(--gin-transition-fast);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--yv-chip-hover);
+      color: var(--yv-accent);
+      text-decoration: none;
+    }
   }
 }
 
 .user-profile-aim {
   margin: 0;
-  color: var(--op-ink);
-  font-size: var(--gin-font-size-l, 1.125rem);
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-l);
   font-weight: 600;
 }
 
@@ -161,17 +124,17 @@ a.user-profile-link {
 .user-profile-skills {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--gin-spacing-xs, 0.5rem);
+  gap: var(--gin-spacing-xs);
 
-  .mini-skill {
-    @include icon-size(small);
+  .skill {
+    @include skill-size("small");
   }
 }
 
 .user-profile-people {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--gin-spacing-s, 0.75rem);
+  gap: var(--gin-spacing-s);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -180,100 +143,94 @@ a.user-profile-link {
 .user-profile-person {
   display: inline-flex;
   align-items: center;
-  gap: var(--gin-spacing-xs, 0.5rem);
-  padding: 0.3rem 1rem 0.3rem 0.3rem;
-  border: 1px solid var(--op-outline);
-  border-radius: 999px;
+  gap: var(--gin-spacing-xs);
+  padding: var(--gin-spacing-xxs) var(--gin-spacing-m) var(--gin-spacing-xxs) var(--gin-spacing-xxs);
+  border: 1px solid var(--yv-outline);
+  border-radius: 50vh;
   line-height: 1.25;
 
-  > span {
+  // Name and role, one below the other.
+  > span:last-child {
     display: grid;
+  }
+
+  &[href] {
+    color: inherit;
+    text-decoration: none;
+    transition: border-color var(--gin-transition-fast);
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--yv-accent);
+
+      .user-profile-person-name {
+        color: var(--yv-accent);
+      }
+    }
+  }
+
+  // The manager's avatar, in the size of the contact's initials.
+  .user-avatar {
+    @include icon-size(medium);
+
+    flex: none;
   }
 }
 
 .user-profile-initials {
-  @include icon-size(medium);
+  @include initials-avatar(to-rem(48));
 
-  place-items: center;
-  border-radius: 50%;
-  background: var(--op-chip);
-  color: var(--op-accent);
-  font-size: var(--op-text-s);
-  font-weight: 600;
+  font-size: var(--gin-font-size-s);
 }
 
 .user-profile-person-name {
-  color: var(--op-ink);
+  color: var(--yv-ink);
   font-weight: 600;
 }
 
 .user-profile-person-role {
-  color: var(--op-muted);
-  font-size: var(--op-text-xs);
-}
-
-.user-profile-person-link {
-  color: inherit;
-  text-decoration: none;
-  transition: border-color var(--gin-transition-fast, 0.3s ease);
-
-  &:hover,
-  &:focus-visible {
-    border-color: var(--op-accent);
-
-    .user-profile-person-name {
-      color: var(--op-accent);
-    }
-  }
-}
-
-// Same size as the contact's initials.
-.user-profile-person .user-avatar {
-  @include icon-size(medium);
-
-  flex: none;
-  cursor: inherit;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
 }
 
 .user-profile-budget {
-  border: 1px solid var(--op-line);
-  border-radius: var(--op-radius-m);
+  border: 1px solid var(--yv-line);
+  border-radius: var(--gin-border-m);
 
   summary {
-    padding: var(--gin-spacing-s, 0.75rem) var(--gin-spacing-m, 1rem);
-    border-radius: var(--op-radius-m);
-    color: var(--op-ink);
+    padding: var(--gin-spacing-s) var(--gin-spacing-m);
+    border-radius: var(--gin-border-m);
+    color: var(--yv-ink);
     font-weight: 600;
     cursor: pointer;
-    transition: color var(--gin-transition-fast, 0.3s ease);
+    transition: color var(--gin-transition-fast);
 
     &:hover {
-      color: var(--op-accent);
+      color: var(--yv-accent);
     }
   }
 
   p {
     margin: 0;
-    padding: var(--gin-spacing-s, 0.75rem) var(--gin-spacing-m, 1rem)
-      var(--gin-spacing-m, 1rem);
+    padding: var(--gin-spacing-s) var(--gin-spacing-m) var(--gin-spacing-m);
     white-space: pre-line;
   }
 }
 
 .user-profile-side {
   display: grid;
-  gap: var(--gin-spacing-m, 1rem);
+  gap: var(--gin-spacing-m);
 }
 
 .user-profile-section + .user-profile-section {
-  padding-top: var(--gin-spacing-m, 1rem);
-  border-top: 1px solid var(--op-line);
+  padding-top: var(--gin-spacing-m);
+  border-top: 1px solid var(--yv-line);
 }
 
 .user-profile-section-title {
-  margin: 0 0 var(--gin-spacing-xs, 0.5rem);
-  color: var(--op-muted);
-  font-size: var(--op-text-xs);
+  margin: 0 0 var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -281,7 +238,7 @@ a.user-profile-link {
 
 .user-profile-contact {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--gin-spacing-xxs);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -295,7 +252,7 @@ a.user-profile-link {
 .user-profile-facts {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.25rem var(--gin-spacing-m, 1rem);
+  gap: var(--gin-spacing-xxs) var(--gin-spacing-m);
   margin: 0;
 
   > div {
@@ -303,7 +260,7 @@ a.user-profile-link {
   }
 
   dt {
-    color: var(--op-muted);
+    color: var(--yv-muted);
   }
 
   dd {
@@ -314,13 +271,13 @@ a.user-profile-link {
 
 .user-profile-answers {
   display: grid;
-  gap: var(--gin-spacing-s, 0.75rem);
+  gap: var(--gin-spacing-s);
   margin: 0;
-  font-size: var(--op-text-s);
+  font-size: var(--gin-font-size-s);
 
   dt {
-    color: var(--op-muted);
-    font-size: var(--op-text-xs);
+    color: var(--yv-muted);
+    font-size: var(--gin-font-size-xs);
     font-weight: 600;
   }
 
@@ -330,35 +287,35 @@ a.user-profile-link {
   }
 }
 
-.user-profile-projects {
+.user-profile-wide {
   @media (min-width: 64rem) {
     grid-column: 1 / -1;
   }
 }
 
-.user-profile-projects-title {
-  margin: 0 0 var(--gin-spacing-s, 0.75rem);
-  color: var(--op-ink);
-  font-size: var(--gin-font-size-h3, 1.25rem);
+.user-profile-wide-title {
+  margin: 0 0 var(--gin-spacing-s);
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h3);
 }
 
 .user-profile-organizations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: var(--gin-spacing-s, 0.75rem);
+  gap: var(--gin-spacing-s);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+// Gin shows every view in a layer card; the teasers are cards themselves.
 .organization-projects .view-content,
 .creative-projects .view-content {
-  // Gin shows every view in a layer card; the teasers are cards themselves.
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--gin-spacing-l);
   padding: 0;
   border: 0;
   background: none;
   box-shadow: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: var(--gin-spacing-l, 1.5rem);
 }

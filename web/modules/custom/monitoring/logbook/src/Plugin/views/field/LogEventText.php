@@ -34,14 +34,14 @@ class LogEventText extends FieldPluginBase {
       '#attributes' => ['class' => ['logbook-event']],
       'text' => [
         '#type' => 'container',
-        '#attributes' => ['class' => ['logbook-event__text']],
+        '#attributes' => ['class' => ['logbook-event-text']],
         'markup' => ['#markup' => $log->getMarkup()],
       ],
     ];
     if ($message = $log->buildMessage()) {
       $build['message'] = [
         '#type' => 'container',
-        '#attributes' => ['class' => ['logbook-event__message']],
+        '#attributes' => ['class' => ['logbook-event-message']],
         'content' => $message,
       ];
     }

@@ -97,7 +97,7 @@ final class SearchTags {
    *   The tag as Tagify reads it.
    */
   public static function textTag(string $text): array {
-    return self::build('text:' . $text, $text, 'Text') + ['class' => 'logbook-search__text'];
+    return self::build('text:' . $text, $text, 'Text') + ['class' => 'logbook-search-text'];
   }
 
   /**

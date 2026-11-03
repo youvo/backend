@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * The account data of a profile.
+ *
+ * Variables: account, and extra facts ({label, value}) shown after the roles.
+ */
+#}
+{% set extra = extra|default([]) %}
+{% if account or extra %}
+  <section class="user-profile-section">
+    <h2 class="user-profile-section-title">{{ 'Account'|t }}</h2>
+    <dl class="user-profile-facts">
+      {% if account.status %}
+        <div><dt>{{ 'Status'|t }}</dt><dd>{{ account.status }}</dd></div>
+      {% endif %}
+      {% if account.roles %}
+        <div><dt>{{ 'Roles'|t }}</dt><dd>{{ account.roles }}</dd></div>
+      {% endif %}
+      {% for fact in extra %}
+        <div><dt>{{ fact.label }}</dt><dd>{{ fact.value }}</dd></div>
+      {% endfor %}
+      {% if account.created %}
+        <div><dt>{{ 'Member since'|t }}</dt><dd>{{ account.created }}</dd></div>
+      {% endif %}
+      {% if account.login %}
+        <div><dt>{{ 'Last login'|t }}</dt><dd>{{ account.login }}</dd></div>
+      {% endif %}
+    </dl>
+  </section>
+{% endif %}

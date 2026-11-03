@@ -11,10 +11,10 @@ use Drupal\views\Views;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the logbook of an organization on its profile.
+ * Tests the logbook on the profile of an organization or a creative.
  */
 #[Group('logbook')]
-class LogbookOrganizationTest extends ProjectResourceTestBase {
+class LogbookProfileTest extends ProjectResourceTestBase {
 
   /**
    * The display lists the logs of the organization and of its projects.
@@ -72,7 +72,7 @@ class LogbookOrganizationTest extends ProjectResourceTestBase {
   protected function executeView(Organization $organization, int $page): ViewExecutable {
     $view = Views::getView('logbook');
     $this->assertInstanceOf(ViewExecutable::class, $view);
-    $view->setDisplay('organization');
+    $view->setDisplay('profile');
     $view->setArguments([$organization->id()]);
     $view->setCurrentPage($page);
     $view->execute();
