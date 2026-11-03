@@ -91,4 +91,50 @@ class CreativeFieldAccess extends FieldAccess {
     return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
   }
 
+  /**
+   * Checks the view access to a field of creatives in general.
+   *
+   * Filters and sorts are checked this way. Without it, a filter on a hidden
+   * field like the phone reveals its value character by character. There is
+   * no own profile here, so private fields stay closed.
+   */
+  public static function checkFieldAccessWithoutEntity(
+    string $operation,
+    FieldDefinitionInterface $field,
+    AccountInterface $account,
+  ): AccessResultInterface {
+
+    if ($operation !== 'view') {
+      return AccessResult::neutral();
+    }
+
+    // Administrators pass through.
+    if ($account->hasPermission('administer users')) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Anonymous users can only access public fields.
+    if ($account->isAnonymous()) {
+      if (self::isFieldOfGroup($field, self::PUBLIC_FIELDS)) {
+        return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
+      }
+      return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
+    }
+
+    // Managers may view contact fields.
+    if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
+      if ($account->hasPermission('general manager access')) {
+        return AccessResult::neutral()->cachePerPermissions();
+      }
+      return AccessResult::forbidden()->cachePerPermissions();
+    }
+
+    // Private fields are only accessible on the own profile.
+    if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
+      return AccessResult::forbidden()->cachePerPermissions();
+    }
+
+    return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
+  }
+
 }
