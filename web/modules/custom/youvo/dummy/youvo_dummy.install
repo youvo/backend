@@ -71,6 +71,8 @@ function youvo_dummy_site_install_finished(): void {
     creatives_dummy_log_registrations();
     // Dated after the registrations.
     academy_dummy_generate_progress();
+    // Dated by the organizations' own logs, so it runs last.
+    organizations_dummy_set_last_access();
   }
   finally {
     // Restore overrides from settings.php.
