@@ -308,6 +308,25 @@
   list-style: none;
 }
 
+.user-profile-more {
+  margin-top: var(--gin-spacing-s);
+
+  > summary {
+    display: inline-flex;
+    margin: 0;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  // Load more shows all; there is nothing to collapse again.
+  &[open] > summary {
+    display: none;
+  }
+}
+
 // Gin shows every view in a layer card; the teasers are cards themselves.
 .organization-projects .view-content,
 .creative-projects .view-content {
