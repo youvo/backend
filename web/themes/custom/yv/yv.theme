@@ -5,6 +5,10 @@
  * Provides preprocess logic and other functionality for theming.
  */
 
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\organizations\Entity\Organization;
+use Drupal\projects\ProjectInterface;
+
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
  */
@@ -34,4 +38,152 @@ function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables):
   if (str_starts_with($variables['menu_name'] ?? '', 'dashboard-')) {
     $suggestions[] = 'menu__dashboard';
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page_title.
+ *
+ * The organization profile shows the name itself, the label is the email.
+ */
+function yv_preprocess_page_title(array &$variables): void {
+  $route_match = \Drupal::routeMatch();
+  if ($route_match->getRouteName() === 'entity.user.canonical' &&
+    $route_match->getParameter('user') instanceof Organization) {
+    $variables['title'] = '';
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for user.
+ *
+ * Prepares the plain values of the organization profile. Each value is only
+ * set when the viewer may see the field, and the access results bubble up
+ * through the profile_cache render array.
+ */
+function yv_preprocess_user(array &$variables): void {
+
+  $organization = $variables['elements']['#user'];
+  if (!$organization instanceof Organization || $variables['elements']['#view_mode'] !== 'full') {
+    return;
+  }
+
+  $cache = new CacheableMetadata();
+  $value = static function (string $field_name) use ($organization, $cache): ?string {
+    $access = $organization->get($field_name)->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    $value = $access->isAllowed() ? trim((string) $organization->get($field_name)->value) : '';
+    return $value !== '' ? $value : NULL;
+  };
+  $initials = static fn (?string $name): string => implode('', array_map(
+    static fn (string $word): string => mb_strtoupper(mb_substr($word, 0, 1)),
+    array_slice(preg_grep('/^\p{L}/u', preg_split('/\s+/', (string) $name)), 0, 2),
+  ));
+
+  // Links: the website and all portfolio entries. Only http(s) values become
+  // links, anything else is shown as text.
+  $links = [];
+  foreach (['field_url', 'field_portfolio'] as $field_name) {
+    $access = $organization->get($field_name)->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    if (!$access->isAllowed()) {
+      continue;
+    }
+    foreach ($organization->get($field_name) as $item) {
+      $link = trim((string) $item->get('value')->getValue());
+      if ($link === '') {
+        continue;
+      }
+      $links[] = [
+        'url' => preg_match('{^https?://}i', $link) ? $link : NULL,
+        'label' => rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/'),
+      ];
+    }
+  }
+
+  $name = $value('field_name');
+  $contact = $value('field_contact');
+  $phone = $value('field_phone');
+  $profile = [
+    'name' => $name,
+    'initials' => $initials($name),
+    'short_name' => $value('field_short_name'),
+    'links' => $links,
+    'contact' => $contact,
+    'contact_initials' => $initials($contact),
+    'mail' => $value('mail'),
+    'phone' => $phone,
+    'phone_uri' => $phone ? 'tel:' . preg_replace('/[^\d+]/', '', $phone) : NULL,
+    'address' => array_filter([
+      $value('field_street'),
+      trim($value('field_zip') . ' ' . $value('field_city')),
+      $value('field_country'),
+    ]),
+    'fulltime' => $value('field_count_fulltime'),
+    'volunteer' => $value('field_count_volunteer'),
+  ];
+
+  // The manager pill links to the profile of the manager.
+  $profile['manager_url'] = NULL;
+  $manager_access = $organization->get('field_manager')->access('view', NULL, TRUE);
+  $cache->addCacheableDependency($manager_access);
+  $manager = $manager_access->isAllowed() ? $organization->getManager() : NULL;
+  if ($manager) {
+    $access = $manager->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access)->addCacheableDependency($manager);
+    if ($access->isAllowed()) {
+      $profile['manager_url'] = $manager->toUrl()->toString();
+    }
+  }
+
+  // Account data that only staff may see.
+  $date_formatter = \Drupal::service('date.formatter');
+  $account = [];
+  foreach (['status', 'roles', 'created', 'login'] as $field_name) {
+    $access = $organization->get($field_name)->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    if ($access->isAllowed()) {
+      $account[$field_name] = TRUE;
+    }
+  }
+  if (isset($account['status'])) {
+    $account['status'] = $organization->isActive() ? t('Active') : t('Blocked');
+  }
+  if (isset($account['roles'])) {
+    $roles = \Drupal::entityTypeManager()->getStorage('user_role')
+      ->loadMultiple($organization->getRoles(TRUE));
+    $account['roles'] = implode(', ', array_map(static fn ($role) => $role->label(), $roles));
+    foreach ($roles as $role) {
+      $cache->addCacheableDependency($role);
+    }
+  }
+  if (isset($account['created'])) {
+    $account['created'] = $date_formatter->format($organization->getCreatedTime(), 'custom', 'd.m.Y');
+  }
+  if (isset($account['login'])) {
+    $login = $organization->getLastLoginTime();
+    $account['login'] = $login ? $date_formatter->format((int) $login, 'custom', 'd.m.Y') : t('Never');
+  }
+  $profile['account'] = array_filter($account);
+
+  $variables['profile'] = $profile;
+  $variables['profile_cache'] = [];
+  $cache->applyTo($variables['profile_cache']);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for project.
+ *
+ * The teaser links its title only when the viewer may see the project.
+ */
+function yv_preprocess_project(array &$variables): void {
+
+  $project = $variables['elements']['#project'];
+  if (!$project instanceof ProjectInterface || $variables['elements']['#view_mode'] !== 'teaser') {
+    return;
+  }
+
+  $access = $project->access('view', NULL, TRUE);
+  $variables['url'] = $access->isAllowed() ? $project->toUrl()->toString() : NULL;
+  $variables['project_cache'] = [];
+  CacheableMetadata::createFromObject($access)->applyTo($variables['project_cache']);
 }

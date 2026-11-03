@@ -51,6 +51,11 @@ class LogbookViewsHooks {
       'help' => $this->t('Limits the logs to the people, organizations, projects and texts of the search bar.'),
       'filter' => ['id' => 'logbook_search', 'real field' => 'id'],
     ];
+    $data['log']['logbook_involves'] = [
+      'title' => $this->t('Logbook: Involves'),
+      'help' => $this->t('Limits the logs to those of a person or an organization, as a search for them does.'),
+      'argument' => ['id' => 'logbook_involves', 'real field' => 'id'],
+    ];
     $data['log']['log_visibility'] = [
       'title' => $this->t('Logbook: Visibility'),
       'help' => $this->t('Icons for who can see the log.'),

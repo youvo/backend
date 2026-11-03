@@ -18,3 +18,13 @@ search:
     - core/drupal
     - core/once
     - tagify/default
+
+load_more:
+  js:
+    js/logbook-load-more.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/once
+    # Defines setBrowserUrl, which the script wraps.
+    - views/views.ajax

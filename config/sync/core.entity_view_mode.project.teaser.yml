@@ -1,0 +1,12 @@
+uuid: 23ea9388-8f1f-4861-892c-45e96011dcb8
+langcode: de
+status: true
+dependencies:
+  module:
+    - projects
+id: project.teaser
+label: Teaser
+description: null
+targetEntityType: project
+cache: true
+

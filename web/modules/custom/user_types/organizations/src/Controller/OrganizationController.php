@@ -2,9 +2,11 @@
 
 namespace Drupal\organizations\Controller;
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\organizations\Entity\Organization;
+use Drupal\user\UserInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -13,6 +15,22 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Controller routines for organization routes.
  */
 final class OrganizationController extends ControllerBase {
+
+  /**
+   * Gets the title of a user page.
+   *
+   * An organization is titled with its name. Other users, and organizations
+   * without a name, keep the display name, as in the user module.
+   *
+   * @return array|string
+   *   The title.
+   */
+  public function userTitle(?UserInterface $user = NULL): array|string {
+    if ($user instanceof Organization && $user->getName() !== '') {
+      return $user->getName();
+    }
+    return $user ? ['#markup' => $user->getDisplayName(), '#allowed_tags' => Xss::getHtmlTagList()] : '';
+  }
 
   /**
    * Validates user, hash, and timestamp; logs the user in if correct.
