@@ -65,11 +65,12 @@ function youvo_dummy_site_install_finished(): void {
         printf("  %s: %.1fs\n", $name, microtime(TRUE) - $start);
       }
     }
-    // The managers take over before the first logs of the organizations.
+    // Dated by the project logs, so it runs after the projects.
     organizations_dummy_log_management();
-    // The registrations are dated by the first logs of the creatives, so the
-    // managers register before they manage.
+    // Dated by the first logs, so managers register before they manage.
     creatives_dummy_log_registrations();
+    // Dated after the registrations.
+    academy_dummy_generate_progress();
   }
   finally {
     // Restore overrides from settings.php.
@@ -249,10 +250,10 @@ function youvo_dummy_get_random_organization(array $organization_ids): int {
 /**
  * Dates an account: when it was created, last logged in and last active.
  *
- * The times are written to the table directly, because saving the user again
- * makes filefield_paths log a notice for an already attached avatar. One in
- * ten accounts never logged in. Drawn with random_int(), not with Faker, so
- * the seeded content stays the same.
+ * Writes to the table directly, because saving the user again makes
+ * filefield_paths log a notice for an already attached avatar. Uses
+ * random_int() instead of Faker: Faker is seeded, and extra calls would shift
+ * the generated content.
  *
  * @param int $uid
  *   The id of the account.

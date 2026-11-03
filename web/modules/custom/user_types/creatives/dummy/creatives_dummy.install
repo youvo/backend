@@ -85,8 +85,7 @@ function creatives_dummy_generate_content(): void {
       'field_skills' => youvo_dummy_get_random_skills(),
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
-      // No website for some creatives. Drawn in place, so the seeded content
-      // after it stays the same.
+      // Drawn in place, so the seeded content after it stays the same.
       'field_url' => ($domain = $faker->optional(0.8)->domainName()) ? 'https://www.' . $domain : NULL,
       'field_education' => $faker->optional(0.8)
         ->passthrough($faker->randomElement($schools) . ' ' . $faker->city()),
@@ -124,12 +123,9 @@ function creatives_dummy_generate_content(): void {
 /**
  * Logs the registrations of the creatives.
  *
- * Called by youvo_dummy_site_install_finished() after the projects and the
- * management of the organizations, so a creative registers a few days before
- * the first log with them, mostly an application, and a manager before they
- * manage. Creatives without such a log register some time in the year of the
- * projects. The mail with the link is skipped while the dummy content is
- * generated.
+ * Runs after the projects and the organization management, so a creative
+ * registers before their first log. The registration mail is skipped while the
+ * dummy content is generated.
  */
 function creatives_dummy_log_registrations(): void {
   $current_time = \Drupal::time()->getRequestTime();
@@ -145,8 +141,7 @@ function creatives_dummy_log_registrations(): void {
       ->condition('roles', 'creative')
       ->execute();
     foreach (Creative::loadMultiple($creative_ids) as $id => $creative) {
-      // The first log with the creative in any role: as creative, as manager
-      // or as author. A manager registers before managing anything.
+      // A manager registers before managing anything.
       $query = $log_storage->getQuery()->accessCheck(FALSE);
       $involved = $query->orConditionGroup()
         ->condition('creatives', $id)
@@ -163,10 +158,9 @@ function creatives_dummy_log_registrations(): void {
       else {
         $registered = random_int($one_year_ago, $current_time);
       }
-      // The registration date, the last login and the last access.
       youvo_dummy_set_account_times((int) $id, $registered);
       $creative->set('created', $registered);
-      // The creative registers themselves, so the log has them as author.
+      // Creatives register themselves, so they author the log.
       $account_switcher->switchTo($creative);
       try {
         $event_dispatcher->dispatch(new CreativeRegisterEvent($creative, 'https://www.youvo.org', $registered));

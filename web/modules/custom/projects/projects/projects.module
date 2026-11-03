@@ -118,7 +118,7 @@ function projects_views_data_alter(array &$data): void {
   }
   $data['project_field_data']['project_creative'] = [
     'title' => t('Projects of a creative'),
-    'help' => t('Limits the projects to those a creative takes part in or manages.'),
+    'help' => t('Limits the projects to those a creative applied for, takes part in or manages.'),
     'argument' => ['id' => 'project_creative', 'real field' => 'id'],
   ];
 }

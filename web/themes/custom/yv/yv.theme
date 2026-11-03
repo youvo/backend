@@ -5,7 +5,9 @@
  * Provides preprocess logic and other functionality for theming.
  */
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -58,9 +60,8 @@ function yv_preprocess_page_title(array &$variables): void {
 /**
  * Implements hook_preprocess_HOOK() for user.
  *
- * Prepares the plain values of the profile of an organization or a creative.
- * Each value is only set when the viewer may see the field, and the access
- * results bubble up through the profile_cache render array.
+ * The templates print plain values, so field access is checked here and its
+ * cacheability bubbles up through profile_cache.
  */
 function yv_preprocess_user(array &$variables): void {
 
@@ -71,11 +72,6 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   $cache = new CacheableMetadata();
-  // The field access of creatives allows their private fields to themselves
-  // without varying per user, so their profile does.
-  if ($user instanceof Creative) {
-    $cache->addCacheContexts(['user']);
-  }
   $value = static function (string $field_name) use ($user, $cache): ?string {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
     $cache->addCacheableDependency($access);
@@ -87,8 +83,7 @@ function yv_preprocess_user(array &$variables): void {
     array_slice(preg_grep('/^\p{L}/u', preg_split('/\s+/', (string) $name)), 0, 2),
   ));
 
-  // Links: the website and all portfolio entries. Only http(s) values become
-  // links, anything else is shown as text.
+  // Only http(s) values become links, so other schemes are shown as text.
   $links = [];
   foreach (['field_url', 'field_portfolio'] as $field_name) {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
@@ -136,7 +131,6 @@ function yv_preprocess_user(array &$variables): void {
       'volunteer' => $value('field_count_volunteer'),
     ];
 
-    // The manager pill names the manager and links to their profile.
     $profile['manager_name'] = NULL;
     $profile['manager_url'] = NULL;
     $manager_access = $user->get('field_manager')->access('view', NULL, TRUE);
@@ -159,7 +153,6 @@ function yv_preprocess_user(array &$variables): void {
       'city' => $value('field_city'),
     ];
 
-    // Yes or no answers that only staff and the creative may see.
     $preferences = [];
     foreach ([
       'field_jobs' => t('Job offers'),
@@ -172,9 +165,92 @@ function yv_preprocess_user(array &$variables): void {
       }
     }
     $profile['preferences'] = $preferences;
+
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $organizations = [];
+    $cache->addCacheTags(['user_list']);
+    $organization_ids = \Drupal::entityQuery('user')
+      ->accessCheck(FALSE)
+      ->condition('type', 'organization')
+      ->condition('field_manager', $user->id())
+      ->sort('field_name')
+      ->execute();
+    foreach (Organization::loadMultiple($organization_ids) as $organization) {
+      $access = $organization->access('view', NULL, TRUE);
+      $cache->addCacheableDependency($access)->addCacheableDependency($organization);
+      if ($access->isAllowed()) {
+        $organizations[] = [
+          'name' => $organization->getName(),
+          'url' => $organization->toUrl()->toString(),
+        ];
+      }
+    }
+    $profile['organizations'] = $organizations;
+
+    $profile['feedback'] = [];
+    $profile['courses'] = [];
+    $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
+    $cache->addCacheableDependency($staff);
+    if ($staff->isAllowed()) {
+      $date_formatter = \Drupal::service('date.formatter');
+
+      $cache->addCacheTags(['feedback_list']);
+      $feedback_ids = $entity_type_manager->getStorage('feedback')->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('bundle', 'creative')
+        ->condition('author', $user->id())
+        ->condition('completed', NULL, 'IS NOT NULL')
+        ->sort('completed', 'DESC')
+        ->execute();
+      /** @var \Drupal\feedback\Entity\Feedback $feedback */
+      foreach ($entity_type_manager->getStorage('feedback')->loadMultiple($feedback_ids) as $feedback) {
+        $project = $feedback->get('project')->entity;
+        if (!$project instanceof ProjectInterface) {
+          continue;
+        }
+        $access = $feedback->access('view', NULL, TRUE);
+        $cache->addCacheableDependency($access)->addCacheableDependency($project);
+        $profile['feedback'][] = [
+          'project' => $project->getTitle(),
+          'url' => $access->isAllowed() ? $feedback->toUrl()->toString() : NULL,
+          'date' => $date_formatter->format((int) $feedback->get('completed')->value, 'custom', 'd.m.Y'),
+        ];
+      }
+
+      $cache->addCacheTags(['course_progress_list', 'lecture_progress_list']);
+      $progress_storage = $entity_type_manager->getStorage('course_progress');
+      $lecture_progress_storage = $entity_type_manager->getStorage('lecture_progress');
+      $progress_ids = $progress_storage->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('uid', $user->id())
+        ->sort('enrolled')
+        ->execute();
+      /** @var \Drupal\progress\Entity\CourseProgress $progress */
+      foreach ($progress_storage->loadMultiple($progress_ids) as $progress) {
+        $course = $progress->get('course')->entity;
+        if (!$course instanceof Course) {
+          continue;
+        }
+        $cache->addCacheableDependency($course);
+        $lecture_ids = array_map(static fn ($lecture) => $lecture->id(), $course->getLectures());
+        $completed_lectures = $lecture_ids ? (int) $lecture_progress_storage->getQuery()
+          ->accessCheck(FALSE)
+          ->condition('uid', $user->id())
+          ->condition('lecture', $lecture_ids, 'IN')
+          ->condition('completed', 0, '>')
+          ->count()
+          ->execute() : 0;
+        $completed = $progress->getCompletedTime();
+        $profile['courses'][] = [
+          'title' => $course->label(),
+          'status' => $completed
+            ? t('Completed @date', ['@date' => $date_formatter->format($completed, 'custom', 'd.m.Y')])
+            : t('@done of @total lectures', ['@done' => $completed_lectures, '@total' => count($lecture_ids)]),
+        ];
+      }
+    }
   }
 
-  // Account data that only staff may see.
   $date_formatter = \Drupal::service('date.formatter');
   $account = [];
   foreach (['status', 'roles', 'created', 'login'] as $field_name) {
@@ -212,9 +288,9 @@ function yv_preprocess_user(array &$variables): void {
 /**
  * Implements hook_preprocess_HOOK() for views_view_unformatted.
  *
- * On a creative's profile, the teasers of projects the creative manages say
- * so. The flag is part of the cache keys, because the same teasers show
- * elsewhere without it.
+ * Adds the creative's role to the project teasers on a creative's profile.
+ * The role is part of the cache keys, because the same teasers show elsewhere
+ * without it.
  */
 function yv_preprocess_views_view_unformatted(array &$variables): void {
 
@@ -230,9 +306,15 @@ function yv_preprocess_views_view_unformatted(array &$variables): void {
       continue;
     }
     $owner = $project->getOwner();
-    if ($owner instanceof Organization && $owner->getManager()?->id() == $creative) {
-      $row['content']['#managed'] = TRUE;
-      $row['content']['#cache']['keys'][] = 'managed';
+    $role = match (TRUE) {
+      $owner instanceof Organization && $owner->getManager()?->id() == $creative => 'managed',
+      $project->isParticipant($creative) => 'participant',
+      $project->isApplicant($creative) && $project->lifecycle()->isOpen() => 'applied',
+      default => NULL,
+    };
+    if ($role) {
+      $row['content']['#creative_role'] = $role;
+      $row['content']['#cache']['keys'][] = $role;
     }
   }
 }
@@ -240,9 +322,7 @@ function yv_preprocess_views_view_unformatted(array &$variables): void {
 /**
  * Implements hook_preprocess_HOOK() for project.
  *
- * The teaser links its title only when the viewer may see the project, and
- * names the organization of the project by its short name, as the frontend
- * does.
+ * The teaser names the organization by its short name, as the frontend does.
  */
 function yv_preprocess_project(array &$variables): void {
 
@@ -256,7 +336,7 @@ function yv_preprocess_project(array &$variables): void {
   $cache->addCacheableDependency($access);
   $variables['url'] = $access->isAllowed() ? $project->toUrl()->toString() : NULL;
 
-  $variables['managed'] = !empty($variables['elements']['#managed']);
+  $variables['creative_role'] = $variables['elements']['#creative_role'] ?? NULL;
   $variables['organization'] = NULL;
   $owner = $project->getOwner();
   if ($owner instanceof Organization) {

@@ -1,8 +1,7 @@
 // =============================================================================
 // USER PROFILE (user--organization--full, user--user--full)
 // =============================================================================
-// Gin sets the look; the fallbacks are the values of the default Gin theme, as
-// in the manager's pane-ui.css.
+// Fallbacks are the default Gin theme values, as in the manager's pane-ui.css.
 
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
@@ -28,7 +27,7 @@
   align-items: start;
   color: var(--op-text);
 
-  // Names, links and the short texts read better unbroken.
+  // Names, links and short texts read better unbroken.
   hyphens: manual;
 
   @media (min-width: 64rem) {
@@ -54,8 +53,6 @@
   display: grid;
   gap: var(--gin-spacing-m, 1rem);
 }
-
-// Header: avatar, name, links and causes.
 
 .user-profile-header {
   display: flex;
@@ -129,8 +126,7 @@
   overflow-wrap: anywhere;
 }
 
-// Link chips darken on hover, like the chips of the manager panes. Focus
-// keeps Gin's focus ring.
+// Like the chips of the manager panes. Focus keeps Gin's focus ring.
 a.user-profile-link {
   text-decoration: none;
   transition: background-color var(--gin-transition-fast, 0.3s ease);
@@ -142,8 +138,6 @@ a.user-profile-link {
     text-decoration: none;
   }
 }
-
-// Body: aim and about.
 
 .user-profile-aim {
   margin: 0;
@@ -164,8 +158,6 @@ a.user-profile-link {
   }
 }
 
-// Skills of a creative: the skill icons in a larger size.
-
 .user-profile-skills {
   display: flex;
   flex-wrap: wrap;
@@ -175,8 +167,6 @@ a.user-profile-link {
     @include icon-size(small);
   }
 }
-
-// People: the organization contact and the project manager as pills.
 
 .user-profile-people {
   display: flex;
@@ -222,8 +212,6 @@ a.user-profile-link {
   font-size: var(--op-text-xs);
 }
 
-// A pill that links to a profile: the border and the name take the accent on
-// hover and focus.
 .user-profile-person-link {
   color: inherit;
   text-decoration: none;
@@ -239,15 +227,13 @@ a.user-profile-link {
   }
 }
 
-// The avatar of the manager, in the size of the contact's initials.
+// Same size as the contact's initials.
 .user-profile-person .user-avatar {
   @include icon-size(medium);
 
   flex: none;
   cursor: inherit;
 }
-
-// Budget: a disclosure like the frontend's.
 
 .user-profile-budget {
   border: 1px solid var(--op-line);
@@ -273,9 +259,6 @@ a.user-profile-link {
     white-space: pre-line;
   }
 }
-
-// Side card: contact options, account data and registration answers, grouped
-// in sections divided by a hairline.
 
 .user-profile-side {
   display: grid;
@@ -309,7 +292,6 @@ a.user-profile-link {
   }
 }
 
-// Short facts: label and value on one line.
 .user-profile-facts {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -330,7 +312,6 @@ a.user-profile-link {
   }
 }
 
-// Long answers: label above the text, in a smaller size.
 .user-profile-answers {
   display: grid;
   gap: var(--gin-spacing-s, 0.75rem);
@@ -348,9 +329,6 @@ a.user-profile-link {
     white-space: pre-line;
   }
 }
-
-// Projects: the organization_projects view below both columns, as a grid of
-// project teasers.
 
 .user-profile-projects {
   @media (min-width: 64rem) {

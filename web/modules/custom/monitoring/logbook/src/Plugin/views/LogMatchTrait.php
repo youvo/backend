@@ -10,9 +10,9 @@ use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 /**
  * Matches the logs of people, organizations and projects.
  *
- * Shared by the search filter and the contextual filter of the logbook, so an
- * organization's logs are the same in both. The plugin provides the entity
- * type manager, the entity field manager, the database and its table.
+ * Shared by the logbook search and contextual filters, so both match the same
+ * logs. The plugin provides entityTypeManager, entityFieldManager, database
+ * and table.
  */
 trait LogMatchTrait {
 
@@ -37,7 +37,7 @@ trait LogMatchTrait {
       foreach (static::PARTICIPANTS as $field) {
         $this->logCondition($or, $alias, $field, $users, 'IN');
       }
-      // The logs of the projects they own.
+      // Feedback logs carry no organization, only the project.
       $this->logCondition($or, $alias, 'project', $this->ids('project', 'uid', $users, 'IN'), 'IN');
     }
     if ($projects) {
@@ -48,8 +48,6 @@ trait LogMatchTrait {
 
   /**
    * Adds a condition on a field of the log.
-   *
-   * A field in the base table is matched there, any other in a subquery.
    */
   protected function logCondition(Condition $condition, string $alias, string $field, mixed $value, string $operator): void {
     [$table, $column] = $this->column('log', $field);

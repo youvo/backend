@@ -3,12 +3,8 @@
  * @file
  * Full view of a creative in the backend.
  *
- * Follows the profile page of the frontend: avatar, name, position, city and
- * education on top, then about, skills and portfolio. The side card holds what
- * only the backend shows: contact options, account data and preferences.
- * Below come the logbook and the projects the creative takes part in. The
- * plain values in "profile" come from yv_preprocess_user() and are set only
- * when the viewer may see the field.
+ * The plain values in "profile" come from yv_preprocess_user() and are set
+ * only when the viewer may see the field.
  */
 #}
 {% set account = profile.account %}
@@ -64,6 +60,17 @@
         </ul>
       </section>
     {% endif %}
+
+    {% if profile.organizations %}
+      <section>
+        <h2 class="user-profile-section-title">{{ 'Managed organizations'|t }}</h2>
+        <ul class="user-profile-tags">
+          {% for organization in profile.organizations %}
+            <li><a class="user-profile-link" href="{{ organization.url }}">{{ organization.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
   </div>
 
   <aside class="user-profile-side">
@@ -107,6 +114,37 @@
         <dl class="user-profile-facts">
           {% for preference in profile.preferences %}
             <div><dt>{{ preference.label }}</dt><dd>{{ preference.value }}</dd></div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+
+    {% if profile.feedback %}
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Feedback'|t }}</h2>
+        <dl class="user-profile-facts">
+          {% for item in profile.feedback %}
+            <div>
+              <dt>
+                {% if item.url %}
+                  <a href="{{ item.url }}">{{ item.project }}</a>
+                {% else %}
+                  {{ item.project }}
+                {% endif %}
+              </dt>
+              <dd>{{ item.date }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+
+    {% if profile.courses %}
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Academy'|t }}</h2>
+        <dl class="user-profile-facts">
+          {% for course in profile.courses %}
+            <div><dt>{{ course.title }}</dt><dd>{{ course.status }}</dd></div>
           {% endfor %}
         </dl>
       </section>

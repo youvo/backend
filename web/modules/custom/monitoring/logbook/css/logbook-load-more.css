@@ -1,0 +1,19 @@
+/* Gin sets margins on every item list, hence the longer selectors. */
+.item-list .logbook-load-more {
+  display: flex;
+  justify-content: center;
+  margin: var(--gin-spacing-l, 1.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item-list .logbook-load-more li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Gin gives every button a vertical margin; the list sets the gaps. */
+.item-list .logbook-load-more .button {
+  margin-block: 0;
+}

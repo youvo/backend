@@ -1,9 +1,10 @@
 {#
 /**
  * @file
- * Teaser of a project: image, title, organization, status and skills, like the
- * project cards of the frontend. Used on the profiles of organizations and
- * creatives. "managed" marks a project the creative of the profile manages.
+ * Teaser of a project, like the project cards of the frontend.
+ *
+ * On a creative's profile, "creative_role" is their role in the project:
+ * "managed", "participant" or "applied".
  */
 #}
 {% set project = elements['#project'] %}
@@ -34,8 +35,9 @@
     </div>
     <div class="project-teaser-meta">
       <span class="project-teaser-status project-teaser-status-{{ project.field_lifecycle.value|clean_class }}">{{ elements.field_lifecycle|field_value }}</span>
-      {% if managed %}
-        <span class="project-teaser-status project-teaser-managed">{{ 'Manager'|t }}</span>
+      {% set role_labels = {managed: 'Manager'|t, participant: 'Participant'|t, applied: 'Applied'|t} %}
+      {% if creative_role %}
+        <span class="project-teaser-status project-teaser-{{ creative_role }}">{{ role_labels[creative_role] }}</span>
       {% endif %}
       {% if not project.isPublished() %}
         <span class="project-teaser-status project-teaser-hidden">{{ 'Hidden'|t }}</span>

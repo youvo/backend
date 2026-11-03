@@ -15,9 +15,8 @@ class UserTypeController extends ControllerBase {
   /**
    * Gets the title of a user page.
    *
-   * A creative or an organization is titled with its name, not with the email
-   * that is its account name. Other users, and accounts without a name, keep
-   * the display name, as in the user module.
+   * Creatives and organizations use their name, because their account name is
+   * an email.
    *
    * @return array|string
    *   The title.
