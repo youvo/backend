@@ -55,17 +55,45 @@ jobs:
             exit 1
           fi
 
-  test:
-    name: Testing
+  unit-kernel:
+    name: Unit & Kernel Tests
     runs-on: ubuntu-latest
     needs: lint
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          coverage: no
+          coverage: none
+          php-version: 8.4
+      - name: Install Dependencies
+        uses: ramsey/composer-install@v3
+      - name: Setup Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends imagemagick
+          sudo systemctl start mysql.service
+          mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
+      - name: Unit & Kernel Tests
+        run: vendor/bin/phpunit --testsuite unit,kernel --testdox --stop-on-failure
+
+  existing-site:
+    name: Existing Site Tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    needs: unit-kernel
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
           php-version: 8.4
       - name: Install Dependencies
         uses: ramsey/composer-install@v3
@@ -76,9 +104,12 @@ jobs:
           sudo systemctl start mysql.service
           mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
           sudo systemctl start apache2.service
-      - name: Unit & Kernel Tests
-        run: vendor/bin/phpunit --testsuite unit,kernel --testdox --stop-on-failure
       - name: Install Drupal
         run: bash scripts/install-ci.sh
+      # Each shard installs its own site and runs every third test file.
       - name: Existing Site Tests
-        run: vendor/bin/phpunit --testsuite existing-site --testdox --stop-on-failure
+        run: |
+          files=$(vendor/bin/phpunit --testsuite existing-site --list-test-files \
+            | sed -n 's/^ - //p' | sort \
+            | awk -v n=3 -v i=${{ matrix.shard }} 'NR % n == i % n')
+          vendor/bin/phpunit --testdox --stop-on-failure $files
