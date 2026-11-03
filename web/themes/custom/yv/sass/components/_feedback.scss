@@ -1,0 +1,188 @@
+// =============================================================================
+// FEEDBACK (FeedbackViewBuilder)
+// =============================================================================
+// The admin page of a feedback, in the look of the user profiles: cards,
+// one accent and chips with small corners as the project badges.
+
+@use "../abstracts/mixins.scss" as *;
+
+.feedback {
+  --feedback-neutral: color-mix(in srgb, var(--yv-muted) 12%, var(--yv-surface));
+
+  display: grid;
+  gap: var(--gin-spacing-xl);
+  max-width: 60rem;
+  color: var(--yv-text);
+  hyphens: manual;
+}
+
+// Drupal's field classes are outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.feedback-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gin-spacing-xxs) var(--gin-spacing-l);
+  color: var(--yv-muted);
+
+  .field {
+    display: flex;
+    gap: var(--gin-spacing-xs);
+    margin: 0;
+  }
+
+  .field__label {
+    font-weight: normal;
+
+    &::after {
+      content: ":";
+    }
+  }
+
+  .field__item {
+    color: var(--yv-text);
+  }
+}
+
+.feedback-type {
+  @include chip;
+}
+
+.feedback-comment {
+  @include card;
+
+  margin: 0;
+  padding: var(--gin-spacing-m);
+
+  @media (min-width: 40rem) {
+    padding: var(--gin-spacing-l);
+  }
+
+  figcaption {
+    @include section-label;
+  }
+
+  blockquote {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: var(--yv-ink);
+    font-size: var(--gin-font-size-l);
+    line-height: 1.5;
+
+    // Gin draws its own accent bar before a quote.
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.feedback-section-title {
+  @include section-heading;
+}
+
+.feedback-rows {
+  @include card;
+
+  // With the padding of the rows, the first and last row keep the same
+  // distance to the edge as the sides.
+  padding: 0 var(--gin-spacing-m);
+
+  @media (min-width: 40rem) {
+    padding: var(--gin-spacing-xs) var(--gin-spacing-l);
+  }
+}
+
+.feedback-row {
+  display: grid;
+  gap: var(--gin-spacing-xs) var(--gin-spacing-l);
+  align-items: baseline;
+  padding: var(--gin-spacing-m) 0;
+  border-top: 1px solid var(--yv-line);
+
+  &:first-child {
+    border-top: 0;
+  }
+
+  @media (min-width: 40rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.feedback-question {
+  color: var(--yv-text);
+}
+
+// A follow-up question belongs to the question above: no line between them,
+// and indented with a thin guide.
+.feedback-row[data-follow-up] {
+  padding-top: 0;
+  border-top: 0;
+
+  .feedback-question {
+    padding-inline-start: var(--gin-spacing-s);
+    border-inline-start: 2px solid var(--yv-line);
+  }
+}
+
+.feedback-answer {
+  color: var(--yv-ink);
+
+  .field,
+  .field__items {
+    margin: 0;
+  }
+}
+
+// Line breaks of the answer show, but not those of the markup around it.
+.feedback-answer[data-format="basic_string"] .field__item {
+  white-space: pre-line;
+}
+
+// Yes and no as badges, as are the options of a multiple choice. A single
+// choice is read as text.
+.feedback-answer[data-format="feedback_options"] .field__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs);
+}
+
+.feedback-answer[data-format="boolean"] .field__item,
+.feedback-answer[data-format="feedback_options"][data-multiple] .field__item {
+  @include chip;
+
+  display: inline-block;
+}
+
+// stylelint-enable selector-class-pattern
+
+.feedback-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gin-spacing-s);
+}
+
+.feedback-scale-steps {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.feedback-scale-step {
+  width: 1.25rem;
+  height: 0.5rem;
+  border-radius: var(--gin-border-xxs);
+  background: var(--feedback-neutral);
+
+  &[data-filled] {
+    background: var(--yv-accent);
+  }
+}
+
+.feedback-scale-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.feedback-scale-label {
+  color: var(--yv-text);
+}

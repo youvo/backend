@@ -106,9 +106,26 @@
   padding: 0.15em 0.65em;
   border-radius: $radius;
   background: var(--yv-chip);
-  color: var(--yv-accent);
+  color: var(--yv-chip-text);
   font-size: var(--gin-font-size-xs);
   font-weight: 600;
+}
+
+// The heading of a section below the cards, as "Logbook" on the profiles.
+@mixin section-heading {
+  margin: 0 0 var(--gin-spacing-s);
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h3);
+}
+
+// A small uppercase label above the content of a card.
+@mixin section-label {
+  margin: 0 0 var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 // An avatar image, or the initials when there is none.
@@ -121,7 +138,7 @@
   overflow: hidden;
   border-radius: $radius;
   background: var(--yv-chip);
-  color: var(--yv-accent);
+  color: var(--yv-chip-text);
   font-weight: 600;
 
   img {

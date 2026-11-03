@@ -32,7 +32,7 @@ class FeedbackScaleFormatter extends FeedbackOptionsFormatter {
       $value = (int) $item->get('value')->getValue();
       $elements[$delta] = [
         '#type' => 'inline_template',
-        '#template' => '<span class="feedback-scale" role="img" aria-label="{{ aria }}"><span class="feedback-scale__steps" aria-hidden="true">{% for step in 1..max %}<span class="feedback-scale__step{{ step <= value ? " is-filled" }}"></span>{% endfor %}</span><span class="feedback-scale__value" aria-hidden="true">{{ value }}</span>{% if label %}<span class="feedback-scale__label" aria-hidden="true">{{ label }}</span>{% endif %}</span>',
+        '#template' => '<span class="feedback-scale" role="img" aria-label="{{ aria }}"><span class="feedback-scale-steps" aria-hidden="true">{% for step in 1..max %}<span class="feedback-scale-step"{{ step <= value ? " data-filled" }}></span>{% endfor %}</span><span class="feedback-scale-value" aria-hidden="true">{{ value }}</span>{% if label %}<span class="feedback-scale-label" aria-hidden="true">{{ label }}</span>{% endif %}</span>',
         '#context' => [
           'value' => $value,
           'max' => $max,
