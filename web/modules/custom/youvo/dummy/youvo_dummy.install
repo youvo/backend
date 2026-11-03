@@ -67,6 +67,8 @@ function youvo_dummy_site_install_finished(): void {
     }
     // The registrations are dated by the first project logs of the creatives.
     creatives_dummy_log_registrations();
+    // The managers take over before the first logs of the organizations.
+    organizations_dummy_log_management();
   }
   finally {
     // Restore overrides from settings.php.
@@ -241,4 +243,29 @@ function youvo_dummy_get_random_organization(array $organization_ids): int {
     return $organization_ids[array_rand($organization_ids)];
   }
   return 0;
+}
+
+/**
+ * Dates an account: when it was created, last logged in and last active.
+ *
+ * The times are written to the table directly, because saving the user again
+ * makes filefield_paths log a notice for an already attached avatar. One in
+ * ten accounts never logged in. Drawn with random_int(), not with Faker, so
+ * the seeded content stays the same.
+ *
+ * @param int $uid
+ *   The id of the account.
+ * @param int $created
+ *   The time the account was created.
+ */
+function youvo_dummy_set_account_times(int $uid, int $created): void {
+  $now = \Drupal::time()->getRequestTime();
+  $login = random_int(1, 10) === 1 ? 0 : random_int($created, $now);
+  // Without a login, there was no access either.
+  $access = $login ? random_int($login, $now) : 0;
+  \Drupal::database()->update('users_field_data')
+    ->fields(['created' => $created, 'login' => $login, 'access' => $access])
+    ->condition('uid', $uid)
+    ->execute();
+  \Drupal::entityTypeManager()->getStorage('user')->resetCache([$uid]);
 }

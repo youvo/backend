@@ -1,8 +1,9 @@
 {#
 /**
  * @file
- * Teaser of a project: image, title, status and skills, like the project cards
- * of the frontend. Used on the organization profile.
+ * Teaser of a project: image, title, organization, status and skills, like the
+ * project cards of the frontend. Used on the profiles of organizations and
+ * creatives. "managed" marks a project the creative of the profile manages.
  */
 #}
 {% set project = elements['#project'] %}
@@ -19,15 +20,23 @@
     </div>
   {% endif %}
   <div class="project-teaser-body">
-    <h3 class="project-teaser-title">
-      {% if url %}
-        <a href="{{ url }}">{{ elements.title|field_value }}</a>
-      {% else %}
-        {{ elements.title|field_value }}
+    <div class="project-teaser-heading">
+      <h3 class="project-teaser-title">
+        {% if url %}
+          <a href="{{ url }}">{{ elements.title|field_value }}</a>
+        {% else %}
+          {{ elements.title|field_value }}
+        {% endif %}
+      </h3>
+      {% if organization %}
+        <p class="project-teaser-organization">{{ organization }}</p>
       {% endif %}
-    </h3>
+    </div>
     <div class="project-teaser-meta">
       <span class="project-teaser-status project-teaser-status-{{ project.field_lifecycle.value|clean_class }}">{{ elements.field_lifecycle|field_value }}</span>
+      {% if managed %}
+        <span class="project-teaser-status project-teaser-managed">{{ 'Manager'|t }}</span>
+      {% endif %}
       {% if not project.isPublished() %}
         <span class="project-teaser-status project-teaser-hidden">{{ 'Hidden'|t }}</span>
       {% endif %}

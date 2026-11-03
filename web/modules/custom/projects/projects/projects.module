@@ -108,3 +108,17 @@ function projects_theme_suggestions_project(array $variables): array {
   $suggestions[] = 'project__' . $sanitized_view_mode;
   return $suggestions;
 }
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function projects_views_data_alter(array &$data): void {
+  if (!isset($data['project_field_data'])) {
+    return;
+  }
+  $data['project_field_data']['project_creative'] = [
+    'title' => t('Projects of a creative'),
+    'help' => t('Limits the projects to those a creative takes part in or manages.'),
+    'argument' => ['id' => 'project_creative', 'real field' => 'id'],
+  ];
+}

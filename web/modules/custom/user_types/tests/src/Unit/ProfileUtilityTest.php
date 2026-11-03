@@ -61,6 +61,7 @@ class ProfileUtilityTest extends UnitTestCase {
 
     $this->creative = $this->createMock(Creative::class);
     $this->creative->method('id')->willReturn(3);
+    $this->creative->method('getName')->willReturn('Anna Berg');
 
     $this->accountProxy = $this->createMock(AccountProxyInterface::class);
     $this->accountProxy->method('id')->willReturn(2);
@@ -69,6 +70,7 @@ class ProfileUtilityTest extends UnitTestCase {
 
     $this->organization = $this->createMock(Organization::class);
     $this->organization->method('id')->willReturn(4);
+    $this->organization->method('getName')->willReturn('Berg e.V.');
 
     // The token auth user decorates the user entity. We mock the interface
     // because the implementation is internal to the simple_oauth module.
@@ -127,6 +129,18 @@ class ProfileUtilityTest extends UnitTestCase {
     $this->assertFalse(Profile::isOrganization($this->creativeAuthUser));
     $this->assertTrue(Profile::isOrganization($this->organization));
     $this->assertTrue(Profile::isOrganization($this->organizationAuthUser));
+  }
+
+  /**
+   * Tests the name method.
+   */
+  public function testName(): void {
+    $this->assertSame('', Profile::name($this->account));
+    $this->assertSame('Anna Berg', Profile::name($this->creative));
+    $this->assertSame('Anna Berg', Profile::name($this->accountProxy));
+    $this->assertSame('Anna Berg', Profile::name($this->creativeAuthUser));
+    $this->assertSame('Berg e.V.', Profile::name($this->organization));
+    $this->assertSame('Berg e.V.', Profile::name($this->organizationAuthUser));
   }
 
 }

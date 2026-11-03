@@ -5,10 +5,17 @@
  * Install, update and uninstall functions for the organizations_dummy module.
  */
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\creatives\Entity\Creative;
+use Drupal\logbook\LogInterface;
 use Drupal\organizations\Entity\Organization;
+use Drupal\organizations\Event\OrganizationDisbandEvent;
+use Drupal\organizations\Event\OrganizationManageEvent;
 use Faker\Factory;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Implements hook_install().
@@ -107,5 +114,103 @@ function organizations_dummy_generate_content(): void {
       \Drupal::logger('youvo')
         ->error('An error occurred while creating dummy organization. %type: @message in %function (line %line of %file).', $variables);
     }
+  }
+}
+
+/**
+ * Logs how the organizations got their managers.
+ *
+ * Called by youvo_dummy_site_install_finished() after the projects, so the
+ * manager takes over an organization a few days before its first log. Some
+ * organizations had another manager before, who gave them up. Organizations
+ * without a log get their manager some time in the year of the projects. The
+ * organizations are dated to register before that, with a last login and
+ * access after.
+ */
+function organizations_dummy_log_management(): void {
+  $current_time = \Drupal::time()->getRequestTime();
+  $one_year_ago = $current_time - 31536000;
+  $day = 86400;
+  /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
+  $event_dispatcher = \Drupal::service('event_dispatcher');
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $log_storage = $entity_type_manager->getStorage('log');
+
+  $manager_ids = array_values(\Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('roles', 'manager')
+    ->condition('uid', 1, '!=')
+    ->execute());
+  $organization_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('type', 'organization')
+    ->condition('roles', 'organization')
+    ->execute();
+
+  foreach (Organization::loadMultiple($organization_ids) as $id => $organization) {
+    $manager = $organization->getManager();
+    if (!$manager instanceof Creative) {
+      continue;
+    }
+    $first_managed = NULL;
+
+    // The first log of the organization or of one of its projects.
+    $project_ids = $entity_type_manager->getStorage('project')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('uid', $id)
+      ->execute();
+    $query = $log_storage->getQuery()->accessCheck(FALSE);
+    $involved = $query->orConditionGroup()->condition('organization', $id);
+    if ($project_ids) {
+      $involved->condition('project', $project_ids, 'IN');
+    }
+    $first = $query->condition($involved)->sort('created')->range(0, 1)->execute();
+    $first_log = $first ? $log_storage->load(reset($first)) : NULL;
+    $managed = $first_log instanceof LogInterface
+      ? $first_log->getCreatedTime() - random_int($day, 14 * $day)
+      : random_int($one_year_ago, $current_time);
+
+    // Some organizations had another manager, who gave them up.
+    $others = array_values(array_diff($manager_ids, [$manager->id()]));
+    if ($others && random_int(1, 5) === 1) {
+      $previous = Creative::load($others[random_int(0, count($others) - 1)]);
+      if ($previous instanceof Creative) {
+        $disbanded = $managed - random_int($day, 14 * $day);
+        $started = $disbanded - random_int(30 * $day, 90 * $day);
+        organizations_dummy_dispatch_as($previous, new OrganizationManageEvent($organization, $previous, $started), $event_dispatcher);
+        organizations_dummy_dispatch_as($previous, new OrganizationDisbandEvent($organization, $previous, $disbanded), $event_dispatcher);
+        $first_managed = $started;
+      }
+    }
+
+    organizations_dummy_dispatch_as($manager, new OrganizationManageEvent($organization, $manager, $managed), $event_dispatcher);
+
+    // The organization registered a few days before it got its first manager.
+    youvo_dummy_set_account_times((int) $id, ($first_managed ?? $managed) - random_int($day, 7 * $day));
+  }
+
+  // Prospect organizations registered recently and are not managed yet.
+  $prospect_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('type', 'organization')
+    ->condition('roles', 'prospect')
+    ->execute();
+  foreach ($prospect_ids as $id) {
+    youvo_dummy_set_account_times((int) $id, random_int($current_time - 30 * $day, $current_time));
+  }
+}
+
+/**
+ * Dispatches an event as a user, who becomes the author of its log.
+ */
+function organizations_dummy_dispatch_as(AccountInterface $account, Event $event, EventDispatcherInterface $event_dispatcher): void {
+  /** @var \Drupal\Core\Session\AccountSwitcherInterface $account_switcher */
+  $account_switcher = \Drupal::service('account_switcher');
+  $account_switcher->switchTo($account);
+  try {
+    $event_dispatcher->dispatch($event);
+  }
+  finally {
+    $account_switcher->switchBack();
   }
 }

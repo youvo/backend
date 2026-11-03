@@ -48,6 +48,11 @@
   padding: var(--gin-spacing-m, 1rem);
 }
 
+.project-teaser-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
 .project-teaser-title {
   margin: 0;
   color: var(--pt-ink);
@@ -64,6 +69,12 @@
       text-decoration: underline;
     }
   }
+}
+
+.project-teaser-organization {
+  margin: 0;
+  color: var(--pt-muted);
+  font-size: var(--gin-font-size-s, 0.875rem);
 }
 
 .project-teaser-meta {
@@ -98,6 +109,13 @@ $project-teaser-status-colors: (
     background: color-mix(in srgb, list.nth($colors, 1) 18%, var(--pt-surface));
     color: list.nth($colors, 2);
   }
+}
+
+// The manager badge is a subtle badge in the blue of "completed", so the
+// badges stay within the palette.
+.project-teaser-managed {
+  background: color-mix(in srgb, $color-blue 18%, var(--pt-surface));
+  color: $color-blue-dark;
 }
 
 .project-teaser-hidden {

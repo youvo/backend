@@ -17,9 +17,12 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
-    // Replacement for author.
+    // Replacement for author. A log without one names the platform, without
+    // the author tag, since there is no one to link.
     $author = $log->getOwner();
-    $replacements['%Author'] = '<author>' . $author->getName() . '</author>';
+    $replacements['%Author'] = $this->hasAuthor()
+      ? '<author>' . $author->getName() . '</author>'
+      : $this->fakeTranslateRole();
 
     // Replacement for manager.
     if ($manager = $log->getManager()) {
