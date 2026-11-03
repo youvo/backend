@@ -55,6 +55,49 @@ jobs:
             exit 1
           fi
 
+  # Audits only warn: a finding adds an annotation but never fails the run.
+  backend-audit:
+    name: Backend Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
+          php-version: 8.4
+      - name: Composer Audit
+        run: |
+          composer audit --locked \
+            || echo "::warning title=Backend Audit::composer audit found vulnerable or abandoned packages."
+
+  frontend-audit:
+    name: Frontend Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Audit Manager
+        working-directory: web/modules/custom/projects/manager
+        run: |
+          yarn audit \
+            || echo "::warning title=Frontend Audit::yarn audit found vulnerable packages in the manager."
+      - name: Audit Theme
+        working-directory: web/themes/custom/yv
+        run: |
+          yarn audit \
+            || echo "::warning title=Frontend Audit::yarn audit found vulnerable packages in the theme."
+      - name: Audit Mail Layout
+        working-directory: web/themes/custom/yv/mjml
+        run: |
+          npm audit \
+            || echo "::warning title=Frontend Audit::npm audit found vulnerable packages in the mail layout."
+
   unit-kernel:
     name: Unit & Kernel Tests
     runs-on: ubuntu-latest
