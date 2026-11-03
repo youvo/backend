@@ -52,8 +52,8 @@ Navigate to https://youvo.ddev.site:8443/user/login and login with `admin@youvo.
 
 - DDEV configuration `.ddev/config.yml`
 - Drupal setup parameters `config/.env.local`
-- Consumers configuration `config/.env.consumers.development`
-- OAuth Remote configuration `config/.env.oauth_remote.development`
+- Consumers configuration `config/.env.consumers.local`
+- OAuth Remote configuration `config/.env.oauth_remote.local` (paths inside the DDEV container)
 - API configuration `config/.env.api`
 - XDebug port `.ddev/php/xdebug_client_port.ini`
 - Simple OAuth certificates, see `config/certs/README.md`
@@ -63,6 +63,8 @@ Adjust the config path in `web/sites/default/settings.php` such that `$settings[
 Set `$settings['file_public_path'] = 'files';`.
 Set `$settings['file_assets_path'] = 'assets';`.
 Set `$settings['file_private_path'] = '../private';`.
+
+`scripts/install-local.sh` installs with `CONFIG_ENV=local`, so the OAuth install hooks read the two `*.local` files above. `config/.env.consumers.local` is tracked. Create `config/.env.oauth_remote.local` from `config/.env.oauth_remote.example`; it is git-ignored, because the relay URL holds credentials. The script also writes the OAuth key paths and the auth relay settings into `settings.php`, because the config import during the install empties them.
 
 Note that some of the environment variables files will be merged in the future. We entertain some separation at the moment for development purposes.
 
