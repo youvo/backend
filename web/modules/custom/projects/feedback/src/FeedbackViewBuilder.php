@@ -336,7 +336,8 @@ class FeedbackViewBuilder extends EntityViewBuilder {
    * Lists the other completed feedback on the project in the sidebar.
    *
    * As in the feedback list of the profiles: the author, and the date as a
-   * link to each feedback the viewer may open.
+   * link to the feedback. Only feedback the viewer may open is listed, so the
+   * authors of other feedback stay hidden from the author of an open one.
    */
   protected function buildOtherFeedback(array &$build, FeedbackInterface $entity, ProjectInterface $project): void {
 
@@ -353,27 +354,28 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     $items = [];
     /** @var \Drupal\feedback\FeedbackInterface $other */
     foreach ($storage->loadMultiple($ids) as $id => $other) {
-      $author = $other->getOwner();
       $access = $other->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($other)->addCacheableDependency($author);
+      $cache->addCacheableDependency($access);
+      if (!$access->isAllowed()) {
+        continue;
+      }
+      $author = $other->getOwner();
+      $cache->addCacheableDependency($other)->addCacheableDependency($author);
       $name = $author instanceof Creative || $author instanceof Organization ? $author->getName() : (string) $other->label();
       $date = $this->dateFormatter->format((int) $other->get('completed')->value, 'custom', 'd.m.Y');
-      $value = ['#plain_text' => $date];
-      if ($access->isAllowed()) {
-        $value = [
-          '#type' => 'link',
-          '#title' => [
-            'date' => ['#plain_text' => $date],
-            'context' => [
-              '#type' => 'html_tag',
-              '#tag' => 'span',
-              '#value' => ': ' . new TranslatableMarkup('feedback by @name', ['@name' => $name]),
-              '#attributes' => ['class' => ['visually-hidden']],
-            ],
+      $value = [
+        '#type' => 'link',
+        '#title' => [
+          'date' => ['#plain_text' => $date],
+          'context' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => ': ' . new TranslatableMarkup('feedback by @name', ['@name' => $name]),
+            '#attributes' => ['class' => ['visually-hidden']],
           ],
-          '#url' => $other->toUrl(),
-        ];
-      }
+        ],
+        '#url' => $other->toUrl(),
+      ];
       $items[$id] = [
         '#type' => 'html_tag',
         '#tag' => 'div',
