@@ -23,6 +23,14 @@
         {% if profile.short_name and profile.short_name != profile.name %}
           <p class="user-profile-subtitle">{{ profile.short_name }}</p>
         {% endif %}
+        {% if profile.projects %}
+          <p class="user-profile-subtitle">
+            {{ 'Projects'|t }}:
+            {% for count in profile.projects %}
+              <span class="user-profile-count">{{ count }}</span>{{ not loop.last ? ' · ' }}
+            {% endfor %}
+          </p>
+        {% endif %}
         {% set causes = content.field_causes|field_value %}
         {% if profile.links or causes %}
           <ul class="user-profile-tags">
@@ -107,6 +115,8 @@
         </dl>
       </section>
     {% endif %}
+
+    {% include '@yv/user/includes/user-profile-feedback.html.twig' with {feedback: profile.feedback} only %}
   </aside>
 
   {% include '@yv/user/includes/user-profile-views.html.twig' with {user_id: user.id, projects_view: 'organization_projects'} only %}

@@ -111,6 +111,11 @@ function yv_preprocess_user(array &$variables): void {
     }
   }
 
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $date_formatter = \Drupal::service('date.formatter');
+  $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
+  $cache->addCacheableDependency($staff);
+
   $name = $value('field_name');
   $phone = $value('field_phone');
   $profile = [
@@ -150,6 +155,41 @@ function yv_preprocess_user(array &$variables): void {
         $profile['manager_url'] = $manager->toUrl()->toString();
       }
     }
+
+    // Counts only the projects the viewer may see, as the projects list does.
+    $project_storage = $entity_type_manager->getStorage('project');
+    $cache->addCacheTags(['project_list']);
+    $project_ids = $project_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('uid', $user->id())
+      ->execute();
+    $counts = ['completed' => 0, 'ongoing' => 0, 'open' => 0, 'pending' => 0, 'draft' => 0, 'declined' => 0];
+    /** @var \Drupal\projects\ProjectInterface $project */
+    foreach ($project_storage->loadMultiple($project_ids) as $project) {
+      $access = $project->access('view', NULL, TRUE);
+      $cache->addCacheableDependency($access)->addCacheableDependency($project);
+      if (!$access->isAllowed()) {
+        continue;
+      }
+      $lifecycle = $project->lifecycle();
+      match (TRUE) {
+        $lifecycle->isCompleted() => $counts['completed']++,
+        $lifecycle->isOngoing() => $counts['ongoing']++,
+        $lifecycle->isOpen() => $counts['open']++,
+        $lifecycle->isPending() => $counts['pending']++,
+        $lifecycle->isDraft() => $counts['draft']++,
+        $lifecycle->isDeclined() => $counts['declined']++,
+        default => NULL,
+      };
+    }
+    $profile['projects'] = array_filter([
+      $counts['completed'] ? \Drupal::translation()->formatPlural($counts['completed'], '1 completed', '@count completed') : NULL,
+      $counts['ongoing'] ? \Drupal::translation()->formatPlural($counts['ongoing'], '1 ongoing', '@count ongoing') : NULL,
+      $counts['open'] ? \Drupal::translation()->formatPlural($counts['open'], '1 open', '@count open') : NULL,
+      $counts['pending'] ? \Drupal::translation()->formatPlural($counts['pending'], '1 pending', '@count pending') : NULL,
+      $counts['draft'] ? \Drupal::translation()->formatPlural($counts['draft'], '1 draft', '@count drafts') : NULL,
+      $counts['declined'] ? \Drupal::translation()->formatPlural($counts['declined'], '1 declined', '@count declined') : NULL,
+    ]);
   }
 
   if ($user instanceof Creative) {
@@ -172,7 +212,6 @@ function yv_preprocess_user(array &$variables): void {
     }
     $profile['preferences'] = $preferences;
 
-    $entity_type_manager = \Drupal::entityTypeManager();
     $organizations = [];
     $cache->addCacheTags(['user_list']);
     $organization_ids = \Drupal::entityQuery('user')
@@ -223,36 +262,8 @@ function yv_preprocess_user(array &$variables): void {
       $counts['applied'] ? \Drupal::translation()->formatPlural($counts['applied'], '1 application', '@count applications') : NULL,
     ]);
 
-    $profile['feedback'] = [];
     $profile['courses'] = [];
-    $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
-    $cache->addCacheableDependency($staff);
     if ($staff->isAllowed()) {
-      $date_formatter = \Drupal::service('date.formatter');
-
-      $cache->addCacheTags(['feedback_list']);
-      $feedback_ids = $entity_type_manager->getStorage('feedback')->getQuery()
-        ->accessCheck(FALSE)
-        ->condition('bundle', 'creative')
-        ->condition('author', $user->id())
-        ->condition('completed', NULL, 'IS NOT NULL')
-        ->sort('completed', 'DESC')
-        ->execute();
-      /** @var \Drupal\feedback\Entity\Feedback $feedback */
-      foreach ($entity_type_manager->getStorage('feedback')->loadMultiple($feedback_ids) as $feedback) {
-        $project = $feedback->get('project')->entity;
-        if (!$project instanceof ProjectInterface) {
-          continue;
-        }
-        $access = $feedback->access('view', NULL, TRUE);
-        $cache->addCacheableDependency($access)->addCacheableDependency($project);
-        $profile['feedback'][] = [
-          'project' => $project->getTitle(),
-          'url' => $access->isAllowed() ? $feedback->toUrl()->toString() : NULL,
-          'date' => $date_formatter->format((int) $feedback->get('completed')->value, 'custom', 'd.m.Y'),
-        ];
-      }
-
       $cache->addCacheTags(['course_progress_list', 'lecture_progress_list']);
       $progress_storage = $entity_type_manager->getStorage('course_progress');
       $lecture_progress_storage = $entity_type_manager->getStorage('lecture_progress');
@@ -287,7 +298,32 @@ function yv_preprocess_user(array &$variables): void {
     }
   }
 
-  $date_formatter = \Drupal::service('date.formatter');
+  $profile['feedback'] = [];
+  if ($staff->isAllowed()) {
+    $cache->addCacheTags(['feedback_list']);
+    $feedback_ids = $entity_type_manager->getStorage('feedback')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('bundle', $user instanceof Organization ? 'organization' : 'creative')
+      ->condition('author', $user->id())
+      ->condition('completed', NULL, 'IS NOT NULL')
+      ->sort('completed', 'DESC')
+      ->execute();
+    /** @var \Drupal\feedback\Entity\Feedback $feedback */
+    foreach ($entity_type_manager->getStorage('feedback')->loadMultiple($feedback_ids) as $feedback) {
+      $project = $feedback->get('project')->entity;
+      if (!$project instanceof ProjectInterface) {
+        continue;
+      }
+      $access = $feedback->access('view', NULL, TRUE);
+      $cache->addCacheableDependency($access)->addCacheableDependency($project);
+      $profile['feedback'][] = [
+        'project' => $project->getTitle(),
+        'url' => $access->isAllowed() ? $feedback->toUrl()->toString() : NULL,
+        'date' => $date_formatter->format((int) $feedback->get('completed')->value, 'custom', 'd.m.Y'),
+      ];
+    }
+  }
+
   $account = [];
   foreach (['status', 'roles', 'created', 'login'] as $field_name) {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
@@ -300,7 +336,7 @@ function yv_preprocess_user(array &$variables): void {
     $account['status'] = $user->isActive() ? t('Active') : t('Blocked');
   }
   if (isset($account['roles'])) {
-    $roles = \Drupal::entityTypeManager()->getStorage('user_role')
+    $roles = $entity_type_manager->getStorage('user_role')
       ->loadMultiple($user->getRoles(TRUE));
     $account['roles'] = implode(', ', array_map(static fn ($role) => $role->label(), $roles));
     foreach ($roles as $role) {
