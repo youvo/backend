@@ -25,7 +25,8 @@
         "drupal/jsonapi_cross_bundles": {
             "Issue #3070430: Incompatible with JSON:API Extras": "patches/jsonapi_cross_bundles/3070430-incompatible-with-jsonapi-extras.patch",
             "Custom: Exclude users from cross bundles resources": "patches/jsonapi_cross_bundles/custom-exclude-users-from-cross-bundle-resources.patch",
-            "Custom: Plural resource paths": "patches/jsonapi_cross_bundles/custom-plural-resource-paths.patch"
+            "Custom: Plural resource paths": "patches/jsonapi_cross_bundles/custom-plural-resource-paths.patch",
+            "Custom: Relatable resource types of fields renamed by JSON:API Extras": "patches/jsonapi_cross_bundles/custom-relatable-types-of-renamed-fields.patch"
         },
         "drupal/jsonapi_extras": {
             "Custom: Use obscurity prefix in EntityToJsonApi service": "patches/jsonapi_extras/custom-use-obscurity-prefix-in-entitytojsonapi-service.patch",

@@ -34,6 +34,8 @@ class CreativeTagsTest extends ExistingSiteBase {
       'attributes' => ['name' => "Online Marketing $suffix"],
     ], $creative);
     $this->assertSame(201, $response->getStatusCode(), (string) $response->getContent());
+    // JSON:API Include flattens the relationships into the data.
+    $this->assertArrayHasKey('skills', Json::decode((string) $response->getContent())['data']);
     $tag = $this->loadTag('online-marketing-' . strtolower($suffix));
 
     // The same tag in another spelling is refused.

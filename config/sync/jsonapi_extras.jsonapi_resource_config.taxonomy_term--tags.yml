@@ -145,6 +145,6 @@ resourceFields:
   field_skills:
     disabled: false
     fieldName: field_skills
-    publicName: field_skills
+    publicName: skills
     enhancer:
       id: ''
