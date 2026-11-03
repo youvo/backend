@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * The feedback a user gave, with a link to each one the viewer may open.
+ */
+#}
+{% if feedback %}
+  <section class="user-profile-section">
+    <h2 class="user-profile-section-title">{{ 'Feedback'|t }}</h2>
+    <dl class="user-profile-facts">
+      {% for item in feedback %}
+        <div>
+          <dt>
+            {% if item.url %}
+              <a href="{{ item.url }}">{{ item.project }}</a>
+            {% else %}
+              {{ item.project }}
+            {% endif %}
+          </dt>
+          <dd>{{ item.date }}</dd>
+        </div>
+      {% endfor %}
+    </dl>
+  </section>
+{% endif %}
