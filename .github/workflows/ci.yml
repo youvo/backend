@@ -6,22 +6,25 @@ on:
     branches:
       - main
 
+env:
+  PHP_VERSION: '8.4'
+
 jobs:
   lint:
     name: Linting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           coverage: none
-          php-version: 8.4
+          php-version: ${{ env.PHP_VERSION }}
       - name: Validate Dependencies
         run: composer validate
       - name: Install Dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
       - name: Check Coding Standards
         run: vendor/bin/phpcs --report=summary
       - name: Static Code Analysis
@@ -29,12 +32,12 @@ jobs:
 
   frontend:
     name: Frontend Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - name: Build Manager
@@ -55,30 +58,103 @@ jobs:
             exit 1
           fi
 
-  test:
-    name: Testing
-    runs-on: ubuntu-latest
-    needs: lint
+  # Audits only warn: a finding adds an annotation but never fails the run.
+  backend-audit:
+    name: Backend Audit
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          coverage: no
-          php-version: 8.4
+          coverage: none
+          php-version: ${{ env.PHP_VERSION }}
+      - name: Composer Audit
+        run: |
+          composer audit --locked \
+            || echo "::warning title=Backend Audit::composer audit found vulnerable or abandoned packages."
+
+  frontend-audit:
+    name: Frontend Audit
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Audit Manager
+        working-directory: web/modules/custom/projects/manager
+        run: |
+          yarn audit \
+            || echo "::warning title=Frontend Audit::yarn audit found vulnerable packages in the manager."
+      - name: Audit Theme
+        working-directory: web/themes/custom/yv
+        run: |
+          yarn audit \
+            || echo "::warning title=Frontend Audit::yarn audit found vulnerable packages in the theme."
+      - name: Audit Mail Layout
+        working-directory: web/themes/custom/yv/mjml
+        run: |
+          npm audit \
+            || echo "::warning title=Frontend Audit::npm audit found vulnerable packages in the mail layout."
+
+  unit-kernel:
+    name: Unit & Kernel Tests
+    runs-on: ubuntu-26.04
+    needs: lint
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
+          php-version: ${{ env.PHP_VERSION }}
       - name: Install Dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
       - name: Setup Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends imagemagick
           sudo systemctl start mysql.service
           mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
-          sudo systemctl start apache2.service
       - name: Unit & Kernel Tests
         run: vendor/bin/phpunit --testsuite unit,kernel --testdox --stop-on-failure
+
+  existing-site:
+    name: Existing Site Tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-26.04
+    needs: unit-kernel
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
+          php-version: ${{ env.PHP_VERSION }}
+      - name: Install Dependencies
+        uses: ramsey/composer-install@v4
+      - name: Setup Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends imagemagick
+          sudo systemctl start mysql.service
+          mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
       - name: Install Drupal
         run: bash scripts/install-ci.sh
+      # Each shard installs its own site and runs every third test file.
       - name: Existing Site Tests
-        run: vendor/bin/phpunit --testsuite existing-site --testdox --stop-on-failure
+        run: |
+          files=$(vendor/bin/phpunit --testsuite existing-site --list-test-files \
+            | sed -n 's/^ - //p' | sort \
+            | awk -v n=3 -v i=${{ matrix.shard }} 'NR % n == i % n')
+          vendor/bin/phpunit --testdox --stop-on-failure $files
