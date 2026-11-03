@@ -1,0 +1,19 @@
+uuid: 1a2a631a-39c8-4c39-b3e4-c66921cdfcbb
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+id: taxonomy_term.field_skills
+field_name: field_skills
+entity_type: taxonomy_term
+type: entity_reference
+settings:
+  target_type: taxonomy_term
+module: core
+locked: false
+cardinality: 3
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

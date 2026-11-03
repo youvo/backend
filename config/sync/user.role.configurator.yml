@@ -5,6 +5,7 @@ dependencies:
   config:
     - dashboard.dashboard.youvo
     - taxonomy.vocabulary.skills
+    - taxonomy.vocabulary.tags
   module:
     - content_translation
     - contextual
@@ -25,8 +26,11 @@ permissions:
   - 'access navigation'
   - 'access taxonomy overview'
   - 'create content translations'
+  - 'create terms in tags'
+  - 'delete terms in tags'
   - 'edit log pattern'
   - 'edit terms in skills'
+  - 'edit terms in tags'
   - 'translate log_text'
   - 'translate skills taxonomy_term'
   - 'view youvo dashboard'

@@ -41,6 +41,8 @@ function creatives_dummy_generate_content(): void {
     'Universität',
   ];
 
+  $tags = creatives_dummy_create_tags();
+
   // Iterate some dummy creatives.
   for ($i = 1; $i <= 31; $i++) {
 
@@ -82,7 +84,10 @@ function creatives_dummy_generate_content(): void {
       'field_name' => $firstname . ' ' . $faker->lastName(),
       'field_position' => $faker->optional(0.8)->jobTitle(),
       'field_about' => $faker->optional(0.9)->text(400),
-      'field_skills' => youvo_dummy_get_random_skills(),
+      'field_skills' => $skills = youvo_dummy_get_random_skills(),
+      // Set on creation: a second save makes filefield_paths log a notice for
+      // the attached avatar.
+      'field_tags' => creatives_dummy_pick_tags($tags, $skills, $i),
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
       // Drawn in place, so the seeded content after it stays the same.
@@ -118,6 +123,67 @@ function creatives_dummy_generate_content(): void {
     \Drupal::logger('youvo')
       ->error('An error occurred while deleting dummy creative. %type: @message in %function (line %line of %file).', $variables);
   }
+}
+
+/**
+ * Creates tags per skill.
+ *
+ * @return array
+ *   The tag IDs keyed by skill ID.
+ */
+function creatives_dummy_create_tags(): array {
+
+  // Tags by skill ID, see youvo_site_install_finished().
+  $names = [
+    1 => ['social-media', 'online-marketing', 'wordpress', 'html', 'seo'],
+    2 => ['strategie', 'kampagnen', 'zielgruppen', 'workshops'],
+    3 => ['texten', 'lektorat', 'pressearbeit', 'storytelling'],
+    4 => ['photoshop', 'illustrator', 'logo-design', 'infografiken', 'ux'],
+    5 => ['after-effects', 'videoschnitt', 'animation', 'erklärfilm'],
+    6 => ['portraits', 'eventfotografie', 'lightroom', 'reportage'],
+  ];
+
+  $tags = [];
+  try {
+    $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+    foreach ($names as $skill_id => $skill_names) {
+      foreach ($skill_names as $name) {
+        $tag = $term_storage->create([
+          'vid' => 'tags',
+          'name' => $name,
+          'field_skills' => [['target_id' => $skill_id]],
+          'langcode' => 'de',
+        ]);
+        $tag->save();
+        $tags[$skill_id][] = $tag->id();
+      }
+    }
+  }
+  catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
+    $variables = Error::decodeException($e);
+    \Drupal::logger('youvo')
+      ->error('An error occurred while creating dummy tags. %type: @message in %function (line %line of %file).', $variables);
+  }
+  return $tags;
+}
+
+/**
+ * Picks up to four tags of the skills of the nth creative.
+ *
+ * Picked by position, not at random: Faker seeds PHP's global random
+ * generator, so an extra draw would change every creative after this one.
+ */
+function creatives_dummy_pick_tags(array $tags, array $skills, int $n): array {
+  $candidates = [];
+  foreach (array_column($skills, 'target_id') as $skill_id) {
+    $candidates = array_merge($candidates, $tags[$skill_id] ?? []);
+  }
+  if (!$candidates) {
+    return [];
+  }
+  $offset = $n % count($candidates);
+  $rotated = array_merge(array_slice($candidates, $offset), array_slice($candidates, 0, $offset));
+  return array_slice($rotated, 0, $n % 5);
 }
 
 /**

@@ -6,5 +6,7 @@ package: 'youvo'
 core_version_requirement: '^10.3 || ^11'
 
 dependencies:
+  - drupal:options
+  - drupal:taxonomy
   - user_types:user_types
   - youvo:youvo

@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Tags
+vid: tags
+description: 'Keywords creatives describe their abilities with.'
+weight: 2
+new_revision: false

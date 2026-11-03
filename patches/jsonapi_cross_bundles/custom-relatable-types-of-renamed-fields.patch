@@ -1,0 +1,31 @@
+--- a/src/ResourceType/CrossBundleResourceTypeRepository.php
++++ b/src/ResourceType/CrossBundleResourceTypeRepository.php
+@@ -205,16 +205,22 @@
+    * @see \Drupal\jsonapi\ResourceType\ResourceTypeRepository::getRelatableResourceTypesFromFieldDefinition()
+    */
+   public function getRelatableResourceTypesSuperset(array $resource_types, array $field_mapping, array $initial_resource_types) {
++    // Key by internal field name: JSON:API Extras may rename the fields of a
++    // bundle resource type, but the cross-bundle field mapping keeps them.
+     $relatable_resource_types = [];
+     foreach ($resource_types as $resource_type) {
+-      $relatable_resource_types[] = $this->shim->calculateRelatableResourceTypes($resource_type, $initial_resource_types);
++      foreach ($this->shim->calculateRelatableResourceTypes($resource_type, $initial_resource_types) as $public_name => $relatable) {
++        $relatable_resource_types[$resource_type->getInternalName($public_name)] = $relatable;
++      }
+     }
+-    $relatable_resource_types = array_merge([], ...$relatable_resource_types);
+ 
+-    $mapped_resource_types = array_filter(array_map(function ($item) {
+-      return $item instanceof ResourceTypeRelationship ? $item->getPublicName() : NULL;
+-    }, $field_mapping));
+-    return array_intersect_key($relatable_resource_types, array_flip($mapped_resource_types));
++    $superset = [];
++    foreach ($field_mapping as $internal_name => $field) {
++      if ($field instanceof ResourceTypeRelationship && isset($relatable_resource_types[$internal_name])) {
++        $superset[$field->getPublicName()] = $relatable_resource_types[$internal_name];
++      }
++    }
++    return $superset;
+   }
+ 
+ }
