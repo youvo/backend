@@ -298,6 +298,11 @@
   margin-top: 0;
 }
 
+/* Lines separate the logs; the card already closes the list. */
+.view-logbook tbody tr:last-child {
+  border-bottom: 0;
+}
+
 .view-logbook table {
   margin-bottom: 0;
 }
