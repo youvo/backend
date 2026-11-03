@@ -48,8 +48,7 @@ function projects_dummy_generate_content(): void {
     ->condition('roles', 'creative')
     ->condition('uid', 1, '!=')
     ->execute();
-  // Prospect organizations have no manager; one of the managers declines
-  // their proposals.
+  // Prospects have no manager, so any manager declines their proposals.
   $manager_ids = array_values(\Drupal::entityQuery('user')
     ->accessCheck(FALSE)
     ->condition('roles', 'manager')
@@ -193,8 +192,8 @@ function projects_dummy_generate_content(): void {
     ]);
 
     try {
-      // The organization creates its project, and each later step is done by
-      // whoever does it in the app, so the logs have their authors.
+      // Each step runs as the user who does it in the app, so the logs get
+      // their authors.
       projects_dummy_as($oid, fn () => $project->save());
       $transition_time = $created;
       $participant_entities = [];
@@ -250,8 +249,7 @@ function projects_dummy_generate_content(): void {
       }
       if ($final_state === 'completed') {
         $transition_time += $transition_increment;
-        // The organization, a participant or the manager completes it. Not
-        // drawn with Faker, which would change the rest of the content.
+        // Not drawn with Faker, which would change the rest of the content.
         $completers = array_merge([$oid, $manager], array_map(static fn ($creative) => (int) $creative->id(), $participant_entities));
         $completer = $completers[random_int(0, count($completers) - 1)];
         projects_dummy_as($completer, fn () => $event_dispatcher->dispatch(new ProjectCompleteEvent($project, $transition_time)));
@@ -264,8 +262,7 @@ function projects_dummy_generate_content(): void {
         $decliner = $manager ?: $manager_ids[random_int(0, count($manager_ids) - 1)];
         projects_dummy_as((int) $decliner, fn () => $event_dispatcher->dispatch($decline_event));
       }
-      // The manager reminds the organization of half of its drafts. Not drawn
-      // with Faker, which would change the rest of the content.
+      // Not drawn with Faker, which would change the rest of the content.
       if ($final_state === 'draft' && $manager && random_int(1, 2) === 1) {
         $transition_time += $transition_increment;
         projects_dummy_as($manager, fn () => $event_dispatcher->dispatch(new ProjectNotifyEvent($project, $transition_time)));
@@ -311,8 +308,8 @@ function projects_dummy_generate_content(): void {
       ],
       'langcode' => 'de',
       'uid' => $prospect_id,
-      // A prospect proposes its project when it registers, some time in the
-      // last month. The registration is dated by this project later.
+      // A prospect proposes its project when it registers, so its
+      // registration is dated by this project later.
       'created' => random_int($current_time - 30 * 86400, $current_time - 86400),
       'field_lifecycle' => 'draft',
       'status' => 1,
@@ -438,8 +435,7 @@ function projects_dummy_get_feedback_answers(string $bundle, Generator $faker): 
 /**
  * Runs a step of the dummy content as a user.
  *
- * Logs take their author from the current user, so each event is dispatched
- * as the user who would cause it in the app.
+ * Logs take their author from the current user.
  *
  * @param int $uid
  *   The id of the user, 0 to run the step without one.

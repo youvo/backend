@@ -3,11 +3,8 @@
  * @file
  * Full view of an organization in the backend.
  *
- * Follows the organization page of the frontend: avatar, name, links and
- * causes on top, then aim, about, the people and the budget explanation. The
- * side card holds what only the backend shows: contact options, account data
- * and registration answers. The plain values in "profile" come from
- * yv_preprocess_user() and are set only when the viewer may see the field.
+ * The plain values in "profile" come from yv_preprocess_user() and are set
+ * only when the viewer may see the field.
  */
 #}
 {% set registration = [
@@ -77,7 +74,6 @@
         {% endif %}
         {% if manager %}
           <li>
-            {# The same pill as the contact, with the avatar of the manager. #}
             {% set manager_pill %}
               {{ manager }}
               <span>

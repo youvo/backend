@@ -13,9 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Limits the logs to those of a person or an organization.
  *
- * Matches the same logs as a tag of the user in the logbook search: the logs
- * they wrote, take part in as creative, manage or belong to, and the logs of
- * the projects they own.
+ * Matches the same logs as the user's tag in the logbook search.
  */
 #[ViewsArgument('logbook_involves')]
 class LogbookInvolves extends NumericArgument {

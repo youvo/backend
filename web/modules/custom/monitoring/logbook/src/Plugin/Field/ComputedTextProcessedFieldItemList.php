@@ -17,33 +17,29 @@ class ComputedTextProcessedFieldItemList extends ComputedTextFieldItemListBase {
     /** @var \Drupal\logbook\LogInterface $log */
     $log = $this->getEntity();
 
-    // Replacement for author. A log without one names the platform, without
-    // the author tag, since there is no one to link.
+    // The platform gets no author tag, since there is no one to link.
     $author = $log->getOwner();
     $replacements['%Author'] = $this->hasAuthor()
       ? '<author>' . $author->getName() . '</author>'
       : $this->fakeTranslateRole();
 
-    // Replacement for manager.
     if ($manager = $log->getManager()) {
       $replacements['%Manager'] = '<manager>' . $manager->getName() . '</manager>';
     }
 
-    // Replacement for project.
     $project = $log->getProject();
     if ($project) {
       $replacements['%Project'] = '<project>' . $project->getTitle() . '</project>';
     }
 
-    // Replacement for organization. Organization logs have no project.
+    // Organization logs have no project.
     if ($organization = $log->getOrganization() ?? $project?->getOwner()) {
       $replacements['%Organization'] = '<organization>' . $organization->getName() . '</organization>';
     }
 
-    // Replacement for creatives.
     if ($creatives = $log->getCreatives()) {
-      // Get creative names. Append the delta to the tag. This way the
-      // frontend can use format() on multiple creatives.
+      // The delta in the tag lets the frontend use format() on multiple
+      // creatives.
       $names = [];
       foreach (array_values($creatives) as $delta => $creative) {
         $names[] = '<creative' . ($delta + 1) . '>' . $creative->getName() . '</creative' . ($delta + 1) . '>';

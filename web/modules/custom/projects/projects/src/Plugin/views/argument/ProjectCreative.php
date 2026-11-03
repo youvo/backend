@@ -10,9 +10,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Limits the projects to those of a creative.
- *
- * A creative's projects are the ones they take part in and the ones of the
- * organizations they manage.
  */
 #[ViewsArgument('project_creative')]
 class ProjectCreative extends NumericArgument {
@@ -42,7 +39,7 @@ class ProjectCreative extends NumericArgument {
   }
 
   /**
-   * Adds the condition on the participants and the managed organizations.
+   * Adds the condition on applicants, participants and managed organizations.
    *
    * @param bool $group_by
    *   Whether the query uses aggregation, which this argument ignores.
@@ -54,12 +51,20 @@ class ProjectCreative extends NumericArgument {
     $participations = $this->database->select('project__field_participants', 'p')
       ->fields('p', ['entity_id'])
       ->condition('p.field_participants_target_id', $creative);
+    // An application only counts while the project is open. Afterwards the
+    // creative was either chosen and takes part, or the project is not theirs.
+    $applications = $this->database->select('project__field_applicants', 'a')
+      ->fields('a', ['entity_id'])
+      ->condition('a.field_applicants_target_id', $creative);
+    $applications->join('project__field_lifecycle', 'l', 'l.entity_id = a.entity_id');
+    $applications->condition('l.field_lifecycle_value', 'open');
     $organizations = $this->database->select('user__field_manager', 'm')
       ->fields('m', ['entity_id'])
       ->condition('m.field_manager_target_id', $creative);
 
     $condition = (new Condition('OR'))
       ->condition("$alias.id", $participations, 'IN')
+      ->condition("$alias.id", $applications, 'IN')
       ->condition("$alias.uid", $organizations, 'IN');
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;

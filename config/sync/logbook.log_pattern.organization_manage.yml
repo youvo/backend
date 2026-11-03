@@ -5,7 +5,7 @@ dependencies: {  }
 _core:
   default_config_hash: 9_-txm15vsftREEdL9-ZdhTAWcypKFkjFVHnP3fcd8U
 id: organization_manage
-label: 'Organization Manage'
+label: Manage
 tokens:
   -
     token: '%AuthorWithRole'

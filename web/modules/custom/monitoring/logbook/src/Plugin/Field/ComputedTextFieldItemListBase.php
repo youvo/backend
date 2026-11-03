@@ -43,7 +43,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
 
       $simple_token_replacer = \Drupal::service('youvo.token_replacer');
 
-      // Replace and validate tokens in text.
       $text = $this->getText($pattern);
       $tokens = $pattern->getTokens();
       $simple_token_replacer->populateReplacements($this->getReplacements(), $tokens);
@@ -52,7 +51,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
       $item = $this->createItem(0, $text);
 
-      // Add cache dependencies.
       $item->getValueProperty()->addCacheableDependency($log)
         ->addCacheableDependency($pattern)
         ->addCacheableDependency($log->getOwner());
@@ -86,7 +84,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   abstract protected function getReplacements(): array;
 
   /**
-   * Concatinates creative names.
+   * Concatenates creative names.
    *
    * @todo Use fake translation here. It could be handled by interface
    *   translation in the future.

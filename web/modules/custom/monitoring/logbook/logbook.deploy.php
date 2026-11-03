@@ -24,8 +24,7 @@ function logbook_deploy_archive_log_texts(): void {
 /**
  * Fixes the grammar of the log text of the project mediate pattern.
  *
- * The import only adds missing texts, so the existing text is updated here,
- * unless someone changed it in the meantime.
+ * The import only adds missing texts. A text someone edited is left alone.
  */
 function logbook_deploy_mediate_log_text(): void {
   $storage = \Drupal::entityTypeManager()->getStorage('log_text');

@@ -5,7 +5,7 @@ dependencies: {  }
 _core:
   default_config_hash: 8hMlZB8S5qjRoTeWwdM-PIZbUJ6DyEevybleNL97ClI
 id: organization_disband
-label: 'Organization Disband'
+label: Disband
 tokens:
   -
     token: '%AuthorWithRole'

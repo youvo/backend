@@ -1,1 +1,7 @@
-<div class="skill mini-skill icon-skill-{{ content.machine_name|field_value }}"></div>
+{#
+/**
+ * @file
+ * A skill as icon.
+ */
+#}
+<div class="skill mini-skill icon-skill-{{ content.machine_name|field_value }}" role="img" aria-label="{{ term.label }}" title="{{ term.label }}"></div>

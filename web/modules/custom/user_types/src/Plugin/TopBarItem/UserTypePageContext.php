@@ -10,8 +10,7 @@ use Drupal\user_types\Utility\Profile;
 /**
  * Shows the name of a creative or an organization in the top bar.
  *
- * Replaces the page context of the navigation module, which shows the email
- * of an account, see user_types_top_bar_item_alter().
+ * The page context of the navigation module would show the account's email.
  */
 class UserTypePageContext extends PageContext {
 

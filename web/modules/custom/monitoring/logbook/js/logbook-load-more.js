@@ -1,20 +1,18 @@
 /**
  * @file
- * Keeps the place in the logbook when the load more button is clicked.
+ * Keeps the place in the logbook on load more.
  *
- * The button is a pager link of Views AJAX, which replaces the whole view
- * with the longer list. After a pager link, Views also scrolls to the top of
- * the view and puts the page into the browser URL. Load more only adds to the
- * list, so both are skipped for it: the URL stays, and the last shown log
- * stays where it was on the screen. Focus goes to the first new log, which
- * would otherwise fall back to the page.
+ * Views AJAX replaces the whole view, scrolls to its top and changes the URL.
+ * Load more only appends, so scroll and URL change are skipped and the last
+ * shown log stays in place. Focus moves to the first new log; it would
+ * otherwise fall back to the page.
  */
 ((Drupal, once) => {
   let anchor = null;
 
-  const rows = (view) => view.querySelectorAll('tbody tr');
+  const rows = (view) =>
+    view.querySelectorAll('tbody tr, .view-content > :not(table)');
 
-  // Skips a command of Views AJAX when the load more button sent the request.
   const skipForLoadMore = (name) => {
     const command = Drupal.AjaxCommands.prototype[name];
     Drupal.AjaxCommands.prototype[name] = function skippable(ajax, ...args) {

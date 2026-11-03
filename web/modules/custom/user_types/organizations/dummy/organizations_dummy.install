@@ -105,8 +105,8 @@ function organizations_dummy_generate_content(): void {
       $organization->addRole('organization');
     }
     else {
-      // A creative manages some of the prospects, to invite them. Not drawn
-      // with Faker, which would change the rest of the content.
+      // Some prospects get a manager, who invites them. Not drawn with Faker,
+      // which would change the rest of the content.
       if ($i <= 18) {
         $prospect_managers = array_values($manager_ids);
         $organization->get('field_manager')
@@ -129,13 +129,8 @@ function organizations_dummy_generate_content(): void {
 /**
  * Logs how the organizations got their managers.
  *
- * Called by youvo_dummy_site_install_finished() after the projects, so the
- * manager takes over an organization a few days before its first log. Some
- * organizations had another manager before, who gave them up. Organizations
- * without a log get their manager some time in the year of the projects. The
- * organizations are dated to register before that, with a last login and
- * access after. Prospects register with their project, and the managed ones
- * are invited with it.
+ * Runs after the projects, so a manager takes over an organization before its
+ * first log.
  */
 function organizations_dummy_log_management(): void {
   $current_time = \Drupal::time()->getRequestTime();
@@ -168,7 +163,6 @@ function organizations_dummy_log_management(): void {
       ? $first_log - random_int($day, 14 * $day)
       : random_int($one_year_ago, $current_time);
 
-    // Some organizations had another manager, who gave them up.
     $others = array_values(array_diff($manager_ids, [$manager->id()]));
     if ($others && random_int(1, 5) === 1) {
       $previous = Creative::load($others[random_int(0, count($others) - 1)]);
@@ -183,12 +177,10 @@ function organizations_dummy_log_management(): void {
 
     organizations_dummy_dispatch_as($manager, new OrganizationManageEvent($organization, $manager, $managed), $event_dispatcher);
 
-    // The organization registered a few days before it got its first manager.
     youvo_dummy_set_account_times((int) $id, ($first_managed ?? $managed) - random_int($day, 7 * $day));
   }
 
-  // Prospect organizations registered recently, together with their project.
-  // A creative takes over some of them and invites them with the project.
+  // Prospects register together with their project.
   $prospect_ids = \Drupal::entityQuery('user')
     ->accessCheck(FALSE)
     ->condition('type', 'organization')

@@ -11,9 +11,7 @@ use Drupal\views\Plugin\views\pager\SqlBase;
 /**
  * Shows the first items and a button that loads more.
  *
- * Page 0 shows "items_per_page" items, each further page "step" more, always
- * from the start. With AJAX, the view is replaced by the longer list. Like the
- * mini pager, the query fetches one item more to know whether to offer the
+ * Like the mini pager, it fetches one extra item to know whether to offer the
  * button, so no count query runs.
  */
 #[ViewsPager(
@@ -88,8 +86,8 @@ class LogbookLoadMore extends SqlBase {
    *   The result rows.
    */
   public function postExecute(&$result): void {
-    // The total counts the extra item, so it tells whether there are more,
-    // also when the results come from the cache, which keeps only the total.
+    // The total includes the extra item, because cached results keep only
+    // the total and hasMore() needs it.
     $this->total_items = count($result);
     if ($this->hasMore()) {
       array_pop($result);
@@ -100,9 +98,9 @@ class LogbookLoadMore extends SqlBase {
    * {@inheritdoc}
    */
   public function updatePageInfo(): void {
-    // The page manager builds the links of all pagers on the page from the
-    // registered pagers, so this one is registered too. The page only says
-    // how many items to show, so the pager is sized to keep it as it is.
+    // The pager manager builds the links of all pagers on the page from the
+    // registered ones, so this one registers too. Its size keeps the current
+    // page from being clamped.
     $this->pagerManager->createPager($this->getCurrentPage() + 2, 1, (int) $this->options['id']);
   }
 

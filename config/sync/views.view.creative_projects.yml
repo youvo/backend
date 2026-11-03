@@ -6,6 +6,7 @@ dependencies:
     - core.entity_view_mode.project.teaser
     - user_bundle.user_type.user
   module:
+    - logbook
     - projects
     - user
 id: creative_projects
@@ -25,10 +26,13 @@ display:
       title: Projects
       fields: {  }
       pager:
-        type: some
+        type: logbook_load_more
         options:
           offset: 0
-          items_per_page: 50
+          items_per_page: 8
+          total_pages: null
+          id: 1
+          step: 8
       exposed_form:
         type: basic
         options: {  }
@@ -138,6 +142,7 @@ display:
       contexts:
         - 'languages:language_interface'
         - url
+        - url.query_args
         - user.permissions
       tags: {  }
   block:
@@ -156,6 +161,7 @@ display:
       contexts:
         - 'languages:language_interface'
         - url
+        - url.query_args
         - user.permissions
       tags: {  }
 
