@@ -325,7 +325,7 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   $account = [];
-  foreach (['status', 'roles', 'created', 'login'] as $field_name) {
+  foreach (['status', 'roles', 'created', 'login', 'access'] as $field_name) {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
     $cache->addCacheableDependency($access);
     if ($access->isAllowed()) {
@@ -349,6 +349,10 @@ function yv_preprocess_user(array &$variables): void {
   if (isset($account['login'])) {
     $login = $user->getLastLoginTime();
     $account['login'] = $login ? $date_formatter->format((int) $login, 'custom', 'd.m.Y') : t('Never');
+  }
+  if (isset($account['access'])) {
+    $last_access = $user->getLastAccessedTime();
+    $account['access'] = $last_access ? $date_formatter->format((int) $last_access, 'custom', 'd.m.Y') : t('Never');
   }
   $profile['account'] = array_filter($account);
 
