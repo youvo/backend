@@ -20,3 +20,8 @@ $color-orange-dark: #d17645;
 $color-red: #e15554;
 $color-red-light: #e08b8b;
 $color-red-dark: #ad2626;
+
+// Breakpoints: from medium on, cards get more room; from wide on, profiles
+// show a sidebar.
+$breakpoint-medium: 40rem;
+$breakpoint-wide: 64rem;

@@ -1,7 +1,8 @@
 {#
 /**
  * @file
- * The feedback a user gave, with a link to each one the viewer may open.
+ * The feedback a user gave per project; the date links to each feedback the
+ * viewer may open.
  */
 #}
 {% if feedback %}
@@ -10,14 +11,14 @@
     <dl class="user-profile-facts">
       {% for item in feedback %}
         <div>
-          <dt>
+          <dt>{{ item.project }}</dt>
+          <dd>
             {% if item.url %}
-              <a href="{{ item.url }}">{{ item.project }}</a>
+              <a href="{{ item.url }}">{{ item.date }}<span class="visually-hidden">: {{ 'feedback on @project'|t({'@project': item.project}) }}</span></a>
             {% else %}
-              {{ item.project }}
+              {{ item.date }}
             {% endif %}
-          </dt>
-          <dd>{{ item.date }}</dd>
+          </dd>
         </div>
       {% endfor %}
     </dl>
