@@ -26,6 +26,9 @@
       {% if account.login %}
         <div><dt>{{ 'Last login'|t }}</dt><dd>{{ account.login }}</dd></div>
       {% endif %}
+      {% if account.access %}
+        <div><dt>{{ 'Last access'|t }}</dt><dd>{{ account.access }}</dd></div>
+      {% endif %}
     </dl>
   </section>
 {% endif %}
