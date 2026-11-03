@@ -1,0 +1,19 @@
+// =============================================================================
+// TOKENS
+// =============================================================================
+// One set of tokens on top of Gin's, shared by the components. On body, not
+// :root, because Gin sets its accent colors on body.
+
+body {
+  --yv-ink: var(--gin-color-title);
+  --yv-text: var(--gin-color-text);
+  --yv-muted: var(--gin-color-text-light);
+  --yv-accent: var(--gin-color-primary);
+  --yv-surface: var(--gin-bg-layer);
+  --yv-line: var(--gin-border-color-table);
+  --yv-outline: var(--gin-border-color);
+  --yv-chip: color-mix(in srgb, var(--yv-accent) 15%, var(--yv-surface));
+
+  // As the chips of the manager panes.
+  --yv-chip-hover: color-mix(in srgb, var(--yv-accent) 22%, var(--yv-surface));
+}

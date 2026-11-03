@@ -22,7 +22,7 @@ class LogbookEmpty extends AreaPluginBase {
     $searching = $this->isSearching();
     $paragraph = static fn (string $text, string $class) => [
       '#markup' => $text,
-      '#prefix' => '<p class="logbook-empty__' . $class . '">',
+      '#prefix' => '<p class="logbook-empty-' . $class . '">',
       '#suffix' => '</p>',
     ];
     $build = [

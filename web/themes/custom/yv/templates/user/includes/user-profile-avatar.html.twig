@@ -1,0 +1,15 @@
+{#
+/**
+ * @file
+ * The avatar of a profile, or its initials when there is none.
+ *
+ * Variables: avatar (rendered image), initials, shape ("round" or empty).
+ */
+#}
+<div class="user-profile-avatar"{% if shape %} data-shape="{{ shape }}"{% endif %}>
+  {% if avatar %}
+    {{ avatar }}
+  {% else %}
+    <span aria-hidden="true">{{ initials }}</span>
+  {% endif %}
+</div>

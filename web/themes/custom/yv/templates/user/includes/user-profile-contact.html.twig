@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * The contact options of a profile.
+ */
+#}
+{% if profile.mail or profile.phone or profile.address %}
+  <section class="user-profile-section">
+    <h2 class="user-profile-section-title">{{ 'Contact'|t }}</h2>
+    <ul class="user-profile-contact">
+      {% if profile.mail %}
+        <li><a href="mailto:{{ profile.mail }}">{{ profile.mail }}</a></li>
+      {% endif %}
+      {% if profile.phone %}
+        <li><a href="{{ profile.phone_uri }}">{{ profile.phone }}</a></li>
+      {% endif %}
+      {% if profile.address %}
+        <li><address>{{ profile.address|join(', ') }}</address></li>
+      {% endif %}
+    </ul>
+  </section>
+{% endif %}

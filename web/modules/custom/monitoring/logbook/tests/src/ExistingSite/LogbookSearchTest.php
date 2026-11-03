@@ -46,7 +46,7 @@ class LogbookSearchTest extends ProjectResourceTestBase {
       'entity_id' => 'text:' . $prefix,
       'label' => $prefix,
       'info_label' => 'Text',
-      'class' => 'logbook-search__text',
+      'class' => 'logbook-search-text',
     ], $items[0]);
     $rest = array_slice($items, 1);
     $this->assertSame([

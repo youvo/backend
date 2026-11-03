@@ -63,7 +63,7 @@ class LogVisibility extends FieldPluginBase {
    */
   protected function icon(string $name, string|\Stringable $label): string {
     $label = Html::escape((string) $label);
-    return '<span class="logbook-icon logbook-icon--' . $name . '" role="img" aria-label="' . $label . '" title="' . $label . '"></span>';
+    return '<span class="logbook-icon" data-icon="' . $name . '" role="img" aria-label="' . $label . '" title="' . $label . '"></span>';
   }
 
 }

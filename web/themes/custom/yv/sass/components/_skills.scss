@@ -1,70 +1,51 @@
 // =============================================================================
-// SKILLS COMPONENT
+// SKILLS
 // =============================================================================
+// As the frontend's SkillIcon: a white icon on the color of the skill, 60% of
+// the circle as in its 40px badge. Small sizes get a larger share for
+// readability.
 
 @use "../abstracts/variables.scss" as *;
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 
-.large-skill {
-  @include icon-base;
-  @include icon-size("large");
-}
+// The colors of the frontend's skill config.
+$skill-colors: (
+  "online": $color-red,
+  "concept": $color-orange,
+  "design": $color-turquoise,
+  "photo": $color-blue-light,
+  "video": $color-blue,
+  "text": $color-grey-dark,
+);
 
-.medium-skill {
-  @include icon-base;
-  @include icon-size("medium");
-}
+.skill {
+  @include skill-size("medium");
 
-.small-skill {
-  @include icon-base;
-  @include icon-size("small");
-}
-
-.mini-skill {
-  @include icon-base;
-
+  position: relative;
   display: inline-block;
-  @include icon-size("mini");
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--skill-color, #{$color-grey-dark});
+  vertical-align: middle;
+
+  &::before {
+    position: absolute;
+    background-color: $color-white;
+    content: "";
+    mask: var(--skill-icon) center / contain no-repeat;
+  }
 }
 
-.icon-skill-online {
-  @include skill-icon("online");
+@each $skill, $color in $skill-colors {
+  .skill[data-skill="#{$skill}"] {
+    --skill-color: #{$color};
+    --skill-icon: #{svg-skill($skill)};
+  }
 }
 
-.icon-skill-concept {
-  @include skill-icon("concept");
-}
-
-.icon-skill-text {
-  @include skill-icon("text");
-}
-
-.icon-skill-design {
-  @include skill-icon("design");
-}
-
-.icon-skill-video {
-  @include skill-icon("video");
-}
-
-.icon-skill-photo {
-  @include skill-icon("photo");
-}
-
-// Skill state classes (if needed for manual use)
-.skill-hover {
-  @include skill-hover;
-}
-
-.skill-active {
-  @include skill-active;
-}
-
-.skill-hover-large {
-  @include skill-hover("large");
-}
-
-.skill-active-large {
-  @include skill-active("large");
+@each $size in ("mini", "small", "medium", "large") {
+  .skill[data-size="#{$size}"] {
+    @include skill-size($size);
+  }
 }
