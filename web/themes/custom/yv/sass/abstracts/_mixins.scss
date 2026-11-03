@@ -3,6 +3,7 @@
 // =============================================================================
 
 @use "functions.scss" as *;
+@use "variables.scss" as *;
 
 // Generalized Icon Base Mixin
 // Provides the base styling for all circular icons (skills, avatars, etc.)
@@ -68,6 +69,15 @@
   box-shadow: var(--gin-shadow-l1);
 }
 
+// The padding of a card with content, more from medium screens on.
+@mixin card-padding {
+  padding: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    padding: var(--gin-spacing-l);
+  }
+}
+
 // A card whose one link covers it all, so the card is one click target while
 // screen readers and tabbing meet a single link. The focus ring goes around
 // the card instead of the link.
@@ -102,13 +112,52 @@
 }
 
 // A small rounded value, as the chips of the manager panes.
-@mixin chip($radius: var(--gin-border-s)) {
+@mixin chip {
   padding: 0.15em 0.65em;
-  border-radius: $radius;
+  border-radius: var(--gin-border-s);
   background: var(--yv-chip);
-  color: var(--yv-accent);
+  color: var(--yv-chip-text);
   font-size: var(--gin-font-size-xs);
   font-weight: 600;
+}
+
+// A small uppercase label above the content of a card.
+@mixin section-label {
+  margin: 0 0 var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+// The title of a profile or feedback, in its main card.
+@mixin page-title {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h2);
+  line-height: 1.2;
+}
+
+// Labels and values in two columns, the values at the end of the line.
+@mixin facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gin-spacing-xxs) var(--gin-spacing-m);
+  margin: 0;
+
+  > div {
+    display: contents;
+  }
+
+  dt {
+    color: var(--yv-muted);
+  }
+
+  dd {
+    margin: 0;
+    text-align: end;
+  }
 }
 
 // An avatar image, or the initials when there is none.
@@ -121,7 +170,7 @@
   overflow: hidden;
   border-radius: $radius;
   background: var(--yv-chip);
-  color: var(--yv-accent);
+  color: var(--yv-chip-text);
   font-weight: 600;
 
   img {

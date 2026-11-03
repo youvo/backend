@@ -2,13 +2,19 @@
 
 namespace Drupal\feedback;
 
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\ProjectInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * View builder for the feedback entity.
@@ -76,9 +82,24 @@ class FeedbackViewBuilder extends EntityViewBuilder {
   ];
 
   /**
-   * The base fields shown above the answers.
+   * The entity type manager, to find the other feedback on the project.
    */
-  const array META_FIELDS = ['project', 'author', 'created', 'completed'];
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The date formatter, for the dates of the other feedback.
+   */
+  protected DateFormatterInterface $dateFormatter;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
+    $instance = parent::createInstance($container, $entity_type);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->dateFormatter = $container->get('date.formatter');
+    return $instance;
+  }
 
   /**
    * {@inheritdoc}
@@ -99,50 +120,103 @@ class FeedbackViewBuilder extends EntityViewBuilder {
     if (!$entity instanceof FeedbackInterface) {
       return;
     }
-    $build['#attached']['library'][] = 'feedback/feedback';
     // Without an entity template, a container carries the class of the page.
     $build['#theme_wrappers'][] = 'container';
     $build['#attributes']['class'][] = 'feedback';
 
-    // Who gave the feedback, for which project and when.
-    $build['meta'] = [
+    // As on the profiles: the answers in the main column, who gave the
+    // feedback, for which project and when in a sidebar after it.
+    $build['side'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'aside',
+      '#attributes' => ['class' => ['feedback-side']],
+      '#weight' => 100,
+      'details' => [
+        '#type' => 'html_tag',
+        '#tag' => 'section',
+        '#attributes' => ['class' => ['feedback-side-section']],
+        'title' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => new TranslatableMarkup('Details'),
+          '#attributes' => ['class' => ['feedback-side-title']],
+        ],
+        'facts' => [
+          '#type' => 'html_tag',
+          '#tag' => 'dl',
+          '#attributes' => ['class' => ['feedback-facts']],
+        ],
+      ],
+    ];
+    $build['main'] = [
       '#type' => 'container',
-      '#attributes' => ['class' => ['feedback__meta']],
-      '#weight' => -100,
+      '#attributes' => ['class' => ['feedback-main']],
     ];
-    $titles = [
+
+    // The author by name.
+    $owner = $entity->getOwner();
+    if (isset($build['author'][0]) && ($owner instanceof Creative || $owner instanceof Organization)) {
+      $build['author'][0] = $owner->toLink($owner->getName())->toRenderable();
+    }
+    $facts = [
+      'project' => NULL,
       'author' => new TranslatableMarkup('Author'),
+      'type' => new TranslatableMarkup('Type'),
       'created' => new TranslatableMarkup('Submitted'),
+      'completed' => NULL,
     ];
-    foreach (self::META_FIELDS as $name) {
-      if ($this->hasContent($build, $name)) {
-        $build['meta'][$name] = $build[$name];
-        $build['meta'][$name]['#title'] = $titles[$name] ?? $build[$name]['#title'] ?? '';
-        $build['meta'][$name]['#label_display'] = 'inline';
+    $build['type'] = [
+      '#plain_text' => $entity->get('bundle')->entity?->label(),
+    ];
+    foreach ($facts as $name => $title) {
+      if ($name === 'type' || $this->hasContent($build, $name)) {
+        $value = $build[$name];
+        $value['#label_display'] = 'hidden';
+        $build['side']['details']['facts'][$name] = [
+          '#type' => 'html_tag',
+          '#tag' => 'div',
+          'title' => [
+            '#type' => 'html_tag',
+            '#tag' => 'dt',
+            '#value' => $title ?? $build[$name]['#title'] ?? '',
+          ],
+          'value' => [
+            '#type' => 'html_tag',
+            '#tag' => 'dd',
+            'value' => $value,
+          ],
+        ];
       }
       unset($build[$name]);
     }
-    // The author by name, with the type of feedback next to it.
-    $owner = $entity->getOwner();
-    if (isset($build['meta']['author'][0]) && ($owner instanceof Creative || $owner instanceof Organization)) {
-      $build['meta']['author'][0] = $owner->toLink($owner->getName())->toRenderable();
-    }
-    $build['meta']['type'] = [
+
+    // As on the profiles, a card opens the main column: the title of the
+    // page, then the public comment.
+    $build['main']['intro'] = [
       '#type' => 'html_tag',
-      '#tag' => 'span',
-      '#value' => $entity->get('bundle')->entity?->label(),
-      '#attributes' => ['class' => ['feedback__type']],
-      '#weight' => ($build['meta']['author']['#weight'] ?? 0) + 0.5,
+      '#tag' => 'section',
+      '#attributes' => ['class' => ['feedback-intro']],
+      '#weight' => -95,
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h1',
+        'text' => ['#plain_text' => $entity->label()],
+        '#attributes' => ['class' => ['feedback-title']],
+      ],
     ];
+
+    $project = $entity->get('project')->entity;
+    if ($project instanceof ProjectInterface) {
+      $this->buildOtherFeedback($build, $entity, $project);
+    }
 
     // The public comment for the project, as a quote.
     if ($this->hasContent($build, 'project_comment')) {
       $build['project_comment']['#label_display'] = 'visually_hidden';
-      $build['comment'] = [
+      $build['main']['intro']['comment'] = [
         '#type' => 'html_tag',
         '#tag' => 'figure',
-        '#attributes' => ['class' => ['feedback__comment']],
-        '#weight' => -90,
+        '#attributes' => ['class' => ['feedback-comment']],
         'caption' => [
           '#type' => 'html_tag',
           '#tag' => 'figcaption',
@@ -191,20 +265,17 @@ class FeedbackViewBuilder extends EntityViewBuilder {
         }
       }
       if ($rows) {
-        $build['section_' . $section] = [
+        $build['main']['section_' . $section] = [
           '#type' => 'html_tag',
           '#tag' => 'section',
-          '#attributes' => ['class' => ['feedback__section']],
-          '#weight' => $weight++,
-          'title' => [
-            '#type' => 'html_tag',
-            '#tag' => 'h2',
-            '#value' => $this->sectionTitle($section),
-            '#attributes' => ['class' => ['feedback__section-title']],
+          '#attributes' => [
+            'class' => ['feedback-section'],
+            'aria-label' => $this->sectionTitle($section),
           ],
+          '#weight' => $weight++,
           'rows' => [
             '#type' => 'container',
-            '#attributes' => ['class' => ['feedback__rows']],
+            '#attributes' => ['class' => ['feedback-rows']],
           ] + $rows,
         ];
       }
@@ -228,33 +299,117 @@ class FeedbackViewBuilder extends EntityViewBuilder {
 
     $definition = $entity->getFieldDefinition($name);
     $question = (string) $definition?->getDescription() ?: (string) $definition?->getLabel();
-    $classes = ['feedback__answer', 'feedback__answer--' . ($field['#formatter'] ?? 'default')];
+    $row = ['class' => ['feedback-row']];
+    if ($follow_up) {
+      $row['data-follow-up'] = 'true';
+    }
+    $answer = [
+      'class' => ['feedback-answer'],
+      'data-format' => $field['#formatter'] ?? 'default',
+    ];
     if ($definition?->getFieldStorageDefinition()->isMultiple()) {
-      $classes[] = 'feedback__answer--multiple';
+      $answer['data-multiple'] = 'true';
     }
     if ($definition?->getType() === 'boolean') {
-      $classes[] = $entity->get($name)->value ? 'feedback__answer--yes' : 'feedback__answer--no';
+      $answer['data-answer'] = $entity->get($name)->value ? 'yes' : 'no';
     }
 
     return [
       '#type' => 'container',
-      '#attributes' => [
-        'class' => array_filter([
-          'feedback__row',
-          $follow_up ? 'feedback__row--follow-up' : NULL,
-        ]),
-      ],
+      '#attributes' => $row,
       'question' => [
         '#type' => 'html_tag',
         '#tag' => 'div',
         '#value' => $question,
-        '#attributes' => ['class' => ['feedback__question']],
+        '#attributes' => ['class' => ['feedback-question']],
       ],
       'answer' => [
         '#type' => 'container',
-        '#attributes' => ['class' => $classes],
+        '#attributes' => $answer,
         'field' => $field,
       ],
+    ];
+  }
+
+  /**
+   * Lists the other completed feedback on the project in the sidebar.
+   *
+   * As in the feedback list of the profiles: the author, and the date as a
+   * link to the feedback. Only feedback the viewer may open is listed, so the
+   * authors of other feedback stay hidden from the author of an open one.
+   */
+  protected function buildOtherFeedback(array &$build, FeedbackInterface $entity, ProjectInterface $project): void {
+
+    $cache = CacheableMetadata::createFromRenderArray($build)->addCacheTags(['feedback_list']);
+    $storage = $this->entityTypeManager->getStorage('feedback');
+    $ids = $storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('project', $project->id())
+      ->condition('id', $entity->id(), '<>')
+      ->condition('completed', NULL, 'IS NOT NULL')
+      ->sort('completed', 'DESC')
+      ->execute();
+
+    $items = [];
+    /** @var \Drupal\feedback\FeedbackInterface $other */
+    foreach ($storage->loadMultiple($ids) as $id => $other) {
+      $access = $other->access('view', NULL, TRUE);
+      $cache->addCacheableDependency($access);
+      if (!$access->isAllowed()) {
+        continue;
+      }
+      $author = $other->getOwner();
+      $cache->addCacheableDependency($other)->addCacheableDependency($author);
+      $name = $author instanceof Creative || $author instanceof Organization ? $author->getName() : (string) $other->label();
+      $date = $this->dateFormatter->format((int) $other->get('completed')->value, 'custom', 'd.m.Y');
+      $value = [
+        '#type' => 'link',
+        '#title' => [
+          'date' => ['#plain_text' => $date],
+          'context' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => ': ' . new TranslatableMarkup('feedback by @name', ['@name' => $name]),
+            '#attributes' => ['class' => ['visually-hidden']],
+          ],
+        ],
+        '#url' => $other->toUrl(),
+      ];
+      $items[$id] = [
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        'title' => [
+          '#type' => 'html_tag',
+          '#tag' => 'dt',
+          'text' => ['#plain_text' => $name],
+        ],
+        'value' => [
+          '#type' => 'html_tag',
+          '#tag' => 'dd',
+          'value' => $value,
+        ],
+      ];
+    }
+    $cache->applyTo($build);
+    if (!$items) {
+      return;
+    }
+
+    $build['side']['other'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'section',
+      '#attributes' => ['class' => ['feedback-side-section']],
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h2',
+        '#value' => new TranslatableMarkup('Other feedback on this project'),
+        '#attributes' => ['class' => ['feedback-side-title']],
+      ],
+      'facts' => [
+        '#type' => 'html_tag',
+        '#tag' => 'dl',
+        '#attributes' => ['class' => ['feedback-facts']],
+      ] + $items,
     ];
   }
 

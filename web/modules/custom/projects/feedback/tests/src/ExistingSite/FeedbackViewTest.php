@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\feedback\ExistingSite;
 
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\feedback\FeedbackInterface;
@@ -14,6 +15,42 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('feedback')]
 class FeedbackViewTest extends ProjectResourceTestBase {
+
+  /**
+   * The sidebar lists the other completed feedback the viewer may open.
+   */
+  public function testOtherFeedback(): void {
+    $current_user = $this->container->get('current_user');
+    $current_user->setAccount($this->createUser(['administer feedback']));
+    $feedback = $this->createFeedback(['completed' => 1776000000]);
+    $title = (string) new TranslatableMarkup('Other feedback on this project');
+    $this->assertStringNotContainsString($title, $this->renderFeedback($feedback));
+
+    foreach (['Mara Völker' => 1776100000, 'Jonas Brandt' => NULL] as $name => $completed) {
+      $author = $this->createCreative();
+      $author->set('field_name', $name)->save();
+      $other = Feedback::create([
+        'bundle' => 'creative',
+        'project' => $feedback->get('project')->target_id,
+        'author' => $author->id(),
+        'step' => 1,
+        'completed' => $completed,
+      ]);
+      $other->save();
+      $this->markEntityForCleanup($other);
+    }
+    $html = $this->renderFeedback($feedback);
+    $this->assertStringContainsString($title, $html);
+    $this->assertStringContainsString('Mara Völker</dt>', $html);
+    $this->assertStringNotContainsString('Jonas Brandt', $html);
+    $this->assertStringNotContainsString('Theo Lechner</dt>', $html);
+
+    // Without access to the other feedback, its author stays hidden.
+    $current_user->setAccount(new AnonymousUserSession());
+    $html = $this->renderFeedback($feedback);
+    $this->assertStringNotContainsString($title, $html);
+    $this->assertStringNotContainsString('Mara Völker', $html);
+  }
 
   /**
    * Creates a feedback of a creative or an organization with the answers.
@@ -57,16 +94,16 @@ class FeedbackViewTest extends ProjectResourceTestBase {
       'project_comment' => 'Ein tolles Projekt.',
     ]));
 
-    $this->assertStringContainsString('feedback__comment', $html);
+    $this->assertStringContainsString('feedback-comment', $html);
     $this->assertStringContainsString('Ein tolles Projekt.', $html);
     // The question is shown as the description of the field.
     $this->assertStringContainsString('Wie zufrieden bist Du mit der Betreuung durch youvo?', $html);
     $this->assertStringContainsString((string) new TranslatableMarkup('Offer'), $html);
     // The text follows its scale as a follow-up.
     $question = preg_quote('Was kann youvo Deiner Meinung nach tun, um eine bessere Betreuung sicherzustellen?', '/');
-    $this->assertMatchesRegularExpression('/feedback__row--follow-up[^>]*>\s*<div class="feedback__question">' . $question . '/', $html);
+    $this->assertMatchesRegularExpression('/data-follow-up="true"[^>]*>\s*<div class="feedback-question">' . $question . '/', $html);
     $this->assertStringContainsString('Schneller antworten.', $html);
-    $this->assertStringContainsString('feedback__answer--yes', $html);
+    $this->assertStringContainsString('data-answer="yes"', $html);
     $this->assertStringNotContainsString((string) new TranslatableMarkup('Further answers'), $html);
   }
 
@@ -98,9 +135,9 @@ class FeedbackViewTest extends ProjectResourceTestBase {
     $html = $this->renderFeedback($this->createFeedback(['field_service_scale' => 2]));
     $this->assertStringContainsString((string) new TranslatableMarkup('Offer'), $html);
     $this->assertStringNotContainsString((string) new TranslatableMarkup('Collaboration'), $html);
-    $this->assertStringNotContainsString('feedback__row--follow-up', $html);
+    $this->assertStringNotContainsString('data-follow-up', $html);
     $this->assertStringNotContainsString((string) new TranslatableMarkup('Further answers'), $html);
-    $this->assertStringNotContainsString('feedback__comment', $html);
+    $this->assertStringNotContainsString('feedback-comment', $html);
   }
 
   /**
@@ -108,9 +145,9 @@ class FeedbackViewTest extends ProjectResourceTestBase {
    */
   public function testScale(): void {
     $html = $this->renderFeedback($this->createFeedback(['field_service_scale' => 4]));
-    $this->assertSame(5, substr_count($html, 'feedback-scale__step"') + substr_count($html, 'feedback-scale__step is-filled'));
-    $this->assertSame(4, substr_count($html, 'feedback-scale__step is-filled'));
-    $this->assertStringContainsString('<span class="feedback-scale__value" aria-hidden="true">4</span>', $html);
+    $this->assertSame(5, substr_count($html, 'feedback-scale-step"'));
+    $this->assertSame(4, substr_count($html, 'feedback-scale-step" data-filled'));
+    $this->assertStringContainsString('<span class="feedback-scale-value" aria-hidden="true">4</span>', $html);
     $this->assertStringContainsString('eher zufrieden', $html);
     $this->assertStringContainsString('aria-label="4 of 5: eher zufrieden"', $html);
   }

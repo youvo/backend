@@ -11,8 +11,7 @@
   {title: 'Projects'|t, content: drupal_view(projects_view, 'block', user_id)},
 ] %}
 {% for section in sections|filter(section => section.content) %}
-  <section class="user-profile-wide">
-    <h2 class="user-profile-wide-title">{{ section.title }}</h2>
+  <section class="user-profile-wide" aria-label="{{ section.title }}">
     {{ section.content }}
   </section>
 {% endfor %}

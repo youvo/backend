@@ -94,25 +94,7 @@
       </section>
     {% endif %}
 
-    {% if profile.feedback %}
-      <section class="user-profile-section">
-        <h2 class="user-profile-section-title">{{ 'Feedback'|t }}</h2>
-        <dl class="user-profile-facts">
-          {% for item in profile.feedback %}
-            <div>
-              <dt>
-                {% if item.url %}
-                  <a href="{{ item.url }}">{{ item.project }}</a>
-                {% else %}
-                  {{ item.project }}
-                {% endif %}
-              </dt>
-              <dd>{{ item.date }}</dd>
-            </div>
-          {% endfor %}
-        </dl>
-      </section>
-    {% endif %}
+    {% include '@yv/user/includes/user-profile-feedback.html.twig' with {feedback: profile.feedback} only %}
 
     {% if profile.courses %}
       <section class="user-profile-section">

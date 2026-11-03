@@ -1,6 +1,36 @@
+@use "../abstracts/variables.scss" as *;
+
 // Gin's own offset for the content below its top bar requires an attribute
-// this header lacks, so the theme adds it.
+// this header lacks, so the theme adds it. The top bar is fixed only on wide
+// screens; on smaller ones, the content already follows it.
 // stylelint-disable-next-line selector-class-pattern
 header.gin--navigation-top-bar--offset {
-  margin-block-start: calc(var(--drupal-displace-offset-top, 54px) + var(--gin-spacing-s));
+  margin-block-start: var(--gin-spacing-s);
+
+  @media (min-width: $breakpoint-wide) {
+    margin-block-start: calc(var(--drupal-displace-offset-top, 54px) + var(--gin-spacing-s));
+  }
 }
+
+// On small screens, the breadcrumb wraps word by word next to the title. A
+// current page without a link repeats the title, so it is hidden; the links
+// stay on one line, and the title shortens instead. Gin's own selector, for
+// its specificity.
+// stylelint-disable selector-class-pattern, selector-max-id
+@media (width < $breakpoint-medium) {
+  :is(#extra-specificity-hack, [data-drupal-admin-styles]) .gin-breadcrumb {
+    white-space: nowrap;
+
+    .gin-breadcrumb__item:has(.gin-breadcrumb__text) {
+      display: none;
+    }
+  }
+
+  // Without a minimum width, the title shortens to its ellipsis and leaves
+  // room for the actions.
+  .top-bar__context,
+  .top-bar__title {
+    min-width: 0;
+  }
+}
+// stylelint-enable selector-class-pattern, selector-max-id

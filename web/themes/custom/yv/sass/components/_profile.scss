@@ -3,6 +3,7 @@
 // =============================================================================
 
 @use "../abstracts/functions.scss" as *;
+@use "../abstracts/variables.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 
 .user-profile {
@@ -14,7 +15,7 @@
   // Names, links and short texts read better unbroken.
   hyphens: manual;
 
-  @media (min-width: 64rem) {
+  @media (min-width: $breakpoint-wide) {
     grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
   }
 }
@@ -28,12 +29,7 @@
 .user-profile-main,
 .user-profile-side {
   @include card;
-
-  padding: var(--gin-spacing-m);
-
-  @media (min-width: 40rem) {
-    padding: var(--gin-spacing-l);
-  }
+  @include card-padding;
 }
 
 .user-profile-main {
@@ -41,14 +37,22 @@
   gap: var(--gin-spacing-m);
 }
 
+// On small screens, the avatar sits above the name, so the name and the
+// chips keep the full width.
 .user-profile-header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .user-profile-avatar {
-  @include initials-avatar(to-rem(88), var(--gin-border-m));
+  @include initials-avatar(to-rem(104), var(--gin-border-m));
 
   font-size: var(--gin-font-size-xl);
 
@@ -57,23 +61,22 @@
   }
 }
 
+// Tight, so the lines are about as high as the avatar next to them.
 .user-profile-heading {
   display: grid;
-  gap: var(--gin-spacing-xs);
+  gap: var(--gin-spacing-xxs);
   min-width: 0;
 }
 
 .user-profile-name {
-  margin: 0;
-  color: var(--yv-ink);
-  font-size: var(--gin-font-size-h2);
-  line-height: 1.2;
+  @include page-title;
 }
 
 .user-profile-subtitle {
   margin: 0;
   color: var(--yv-muted);
   font-size: var(--gin-font-size-s);
+  line-height: 1.3;
 }
 
 // A line breaks between the counts, not within one.
@@ -92,7 +95,7 @@
 }
 
 .user-profile-chip {
-  @include chip(var(--gin-border-m));
+  @include chip;
 
   display: inline-block;
   overflow-wrap: anywhere;
@@ -105,7 +108,7 @@
     &:hover,
     &:focus-visible {
       background: var(--yv-chip-hover);
-      color: var(--yv-accent);
+      color: var(--yv-chip-text);
       text-decoration: none;
     }
   }
@@ -202,28 +205,10 @@
   font-size: var(--gin-font-size-xs);
 }
 
+// Line breaks of the text show.
 .user-profile-budget {
-  border: 1px solid var(--yv-line);
-  border-radius: var(--gin-border-m);
-
-  summary {
-    padding: var(--gin-spacing-s) var(--gin-spacing-m);
-    border-radius: var(--gin-border-m);
-    color: var(--yv-ink);
-    font-weight: 600;
-    cursor: pointer;
-    transition: color var(--gin-transition-fast);
-
-    &:hover {
-      color: var(--yv-accent);
-    }
-  }
-
-  p {
-    margin: 0;
-    padding: var(--gin-spacing-s) var(--gin-spacing-m) var(--gin-spacing-m);
-    white-space: pre-line;
-  }
+  margin: 0;
+  white-space: pre-line;
 }
 
 .user-profile-side {
@@ -237,12 +222,7 @@
 }
 
 .user-profile-section-title {
-  margin: 0 0 var(--gin-spacing-xs);
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  @include section-label;
 }
 
 .user-profile-contact {
@@ -259,35 +239,17 @@
 }
 
 .user-profile-facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--gin-spacing-xxs) var(--gin-spacing-m);
-  margin: 0;
-
-  > div {
-    display: contents;
-  }
-
-  dt {
-    color: var(--yv-muted);
-  }
-
-  dd {
-    margin: 0;
-    text-align: end;
-  }
+  @include facts;
 }
 
+// Long answers: the label above the value, in the size of the facts.
 .user-profile-answers {
   display: grid;
   gap: var(--gin-spacing-s);
   margin: 0;
-  font-size: var(--gin-font-size-s);
 
   dt {
     color: var(--yv-muted);
-    font-size: var(--gin-font-size-xs);
-    font-weight: 600;
   }
 
   dd {
@@ -297,15 +259,9 @@
 }
 
 .user-profile-wide {
-  @media (min-width: 64rem) {
+  @media (min-width: $breakpoint-wide) {
     grid-column: 1 / -1;
   }
-}
-
-.user-profile-wide-title {
-  margin: 0 0 var(--gin-spacing-s);
-  color: var(--yv-ink);
-  font-size: var(--gin-font-size-h3);
 }
 
 .user-profile-organizations {
