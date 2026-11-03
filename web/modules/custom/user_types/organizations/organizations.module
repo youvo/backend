@@ -30,6 +30,13 @@ function organizations_entity_field_access(string $operation, FieldDefinitionInt
   if ($entity instanceof Organization) {
     return OrganizationFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
   }
+  // JSON:API filters and sorts and Views check fields without an entity.
+  if ($items === NULL &&
+    $field_definition->getTargetEntityTypeId() === 'user' &&
+    $field_definition->getTargetBundle() === 'organization'
+  ) {
+    return OrganizationFieldAccess::checkFieldAccessWithoutEntity($operation, $field_definition, $account);
+  }
   return AccessResult::neutral();
 }
 

@@ -149,4 +149,39 @@ class OrganizationFieldAccess extends FieldAccess {
       ->cachePerUser();
   }
 
+  /**
+   * Checks the view access to a field of organizations in general.
+   *
+   * Filters and sorts are checked this way. Without it, a filter on a hidden
+   * field like the phone reveals its value character by character. There is
+   * no organization to own or manage here, so private fields stay closed.
+   */
+  public static function checkFieldAccessWithoutEntity(
+    string $operation,
+    FieldDefinitionInterface $field,
+    AccountInterface $account,
+  ): AccessResultInterface {
+
+    if ($operation !== 'view') {
+      return AccessResult::neutral();
+    }
+
+    // Administrators pass through.
+    if ($account->hasPermission('bypass organization field access')) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Viewing the roles is allowed.
+    if ($field->getName() === self::ROLES) {
+      return AccessResult::allowed()->cachePerPermissions();
+    }
+
+    // Viewing public fields is handled downstream.
+    if (self::isFieldOfGroup($field, self::VIEW_PUBLIC)) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    return AccessResult::forbidden()->cachePerPermissions();
+  }
+
 }
