@@ -191,6 +191,23 @@
   font-size: var(--op-text-xs);
 }
 
+// A pill that links to a profile: the border and the name take the accent on
+// hover and focus.
+.organization-profile-person-link {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--gin-transition-fast, 0.3s ease);
+
+  &:hover,
+  &:focus {
+    border-color: var(--op-accent);
+
+    .user-option span {
+      color: var(--op-accent);
+    }
+  }
+}
+
 // The manager is rendered in the user option view mode. Lay it out in a row,
 // with the role below the name.
 .organization-profile-manager {

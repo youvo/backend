@@ -548,3 +548,42 @@
     display: none;
   }
 }
+
+/* The organization logbook is one card with its button: Gin's card is on the
+   view, not on its content. */
+.logbook-organization .view-content.gin-layer-wrapper {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* The load more button of the organization logbook, centred below the list.
+   Gin sets the margins of every item list, hence the longer selectors. */
+.item-list .logbook-load-more {
+  display: flex;
+  justify-content: center;
+  /* The same small gap above and below the button: the bottom margin takes
+     back part of the card's padding. */
+  margin: var(--gin-spacing-m, 1rem) 0 calc(var(--gin-spacing-m, 1rem) - var(--gin-spacing-l, 1.5rem));
+  padding: 0;
+  list-style: none;
+}
+
+.item-list .logbook-load-more li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Gin gives every button a vertical margin; the list sets the gaps here. */
+.item-list .logbook-load-more .button {
+  margin-block: 0;
+}
+
+/* The first new log gets focus from the script after load more; it is read
+   out, not highlighted. */
+.logbook-organization tr[tabindex='-1']:focus {
+  outline: none;
+  box-shadow: none;
+}
