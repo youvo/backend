@@ -193,14 +193,11 @@ class FeedbackViewBuilder extends EntityViewBuilder {
         $build['section_' . $section] = [
           '#type' => 'html_tag',
           '#tag' => 'section',
-          '#attributes' => ['class' => ['feedback-section']],
-          '#weight' => $weight++,
-          'title' => [
-            '#type' => 'html_tag',
-            '#tag' => 'h2',
-            '#value' => $this->sectionTitle($section),
-            '#attributes' => ['class' => ['feedback-section-title']],
+          '#attributes' => [
+            'class' => ['feedback-section'],
+            'aria-label' => $this->sectionTitle($section),
           ],
+          '#weight' => $weight++,
           'rows' => [
             '#type' => 'container',
             '#attributes' => ['class' => ['feedback-rows']],

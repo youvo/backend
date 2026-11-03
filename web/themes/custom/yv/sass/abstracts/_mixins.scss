@@ -111,13 +111,6 @@
   font-weight: 600;
 }
 
-// The heading of a section below the cards, as "Logbook" on the profiles.
-@mixin section-heading {
-  margin: 0 0 var(--gin-spacing-s);
-  color: var(--yv-ink);
-  font-size: var(--gin-font-size-h3);
-}
-
 // A small uppercase label above the content of a card.
 @mixin section-label {
   margin: 0 0 var(--gin-spacing-xs);
