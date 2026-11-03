@@ -28,6 +28,10 @@ function projects_entity_field_access(string $operation, FieldDefinitionInterfac
   if ($entity instanceof Project) {
     return ProjectFieldAccess::checkFieldAccess($entity, $operation, $field_definition, $account);
   }
+  // JSON:API filters and sorts and Views check fields without an entity.
+  if ($items === NULL && $field_definition->getTargetEntityTypeId() === 'project') {
+    return ProjectFieldAccess::checkFieldAccessWithoutEntity($operation, $field_definition, $account);
+  }
   return AccessResult::neutral();
 }
 

@@ -226,4 +226,62 @@ class ProjectFieldAccess extends FieldAccess {
     return $access_result;
   }
 
+  /**
+   * Checks the view access to a field of projects in general.
+   *
+   * Filters and sorts are checked this way. Without it, a filter on the
+   * applicants reveals where a creative applied. The rules that depend on the
+   * project, like the author or the lifecycle state, can't grant access here.
+   */
+  public static function checkFieldAccessWithoutEntity(
+    string $operation,
+    FieldDefinitionInterface $field,
+    AccountInterface $account,
+  ): AccessResultInterface {
+
+    if ($operation !== 'view') {
+      return AccessResult::neutral();
+    }
+
+    // Administrators pass through.
+    if ($account->hasPermission('administer projects')) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Accounts with the manager permission may view the fields that the project
+    // manager page reads.
+    if (self::isFieldOfGroup($field, self::MANAGER_FIELDS) &&
+      $account->hasPermission(self::MANAGER_FIELDS_PERMISSION)
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Viewing public fields is handled downstream.
+    if (self::isFieldOfGroup($field, array_merge(self::PUBLIC_FIELDS, self::UNRESTRICTED_FIELDS))) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // The UUID is the resource ID that JSON:API shows on every project.
+    if ($field->getName() === 'uuid') {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Viewing the fields for logged-in users is handled downstream.
+    if (self::isFieldOfGroup($field, self::AUTHENTICATED_FIELDS) &&
+      $account->hasPermission('view project')
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Creatives may view the computed status fields.
+    if (self::isFieldOfGroup($field, self::USER_STATUS_FIELDS) &&
+      $account->hasPermission('general creative access')
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
+    // Applicants, participants and results depend on the project.
+    return AccessResult::forbidden()->cachePerPermissions();
+  }
+
 }
