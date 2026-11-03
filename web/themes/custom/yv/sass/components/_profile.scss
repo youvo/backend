@@ -297,10 +297,6 @@
   }
 }
 
-.user-profile-wide-title {
-  @include section-heading;
-}
-
 .user-profile-organizations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
