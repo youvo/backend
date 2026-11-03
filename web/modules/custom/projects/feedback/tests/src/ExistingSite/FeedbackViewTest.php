@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\feedback\ExistingSite;
 
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\feedback\FeedbackInterface;
@@ -16,9 +17,11 @@ use PHPUnit\Framework\Attributes\Group;
 class FeedbackViewTest extends ProjectResourceTestBase {
 
   /**
-   * The sidebar lists the other completed feedback on the same project.
+   * The sidebar lists the other completed feedback the viewer may open.
    */
   public function testOtherFeedback(): void {
+    $current_user = $this->container->get('current_user');
+    $current_user->setAccount($this->createUser(['administer feedback']));
     $feedback = $this->createFeedback(['completed' => 1776000000]);
     $title = (string) new TranslatableMarkup('Other feedback on this project');
     $this->assertStringNotContainsString($title, $this->renderFeedback($feedback));
@@ -41,6 +44,12 @@ class FeedbackViewTest extends ProjectResourceTestBase {
     $this->assertStringContainsString('Mara Völker</dt>', $html);
     $this->assertStringNotContainsString('Jonas Brandt', $html);
     $this->assertStringNotContainsString('Theo Lechner</dt>', $html);
+
+    // Without access to the other feedback, its author stays hidden.
+    $current_user->setAccount(new AnonymousUserSession());
+    $html = $this->renderFeedback($feedback);
+    $this->assertStringNotContainsString($title, $html);
+    $this->assertStringNotContainsString('Mara Völker', $html);
   }
 
   /**
