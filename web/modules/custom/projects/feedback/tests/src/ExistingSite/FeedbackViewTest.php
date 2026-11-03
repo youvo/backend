@@ -16,6 +16,34 @@ use PHPUnit\Framework\Attributes\Group;
 class FeedbackViewTest extends ProjectResourceTestBase {
 
   /**
+   * The sidebar lists the other completed feedback on the same project.
+   */
+  public function testOtherFeedback(): void {
+    $feedback = $this->createFeedback(['completed' => 1776000000]);
+    $title = (string) new TranslatableMarkup('Other feedback on this project');
+    $this->assertStringNotContainsString($title, $this->renderFeedback($feedback));
+
+    foreach (['Mara Völker' => 1776100000, 'Jonas Brandt' => NULL] as $name => $completed) {
+      $author = $this->createCreative();
+      $author->set('field_name', $name)->save();
+      $other = Feedback::create([
+        'bundle' => 'creative',
+        'project' => $feedback->get('project')->target_id,
+        'author' => $author->id(),
+        'step' => 1,
+        'completed' => $completed,
+      ]);
+      $other->save();
+      $this->markEntityForCleanup($other);
+    }
+    $html = $this->renderFeedback($feedback);
+    $this->assertStringContainsString($title, $html);
+    $this->assertStringContainsString('Mara Völker</dt>', $html);
+    $this->assertStringNotContainsString('Jonas Brandt', $html);
+    $this->assertStringNotContainsString('Theo Lechner</dt>', $html);
+  }
+
+  /**
    * Creates a feedback of a creative or an organization with the answers.
    *
    * The step stays below the final step, so the feedback is not completed.

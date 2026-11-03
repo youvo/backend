@@ -32,10 +32,19 @@
   min-width: 0;
 }
 
-// First in the markup, so small screens show it above the answers.
+// First in the markup, so small screens show it above the answers. Its
+// sections are divided as in the sidebar of the profiles.
 .feedback-side {
   @include card;
   @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+.feedback-side-section + .feedback-side-section {
+  padding-top: var(--gin-spacing-m);
+  border-top: 1px solid var(--yv-line);
 }
 
 @media (min-width: $breakpoint-wide) {
@@ -63,10 +72,20 @@
   margin: 0;
 }
 
-.feedback-comment {
+// As the main card of a profile: the title, then the public comment.
+.feedback-intro {
   @include card;
   @include card-padding;
 
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+.feedback-title {
+  @include page-title;
+}
+
+.feedback-comment {
   margin: 0;
 
   figcaption {
