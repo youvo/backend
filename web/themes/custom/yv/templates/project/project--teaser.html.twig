@@ -1,0 +1,37 @@
+{#
+/**
+ * @file
+ * Teaser of a project: image, title, status and skills, like the project cards
+ * of the frontend. Used on the organization profile.
+ */
+#}
+{% set project = elements['#project'] %}
+{{ project_cache }}
+<article class="project-teaser">
+  {# The image repeats the title link, so it stays out of the tab order. #}
+  {% if url %}
+    <a class="project-teaser-image" href="{{ url }}" tabindex="-1" aria-hidden="true">
+      {{ elements.field_image|field_value }}
+    </a>
+  {% else %}
+    <div class="project-teaser-image">
+      {{ elements.field_image|field_value }}
+    </div>
+  {% endif %}
+  <div class="project-teaser-body">
+    <h3 class="project-teaser-title">
+      {% if url %}
+        <a href="{{ url }}">{{ elements.title|field_value }}</a>
+      {% else %}
+        {{ elements.title|field_value }}
+      {% endif %}
+    </h3>
+    <div class="project-teaser-meta">
+      <span class="project-teaser-status project-teaser-status-{{ project.field_lifecycle.value|clean_class }}">{{ elements.field_lifecycle|field_value }}</span>
+      {% if not project.isPublished() %}
+        <span class="project-teaser-status project-teaser-hidden">{{ 'Hidden'|t }}</span>
+      {% endif %}
+      <span class="project-teaser-skills">{{ elements.field_skills|field_value }}</span>
+    </div>
+  </div>
+</article>

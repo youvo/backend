@@ -1,0 +1,342 @@
+// =============================================================================
+// ORGANIZATION PROFILE (user--organization--full)
+// =============================================================================
+// Gin sets the look; the fallbacks are the values of the default Gin theme, as
+// in the manager's pane-ui.css.
+
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+
+.organization-profile {
+  --op-ink: var(--gin-color-title, #222330);
+  --op-text: var(--gin-color-text, #222330);
+  --op-muted: var(--gin-color-text-light, #545560);
+  --op-accent: var(--gin-color-primary, #3f78b5);
+  --op-surface: var(--gin-bg-layer, #fff);
+  --op-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --op-outline: var(--gin-border-color, #d4d4d8);
+  --op-chip: color-mix(in srgb, var(--op-accent) 15%, var(--op-surface));
+  --op-radius-m: var(--gin-border-m, 0.5rem);
+  --op-radius-l: var(--gin-border-l, 1rem);
+  --op-shadow: var(--gin-shadow-l1, 0 1px 2px rgb(0 0 0 / 10%));
+  --op-text-s: var(--gin-font-size-s, 0.875rem);
+  --op-text-xs: var(--gin-font-size-xs, 0.8125rem);
+
+  display: grid;
+  gap: var(--gin-spacing-l, 1.5rem);
+  align-items: start;
+  color: var(--op-text);
+
+  @media (min-width: 64rem) {
+    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+  }
+}
+
+.organization-profile-main,
+.organization-profile-side {
+  padding: var(--gin-spacing-l, 1.5rem);
+  border-radius: var(--op-radius-l);
+  background: var(--op-surface);
+  box-shadow: var(--op-shadow);
+}
+
+.organization-profile-main {
+  display: grid;
+  gap: var(--gin-spacing-m, 1rem);
+}
+
+// Header: avatar, name, links and causes.
+
+.organization-profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-m, 1rem);
+}
+
+.organization-profile-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: to-rem(88);
+  height: to-rem(88);
+  overflow: hidden;
+  border-radius: var(--op-radius-m);
+  background: var(--op-chip);
+  color: var(--op-accent);
+  font-size: var(--gin-font-size-xl, 1.5rem);
+  font-weight: 600;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.organization-profile-heading {
+  display: grid;
+  gap: var(--gin-spacing-xs, 0.5rem);
+  min-width: 0;
+}
+
+.organization-profile-name {
+  margin: 0;
+  color: var(--op-ink);
+  font-size: var(--gin-font-size-h2, 1.75rem);
+  line-height: 1.2;
+}
+
+.organization-profile-short-name {
+  margin: 0;
+  color: var(--op-muted);
+  font-size: var(--op-text-s);
+}
+
+.organization-profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gin-spacing-xs, 0.5rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.organization-profile-link,
+.organization-profile-cause {
+  display: inline-block;
+  padding: 0.15em 0.65em;
+  border-radius: var(--op-radius-m);
+  background: var(--op-chip);
+  color: var(--op-accent);
+  font-size: var(--op-text-xs);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.organization-profile-link {
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+}
+
+// Body: aim and about.
+
+.organization-profile-aim {
+  margin: 0;
+  color: var(--op-ink);
+  font-size: var(--gin-font-size-l, 1.125rem);
+  font-weight: 600;
+}
+
+.organization-profile-about {
+  line-height: 1.6;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+// People: the organization contact and the project manager as pills.
+
+.organization-profile-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-s, 0.75rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.organization-profile-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gin-spacing-xs, 0.5rem);
+  padding: 0.3rem 1rem 0.3rem 0.3rem;
+  border: 1px solid var(--op-outline);
+  border-radius: 999px;
+  line-height: 1.25;
+
+  > span {
+    display: grid;
+  }
+}
+
+.organization-profile-initials {
+  @include icon-size(medium);
+
+  place-items: center;
+  border-radius: 50%;
+  background: var(--op-chip);
+  color: var(--op-accent);
+  font-size: var(--op-text-s);
+  font-weight: 600;
+}
+
+.organization-profile-person-name {
+  color: var(--op-ink);
+  font-weight: 600;
+}
+
+.organization-profile-person-role {
+  color: var(--op-muted);
+  font-size: var(--op-text-xs);
+}
+
+// The manager is rendered in the user option view mode. Lay it out in a row,
+// with the role below the name.
+.organization-profile-manager {
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--gin-spacing-xs, 0.5rem);
+
+  .user-option {
+    display: contents;
+  }
+
+  .user-option img {
+    grid-row: span 2;
+    margin: 0;
+  }
+
+  .user-option span {
+    color: var(--op-ink);
+    font-size: inherit;
+    font-weight: 600;
+    text-align: start;
+  }
+
+  .organization-profile-person-role {
+    grid-column: 2;
+  }
+}
+
+// Budget: a disclosure like the frontend's.
+
+.organization-profile-budget {
+  border: 1px solid var(--op-line);
+  border-radius: var(--op-radius-m);
+
+  summary {
+    padding: var(--gin-spacing-s, 0.75rem) var(--gin-spacing-m, 1rem);
+    color: var(--op-ink);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  p {
+    margin: 0;
+    padding: var(--gin-spacing-s, 0.75rem) var(--gin-spacing-m, 1rem)
+      var(--gin-spacing-m, 1rem);
+    white-space: pre-line;
+  }
+}
+
+// Side card: contact options, account data and registration answers, grouped
+// in sections divided by a hairline.
+
+.organization-profile-side {
+  display: grid;
+  gap: var(--gin-spacing-m, 1rem);
+}
+
+.organization-profile-section + .organization-profile-section {
+  padding-top: var(--gin-spacing-m, 1rem);
+  border-top: 1px solid var(--op-line);
+}
+
+.organization-profile-section-title {
+  margin: 0 0 var(--gin-spacing-xs, 0.5rem);
+  color: var(--op-muted);
+  font-size: var(--op-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.organization-profile-contact {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+
+  address {
+    font-style: normal;
+  }
+}
+
+// Short facts: label and value on one line.
+.organization-profile-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem var(--gin-spacing-m, 1rem);
+  margin: 0;
+
+  > div {
+    display: contents;
+  }
+
+  dt {
+    color: var(--op-muted);
+  }
+
+  dd {
+    margin: 0;
+    text-align: end;
+  }
+}
+
+// Long answers: label above the text, in a smaller size.
+.organization-profile-answers {
+  display: grid;
+  gap: var(--gin-spacing-s, 0.75rem);
+  margin: 0;
+  font-size: var(--op-text-s);
+
+  dt {
+    color: var(--op-muted);
+    font-size: var(--op-text-xs);
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+// Projects: the organization_projects view below both columns, as a grid of
+// project teasers.
+
+.organization-profile-projects {
+  @media (min-width: 64rem) {
+    grid-column: 1 / -1;
+  }
+}
+
+.organization-profile-projects-title {
+  margin: 0 0 var(--gin-spacing-s, 0.75rem);
+  color: var(--op-ink);
+  font-size: var(--gin-font-size-h3, 1.25rem);
+}
+
+.organization-projects .view-content {
+  // Gin shows every view in a layer card; the teasers are cards themselves.
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--gin-spacing-l, 1.5rem);
+}
