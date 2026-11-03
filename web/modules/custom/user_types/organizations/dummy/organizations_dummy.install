@@ -207,6 +207,53 @@ function organizations_dummy_log_management(): void {
 }
 
 /**
+ * Dates the last login and access of the organizations by their own logs.
+ *
+ * The account times are set before the projects are generated, so an
+ * organization could have acted after its last access or never have logged
+ * in. Runs after all logs are generated.
+ */
+function organizations_dummy_set_last_access(): void {
+
+  $current_time = \Drupal::time()->getRequestTime();
+  $log_storage = \Drupal::entityTypeManager()->getStorage('log');
+  $database = \Drupal::database();
+
+  $organization_ids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('type', 'organization')
+    ->execute();
+  foreach ($organization_ids as $id) {
+    $last = $log_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('author', $id)
+      ->sort('created', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    $last_log = $last ? $log_storage->load(reset($last)) : NULL;
+    if (!$last_log instanceof LogInterface) {
+      continue;
+    }
+    $acted = $last_log->getCreatedTime();
+
+    $times = $database->select('users_field_data', 'u')
+      ->fields('u', ['created', 'login', 'access'])
+      ->condition('uid', $id)
+      ->execute()
+      ->fetchAssoc();
+    // The session of the last action started before it.
+    $login = (int) $times['login'] ?: max((int) $times['created'], $acted - random_int(60, 3600));
+    $login = min($login, $acted);
+    $access = max((int) $times['access'], random_int($acted, $current_time));
+    $database->update('users_field_data')
+      ->fields(['login' => $login, 'access' => $access])
+      ->condition('uid', $id)
+      ->execute();
+  }
+  \Drupal::entityTypeManager()->getStorage('user')->resetCache($organization_ids);
+}
+
+/**
  * Gets the time of the first log of an organization or of its projects.
  */
 function organizations_dummy_first_log_time(int $id): ?int {
