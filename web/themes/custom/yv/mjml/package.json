@@ -8,5 +8,9 @@
   "devDependencies": {
     "cssnano": "^8.0.10",
     "mjml": "^5.4.1"
+  },
+  "overrides": {
+    "glob": "^14.0.3",
+    "minimatch": "^11.0.4"
   }
 }
