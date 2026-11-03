@@ -4,6 +4,8 @@ namespace Drupal\postman_interface\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -12,15 +14,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Postman Variables Resource.
- *
- * @RestResource(
- *   id = "postman:uuid",
- *   label = @Translation("Postman Uuid Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/postman/uuid"
- *   }
- * )
  */
+#[RestResource(
+  id: 'postman:uuid',
+  label: new TranslatableMarkup('Postman Uuid Resource'),
+  uri_paths: [
+    'canonical' => '/api/postman/uuid',
+  ],
+)]
 class PostmanUuidResource extends ResourceBase {
 
   /**

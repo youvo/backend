@@ -9,13 +9,14 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\simple_oauth\Authentication\TokenAuthUserInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\user_types\Utility\Profile;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Test coverage for the profile utility class.
- *
- * @coversDefaultClass \Drupal\user_types\Utility\Profile
- * @group user_types
  */
+#[CoversClass(Profile::class)]
+#[Group('user_types')]
 class ProfileUtilityTest extends UnitTestCase {
 
   /**
@@ -82,8 +83,6 @@ class ProfileUtilityTest extends UnitTestCase {
 
   /**
    * Tests the id method.
-   *
-   * @covers ::id
    */
   public function testId(): void {
     $this->assertSame(1, Profile::id($this->account));
@@ -98,8 +97,6 @@ class ProfileUtilityTest extends UnitTestCase {
 
   /**
    * Tests the account method.
-   *
-   * @covers ::account
    */
   public function testAccount(): void {
     $this->assertSame($this->account, Profile::account($this->account));
@@ -112,9 +109,6 @@ class ProfileUtilityTest extends UnitTestCase {
 
   /**
    * Tests the isCreative method.
-   *
-   * @covers ::isCreative
-   * @covers ::account
    */
   public function testIsCreative(): void {
     $this->assertTrue(Profile::isCreative($this->accountProxy));
@@ -126,9 +120,6 @@ class ProfileUtilityTest extends UnitTestCase {
 
   /**
    * Tests the isOrganization method.
-   *
-   * @covers ::isOrganization
-   * @covers ::account
    */
   public function testIsOrganization(): void {
     $this->assertFalse(Profile::isOrganization($this->accountProxy));

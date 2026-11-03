@@ -3,9 +3,11 @@
 namespace Drupal\organizations\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\organizations\Entity\Organization;
 use Drupal\organizations\Event\OrganizationDisbandEvent;
 use Drupal\organizations\Event\OrganizationManageEvent;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
@@ -15,15 +17,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides Project Manage Resource.
- *
- * @RestResource(
- *   id = "organization:manage",
- *   label = @Translation("Organization Manage Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/organizations/{organization}/manage"
- *   }
- * )
  */
+#[RestResource(
+  id: 'organization:manage',
+  label: new TranslatableMarkup('Organization Manage Resource'),
+  uri_paths: [
+    'canonical' => '/api/organizations/{organization}/manage',
+  ],
+)]
 class OrganizationManageResource extends ResourceBase {
 
   /**

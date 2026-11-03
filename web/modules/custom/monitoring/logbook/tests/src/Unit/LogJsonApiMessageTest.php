@@ -4,6 +4,7 @@ namespace Drupal\Tests\logbook\Unit;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that JSON:API never exposes the message of a log.
@@ -11,9 +12,8 @@ use Drupal\Tests\UnitTestCase;
  * Messages hold private texts, such as applications or manager mails. A log
  * pattern without resource config would expose all fields, so each pattern
  * needs one.
- *
- * @group logbook
  */
+#[Group('logbook')]
 class LogJsonApiMessageTest extends UnitTestCase {
 
   /**

@@ -8,6 +8,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\file\FileInterface;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
@@ -17,6 +18,7 @@ use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,15 +27,14 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project complete resource.
- *
- * @RestResource(
- *   id = "project:complete",
- *   label = @Translation("Project Complete Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/complete"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:complete',
+  label: new TranslatableMarkup('Project Complete Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/complete',
+  ],
+)]
 class ProjectCompleteResource extends ProjectResourceBase {
 
   /**

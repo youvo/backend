@@ -6,26 +6,27 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectDemoteEvent;
 use Drupal\projects\Exception\ProjectActionException;
 use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project demote resource.
- *
- * @RestResource(
- *   id = "project:demote",
- *   label = @Translation("Project Demote Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/demote"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:demote',
+  label: new TranslatableMarkup('Project Demote Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/demote',
+  ],
+)]
 class ProjectDemoteResource extends ProjectResourceBase {
 
   /**

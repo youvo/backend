@@ -59,7 +59,8 @@ class OrganizationsProjectNotifySubscriber implements EventSubscriberInterface {
         $redirect_link = Url::fromUri('http://localhost:3000' . $path)->toString();
       }
       else {
-        $redirect_link = Url::fromUri('https://hub.dev.youvo.org' . $path)->toString();
+        $hub_url = rtrim((string) $this->config->get('youvo.settings')->get('hub_url'), '/');
+        $redirect_link = Url::fromUri($hub_url . $path)->toString();
       }
       $event->setLink($redirect_link);
     }

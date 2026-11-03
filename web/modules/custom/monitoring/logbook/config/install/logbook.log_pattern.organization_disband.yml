@@ -6,16 +6,16 @@ label: 'Organization Disband'
 tokens:
   -
     token: '%AuthorWithRole'
-    required: 0
+    required: false
   -
     token: '%Organization'
-    required: '1'
+    required: true
   -
     token: '%Author'
-    required: 0
+    required: false
   -
     token: '%Manager'
-    required: 0
+    required: false
 detectable: true
 observable: true
 public: false

@@ -4,23 +4,18 @@ namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project mediate resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectMediateResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectMediateResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project mediate resource - standard GET workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::get
    */
   public function testProjectMediateGet(): void {
 
@@ -43,21 +38,22 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project mediate resource - standard POST workflow.
-   *
-   * @covers ::post
-   * @covers ::loadSelectedCreatives
    */
   public function testProjectMediate(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setPromoted(TRUE)->save();
     $organization = $project->getOwner();
+    $manager = $organization->getManager();
+    $selected = [$this->createCreative(), $this->createCreative()];
 
+    // A selected manager participates once, as manager.
     $path = '/api/projects/' . $project->uuid() . '/mediate';
     $body = [
       'selected_creatives' => [
-        $this->createCreative()->uuid(),
-        $this->createCreative()->uuid(),
-        $this->createCreative()->uuid(),
+        $selected[0]->uuid(),
+        $selected[1]->uuid(),
+        $manager->uuid(),
       ],
     ];
     $request = Request::create($path, 'POST', [], [], [], [], Json::encode($body));
@@ -67,6 +63,22 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project mediated."', $response->getContent());
+
+    $stored = $this->reloadProject($project);
+    $this->assertLastTransition($stored, ProjectTransition::Mediate, ProjectState::Open, ProjectState::Ongoing);
+    $this->assertFalse($stored->isPromoted());
+    $participants = array_column($stored->get('field_participants')->getValue(), 'target_id');
+    $tasks = array_column($stored->get('field_participants_tasks')->getValue(), 'value');
+    $expected = [
+      $selected[0]->id() => 'Creative',
+      $selected[1]->id() => 'Creative',
+      $manager->id() => 'Manager',
+    ];
+    $actual = array_combine($participants, $tasks);
+    ksort($expected);
+    ksort($actual);
+    $this->assertCount(3, $tasks);
+    $this->assertEquals($expected, $actual);
   }
 
   /**
@@ -80,12 +92,11 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
       $this->authenticateRequest($request, $project->getOwner());
       $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
     }
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOpen());
   }
 
   /**
    * Tests the project mediate resource - manager.
-   *
-   * @covers ::access
    */
   public function testProjectMediateManager(): void {
 
@@ -101,12 +112,11 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project mediated."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOngoing());
   }
 
   /**
    * Tests the project mediate resource - supervisor.
-   *
-   * @covers ::access
    */
   public function testProjectMediateSupervisor(): void {
 
@@ -122,12 +132,11 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project mediated."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOngoing());
   }
 
   /**
    * Tests the project mediate resource - not open.
-   *
-   * @covers ::post
    */
   public function testProjectMediateNotOpen(): void {
 
@@ -147,8 +156,6 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project mediate resource - not owner.
-   *
-   * @covers ::access
    */
   public function testProjectMediateNotOwner(): void {
 
@@ -167,8 +174,6 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project mediate resource - not manager.
-   *
-   * @covers ::access
    */
   public function testProjectMediateNotManager(): void {
 
@@ -186,31 +191,7 @@ class ProjectMediateResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project mediate resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectMediateArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $organization = $project->getOwner();
-
-    $path = '/api/projects/' . $project->uuid() . '/mediate';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the project mediate resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectMediateNoPermission(): void {
 

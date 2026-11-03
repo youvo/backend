@@ -2,6 +2,7 @@
 
 namespace Drupal\feedback\Entity;
 
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -18,37 +19,36 @@ use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the feedback entity class.
- *
- * @ContentEntityType(
- *   id = "feedback",
- *   label = @Translation("Feedback"),
- *   label_collection = @Translation("Feedbacks"),
- *   bundle_label = @Translation("Feedback type"),
- *   handlers = {
- *     "view_builder" = "Drupal\feedback\FeedbackViewBuilder",
- *     "access" = "Drupal\feedback\Access\FeedbackEntityAccess",
- *     "list_builder" = "Drupal\feedback\FeedbackListBuilder",
- *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "feedback",
- *   admin_permission = "administer feedback types",
- *   entity_keys = {
- *     "id" = "id",
- *     "bundle" = "bundle",
- *     "label" = "id",
- *     "uuid" = "uuid",
- *     "owner" = "author"
- *   },
- *   links = {
- *     "canonical" = "/feedback/{feedback}",
- *     "collection" = "/admin/content/feedback"
- *   },
- *   bundle_entity_type = "feedback_type",
- *   field_ui_base_route = "entity.feedback_type.edit_form"
- * )
  */
+#[ContentEntityType(
+  id: 'feedback',
+  label: new TranslatableMarkup('Feedback'),
+  label_collection: new TranslatableMarkup('Feedbacks'),
+  bundle_label: new TranslatableMarkup('Feedback type'),
+  handlers: [
+    'view_builder' => 'Drupal\feedback\FeedbackViewBuilder',
+    'access' => 'Drupal\feedback\Access\FeedbackEntityAccess',
+    'list_builder' => 'Drupal\feedback\FeedbackListBuilder',
+    'route_provider' => [
+      'html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'feedback',
+  admin_permission: 'administer feedback types',
+  entity_keys: [
+    'id' => 'id',
+    'bundle' => 'bundle',
+    'label' => 'id',
+    'uuid' => 'uuid',
+    'owner' => 'author',
+  ],
+  links: [
+    'canonical' => '/feedback/{feedback}',
+    'collection' => '/admin/content/feedback',
+  ],
+  bundle_entity_type: 'feedback_type',
+  field_ui_base_route: 'entity.feedback_type.edit_form',
+)]
 class Feedback extends ContentEntityBase implements FeedbackInterface {
 
   use EntityChangedTrait;

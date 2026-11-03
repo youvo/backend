@@ -7,7 +7,7 @@
 #}
 <tr class="context-pane" {{ attributes }}>
   <td colspan="100%">
-    {% for action in content.actions|filter((value, key) => key|first != '#') %}
+    {% for action in content.actions|default([])|filter((value, key) => key|first != '#') %}
       <div class="context-pane-action">
         {% if action.options is not null %}
           <div class="transition-checkboxes">
@@ -43,6 +43,8 @@
           {{ action.description }}
         </div>
       </div>
+    {% else %}
+      {{ 'No actions available.'|t }}
     {% endfor %}
   </td>
 </tr>

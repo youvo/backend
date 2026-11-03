@@ -2,27 +2,28 @@
 
 namespace Drupal\child_entities_test\Entity;
 
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the origin of the test entity chain, which is not a child itself.
- *
- * @ContentEntityType(
- *   id = "child_test_origin",
- *   label = @Translation("Test origin"),
- *   handlers = {
- *     "access" = "Drupal\child_entities_test\TestOriginAccessControlHandler"
- *   },
- *   base_table = "child_test_origin",
- *   entity_keys = {
- *     "id" = "id",
- *     "uuid" = "uuid",
- *     "label" = "name"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'child_test_origin',
+  label: new TranslatableMarkup('Test origin'),
+  handlers: [
+    'access' => 'Drupal\child_entities_test\TestOriginAccessControlHandler',
+  ],
+  base_table: 'child_test_origin',
+  entity_keys: [
+    'id' => 'id',
+    'uuid' => 'uuid',
+    'label' => 'name',
+  ],
+)]
 class TestOrigin extends ContentEntityBase {
 
   /**

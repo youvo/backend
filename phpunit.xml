@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Used by CI and on the host (override SIMPLETEST_DB for Unit and Kernel tests). -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="vendor/weitzman/drupal-test-traits/src/bootstrap.php" colors="true"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/weitzman/drupal-test-traits/src/bootstrap.php"
+         colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
-         failOnWarning="false"
-         printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnPhpunitDeprecations="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         failOnWarning="true"
          cacheResult="false">
+
   <php>
     <ini name="error_reporting" value="32767"/>
     <ini name="memory_limit" value="-1"/>
@@ -14,12 +20,6 @@
     <env name="DTT_API_URL" value="http://127.0.0.1:80"/>
     <env name="SIMPLETEST_BASE_URL" value="http://127.0.0.1"/>
     <env name="SIMPLETEST_DB" value="mysql://root:root@127.0.0.1:3306/db"/>
-    <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="/var/www/html/private/browsertest_output"/>
-    <env name="BROWSERTEST_OUTPUT_BASE_URL" value="http://web"/>
-    <env name="MINK_DRIVER_CLASS" value=""/>
-    <env name="MINK_DRIVER_ARGS" value=""/>
-    <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
-    <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
   </php>
 
   <testsuites>
@@ -27,23 +27,32 @@
       <directory>./web/modules/custom/*/tests/src/Unit</directory>
       <directory>./web/modules/custom/*/*/tests/src/Unit</directory>
     </testsuite>
-    <testsuite name="existing-site">
-      <directory>./web/modules/custom/*/tests/src/ExistingSite</directory>
-      <directory>./web/modules/custom/*/*/tests/src/ExistingSite</directory>
-    </testsuite>
     <testsuite name="kernel">
       <directory>./web/modules/custom/*/tests/src/Kernel</directory>
       <directory>./web/modules/custom/*/*/tests/src/Kernel</directory>
     </testsuite>
-    <testsuite name="functional">
-      <directory>./web/modules/custom/*/tests/src/Functional</directory>
-      <directory>./web/modules/custom/*/*/tests/src/Functional</directory>
+    <testsuite name="existing-site">
+      <directory>./web/modules/custom/*/tests/src/ExistingSite</directory>
+      <directory>./web/modules/custom/*/*/tests/src/ExistingSite</directory>
     </testsuite>
   </testsuites>
 
-  <listeners>
-    <listener class="\Drupal\Tests\Listeners\DrupalListener">
-    </listener>
-  </listeners>
+  <!-- Report deprecations that Drupal triggers with @trigger_error(), but only
+       those our code or tests trigger, not contrib calling core or vendor. -->
+  <source ignoreSuppressionOfDeprecations="true" ignoreIndirectDeprecations="true">
+    <include>
+      <directory>./web/modules/custom</directory>
+    </include>
+    <exclude>
+      <directory>./web/modules/custom/*/tests</directory>
+      <directory>./web/modules/custom/*/*/tests</directory>
+    </exclude>
+    <!-- Drupal's BootstrapErrorHandler forwards errors to PHPUnit through call_user_func().
+         Skip both frames so PHPUnit classifies the trigger by the real caller. -->
+    <deprecationTrigger>
+      <function>call_user_func</function>
+      <method>Drupal\TestTools\ErrorHandler\BootstrapErrorHandler::__invoke</method>
+    </deprecationTrigger>
+  </source>
 
 </phpunit>

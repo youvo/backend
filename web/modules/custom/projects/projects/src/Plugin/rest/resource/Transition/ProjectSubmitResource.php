@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\lifecycle\Exception\LifecycleTransitionException;
 use Drupal\lifecycle\WorkflowPermissions;
@@ -14,21 +15,21 @@ use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project submit resource.
- *
- * @RestResource(
- *   id = "project:submit",
- *   label = @Translation("Project Submit Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/submit"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:submit',
+  label: new TranslatableMarkup('Project Submit Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/submit',
+  ],
+)]
 class ProjectSubmitResource extends ProjectResourceBase {
 
   /**

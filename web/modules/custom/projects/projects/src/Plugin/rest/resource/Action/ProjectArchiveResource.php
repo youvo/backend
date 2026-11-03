@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Exception\ProjectActionException;
@@ -14,6 +15,7 @@ use Drupal\projects\Plugin\rest\resource\ProjectMailRequestTrait;
 use Drupal\projects\Plugin\rest\resource\ProjectResourceBase;
 use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -23,15 +25,14 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Provides project archive resource.
- *
- * @RestResource(
- *   id = "project:archive",
- *   label = @Translation("Project Archive Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/archive"
- *   }
- * )
  */
+#[RestResource(
+  id: 'project:archive',
+  label: new TranslatableMarkup('Project Archive Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/archive',
+  ],
+)]
 class ProjectArchiveResource extends ProjectResourceBase {
 
   use ProjectMailRequestTrait;

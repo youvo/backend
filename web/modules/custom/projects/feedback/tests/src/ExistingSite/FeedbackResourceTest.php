@@ -5,6 +5,7 @@ namespace Drupal\Tests\feedback\ExistingSite;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
+use Drupal\feedback\Event\FeedbackCompleteEvent;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
@@ -12,19 +13,25 @@ use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\youvo\Traits\RequestTrait;
 use Drupal\user\UserInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use weitzman\DrupalTestTraits\ExistingSiteBase;
 
 /**
  * Tests the feedback create resource and saving feedback via JSON:API.
- *
- * @coversDefaultClass \Drupal\feedback\Plugin\rest\resource\FeedbackCreateResource
- * @group feedback
  */
+#[Group('feedback')]
 class FeedbackResourceTest extends ExistingSiteBase {
 
   use RequestTrait;
+
+  /**
+   * The dispatched feedback complete events.
+   *
+   * @var \Drupal\feedback\Event\FeedbackCompleteEvent[]
+   */
+  protected array $completeEvents = [];
 
   /**
    * {@inheritdoc}
@@ -47,6 +54,27 @@ class FeedbackResourceTest extends ExistingSiteBase {
         }
       }
     }
+    $event_dispatcher->addListener(FeedbackCompleteEvent::class, function (FeedbackCompleteEvent $event): void {
+      $this->completeEvents[] = $event;
+    });
+  }
+
+  /**
+   * Loads the comments on the result of a project, marked for cleanup.
+   *
+   * @return \Drupal\projects\ProjectCommentInterface[]
+   *   The comments.
+   */
+  protected function loadComments(ProjectInterface $project): array {
+    /** @var \Drupal\projects\ProjectResultInterface $project_result */
+    $project_result = $this->container->get('entity_type.manager')
+      ->getStorage('project_result')
+      ->loadUnchanged($project->getResult()->id());
+    $comments = $project_result->getComments();
+    foreach ($comments as $comment) {
+      $this->markEntityForCleanup($comment);
+    }
+    return $comments;
   }
 
   /**
@@ -167,10 +195,6 @@ class FeedbackResourceTest extends ExistingSiteBase {
 
   /**
    * Tests that the bundle depends on the role of the account.
-   *
-   * @covers ::post
-   * @covers ::routes
-   * @covers \Drupal\feedback\Access\FeedbackCreateAccess::access
    */
   public function testCreateFeedback(): void {
 
@@ -201,8 +225,6 @@ class FeedbackResourceTest extends ExistingSiteBase {
 
   /**
    * Tests that completed feedback can not be requested again.
-   *
-   * @covers ::post
    */
   public function testCreateFeedbackCompleted(): void {
 
@@ -217,8 +239,6 @@ class FeedbackResourceTest extends ExistingSiteBase {
 
   /**
    * Tests the access of the feedback create resource.
-   *
-   * @covers \Drupal\feedback\Access\FeedbackCreateAccess::access
    */
   public function testCreateFeedbackAccess(): void {
 
@@ -239,8 +259,6 @@ class FeedbackResourceTest extends ExistingSiteBase {
 
   /**
    * Tests that the author saves answers and completes the feedback.
-   *
-   * @covers \Drupal\feedback\Entity\Feedback::preSave
    */
   public function testPatchFeedback(): void {
 
@@ -248,8 +266,9 @@ class FeedbackResourceTest extends ExistingSiteBase {
     $participant = $this->getParticipant($project);
     $feedback = $this->createFeedback($project, $participant);
 
+    // The creative feedback is not completed before step 4.
     $response = $this->requestPatch($feedback, $participant, [
-      'step' => 1,
+      'step' => 3,
       'project_comment' => 'Great project!',
       'satisfied_scale' => 4,
       'recommend_boolean' => TRUE,
@@ -258,31 +277,56 @@ class FeedbackResourceTest extends ExistingSiteBase {
     $feedback = $this->reload($feedback);
     $this->assertEquals(4, $feedback->get('field_satisfied_scale')->value);
     $this->assertFalse($feedback->isCompleted());
+    $this->assertEmpty($this->loadComments($project));
+    $this->assertEmpty($this->completeEvents);
 
     $response = $this->requestPatch($feedback, $participant, ['step' => 4]);
     $this->assertEquals(200, $response->getStatusCode(), $response->getContent());
-    $this->assertTrue($this->reload($feedback)->isCompleted());
+    $feedback = $this->reload($feedback);
+    $this->assertTrue($feedback->isCompleted());
+    $this->assertCount(1, $this->completeEvents);
 
-    /** @var \Drupal\projects\ProjectResultInterface $project_result */
-    $project_result = $this->container->get('entity_type.manager')
-      ->getStorage('project_result')
-      ->loadUnchanged($project->getResult()->id());
-    $comments = $project_result->getComments();
+    $comments = $this->loadComments($project);
     $this->assertCount(1, $comments);
     $comment = reset($comments);
-    $this->markEntityForCleanup($comment);
     $this->assertEquals($participant->id(), $comment->getOwnerId());
     $this->assertEquals('Great project!', $comment->getComment());
 
     // The completed feedback can not be changed anymore.
     $response = $this->requestPatch($feedback, $participant, ['step' => 5]);
     $this->assertEquals(403, $response->getStatusCode());
+
+    // Saving the completed feedback again adds no comment.
+    $feedback->set('step', 5)->save();
+    $this->assertCount(1, $this->loadComments($project));
+    $this->assertCount(1, $this->completeEvents);
+  }
+
+  /**
+   * Tests that the organization feedback is completed at step 5.
+   */
+  public function testPatchOrganizationFeedback(): void {
+
+    $project = $this->createProject();
+    $organization = $project->getOwner();
+    $feedback = $this->createFeedback($project, $organization);
+
+    $response = $this->requestPatch($feedback, $organization, ['step' => 4, 'project_comment' => 'Thanks!']);
+    $this->assertEquals(200, $response->getStatusCode(), $response->getContent());
+    $this->assertFalse($this->reload($feedback)->isCompleted());
+    $this->assertEmpty($this->loadComments($project));
+
+    $response = $this->requestPatch($feedback, $organization, ['step' => 5]);
+    $this->assertEquals(200, $response->getStatusCode(), $response->getContent());
+    $this->assertTrue($this->reload($feedback)->isCompleted());
+    $comments = $this->loadComments($project);
+    $this->assertCount(1, $comments);
+    $this->assertEquals($organization->id(), reset($comments)->getOwnerId());
+    $this->assertSame('Thanks!', reset($comments)->getComment());
   }
 
   /**
    * Tests that option answers of the organization are displayed with labels.
-   *
-   * @covers \Drupal\feedback\Plugin\Field\FieldFormatter\FeedbackOptionsFormatter::viewElements
    */
   public function testOrganizationFeedbackOptionsDisplay(): void {
 
@@ -310,8 +354,6 @@ class FeedbackResourceTest extends ExistingSiteBase {
 
   /**
    * Tests that the author may not change the fields set by the backend.
-   *
-   * @covers \Drupal\feedback\Access\FeedbackFieldAccess::checkFieldAccess
    */
   public function testPatchRestrictedFields(): void {
 

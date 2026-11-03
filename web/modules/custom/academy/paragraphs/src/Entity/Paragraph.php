@@ -4,60 +4,63 @@ namespace Drupal\paragraphs\Entity;
 
 use Drupal\child_entities\ChildEntityInterface;
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the paragraph entity class.
- *
- * @ContentEntityType(
- *   id = "paragraph",
- *   label = @Translation("Paragraph"),
- *   label_collection = @Translation("Paragraphs"),
- *   bundle_label = @Translation("Paragraph type"),
- *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "list_builder" = "Drupal\paragraphs\ParagraphListBuilder",
- *     "form" = {
- *       "add" = "Drupal\paragraphs\Form\ParagraphForm",
- *       "edit" = "Drupal\paragraphs\Form\ParagraphForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "paragraphs",
- *   data_table = "paragraphs_field_data",
- *   translatable = TRUE,
- *   fieldable = TRUE,
- *   admin_permission = "administer courses",
- *   cascade_delete = TRUE,
- *   entity_keys = {
- *     "id" = "id",
- *     "langcode" = "langcode",
- *     "bundle" = "bundle",
- *     "label" = "title",
- *     "owner" = "uid",
- *     "uuid" = "uuid",
- *     "parent" = "lecture",
- *     "weight" = "weight"
- *   },
- *   links = {
- *     "add-form" = "/academy/co/{course}/le/{lecture}/pa/add/{paragraph_type}",
- *     "add-page" = "/academy/co/{course}/le/{lecture}/pa/add",
- *     "edit-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}",
- *     "delete-form" = "/academy/co/{course}/le/{lecture}/pa/{paragraph}/delete",
- *     "collection" = "/academy/co/{course}/le/{lecture}/paragraphs"
- *   },
- *   bundle_entity_type = "paragraph_type",
- *   field_ui_base_route = "entity.paragraph_type.edit_form"
- * )
  */
+#[ContentEntityType(
+  id: 'paragraph',
+  label: new TranslatableMarkup('Paragraph'),
+  label_collection: new TranslatableMarkup('Paragraphs'),
+  bundle_label: new TranslatableMarkup('Paragraph type'),
+  handlers: [
+    'access' => 'Drupal\child_entities\ChildEntityAccessControlHandler',
+    'list_builder' => 'Drupal\paragraphs\ParagraphListBuilder',
+    'form' => [
+      'add' => 'Drupal\paragraphs\Form\ParagraphForm',
+      'edit' => 'Drupal\paragraphs\Form\ParagraphForm',
+      'delete' => 'Drupal\Core\Entity\ContentEntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'paragraphs',
+  data_table: 'paragraphs_field_data',
+  translatable: TRUE,
+  admin_permission: 'administer courses',
+  entity_keys: [
+    'id' => 'id',
+    'langcode' => 'langcode',
+    'bundle' => 'bundle',
+    'label' => 'title',
+    'owner' => 'uid',
+    'uuid' => 'uuid',
+    'parent' => 'lecture',
+    'weight' => 'weight',
+  ],
+  links: [
+    'add-form' => '/academy/co/{course}/le/{lecture}/pa/add/{paragraph_type}',
+    'add-page' => '/academy/co/{course}/le/{lecture}/pa/add',
+    'edit-form' => '/academy/co/{course}/le/{lecture}/pa/{paragraph}',
+    'delete-form' => '/academy/co/{course}/le/{lecture}/pa/{paragraph}/delete',
+    'collection' => '/academy/co/{course}/le/{lecture}/paragraphs',
+  ],
+  bundle_entity_type: 'paragraph_type',
+  field_ui_base_route: 'entity.paragraph_type.edit_form',
+  additional: [
+    'fieldable' => TRUE,
+    'cascade_delete' => TRUE,
+  ],
+)]
 class Paragraph extends ContentEntityBase implements ChildEntityInterface {
 
   use EntityChangedTrait;

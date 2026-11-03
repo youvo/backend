@@ -2,7 +2,9 @@
 
 namespace Drupal\feedback\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Plugin implementation of the 'feedback_scale' formatter.
@@ -11,15 +13,12 @@ use Drupal\Core\Field\FieldItemListInterface;
  * of options. This formatter shows the answer as a row of segments, filled up
  * to the answer, followed by the value and its label, as the frontend shows
  * them, for example "4 eher zufrieden".
- *
- * @FieldFormatter(
- *   id = "feedback_scale",
- *   label = @Translation("Feedback scale"),
- *   field_types = {
- *     "integer"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'feedback_scale',
+  label: new TranslatableMarkup('Feedback scale'),
+  field_types: ['integer'],
+)]
 class FeedbackScaleFormatter extends FeedbackOptionsFormatter {
 
   /**

@@ -5,62 +5,63 @@ namespace Drupal\logbook\Entity;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\logbook\LogTextInterface;
 use Drupal\youvo\SimpleToken;
 
 /**
  * Defines the Log Pattern entity type.
- *
- * @ConfigEntityType(
- *   id = "log_pattern",
- *   label = @Translation("Log Pattern"),
- *   label_collection = @Translation("Log Patterns"),
- *   label_singular = @Translation("log pattern"),
- *   label_plural = @Translation("log patterns"),
- *   label_count = @PluralTranslation(
- *     singular = "@count log pattern",
- *     plural = "@count log patterns",
- *   ),
- *   handlers = {
- *     "access" = "Drupal\logbook\LogPatternAccessControlHandler",
- *     "list_builder" = "Drupal\logbook\LogPatternListBuilder",
- *     "form" = {
- *       "add" = "Drupal\logbook\Form\LogPatternForm",
- *       "edit" = "Drupal\logbook\Form\LogPatternForm",
- *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
- *     }
- *   },
- *   config_prefix = "log_pattern",
- *   admin_permission = "administer log pattern",
- *   bundle_of = "log",
- *   links = {
- *     "collection" = "/admin/structure/log-pattern",
- *     "add-form" = "/admin/structure/log-pattern/add",
- *     "edit-form" = "/admin/structure/log-pattern/{log_pattern}",
- *     "delete-form" = "/admin/structure/log-pattern/{log_pattern}/delete"
- *   },
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "label",
- *     "uuid" = "uuid",
- *     "status" = "status"
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "tokens",
- *     "status",
- *     "detectable",
- *     "observable",
- *     "public",
- *     "promote",
- *     "hidden",
- *     "color",
- *     "tone"
- *   }
- * )
  */
+#[ConfigEntityType(
+  id: 'log_pattern',
+  label: new TranslatableMarkup('Log Pattern'),
+  label_collection: new TranslatableMarkup('Log Patterns'),
+  label_singular: new TranslatableMarkup('log pattern'),
+  label_plural: new TranslatableMarkup('log patterns'),
+  label_count: [
+    'singular' => '@count log pattern',
+    'plural' => '@count log patterns',
+  ],
+  handlers: [
+    'access' => 'Drupal\logbook\LogPatternAccessControlHandler',
+    'list_builder' => 'Drupal\logbook\LogPatternListBuilder',
+    'form' => [
+      'add' => 'Drupal\logbook\Form\LogPatternForm',
+      'edit' => 'Drupal\logbook\Form\LogPatternForm',
+      'delete' => 'Drupal\Core\Entity\EntityDeleteForm',
+    ],
+  ],
+  config_prefix: 'log_pattern',
+  admin_permission: 'administer log pattern',
+  bundle_of: 'log',
+  links: [
+    'collection' => '/admin/structure/log-pattern',
+    'add-form' => '/admin/structure/log-pattern/add',
+    'edit-form' => '/admin/structure/log-pattern/{log_pattern}',
+    'delete-form' => '/admin/structure/log-pattern/{log_pattern}/delete',
+  ],
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+    'uuid' => 'uuid',
+    'status' => 'status',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'tokens',
+    'status',
+    'detectable',
+    'observable',
+    'public',
+    'promote',
+    'hidden',
+    'color',
+    'tone',
+  ],
+)]
 class LogPattern extends ConfigEntityBundleBase implements LogPatternInterface {
 
   /**

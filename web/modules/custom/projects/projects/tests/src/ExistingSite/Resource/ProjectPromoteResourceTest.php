@@ -2,19 +2,13 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
-use Drupal\projects\Plugin\rest\resource\Action\ProjectPromoteResource;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project promote resource.
  */
-#[CoversMethod(ProjectPromoteResource::class, 'create')]
-#[CoversMethod(ProjectPromoteResource::class, 'routes')]
-#[CoversMethod(ProjectPromoteResource::class, 'access')]
-#[CoversMethod(ProjectPromoteResource::class, 'post')]
 #[Group('projects')]
 class ProjectPromoteResourceTest extends ProjectResourceTestBase {
 
@@ -34,6 +28,7 @@ class ProjectPromoteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project promoted."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->isPromoted());
   }
 
   /**

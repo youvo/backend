@@ -2,23 +2,24 @@
 
 namespace Drupal\youvo\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\IntegerItem;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\youvo\Plugin\DataType\CacheableIntegerData;
 
 /**
  * Defines the 'integer' entity field type with cacheability metadata.
- *
- * @FieldType(
- *   id = "cacheable_integer",
- *   label = @Translation("Cacheable Integer Item"),
- *   description = @Translation("A field containing a integer value and cacheability metadata."),
- *   no_ui = TRUE,
- *   default_widget = "number",
- *   default_formatter = "number_integer"
- * )
  */
+#[FieldType(
+  id: 'cacheable_integer',
+  label: new TranslatableMarkup('Cacheable Integer Item'),
+  description: new TranslatableMarkup('A field containing a integer value and cacheability metadata.'),
+  no_ui: TRUE,
+  default_widget: 'number',
+  default_formatter: 'number_integer',
+)]
 class CacheableIntegerItem extends IntegerItem {
 
   /**

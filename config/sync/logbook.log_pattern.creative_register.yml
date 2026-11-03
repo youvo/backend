@@ -9,7 +9,7 @@ label: Register
 tokens:
   -
     token: '%Creative'
-    required: 0
+    required: false
 detectable: true
 observable: true
 public: false

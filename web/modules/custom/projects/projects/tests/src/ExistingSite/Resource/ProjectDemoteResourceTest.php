@@ -2,19 +2,13 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
-use Drupal\projects\Plugin\rest\resource\Action\ProjectDemoteResource;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project demote resource.
  */
-#[CoversMethod(ProjectDemoteResource::class, 'create')]
-#[CoversMethod(ProjectDemoteResource::class, 'routes')]
-#[CoversMethod(ProjectDemoteResource::class, 'access')]
-#[CoversMethod(ProjectDemoteResource::class, 'post')]
 #[Group('projects')]
 class ProjectDemoteResourceTest extends ProjectResourceTestBase {
 
@@ -24,6 +18,7 @@ class ProjectDemoteResourceTest extends ProjectResourceTestBase {
   public function testProjectDemote(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setPromoted(TRUE)->save();
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/demote';
@@ -34,6 +29,7 @@ class ProjectDemoteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project demoted."', $response->getContent());
+    $this->assertFalse($this->reloadProject($project)->isPromoted());
   }
 
   /**

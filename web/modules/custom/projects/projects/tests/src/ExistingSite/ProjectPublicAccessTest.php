@@ -4,21 +4,14 @@ namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AnonymousUserSession;
-use Drupal\projects\Access\ProjectEntityAccess;
-use Drupal\projects\Access\ProjectFieldAccess;
-use Drupal\projects\EventSubscriber\ProjectQueryAccessSubscriber;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the public access to projects, the hidden flag and the query access.
  */
-#[CoversClass(ProjectEntityAccess::class)]
-#[CoversClass(ProjectFieldAccess::class)]
-#[CoversClass(ProjectQueryAccessSubscriber::class)]
 #[Group('projects')]
 class ProjectPublicAccessTest extends ProjectResourceTestBase {
 

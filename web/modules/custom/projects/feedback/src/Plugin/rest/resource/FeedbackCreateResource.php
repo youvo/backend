@@ -6,10 +6,12 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\feedback\Event\FeedbackCreateEvent;
 use Drupal\feedback\FeedbackInterface;
 use Drupal\projects\ProjectInterface;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponseInterface;
@@ -19,15 +21,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides feedback create resource.
- *
- * @RestResource(
- *   id = "feedback:create",
- *   label = @Translation("Feedback Create Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/projects/{project}/feedback"
- *   }
- * )
  */
+#[RestResource(
+  id: 'feedback:create',
+  label: new TranslatableMarkup('Feedback Create Resource'),
+  uri_paths: [
+    'canonical' => '/api/projects/{project}/feedback',
+  ],
+)]
 class FeedbackCreateResource extends ResourceBase {
 
   /**

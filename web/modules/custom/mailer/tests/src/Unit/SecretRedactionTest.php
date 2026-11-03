@@ -4,12 +4,14 @@ namespace Drupal\Tests\mailer\Unit;
 
 use Drupal\mailer\Mailer\YouvoMailerBase;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the redaction of secrets from recorded mails.
- *
- * @group mailer
  */
+#[CoversClass(YouvoMailerBase::class)]
+#[Group('mailer')]
 class SecretRedactionTest extends UnitTestCase {
 
   const LINK = "https://example.com/invite/1/2?a=b&c='d'#h-1";

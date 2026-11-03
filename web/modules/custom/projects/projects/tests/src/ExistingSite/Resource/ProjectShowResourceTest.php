@@ -2,19 +2,13 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
-use Drupal\projects\Plugin\rest\resource\Action\ProjectShowResource;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project show resource.
  */
-#[CoversMethod(ProjectShowResource::class, 'create')]
-#[CoversMethod(ProjectShowResource::class, 'routes')]
-#[CoversMethod(ProjectShowResource::class, 'access')]
-#[CoversMethod(ProjectShowResource::class, 'post')]
 #[Group('projects')]
 class ProjectShowResourceTest extends ProjectResourceTestBase {
 
@@ -24,6 +18,7 @@ class ProjectShowResourceTest extends ProjectResourceTestBase {
   public function testProjectShow(): void {
 
     $project = $this->createProject(ProjectState::Open);
+    $project->setHidden()->save();
     $supervisor = $this->createSupervisor();
 
     $path = '/api/projects/' . $project->uuid() . '/show';
@@ -34,6 +29,7 @@ class ProjectShowResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project shown."', $response->getContent());
+    $this->assertFalse($this->reloadProject($project)->isHidden());
   }
 
   /**

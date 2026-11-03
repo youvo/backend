@@ -1,0 +1,5 @@
+# The install scripts override these per environment from the HUB_URL,
+# APP_URL and WEBSITE_URL variables of the config/.env.* files.
+hub_url: 'https://hub.youvo.org'
+app_url: 'https://app.youvo.org'
+website_url: 'https://youvo.org'

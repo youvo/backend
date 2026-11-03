@@ -7,6 +7,9 @@ services:
 
   project.lifecycle:
     class: Drupal\projects\Service\ProjectLifecycle
+    # Each project needs its own lifecycle instance; a shared instance would be
+    # repointed to whichever project called lifecycle() last.
+    shared: false
     arguments:
       [ '@current_user', '@entity_type.manager', '@datetime.time' ]
   logger.channel.projects:

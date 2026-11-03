@@ -2,26 +2,19 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
-use Drupal\Component\EventDispatcher\Event;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
-use Drupal\projects\Event\ProjectApplyEvent;
-use Drupal\projects\Event\ProjectCompleteEvent;
-use Drupal\projects\Event\ProjectMediateEvent;
-use Drupal\projects\Event\ProjectPublishEvent;
-use Drupal\projects\Event\ProjectResetEvent;
-use Drupal\projects\Event\ProjectSubmitEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
 use Drupal\Tests\youvo\Traits\RequestTrait;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use weitzman\DrupalTestTraits\ExistingSiteBase;
 
 /**
  * Provides a test base for project resources.
  */
-abstract class ProjectResourceTestBase extends ExistingSiteBase implements EventSubscriberInterface {
+abstract class ProjectResourceTestBase extends ExistingSiteBase {
 
   use RequestTrait;
 
@@ -32,7 +25,8 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
 
     parent::setUp();
 
-    // Only listen to project events.
+    // Only keep the listeners of the projects module for project events. This
+    // removes the mailer, logbook and organizations listeners.
     $event_dispatcher = $this->container->get('event_dispatcher');
     foreach ($event_dispatcher->getListeners() as $event => $listeners) {
       if (str_contains($event, 'projects')) {
@@ -43,9 +37,6 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
         }
       }
     }
-
-    // Add the test as an event subscriber for specific test cases.
-    $event_dispatcher->addSubscriber($this);
   }
 
   /**
@@ -157,26 +148,24 @@ abstract class ProjectResourceTestBase extends ExistingSiteBase implements Event
   }
 
   /**
-   * Listens to the project events to throw an exception for testing purposes.
-   *
-   * @throws \LogicException
+   * Reloads a project from storage, bypassing the caches.
    */
-  public function onProjectEvent(Event $event): void {
-    throw new \LogicException('Exception thrown for testing purposes.');
+  protected function reloadProject(ProjectInterface $project): ProjectInterface {
+    /** @var \Drupal\projects\ProjectInterface $reloaded */
+    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
+    return $reloaded;
   }
 
   /**
-   * {@inheritdoc}
+   * Asserts the state and the last history item of a project.
    */
-  public static function getSubscribedEvents(): array {
-    return [
-      ProjectApplyEvent::class => 'onProjectEvent',
-      ProjectCompleteEvent::class => 'onProjectEvent',
-      ProjectMediateEvent::class => 'onProjectEvent',
-      ProjectPublishEvent::class => 'onProjectEvent',
-      ProjectResetEvent::class => 'onProjectEvent',
-      ProjectSubmitEvent::class => 'onProjectEvent',
-    ];
+  protected function assertLastTransition(ProjectInterface $project, ProjectTransition $transition, ProjectState $from, ProjectState $to): void {
+    $this->assertSame($to->value, $project->get('field_lifecycle')->value);
+    /** @var \Drupal\lifecycle\Plugin\Field\FieldType\LifecycleHistoryItem $last */
+    $last = $project->lifecycle()->history()->last();
+    $this->assertSame($transition->value, $last->transition);
+    $this->assertSame($from->value, $last->from);
+    $this->assertSame($to->value, $last->to);
   }
 
 }

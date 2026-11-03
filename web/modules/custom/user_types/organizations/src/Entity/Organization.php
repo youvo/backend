@@ -45,7 +45,7 @@ class Organization extends TypedUser implements ManagerInterface {
    */
   public function getAddress(): string {
     $country = !empty($this->get('field_country')->value) ?
-      ', ' . !empty($this->get('field_country')->value) : '';
+      ', ' . $this->get('field_country')->value : '';
     return $this->get('field_street')->value . ', ' .
       $this->get('field_zip')->value . ' ' . $this->get('field_city')->value .
       $country;

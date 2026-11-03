@@ -94,4 +94,4 @@ phpcbf:
 ## phpunit 	:	Run PHPUnit tests.
 .PHONY: phpunit
 phpunit:
-	@vendor/bin/phpunit --configuration ${PWD}/phpunit.local.xml
+	@vendor/bin/phpunit --configuration ${PWD}/phpunit.xml

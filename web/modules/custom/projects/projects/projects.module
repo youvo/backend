@@ -58,10 +58,10 @@ function projects_entity_base_field_info(EntityTypeInterface $entity_type): arra
 function projects_tokens(string $type, array $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata): array {
 
   if ($type === 'project' && (!empty($data['project']) || !empty($data['project_result']))) {
-    if ($data['project'] instanceof ProjectInterface) {
+    if (($data['project'] ?? NULL) instanceof ProjectInterface) {
       $project = $data['project'];
     }
-    elseif ($data['project_result'] instanceof ProjectResultInterface) {
+    elseif (($data['project_result'] ?? NULL) instanceof ProjectResultInterface) {
       $project = $data['project_result']->getOriginEntity();
     }
     if (isset($project)) {

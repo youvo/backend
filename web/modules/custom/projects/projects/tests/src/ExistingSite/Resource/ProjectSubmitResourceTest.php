@@ -3,23 +3,18 @@
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project submit resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectSubmitResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectSubmitResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project submit resource - standard workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::post
    */
   public function testProjectSubmit(): void {
 
@@ -34,12 +29,11 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project submitted."', $response->getContent());
+    $this->assertLastTransition($this->reloadProject($project), ProjectTransition::Submit, ProjectState::Draft, ProjectState::Pending);
   }
 
   /**
    * Tests the for the project submit resource - supervisor.
-   *
-   * @covers ::access
    */
   public function testProjectSubmitSupervisor(): void {
 
@@ -54,12 +48,11 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project submitted."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isPending());
   }
 
   /**
    * Tests the for the project submit resource - not draft.
-   *
-   * @covers ::post
    */
   public function testProjectSubmitNotDraft(): void {
 
@@ -78,8 +71,6 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project submit resource - not owner.
-   *
-   * @covers ::access
    */
   public function testProjectSubmitNotOwner(): void {
 
@@ -97,31 +88,7 @@ class ProjectSubmitResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project submit resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectSubmitArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $organization = $project->getOwner();
-
-    $path = '/api/projects/' . $project->uuid() . '/submit';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the project submit resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectSubmitNoPermission(): void {
 

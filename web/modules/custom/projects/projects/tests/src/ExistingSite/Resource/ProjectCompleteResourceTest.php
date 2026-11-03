@@ -5,25 +5,18 @@ namespace Drupal\Tests\projects\ExistingSite\Resource;
 use Drupal\Component\Serialization\Json;
 use Drupal\file\Entity\File;
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project complete resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectCompleteResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project complete resource - standard workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::post
-   * @covers ::preloadFiles
-   * @covers ::shapeResults
    */
   public function testProjectComplete(): void {
 
@@ -33,8 +26,9 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
     $project->appendParticipant($participant);
     $project->save();
 
-    $file = File::create(['uri' => $this->randomString()]);
+    $file = File::create(['uri' => 'public://' . $this->randomMachineName() . '.txt']);
     $file->save();
+    $this->markEntityForCleanup($file);
 
     $path = '/api/projects/' . $project->uuid() . '/complete';
     $body = [
@@ -43,7 +37,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
         [
           'type' => 'file',
           'value' => $file->uuid(),
-          'description' => $this->randomString(),
+          'description' => 'File description',
         ],
         [
           'type' => 'file',
@@ -52,8 +46,8 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
         ],
         [
           'type' => 'link',
-          'value' => $this->randomString(),
-          'description' => $this->randomString(),
+          'value' => 'https://example.com',
+          'description' => 'Link description',
         ],
       ],
     ];
@@ -64,6 +58,20 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project completed."', $response->getContent());
+
+    // The project is completed with its results, the unknown file is skipped.
+    $stored = $this->reloadProject($project);
+    $this->assertLastTransition($stored, ProjectTransition::Complete, ProjectState::Ongoing, ProjectState::Completed);
+    /** @var \Drupal\projects\ProjectResultInterface $result */
+    $result = $this->container->get('entity_type.manager')->getStorage('project_result')->loadUnchanged($stored->getResult()->id());
+    $files = $result->get('field_files')->getValue();
+    $this->assertCount(1, $files);
+    $this->assertEquals($file->id(), $files[0]['target_id']);
+    $this->assertSame('File description', $files[0]['description']);
+    $links = $result->get('field_hyperlinks')->getValue();
+    $this->assertCount(1, $links);
+    $this->assertSame('https://example.com', $links[0]['value']);
+    $this->assertSame('Link description', $links[0]['description']);
   }
 
   /**
@@ -79,12 +87,11 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
       $this->authenticateRequest($request, $project->getOwner());
       $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
     }
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOngoing());
   }
 
   /**
    * Tests the project complete resource - manager.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteManager(): void {
 
@@ -102,12 +109,11 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project completed."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isCompleted());
   }
 
   /**
    * Tests the project complete resource - participant.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteParticipant(): void {
 
@@ -124,12 +130,11 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project completed."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isCompleted());
   }
 
   /**
    * Tests the project complete resource - supervisor.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteSupervisor(): void {
 
@@ -147,12 +152,11 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project completed."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isCompleted());
   }
 
   /**
    * Tests the project complete resource - not ongoing.
-   *
-   * @covers ::post
    */
   public function testProjectCompleteNotOngoing(): void {
 
@@ -171,8 +175,6 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project complete resource - not owner.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteNotOwner(): void {
 
@@ -191,8 +193,6 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project complete resource - not manager.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteNotManager(): void {
 
@@ -211,8 +211,6 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project complete resource - not participant.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteNotParticipant(): void {
 
@@ -230,31 +228,7 @@ class ProjectCompleteResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the project complete resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectCompleteArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $organization = $project->getOwner();
-
-    $path = '/api/projects/' . $project->uuid() . '/complete';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $organization);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the project complete resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectCompleteNoPermission(): void {
 

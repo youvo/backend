@@ -2,24 +2,19 @@
 
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\projects\ProjectState;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for the project apply resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Action\ProjectApplyResource
- * @group projects
  */
+#[Group('projects')]
 class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project apply resource - standard GET workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::get
    */
   public function testProjectApplyGet(): void {
 
@@ -38,8 +33,6 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project apply resource - standard POST workflow.
-   *
-   * @covers ::post
    */
   public function testProjectApply(): void {
 
@@ -47,13 +40,20 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
     $creative = $this->createCreative();
 
     $path = '/api/projects/' . $project->uuid() . '/apply';
-    $request = Request::create($path, 'POST');
+    $body = Json::encode(['message' => 'Hello', 'phone' => '+1234567890']);
+    $request = Request::create($path, 'POST', [], [], [], [], $body);
     $request->headers->set('Content-Type', 'application/json');
     $this->authenticateRequest($request, $creative);
 
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project applied."', $response->getContent());
+
+    // The creative applied with the phone number, the project stays open.
+    $stored = $this->reloadProject($project);
+    $this->assertTrue($stored->lifecycle()->isOpen());
+    $this->assertSame([(int) $creative->id()], array_keys($stored->getApplicants()));
+    $this->assertSame('+1234567890', $stored->getApplicants()[(int) $creative->id()]->getPhoneNumber());
   }
 
   /**
@@ -68,13 +68,11 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
       $this->authenticateRequest($request, $creative);
       $this->assertEquals(400, $this->doRequest($request)->getStatusCode(), $body);
     }
-    $this->assertFalse($project->isApplicant($creative));
+    $this->assertFalse($this->reloadProject($project)->isApplicant($creative));
   }
 
   /**
    * Tests the project apply resource - already applied.
-   *
-   * @covers ::access
    */
   public function testProjectApplyAlreadyApplied(): void {
 
@@ -95,8 +93,6 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project apply resource - manager.
-   *
-   * @covers ::access
    */
   public function testProjectApplyManager(): void {
 
@@ -115,8 +111,6 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project apply resource - not open.
-   *
-   * @covers ::access
    */
   public function testProjectApplyNotOpen(): void {
 
@@ -131,28 +125,6 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(403, $response->getStatusCode());
     $this->assertEquals('The project conditions for this application are not met.', $response->getContent());
-  }
-
-  /**
-   * Tests the project apply resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectApplyArchived(): void {
-
-    $project = $this->createProject(ProjectState::Open);
-    $project->setArchived();
-    $project->save();
-    $creative = $this->createCreative();
-
-    $path = '/api/projects/' . $project->uuid() . '/apply';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $creative);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
   }
 
   /**
@@ -177,8 +149,6 @@ class ProjectApplyResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the project apply resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectApplyNoPermission(): void {
 

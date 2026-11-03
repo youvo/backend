@@ -7,10 +7,10 @@ label: 'Organization Create'
 tokens:
   -
     token: '%Organization'
-    required: '1'
+    required: true
   -
     token: '%Project'
-    required: 0
+    required: false
 detectable: true
 observable: true
 public: false

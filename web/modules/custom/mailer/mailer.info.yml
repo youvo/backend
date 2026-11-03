@@ -13,3 +13,4 @@ dependencies:
   - symfony_mailer:mailer_policy
   - symfony_mailer:mailer_transport
   - symfony_mailer:symfony_mailer
+  - youvo:youvo

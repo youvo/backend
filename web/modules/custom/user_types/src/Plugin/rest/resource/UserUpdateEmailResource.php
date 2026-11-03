@@ -7,6 +7,8 @@ use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -18,15 +20,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides User Update Email Resource.
- *
- * @RestResource(
- *   id = "user:update:mail",
- *   label = @Translation("User Update Email"),
- *   uri_paths = {
- *     "canonical" = "/api/users/update/mail"
- *   }
- * )
  */
+#[RestResource(
+  id: 'user:update:mail',
+  label: new TranslatableMarkup('User Update Email'),
+  uri_paths: [
+    'canonical' => '/api/users/update/mail',
+  ],
+)]
 class UserUpdateEmailResource extends ResourceBase {
 
   /**

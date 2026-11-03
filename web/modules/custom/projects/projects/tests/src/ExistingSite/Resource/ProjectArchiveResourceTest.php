@@ -4,10 +4,8 @@ namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\projects\Plugin\rest\resource\Action\ProjectArchiveResource;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Tests for the project archive resource.
  */
-#[CoversClass(ProjectArchiveResource::class)]
 #[Group('projects')]
 class ProjectArchiveResourceTest extends ProjectResourceTestBase {
 
@@ -27,15 +24,6 @@ class ProjectArchiveResourceTest extends ProjectResourceTestBase {
     $request->headers->set('Content-Type', 'application/json');
     $this->authenticateRequest($request, $account);
     return $this->doRequest($request);
-  }
-
-  /**
-   * Reloads a project from storage.
-   */
-  protected function reload(ProjectInterface $project): ProjectInterface {
-    /** @var \Drupal\projects\ProjectInterface $reloaded */
-    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
-    return $reloaded;
   }
 
   /**
@@ -51,7 +39,7 @@ class ProjectArchiveResourceTest extends ProjectResourceTestBase {
     $response = $this->request($project, $supervisor, 'POST', $content);
     $this->assertSame(200, $response->getStatusCode());
     $this->assertSame('"Project archived."', $response->getContent());
-    $stored = $this->reload($project);
+    $stored = $this->reloadProject($project);
     $this->assertTrue($stored->isArchived());
     $this->assertFalse($stored->isPromoted());
     $this->assertTrue($stored->lifecycle()->isOpen());
@@ -82,7 +70,7 @@ class ProjectArchiveResourceTest extends ProjectResourceTestBase {
     foreach ($invalid as $content) {
       $this->assertSame(400, $this->request($project, $supervisor, 'POST', $content)->getStatusCode());
     }
-    $this->assertFalse($this->reload($project)->isArchived());
+    $this->assertFalse($this->reloadProject($project)->isArchived());
   }
 
   /**
@@ -98,12 +86,12 @@ class ProjectArchiveResourceTest extends ProjectResourceTestBase {
 
     $project = $this->createProject(ProjectState::Draft);
     $this->assertSame(200, $this->request($project, $this->createCreative('administrator'))->getStatusCode());
-    $this->assertTrue($this->reload($project)->isArchived());
+    $this->assertTrue($this->reloadProject($project)->isArchived());
 
     $project = $this->createProject(ProjectState::Open);
     $this->assertSame(403, $this->request($project, $project->getOwner()->getManager())->getStatusCode());
     $this->assertSame(403, $this->request($project, $project->getOwner())->getStatusCode());
-    $this->assertFalse($this->reload($project)->isArchived());
+    $this->assertFalse($this->reloadProject($project)->isArchived());
   }
 
 }

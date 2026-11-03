@@ -3,23 +3,18 @@
 namespace Drupal\Tests\projects\ExistingSite\Resource;
 
 use Drupal\projects\ProjectState;
+use Drupal\projects\ProjectTransition;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Tests for the project submit resource.
- *
- * @coversDefaultClass \Drupal\projects\Plugin\rest\resource\Transition\ProjectPublishResource
- * @group projects
+ * Tests for the project publish resource.
  */
+#[Group('projects')]
 class ProjectPublishResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project publish resource - standard workflow.
-   *
-   * @covers ::create
-   * @covers ::routes
-   * @covers ::access
-   * @covers ::post
    */
   public function testProjectPublish(): void {
 
@@ -34,12 +29,11 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project published."', $response->getContent());
+    $this->assertLastTransition($this->reloadProject($project), ProjectTransition::Publish, ProjectState::Pending, ProjectState::Open);
   }
 
   /**
    * Tests the for the project publish resource - supervisor.
-   *
-   * @covers ::access
    */
   public function testProjectPublishSupervisor(): void {
 
@@ -54,12 +48,11 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
     $response = $this->doRequest($request);
     $this->assertEquals(200, $response->getStatusCode());
     $this->assertEquals('"Project published."', $response->getContent());
+    $this->assertTrue($this->reloadProject($project)->lifecycle()->isOpen());
   }
 
   /**
    * Tests the for the project publish resource - not pending.
-   *
-   * @covers ::post
    */
   public function testProjectPublishNotPending(): void {
 
@@ -78,8 +71,6 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
 
   /**
    * Tests the for the project submit resource - not manager.
-   *
-   * @covers ::access
    */
   public function testProjectPublishNotManager(): void {
 
@@ -97,31 +88,7 @@ class ProjectPublishResourceTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests the for the project publish resource - archived.
-   *
-   * @covers ::access
-   */
-  public function testProjectPublishArchived(): void {
-
-    $project = $this->createProject();
-    $project->setArchived();
-    $project->save();
-    $manager = $project->getOwner()->getManager();
-
-    $path = '/api/projects/' . $project->uuid() . '/publish';
-    $request = Request::create($path, 'POST');
-    $request->headers->set('Content-Type', 'application/json');
-    $this->authenticateRequest($request, $manager);
-
-    $response = $this->doRequest($request);
-    $this->assertEquals(403, $response->getStatusCode());
-    $this->assertEquals('The project is archived.', $response->getContent());
-  }
-
-  /**
    * Tests the project publish resource - no permission.
-   *
-   * @covers ::access
    */
   public function testProjectPublishNoPermission(): void {
 

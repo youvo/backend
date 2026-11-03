@@ -4,12 +4,14 @@ namespace Drupal\Tests\mailer\Unit;
 
 use Drupal\mailer\Manager\LateTokens;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the late token replacement.
- *
- * @group mailer
  */
+#[CoversClass(LateTokens::class)]
+#[Group('mailer')]
 class LateTokensTest extends UnitTestCase {
 
   /**

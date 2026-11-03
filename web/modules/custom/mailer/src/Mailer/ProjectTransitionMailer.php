@@ -145,10 +145,11 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
   public function complete(ProjectInterface $project): bool {
     $base = $this->mailVariables->project($project);
     $participants = $project->getParticipants('Creative');
+    $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
 
     $email = $this->projectEmail('complete_organization', $project, $base + [
       'participants' => $this->names($participants),
-      'feedback_link' => 'https://youvo.org/feedback/organization/' . $project->uuid(),
+      'feedback_link' => $website_url . '/feedback/organization/' . $project->uuid(),
     ]);
     $success = $this->deliver($email, $project, 'complete_organization', $this->ownerEmail($project));
 
@@ -157,8 +158,8 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
         continue;
       }
       $email = $this->projectEmail('complete_creative', $project, $this->mailVariables->creative($participant) + $base + [
-        'feedback_link' => 'https://youvo.org/feedback/creative/' . $project->uuid(),
-        'results_link' => 'https://youvo.org/results/' . $project->uuid(),
+        'feedback_link' => $website_url . '/feedback/creative/' . $project->uuid(),
+        'results_link' => $website_url . '/results/' . $project->uuid(),
       ]);
       $success = $this->deliver($email, $project, 'complete_creative', $participant->getEmail()) && $success;
     }

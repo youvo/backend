@@ -11,14 +11,16 @@ use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Tests the JSON:API Obscurity functionality.
- *
- * @group jsonapi_obscurity
  */
+#[Group('jsonapi_obscurity')]
+#[RunTestsInSeparateProcesses]
 class JsonApiObscurityTest extends KernelTestBase {
 
   use NodeCreationTrait;

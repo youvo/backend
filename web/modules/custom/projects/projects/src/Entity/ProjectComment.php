@@ -3,6 +3,7 @@
 namespace Drupal\projects\Entity;
 
 use Drupal\child_entities\ChildEntityTrait;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
@@ -15,31 +16,32 @@ use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the project comment entity class.
- *
- * @ContentEntityType(
- *   id = "project_comment",
- *   label = @Translation("Project Comment"),
- *   label_collection = @Translation("Project Comments"),
- *   handlers = {
- *     "access" = "Drupal\child_entities\ChildEntityAccessControlHandler",
- *     "route_provider" = {
- *       "html" = "Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "project_comment",
- *   fieldable = TRUE,
- *   admin_permission = "administer projects",
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "id",
- *     "owner" = "author",
- *     "uuid" = "uuid",
- *     "published" = "status",
- *     "parent" = "project_result",
- *     "weight" = "weight"
- *   }
- * )
  */
+#[ContentEntityType(
+  id: 'project_comment',
+  label: new TranslatableMarkup('Project Comment'),
+  label_collection: new TranslatableMarkup('Project Comments'),
+  handlers: [
+    'access' => 'Drupal\child_entities\ChildEntityAccessControlHandler',
+    'route_provider' => [
+      'html' => 'Drupal\child_entities\Routing\ChildContentEntityHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'project_comment',
+  admin_permission: 'administer projects',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'id',
+    'owner' => 'author',
+    'uuid' => 'uuid',
+    'published' => 'status',
+    'parent' => 'project_result',
+    'weight' => 'weight',
+  ],
+  additional: [
+    'fieldable' => TRUE,
+  ],
+)]
 class ProjectComment extends ContentEntityBase implements ProjectCommentInterface {
 
   use ChildEntityTrait;

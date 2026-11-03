@@ -7,6 +7,8 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\ResourceResponseInterface;
@@ -15,15 +17,14 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides postman variables resource.
- *
- * @RestResource(
- *   id = "postman:variables",
- *   label = @Translation("Postman Variables Resource"),
- *   uri_paths = {
- *     "canonical" = "/api/postman"
- *   }
- * )
  */
+#[RestResource(
+  id: 'postman:variables',
+  label: new TranslatableMarkup('Postman Variables Resource'),
+  uri_paths: [
+    'canonical' => '/api/postman',
+  ],
+)]
 class PostmanVariablesResource extends ResourceBase {
 
   /**

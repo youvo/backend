@@ -3,6 +3,7 @@
 namespace Drupal\courses\Entity;
 
 use Drupal\academy\AcademicFormatInterface;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -11,6 +12,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\courses\CourseInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -18,41 +20,40 @@ use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the course entity class.
- *
- * @ContentEntityType(
- *   id = "course",
- *   label = @Translation("Course"),
- *   label_collection = @Translation("Courses"),
- *   handlers = {
- *     "access" = "Drupal\courses\CourseAccessControlHandler",
- *     "form" = {
- *       "add" = "Drupal\courses\Form\CourseForm",
- *       "edit" = "Drupal\courses\Form\CourseForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
- *     },
- *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     }
- *   },
- *   base_table = "course",
- *   data_table = "course_field_data",
- *   translatable = TRUE,
- *   admin_permission = "administer courses",
- *   entity_keys = {
- *     "id" = "id",
- *     "langcode" = "langcode",
- *     "label" = "title",
- *     "published" = "status",
- *     "owner" = "uid",
- *     "uuid" = "uuid"
- *   },
- *   links = {
- *     "add-form" = "/academy/co/add",
- *     "edit-form" = "/academy/co/{course}",
- *     "delete-form" = "/academy/co/{course}/delete",
- *   },
- * )
  */
+#[ContentEntityType(
+  id: 'course',
+  label: new TranslatableMarkup('Course'),
+  label_collection: new TranslatableMarkup('Courses'),
+  handlers: [
+    'access' => 'Drupal\courses\CourseAccessControlHandler',
+    'form' => [
+      'add' => 'Drupal\courses\Form\CourseForm',
+      'edit' => 'Drupal\courses\Form\CourseForm',
+      'delete' => 'Drupal\Core\Entity\ContentEntityDeleteForm',
+    ],
+    'route_provider' => [
+      'html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider',
+    ],
+  ],
+  base_table: 'course',
+  data_table: 'course_field_data',
+  translatable: TRUE,
+  admin_permission: 'administer courses',
+  entity_keys: [
+    'id' => 'id',
+    'langcode' => 'langcode',
+    'label' => 'title',
+    'published' => 'status',
+    'owner' => 'uid',
+    'uuid' => 'uuid',
+  ],
+  links: [
+    'add-form' => '/academy/co/add',
+    'edit-form' => '/academy/co/{course}',
+    'delete-form' => '/academy/co/{course}/delete',
+  ],
+)]
 class Course extends ContentEntityBase implements CourseInterface, AcademicFormatInterface, EntityOwnerInterface, EntityChangedInterface {
 
   use EntityChangedTrait;

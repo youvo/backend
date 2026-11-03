@@ -50,6 +50,7 @@
  [[ -r config/certs/public.key && -r config/certs/private.key ]] || fail "OAuth keys are missing in config/certs."
  [[ -n "$TRUSTED_HOST_PATTERN" ]] || fail "Set TRUSTED_HOST_PATTERN in config/.env.production."
  [[ -v JSONAPI_OBSCURITY_PREFIX ]] || fail "Set JSONAPI_OBSCURITY_PREFIX in config/.env.production (may be empty)."
+ [[ -n "$HUB_URL" && -n "$APP_URL" && -n "$WEBSITE_URL" ]] || fail "Set HUB_URL, APP_URL and WEBSITE_URL in config/.env.production."
  mysql "${CONNECTION[@]}" -e "SELECT 1" "$DB_NAME" > /dev/null || fail "Cannot connect to the database $DB_NAME."
  if [[ -n "$CONTENT" ]]; then
   [[ -r "$CONTENT" ]] || fail "$CONTENT is not readable."
@@ -91,6 +92,9 @@
  rm -f $SITE/settings.php
  cp $SITE/install.settings.php $SITE/settings.php
  printf "\$settings['trusted_host_patterns'] = ['%s'];\n" "$TRUSTED_HOST_PATTERN" >> $SITE/settings.php
+ printf "\$config['youvo.settings']['hub_url'] = '%s';\n" "$HUB_URL" >> $SITE/settings.php
+ printf "\$config['youvo.settings']['app_url'] = '%s';\n" "$APP_URL" >> $SITE/settings.php
+ printf "\$config['youvo.settings']['website_url'] = '%s';\n" "$WEBSITE_URL" >> $SITE/settings.php
  [[ -f $SITE/services.yml ]] || cp $SITE/install.services.yml $SITE/services.yml
  chmod u+w $SITE/services.yml
  sed -i.bak -E "s|^( *jsonapi_obscurity\.prefix:).*|\1 '$JSONAPI_OBSCURITY_PREFIX'|" $SITE/services.yml && rm $SITE/services.yml.bak

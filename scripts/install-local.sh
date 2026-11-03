@@ -38,6 +38,10 @@
  fi
  cp install.settings.php settings.php
  chmod 0777 settings.php
+ # Point links and redirects to the frontends of this environment.
+ printf "\$config['youvo.settings']['hub_url'] = '%s';\n" "${HUB_URL:?Set HUB_URL in config/.env.local.}" >> settings.php
+ printf "\$config['youvo.settings']['app_url'] = '%s';\n" "${APP_URL:?Set APP_URL in config/.env.local.}" >> settings.php
+ printf "\$config['youvo.settings']['website_url'] = '%s';\n" "${WEBSITE_URL:?Set WEBSITE_URL in config/.env.local.}" >> settings.php
  echo "Settings reset ..."
 
  # Reset files folder. The public files path is web/files.

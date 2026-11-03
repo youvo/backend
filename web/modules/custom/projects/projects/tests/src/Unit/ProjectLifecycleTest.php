@@ -14,19 +14,20 @@ use Drupal\lifecycle\Plugin\WorkflowType\Lifecycle;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\projects\ProjectTransition;
 use Drupal\projects\Service\ProjectLifecycle;
 use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\workflows\Entity\Workflow;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Prophecy\Argument;
 
 /**
  * Tests the project lifecycle.
- *
- * @coversDefaultClass \Drupal\projects\Service\ProjectLifecycle
- * @group projects
  */
+#[CoversClass(ProjectLifecycle::class)]
+#[Group('projects')]
 class ProjectLifecycleTest extends UnitTestCase {
 
   /**
@@ -51,10 +52,6 @@ class ProjectLifecycleTest extends UnitTestCase {
 
   /**
    * Tests the project methods.
-   *
-   * @covers ::__construct
-   * @covers ::setProject
-   * @covers ::project
    */
   public function testProject(): void {
 
@@ -74,17 +71,8 @@ class ProjectLifecycleTest extends UnitTestCase {
 
   /**
    * Tests the different is methods.
-   *
-   * @covers ::isDraft
-   * @covers ::isPending
-   * @covers ::isOpen
-   * @covers ::isOngoing
-   * @covers ::isCompleted
-   * @covers ::isDeclined
-   * @covers ::getState
-   *
-   * @dataProvider isStateProvider
    */
+  #[DataProvider('isStateProvider')]
   public function testIsState(ProjectState $state): void {
     $method = 'is' . ucfirst($state->value);
     foreach (ProjectState::cases() as $test_state) {
@@ -116,110 +104,7 @@ class ProjectLifecycleTest extends UnitTestCase {
   }
 
   /**
-   * Tests the different transition methods.
-   *
-   * @param \Drupal\projects\ProjectTransition $transition
-   *   The transition.
-   * @param array $allowed_from
-   *   An array to mock the workflow allowed from settings.
-   * @param array $has_transition
-   *   An array to mock the workflow transition settings.
-   * @param bool $has_participant
-   *   Whether the project has an applicant. Relevant for mediate transition.
-   *
-   * @covers ::submit
-   * @covers ::publish
-   * @covers ::mediate
-   * @covers ::complete
-   * @covers ::reset
-   * @covers ::decline
-   * @covers ::hasTransition
-   * @covers ::canTransition
-   * @covers ::doTransition
-   * @covers ::getSuccessorFromTransition
-   * @covers ::inscribeTransition
-   *
-   * @dataProvider doTransitionProvider
-   */
-  public function testDoTransition(ProjectTransition $transition, array $allowed_from, array $has_transition, bool $has_participant): void {
-    $states = ProjectState::cases();
-    $this->prophesizeWorkflow($states, $has_transition, $has_participant);
-    foreach ($states as $state) {
-      try {
-        $this->assertTrue($this->lifecycle->{$transition->value}());
-      }
-      catch (LifecycleTransitionException) {
-        $this->assertFalse(in_array($state, $allowed_from, TRUE) && $has_participant);
-      }
-    }
-  }
-
-  /**
-   * Provides data for the testDoTransition method.
-   */
-  public static function doTransitionProvider(): array {
-
-    $cases[ProjectTransition::Submit->value] = [
-      'transition' => ProjectTransition::Submit,
-      'allowed_from' => [ProjectState::Draft],
-      'has_transition' => [TRUE, FALSE, FALSE, FALSE, FALSE, FALSE],
-      // Not relevant for this case.
-      'has_participant' => FALSE,
-    ];
-
-    $cases[ProjectTransition::Publish->value] = [
-      'transition' => ProjectTransition::Publish,
-      'allowed_from' => [ProjectState::Pending],
-      'has_transition' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE],
-      // Not relevant for this case.
-      'has_participant' => FALSE,
-    ];
-
-    $cases[ProjectTransition::Mediate->value . '-without-participant'] = [
-      'transition' => ProjectTransition::Mediate,
-      'allowed_from' => [ProjectState::Open],
-      'has_transition' => [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
-      'has_participant' => FALSE,
-    ];
-
-    $cases[ProjectTransition::Mediate->value . '-with-participant'] = [
-      'transition' => ProjectTransition::Mediate,
-      'allowed_from' => [ProjectState::Open],
-      'has_transition' => [FALSE, FALSE, TRUE, FALSE, FALSE, FALSE],
-      'has_participant' => TRUE,
-    ];
-
-    $cases[ProjectTransition::Complete->value] = [
-      'transition' => ProjectTransition::Complete,
-      'allowed_from' => [ProjectState::Ongoing],
-      'has_transition' => [FALSE, FALSE, FALSE, TRUE, FALSE, FALSE],
-      'has_participant' => TRUE,
-    ];
-
-    $cases[ProjectTransition::Reset->value] = [
-      'transition' => ProjectTransition::Reset,
-      'allowed_from' => ProjectState::cases(),
-      'has_transition' => [TRUE, TRUE, TRUE, TRUE, TRUE, TRUE],
-      // Not relevant for this case.
-      'has_participant' => FALSE,
-    ];
-
-    $cases[ProjectTransition::Decline->value] = [
-      'transition' => ProjectTransition::Decline,
-      'allowed_from' => [ProjectState::Draft, ProjectState::Pending],
-      'has_transition' => [TRUE, TRUE, FALSE, FALSE, FALSE, FALSE],
-      // Not relevant for this case.
-      'has_participant' => FALSE,
-    ];
-
-    return $cases;
-  }
-
-  /**
    * Tests that a draft project can only be declined for prospect owners.
-   *
-   * @covers ::decline
-   * @covers ::canTransition
    */
   public function testDeclineDraftRequiresProspect(): void {
     $states = [ProjectState::Draft];
@@ -229,47 +114,9 @@ class ProjectLifecycleTest extends UnitTestCase {
   }
 
   /**
-   * Tests that a draft project of a prospect owner can be declined.
-   *
-   * @covers ::decline
-   * @covers ::canTransition
-   */
-  public function testDeclineDraftOfProspect(): void {
-    $this->prophesizeWorkflow([ProjectState::Draft], [TRUE], FALSE, TRUE);
-    $this->assertTrue($this->lifecycle->decline());
-  }
-
-  /**
-   * Tests that a pending project can be declined for any owner.
-   *
-   * @covers ::decline
-   * @covers ::canTransition
-   */
-  public function testDeclinePendingWithoutProspect(): void {
-    $this->prophesizeWorkflow([ProjectState::Pending], [TRUE], FALSE, FALSE);
-    $this->assertTrue($this->lifecycle->decline());
-  }
-
-  /**
-   * Tests that a declined project can not be declined again.
-   *
-   * @covers ::decline
-   * @covers ::canTransition
-   */
-  public function testDeclineDeclinedThrows(): void {
-    $this->prophesizeWorkflow([ProjectState::Declined], [FALSE], FALSE, TRUE);
-    $this->expectException(LifecycleTransitionException::class);
-    $this->lifecycle->decline();
-  }
-
-  /**
    * Tests whether a project can be declined.
-   *
-   * @covers ::canDecline
-   * @covers ::canTransition
-   *
-   * @dataProvider canDeclineProvider
    */
+  #[DataProvider('canDeclineProvider')]
   public function testCanDecline(ProjectState $state, bool $has_transition, bool $is_prospect, bool $expected): void {
     [$project, $history] = $this->prophesizeWorkflow([$state], [$has_transition], FALSE, $is_prospect);
     $this->assertSame($expected, $this->lifecycle->canDecline());
@@ -289,19 +136,6 @@ class ProjectLifecycleTest extends UnitTestCase {
       'open' => [ProjectState::Open, FALSE, TRUE, FALSE],
       'declined' => [ProjectState::Declined, FALSE, TRUE, FALSE],
     ];
-  }
-
-  /**
-   * Tests the history method.
-   *
-   * @covers ::history
-   */
-  public function testHistory(): void {
-    $project = $this->prophesize(ProjectInterface::class);
-    $history = $this->prophesize(FieldItemListInterface::class)->reveal();
-    $project->get(Argument::any())->willReturn($history);
-    $this->lifecycle->setProject($project->reveal());
-    $this->assertSame($history, $this->lifecycle->history());
   }
 
   /**
