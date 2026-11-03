@@ -99,10 +99,10 @@
  ddev drush cr > /dev/null 2>&1
  took
 
- # Generate the image styles of the dummy content.
- echo "Generating image styles ..."
- ddev drush queue:run image_style_warmer_pregenerator > /dev/null 2>&1
- took
+ # Generate the image styles of the dummy content in the background, since
+ # ImageMagick takes minutes. It starts before xdebug is enabled again.
+ echo "Generating image styles in the background ..."
+ nohup ddev drush queue:run image_style_warmer_pregenerator > /tmp/image-style-warmer.log 2>&1 &
 
  # Set permissions for settings file.
  cd web/sites/default || exit
