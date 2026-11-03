@@ -1,0 +1,102 @@
+uuid: 7d8ed0f3-2564-4a74-92ed-f09e4802d2b7
+langcode: de
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.user.full
+    - field.field.user.user.field_about
+    - field.field.user.user.field_avatar
+    - field.field.user.user.field_city
+    - field.field.user.user.field_education
+    - field.field.user.user.field_jobs
+    - field.field.user.user.field_name
+    - field.field.user.user.field_newsletter
+    - field.field.user.user.field_phone
+    - field.field.user.user.field_portfolio
+    - field.field.user.user.field_position
+    - field.field.user.user.field_public_profile
+    - field.field.user.user.field_skills
+    - field.field.user.user.field_url
+    - image.style.avatar
+    - user_bundle.user_type.user
+  module:
+    - image
+    - text
+id: user.user.full
+targetEntityType: user
+bundle: user
+mode: full
+content:
+  field_about:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_avatar:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: avatar
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_city:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_education:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_position:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_skills:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: icon
+      link: false
+    third_party_settings: {  }
+    weight: 6
+    region: content
+hidden:
+  field_jobs: true
+  field_newsletter: true
+  field_phone: true
+  field_portfolio: true
+  field_public_profile: true
+  field_url: true
+  langcode: true
+  member_for: true
+

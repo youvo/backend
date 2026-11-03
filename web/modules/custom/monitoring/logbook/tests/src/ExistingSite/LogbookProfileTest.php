@@ -11,13 +11,10 @@ use Drupal\views\Views;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the logbook of an organization on its profile.
- *
- * The organization display of the logbook view takes the organization as
- * contextual filter and loads more logs with a button.
+ * Tests the logbook on the profile of an organization or a creative.
  */
 #[Group('logbook')]
-class LogbookOrganizationTest extends ProjectResourceTestBase {
+class LogbookProfileTest extends ProjectResourceTestBase {
 
   /**
    * The display lists the logs of the organization and of its projects.
@@ -33,7 +30,7 @@ class LogbookOrganizationTest extends ProjectResourceTestBase {
     // A log of the project without the organization, as feedback logs are.
     $publish = $this->createLog('project_publish', ['project' => $project->id()], 200);
     $manage = $this->createLog('organization_manage', ['organization' => $organization->id()], 300);
-    // The log of another organization and a log that is not observable.
+    // Left out: another organization's log and an unobservable pattern.
     $this->createLog('organization_manage', ['organization' => $other->id()], 400);
     $this->createLog('feedback_create', ['organization' => $organization->id()], 500);
 
@@ -57,14 +54,13 @@ class LogbookOrganizationTest extends ProjectResourceTestBase {
     $this->assertSame(array_slice($newest, 0, 5), $this->ids($view));
     $this->assertSame('1', $this->nextPage($view));
 
-    // The second time, the results come from the cache, the button stays.
+    // The second run reads from the cache, which must keep the button.
     foreach ([1, 2] as $run) {
       $view = $this->executeView($organization, 1);
       $this->assertSame(array_slice($newest, 0, 15), $this->ids($view), "Run $run");
       $this->assertSame('2', $this->nextPage($view), "Run $run");
     }
 
-    // All logs are shown, so the button is gone.
     $view = $this->executeView($organization, 2);
     $this->assertSame($newest, $this->ids($view));
     $this->assertNull($this->nextPage($view));
@@ -76,7 +72,7 @@ class LogbookOrganizationTest extends ProjectResourceTestBase {
   protected function executeView(Organization $organization, int $page): ViewExecutable {
     $view = Views::getView('logbook');
     $this->assertInstanceOf(ViewExecutable::class, $view);
-    $view->setDisplay('organization');
+    $view->setDisplay('profile');
     $view->setArguments([$organization->id()]);
     $view->setCurrentPage($page);
     $view->execute();
@@ -107,8 +103,7 @@ class LogbookOrganizationTest extends ProjectResourceTestBase {
   /**
    * Creates a log of a pattern, some seconds after an old fixed time.
    *
-   * The fixed time puts the logs in a known order, before all logs of the
-   * site, which the contextual filter leaves out anyway.
+   * The fixed time gives the logs a known order, older than the site's logs.
    */
   protected function createLog(string $type, array $values, int $seconds): LogInterface {
     $log = Log::create($values + [

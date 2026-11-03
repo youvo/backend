@@ -12,6 +12,9 @@ use Drupal\youvo\Utility\FieldAccess;
 
 /**
  * Provides field access methods for the creative user bundle.
+ *
+ * Every result carries its cache contexts. Without them, a creative's profile
+ * could be cached with their private fields and shown to others.
  */
 class CreativeFieldAccess extends FieldAccess {
 
@@ -20,11 +23,20 @@ class CreativeFieldAccess extends FieldAccess {
     'field_avatar',
   ];
 
+  /**
+   * Contact fields: the creative and the managers see them.
+   */
+  const CONTACT_FIELDS = [
+    'field_phone',
+  ];
+
+  /**
+   * Private fields: only the creative sees them.
+   */
   const PRIVATE_FIELDS = [
     'field_newsletter',
     'field_jobs',
     'field_public_profile',
-    'field_phone',
   ];
 
   /**
@@ -37,7 +49,7 @@ class CreativeFieldAccess extends FieldAccess {
     AccountInterface $account,
   ): AccessResultInterface {
 
-    // Only project fields should be controlled by this class.
+    // Only creative fields should be controlled by this class.
     if (!$entity instanceof Creative) {
       return AccessResult::forbidden();
     }
@@ -52,19 +64,31 @@ class CreativeFieldAccess extends FieldAccess {
       if ($operation === 'view' &&
         self::isFieldOfGroup($field, self::PUBLIC_FIELDS)
       ) {
-        return AccessResult::neutral();
+        return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
       }
-      return AccessResult::forbidden();
+      return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
+    }
+
+    // Managers may view contact fields, but only the creative edits them.
+    if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
+      if ($operation === 'view' && $account->hasPermission('general manager access')) {
+        return AccessResult::neutral()->cachePerPermissions();
+      }
+      if ($entity->id() == $account->id()) {
+        return AccessResult::neutral()->cachePerPermissions()->cachePerUser();
+      }
+      return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
     }
 
     // Private fields are only accessible for the creative itself.
-    if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS) &&
-      $entity->id() != $account->id()
-    ) {
-      return AccessResult::forbidden();
+    if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
+      if ($entity->id() == $account->id()) {
+        return AccessResult::neutral()->cachePerUser();
+      }
+      return AccessResult::forbidden()->cachePerUser();
     }
 
-    return AccessResult::neutral();
+    return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
   }
 
 }

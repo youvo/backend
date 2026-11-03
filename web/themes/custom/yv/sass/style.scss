@@ -2,19 +2,12 @@
 // MAIN STYLESHEET
 // =============================================================================
 
-// Abstracts (variables, functions, mixins)
-
-@use "abstracts/variables.scss";
-
-@use "abstracts/functions.scss";
-
-@use "abstracts/mixins.scss";
-
-// Components (reusable UI components)
+@use "abstracts/tokens.scss";
 
 @use "components/skills.scss";
 @use "components/avatar.scss";
 @use "components/top-bar.scss";
-@use "components/organization.scss";
+@use "components/profile.scss";
 @use "components/project-teaser.scss";
+@use "components/organization-teaser.scss";
 @use "components/throbber.scss";

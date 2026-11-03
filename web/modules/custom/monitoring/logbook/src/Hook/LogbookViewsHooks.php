@@ -87,7 +87,7 @@ class LogbookViewsHooks {
     foreach ($variables['rows'] as $key => &$row) {
       $log = $variables['view']->result[$key]->_entity ?? NULL;
       if ($log instanceof LogInterface && $log->getPattern()->getTone() === 'celebrate') {
-        $row['attributes']->addClass('logbook-row--celebrate');
+        $row['attributes']->addClass('logbook-row-celebrate');
       }
     }
   }

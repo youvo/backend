@@ -2,7 +2,6 @@
 // MIXINS
 // =============================================================================
 
-@use "variables.scss" as *;
 @use "functions.scss" as *;
 
 // Generalized Icon Base Mixin
@@ -10,7 +9,7 @@
 @mixin icon-base {
   display: block;
   border-radius: 50%;
-  background-color: $color-grey;
+  background-color: var(--yv-chip);
   background-repeat: no-repeat;
   background-size: contain;
   vertical-align: middle;
@@ -35,34 +34,100 @@
   }
 }
 
-// Backward-compatible aliases (to be removed after migration)
-@mixin skill-base {
-  @include icon-base;
-}
+// The size of a skill badge: circle, icon and shadow. From 40px on, the icon
+// is 60% of the circle as in the frontend's badge. Smaller badges give the
+// icon a larger share in whole pixels, so its thin strokes stay readable, and
+// a lighter shadow.
 @mixin skill-size($size) {
   @include icon-size($size);
-}
 
-// Skill State Mixins
-
-@mixin skill-hover($size: "medium") {
-  @if $size == "large" {
-    box-shadow: 0 0 0 to-rem(12) $color-orange-light;
+  @if $size == "mini" {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 15%);
   } @else {
-    box-shadow: 0 0 0 to-rem(8) $color-orange-light;
+    // Chakra's md shadow, as on the frontend's badges.
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 10%),
+      0 2px 4px -1px rgb(0 0 0 / 6%);
+  }
+
+  &::before {
+    @if $size == "mini" {
+      inset: to-rem(4);
+    } @else if $size == "small" {
+      inset: to-rem(6);
+    } @else {
+      inset: 20%;
+    }
   }
 }
 
-@mixin skill-active($size: "medium") {
-  @if $size == "large" {
-    box-shadow: 0 0 0 to-rem(12) $color-orange !important;
-  } @else {
-    box-shadow: 0 0 0 to-rem(8) $color-orange !important;
+// A card on the page, as Gin's layer cards.
+@mixin card {
+  border-radius: var(--gin-border-l);
+  background: var(--yv-surface);
+  box-shadow: var(--gin-shadow-l1);
+}
+
+// A card whose one link covers it all, so the card is one click target while
+// screen readers and tabbing meet a single link. The focus ring goes around
+// the card instead of the link.
+@mixin card-link($link) {
+  position: relative;
+
+  #{$link} {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--gin-transition-fast);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+    }
+
+    &:focus-visible {
+      box-shadow: none;
+    }
+  }
+
+  &:hover #{$link},
+  #{$link}:focus-visible {
+    color: var(--yv-accent);
+  }
+
+  &:has(#{$link}:focus-visible) {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 2px;
   }
 }
 
-// Skill Icon Mixin
+// A small rounded value, as the chips of the manager panes.
+@mixin chip($radius: var(--gin-border-s)) {
+  padding: 0.15em 0.65em;
+  border-radius: $radius;
+  background: var(--yv-chip);
+  color: var(--yv-accent);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+}
 
-@mixin skill-icon($type) {
-  background-image: svg-skill($type);
+// An avatar image, or the initials when there is none.
+@mixin initials-avatar($size, $radius: 50%) {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: $size;
+  height: $size;
+  overflow: hidden;
+  border-radius: $radius;
+  background: var(--yv-chip);
+  color: var(--yv-accent);
+  font-weight: 600;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }

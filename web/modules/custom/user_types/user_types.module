@@ -5,6 +5,7 @@
  * Custom module which handles business logic for user types.
  */
 
+use Drupal\user_types\Plugin\TopBarItem\UserTypePageContext;
 use Drupal\user_types\UserTypeAccessControlHandler;
 
 /**
@@ -14,4 +15,16 @@ function user_types_entity_type_build(array &$entity_types): void {
   // Be careful here, because user_bundle_entity_type_build() already alters the
   // entity handlers.
   $entity_types['user']->setHandlerClass('access', UserTypeAccessControlHandler::class);
+}
+
+/**
+ * Implements hook_top_bar_item_alter().
+ *
+ * The top bar shows the name of a creative or an organization, as the title
+ * of its page does.
+ */
+function user_types_top_bar_item_alter(array &$definitions): void {
+  if (isset($definitions['page_context'])) {
+    $definitions['page_context']['class'] = UserTypePageContext::class;
+  }
 }

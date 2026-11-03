@@ -20,6 +20,9 @@ search:
     - tagify/default
 
 load_more:
+  css:
+    theme:
+      css/logbook-load-more.css: {}
   js:
     js/logbook-load-more.js: {}
   dependencies:

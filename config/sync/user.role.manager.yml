@@ -68,4 +68,6 @@ permissions:
   - 'view hidden projects'
   - 'view observable log'
   - 'view project manager fields'
+  - 'view user email addresses'
   - 'view youvo dashboard'
+

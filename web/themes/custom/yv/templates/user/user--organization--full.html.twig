@@ -3,11 +3,8 @@
  * @file
  * Full view of an organization in the backend.
  *
- * Follows the organization page of the frontend: avatar, name, links and
- * causes on top, then aim, about, the people and the budget explanation. The
- * side card holds what only the backend shows: contact options, account data
- * and registration answers. The plain values in "profile" come from
- * yv_preprocess_user() and are set only when the viewer may see the field.
+ * The plain values in "profile" come from yv_preprocess_user() and are set
+ * only when the viewer may see the field.
  */
 #}
 {% set registration = [
@@ -15,38 +12,23 @@
   {label: 'Referral'|t, value: content.field_referral|field_value},
   {label: 'Publicity'|t, value: content.field_publicity|field_value},
 ] %}
-{% set account = profile.account %}
 
 {{ profile_cache }}
-<article{{ attributes.addClass('organization-profile') }}>
-  <div class="organization-profile-main">
-    <header class="organization-profile-header">
-      <div class="organization-profile-avatar">
-        {% if content.field_avatar|field_value %}
-          {{ content.field_avatar|field_value }}
-        {% else %}
-          <span aria-hidden="true">{{ profile.initials }}</span>
-        {% endif %}
-      </div>
-      <div class="organization-profile-heading">
-        <h1 class="organization-profile-name">{{ profile.name }}</h1>
+<article{{ attributes.addClass('user-profile') }}>
+  <div class="user-profile-main">
+    <header class="user-profile-header">
+      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: content.field_avatar|field_value, initials: profile.initials} only %}
+      <div class="user-profile-heading">
+        <h1 class="user-profile-name">{{ profile.name }}</h1>
         {% if profile.short_name and profile.short_name != profile.name %}
-          <p class="organization-profile-short-name">{{ profile.short_name }}</p>
+          <p class="user-profile-subtitle">{{ profile.short_name }}</p>
         {% endif %}
         {% set causes = content.field_causes|field_value %}
         {% if profile.links or causes %}
-          <ul class="organization-profile-tags">
-            {% for link in profile.links %}
-              <li>
-                {% if link.url %}
-                  <a class="organization-profile-link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
-                {% else %}
-                  <span class="organization-profile-link">{{ link.label }}</span>
-                {% endif %}
-              </li>
-            {% endfor %}
+          <ul class="user-profile-tags">
+            {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
             {% for cause in causes %}
-              <li class="organization-profile-cause">#{{ cause }}</li>
+              <li><span class="user-profile-chip">#{{ cause }}</span></li>
             {% endfor %}
           </ul>
         {% endif %}
@@ -54,39 +36,40 @@
     </header>
 
     {% if content.field_aim|field_value %}
-      <p class="organization-profile-aim">{{ content.field_aim|field_value }}</p>
+      <p class="user-profile-aim">{{ content.field_aim|field_value }}</p>
     {% endif %}
 
     {% if content.field_about|field_value %}
-      <div class="organization-profile-about">{{ content.field_about|field_value }}</div>
+      <div class="user-profile-about">{{ content.field_about|field_value }}</div>
     {% endif %}
 
     {% set manager = content.field_manager|field_value %}
     {% if profile.contact or manager %}
-      <ul class="organization-profile-people">
+      <ul class="user-profile-people">
         {% if profile.contact %}
           <li>
-            <span class="organization-profile-person">
-              <span class="organization-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
+            <span class="user-profile-person">
+              <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
               <span>
-                <span class="organization-profile-person-name">{{ profile.contact }}</span>
-                <span class="organization-profile-person-role">{{ 'Organization contact'|t }}</span>
+                <span class="user-profile-person-name">{{ profile.contact }}</span>
+                <span class="user-profile-person-role">{{ 'Organization contact'|t }}</span>
               </span>
             </span>
           </li>
         {% endif %}
         {% if manager %}
           <li>
-            {% if profile.manager_url %}
-              <a class="organization-profile-person organization-profile-manager organization-profile-person-link" href="{{ profile.manager_url }}">
-                {{ manager }}
-                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
-              </a>
-            {% else %}
-              <span class="organization-profile-person organization-profile-manager">
-                {{ manager }}
-                <span class="organization-profile-person-role">{{ 'Project manager'|t }}</span>
+            {% set manager_pill %}
+              {{ manager }}
+              <span>
+                <span class="user-profile-person-name">{{ profile.manager_name }}</span>
+                <span class="user-profile-person-role">{{ 'Project manager'|t }}</span>
               </span>
+            {% endset %}
+            {% if profile.manager_url %}
+              <a class="user-profile-person" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
+            {% else %}
+              <span class="user-profile-person">{{ manager_pill }}</span>
             {% endif %}
           </li>
         {% endif %}
@@ -94,62 +77,27 @@
     {% endif %}
 
     {% if content.field_budget|field_value %}
-      <details class="organization-profile-budget">
+      <details class="user-profile-budget">
         <summary>{{ 'Why there is no budget for creative work'|t }}</summary>
         <p>{{ content.field_budget|field_value }}</p>
       </details>
     {% endif %}
   </div>
 
-  <aside class="organization-profile-side">
-    {% if profile.mail or profile.phone or profile.address %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Contact'|t }}</h2>
-        <ul class="organization-profile-contact">
-          {% if profile.mail %}
-            <li><a href="mailto:{{ profile.mail }}">{{ profile.mail }}</a></li>
-          {% endif %}
-          {% if profile.phone %}
-            <li><a href="{{ profile.phone_uri }}">{{ profile.phone }}</a></li>
-          {% endif %}
-          {% if profile.address %}
-            <li><address>{{ profile.address|join(', ') }}</address></li>
-          {% endif %}
-        </ul>
-      </section>
-    {% endif %}
+  <aside class="user-profile-side">
+    {% include '@yv/user/includes/user-profile-contact.html.twig' with {profile: profile} only %}
 
-    {% if profile.fulltime or profile.volunteer or account %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Account'|t }}</h2>
-        <dl class="organization-profile-facts">
-          {% if account.status %}
-            <div><dt>{{ 'Status'|t }}</dt><dd>{{ account.status }}</dd></div>
-          {% endif %}
-          {% if account.roles %}
-            <div><dt>{{ 'Roles'|t }}</dt><dd>{{ account.roles }}</dd></div>
-          {% endif %}
-          {% if profile.fulltime or profile.volunteer %}
-            <div>
-              <dt>{{ 'Staff'|t }}</dt>
-              <dd>{{ profile.fulltime|default('–') }} {{ 'full-time'|t }} · {{ profile.volunteer|default('–') }} {{ 'volunteers'|t }}</dd>
-            </div>
-          {% endif %}
-          {% if account.created %}
-            <div><dt>{{ 'Member since'|t }}</dt><dd>{{ account.created }}</dd></div>
-          {% endif %}
-          {% if account.login %}
-            <div><dt>{{ 'Last login'|t }}</dt><dd>{{ account.login }}</dd></div>
-          {% endif %}
-        </dl>
-      </section>
+    {% set staff = [] %}
+    {% if profile.fulltime or profile.volunteer %}
+      {% set staff = [{label: 'Staff'|t, value: (profile.fulltime|default('–')) ~ ' ' ~ 'full-time'|t ~ ' · ' ~ (profile.volunteer|default('–')) ~ ' ' ~ 'volunteers'|t}] %}
     {% endif %}
+    {% include '@yv/user/includes/user-profile-account.html.twig' with {account: profile.account, extra: staff} only %}
 
     {% set answers = registration|filter(item => item.value|render|striptags|trim) %}
     {% if answers %}
-      <section class="organization-profile-section">
-        <h2 class="organization-profile-section-title">{{ 'Registration'|t }}</h2>
-        <dl class="organization-profile-answers">
+      <section class="user-profile-section">
+        <h2 class="user-profile-section-title">{{ 'Registration'|t }}</h2>
+        <dl class="user-profile-answers">
           {% for item in answers %}
             <div>
               <dt>{{ item.label }}</dt>
@@ -161,20 +109,5 @@
     {% endif %}
   </aside>
 
-  {# Both sections are empty for viewers without access to their view. #}
-  {% set logbook = drupal_view('logbook', 'organization', user.id) %}
-  {% if logbook %}
-    <section class="organization-profile-projects organization-profile-logbook">
-      <h2 class="organization-profile-projects-title">{{ 'Logbook'|t }}</h2>
-      {{ logbook }}
-    </section>
-  {% endif %}
-
-  {% set projects = drupal_view('organization_projects', 'block', user.id) %}
-  {% if projects %}
-    <section class="organization-profile-projects">
-      <h2 class="organization-profile-projects-title">{{ 'Projects'|t }}</h2>
-      {{ projects }}
-    </section>
-  {% endif %}
+  {% include '@yv/user/includes/user-profile-views.html.twig' with {user_id: user.id, projects_view: 'organization_projects'} only %}
 </article>

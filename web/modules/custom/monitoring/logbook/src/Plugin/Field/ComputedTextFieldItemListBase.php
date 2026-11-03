@@ -25,6 +25,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
     'supervisor' => 'Supervisorin',
     'administrator' => 'Administratorin',
     'creative' => 'Kreative',
+    'platform' => 'Plattform',
   ];
 
   /**
@@ -42,7 +43,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
 
       $simple_token_replacer = \Drupal::service('youvo.token_replacer');
 
-      // Replace and validate tokens in text.
       $text = $this->getText($pattern);
       $tokens = $pattern->getTokens();
       $simple_token_replacer->populateReplacements($this->getReplacements(), $tokens);
@@ -51,7 +51,6 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
       /** @var \Drupal\youvo\Plugin\Field\FieldType\CacheableStringItem $item */
       $item = $this->createItem(0, $text);
 
-      // Add cache dependencies.
       $item->getValueProperty()->addCacheableDependency($log)
         ->addCacheableDependency($pattern)
         ->addCacheableDependency($log->getOwner());
@@ -85,7 +84,7 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   abstract protected function getReplacements(): array;
 
   /**
-   * Concatinates creative names.
+   * Concatenates creative names.
    *
    * @todo Use fake translation here. It could be handled by interface
    *   translation in the future.
@@ -142,6 +141,15 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
   }
 
   /**
+   * Whether the log has an author, other than the anonymous user.
+   */
+  protected function hasAuthor(): bool {
+    /** @var \Drupal\logbook\LogInterface $log */
+    $log = $this->getEntity();
+    return !$log->getOwner()->isAnonymous();
+  }
+
+  /**
    * Returns the role of the author with respect to the project.
    */
   protected function authorRole(): string {
@@ -149,6 +157,11 @@ abstract class ComputedTextFieldItemListBase extends FieldItemList {
     $log = $this->getEntity();
     $author = $log->getOwner();
     $project = $log->getProject();
+
+    // Logs written without a user, such as by cron, come from the platform.
+    if (!$this->hasAuthor()) {
+      return 'platform';
+    }
 
     if (Profile::isOrganization($author)) {
       return 'organization';

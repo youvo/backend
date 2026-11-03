@@ -508,8 +508,8 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $html = $this->renderPage();
 
     // Cells: tone pill, escaped message, visibility icons.
-    $this->assertStringContainsString('logbook-type--positive', $html);
-    $this->assertStringContainsString('logbook-event__message', $html);
+    $this->assertStringContainsString('class="logbook-type" data-tone="positive"', $html);
+    $this->assertStringContainsString('logbook-event-message', $html);
     $this->assertStringContainsString('Hello &lt;b&gt;world&lt;/b&gt;', $html);
     // The visibility column has an accessible name, but no visible title.
     $this->assertStringContainsString('Sichtbarkeit</th>', $html);
@@ -520,7 +520,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $icons = [];
     foreach ($rows[0] as $row) {
       if (preg_match('/logbook-type[^>]*>([^<]+)</', $row, $type)) {
-        preg_match_all('/logbook-icon--(\w+)/', $row, $found);
+        preg_match_all('/data-icon="(\w+)"/', $row, $found);
         $icons[$type[1]] = $found[1];
       }
     }
@@ -531,14 +531,14 @@ class LogbookViewTest extends LogbookKernelTestBase {
     $this->assertStringNotContainsString('Sort ascending', $html);
     $this->assertStringNotContainsString('order=created', $html);
     // Only a celebrate pattern colors the row.
-    $this->assertStringNotContainsString('logbook-row--celebrate', $html);
+    $this->assertStringNotContainsString('logbook-row-celebrate', $html);
 
     $this->createLog('project_complete', ['created' => 400]);
     $view = Views::getView('logbook');
     $view->setDisplay('page_1');
     $render = $view->buildRenderable('page_1');
     $html = (string) $this->container->get('renderer')->renderInIsolation($render);
-    $this->assertSame(1, substr_count($html, 'logbook-row--celebrate'));
+    $this->assertSame(1, substr_count($html, 'logbook-row-celebrate'));
     $this->assertContains('logbook/table', $render['#attached']['library'] ?? []);
     // Editing a log pattern invalidates the rendered list.
     $this->assertContains('config:log_pattern_list', $render['#cache']['tags'] ?? []);
@@ -547,7 +547,7 @@ class LogbookViewTest extends LogbookKernelTestBase {
     // An archived log shows the archive icon instead of its visibility.
     $this->createLog('project_publish', ['created' => 100])->setArchived()->save();
     $html = $this->renderPage([], ['view observable log', 'view archived log']);
-    preg_match_all('/logbook-icon--(\w+)/', $html, $found);
+    preg_match_all('/data-icon="(\w+)"/', $html, $found);
     $this->assertSame(['archive'], $found[1]);
   }
 
