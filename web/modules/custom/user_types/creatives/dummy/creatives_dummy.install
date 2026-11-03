@@ -14,7 +14,6 @@ use Drupal\creatives\Event\CreativeRegisterEvent;
 use Drupal\logbook\LogInterface;
 use Drupal\user\Entity\User;
 use Faker\Factory;
-use Faker\Generator;
 
 /**
  * Implements hook_install().
@@ -41,6 +40,8 @@ function creatives_dummy_generate_content(): void {
     'Fachhochschule',
     'Universität',
   ];
+
+  $tags = creatives_dummy_create_tags();
 
   // Iterate some dummy creatives.
   for ($i = 1; $i <= 31; $i++) {
@@ -83,7 +84,10 @@ function creatives_dummy_generate_content(): void {
       'field_name' => $firstname . ' ' . $faker->lastName(),
       'field_position' => $faker->optional(0.8)->jobTitle(),
       'field_about' => $faker->optional(0.9)->text(400),
-      'field_skills' => youvo_dummy_get_random_skills(),
+      'field_skills' => $skills = youvo_dummy_get_random_skills(),
+      // Set on creation: a second save makes filefield_paths log a notice for
+      // the attached avatar.
+      'field_tags' => creatives_dummy_pick_tags($tags, $skills, $i),
       'field_portfolio' => $portfolio,
       'field_phone' => $faker->optional()->phoneNumber(),
       // Drawn in place, so the seeded content after it stays the same.
@@ -107,9 +111,6 @@ function creatives_dummy_generate_content(): void {
     }
   }
 
-  // Drawn after the creatives, so their seeded content stays the same.
-  creatives_dummy_tag_creatives($faker);
-
   // Delete user with ID 14 for legacy user.
   try {
     if ($account = \Drupal::entityTypeManager()
@@ -125,9 +126,12 @@ function creatives_dummy_generate_content(): void {
 }
 
 /**
- * Creates tags per skill and tags the creatives with those of their skills.
+ * Creates tags per skill.
+ *
+ * @return array
+ *   The tag IDs keyed by skill ID.
  */
-function creatives_dummy_tag_creatives(Generator $faker): void {
+function creatives_dummy_create_tags(): array {
 
   // Tags by skill ID, see youvo_site_install_finished().
   $names = [
@@ -139,9 +143,9 @@ function creatives_dummy_tag_creatives(Generator $faker): void {
     6 => ['portraits', 'eventfotografie', 'lightroom', 'reportage'],
   ];
 
+  $tags = [];
   try {
     $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
-    $tags = [];
     foreach ($names as $skill_id => $skill_names) {
       foreach ($skill_names as $name) {
         $tag = $term_storage->create([
@@ -154,30 +158,32 @@ function creatives_dummy_tag_creatives(Generator $faker): void {
         $tags[$skill_id][] = $tag->id();
       }
     }
-
-    $creative_ids = \Drupal::entityQuery('user')
-      ->accessCheck(FALSE)
-      ->condition('roles', 'creative')
-      ->sort('uid')
-      ->execute();
-    foreach (Creative::loadMultiple($creative_ids) as $creative) {
-      $candidates = [];
-      foreach (array_column($creative->get('field_skills')->getValue(), 'target_id') as $skill_id) {
-        $candidates = array_merge($candidates, $tags[$skill_id] ?? []);
-      }
-      if (!$candidates || !$faker->boolean(80)) {
-        continue;
-      }
-      $picked = $faker->randomElements($candidates, $faker->numberBetween(1, min(6, count($candidates))));
-      $creative->set('field_tags', $picked);
-      $creative->save();
-    }
   }
   catch (InvalidPluginDefinitionException | PluginNotFoundException | EntityStorageException $e) {
     $variables = Error::decodeException($e);
     \Drupal::logger('youvo')
-      ->error('An error occurred while tagging dummy creatives. %type: @message in %function (line %line of %file).', $variables);
+      ->error('An error occurred while creating dummy tags. %type: @message in %function (line %line of %file).', $variables);
   }
+  return $tags;
+}
+
+/**
+ * Picks up to four tags of the skills of the nth creative.
+ *
+ * Picked by position, not at random: Faker seeds PHP's global random
+ * generator, so an extra draw would change every creative after this one.
+ */
+function creatives_dummy_pick_tags(array $tags, array $skills, int $n): array {
+  $candidates = [];
+  foreach (array_column($skills, 'target_id') as $skill_id) {
+    $candidates = array_merge($candidates, $tags[$skill_id] ?? []);
+  }
+  if (!$candidates) {
+    return [];
+  }
+  $offset = $n % count($candidates);
+  $rotated = array_merge(array_slice($candidates, $offset), array_slice($candidates, 0, $offset));
+  return array_slice($rotated, 0, $n % 5);
 }
 
 /**
