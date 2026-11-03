@@ -66,6 +66,16 @@ function yv_preprocess_page_title(array &$variables): void {
 function yv_preprocess_user(array &$variables): void {
 
   $user = $variables['elements']['#user'];
+
+  if ($user instanceof Organization && $variables['elements']['#view_mode'] === 'teaser') {
+    $access = $user->access('view', NULL, TRUE);
+    $variables['url'] = $access->isAllowed() && !$user->isNew() ? $user->toUrl()->toString() : NULL;
+    $variables['initials'] = yv_initials($user->getName());
+    $variables['teaser_cache'] = [];
+    CacheableMetadata::createFromObject($access)->applyTo($variables['teaser_cache']);
+    return;
+  }
+
   if ($variables['elements']['#view_mode'] !== 'full' ||
     !($user instanceof Organization || $user instanceof Creative)) {
     return;
@@ -78,10 +88,6 @@ function yv_preprocess_user(array &$variables): void {
     $value = $access->isAllowed() ? trim((string) $user->get($field_name)->value) : '';
     return $value !== '' ? $value : NULL;
   };
-  $initials = static fn (?string $name): string => implode('', array_map(
-    static fn (string $word): string => mb_strtoupper(mb_substr($word, 0, 1)),
-    array_slice(preg_grep('/^\p{L}/u', preg_split('/\s+/', (string) $name)), 0, 2),
-  ));
 
   // Only http(s) values become links, so other schemes are shown as text.
   $links = [];
@@ -109,7 +115,7 @@ function yv_preprocess_user(array &$variables): void {
   $phone = $value('field_phone');
   $profile = [
     'name' => $name,
-    'initials' => $initials($name),
+    'initials' => yv_initials($name),
     'links' => $links,
     'mail' => $value('mail'),
     'phone' => $phone,
@@ -121,7 +127,7 @@ function yv_preprocess_user(array &$variables): void {
     $profile += [
       'short_name' => $value('field_short_name'),
       'contact' => $contact,
-      'contact_initials' => $initials($contact),
+      'contact_initials' => yv_initials($contact),
       'address' => array_filter([
         $value('field_street'),
         trim($value('field_zip') . ' ' . $value('field_city')),
@@ -175,14 +181,12 @@ function yv_preprocess_user(array &$variables): void {
       ->condition('field_manager', $user->id())
       ->sort('field_name')
       ->execute();
+    $view_builder = $entity_type_manager->getViewBuilder('user');
     foreach (Organization::loadMultiple($organization_ids) as $organization) {
       $access = $organization->access('view', NULL, TRUE);
       $cache->addCacheableDependency($access)->addCacheableDependency($organization);
       if ($access->isAllowed()) {
-        $organizations[] = [
-          'name' => $organization->getName(),
-          'url' => $organization->toUrl()->toString(),
-        ];
+        $organizations[] = $view_builder->view($organization, 'teaser');
       }
     }
     $profile['organizations'] = $organizations;
@@ -354,4 +358,14 @@ function yv_preprocess_project(array &$variables): void {
 
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
+}
+
+/**
+ * Gets the initials of the first two words of a name.
+ */
+function yv_initials(?string $name): string {
+  return implode('', array_map(
+    static fn (string $word): string => mb_strtoupper(mb_substr($word, 0, 1)),
+    array_slice(preg_grep('/^\p{L}/u', preg_split('/\s+/', (string) $name)), 0, 2),
+  ));
 }

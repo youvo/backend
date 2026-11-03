@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Teaser of an organization: avatar and name.
+ */
+#}
+{{ teaser_cache }}
+<article class="organization-teaser">
+  <div class="organization-teaser-avatar">
+    {% if content.field_avatar|field_value %}
+      {{ content.field_avatar|field_value }}
+    {% else %}
+      <span aria-hidden="true">{{ initials }}</span>
+    {% endif %}
+  </div>
+  <h3 class="organization-teaser-name">
+    {% if url %}
+      <a href="{{ url }}">{{ content.field_name|field_value }}</a>
+    {% else %}
+      {{ content.field_name|field_value }}
+    {% endif %}
+  </h3>
+</article>

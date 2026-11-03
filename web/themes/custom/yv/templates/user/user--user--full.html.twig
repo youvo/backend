@@ -64,9 +64,9 @@
     {% if profile.organizations %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Managed organizations'|t }}</h2>
-        <ul class="user-profile-tags">
+        <ul class="user-profile-organizations">
           {% for organization in profile.organizations %}
-            <li><a class="user-profile-link" href="{{ organization.url }}">{{ organization.name }}</a></li>
+            <li>{{ organization }}</li>
           {% endfor %}
         </ul>
       </section>
