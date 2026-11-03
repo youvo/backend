@@ -13,7 +13,7 @@
   --logbook-outline: var(--gin-border-color, #d4d4d8);
   --logbook-field-line: var(--gin-border-color-form-element, #8e929c);
   --logbook-chip: color-mix(in srgb, var(--logbook-accent) 15%, var(--logbook-surface));
-  --logbook-radius-m: var(--gin-border-m, 0.5rem);
+  --logbook-radius-s: var(--gin-border-s, 0.375rem);
   --logbook-text-xs: var(--gin-font-size-xs, small);
   --logbook-green: var(--gin-color-green, #26a769);
   --logbook-yellow: var(--gin-color-warning, #d8b234);
@@ -343,8 +343,8 @@
 /* Type pill: a neutral chip, mixed with the tone of the pattern. */
 .logbook-type {
   display: inline-block;
-  padding: 0.2em 0.8em;
-  border-radius: var(--logbook-radius-m, 0.5rem);
+  padding: 0.15em 0.65em;
+  border-radius: var(--logbook-radius-s, 0.375rem);
   background: var(--logbook-chip, #e8eef6);
   font-size: var(--logbook-text-xs, small);
   font-weight: 600;
