@@ -2,3 +2,10 @@ style:
   css:
     theme:
       dist/style.css: {}
+
+ajax:
+  js:
+    js/ajax.js: {}
+  dependencies:
+    - core/drupal
+    - claro/ajax

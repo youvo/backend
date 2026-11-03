@@ -1,0 +1,77 @@
+uuid: 581bbba4-fcfe-4b6d-b575-9cd7881b3f10
+langcode: de
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.project.teaser
+    - field.field.project.project.body
+    - field.field.project.project.field_allowance
+    - field.field.project.project.field_applicants
+    - field.field.project.project.field_appreciation
+    - field.field.project.project.field_city
+    - field.field.project.project.field_contact
+    - field.field.project.project.field_deadline
+    - field.field.project.project.field_image
+    - field.field.project.project.field_image_copyright
+    - field.field.project.project.field_lifecycle
+    - field.field.project.project.field_lifecycle_history
+    - field.field.project.project.field_local
+    - field.field.project.project.field_material
+    - field.field.project.project.field_participants
+    - field.field.project.project.field_participants_tasks
+    - field.field.project.project.field_skills
+    - field.field.project.project.field_workload
+    - image.style.teaser
+  module:
+    - image
+    - options
+    - projects
+id: project.project.teaser
+targetEntityType: project
+bundle: project
+mode: teaser
+content:
+  field_image:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: teaser
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_lifecycle:
+    type: list_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_skills:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: icon
+      link: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  body: true
+  field_allowance: true
+  field_applicants: true
+  field_appreciation: true
+  field_city: true
+  field_contact: true
+  field_deadline: true
+  field_image_copyright: true
+  field_lifecycle_history: true
+  field_local: true
+  field_material: true
+  field_participants: true
+  field_participants_tasks: true
+  field_workload: true
+  langcode: true
+

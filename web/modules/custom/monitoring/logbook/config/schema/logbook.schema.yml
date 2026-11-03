@@ -65,6 +65,18 @@ views.filter.logbook_search:
         type: string
         label: 'Token'
 
+views.argument.logbook_involves:
+  type: views.argument.numeric
+  label: 'Logbook: Involves'
+
+views.pager.logbook_load_more:
+  type: views_pager_sql
+  label: 'Logbook: Load more'
+  mapping:
+    step:
+      type: integer
+      label: 'Items loaded with each click'
+
 views.cache.logbook_tag:
   type: views.cache.tag
   label: 'Logbook tags'

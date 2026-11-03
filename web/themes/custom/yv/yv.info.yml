@@ -7,6 +7,10 @@ core_version_requirement: ^11
 libraries:
   - yv/style
 
+libraries-extend:
+  core/drupal.ajax:
+    - yv/ajax
+
 regions:
   header: 'Header'
   pre_content: 'Pre-content'
