@@ -252,12 +252,12 @@ class LogbookProjectChangeTest extends ExistingSiteBase {
 
     $markup = (string) $log->get('markup')->value;
     $this->assertStringContainsString('bearbeitet: Project Title, City.', $markup);
-    $this->assertStringContainsString('/projects/' . $project->id() . '/revisions/' . $project->getRevisionId() . '/view', $markup);
+    $this->assertStringContainsString('/projects/' . $project->id() . '#revision-' . $project->getRevisionId(), $markup);
 
     $processed = (string) $log->get('processed')->value;
     $this->assertStringNotContainsString('%Changes', $processed);
     $this->assertStringNotContainsString('%Diff', $processed);
-    $this->assertStringNotContainsString('/revisions/', $processed);
+    $this->assertStringNotContainsString('#revision-', $processed);
   }
 
   /**

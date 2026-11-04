@@ -60,10 +60,9 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
       $replacements['%Changes'] = implode(', ', $labels);
     }
     if ($project && !empty($misc['revision_id'])) {
-      $replacements['%Diff'] = Link::createFromRoute(new TranslatableMarkup('Änderungen ansehen'), 'entity.project.revision', [
-        'project' => $project->id(),
-        'project_revision' => $misc['revision_id'],
-      ])->toString();
+      // The changes card on the project page opens at this revision.
+      $url = $project->toUrl('canonical', ['fragment' => 'revision-' . $misc['revision_id']]);
+      $replacements['%Diff'] = Link::fromTextAndUrl(new TranslatableMarkup('Änderungen ansehen'), $url)->toString();
     }
 
     if ($creatives = $log->getCreatives()) {
