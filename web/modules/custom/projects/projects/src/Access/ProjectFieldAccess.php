@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\Routing\ProjectHtmlRouteProvider;
 use Drupal\youvo\Utility\FieldAccess;
@@ -218,6 +219,7 @@ class ProjectFieldAccess extends FieldAccess {
     if ($operation === 'view' &&
       $field->getName() === self::LIFECYCLE_HISTORY_FIELD &&
       $account->hasPermission('general manager access') &&
+      $entity->getOwner() instanceof Organization &&
       $entity->getOwner()->isManager($account)
     ) {
       return AccessResult::neutral()

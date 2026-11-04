@@ -3,8 +3,9 @@
  * @file
  * Full view of a project in the backend, in the layout of the profiles.
  *
- * The plain values in "project_page" come from yv_preprocess_project_full()
- * and are set only when the viewer may see the field.
+ * The plain fields come from the full display in "content". The values in
+ * "project_page" come from yv_preprocess_project_full(), for what the display
+ * cannot show, and are set only when the viewer may see the fields.
  */
 #}
 {% import _self as macros %}
@@ -35,9 +36,9 @@
 <article class="project-page">
   <div class="project-page-main">
     <section class="project-page-card project-page-intro">
-      {% if page.image %}
+      {% if content.field_image|field_value %}
         <figure class="project-page-image">
-          {{ page.image|field_value }}
+          {{ content.field_image|field_value }}
         </figure>
       {% endif %}
 
@@ -50,8 +51,8 @@
             <p class="project-page-organization">{{ page.organization.name }}</p>
           {% endif %}
           {# The badges reuse the colors of the project teasers. #}
-          <ul class="project-page-badges">
-            <li><span class="project-teaser-badge" data-badge="{{ page.state|clean_class }}">{{ page.state_label }}</span></li>
+          <ul class="project-page-badges" aria-label="{{ 'Project status'|t }}">
+            <li><span class="project-teaser-badge" data-badge="{{ page.state|clean_class }}">{{ content.field_lifecycle|field_value }}</span></li>
             {% if page.archived %}
               <li><span class="project-teaser-badge" data-badge="archived">{{ 'Archived'|t }}</span></li>
             {% endif %}
@@ -68,12 +69,19 @@
           <p class="project-page-summary">{{ page.summary }}</p>
         {% endif %}
 
-        {% if page.skills %}
-          <div class="project-page-skills">{{ page.skills|field_value }}</div>
+        {% if content.field_skills|field_value %}
+          <div class="project-page-skills">{{ content.field_skills|field_value }}</div>
         {% endif %}
 
-        {% if page.facts %}
+        {% set deadline = content.field_deadline|field_value %}
+        {% if deadline or page.facts %}
           <dl class="project-page-facts">
+            {% if deadline %}
+              <div>
+                <dt>{{ 'Deadline'|t }}</dt>
+                <dd>{{ deadline }}</dd>
+              </div>
+            {% endif %}
             {% for fact in page.facts %}
               <div>
                 <dt>{{ fact.label }}</dt>
@@ -85,32 +93,20 @@
       </div>
     </section>
 
-    {% if page.body or page.appreciation or page.material or page.allowance %}
+    {% set sections = [
+      {title: 'Briefing'|t, value: content.body|field_value, class: 'project-page-text'},
+      {title: 'Appreciation'|t, value: content.field_appreciation|field_value, class: 'project-page-plain'},
+      {title: 'Material'|t, value: content.field_material|field_value, class: 'project-page-plain'},
+      {title: 'Allowance'|t, value: content.field_allowance|field_value, class: 'project-page-plain'},
+    ]|filter(section => section.value) %}
+    {% if sections %}
       <div class="project-page-card project-page-content">
-        {% if page.body %}
+        {% for section in sections %}
           <section>
-            <h2 class="project-page-section-title">{{ 'Briefing'|t }}</h2>
-            <div class="project-page-text">{{ page.body }}</div>
+            <h2 class="project-page-section-title">{{ section.title }}</h2>
+            <div class="{{ section.class }}">{{ section.value }}</div>
           </section>
-        {% endif %}
-        {% if page.appreciation %}
-          <section>
-            <h2 class="project-page-section-title">{{ 'Appreciation'|t }}</h2>
-            <p class="project-page-plain">{{ page.appreciation }}</p>
-          </section>
-        {% endif %}
-        {% if page.material %}
-          <section>
-            <h2 class="project-page-section-title">{{ 'Material'|t }}</h2>
-            <p class="project-page-plain">{{ page.material }}</p>
-          </section>
-        {% endif %}
-        {% if page.allowance %}
-          <section>
-            <h2 class="project-page-section-title">{{ 'Allowance'|t }}</h2>
-            <p class="project-page-plain">{{ page.allowance }}</p>
-          </section>
-        {% endif %}
+        {% endfor %}
       </div>
     {% endif %}
 
@@ -178,9 +174,22 @@
     <section class="project-page-side-section">
       <h2 class="project-page-section-title">{{ 'Details'|t }}</h2>
       <dl class="project-page-details">
-        {% for detail in page.details %}
-          <div><dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd></div>
+        <div><dt>{{ 'State'|t }}</dt><dd>{{ content.field_lifecycle|field_value }}</dd></div>
+        <div><dt>{{ 'Status'|t }}</dt><dd>{{ page.archived ? 'Archived'|t : 'Active'|t }}</dd></div>
+        {% for reason in page.reasons %}
+          <div><dt>{{ reason.label }}</dt><dd>{{ reason.value }}</dd></div>
         {% endfor %}
+        <div><dt>{{ 'Hidden'|t }}</dt><dd>{{ page.hidden ? 'Yes'|t : 'No'|t }}</dd></div>
+        <div><dt>{{ 'Promoted'|t }}</dt><dd>{{ page.promoted ? 'Yes'|t : 'No'|t }}</dd></div>
+        {% if content.langcode|field_value %}
+          <div><dt>{{ 'Language'|t }}</dt><dd>{{ content.langcode|field_value }}</dd></div>
+        {% endif %}
+        {% if page.created %}
+          <div><dt>{{ 'Created'|t }}</dt><dd>{{ page.created }}</dd></div>
+        {% endif %}
+        {% if page.changed %}
+          <div><dt>{{ 'Changed'|t }}</dt><dd>{{ page.changed }}</dd></div>
+        {% endif %}
       </dl>
     </section>
 
@@ -219,7 +228,7 @@
           {% for item in page.feedback %}
             <div>
               <dt>{{ item.name }}</dt>
-              <dd><a href="{{ item.url }}">{{ item.date }}<span class="visually-hidden">: {{ 'feedback by @name'|t({'@name': item.name}) }}</span></a></dd>
+              <dd><a href="{{ item.url }}">{{ item.date }}<span class="visually-hidden">: {{ 'Feedback'|t }}</span></a></dd>
             </div>
           {% endfor %}
         </dl>

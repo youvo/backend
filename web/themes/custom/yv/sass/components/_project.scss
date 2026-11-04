@@ -182,11 +182,9 @@
 
 // stylelint-enable selector-class-pattern
 
-// Line breaks of the text show.
+// The plain text fields, whose formatter turns line breaks into <br>.
 .project-page-plain {
-  margin: 0;
   line-height: 1.6;
-  white-space: pre-line;
 }
 
 // The results as small cards with a preview: the image, or the type of the

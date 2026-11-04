@@ -125,6 +125,37 @@ class ProjectPageTest extends ProjectResourceTestBase {
   }
 
   /**
+   * The result shows only once the project is completed.
+   */
+  public function testResultOnlyWhenCompleted(): void {
+
+    $project = $this->createProject(ProjectState::Ongoing);
+    $project->getResult()->setLinks([['value' => 'https://example.org/draft', 'weight' => 0]])->save();
+    $this->container->get('current_user')->setAccount(User::load(1));
+    $this->assertStringNotContainsString('project-page-results', $this->renderProject($this->reloadProject($project)));
+
+    $project->set('field_lifecycle', ProjectState::Completed->value)->save();
+    $this->assertStringContainsString('example.org/draft', $this->renderProject($this->reloadProject($project)));
+  }
+
+  /**
+   * A project of an administrator, not an organization, renders for managers.
+   */
+  public function testAdministratorOwner(): void {
+
+    $project = $this->createProject(ProjectState::Draft);
+    $administrator = $this->createCreative();
+    // The site's administrator role holds every permission.
+    $administrator->addRole('administrator')->save();
+    $project->set('uid', $administrator->id())->save();
+
+    $this->container->get('current_user')->setAccount($this->createManager());
+    $html = $this->renderProject($this->reloadProject($project));
+    $this->assertStringContainsString('project-page-title', $html);
+    $this->assertStringNotContainsString('>Lifecycle<', $html);
+  }
+
+  /**
    * Renders the full view of a project.
    */
   protected function renderProject(ProjectInterface $project): string {

@@ -9,6 +9,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
@@ -94,7 +95,10 @@ function yv_preprocess_user(array &$variables): void {
     return;
   }
 
+  // The plain fields come from the full display in "content"; the values
+  // here are what the display cannot show.
   $cache = new CacheableMetadata();
+  yv_content_cache($variables['content'], $cache);
   $value = static function (string $field_name) use ($user, $cache): ?string {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
     $cache->addCacheableDependency($access);
@@ -132,7 +136,6 @@ function yv_preprocess_user(array &$variables): void {
   $name = $value('field_name');
   $phone = $value('field_phone');
   $profile = [
-    'name' => $name,
     'initials' => yv_initials($name),
     'avatar' => yv_avatar($user, $cache),
     'links' => $links,
@@ -142,11 +145,11 @@ function yv_preprocess_user(array &$variables): void {
   ];
 
   if ($user instanceof Organization) {
-    $contact = $value('field_contact');
+    $short_name = $value('field_short_name');
     $profile += [
-      'short_name' => $value('field_short_name'),
-      'contact' => $contact,
-      'contact_initials' => yv_initials($contact),
+      // Only a short name that differs from the name says something.
+      'short_name' => $short_name !== $name ? $short_name : NULL,
+      'contact_initials' => yv_initials($value('field_contact')),
       'address' => array_filter([
         $value('field_street'),
         trim($value('field_zip') . ' ' . $value('field_city')),
@@ -211,12 +214,6 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   if ($user instanceof Creative) {
-    $profile += [
-      'position' => $value('field_position'),
-      'education' => $value('field_education'),
-      'city' => $value('field_city'),
-    ];
-
     $preferences = [];
     foreach ([
       'field_jobs' => t('Job offers'),
@@ -458,55 +455,50 @@ function yv_preprocess_project(array &$variables): void {
 /**
  * Prepares the full view of a project, its page in the backend.
  *
- * As on the profiles, the template prints plain values, each set only when
- * the viewer may see its field. The cacheability bubbles up through
+ * The plain fields come from the full display in "content". Here are only
+ * the values the display cannot provide, each set only when the viewer may
+ * see its fields, as on the profiles. The cacheability bubbles up through
  * project_cache.
  */
 function yv_preprocess_project_full(array &$variables, ProjectInterface $project): void {
 
   $cache = CacheableMetadata::createFromObject($project);
+  yv_content_cache($variables['content'], $cache);
   $states = yv_project_states($project, $cache);
-  $state = (string) $project->get('field_lifecycle')->value;
 
   $page = [
     'title' => $project->getTitle(),
-    'state' => $state,
-    'state_label' => $states[$state] ?? $state,
+    // The raw state for the color of the badge, whose label is the field.
+    'state' => (string) $project->get('field_lifecycle')->value,
     'archived' => !$project->isPublished(),
     'hidden' => $project->isHidden(),
     'promoted' => $project->isPromoted(),
-    'image' => yv_field_shows($project, 'field_image', $cache) ? $project->get('field_image')->view([
-      'label' => 'hidden',
-      'type' => 'image',
-      // A style that image_style_warmer generates up front.
-      'settings' => ['image_style' => 'content'],
-    ]) : NULL,
+    // The display shows the body, the summary is its own value.
     'summary' => yv_field_shows($project, 'body', $cache) ? trim((string) $project->get('body')->summary) ?: NULL : NULL,
-    'body' => yv_field_shows($project, 'body', $cache) ? $project->get('body')->view([
-      'label' => 'hidden',
-      'type' => 'text_default',
-    ]) : NULL,
-    'appreciation' => yv_field_value($project, 'field_appreciation', $cache),
-    'material' => yv_field_value($project, 'field_material', $cache),
-    'allowance' => yv_field_shows($project, 'field_allowance', $cache)
-      ? ($project->get('field_allowance')->value ? t('Yes') : t('No'))
-      : NULL,
-    'skills' => yv_field_shows($project, 'field_skills', $cache) ? $project->get('field_skills')->view([
-      'label' => 'hidden',
-      'type' => 'entity_reference_entity_view',
-      'settings' => ['view_mode' => 'icon'],
-    ]) : NULL,
     'facts' => yv_project_facts($project, $cache),
   ];
   $page += yv_project_people($project, $cache);
   $page += yv_project_result($project, $cache);
-  $page['details'] = yv_project_details($project, $page, $cache);
+  $page += yv_project_details($project, $page, $cache);
   $page['history'] = yv_project_history($project, $states, $cache);
   $page['feedback'] = yv_project_feedback($project, $cache);
 
   $variables['project_page'] = $page;
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
+}
+
+/**
+ * Collects the cacheability of the fields of a display.
+ *
+ * A template that prints single fields, and not the whole content, would
+ * lose the cacheability of the fields it leaves out, such as the access
+ * result of a field the viewer may not see.
+ */
+function yv_content_cache(array $content, CacheableMetadata $cache): void {
+  foreach (Element::children($content) as $key) {
+    $cache->addCacheableDependency(CacheableMetadata::createFromRenderArray($content[$key]));
+  }
 }
 
 /**
@@ -605,14 +597,11 @@ function yv_project_task_label(string $task): ?string {
 }
 
 /**
- * Gets the key facts below the title, as on the project page of the frontend.
+ * Gets the workload and the location, the facts the display cannot show.
  */
 function yv_project_facts(ProjectInterface $project, CacheableMetadata $cache): array {
+  // The deadline comes from the display.
   $facts = [];
-  if (yv_field_shows($project, 'field_deadline', $cache)) {
-    $deadline = $project->get('field_deadline')->date;
-    $facts['deadline'] = ['label' => t('Deadline'), 'value' => $deadline?->format('d.m.Y')];
-  }
   $workload = (float) yv_field_value($project, 'field_workload', $cache);
   if ($workload > 0) {
     $days = (string) $workload;
@@ -657,10 +646,13 @@ function yv_project_people(ProjectInterface $project, CacheableMetadata $cache):
   }
 
   if (yv_field_shows($project, 'field_participants', $cache)) {
+    // The tasks have their own access, which can be stricter.
+    $tasks = yv_field_shows($project, 'field_participants_tasks', $cache);
     foreach ($project->getParticipants() as $participant) {
       if ($participant instanceof Creative) {
         // @phpstan-ignore-next-line
-        $people['participants'][] = yv_person($participant, yv_project_task_label((string) $participant->task), $cache);
+        $role = $tasks ? yv_project_task_label((string) $participant->task) : NULL;
+        $people['participants'][] = yv_person($participant, $role, $cache);
       }
     }
   }
@@ -682,8 +674,10 @@ function yv_project_people(ProjectInterface $project, CacheableMetadata $cache):
  */
 function yv_project_result(ProjectInterface $project, CacheableMetadata $cache): array {
 
+  // The result belongs to a completed project. Its field is viewable in every
+  // state, so the state is checked here.
   $none = ['result' => [], 'lightbox' => FALSE];
-  if (!yv_field_shows($project, 'project_result', $cache)) {
+  if (!$project->lifecycle()->isCompleted() || !yv_field_shows($project, 'project_result', $cache)) {
     return $none;
   }
   $result = $project->get('project_result')->entity;
@@ -741,12 +735,18 @@ function yv_project_result(ProjectInterface $project, CacheableMetadata $cache):
     if ($link === '') {
       continue;
     }
+    // A value without an address, such as "https://www.", is left out, as on
+    // the profiles.
+    $name = rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/');
+    if ($name === '') {
+      continue;
+    }
     // Only http(s) values become links, as on the profiles.
     $url = preg_match('{^https?://}i', $link) ? Url::fromUri($link) : NULL;
     $items[] = [
       'weight' => (int) ($value['weight'] ?? 0),
       'url' => $url?->toString(),
-      'name' => rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/'),
+      'name' => $name,
       'description' => trim((string) ($value['description'] ?? '')),
       'preview' => NULL,
       'type' => (string) t('Link'),
@@ -779,7 +779,7 @@ function yv_project_result(ProjectInterface $project, CacheableMetadata $cache):
 }
 
 /**
- * Gets the details in the sidebar.
+ * Gets the details in the sidebar that the display cannot show.
  *
  * @param \Drupal\projects\ProjectInterface $project
  *   The project.
@@ -789,34 +789,27 @@ function yv_project_result(ProjectInterface $project, CacheableMetadata $cache):
  *   The cacheability of the page.
  *
  * @return array
- *   The details, each with label and value.
+ *   The reasons of a decline or the archiving, each with label and value,
+ *   and the created and changed dates.
  */
 function yv_project_details(ProjectInterface $project, array $page, CacheableMetadata $cache): array {
 
-  $details = [
-    ['label' => t('State'), 'value' => $page['state_label']],
-    ['label' => t('Status'), 'value' => $page['archived'] ? t('Archived') : t('Active')],
-  ];
+  $details = ['reasons' => [], 'created' => NULL, 'changed' => NULL];
 
   /** @var \Drupal\logbook\ProjectReasons $reasons */
   $reasons = \Drupal::service('logbook.project_reasons');
   if ($page['state'] === 'declined' && $reason = $reasons->getDeclineReason($project, $cache)) {
-    $details[] = ['label' => t('Decline reason'), 'value' => $reason->label()];
+    $details['reasons'][] = ['label' => t('Decline reason'), 'value' => $reason->label()];
   }
   if ($page['archived'] && $reason = $reasons->getArchiveReason($project, $cache)) {
-    $details[] = ['label' => t('Archive reason'), 'value' => $reason->label()];
+    $details['reasons'][] = ['label' => t('Archive reason'), 'value' => $reason->label()];
   }
 
-  $details[] = ['label' => t('Hidden'), 'value' => $page['hidden'] ? t('Yes') : t('No')];
-  $details[] = ['label' => t('Promoted'), 'value' => $page['promoted'] ? t('Yes') : t('No')];
-  if (yv_field_shows($project, 'langcode', $cache)) {
-    $details[] = ['label' => t('Language'), 'value' => $project->language()->getName()];
-  }
+  // The dates are base fields without a configurable display.
   $date_formatter = \Drupal::service('date.formatter');
-  foreach (['created' => t('Created'), 'changed' => t('Changed')] as $field_name => $label) {
+  foreach (['created', 'changed'] as $field_name) {
     if (yv_field_shows($project, $field_name, $cache)) {
-      $timestamp = (int) $project->get($field_name)->value;
-      $details[] = ['label' => $label, 'value' => $date_formatter->format($timestamp, 'custom', 'd.m.Y')];
+      $details[$field_name] = $date_formatter->format((int) $project->get($field_name)->value, 'custom', 'd.m.Y');
     }
   }
   return $details;

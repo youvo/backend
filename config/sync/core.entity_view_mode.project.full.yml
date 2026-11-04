@@ -1,0 +1,12 @@
+uuid: cf0b4e9b-722d-4194-b61c-dbaad9edaced
+langcode: de
+status: true
+dependencies:
+  module:
+    - projects
+id: project.full
+label: Full
+description: 'The project page in the backend, built by the yv theme.'
+targetEntityType: project
+cache: true
+
