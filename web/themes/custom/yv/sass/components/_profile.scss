@@ -20,12 +20,6 @@
   }
 }
 
-// Gin rings every focused element, also after a mouse click. On the profile,
-// only keyboard focus shows the ring.
-.user-profile :focus:not(:focus-visible) {
-  box-shadow: none;
-}
-
 .user-profile-main,
 .user-profile-side {
   @include card;

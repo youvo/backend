@@ -21,11 +21,6 @@
   }
 }
 
-// As on the profiles, only keyboard focus shows Gin's focus ring.
-.project-page :focus:not(:focus-visible) {
-  box-shadow: none;
-}
-
 .project-page-main {
   display: grid;
   gap: var(--gin-spacing-l);

@@ -21,11 +21,6 @@
   }
 }
 
-// As on the profiles, only keyboard focus shows Gin's focus ring.
-.feedback :focus:not(:focus-visible) {
-  box-shadow: none;
-}
-
 .feedback-main {
   display: grid;
   gap: var(--gin-spacing-l);
