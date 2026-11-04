@@ -8,6 +8,15 @@
 
 @use "../abstracts/variables.scss" as *;
 
+// The columns the changes share with the logbook below: the widest date and
+// the widest pill, and the cell padding of the logbook's table. The logbook
+// sizes its columns by their content, so on the project page it gets these
+// widths too, and both lists line up.
+$date-column: 7rem;
+$type-column: 5.25rem;
+$cell-padding: 1rem;
+$link-column: 2.25rem;
+
 // Gin draws the details; it only spans both columns, like the logbook.
 .project-changes {
   min-width: 0;
@@ -71,8 +80,8 @@
   // 1rem padding on each side.
   @media (min-width: $breakpoint-medium) {
     grid-template-areas: "meta type event link";
-    grid-template-columns: 6.75rem 4.25rem minmax(0, 1fr) auto;
-    gap: 0.5rem 2rem;
+    grid-template-columns: $date-column $type-column minmax(0, 1fr) auto;
+    gap: 0.5rem 2 * $cell-padding;
   }
 }
 
@@ -204,4 +213,28 @@
 .project-changes-earlier {
   margin-top: var(--gin-spacing-s);
   font-size: var(--gin-font-size-s);
+}
+
+// The logbook on the project page, in the columns of the changes. Below this
+// width it shows each log as a card of its own.
+@media (min-width: 40.0625rem) {
+  .project-page-wide .view-logbook table {
+    table-layout: fixed;
+  }
+
+  .project-page-wide .view-logbook :is(th, td) {
+    box-sizing: border-box;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-created {
+    width: $date-column + 2 * $cell-padding;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-log-type {
+    width: $type-column + 2 * $cell-padding;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-log-visibility {
+    width: $link-column + $cell-padding;
+  }
 }
