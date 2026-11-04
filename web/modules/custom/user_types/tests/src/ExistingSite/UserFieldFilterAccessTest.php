@@ -41,7 +41,9 @@ class UserFieldFilterAccessTest extends ProjectResourceTestBase {
 
     $manager = $this->createManager();
     $this->assertSame([$creative->uuid()], $this->ids($this->get('/api/users?filter[phone]=' . $phone, $manager)));
-    $this->assertSame([$project->uuid()], $this->ids($this->get('/api/projects' . $participant_filter, $manager)));
+    // The participants themselves are only filterable for supervisors.
+    $supervisor = $this->createSupervisor();
+    $this->assertSame([$project->uuid()], $this->ids($this->get('/api/projects' . $participant_filter, $supervisor)));
 
     // Public fields stay filterable for everyone.
     $response = $this->get('/api/users?filter[id]=' . $creative->uuid() . '&sort=name', NULL);
