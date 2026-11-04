@@ -15,7 +15,6 @@ use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\FileInterface;
 use Drupal\image\ImageStyleInterface;
-use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
@@ -214,19 +213,6 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   if ($user instanceof Creative) {
-    $preferences = [];
-    foreach ([
-      'field_jobs' => t('Job offers'),
-      'field_newsletter' => t('Newsletter'),
-      'field_public_profile' => t('Public profile'),
-    ] as $field_name => $label) {
-      $flag = $value($field_name);
-      if ($flag !== NULL) {
-        $preferences[] = ['label' => $label, 'value' => $flag ? t('Yes') : t('No')];
-      }
-    }
-    $profile['preferences'] = $preferences;
-
     $organizations = [];
     $cache->addCacheTags(['user_list']);
     $organization_ids = \Drupal::entityQuery('user')
@@ -464,11 +450,10 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
 
   $cache = CacheableMetadata::createFromObject($project);
   yv_content_cache($variables['content'], $cache);
-  $states = yv_project_states($project, $cache);
 
   $page = [
     'title' => $project->getTitle(),
-    // The raw state for the color of the badge, whose label is the field.
+    // The raw values for the badges, whose labels come from the display.
     'state' => (string) $project->get('field_lifecycle')->value,
     'archived' => !$project->isPublished(),
     'hidden' => $project->isHidden(),
@@ -479,8 +464,7 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   ];
   $page += yv_project_people($project, $cache);
   $page += yv_project_result($project, $cache);
-  $page += yv_project_details($project, $page, $cache);
-  $page['history'] = yv_project_history($project, $states, $cache);
+  $page['reasons'] = yv_project_reasons($project, $page, $cache);
   $page['feedback'] = yv_project_feedback($project, $cache);
 
   $variables['project_page'] = $page;
@@ -567,20 +551,6 @@ function yv_avatar(Organization|Creative $user, CacheableMetadata $cache): ?arra
     '#uri' => $file->getFileUri(),
     '#alt' => '',
   ];
-}
-
-/**
- * Gets the labels of the lifecycle states, keyed by state.
- */
-function yv_project_states(ProjectInterface $project, CacheableMetadata $cache): array {
-  $lifecycle = $project->get('field_lifecycle')->first();
-  if (!$lifecycle instanceof LifecycleItem) {
-    return [];
-  }
-  if ($workflow = $lifecycle->getWorkflow()) {
-    $cache->addCacheableDependency($workflow);
-  }
-  return $lifecycle->getPossibleOptions();
 }
 
 /**
@@ -779,7 +749,7 @@ function yv_project_result(ProjectInterface $project, CacheableMetadata $cache):
 }
 
 /**
- * Gets the details in the sidebar that the display cannot show.
+ * Gets why a project was declined or archived, from the logbook.
  *
  * @param \Drupal\projects\ProjectInterface $project
  *   The project.
@@ -789,48 +759,20 @@ function yv_project_result(ProjectInterface $project, CacheableMetadata $cache):
  *   The cacheability of the page.
  *
  * @return array
- *   The reasons of a decline or the archiving, each with label and value,
- *   and the created and changed dates.
+ *   The reasons, each with label and value.
  */
-function yv_project_details(ProjectInterface $project, array $page, CacheableMetadata $cache): array {
+function yv_project_reasons(ProjectInterface $project, array $page, CacheableMetadata $cache): array {
 
-  $details = ['reasons' => [], 'created' => NULL, 'changed' => NULL];
-
-  /** @var \Drupal\logbook\ProjectReasons $reasons */
-  $reasons = \Drupal::service('logbook.project_reasons');
-  if ($page['state'] === 'declined' && $reason = $reasons->getDeclineReason($project, $cache)) {
-    $details['reasons'][] = ['label' => t('Decline reason'), 'value' => $reason->label()];
+  $reasons = [];
+  /** @var \Drupal\logbook\ProjectReasons $reader */
+  $reader = \Drupal::service('logbook.project_reasons');
+  if ($page['state'] === 'declined' && $reason = $reader->getDeclineReason($project, $cache)) {
+    $reasons[] = ['label' => t('Decline reason'), 'value' => $reason->label()];
   }
-  if ($page['archived'] && $reason = $reasons->getArchiveReason($project, $cache)) {
-    $details['reasons'][] = ['label' => t('Archive reason'), 'value' => $reason->label()];
+  if ($page['archived'] && $reason = $reader->getArchiveReason($project, $cache)) {
+    $reasons[] = ['label' => t('Archive reason'), 'value' => $reason->label()];
   }
-
-  // The dates are base fields without a configurable display.
-  $date_formatter = \Drupal::service('date.formatter');
-  foreach (['created', 'changed'] as $field_name) {
-    if (yv_field_shows($project, $field_name, $cache)) {
-      $details[$field_name] = $date_formatter->format((int) $project->get($field_name)->value, 'custom', 'd.m.Y');
-    }
-  }
-  return $details;
-}
-
-/**
- * Gets the lifecycle, newest first: each state with the date it was reached.
- */
-function yv_project_history(ProjectInterface $project, array $states, CacheableMetadata $cache): array {
-  if (!yv_field_shows($project, 'field_lifecycle_history', $cache)) {
-    return [];
-  }
-  $date_formatter = \Drupal::service('date.formatter');
-  $history = [];
-  foreach (array_reverse($project->get('field_lifecycle_history')->getValue()) as $item) {
-    $history[] = [
-      'label' => $states[$item['to']] ?? $item['to'],
-      'date' => $date_formatter->format((int) $item['timestamp'], 'custom', 'd.m.Y'),
-    ];
-  }
-  return $history;
+  return $reasons;
 }
 
 /**

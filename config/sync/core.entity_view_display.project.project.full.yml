@@ -22,9 +22,11 @@ dependencies:
     - field.field.project.project.field_skills
     - field.field.project.project.field_workload
     - image.style.content
+    - workflows.workflow.project_lifecycle
   module:
     - datetime
     - image
+    - lifecycle
     - options
     - projects
     - text
@@ -40,6 +42,44 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 3
+    region: content
+  changed:
+    type: timestamp
+    label: hidden
+    settings:
+      date_format: custom
+      custom_date_format: d.m.Y
+      timezone: ''
+      tooltip:
+        date_format: ''
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 13
+    region: content
+  created:
+    type: timestamp
+    label: hidden
+    settings:
+      date_format: custom
+      custom_date_format: d.m.Y
+      timezone: ''
+      tooltip:
+        date_format: ''
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 12
     region: content
   field_allowance:
     type: boolean
@@ -85,6 +125,15 @@ content:
     third_party_settings: {  }
     weight: 7
     region: content
+  field_lifecycle_history:
+    type: lifecycle_history
+    label: hidden
+    settings:
+      workflow: project_lifecycle
+      date_format: d.m.Y
+    third_party_settings: {  }
+    weight: 14
+    region: content
   field_material:
     type: basic_string
     label: hidden
@@ -101,6 +150,16 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
+  hidden:
+    type: boolean
+    label: hidden
+    settings:
+      format: yes-no
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 10
+    region: content
   langcode:
     type: language
     label: hidden
@@ -110,12 +169,31 @@ content:
     third_party_settings: {  }
     weight: 8
     region: content
+  promote:
+    type: boolean
+    label: hidden
+    settings:
+      format: yes-no
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  status:
+    type: boolean
+    label: hidden
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 9
+    region: content
 hidden:
   field_applicants: true
   field_city: true
   field_contact: true
   field_image_copyright: true
-  field_lifecycle_history: true
   field_local: true
   field_participants: true
   field_participants_tasks: true

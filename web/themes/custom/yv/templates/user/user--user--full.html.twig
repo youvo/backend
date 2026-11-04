@@ -98,11 +98,16 @@
 
     {% include '@yv/user/includes/user-profile-account.html.twig' with {account: profile.account} only %}
 
-    {% if profile.preferences %}
+    {% set preferences = [
+      {label: 'Job offers'|t, value: content.field_jobs|field_value},
+      {label: 'Newsletter'|t, value: content.field_newsletter|field_value},
+      {label: 'Public profile'|t, value: content.field_public_profile|field_value},
+    ]|filter(preference => preference.value) %}
+    {% if preferences %}
       <section class="user-profile-section">
         <h2 class="user-profile-section-title">{{ 'Preferences'|t }}</h2>
         <dl class="user-profile-facts">
-          {% for preference in profile.preferences %}
+          {% for preference in preferences %}
             <div><dt>{{ preference.label }}</dt><dd>{{ preference.value }}</dd></div>
           {% endfor %}
         </dl>

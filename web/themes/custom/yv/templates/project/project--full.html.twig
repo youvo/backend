@@ -175,30 +175,32 @@
       <h2 class="project-page-section-title">{{ 'Details'|t }}</h2>
       <dl class="project-page-details">
         <div><dt>{{ 'State'|t }}</dt><dd>{{ content.field_lifecycle|field_value }}</dd></div>
-        <div><dt>{{ 'Status'|t }}</dt><dd>{{ page.archived ? 'Archived'|t : 'Active'|t }}</dd></div>
+        {% if content.status|field_value %}
+          <div><dt>{{ 'Status'|t }}</dt><dd>{{ content.status|field_value }}</dd></div>
+        {% endif %}
         {% for reason in page.reasons %}
           <div><dt>{{ reason.label }}</dt><dd>{{ reason.value }}</dd></div>
         {% endfor %}
-        <div><dt>{{ 'Hidden'|t }}</dt><dd>{{ page.hidden ? 'Yes'|t : 'No'|t }}</dd></div>
-        <div><dt>{{ 'Promoted'|t }}</dt><dd>{{ page.promoted ? 'Yes'|t : 'No'|t }}</dd></div>
-        {% if content.langcode|field_value %}
-          <div><dt>{{ 'Language'|t }}</dt><dd>{{ content.langcode|field_value }}</dd></div>
-        {% endif %}
-        {% if page.created %}
-          <div><dt>{{ 'Created'|t }}</dt><dd>{{ page.created }}</dd></div>
-        {% endif %}
-        {% if page.changed %}
-          <div><dt>{{ 'Changed'|t }}</dt><dd>{{ page.changed }}</dd></div>
-        {% endif %}
+        {% set rows = [
+          {label: 'Hidden'|t, value: content.hidden|field_value},
+          {label: 'Promoted'|t, value: content.promote|field_value},
+          {label: 'Language'|t, value: content.langcode|field_value},
+          {label: 'Created'|t, value: content.created|field_value},
+          {label: 'Changed'|t, value: content.changed|field_value},
+        ]|filter(row => row.value) %}
+        {% for row in rows %}
+          <div><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div>
+        {% endfor %}
       </dl>
     </section>
 
-    {% if page.history %}
+    {% set history = content.field_lifecycle_history|field_value %}
+    {% if history %}
       <section class="project-page-side-section">
         <h2 class="project-page-section-title">{{ 'Lifecycle'|t }}</h2>
         <dl class="project-page-details">
-          {% for item in page.history %}
-            <div><dt>{{ item.label }}</dt><dd>{{ item.date }}</dd></div>
+          {% for item in history %}
+            <div>{{ item }}</div>
           {% endfor %}
         </dl>
       </section>
