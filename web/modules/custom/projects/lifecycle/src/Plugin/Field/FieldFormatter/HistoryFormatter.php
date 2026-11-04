@@ -53,6 +53,7 @@ class HistoryFormatter extends FormatterBase {
     return [
       'workflow' => '',
       'date_format' => 'd.m.Y',
+      'oldest_first' => FALSE,
     ] + parent::defaultSettings();
   }
 
@@ -76,6 +77,12 @@ class HistoryFormatter extends FormatterBase {
       '#default_value' => $this->getSetting('date_format'),
       '#required' => TRUE,
     ];
+    $form['oldest_first'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Oldest first'),
+      '#description' => $this->t('List the states in the order they were reached. Otherwise the current state comes first.'),
+      '#default_value' => $this->getSetting('oldest_first'),
+    ];
     return $form;
   }
 
@@ -86,6 +93,7 @@ class HistoryFormatter extends FormatterBase {
     return [
       $this->t('Workflow: @workflow', ['@workflow' => $this->getSetting('workflow') ?: $this->t('None')]),
       $this->t('Date format: @format', ['@format' => $this->getSetting('date_format')]),
+      $this->getSetting('oldest_first') ? $this->t('Oldest first') : $this->t('Current state first'),
     ];
   }
 
@@ -103,7 +111,11 @@ class HistoryFormatter extends FormatterBase {
     }
 
     $elements = [];
-    foreach (array_reverse(iterator_to_array($items)) as $item) {
+    $history = iterator_to_array($items);
+    if (!$this->getSetting('oldest_first')) {
+      $history = array_reverse($history);
+    }
+    foreach ($history as $item) {
       $state = (string) $item->get('to')->getValue();
       $elements[] = [
         '#type' => 'inline_template',

@@ -149,6 +149,7 @@ content:
     settings:
       workflow: project_lifecycle
       date_format: d.m.Y
+      oldest_first: true
     third_party_settings: {  }
     weight: 14
     region: content

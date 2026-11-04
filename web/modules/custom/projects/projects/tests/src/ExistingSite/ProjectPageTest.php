@@ -141,6 +141,22 @@ class ProjectPageTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that the sidebar lists the lifecycle oldest first.
+   */
+  public function testLifecycleOldestFirst(): void {
+
+    $project = $this->createProject();
+    $project->lifecycle()->submit(1700000000);
+    $project->lifecycle()->publish(1700100000);
+    $project->save();
+    $this->container->get('current_user')->setAccount($this->createSupervisor());
+
+    $html = $this->renderProject($project);
+    preg_match_all('~<dt>(Draft|Pending|Open)</dt>~', $html, $matches);
+    $this->assertSame(['Draft', 'Pending', 'Open'], $matches[1]);
+  }
+
+  /**
    * Renders the full view of a project.
    */
   protected function renderProject(ProjectInterface $project): string {
