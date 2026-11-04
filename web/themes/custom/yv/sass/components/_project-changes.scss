@@ -25,6 +25,18 @@
   font-weight: 400;
 }
 
+// The rows line up with the logbook below: Gin indents the details content
+// by its border and 20px, the logbook card by 24px. The rest of the indent
+// and the cell padding of the logbook go here, so the row lines and the
+// columns start where the logbook's do.
+.project-changes-entries {
+  margin-inline: -1rem;
+
+  @media (min-width: $breakpoint-medium) {
+    margin-inline: 0.25rem;
+  }
+}
+
 // Rows: date and author, type pill, the changed fields and the revision
 // link. On narrow screens the pill and the date share a line above the rest.
 .project-changes-entry {
@@ -36,13 +48,9 @@
   grid-template-columns: auto 1fr;
   gap: var(--gin-spacing-xs) var(--gin-spacing-s);
   align-items: baseline;
-  padding: var(--gin-spacing-s) 0;
+  padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--yv-line);
   scroll-margin-top: var(--gin-spacing-xl);
-
-  &:first-child {
-    padding-top: 0;
-  }
 
   &:last-child,
   &:has(+ [hidden]) {
@@ -55,16 +63,16 @@
   }
 
   &.is-target {
-    margin-inline: calc(-1 * var(--gin-spacing-s));
-    padding-inline: var(--gin-spacing-s);
     border-radius: var(--gin-border-s);
     background: var(--yv-chip);
   }
 
+  // The column widths and the gap of the logbook's table: its cells have
+  // 1rem padding on each side.
   @media (min-width: $breakpoint-medium) {
     grid-template-areas: "meta type event link";
-    grid-template-columns: 11rem auto minmax(0, 1fr) auto;
-    gap: var(--gin-spacing-m);
+    grid-template-columns: 6.75rem 4.25rem minmax(0, 1fr) auto;
+    gap: 0.5rem 2rem;
   }
 }
 
@@ -157,9 +165,40 @@
   white-space: nowrap;
 }
 
-// The button for the older changes, below the two newest.
-.project-changes-more {
-  margin: var(--gin-spacing-s) 0 0;
+// The button for the older changes, centered like the logbook's Load more.
+// Scoped to the card, as Gin's button margin would win.
+.project-changes .project-changes-more {
+  display: block;
+  margin: var(--gin-spacing-s) auto 0;
+}
+
+.project-changes-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-s);
+  align-items: center;
+}
+
+// Old and new image, framed in the colors of removed and added text.
+.project-changes-image {
+  display: block;
+  padding: 0.25rem;
+  border-radius: var(--gin-border-m);
+  background: var(--gin-color-green-lightest);
+  text-decoration: none;
+
+  &:is(del) {
+    background: var(--gin-color-danger-lightest);
+  }
+
+  img {
+    display: block;
+    width: auto;
+    max-width: 10rem;
+    height: 5rem;
+    border-radius: var(--gin-border-s);
+    object-fit: cover;
+  }
 }
 
 .project-changes-earlier {

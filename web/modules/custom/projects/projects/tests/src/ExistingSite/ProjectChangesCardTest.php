@@ -39,7 +39,7 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
     $session = $this->assertSession();
     $card = $session->elementExists('css', 'details.project-changes');
     $this->assertFalse($card->hasAttribute('open'));
-    $session->elementTextContains('css', 'details.project-changes > summary', '2 changes');
+    $session->elementTextContains('css', 'details.project-changes > summary', '2 revisions');
     $session->elementTextContains('css', '#revision-' . $revision_id, 'Project Title');
     $session->elementExists('css', '#revision-' . $revision_id . ' a[href$="/projects/' . $project->id() . '/revisions/' . $revision_id . '/view"]');
 
@@ -47,6 +47,7 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
     // link, without repeating the log text.
     $session->elementTextEquals('css', '#revision-' . $revision_id . ' .project-changes-type', 'Change');
     $session->elementExists('css', '#revision-' . $revision_id . ' .project-changes-author a[href$="/user/' . $project->getOwner()->id() . '"]');
+    $session->elementTextNotContains('css', '#revision-' . $revision_id . ' .project-changes-author', 'Organisation');
     $session->elementTextNotContains('css', '#revision-' . $revision_id, 'bearbeitet');
 
     // The card is a details element of Gin, below the main column and the

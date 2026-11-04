@@ -9,7 +9,7 @@
  * Available variables:
  * - entries: The entries, newest first. Each has revision_id, author_role,
  *   author_name, author_id, time, created, url and fields (label, long, old,
- *   new, diff).
+ *   new, diff, old_image, new_image).
  * - visible: The number of entries shown before the button for the rest.
  */
 #}
@@ -19,8 +19,11 @@
       <div class="project-changes-meta-column">
         <time class="project-changes-date" datetime="{{ entry.time|date('c') }}">{{ entry.time|format_date('custom', 'd.m.Y H:i') }}</time>
         <span class="project-changes-author">
-          {{ entry.author_role }}
-          {%- if entry.author_id %} <a href="{{ path('entity.user.canonical', {'user': entry.author_id}) }}">{{ entry.author_name }}</a>{% endif %}
+          {%- if entry.author_id -%}
+            <a href="{{ path('entity.user.canonical', {'user': entry.author_id}) }}">{{ entry.author_name }}</a>
+          {%- else -%}
+            {{ entry.author_role }}
+          {%- endif -%}
         </span>
       </div>
       <span class="project-changes-type"{% if not entry.created %} data-tone="attention"{% endif %}>{{ entry.created ? 'Create'|t : 'Change'|t }}</span>
@@ -28,7 +31,13 @@
         {% for field in entry.fields %}
           <div class="project-changes-field">
             <div class="project-changes-label">{{ field.label }}</div>
-            {% if field.long %}
+            {% if field.old_image or field.new_image %}
+              <div class="project-changes-images">
+                {% if field.old_image %}<del class="project-changes-image"><img src="{{ field.old_image }}" alt="{{ 'Previous image'|t }}" loading="lazy"></del>{% endif %}
+                {% if field.old_image and field.new_image %}<span class="project-changes-arrow" aria-hidden="true">→</span>{% endif %}
+                {% if field.new_image %}<ins class="project-changes-image"><img src="{{ field.new_image }}" alt="{{ 'New image'|t }}" loading="lazy"></ins>{% endif %}
+              </div>
+            {% elseif field.long %}
               <div class="project-changes-diff">{{ field.diff }}</div>
             {% else %}
               <div class="project-changes-value">

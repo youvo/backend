@@ -78,10 +78,10 @@ class ProjectChangesHooks {
     $count = count($entries) + $changes['earlier'];
     $newest = reset($entries);
     $meta = new FormattableMarkup('@count · @last', [
-      '@count' => new PluralTranslatableMarkup($count, '1 change', '@count changes'),
+      '@count' => new PluralTranslatableMarkup($count, '1 revision', '@count revisions'),
       '@last' => new TranslatableMarkup('last @date by @author', [
         '@date' => date('d.m.Y', $newest['time']),
-        '@author' => $newest['author'],
+        '@author' => $newest['author_name'] ?: $newest['author_role'],
       ]),
     ]);
 
@@ -108,7 +108,7 @@ class ProjectChangesHooks {
       $card['earlier'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => new PluralTranslatableMarkup($changes['earlier'], '1 earlier change', '@count earlier changes'),
+        '#value' => new PluralTranslatableMarkup($changes['earlier'], '1 earlier revision', '@count earlier revisions'),
         '#attributes' => ['class' => ['project-changes-earlier']],
       ];
     }

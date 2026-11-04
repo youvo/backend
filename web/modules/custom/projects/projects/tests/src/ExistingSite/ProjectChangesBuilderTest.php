@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\projects\ExistingSite;
 
+use Drupal\file\Entity\File;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectChangesBuilder;
@@ -92,8 +93,24 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
     $fields = $this->fields($this->build($project)['entries'][0]);
     $this->assertSame('Plakatgestaltung', $fields['Skills']['new']);
     $this->assertSame('On', $fields['Allowance']['new']);
-    $this->assertStringNotContainsString('<', $fields['Deadline']['new']);
-    $this->assertStringContainsString('2030', $fields['Deadline']['new']);
+    $this->assertSame('01.03.2030', $fields['Deadline']['new']);
+  }
+
+  /**
+   * Tests that an image change has the old and the new image.
+   */
+  public function testImageValues(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $uri = $this->container->get('file_system')->copy('core/misc/druplicon.png', 'public://', 0);
+    $file = File::create(['uri' => $uri, 'status' => 1]);
+    $file->save();
+    $this->markEntityForCleanup($file);
+    $project->set('field_image', ['target_id' => $file->id(), 'alt' => 'Alt'])->save();
+
+    $image = $this->fields($this->build($project)['entries'][0])['Project Image'];
+    $this->assertNull($image['old_image']);
+    $this->assertStringContainsString('druplicon', $image['new_image']);
   }
 
   /**
@@ -157,6 +174,7 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
       $this->container->get('entity_type.manager'),
       $this->container->get('diff.entity_comparison'),
       $this->container->get('language_manager'),
+      $this->container->get('file_url_generator'),
     ) extends ProjectChangesBuilder {
 
       public const int LIMIT = 2;

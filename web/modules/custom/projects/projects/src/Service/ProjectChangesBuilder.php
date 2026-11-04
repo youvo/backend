@@ -5,10 +5,13 @@ namespace Drupal\projects\Service;
 use Caxy\HtmlDiff\HtmlDiff;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\diff\DiffEntityComparison;
+use Drupal\file\FileInterface;
+use Drupal\image\ImageStyleInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
@@ -50,12 +53,13 @@ class ProjectChangesBuilder {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected DiffEntityComparison $diffEntityComparison,
     protected LanguageManagerInterface $languageManager,
+    protected FileUrlGeneratorInterface $fileUrlGenerator,
   ) {}
 
   /**
    * Builds the changes of a project.
    *
-   * @return array{entries: list<array{revision_id: int, author: string, author_role: string, author_name: string, author_id: int|null, time: int, created: bool, fields: list<array{label: string, long: bool, old: string, new: string, diff: string}>}>, earlier: int}
+   * @return array{entries: list<array{revision_id: int, author: string, author_role: string, author_name: string, author_id: int|null, time: int, created: bool, fields: list<array{label: string, long: bool, old: string, new: string, diff: string, old_image: string|null, new_image: string|null}>}>, earlier: int}
    *   The entries of the newest revisions, newest first, and the number of
    *   earlier revisions without an entry.
    */
@@ -113,16 +117,45 @@ class ProjectChangesBuilder {
         continue;
       }
       $field_name = substr($key, strrpos($key, '.') + 1);
+      $type = $revision->getFieldDefinition($field_name)?->getType();
       $long = in_array($field_name, static::LONG_FIELDS, TRUE);
       $fields[] = [
         'label' => (string) $comparison['#name'],
         'long' => $long,
-        'old' => $this->plain($old),
-        'new' => $this->plain($new),
+        'old' => $type === 'datetime' ? $this->dates($old) : $this->plain($old),
+        'new' => $type === 'datetime' ? $this->dates($new) : $this->plain($new),
         'diff' => $long ? $this->passageDiff($old, $new) : '',
+        'old_image' => $type === 'image' ? $this->imageUrl($previous, $field_name) : NULL,
+        'new_image' => $type === 'image' ? $this->imageUrl($revision, $field_name) : NULL,
       ];
     }
     return $fields;
+  }
+
+  /**
+   * Formats the dates of a compared value as on the rest of the page.
+   *
+   * Diff renders them with the medium format and a time.
+   */
+  protected function dates(string $value): string {
+    preg_match_all('~datetime="([^"]+)"~', $value, $matches);
+    return implode(', ', array_map(static fn (string $date) => date('d.m.Y', strtotime($date)), $matches[1]));
+  }
+
+  /**
+   * Gets the URL of the teaser of an image field, NULL without an image.
+   *
+   * The teaser derivatives are generated with the image, so they exist.
+   */
+  protected function imageUrl(ProjectInterface $revision, string $field_name): ?string {
+    $file = $revision->get($field_name)->entity;
+    if (!$file instanceof FileInterface) {
+      return NULL;
+    }
+    $style = $this->entityTypeManager->getStorage('image_style')->load('teaser');
+    return $style instanceof ImageStyleInterface
+      ? $this->fileUrlGenerator->transformRelative($style->buildUrl($file->getFileUri()))
+      : $this->fileUrlGenerator->generateString($file->getFileUri());
   }
 
   /**
@@ -248,7 +281,8 @@ class ProjectChangesBuilder {
     }
 
     // The user types name their people; other accounts have a display name.
-    $name = $user instanceof Organization || $user instanceof Creative ? $user->getName() : $user->getDisplayName();
+    $name = $user instanceof Organization || $user instanceof Creative ? $user->getName() : '';
+    $name = $name !== '' ? $name : (string) $user->getDisplayName();
     return [
       'author' => static::ROLE_WORDS[$role] . ' ' . $name,
       'author_role' => static::ROLE_WORDS[$role],
