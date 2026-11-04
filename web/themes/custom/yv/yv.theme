@@ -7,8 +7,11 @@
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Render\Element;
 use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
+use Drupal\file\FileInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 
@@ -31,6 +34,8 @@ function yv_theme_suggestions_user_alter(array &$suggestions, array $variables):
   $user = $variables['elements']['#user'];
   $user_type = $user->bundle();
   $view_mode = $variables['elements']['#view_mode'];
+  // A view mode shared by the user types, such as person, has one template.
+  $suggestions[] = 'user__' . $view_mode;
   $suggestions[] = 'user__' . $user_type . '__' . $view_mode;
 }
 
@@ -46,8 +51,8 @@ function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables):
 /**
  * Implements hook_preprocess_HOOK() for page_title.
  *
- * The profiles of organizations and creatives and the feedback page show
- * their title themselves.
+ * The profiles of organizations and creatives, the feedback page and the
+ * project page show their title themselves.
  */
 function yv_preprocess_page_title(array &$variables): void {
   $route_match = \Drupal::routeMatch();
@@ -56,7 +61,7 @@ function yv_preprocess_page_title(array &$variables): void {
     $route_match->getParameter('user') instanceof Creative)) {
     $variables['title'] = '';
   }
-  if ($route_match->getRouteName() === 'entity.feedback.canonical') {
+  if (in_array($route_match->getRouteName(), ['entity.feedback.canonical', 'entity.project.canonical'], TRUE)) {
     $variables['title'] = '';
   }
 }
@@ -75,8 +80,24 @@ function yv_preprocess_user(array &$variables): void {
     $access = $user->access('view', NULL, TRUE);
     $variables['url'] = $access->isAllowed() && !$user->isNew() ? $user->toUrl()->toString() : NULL;
     $variables['initials'] = yv_initials($user->getName());
+    $teaser_cache = CacheableMetadata::createFromObject($access);
+    $variables['avatar'] = yv_avatar($user, $teaser_cache);
     $variables['teaser_cache'] = [];
-    CacheableMetadata::createFromObject($access)->applyTo($variables['teaser_cache']);
+    $teaser_cache->applyTo($variables['teaser_cache']);
+    return;
+  }
+
+  // A person next to its role: the link to the profile if the viewer may
+  // open it, and the avatar as decoration.
+  if ($variables['elements']['#view_mode'] === 'person' && ($user instanceof Organization || $user instanceof Creative)) {
+    $cache = new CacheableMetadata();
+    $access = $user->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    $variables['url'] = $access->isAllowed() ? $user->toUrl()->toString() : NULL;
+    $variables['avatar'] = yv_avatar($user, $cache);
+    $variables['initials'] = yv_initials(yv_field_value($user, 'field_name', $cache));
+    $variables['person_cache'] = [];
+    $cache->applyTo($variables['person_cache']);
     return;
   }
 
@@ -85,7 +106,10 @@ function yv_preprocess_user(array &$variables): void {
     return;
   }
 
+  // The plain fields come from the full display in "content"; the values
+  // here are what the display cannot show.
   $cache = new CacheableMetadata();
+  yv_content_cache($variables['content'], $cache);
   $value = static function (string $field_name) use ($user, $cache): ?string {
     $access = $user->get($field_name)->access('view', NULL, TRUE);
     $cache->addCacheableDependency($access);
@@ -93,72 +117,26 @@ function yv_preprocess_user(array &$variables): void {
     return $value !== '' ? $value : NULL;
   };
 
-  // Only http(s) values become links, so other schemes are shown as text.
-  $links = [];
-  foreach (['field_url', 'field_portfolio'] as $field_name) {
-    $access = $user->get($field_name)->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($access);
-    if (!$access->isAllowed()) {
-      continue;
-    }
-    foreach ($user->get($field_name) as $item) {
-      // A value without an address, such as "https://www.", is left out.
-      $link = trim((string) $item->get('value')->getValue());
-      $label = rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/');
-      if ($label === '') {
-        continue;
-      }
-      $links[] = [
-        'url' => preg_match('{^https?://}i', $link) ? $link : NULL,
-        'label' => $label,
-      ];
-    }
-  }
-
   $entity_type_manager = \Drupal::entityTypeManager();
   $date_formatter = \Drupal::service('date.formatter');
   $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
   $cache->addCacheableDependency($staff);
 
   $name = $value('field_name');
-  $phone = $value('field_phone');
   $profile = [
-    'name' => $name,
     'initials' => yv_initials($name),
-    'links' => $links,
+    'avatar' => yv_avatar($user, $cache),
+    // The mail is a base field of users without a configurable display.
     'mail' => $value('mail'),
-    'phone' => $phone,
-    'phone_uri' => $phone ? 'tel:' . preg_replace('/[^\d+]/', '', $phone) : NULL,
   ];
 
   if ($user instanceof Organization) {
-    $contact = $value('field_contact');
+    $short_name = $value('field_short_name');
     $profile += [
-      'short_name' => $value('field_short_name'),
-      'contact' => $contact,
-      'contact_initials' => yv_initials($contact),
-      'address' => array_filter([
-        $value('field_street'),
-        trim($value('field_zip') . ' ' . $value('field_city')),
-        $value('field_country'),
-      ]),
-      'fulltime' => $value('field_count_fulltime'),
-      'volunteer' => $value('field_count_volunteer'),
+      // Only a short name that differs from the name says something.
+      'short_name' => $short_name !== $name ? $short_name : NULL,
+      'contact_initials' => yv_initials($value('field_contact')),
     ];
-
-    $profile['manager_name'] = NULL;
-    $profile['manager_url'] = NULL;
-    $manager_access = $user->get('field_manager')->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($manager_access);
-    $manager = $manager_access->isAllowed() ? $user->getManager() : NULL;
-    if ($manager) {
-      $profile['manager_name'] = $manager->getName();
-      $access = $manager->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($manager);
-      if ($access->isAllowed()) {
-        $profile['manager_url'] = $manager->toUrl()->toString();
-      }
-    }
 
     // Counts only the projects the viewer may see, as the projects list does.
     $project_storage = $entity_type_manager->getStorage('project');
@@ -197,43 +175,6 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   if ($user instanceof Creative) {
-    $profile += [
-      'position' => $value('field_position'),
-      'education' => $value('field_education'),
-      'city' => $value('field_city'),
-    ];
-
-    $preferences = [];
-    foreach ([
-      'field_jobs' => t('Job offers'),
-      'field_newsletter' => t('Newsletter'),
-      'field_public_profile' => t('Public profile'),
-    ] as $field_name => $label) {
-      $flag = $value($field_name);
-      if ($flag !== NULL) {
-        $preferences[] = ['label' => $label, 'value' => $flag ? t('Yes') : t('No')];
-      }
-    }
-    $profile['preferences'] = $preferences;
-
-    $organizations = [];
-    $cache->addCacheTags(['user_list']);
-    $organization_ids = \Drupal::entityQuery('user')
-      ->accessCheck(FALSE)
-      ->condition('type', 'organization')
-      ->condition('field_manager', $user->id())
-      ->sort('field_name')
-      ->execute();
-    $view_builder = $entity_type_manager->getViewBuilder('user');
-    foreach (Organization::loadMultiple($organization_ids) as $organization) {
-      $access = $organization->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($organization);
-      if ($access->isAllowed()) {
-        $organizations[] = $view_builder->view($organization, 'teaser');
-      }
-    }
-    $profile['organizations'] = $organizations;
-
     // Counts only the projects the viewer may see, as the projects list does.
     $project_storage = $entity_type_manager->getStorage('project');
     $cache->addCacheTags(['project_list']);
@@ -299,32 +240,6 @@ function yv_preprocess_user(array &$variables): void {
             : t('@done of @total lectures', ['@done' => $completed_lectures, '@total' => count($lecture_ids)]),
         ];
       }
-    }
-  }
-
-  $profile['feedback'] = [];
-  if ($staff->isAllowed()) {
-    $cache->addCacheTags(['feedback_list']);
-    $feedback_ids = $entity_type_manager->getStorage('feedback')->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('bundle', $user instanceof Organization ? 'organization' : 'creative')
-      ->condition('author', $user->id())
-      ->condition('completed', NULL, 'IS NOT NULL')
-      ->sort('completed', 'DESC')
-      ->execute();
-    /** @var \Drupal\feedback\Entity\Feedback $feedback */
-    foreach ($entity_type_manager->getStorage('feedback')->loadMultiple($feedback_ids) as $feedback) {
-      $project = $feedback->get('project')->entity;
-      if (!$project instanceof ProjectInterface) {
-        continue;
-      }
-      $access = $feedback->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($project);
-      $profile['feedback'][] = [
-        'project' => $project->getTitle(),
-        'url' => $access->isAllowed() ? $feedback->toUrl()->toString() : NULL,
-        'date' => $date_formatter->format((int) $feedback->get('completed')->value, 'custom', 'd.m.Y'),
-      ];
     }
   }
 
@@ -403,10 +318,15 @@ function yv_preprocess_views_view_unformatted(array &$variables): void {
  * Implements hook_preprocess_HOOK() for project.
  *
  * The teaser names the organization by its short name, as the frontend does.
+ * The full view is prepared by yv_preprocess_project_full().
  */
 function yv_preprocess_project(array &$variables): void {
 
   $project = $variables['elements']['#project'];
+  if ($project instanceof ProjectInterface && $variables['elements']['#view_mode'] === 'full') {
+    yv_preprocess_project_full($variables);
+    return;
+  }
   if (!$project instanceof ProjectInterface || $variables['elements']['#view_mode'] !== 'teaser') {
     return;
   }
@@ -434,6 +354,73 @@ function yv_preprocess_project(array &$variables): void {
 
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
+}
+
+/**
+ * Prepares the full view of a project, its page in the backend.
+ *
+ * The page shows the fields of the full display one by one, so the
+ * cacheability of the others is passed on here, see yv_content_cache().
+ */
+function yv_preprocess_project_full(array &$variables): void {
+  $cache = new CacheableMetadata();
+  yv_content_cache($variables['content'], $cache);
+  $variables['contact_initials'] = yv_initials(yv_field_value($variables['project'], 'field_contact', $cache));
+  $variables['project_cache'] = [];
+  $cache->applyTo($variables['project_cache']);
+}
+
+/**
+ * Collects the cacheability of the fields of a display.
+ *
+ * A template that prints single fields, and not the whole content, would
+ * lose the cacheability of the fields it leaves out, such as the access
+ * result of a field the viewer may not see.
+ */
+function yv_content_cache(array $content, CacheableMetadata $cache): void {
+  foreach (Element::children($content) as $key) {
+    $cache->addCacheableDependency(CacheableMetadata::createFromRenderArray($content[$key]));
+  }
+}
+
+/**
+ * Whether the viewer may see a field of an entity, and it has a value.
+ */
+function yv_field_shows(FieldableEntityInterface $entity, string $field_name, CacheableMetadata $cache): bool {
+  $access = $entity->get($field_name)->access('view', NULL, TRUE);
+  $cache->addCacheableDependency($access);
+  return $access->isAllowed() && !$entity->get($field_name)->isEmpty();
+}
+
+/**
+ * Gets the trimmed value of a field the viewer may see, NULL if empty.
+ */
+function yv_field_value(FieldableEntityInterface $entity, string $field_name, CacheableMetadata $cache): ?string {
+  $value = yv_field_shows($entity, $field_name, $cache) ? trim((string) $entity->get($field_name)->value) : '';
+  return $value !== '' ? $value : NULL;
+}
+
+/**
+ * Gets the avatar of an organization or a creative as decoration.
+ *
+ * The avatar always stands next to the name, so its alt text would only
+ * precede the name for screen readers.
+ */
+function yv_avatar(Organization|Creative $user, CacheableMetadata $cache): ?array {
+  if (!yv_field_shows($user, 'field_avatar', $cache)) {
+    return NULL;
+  }
+  $file = $user->get('field_avatar')->entity;
+  if (!$file instanceof FileInterface) {
+    return NULL;
+  }
+  $cache->addCacheableDependency($file);
+  return [
+    '#theme' => 'image_style',
+    '#style_name' => 'avatar',
+    '#uri' => $file->getFileUri(),
+    '#alt' => '',
+  ];
 }
 
 /**

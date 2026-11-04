@@ -7,8 +7,8 @@
 {{ teaser_cache }}
 <article class="organization-teaser">
   <div class="organization-teaser-avatar">
-    {% if content.field_avatar|field_value %}
-      {{ content.field_avatar|field_value }}
+    {% if avatar %}
+      {{ avatar }}
     {% else %}
       <span aria-hidden="true">{{ initials }}</span>
     {% endif %}

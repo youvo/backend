@@ -3,8 +3,9 @@
  * @file
  * Full view of an organization in the backend.
  *
- * The plain values in "profile" come from yv_preprocess_user() and are set
- * only when the viewer may see the field.
+ * The plain fields come from the full display in "content". The values in
+ * "profile" come from yv_preprocess_user(), for what the display cannot show,
+ * and are set only when the viewer may see the fields.
  */
 #}
 {% set registration = [
@@ -17,10 +18,10 @@
 <article{{ attributes.addClass('user-profile') }}>
   <div class="user-profile-main">
     <header class="user-profile-header">
-      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: content.field_avatar|field_value, initials: profile.initials} only %}
+      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: profile.avatar, initials: profile.initials} only %}
       <div class="user-profile-heading">
-        <h1 class="user-profile-name">{{ profile.name }}</h1>
-        {% if profile.short_name and profile.short_name != profile.name %}
+        <h1 class="user-profile-name">{{ content.field_name|field_value }}</h1>
+        {% if profile.short_name %}
           <p class="user-profile-subtitle">{{ profile.short_name }}</p>
         {% endif %}
         {% if profile.projects %}
@@ -57,45 +58,37 @@
       </section>
     {% endif %}
 
-    {% if profile.links %}
+{% set links = (content.field_url|field_value ?: [])|merge(content.field_portfolio|field_value ?: []) %}
+    {% if links %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Links'|t }}</h2>
-        <ul class="user-profile-tags">
-          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
+        <ul class="user-profile-tags user-profile-links">
+          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: links} only %}
         </ul>
       </section>
     {% endif %}
 
+    {# The contact is a name, not an account, so it gets the markup of a
+       person by hand. #}
+    {% set contact = content.field_contact|field_value %}
     {% set manager = content.field_manager|field_value %}
-    {% if profile.contact or manager %}
+    {% if contact or manager %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Contacts'|t }}</h2>
-        <ul class="user-profile-people">
-          {% if profile.contact %}
+        <ul class="person-list">
+          {% if contact %}
             <li>
-              <span class="user-profile-person">
-                <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
-                <span>
-                  <span class="user-profile-person-name">{{ profile.contact }}</span>
-                  <span class="user-profile-person-role">{{ 'Organization Contact'|t }}</span>
-                </span>
+              <span class="person">
+                <span class="person-avatar" aria-hidden="true">{{ profile.contact_initials }}</span>
+                <span class="person-name">{{ contact }}</span>
               </span>
+              <span class="person-role">{{ 'Contact'|t }}</span>
             </li>
           {% endif %}
           {% if manager %}
             <li>
-              {% set manager_pill %}
-                {{ manager }}
-                <span>
-                  <span class="user-profile-person-name">{{ profile.manager_name }}</span>
-                  <span class="user-profile-person-role">{{ 'Project Manager'|t }}</span>
-                </span>
-              {% endset %}
-              {% if profile.manager_url %}
-                <a class="user-profile-person" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
-              {% else %}
-                <span class="user-profile-person">{{ manager_pill }}</span>
-              {% endif %}
+              {{ manager }}
+              <span class="person-role">{{ 'Manager'|t }}</span>
             </li>
           {% endif %}
         </ul>
@@ -104,11 +97,25 @@
   </div>
 
   <aside class="user-profile-side">
-    {% include '@yv/user/includes/user-profile-contact.html.twig' with {profile: profile} only %}
+    {# The address and the staff from their fields, printed one by one, as
+       joining rendered fields would escape them twice. #}
+    {% set street = content.field_street|field_value %}
+    {% set zip = content.field_zip|field_value %}
+    {% set city = content.field_city|field_value %}
+    {% set country = content.field_country|field_value %}
+    {% set address %}
+      {%- if street or zip or city or country -%}
+        {{ street }}{{ street and (zip or city or country) ? ', ' }}{{ zip }}{{ zip and city ? ' ' }}{{ city }}{{ (zip or city) and country ? ', ' }}{{ country }}
+      {%- endif -%}
+    {% endset %}
+    {% include '@yv/user/includes/user-profile-contact.html.twig' with {mail: profile.mail, phone: content.field_phone|field_value, address: address|trim} only %}
 
+    {% set fulltime = content.field_count_fulltime|field_value %}
+    {% set volunteer = content.field_count_volunteer|field_value %}
     {% set staff = [] %}
-    {% if profile.fulltime or profile.volunteer %}
-      {% set staff = [{label: 'Staff'|t, value: (profile.fulltime|default('–')) ~ ' ' ~ 'full-time'|t ~ ' · ' ~ (profile.volunteer|default('–')) ~ ' ' ~ 'volunteers'|t}] %}
+    {% if fulltime or volunteer %}
+      {% set staff_value %}{{ fulltime ?: '–' }} {{ 'full-time'|t }} · {{ volunteer ?: '–' }} {{ 'volunteers'|t }}{% endset %}
+      {% set staff = [{label: 'Staff'|t, value: staff_value}] %}
     {% endif %}
     {% include '@yv/user/includes/user-profile-account.html.twig' with {account: profile.account, extra: staff} only %}
 
@@ -127,7 +134,7 @@
       </section>
     {% endif %}
 
-    {% include '@yv/user/includes/user-profile-feedback.html.twig' with {feedback: profile.feedback} only %}
+    {{ drupal_view('feedback', 'profile', user.id) }}
   </aside>
 
   {% include '@yv/user/includes/user-profile-views.html.twig' with {user_id: user.id, projects_view: 'organization_projects'} only %}

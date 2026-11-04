@@ -1,0 +1,43 @@
+uuid: da5487e5-f722-459a-99c0-6dd9d34f13ea
+langcode: de
+status: true
+dependencies:
+  config:
+    - field.field.project_result.project_result.field_files
+    - field.field.project_result.project_result.field_hyperlinks
+    - image.style.content
+    - image.style.teaser
+  module:
+    - projects
+id: project_result.project_result.default
+targetEntityType: project_result
+bundle: project_result
+mode: default
+content:
+  field_files:
+    type: project_result_files
+    label: hidden
+    settings:
+      preview_style: teaser
+      lightbox_style: content
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_hyperlinks:
+    type: project_result_links
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  project_comments:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden: {  }
+

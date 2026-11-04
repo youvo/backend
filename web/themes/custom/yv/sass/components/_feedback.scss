@@ -60,17 +60,13 @@
   margin: 0;
 }
 
-// As the main card of a profile: the title, then the public comment.
+// As the main card of a profile, with the public comment.
 .feedback-intro {
   @include card;
   @include card-padding;
 
   display: grid;
   gap: var(--gin-spacing-m);
-}
-
-.feedback-title {
-  @include page-title;
 }
 
 .feedback-comment {

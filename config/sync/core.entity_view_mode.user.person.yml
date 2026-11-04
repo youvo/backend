@@ -1,0 +1,12 @@
+uuid: 8266e77d-4e00-441c-854e-47a33b331aa2
+langcode: de
+status: true
+dependencies:
+  module:
+    - user
+id: user.person
+label: Person
+description: 'A person or an organization next to its role, with avatar, name and link.'
+targetEntityType: user
+cache: true
+

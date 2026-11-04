@@ -3,15 +3,17 @@
  * @file
  * The logbook and the projects of a profile, below both columns.
  *
- * Both are empty for viewers without access to their view.
+ * Both are empty for viewers without access to their view. Each section has
+ * a heading for screen readers, so navigating by headings reaches it.
  */
 #}
 {% set sections = [
-  {title: 'Logbook'|t, content: drupal_view('logbook', 'profile', user_id)},
-  {title: 'Projects'|t, content: drupal_view(projects_view, 'block', user_id)},
+  {id: 'user-profile-logbook', title: 'Logbook'|t, content: drupal_view('logbook', 'profile', user_id)},
+  {id: 'user-profile-projects', title: 'Projects'|t, content: drupal_view(projects_view, 'block', user_id)},
 ] %}
 {% for section in sections|filter(section => section.content) %}
-  <section class="user-profile-wide" aria-label="{{ section.title }}">
+  <section class="user-profile-wide" aria-labelledby="{{ section.id }}">
+    <h2 id="{{ section.id }}" class="visually-hidden">{{ section.title }}</h2>
     {{ section.content }}
   </section>
 {% endfor %}

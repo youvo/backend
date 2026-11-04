@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * The organizations a creative manages, as a section of the profile.
+ *
+ * The section keeps the attributes of the view, which its load more button
+ * needs. Nothing shows without organizations.
+ */
+#}
+{# The classes of core's view template: the load more button finds the view
+   by its dom id. #}
+{% set classes = [
+  'view',
+  'view-' ~ id|clean_class,
+  'view-id-' ~ id,
+  'view-display-id-' ~ display_id,
+  dom_id ? 'js-view-dom-id-' ~ dom_id,
+] %}
+{% if rows %}
+  <section{{ attributes.addClass(classes) }}>
+    <h2 class="user-profile-section-title">{{ 'Managed organizations'|t }}</h2>
+    <ul class="user-profile-organizations">
+      {{ rows }}
+    </ul>
+    {{ pager }}
+  </section>
+{% endif %}

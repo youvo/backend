@@ -143,7 +143,8 @@ class ProjectResult extends ContentEntityBase implements ProjectResultInterface 
       ->setLabel(t('Project Comments'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'project_comment')
-      ->setTranslatable(FALSE);
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 

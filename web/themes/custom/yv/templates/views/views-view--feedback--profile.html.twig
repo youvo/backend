@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * The completed feedback of an author, as a section of the profile sidebar.
+ *
+ * Nothing shows without feedback, so the sidebar has no empty section.
+ */
+#}
+{% if rows %}
+  <section class="user-profile-section">
+    <h2 class="user-profile-section-title">{{ 'Feedback'|t }}</h2>
+    <dl class="user-profile-facts">
+      {{ rows }}
+    </dl>
+  </section>
+{% endif %}

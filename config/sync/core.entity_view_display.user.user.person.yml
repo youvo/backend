@@ -1,0 +1,52 @@
+uuid: 1ed4da0a-2a4d-47c2-9dd7-37fcbf05c3ee
+langcode: de
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.user.person
+    - field.field.user.user.field_about
+    - field.field.user.user.field_avatar
+    - field.field.user.user.field_city
+    - field.field.user.user.field_education
+    - field.field.user.user.field_jobs
+    - field.field.user.user.field_name
+    - field.field.user.user.field_newsletter
+    - field.field.user.user.field_phone
+    - field.field.user.user.field_portfolio
+    - field.field.user.user.field_position
+    - field.field.user.user.field_public_profile
+    - field.field.user.user.field_skills
+    - field.field.user.user.field_tags
+    - field.field.user.user.field_url
+    - user_bundle.user_type.user
+id: user.user.person
+targetEntityType: user
+bundle: user
+mode: person
+content:
+  field_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_about: true
+  field_avatar: true
+  field_city: true
+  field_education: true
+  field_jobs: true
+  field_newsletter: true
+  field_phone: true
+  field_portfolio: true
+  field_position: true
+  field_public_profile: true
+  field_skills: true
+  field_tags: true
+  field_url: true
+  langcode: true
+  member_for: true
+

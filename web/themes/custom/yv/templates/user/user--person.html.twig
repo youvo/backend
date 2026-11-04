@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * A person or an organization next to its role: avatar, name and a link to
+ * the profile, if the viewer may open it.
+ *
+ * The avatar is decoration, as the name follows it. The variables url,
+ * avatar and initials come from yv_preprocess_user().
+ */
+#}
+{{ person_cache }}
+{% set person_content %}
+  {% if avatar %}
+    <span class="person-avatar">{{ avatar }}</span>
+  {% else %}
+    <span class="person-avatar" aria-hidden="true">{{ initials }}</span>
+  {% endif %}
+  <span class="person-name">{{ content.field_name|field_value ?: 'Unknown'|t }}</span>
+{% endset %}
+{% if url %}
+  <a class="person" href="{{ url }}">{{ person_content }}</a>
+{% else %}
+  <span class="person">{{ person_content }}</span>
+{% endif %}

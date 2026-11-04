@@ -476,6 +476,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setSetting('target_type', 'user')
       ->setTranslatable(FALSE)
       ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner')
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'author',
@@ -498,6 +499,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setSetting('off_label', t('Archived'))
       ->setTranslatable(FALSE)
       ->setDefaultValue(TRUE)
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
         'settings' => [
@@ -510,6 +512,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the project was created.'))
       ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',
@@ -523,12 +526,14 @@ class Project extends ContentEntityBase implements ProjectInterface {
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the project was last edited.'))
-      ->setTranslatable(FALSE);
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['promote'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Promoted to front page.'))
       ->setTranslatable(FALSE)
       ->setDefaultValue(FALSE)
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
         'settings' => [
@@ -542,7 +547,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
     $fields['project_result'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Project Result'))
       ->setSetting('target_type', 'project_result')
-      ->setTranslatable(FALSE);
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['user_is_applicant'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('User Status Applicant'))
@@ -576,7 +582,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setLabel(t('Hidden'))
       ->setDescription(t('Hidden projects are not listed publicly and take no applications. The organization still sees them.'))
       ->setTranslatable(FALSE)
-      ->setDefaultValue(FALSE);
+      ->setDefaultValue(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
   }
 
 }

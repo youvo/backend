@@ -93,17 +93,6 @@ function projects_jsonapi_project_filter_access(EntityTypeInterface $entity_type
 }
 
 /**
- * Implements hook_theme().
- */
-function projects_theme(): array {
-  return [
-    'project' => [
-      'render element' => 'elements',
-    ],
-  ];
-}
-
-/**
  * Implements hook_theme_suggestions_HOOK().
  */
 function projects_theme_suggestions_project(array $variables): array {

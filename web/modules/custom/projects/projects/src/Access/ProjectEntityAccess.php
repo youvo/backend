@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 
 /**
@@ -72,8 +73,10 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
 
     $organization = $project->getOwner();
 
-    // Managers can view draft projects of organizations without managers.
+    // Managers can view draft projects of organizations without managers. The
+    // owner is an organization, unless an administrator owns the project.
     if (
+      $organization instanceof Organization &&
       !$organization->hasManager() &&
       $account->hasPermission('general manager access') &&
       $project->lifecycle()->isDraft()
@@ -86,6 +89,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
     // Managers of the organization can view the project in any state.
     if (
       $account->hasPermission('general manager access') &&
+      $organization instanceof Organization &&
       $organization->isManager($account)
     ) {
       return AccessResult::allowed()

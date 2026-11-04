@@ -9,3 +9,10 @@ ajax:
   dependencies:
     - core/drupal
     - claro/ajax
+
+lightbox:
+  js:
+    js/lightbox.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

@@ -85,7 +85,8 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
       ->setDescription(t('The UID of the project comment author.'))
       ->setSetting('target_type', 'user')
       ->setTranslatable(FALSE)
-      ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner');
+      ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner')
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(new TranslatableMarkup('Published'))
@@ -107,14 +108,16 @@ class ProjectComment extends ContentEntityBase implements ProjectCommentInterfac
     $fields['value'] = BaseFieldDefinition::create('string_long')
       ->setTranslatable(TRUE)
       ->setLabel(new TranslatableMarkup('Comment'))
-      ->setDescription(new TranslatableMarkup('The comment.'));
+      ->setDescription(new TranslatableMarkup('The comment.'))
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['task'] = BaseFieldDefinition::create('cacheable_string')
       ->setLabel(t('Task'))
       ->setDescription(t('Computes the task of the user.'))
       ->setComputed(TRUE)
       ->setTranslatable(FALSE)
-      ->setClass(ProjectCommentTaskFieldItemList::class);
+      ->setClass(ProjectCommentTaskFieldItemList::class)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields += static::childBaseFieldDefinitions($entity_type);
 

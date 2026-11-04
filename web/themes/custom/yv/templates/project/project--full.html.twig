@@ -1,0 +1,179 @@
+{#
+/**
+ * @file
+ * Full view of a project in the backend, in the layout of the profiles.
+ *
+ * The fields come from the full display in "content". The entity itself
+ * only sets the colors of the badges.
+ */
+#}
+{{ project_cache }}
+<article class="project-page">
+  <div class="project-page-main">
+    <section class="project-page-card project-page-intro">
+      {% if content.field_image|field_value %}
+        <figure class="project-page-image">
+          {{ content.field_image|field_value }}
+        </figure>
+      {% endif %}
+
+      <div class="project-page-intro-body">
+        <header class="project-page-header">
+          <h1 class="project-page-title">{{ content.title|field_value }}</h1>
+          {# The owner is the organization in the sidebar, so its name here needs
+             a display of its own. #}
+          <p class="project-page-organization">{{ drupal_field('uid', 'project', project.id(), {label: 'hidden', type: 'entity_reference_entity_view', settings: {view_mode: 'name'}})|field_value }}</p>
+          {# The badges reuse the colors of the project teasers. #}
+          <ul class="project-page-badges" aria-label="{{ 'Project status'|t }}">
+            <li><span class="project-teaser-badge" data-badge="{{ project.field_lifecycle.value|clean_class }}">{{ content.field_lifecycle|field_value }}</span></li>
+            {% if not project.isPublished() %}
+              <li><span class="project-teaser-badge" data-badge="archived">{{ 'Archived'|t }}</span></li>
+            {% endif %}
+            {% if project.isHidden() %}
+              <li><span class="project-teaser-badge" data-badge="hidden">{{ 'Hidden'|t }}</span></li>
+            {% endif %}
+            {% if project.isPromoted() %}
+              <li><span class="project-teaser-badge">{{ 'Promoted'|t }}</span></li>
+            {% endif %}
+          </ul>
+        </header>
+
+        {# The display shows the body as the briefing, so the summary needs a
+           display of its own. #}
+        {% set summary = drupal_field('body', 'project', project.id(), {label: 'hidden', type: 'text_summary_only'})|field_value %}
+        {% if summary %}
+          <p class="project-page-summary">{{ summary }}</p>
+        {% endif %}
+
+        {% if content.field_skills|field_value %}
+          <div class="project-page-skills">{{ content.field_skills|field_value }}</div>
+        {% endif %}
+
+        {% set facts = [
+          {label: 'Deadline'|t, value: content.field_deadline|field_value},
+          {label: 'Workload'|t, value: content.field_workload|field_value},
+          {label: 'Location'|t, value: content.field_local|field_value},
+        ]|filter(fact => fact.value) %}
+        {% if facts %}
+          <dl class="project-page-facts">
+            {% for fact in facts %}
+              <div>
+                <dt>{{ fact.label }}</dt>
+                <dd>{{ fact.value }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% endif %}
+      </div>
+    </section>
+
+    {% set sections = [
+      {title: 'Briefing'|t, value: content.body|field_value, class: 'project-page-text'},
+      {title: 'Appreciation'|t, value: content.field_appreciation|field_value, class: 'project-page-plain'},
+      {title: 'Material'|t, value: content.field_material|field_value, class: 'project-page-plain'},
+      {title: 'Allowance'|t, value: content.field_allowance|field_value, class: 'project-page-plain'},
+    ]|filter(section => section.value) %}
+    {% if sections %}
+      <div class="project-page-card project-page-content">
+        {% for section in sections %}
+          <section>
+            <h2 class="project-page-section-title">{{ section.title }}</h2>
+            <div class="{{ section.class }}">{{ section.value }}</div>
+          </section>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# The result belongs to a completed project. #}
+    {% if project.field_lifecycle.value == 'completed' %}
+      {{ content.project_result|field_value }}
+    {% endif %}
+  </div>
+
+  <aside class="project-page-side">
+    <section class="project-page-side-section">
+      <h2 class="project-page-section-title">{{ 'Details'|t }}</h2>
+      <dl class="project-page-details">
+        {% set rows = [
+          {label: 'State'|t, value: content.field_lifecycle|field_value},
+          {label: 'Status'|t, value: content.status|field_value},
+          {label: 'Hidden'|t, value: content.hidden|field_value},
+          {label: 'Promoted'|t, value: content.promote|field_value},
+          {label: 'Language'|t, value: content.langcode|field_value},
+          {label: 'Created'|t, value: content.created|field_value},
+          {label: 'Changed'|t, value: content.changed|field_value},
+        ]|filter(row => row.value) %}
+        {% for row in rows %}
+          <div><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    {% set history = content.field_lifecycle_history|field_value %}
+    {% if history %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ 'Lifecycle'|t }}</h2>
+        <dl class="project-page-details">
+          {% for item in history %}
+            <div>{{ item }}</div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+
+    {# The contact of the organization is a name, not an account, so it gets
+       the markup of a person by hand. The organization is linked below the
+       title. #}
+    {% set contact = content.field_contact|field_value %}
+    {% if contact %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ 'Contact'|t }}</h2>
+        <ul class="person-list">
+          <li>
+            <span class="person">
+              <span class="person-avatar" aria-hidden="true">{{ contact_initials }}</span>
+              <span class="person-name">{{ contact }}</span>
+            </span>
+          </li>
+        </ul>
+      </section>
+    {% endif %}
+
+    {# The tasks are matched to the participants by their position. The
+       manager belongs to the organization. #}
+    {% set manager = drupal_field('field_manager', 'user', project.uid.target_id, {label: 'hidden', type: 'entity_reference_entity_view', settings: {view_mode: 'person'}})|field_value %}
+    {% set groups = [
+      {title: 'Manager'|t, people: manager, roles: []},
+      {title: 'Participants'|t, people: content.field_participants|field_value, roles: content.field_participants_tasks|field_value},
+      {title: 'Applicants'|t, people: content.field_applicants|field_value, roles: []},
+    ] %}
+    {% for group in groups|filter(group => group.people) %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ group.title }}</h2>
+        <ul class="person-list">
+          {% for delta, person in group.people %}
+            <li>
+              {{ person }}
+              {% if group.roles[delta] %}
+                <span class="person-role">{{ group.roles[delta] }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+
+    {{ drupal_view('feedback', 'project', project.id()) }}
+  </aside>
+
+  {# The logbook, below both columns. It is empty for viewers without access
+     to it. The heading is for screen readers, so navigating by headings
+     reaches it. #}
+  {% set logbook = drupal_view('logbook', 'project', project.id()) %}
+  {% if logbook %}
+    <section class="project-page-wide" aria-labelledby="project-page-logbook">
+      <h2 id="project-page-logbook" class="visually-hidden">{{ 'Logbook'|t }}</h2>
+      {{ logbook }}
+    </section>
+  {% endif %}
+</article>

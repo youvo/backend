@@ -3,15 +3,10 @@
  * @file
  * The website and portfolio links of a profile, as list items.
  *
- * Values that are no URL show as text, so they do not look clickable.
+ * The formatter shows values that are no URL as text, so they do not look
+ * clickable.
  */
 #}
 {% for link in links %}
-  <li>
-    {% if link.url %}
-      <a class="user-profile-chip" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
-    {% else %}
-      <span class="user-profile-chip">{{ link.label }}</span>
-    {% endif %}
-  </li>
+  <li>{{ link }}</li>
 {% endfor %}

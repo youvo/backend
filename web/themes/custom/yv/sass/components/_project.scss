@@ -1,0 +1,321 @@
+// =============================================================================
+// PROJECT PAGE (project--full)
+// =============================================================================
+// The admin page of a project, in the layout of the profiles: cards in the
+// main column, the details in a sidebar. The intro card follows the top of
+// the frontend's project page: image, title, badges and the key facts.
+
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+.project-page {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  align-items: start;
+  color: var(--yv-text);
+  hyphens: manual;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+  }
+}
+
+// As on the profiles, only keyboard focus shows Gin's focus ring.
+.project-page :focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.project-page-main {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  min-width: 0;
+}
+
+.project-page-card {
+  @include card;
+}
+
+.project-page-content,
+.project-page-intro-body {
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+// The image spans the top of the card.
+.project-page-intro {
+  overflow: hidden;
+}
+
+.project-page-image {
+  margin: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 1;
+    object-fit: cover;
+    background: var(--yv-chip);
+  }
+}
+
+// The title, the organization and the badges belong together: tighter
+// than the summary and the facts below them.
+.project-page-header {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+}
+
+.project-page-header .project-page-badges {
+  margin-top: var(--gin-spacing-xxs);
+}
+
+.project-page-title {
+  @include page-title;
+}
+
+// As the subtitle of the profiles.
+.project-page-organization {
+  justify-self: start;
+  margin: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+  line-height: 1.3;
+
+  // The name view mode links the name to the organization.
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--yv-accent);
+      text-decoration: underline;
+    }
+  }
+}
+
+.project-page-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The skills in the size of the profiles.
+.project-page-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs);
+
+  .skill {
+    @include skill-size("small");
+  }
+}
+
+.project-page-summary {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-l);
+  line-height: 1.5;
+}
+
+// The key facts side by side, the value above its label, as in the
+// frontend's fact bar. The gaps show the line color behind the facts, so
+// the facts are divided in rows and columns however they wrap. They grow
+// to fill each row, so no gap is left at the end of one.
+.project-page-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--yv-line);
+  border-radius: var(--gin-border-m);
+  background: var(--yv-line);
+
+  > div {
+    display: flex;
+    flex: 1 1 8rem;
+    flex-direction: column-reverse;
+    padding: var(--gin-spacing-s) var(--gin-spacing-m);
+    background: var(--yv-surface);
+  }
+
+  dt {
+    color: var(--yv-muted);
+    font-size: var(--gin-font-size-xs);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--yv-ink);
+
+    // In the size of the text, so the facts don't outweigh the title.
+    font-size: var(--gin-font-size-m);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.project-page-section-title {
+  @include section-label;
+}
+
+.project-page-text {
+  line-height: 1.6;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+// The plain text fields, whose formatter turns line breaks into <br>.
+.project-page-plain {
+  line-height: 1.6;
+}
+
+// The results as small cards with a preview: the image, or the type of the
+// file or link. The description links the whole card.
+.project-page-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--gin-spacing-s);
+  margin: 0;
+
+  // As in the sidebar: the borders start at the top edge, while text starts
+  // below its line spacing.
+  padding: var(--gin-spacing-xxs) 0 0;
+  list-style: none;
+}
+
+.project-page-result {
+  @include card-link(".project-page-result-label");
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--yv-line);
+  border-radius: var(--gin-border-m);
+}
+
+.project-page-result-preview {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 8 / 5;
+  background: var(--yv-chip);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.project-page-result-type {
+  color: var(--yv-chip-text);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.project-page-result-body {
+  display: grid;
+  gap: var(--gin-spacing-xxxs);
+  padding: var(--gin-spacing-xs) var(--gin-spacing-s);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.project-page-result-label {
+  font-weight: 600;
+}
+
+// After the label of a link that leaves the website.
+.project-page-external {
+  margin-inline-start: var(--gin-spacing-xxs);
+  vertical-align: baseline;
+}
+
+.project-page-result-name {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+}
+
+.project-page-comments {
+  display: grid;
+  gap: var(--gin-spacing-m);
+  margin: 0;
+
+  // The avatars start at the top edge, see the results.
+  padding: var(--gin-spacing-xxs) 0 0;
+  list-style: none;
+
+  // The role sits close below the name, as in the sidebar.
+  > li {
+    display: grid;
+    justify-items: start;
+  }
+
+  // Below the name, so the comment reads as the author's: the width of the
+  // avatar and the gap after it.
+  blockquote {
+    margin: var(--gin-spacing-xs) 0 0 calc(#{to-rem(32)} + var(--gin-spacing-s));
+    padding: 0;
+    border: 0;
+    color: var(--yv-ink);
+
+    // Gin enlarges quotes; the comments read as the text around them. The
+    // formatter turns line breaks into <br>.
+    font-size: inherit;
+
+    // Gin draws its own accent bar before a quote.
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.project-page-side {
+  @include card;
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+// Divided from the section above. Embedded views wrap their section, which a
+// sibling selector would miss.
+.project-page-side-section {
+  padding-top: var(--gin-spacing-m);
+  border-top: 1px solid var(--yv-line);
+}
+
+.project-page-side > .project-page-side-section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.project-page-details {
+  @include facts;
+}
+
+// The logbook, below both columns.
+.project-page-wide {
+  min-width: 0;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-column: 1 / -1;
+  }
+}
