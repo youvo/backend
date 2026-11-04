@@ -20,6 +20,7 @@ abstract class ProjectEventSubscriberTestBase extends KernelTestBase {
    */
   protected static $modules = [
     'creatives',
+    'diff',
     'field',
     'lifecycle',
     'options',

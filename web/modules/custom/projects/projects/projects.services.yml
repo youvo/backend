@@ -12,6 +12,10 @@ services:
     shared: false
     arguments:
       [ '@current_user', '@entity_type.manager', '@datetime.time' ]
+  projects.changes_builder:
+    class: Drupal\projects\Service\ProjectChangesBuilder
+    arguments:
+      [ '@entity_type.manager', '@diff.entity_comparison', '@language_manager' ]
   logger.channel.projects:
     parent: logger.channel_base
     arguments: [ 'projects' ]

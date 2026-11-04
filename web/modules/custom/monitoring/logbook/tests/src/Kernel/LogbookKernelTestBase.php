@@ -22,6 +22,7 @@ abstract class LogbookKernelTestBase extends ProjectEventSubscriberTestBase {
   protected static $modules = [
     'child_entities',
     'content_translation',
+    'diff',
     'language',
     'system',
     'views',
