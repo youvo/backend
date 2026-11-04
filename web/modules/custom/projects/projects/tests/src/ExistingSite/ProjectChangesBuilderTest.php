@@ -109,6 +109,9 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
     $fields = $this->fields($this->build($project)['entries'][0]);
     $this->assertSame('Erika Muster', $fields['Image Copyright']['new']);
     $this->assertSame(['2', '3.5'], [$fields['Workload']['old'], $fields['Workload']['new']]);
+
+    $project->set('field_workload', '10')->save();
+    $this->assertSame('10', $this->fields($this->build($project)['entries'][0])['Workload']['new']);
   }
 
   /**

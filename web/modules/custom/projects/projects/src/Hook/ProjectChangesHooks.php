@@ -4,6 +4,7 @@ namespace Drupal\projects\Hook;
 
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
@@ -19,6 +20,7 @@ class ProjectChangesHooks {
 
   public function __construct(
     protected ProjectChangesBuilder $changesBuilder,
+    protected DateFormatterInterface $dateFormatter,
   ) {}
 
   /**
@@ -80,7 +82,7 @@ class ProjectChangesHooks {
     $meta = new FormattableMarkup('@count · @last', [
       '@count' => new PluralTranslatableMarkup($count, '1 revision', '@count revisions'),
       '@last' => new TranslatableMarkup('last @date by @author', [
-        '@date' => date('d.m.Y', $newest['time']),
+        '@date' => $this->dateFormatter->format($newest['time'], 'custom', 'd.m.Y'),
         '@author' => $newest['author_name'] ?: $newest['author_role'],
       ]),
     ]);

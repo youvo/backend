@@ -75,7 +75,7 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
   /**
    * Tests that entries beyond the two newest are hidden behind a button.
    */
-  public function testOlderEntriesNested(): void {
+  public function testOlderEntriesHidden(): void {
 
     $project = $this->createChangedProject(3);
 

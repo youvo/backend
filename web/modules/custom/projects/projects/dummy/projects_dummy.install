@@ -44,6 +44,26 @@ function projects_dummy_install(): void {
  */
 function projects_dummy_generate_content(): void {
 
+  // The images are attached on create. Without active updating, every later
+  // save makes filefield_paths log a notice about the file it skips; with it,
+  // a file already in place passes silently.
+  $image_field = 'field.field.project.project.field_image';
+  $GLOBALS['config'][$image_field]['third_party_settings']['filefield_paths']['active_updating'] = TRUE;
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+  try {
+    projects_dummy_generate_projects();
+  }
+  finally {
+    unset($GLOBALS['config'][$image_field]);
+    \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+  }
+}
+
+/**
+ * Generates the dummy projects with their lifecycles and edits.
+ */
+function projects_dummy_generate_projects(): void {
+
   // Initialize user IDs.
   $creative_ids = \Drupal::entityQuery('user')
     ->accessCheck(FALSE)
@@ -100,13 +120,6 @@ function projects_dummy_generate_content(): void {
 
   /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
   $event_dispatcher = \Drupal::service('event_dispatcher');
-
-  // The images are attached on create. Without active updating, every later
-  // save makes filefield_paths log a notice about the file it skips; with it,
-  // a file already in place passes silently.
-  $image_field = 'field.field.project.project.field_image';
-  $GLOBALS['config'][$image_field]['third_party_settings']['filefield_paths']['active_updating'] = TRUE;
-  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 
   // Create random content.
   for ($i = 1; $i <= $total; $i++) {
@@ -356,8 +369,6 @@ function projects_dummy_generate_content(): void {
     }
   }
 
-  unset($GLOBALS['config'][$image_field]);
-  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 }
 
 /**

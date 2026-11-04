@@ -139,7 +139,11 @@ class ProjectChangesBuilder {
     return match ($type) {
       'datetime' => $this->dates($value),
       // Diff shows decimals with all places of the scale: 2.00 reads as 2.
-      'decimal' => implode(', ', array_map(static fn (string $number) => rtrim(rtrim($number, '0'), '.'), explode(', ', $this->plain($value)))),
+      // Only places after a point are trimmed, so 10 stays 10.
+      'decimal' => implode(', ', array_map(
+        static fn (string $number) => str_contains($number, '.') ? rtrim(rtrim($number, '0'), '.') : $number,
+        explode(', ', $this->plain($value)),
+      )),
       default => $this->plain($value),
     };
   }
