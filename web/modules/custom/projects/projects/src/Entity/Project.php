@@ -681,6 +681,10 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       $translation = $this->getTranslation($langcode);
       $original_translation = $original->hasTranslation($langcode) ? $original->getTranslation($langcode) : NULL;
       foreach (static::CONTENT_FIELDS as $field_name) {
+        // Sites without a configurable field, such as kernel tests, skip it.
+        if (!$translation->hasField($field_name)) {
+          continue;
+        }
         $items = $translation->get($field_name);
         $changed_items = $original_translation
           ? $items->hasAffectingChanges($original_translation->get($field_name), $langcode)
