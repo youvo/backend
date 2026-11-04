@@ -194,11 +194,20 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
    */
   public function preSave(EntityStorageInterface $storage): void {
 
-    // The change set is computed in hook_project_presave(), after the fields
-    // filled in their derived values. See trackContentChanges().
     $this->changedContentFields = [];
     $this->previousRevisionId = NULL;
     $this->wasSubmitted = FALSE;
+    if (!$this->isNew() && !$this->isSyncing()) {
+      $this->changedContentFields = $this->computeChangedContentFields();
+      $this->previousRevisionId = (int) $this->getLoadedRevisionId();
+      $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
+      if ($this->changedContentFields) {
+        $this->setNewRevision();
+        $this->setRevisionUserId(\Drupal::currentUser()->id());
+        $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
+        $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
+      }
+    }
 
     parent::preSave($storage);
     if ($this->isNew()) {
@@ -633,24 +642,6 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
   /**
    * {@inheritdoc}
    */
-  public function trackContentChanges(): void {
-    if ($this->isNew() || $this->isSyncing()) {
-      return;
-    }
-    $this->changedContentFields = $this->computeChangedContentFields();
-    $this->previousRevisionId = (int) $this->getLoadedRevisionId();
-    $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
-    if ($this->changedContentFields) {
-      $this->setNewRevision();
-      $this->setRevisionUserId(\Drupal::currentUser()->id());
-      $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
-      $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getChangedContentFields(): array {
     return $this->changedContentFields;
   }
@@ -702,9 +693,15 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
           continue;
         }
         $items = $translation->get($field_name);
-        $changed_items = $original_translation
-          ? $items->hasAffectingChanges($original_translation->get($field_name), $langcode)
-          : !$items->isEmpty();
+        $original_items = $original_translation?->get($field_name);
+        $changed_items = match (TRUE) {
+          $original_items === NULL => !$items->isEmpty(),
+          // Only another file changes the image. The image fills in its
+          // dimensions on save, after this comparison.
+          $field_name === 'field_image' => $items->hasAffectingChanges($original_items, $langcode) &&
+            array_column($items->getValue(), 'target_id') != array_column($original_items->getValue(), 'target_id'),
+          default => $items->hasAffectingChanges($original_items, $langcode),
+        };
         if ($changed_items) {
           $changed[$field_name] = $field_name;
         }
