@@ -1,0 +1,28 @@
+langcode: de
+status: true
+dependencies: {  }
+id: project_change
+label: 'Project Change'
+tokens:
+  -
+    token: '%Project'
+    required: true
+  -
+    token: '%AuthorWithRole'
+    required: false
+  -
+    token: '%Author'
+    required: false
+  -
+    token: '%Changes'
+    required: false
+  -
+    token: '%Diff'
+    required: false
+detectable: false
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''
+tone: attention

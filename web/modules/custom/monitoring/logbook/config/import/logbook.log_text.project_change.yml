@@ -1,0 +1,4 @@
+id: project_change
+langcode: 'de'
+text: 'Das Projekt %Project wurde von der %AuthorWithRole bearbeitet: %Changes. %Diff'
+public_text: 'Das Projekt %Project wurde von %Author bearbeitet.'

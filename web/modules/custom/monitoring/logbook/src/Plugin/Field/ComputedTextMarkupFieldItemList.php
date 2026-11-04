@@ -4,6 +4,7 @@ namespace Drupal\logbook\Plugin\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\logbook\LogPatternInterface;
 use Drupal\user\UserInterface;
 
@@ -45,6 +46,24 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
     // Organization logs have no project.
     if ($organization = $log->getOrganization() ?? $project?->getOwner()) {
       $replacements['%Organization'] = $this->generateLink($organization->getName(), $organization);
+    }
+
+    // Project change logs name the changed fields and link to the revision.
+    $misc = $log->getMisc();
+    if ($project && !empty($misc['fields'])) {
+      $labels = [];
+      foreach ($misc['fields'] as $field_name) {
+        if ($project->hasField($field_name)) {
+          $labels[] = $project->getFieldDefinition($field_name)->getLabel();
+        }
+      }
+      $replacements['%Changes'] = implode(', ', $labels);
+    }
+    if ($project && !empty($misc['revision_id'])) {
+      $replacements['%Diff'] = Link::createFromRoute(new TranslatableMarkup('Änderungen ansehen'), 'entity.project.revision', [
+        'project' => $project->id(),
+        'project_revision' => $misc['revision_id'],
+      ])->toString();
     }
 
     if ($creatives = $log->getCreatives()) {
