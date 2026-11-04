@@ -50,7 +50,7 @@
   display: none;
 }
 
-// The image spans the top of the card, its copyright below it.
+// The image spans the top of the card.
 .project-page-intro {
   overflow: hidden;
 }
@@ -65,17 +65,6 @@
     aspect-ratio: 3 / 1;
     object-fit: cover;
     background: var(--yv-chip);
-  }
-
-  figcaption {
-    padding: var(--gin-spacing-xxs) var(--gin-spacing-m) 0;
-    color: var(--yv-muted);
-    font-size: var(--gin-font-size-xxs);
-    text-align: end;
-
-    @media (min-width: $breakpoint-medium) {
-      padding-inline: var(--gin-spacing-l);
-    }
   }
 }
 
@@ -330,6 +319,13 @@
 
 .project-page-details {
   @include facts;
+}
+
+// Who made a transition, below its date.
+.project-page-history-by {
+  display: block;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
 }
 
 // The logbook, below both columns.

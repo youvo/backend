@@ -38,9 +38,6 @@
       {% if page.image %}
         <figure class="project-page-image">
           {{ page.image|field_value }}
-          {% if page.copyright %}
-            <figcaption>© {{ page.copyright }}</figcaption>
-          {% endif %}
         </figure>
       {% endif %}
 
@@ -167,7 +164,15 @@
         <h2 class="project-page-section-title">{{ 'Lifecycle'|t }}</h2>
         <dl class="project-page-details">
           {% for item in page.history %}
-            <div><dt>{{ item.label }}</dt><dd>{{ item.date }}</dd></div>
+            <div>
+              <dt>{{ item.label }}</dt>
+              <dd>
+                {{ item.date }}
+                {% if item.by %}
+                  <span class="project-page-history-by">{{ item.by }}</span>
+                {% endif %}
+              </dd>
+            </div>
           {% endfor %}
         </dl>
       </section>

@@ -2,9 +2,13 @@
 
 namespace Drupal\Tests\projects\ExistingSite;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\logbook\Entity\Log;
+use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
+use Drupal\user\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -35,6 +39,31 @@ class ProjectPageTest extends ProjectResourceTestBase {
     $html = $this->renderProject($project);
     $this->assertStringContainsString('project-page-title', $html);
     $this->assertStringNotContainsString('Mara Völker', $html);
+  }
+
+  /**
+   * An archived project shows its status and the reason from its log.
+   */
+  public function testArchiveReason(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $this->container->get('current_user')->setAccount(User::load(1));
+    $html = $this->renderProject($project);
+    $this->assertStringContainsString('<dt>Status</dt><dd>Active</dd>', $html);
+    $this->assertStringNotContainsString('Archive reason', $html);
+
+    $project->setArchived()->save();
+    $log = Log::create([
+      'type' => 'project_archive',
+      'author' => 1,
+      'project' => $project->id(),
+      'misc' => Json::encode(['reason' => ProjectArchiveReason::External->value]),
+    ]);
+    $log->save();
+    $this->markEntityForCleanup($log);
+    $html = $this->renderProject($project);
+    $this->assertStringContainsString('<dt>Status</dt><dd>Archived</dd>', $html);
+    $this->assertStringContainsString('<dt>Archive reason</dt><dd>' . ProjectArchiveReason::External->label() . '</dd>', $html);
   }
 
   /**

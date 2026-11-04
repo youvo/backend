@@ -12,9 +12,13 @@ use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\FileInterface;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
+use Drupal\logbook\LogInterface;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\ProjectArchiveReason;
+use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
@@ -512,7 +516,6 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
       'type' => 'image',
       'settings' => ['image_style' => 'wide'],
     ]) : NULL,
-    'copyright' => $value('field_image_copyright'),
     'summary' => $shows($project, 'body') ? trim((string) $project->get('body')->summary) ?: NULL : NULL,
     'body' => $shows($project, 'body') ? $project->get('body')->view([
       'label' => 'hidden',
@@ -574,12 +577,12 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   }
 
   // The tasks of the participants, named as the sections of the sidebar.
+  $tasks = [
+    'Creative' => (string) t('Creative'),
+    'Manager' => (string) t('Manager'),
+  ];
   $page['participants'] = [];
   if ($shows($project, 'field_participants')) {
-    $tasks = [
-      'Creative' => (string) t('Creative'),
-      'Manager' => (string) t('Manager'),
-    ];
     foreach ($project->getParticipants() as $participant) {
       if ($participant instanceof Creative) {
         // @phpstan-ignore-next-line
@@ -627,7 +630,8 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
         $cache->addCacheableDependency($comment);
         $author = $comment->getOwner();
         if ($comment->get('status')->value && trim($comment->getComment()) !== '' && $author instanceof Creative) {
-          $comments[] = $person($author, NULL) + ['comment' => $comment->getComment()];
+          $task = (string) $comment->get('task')->value;
+          $comments[] = $person($author, $tasks[$task] ?? ($task ?: NULL)) + ['comment' => $comment->getComment()];
         }
       }
       $page['result'] = array_filter(['links' => $links, 'comments' => $comments]);
@@ -635,10 +639,41 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   }
 
   // The details in the sidebar.
-  $details = [['label' => t('Status'), 'value' => $page['state_label']]];
-  if ($page['archived']) {
-    $details[] = ['label' => t('Archive status'), 'value' => t('Archived')];
+  $details = [
+    ['label' => t('State'), 'value' => $page['state_label']],
+    ['label' => t('Status'), 'value' => $page['archived'] ? t('Archived') : t('Active')],
+  ];
+
+  // The reasons of a decline and of the archiving are kept in their logs.
+  $log_storage = \Drupal::entityTypeManager()->getStorage('log');
+  $cache->addCacheTags(['log_list']);
+  $reasons = [
+    'project_decline' => [$state === 'declined', t('Decline reason'), ProjectDeclineReason::class],
+    'project_archive' => [$page['archived'], t('Archive reason'), ProjectArchiveReason::class],
+  ];
+  foreach ($reasons as $type => [$applies, $label, $enum]) {
+    if (!$applies) {
+      continue;
+    }
+    $log_ids = $log_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', $type)
+      ->condition('project', $project->id())
+      ->sort('created', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    $log = $log_ids ? $log_storage->load(reset($log_ids)) : NULL;
+    if (!$log instanceof LogInterface) {
+      continue;
+    }
+    $access = $log->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access)->addCacheableDependency($log);
+    $reason = $enum::tryFrom((string) ($log->getMisc()['reason'] ?? ''));
+    if ($access->isAllowed() && $reason) {
+      $details[] = ['label' => $label, 'value' => $reason->label()];
+    }
   }
+
   $details[] = ['label' => t('Hidden'), 'value' => $page['hidden'] ? t('Yes') : t('No')];
   $details[] = ['label' => t('Promoted'), 'value' => $page['promoted'] ? t('Yes') : t('No')];
   if ($shows($project, 'langcode')) {
@@ -652,13 +687,21 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   }
   $page['details'] = $details;
 
-  // The lifecycle, newest first: each state with the date it was reached.
+  // The lifecycle, newest first: each state with the date it was reached and
+  // who made the transition.
   $page['history'] = [];
   if ($shows($project, 'field_lifecycle_history')) {
+    $user_storage = \Drupal::entityTypeManager()->getStorage('user');
     foreach (array_reverse($project->get('field_lifecycle_history')->getValue()) as $item) {
+      $by = $item['uid'] ? $user_storage->load($item['uid']) : NULL;
       $page['history'][] = [
         'label' => $states[$item['to']] ?? $item['to'],
         'date' => $date((int) $item['timestamp']),
+        'by' => match (TRUE) {
+          $by instanceof Organization, $by instanceof Creative => $person($by, NULL)['name'],
+          $by instanceof UserInterface => $by->getDisplayName(),
+          default => NULL,
+        },
       ];
     }
   }
