@@ -711,7 +711,9 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
         $items = $translation->get($field_name);
         $original_items = $original_translation?->get($field_name);
         $changed_items = match (TRUE) {
-          $original_items === NULL => !$items->isEmpty(),
+          // A new translation shares the untranslatable fields, which the
+          // default translation compares already.
+          $original_items === NULL => $items->getFieldDefinition()->isTranslatable() && !$items->isEmpty(),
           // Only other targets count: the image fills in its dimensions later.
           $items instanceof EntityReferenceFieldItemListInterface => $items->hasAffectingChanges($original_items, $langcode) &&
             array_column($items->getValue(), 'target_id') != array_column($original_items->getValue(), 'target_id'),

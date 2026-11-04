@@ -179,4 +179,42 @@ class ProjectRevisionTest extends ProjectResourceTestBase {
     $this->assertSame(1700000000, (int) $project->getRevisionCreationTime());
   }
 
+  /**
+   * Tests that a new translation changes only its translatable fields.
+   *
+   * Untranslatable fields share the values of the default translation.
+   */
+  public function testNewTranslationChangesTranslatableFields(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->set('field_city', 'Hamburg')->set('field_workload', '2')->save();
+
+    $project->addTranslation('en', ['title' => 'English'])->save();
+
+    $this->assertSame(['title'], $project->getChangedContentFields());
+  }
+
+  /**
+   * Tests that the update hook names the creator of the first revisions.
+   *
+   * The storage conversion copies the projects without revision metadata.
+   */
+  public function testUpdateBackfillsFirstRevisions(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->set('created', 1700000000)->setSyncing(TRUE)->save();
+    $this->container->get('database')->update('project_revision')
+      ->fields(['revision_user' => NULL, 'revision_created' => NULL])
+      ->condition('id', $project->id())
+      ->execute();
+
+    $this->container->get('module_handler')->loadInclude('projects', 'install');
+    projects_backfill_revision_metadata();
+
+    /** @var \Drupal\projects\ProjectInterface $revision */
+    $revision = $this->container->get('entity_type.manager')->getStorage('project')->loadRevision($project->getRevisionId());
+    $this->assertSame((int) $project->getOwnerId(), (int) $revision->getRevisionUserId());
+    $this->assertSame(1700000000, (int) $revision->getRevisionCreationTime());
+  }
+
 }

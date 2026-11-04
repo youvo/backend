@@ -167,6 +167,24 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that a changed alt text is no change of the image.
+   *
+   * References change with their targets only, as in the change log.
+   */
+  public function testImageAltIsNoChange(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $uri = $this->container->get('file_system')->copy('core/misc/druplicon.png', 'public://', 0);
+    $file = File::create(['uri' => $uri, 'status' => 1]);
+    $file->save();
+    $this->markEntityForCleanup($file);
+    $project->set('field_image', ['target_id' => $file->id(), 'alt' => 'Alt'])->save();
+    $project->setTitle('Neu')->set('field_image', ['target_id' => $file->id(), 'alt' => 'Other alt'])->save();
+
+    $this->assertSame(['Project Title'], array_keys($this->fields($this->build($project)['entries'][0])));
+  }
+
+  /**
    * Tests that values are plain text, not escaped twice.
    */
   public function testPlainValues(): void {

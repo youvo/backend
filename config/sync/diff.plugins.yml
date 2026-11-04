@@ -50,7 +50,9 @@ fields:
       settings: {  }
     field_image:
       type: image_field_diff_builder
-      settings: {  }
+      settings:
+        compare_alt_field: 0
+        compare_title_field: 0
     field_image_copyright:
       type: core_field_diff_builder
       settings: {  }
