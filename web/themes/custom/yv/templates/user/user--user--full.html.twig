@@ -13,7 +13,7 @@
 <article{{ attributes.addClass('user-profile') }}>
   <div class="user-profile-main">
     <header class="user-profile-header">
-      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: content.field_avatar|field_value, initials: profile.initials, shape: 'round'} only %}
+      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: profile.avatar, initials: profile.initials, shape: 'round'} only %}
       <div class="user-profile-heading">
         <h1 class="user-profile-name">{{ profile.name }}</h1>
         {% if profile.position %}

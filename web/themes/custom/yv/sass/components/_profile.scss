@@ -180,13 +180,6 @@
       }
     }
   }
-
-  // The manager's avatar, in the size of the contact's initials.
-  .user-avatar {
-    @include icon-size(medium);
-
-    flex: none;
-  }
 }
 
 .user-profile-initials {

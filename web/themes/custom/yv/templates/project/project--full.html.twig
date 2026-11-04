@@ -125,7 +125,8 @@
             <ul class="project-page-results" data-lightbox-group>
               {% for item in page.result.items %}
                 <li class="project-page-result">
-                  <div class="project-page-result-preview">
+                  {# The label of the link names the result, so the preview is decoration. #}
+                  <div class="project-page-result-preview" aria-hidden="true">
                     {% if item.preview %}
                       {{ item.preview }}
                     {% else %}
@@ -226,10 +227,13 @@
     {% endif %}
   </aside>
 
-  {# The logbook, below both columns. It is empty for viewers without access to it. #}
+  {# The logbook, below both columns. It is empty for viewers without access
+     to it. The heading is for screen readers, so navigating by headings
+     reaches it. #}
   {% set logbook = drupal_view('logbook', 'project', project.id()) %}
   {% if logbook %}
-    <section class="project-page-wide" aria-label="{{ 'Logbook'|t }}">
+    <section class="project-page-wide" aria-labelledby="project-page-logbook">
+      <h2 id="project-page-logbook" class="visually-hidden">{{ 'Logbook'|t }}</h2>
       {{ logbook }}
     </section>
   {% endif %}

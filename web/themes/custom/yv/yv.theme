@@ -82,8 +82,10 @@ function yv_preprocess_user(array &$variables): void {
     $access = $user->access('view', NULL, TRUE);
     $variables['url'] = $access->isAllowed() && !$user->isNew() ? $user->toUrl()->toString() : NULL;
     $variables['initials'] = yv_initials($user->getName());
+    $teaser_cache = CacheableMetadata::createFromObject($access);
+    $variables['avatar'] = yv_avatar($user, $teaser_cache);
     $variables['teaser_cache'] = [];
-    CacheableMetadata::createFromObject($access)->applyTo($variables['teaser_cache']);
+    $teaser_cache->applyTo($variables['teaser_cache']);
     return;
   }
 
@@ -132,6 +134,7 @@ function yv_preprocess_user(array &$variables): void {
   $profile = [
     'name' => $name,
     'initials' => yv_initials($name),
+    'avatar' => yv_avatar($user, $cache),
     'links' => $links,
     'mail' => $value('mail'),
     'phone' => $phone,
@@ -155,11 +158,15 @@ function yv_preprocess_user(array &$variables): void {
 
     $profile['manager_name'] = NULL;
     $profile['manager_url'] = NULL;
+    $profile['manager_avatar'] = NULL;
+    $profile['manager_initials'] = NULL;
     $manager_access = $user->get('field_manager')->access('view', NULL, TRUE);
     $cache->addCacheableDependency($manager_access);
     $manager = $manager_access->isAllowed() ? $user->getManager() : NULL;
     if ($manager) {
       $profile['manager_name'] = $manager->getName();
+      $profile['manager_avatar'] = yv_avatar($manager, $cache);
+      $profile['manager_initials'] = yv_initials($manager->getName());
       $access = $manager->access('view', NULL, TRUE);
       $cache->addCacheableDependency($access)->addCacheableDependency($manager);
       if ($access->isAllowed()) {
@@ -541,13 +548,32 @@ function yv_person(Organization|Creative $user, ?string $role, CacheableMetadata
   return [
     'name' => $name,
     'initials' => yv_initials($name),
-    'avatar' => yv_field_shows($user, 'field_avatar', $cache) ? $user->get('field_avatar')->view([
-      'label' => 'hidden',
-      'type' => 'image',
-      'settings' => ['image_style' => 'avatar'],
-    ]) : NULL,
+    'avatar' => yv_avatar($user, $cache),
     'role' => $role,
     'url' => $access->isAllowed() ? $user->toUrl()->toString() : NULL,
+  ];
+}
+
+/**
+ * Gets the avatar of an organization or a creative as decoration.
+ *
+ * The avatar always stands next to the name, so its alt text would only
+ * precede the name for screen readers.
+ */
+function yv_avatar(Organization|Creative $user, CacheableMetadata $cache): ?array {
+  if (!yv_field_shows($user, 'field_avatar', $cache)) {
+    return NULL;
+  }
+  $file = $user->get('field_avatar')->entity;
+  if (!$file instanceof FileInterface) {
+    return NULL;
+  }
+  $cache->addCacheableDependency($file);
+  return [
+    '#theme' => 'image_style',
+    '#style_name' => 'avatar',
+    '#uri' => $file->getFileUri(),
+    '#alt' => '',
   ];
 }
 

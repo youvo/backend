@@ -45,6 +45,9 @@
         const image = element('img', 'lightbox-image');
         image.alt = '';
         const caption = element('figcaption', 'lightbox-caption');
+        // Announces the next or previous image, whose change is not otherwise
+        // perceivable without sight.
+        caption.setAttribute('aria-live', 'polite');
         figure.append(image, caption);
         const close = button('lightbox-close', Drupal.t('Close'), '×');
         const previous = button('lightbox-previous', Drupal.t('Previous image'), '‹');
