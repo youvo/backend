@@ -152,6 +152,14 @@ content:
     third_party_settings: {  }
     weight: 14
     region: content
+  field_local:
+    type: project_location
+    label: hidden
+    settings:
+      city_field: field_city
+    third_party_settings: {  }
+    weight: 22
+    region: content
   field_material:
     type: basic_string
     label: hidden
@@ -251,5 +259,4 @@ content:
 hidden:
   field_city: true
   field_image_copyright: true
-  field_local: true
 

@@ -342,7 +342,7 @@ function yv_preprocess_project(array &$variables): void {
 
   $project = $variables['elements']['#project'];
   if ($project instanceof ProjectInterface && $variables['elements']['#view_mode'] === 'full') {
-    yv_preprocess_project_full($variables, $project);
+    yv_preprocess_project_full($variables);
     return;
   }
   if (!$project instanceof ProjectInterface || $variables['elements']['#view_mode'] !== 'teaser') {
@@ -377,21 +377,12 @@ function yv_preprocess_project(array &$variables): void {
 /**
  * Prepares the full view of a project, its page in the backend.
  *
- * The plain fields come from the full display in "content". Here are only
- * the values the display cannot provide, each set only when the viewer may
- * see its fields, as on the profiles. The cacheability bubbles up through
- * project_cache.
+ * The page shows the fields of the full display one by one, so the
+ * cacheability of the others is passed on here, see yv_content_cache().
  */
-function yv_preprocess_project_full(array &$variables, ProjectInterface $project): void {
-
-  $cache = CacheableMetadata::createFromObject($project);
+function yv_preprocess_project_full(array &$variables): void {
+  $cache = new CacheableMetadata();
   yv_content_cache($variables['content'], $cache);
-
-  $page = [
-    'location' => yv_project_location($project, $cache),
-  ];
-
-  $variables['project_page'] = $page;
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
 }
@@ -447,20 +438,6 @@ function yv_avatar(Organization|Creative $user, CacheableMetadata $cache): ?arra
     '#uri' => $file->getFileUri(),
     '#alt' => '',
   ];
-}
-
-/**
- * Gets the location: the city of a local project, or remote.
- *
- * It combines two fields, which a formatter of one field cannot.
- */
-function yv_project_location(ProjectInterface $project, CacheableMetadata $cache): mixed {
-  if (!yv_field_shows($project, 'field_local', $cache)) {
-    return NULL;
-  }
-  return $project->get('field_local')->value
-    ? (yv_field_value($project, 'field_city', $cache) ?? t('On site'))
-    : t('Remote');
 }
 
 /**

@@ -3,12 +3,10 @@
  * @file
  * Full view of a project in the backend, in the layout of the profiles.
  *
- * The plain fields come from the full display in "content". The values in
- * "project_page" come from yv_preprocess_project_full(), for what the display
- * cannot show, and are set only when the viewer may see the fields.
+ * The fields come from the full display in "content". The entity itself
+ * only sets the colors of the badges.
  */
 #}
-{% set page = project_page %}
 {{ project_cache }}
 <article class="project-page">
   <div class="project-page-main">
@@ -54,7 +52,7 @@
         {% set facts = [
           {label: 'Deadline'|t, value: content.field_deadline|field_value},
           {label: 'Workload'|t, value: content.field_workload|field_value},
-          {label: 'Location'|t, value: page.location},
+          {label: 'Location'|t, value: content.field_local|field_value},
         ]|filter(fact => fact.value) %}
         {% if facts %}
           <dl class="project-page-facts">
@@ -96,11 +94,9 @@
     <section class="project-page-side-section">
       <h2 class="project-page-section-title">{{ 'Details'|t }}</h2>
       <dl class="project-page-details">
-        <div><dt>{{ 'State'|t }}</dt><dd>{{ content.field_lifecycle|field_value }}</dd></div>
-        {% if content.status|field_value %}
-          <div><dt>{{ 'Status'|t }}</dt><dd>{{ content.status|field_value }}</dd></div>
-        {% endif %}
         {% set rows = [
+          {label: 'State'|t, value: content.field_lifecycle|field_value},
+          {label: 'Status'|t, value: content.status|field_value},
           {label: 'Hidden'|t, value: content.hidden|field_value},
           {label: 'Promoted'|t, value: content.promote|field_value},
           {label: 'Language'|t, value: content.langcode|field_value},

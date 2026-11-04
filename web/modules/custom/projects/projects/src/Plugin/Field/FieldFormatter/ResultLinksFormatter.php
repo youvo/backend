@@ -65,12 +65,11 @@ class ResultLinksFormatter extends FormatterBase {
         '#kind' => $this->t('Link'),
         '#external' => $url && $url->isExternal() && !UrlHelper::externalIsLocal($link, $base_url),
         '#weight' => (int) $item->get('weight')->getValue(),
+        // Whether the link leaves the website depends on its address.
+        '#cache' => ['contexts' => ['url.site']],
       ];
     }
     usort($elements, static fn (array $a, array $b): int => $a['#weight'] <=> $b['#weight']);
-    if ($elements) {
-      $elements[0]['#cache']['contexts'][] = 'url.site';
-    }
     return $elements;
   }
 
