@@ -2,8 +2,10 @@
 
 namespace Drupal\Tests\projects\ExistingSite;
 
+use Drupal\file\Entity\File;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -106,6 +108,44 @@ class ProjectRevisionTest extends ProjectResourceTestBase {
 
     $this->assertCount($revision_count + 1, $this->revisionIds($project));
     $this->assertSame(['title'], $project->getChangedContentFields());
+  }
+
+  /**
+   * Creates an image file.
+   */
+  protected function createImage(): File {
+    $uri = $this->container->get('file_system')->copy('core/misc/druplicon.png', 'public://', 0);
+    $file = File::create(['uri' => $uri, 'status' => 1]);
+    $file->save();
+    $this->markEntityForCleanup($file);
+    return $file;
+  }
+
+  /**
+   * Tests that references change only with other targets.
+   */
+  public function testReferenceChanges(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->set('field_image', ['target_id' => $this->createImage()->id(), 'alt' => 'Alt'])->save();
+    $this->assertSame(['field_image'], $project->getChangedContentFields());
+    $revision_count = count($this->revisionIds($project));
+
+    // The same file with other derived values and alt text is no change.
+    $file_id = $project->get('field_image')->target_id;
+    $project->set('field_image', ['target_id' => $file_id, 'alt' => 'Other alt'])->save();
+    $this->assertSame([], $project->getChangedContentFields());
+    $this->assertCount($revision_count, $this->revisionIds($project));
+
+    $project->set('field_image', ['target_id' => $this->createImage()->id(), 'alt' => 'Alt'])->save();
+    $this->assertSame(['field_image'], $project->getChangedContentFields());
+
+    $skill = Term::create(['vid' => 'skills', 'name' => $this->randomMachineName()]);
+    $skill->save();
+    $this->markEntityForCleanup($skill);
+    $project->set('field_skills', [$skill->id()])->save();
+    $this->assertSame(['field_skills'], $project->getChangedContentFields());
+    $this->assertCount($revision_count + 2, $this->revisionIds($project));
   }
 
 }

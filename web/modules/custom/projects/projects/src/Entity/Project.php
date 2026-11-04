@@ -237,9 +237,8 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       $this->set('project_result', ['target_id' => $project_result->id()]);
       // It is not ideal to have a recursive save here, but we trust the update
       // argument. Unfortunately, we somehow need to resolve the IDs, which are
-      // not available before the first save, to create the relation. The
-      // storage marks the first revision as stored only after postSave(), so
-      // the second save would insert it again.
+      // not available before the first save, to create the relation. Without
+      // marking the revision as stored, the second save would insert it again.
       $this->updateLoadedRevisionId();
       $this->setNewRevision(FALSE);
       $this->save();
@@ -254,8 +253,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     }
 
-    // Content changes after draft are worth a note for the managers, if this
-    // is a proper organization like for the create event.
+    // Logs content changes after draft, for organizations like on create.
     if (
       $update &&
       $this->changedContentFields &&
@@ -657,7 +655,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
   /**
    * {@inheritdoc}
    *
-   * Every translation object reports the change set of the last save.
+   * Shares the change set with every translation object.
    */
   protected function initializeTranslation($langcode) {
     /** @var static $translation */
@@ -671,8 +669,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
   /**
    * Computes the content fields that differ from the original project.
    *
-   * Every translation counts. A translation the original lacks changes its
-   * non-empty content fields.
+   * Checks every translation; a new translation changes its filled fields.
    *
    * @return string[]
    *   The changed field names, in CONTENT_FIELDS order.
@@ -689,7 +686,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       $translation = $this->getTranslation($langcode);
       $original_translation = $original->hasTranslation($langcode) ? $original->getTranslation($langcode) : NULL;
       foreach (static::CONTENT_FIELDS as $field_name) {
-        // Sites without a configurable field, such as kernel tests, skip it.
+        // Kernel tests may lack configurable fields.
         if (!$translation->hasField($field_name)) {
           continue;
         }
@@ -697,9 +694,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
         $original_items = $original_translation?->get($field_name);
         $changed_items = match (TRUE) {
           $original_items === NULL => !$items->isEmpty(),
-          // Only other targets change a reference, such as another file of the
-          // image. The image fills in its dimensions on save, after this
-          // comparison.
+          // Only other targets count: the image fills in its dimensions later.
           $items instanceof EntityReferenceFieldItemListInterface => $items->hasAffectingChanges($original_items, $langcode) &&
             array_column($items->getValue(), 'target_id') != array_column($original_items->getValue(), 'target_id'),
           default => $items->hasAffectingChanges($original_items, $langcode),

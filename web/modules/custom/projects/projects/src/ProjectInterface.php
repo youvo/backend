@@ -42,8 +42,7 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   /**
    * The fields that make up the content of a project.
    *
-   * A save that changes one of them creates a new revision. The other fields
-   * hold workflow state, such as the lifecycle, applicants and participants.
+   * Changing one creates a revision. Other fields hold workflow state.
    */
   public const array CONTENT_FIELDS = [
     'title',
