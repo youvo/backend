@@ -14,10 +14,11 @@ use PHPUnit\Framework\Attributes\Group;
 class ProjectChangesCardTest extends ProjectResourceTestBase {
 
   /**
-   * Creates a pending project with the given number of title changes.
+   * Creates a pending project with title changes by its organization.
    */
   protected function createChangedProject(int $changes): ProjectInterface {
     $project = $this->createProject(ProjectState::Pending);
+    $this->setCurrentUser($project->getOwner());
     for ($i = 1; $i <= $changes; $i++) {
       $project->setTitle('Titel ' . $i)->save();
     }
@@ -41,6 +42,11 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
     $session->elementTextContains('css', 'details.project-changes > summary', '2 changes');
     $session->elementTextContains('css', '#revision-' . $revision_id, 'Project Title');
     $session->elementExists('css', '#revision-' . $revision_id . ' a[href$="/projects/' . $project->id() . '/revisions/' . $revision_id . '/view"]');
+
+    // Entries read like the logbook: a type pill and a sentence naming the
+    // author with a link.
+    $session->elementTextEquals('css', '#revision-' . $revision_id . ' .project-changes-type', 'Change');
+    $session->elementExists('css', '#revision-' . $revision_id . ' .project-changes-text a[href$="/user/' . $project->getOwner()->id() . '"]');
   }
 
   /**

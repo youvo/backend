@@ -4,7 +4,9 @@
 // The revisions of a project at the end of the project page: a collapsed card
 // that opens to the entries, newest first. The logbook links to an entry.
 
+@use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
 
 .project-changes {
   @include card-padding;
@@ -28,32 +30,63 @@
 }
 
 .project-changes-entries {
-  display: grid;
-  gap: var(--gin-spacing-m);
-  margin-top: var(--gin-spacing-m);
+  margin-top: var(--gin-spacing-s);
 }
 
+// A row like in the logbook: date, type pill and the event. On narrow
+// screens the pill and the date share a line above the event.
 .project-changes-entry {
-  padding: var(--gin-spacing-xs) 0 var(--gin-spacing-xs) var(--gin-spacing-s);
-  border-left: 2px solid var(--yv-accent);
+  display: grid;
+  grid-template-areas:
+    "type date"
+    "event event";
+  grid-template-columns: auto 1fr;
+  gap: var(--gin-spacing-xs) var(--gin-spacing-s);
+  align-items: baseline;
+  padding: var(--gin-spacing-s) 0;
+  border-bottom: 1px solid var(--yv-line);
   scroll-margin-top: var(--gin-spacing-xl);
+
+  &:last-child {
+    border-bottom: 0;
+  }
 
   &.is-target {
     background: var(--yv-chip);
   }
+
+  @media (min-width: $breakpoint-medium) {
+    grid-template-areas: "date type event";
+    grid-template-columns: auto auto 1fr;
+    gap: var(--gin-spacing-s) var(--gin-spacing-m);
+  }
 }
 
-.project-changes-entry-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gin-spacing-xs);
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-s);
+.project-changes-date {
+  grid-area: date;
+  color: var(--yv-text);
+  font-size: var(--gin-font-size-xs);
+  white-space: nowrap;
 }
 
-.project-changes-author {
-  color: var(--yv-ink);
+// The pill of the logbook: neutral, yellow for changes as their logs.
+.project-changes-type {
+  grid-area: type;
+  justify-self: start;
+  padding: 0.15em 0.65em;
+  border-radius: var(--gin-border-s);
+  background: var(--yv-chip);
+  font-size: var(--gin-font-size-xs);
   font-weight: 600;
+
+  &[data-tone="attention"] {
+    background: color-mix(in srgb, var(--gin-color-warning) 40%, var(--yv-surface));
+  }
+}
+
+.project-changes-event {
+  grid-area: event;
+  max-width: to-rem(680);
 }
 
 .project-changes-field {
@@ -61,6 +94,9 @@
 }
 
 .project-changes-label {
+  margin-right: var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
   font-weight: 600;
 }
 
@@ -83,16 +119,13 @@
   }
 }
 
-.project-changes-created,
 .project-changes-earlier {
   margin: var(--gin-spacing-xs) 0 0;
   color: var(--yv-muted);
 }
 
 .project-changes-link {
-  display: inline-block;
-  margin-top: var(--gin-spacing-xs);
-  font-size: var(--gin-font-size-s);
+  white-space: nowrap;
 }
 
 .project-changes-older > summary {
