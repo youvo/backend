@@ -237,6 +237,15 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
   public function getOwner(): Organization|Creative;
 
   /**
+   * Computes the content changes of the current save.
+   *
+   * Creates a new revision when a content field changed. Called on presave,
+   * after the fields filled in their derived values, such as the image
+   * dimensions.
+   */
+  public function trackContentChanges(): void;
+
+  /**
    * Gets the content fields that the last save changed.
    *
    * @return string[]

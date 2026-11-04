@@ -2,7 +2,10 @@
 
 namespace Drupal\Tests\logbook\ExistingSite;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
+use Drupal\file\Entity\File;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
 use Drupal\organizations\Entity\Organization;
@@ -10,7 +13,10 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
+use Drupal\Tests\youvo\Traits\RequestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use weitzman\DrupalTestTraits\ExistingSiteBase;
 
 /**
@@ -22,6 +28,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
 class LogbookProjectChangeTest extends ExistingSiteBase {
 
   use MailInterceptTrait;
+  use RequestTrait;
 
   /**
    * {@inheritdoc}
@@ -50,6 +57,7 @@ class LogbookProjectChangeTest extends ExistingSiteBase {
       'name' => $this->randomMachineName(),
       'mail' => $this->randomMachineName() . '@example.org',
       'field_manager' => $manager,
+      'pass' => 'password',
       'status' => 1,
     ]);
     $organization->addRole('organization');
@@ -83,6 +91,139 @@ class LogbookProjectChangeTest extends ExistingSiteBase {
     $logs = Log::loadMultiple($ids);
     array_walk($logs, fn (LogInterface $log) => $this->markEntityForCleanup($log));
     return array_values($logs);
+  }
+
+  /**
+   * Sends a JSON:API request for a project as the given account.
+   */
+  protected function jsonApi(string $method, ProjectInterface $project, AccountInterface $account, array $data = []): Response {
+    $content = $data ? Json::encode(['data' => $data]) : NULL;
+    $request = Request::create('/api/projects/' . $project->uuid(), $method, [], [], [], [], $content);
+    $request->headers->set('Content-Type', 'application/vnd.api+json');
+    $request->headers->set('Accept', 'application/vnd.api+json');
+    $this->authenticateRequest($request, $account);
+    // Requests are handled in this process: reset the static access caches.
+    $this->container->get('entity_type.manager')->getAccessControlHandler('project')->resetCache();
+    return $this->doRequest($request);
+  }
+
+  /**
+   * Fills every content field of a project, as the hub would.
+   */
+  protected function fillContent(ProjectInterface $project): void {
+    $source = \Drupal::service('file_system')->copy('core/misc/druplicon.png', 'public://', 1);
+    $file = File::create(['uri' => $source, 'status' => 1]);
+    $file->save();
+    $this->markEntityForCleanup($file);
+    $project->set('body', ['value' => '<p>Details</p>', 'format' => 'plain_text'])
+      ->set('field_allowance', TRUE)
+      ->set('field_appreciation', 'Thanks')
+      ->set('field_city', 'Hamburg')
+      ->set('field_local', TRUE)
+      ->set('field_deadline', '2030-01-31')
+      ->set('field_image', ['target_id' => $file->id(), 'alt' => 'Alt'])
+      ->set('field_image_copyright', 'Someone')
+      ->set('field_material', 'Material')
+      ->set('field_workload', '2.5')
+      ->setSyncing(TRUE)
+      ->save();
+    $project->setSyncing(FALSE);
+  }
+
+  /**
+   * Tests that saving unchanged content through JSON:API doesn't log.
+   */
+  public function testUnchangedPatchDoesNotLog(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $this->fillContent($project);
+    $organization = $project->getOwner();
+    $revision_id = (int) $project->getRevisionId();
+
+    $response = $this->jsonApi('GET', $project, $organization);
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+    // Responses are flattened; requests use the regular JSON:API structure.
+    $resource = Json::decode((string) $response->getContent())['data'];
+    $names = [
+      'title',
+      'body',
+      'allowance',
+      'appreciation',
+      'city',
+      'local',
+      'deadline',
+      'image_copyright',
+      'material',
+      'workload',
+    ];
+    $attributes = array_intersect_key($resource, array_flip($names));
+    unset($attributes['body']['processed']);
+    $data = [
+      'type' => $resource['type'],
+      'id' => $resource['id'],
+      'attributes' => $attributes,
+      'relationships' => ['image' => ['data' => $resource['image']]],
+    ];
+
+    $response = $this->jsonApi('PATCH', $project, $organization, $data);
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+
+    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
+    $this->assertSame($revision_id, (int) $reloaded->getRevisionId());
+    $this->assertSame([], $this->changeLogs($project));
+  }
+
+  /**
+   * Tests that unchanged content without derived values doesn't log.
+   *
+   * Clients may leave out the image dimensions, which the image field fills
+   * on save, and the empty summary of the body.
+   */
+  public function testUnchangedPartialPatchDoesNotLog(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $this->fillContent($project);
+    $organization = $project->getOwner();
+    $revision_id = (int) $project->getRevisionId();
+    $image = $project->get('field_image')->entity;
+
+    $response = $this->jsonApi('PATCH', $project, $organization, [
+      'type' => 'project',
+      'id' => $project->uuid(),
+      'attributes' => [
+        'body' => ['value' => '<p>Details</p>', 'format' => 'plain_text'],
+        'workload' => 2.5,
+      ],
+      'relationships' => [
+        'image' => ['data' => ['type' => 'file', 'id' => $image->uuid(), 'meta' => ['alt' => 'Alt']]],
+      ],
+    ]);
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+
+    $reloaded = $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id());
+    $this->assertSame($revision_id, (int) $reloaded->getRevisionId());
+    $this->assertSame([], $this->changeLogs($project));
+  }
+
+  /**
+   * Tests that the organization editing via JSON:API writes a log.
+   */
+  public function testPatchLogsWithOrganizationAsAuthor(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $organization = $project->getOwner();
+
+    $response = $this->jsonApi('PATCH', $project, $organization, [
+      'type' => 'project',
+      'id' => $project->uuid(),
+      'attributes' => ['title' => 'Edited'],
+    ]);
+    $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+
+    $logs = $this->changeLogs($project);
+    $this->assertCount(1, $logs);
+    $this->assertSame((int) $organization->id(), (int) $logs[0]->getOwnerId());
+    $this->assertSame(['title'], $logs[0]->getMisc()['fields']);
   }
 
   /**

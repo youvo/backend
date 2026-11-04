@@ -194,20 +194,11 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
    */
   public function preSave(EntityStorageInterface $storage): void {
 
+    // The change set is computed in hook_project_presave(), after the fields
+    // filled in their derived values. See trackContentChanges().
     $this->changedContentFields = [];
     $this->previousRevisionId = NULL;
     $this->wasSubmitted = FALSE;
-    if (!$this->isNew() && !$this->isSyncing()) {
-      $this->changedContentFields = $this->computeChangedContentFields();
-      $this->previousRevisionId = (int) $this->getLoadedRevisionId();
-      $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
-      if ($this->changedContentFields) {
-        $this->setNewRevision();
-        $this->setRevisionUserId(\Drupal::currentUser()->id());
-        $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
-        $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
-      }
-    }
 
     parent::preSave($storage);
     if ($this->isNew()) {
@@ -637,6 +628,24 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       ->setClass(UserIsManagerFieldItemList::class);
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function trackContentChanges(): void {
+    if ($this->isNew() || $this->isSyncing()) {
+      return;
+    }
+    $this->changedContentFields = $this->computeChangedContentFields();
+    $this->previousRevisionId = (int) $this->getLoadedRevisionId();
+    $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
+    if ($this->changedContentFields) {
+      $this->setNewRevision();
+      $this->setRevisionUserId(\Drupal::currentUser()->id());
+      $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
+      $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
+    }
   }
 
   /**
