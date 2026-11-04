@@ -88,6 +88,9 @@
     {% if project.field_lifecycle.value == 'completed' %}
       {{ content.project_result|field_value }}
     {% endif %}
+
+    {# Only staff get the changes; the card is empty for everyone else. #}
+    {{ content.project_changes }}
   </div>
 
   <aside class="project-page-side">

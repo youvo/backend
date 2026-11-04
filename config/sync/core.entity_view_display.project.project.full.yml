@@ -218,6 +218,11 @@ content:
     third_party_settings: {  }
     weight: 8
     region: content
+  project_changes:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 30
+    region: content
   project_result:
     type: entity_reference_entity_view
     label: hidden

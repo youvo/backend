@@ -7,6 +7,7 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\creatives\Entity\Creative;
 use Drupal\diff\DiffEntityComparison;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -207,7 +208,9 @@ class ProjectChangesBuilder {
       }
     }
 
-    return static::ROLE_WORDS[$role] . ' ' . $user->getAccountName();
+    // The user types name their people; other accounts have a display name.
+    $name = $user instanceof Organization || $user instanceof Creative ? $user->getName() : $user->getDisplayName();
+    return static::ROLE_WORDS[$role] . ' ' . $name;
   }
 
 }

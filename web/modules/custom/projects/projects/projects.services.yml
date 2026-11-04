@@ -16,6 +16,7 @@ services:
     class: Drupal\projects\Service\ProjectChangesBuilder
     arguments:
       [ '@entity_type.manager', '@diff.entity_comparison', '@language_manager' ]
+  Drupal\projects\Service\ProjectChangesBuilder: '@projects.changes_builder'
   logger.channel.projects:
     parent: logger.channel_base
     arguments: [ 'projects' ]

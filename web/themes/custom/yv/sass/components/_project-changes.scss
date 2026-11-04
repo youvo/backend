@@ -1,0 +1,102 @@
+// =============================================================================
+// PROJECT CHANGES (project-changes)
+// =============================================================================
+// The revisions of a project at the end of the project page: a collapsed card
+// that opens to the entries, newest first. The logbook links to an entry.
+
+@use "../abstracts/mixins.scss" as *;
+
+.project-changes {
+  @include card-padding;
+}
+
+.project-changes-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs) var(--gin-spacing-s);
+  align-items: baseline;
+  cursor: pointer;
+
+  .project-page-section-title {
+    margin: 0;
+  }
+}
+
+.project-changes-meta {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+}
+
+.project-changes-entries {
+  display: grid;
+  gap: var(--gin-spacing-m);
+  margin-top: var(--gin-spacing-m);
+}
+
+.project-changes-entry {
+  padding: var(--gin-spacing-xs) 0 var(--gin-spacing-xs) var(--gin-spacing-s);
+  border-left: 2px solid var(--yv-accent);
+  scroll-margin-top: var(--gin-spacing-xl);
+
+  &.is-target {
+    background: var(--yv-chip);
+  }
+}
+
+.project-changes-entry-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+}
+
+.project-changes-author {
+  color: var(--yv-ink);
+  font-weight: 600;
+}
+
+.project-changes-field {
+  margin-top: var(--gin-spacing-xs);
+}
+
+.project-changes-label {
+  font-weight: 600;
+}
+
+.project-changes-value,
+.project-changes-diff {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  del {
+    background: var(--gin-color-danger-lightest);
+  }
+
+  ins {
+    background: var(--gin-color-green-lightest);
+    text-decoration: none;
+  }
+
+  p {
+    margin: 0 0 var(--gin-spacing-xs);
+  }
+}
+
+.project-changes-created,
+.project-changes-earlier {
+  margin: var(--gin-spacing-xs) 0 0;
+  color: var(--yv-muted);
+}
+
+.project-changes-link {
+  display: inline-block;
+  margin-top: var(--gin-spacing-xs);
+  font-size: var(--gin-font-size-s);
+}
+
+.project-changes-older > summary {
+  margin-top: var(--gin-spacing-m);
+  color: var(--yv-accent);
+  cursor: pointer;
+}

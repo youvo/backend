@@ -1,0 +1,6 @@
+changes:
+  js:
+    js/project-changes.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

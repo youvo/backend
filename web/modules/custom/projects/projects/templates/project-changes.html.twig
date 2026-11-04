@@ -1,0 +1,67 @@
+{#
+/**
+ * @file
+ * The changes of a project, collapsed, with the two newest entries first.
+ *
+ * Available variables:
+ * - entries: The entries, newest first. Each has revision_id, author, time,
+ *   created, url and fields (label, long, old, new, diff).
+ * - earlier: The number of earlier revisions without an entry.
+ * - count: The number of all revisions.
+ */
+#}
+{% macro entry(entry) %}
+  <article class="project-changes-entry" id="revision-{{ entry.revision_id }}">
+    <header class="project-changes-entry-header">
+      <span class="project-changes-author">{{ entry.author }}</span>
+      <time datetime="{{ entry.time|date('c') }}">{{ entry.time|format_date('custom', 'd.m.Y H:i') }}</time>
+    </header>
+    {% if entry.created %}
+      <p class="project-changes-created">{{ 'Created'|t }}</p>
+    {% endif %}
+    {% for field in entry.fields %}
+      <div class="project-changes-field">
+        <div class="project-changes-label">{{ field.label }}</div>
+        {% if field.long %}
+          <div class="project-changes-diff">{{ field.diff }}</div>
+        {% else %}
+          <div class="project-changes-value">
+            {% if field.old %}<del>{{ field.old }}</del>{% endif %}
+            {% if field.old and field.new %}<span aria-hidden="true">→</span>{% endif %}
+            {% if field.new %}<ins>{{ field.new }}</ins>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <a class="project-changes-link" href="{{ entry.url }}">{{ 'View this revision'|t }}</a>
+  </article>
+{% endmacro %}
+{{ attach_library('projects/changes') }}
+<details class="project-page-card project-changes" data-project-changes>
+  <summary class="project-changes-summary">
+    <h2 class="project-page-section-title">{{ 'Changes'|t }}</h2>
+    <span class="project-changes-meta">
+      {% trans %}{{ count }} change{% plural count %}{{ count }} changes{% endtrans %}
+      · {{ 'last @date by @author'|t({'@date': entries|first.time|format_date('custom', 'd.m.Y'), '@author': entries|first.author}) }}
+    </span>
+  </summary>
+  <div class="project-changes-entries">
+    {% for entry in entries|slice(0, 2) %}
+      {{ _self.entry(entry) }}
+    {% endfor %}
+  </div>
+  {% if entries|length > 2 %}
+    {% set older = entries|length - 2 %}
+    <details class="project-changes-older">
+      <summary>{% trans %}Show {{ older }} older change{% plural older %}Show {{ older }} older changes{% endtrans %}</summary>
+      <div class="project-changes-entries">
+        {% for entry in entries|slice(2) %}
+          {{ _self.entry(entry) }}
+        {% endfor %}
+      </div>
+    </details>
+  {% endif %}
+  {% if earlier %}
+    <p class="project-changes-earlier">{% trans %}{{ earlier }} earlier change{% plural earlier %}{{ earlier }} earlier changes{% endtrans %}</p>
+  {% endif %}
+</details>
