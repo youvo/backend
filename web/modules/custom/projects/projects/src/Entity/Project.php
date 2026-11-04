@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
@@ -696,9 +697,10 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
         $original_items = $original_translation?->get($field_name);
         $changed_items = match (TRUE) {
           $original_items === NULL => !$items->isEmpty(),
-          // Only another file changes the image. The image fills in its
-          // dimensions on save, after this comparison.
-          $field_name === 'field_image' => $items->hasAffectingChanges($original_items, $langcode) &&
+          // Only other targets change a reference, such as another file of the
+          // image. The image fills in its dimensions on save, after this
+          // comparison.
+          $items instanceof EntityReferenceFieldItemListInterface => $items->hasAffectingChanges($original_items, $langcode) &&
             array_column($items->getValue(), 'target_id') != array_column($original_items->getValue(), 'target_id'),
           default => $items->hasAffectingChanges($original_items, $langcode),
         };
