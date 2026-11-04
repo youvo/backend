@@ -31,7 +31,7 @@ use Drupal\user\EntityOwnerTrait;
     'list_builder' => 'Drupal\feedback\FeedbackListBuilder',
     'views_data' => 'Drupal\views\EntityViewsData',
     'route_provider' => [
-      'html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider',
+      'html' => 'Drupal\feedback\Routing\FeedbackHtmlRouteProvider',
     ],
   ],
   base_table: 'feedback',

@@ -73,15 +73,8 @@ class BlockerMode implements BlockerModeInterface {
       return TRUE;
     }
 
-    // We disallow all /user paths. Note that blocker mode does not apply for
-    // the login and logout route.
-    $forbidden_path = FALSE;
-    if ($route_match->getRouteObject()) {
-      $path = $route_match->getRouteObject()->getPath();
-      $forbidden_path = str_starts_with($path, '/user');
-    }
-
-    return $account->hasPermission('access site') && !$forbidden_path;
+    // Staff are welcome. The route access decides which pages they reach.
+    return $account->hasPermission('access site');
   }
 
 }

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\organizations\ExistingSite;
 
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Access\OrganizationEntityAccess;
 use Drupal\organizations\Entity\Organization;
@@ -73,6 +74,26 @@ class OrganizationAccessTest extends ExistingSiteBase {
     $this->assertFalse($access->accessManage($this->organization, $this->organization)->isAllowed());
     $this->assertFalse($access->accessManage($creative, $this->organization)->isAllowed());
     $this->assertFalse($access->accessManage($supervisor, $creative)->isAllowed());
+  }
+
+  /**
+   * Tests that the profile pages are for staff, but the API keeps its access.
+   */
+  public function testProfileRouteAccess(): void {
+
+    $anonymous = new AnonymousUserSession();
+    $creative = $this->createCreative(['creative']);
+    $access_manager = $this->container->get('access_manager');
+
+    foreach ([$this->organization, $creative] as $profile) {
+      $parameters = ['user' => $profile->id()];
+      $this->assertFalse($access_manager->checkNamedRoute('entity.user.canonical', $parameters, $anonymous));
+      $this->assertFalse($access_manager->checkNamedRoute('entity.user.canonical', $parameters, $profile));
+      $this->assertTrue($access_manager->checkNamedRoute('entity.user.canonical', $parameters, $this->manager));
+
+      // JSON:API checks the entity access, which stays open.
+      $this->assertTrue($profile->access('view', $anonymous));
+    }
   }
 
   /**

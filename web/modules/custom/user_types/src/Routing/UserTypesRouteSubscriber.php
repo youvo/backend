@@ -8,6 +8,9 @@ use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Alters the routes of user accounts for the user types.
+ *
+ * The profile page is for staff only. The frontend reads users through
+ * JSON:API, which checks the entity access but not this route.
  */
 class UserTypesRouteSubscriber extends RouteSubscriberBase {
 
@@ -15,8 +18,9 @@ class UserTypesRouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection): void {
-    $collection->get('entity.user.canonical')
-      ?->setDefault('_title_callback', UserTypeController::class . '::userTitle');
+    $route = $collection->get('entity.user.canonical');
+    $route?->setDefault('_title_callback', UserTypeController::class . '::userTitle');
+    $route?->setRequirement('_permission', 'access site');
   }
 
 }

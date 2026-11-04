@@ -23,8 +23,7 @@ class BlockerModeTest extends UnitTestCase {
    * Tests the exemption per permissions and path.
    *
    * Staff roles (manager, supervisor, observer) hold 'access site', so they
-   * reach the manager pane, the logbook and the dashboard, but no /user path.
-   * Only administrators hold 'bypass blocker mode'.
+   * pass on every path, also /user paths. The route access decides the rest.
    */
   #[DataProvider('exemptProvider')]
   public function testExempt(array $permissions, string $path, bool $expected): void {
@@ -49,7 +48,7 @@ class BlockerModeTest extends UnitTestCase {
     return [
       'staff on the manager pane' => [$staff, $pane, TRUE],
       'staff on the logbook' => [$staff, '/logbook', TRUE],
-      'staff on a user path' => [$staff, '/user/{user}', FALSE],
+      'staff on a user path' => [$staff, '/user/{user}', TRUE],
       'organization on the manager pane' => [[], $pane, FALSE],
       'administrator on a user path' => [$admin, '/user/{user}', TRUE],
     ];

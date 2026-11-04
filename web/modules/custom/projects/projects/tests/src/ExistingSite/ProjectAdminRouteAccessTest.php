@@ -3,12 +3,16 @@
 namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that the project admin pages are for administrators only.
+ *
+ * The project page is for staff.
  */
 #[Group('projects')]
 class ProjectAdminRouteAccessTest extends ProjectResourceTestBase {
@@ -50,8 +54,22 @@ class ProjectAdminRouteAccessTest extends ProjectResourceTestBase {
       }
     }
 
-    // The canonical route keeps the entity view access.
-    $this->assertTrue($this->checkRoute('entity.project.canonical', $project, $organization));
+  }
+
+  /**
+   * Tests that the project page is for staff, but the API keeps its access.
+   */
+  public function testCanonicalRouteAccess(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $anonymous = new AnonymousUserSession();
+
+    $this->assertFalse($this->checkRoute('entity.project.canonical', $project, $anonymous));
+    $this->assertFalse($this->checkRoute('entity.project.canonical', $project, $project->getOwner()));
+    $this->assertTrue($this->checkRoute('entity.project.canonical', $project, $project->getOwner()->getManager()));
+
+    // JSON:API checks the entity access, which stays open.
+    $this->assertTrue($project->access('view', $anonymous));
   }
 
   /**

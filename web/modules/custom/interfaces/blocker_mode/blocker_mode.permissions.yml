@@ -3,5 +3,5 @@ access site:
   title: 'Access site'
 bypass blocker mode:
   title: 'Bypass blocker mode'
-  description: 'Access all paths in blocker mode, also /user paths.'
+  description: 'Access all paths in blocker mode.'
   restrict access: true

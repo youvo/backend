@@ -79,6 +79,16 @@ class FeedbackAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that the feedback page is for staff, also with entity view access.
+   */
+  public function testCanonicalRouteAccess(): void {
+    $access_manager = $this->container->get('access_manager');
+    $parameters = ['feedback' => $this->feedback->id()];
+    $this->assertFalse($access_manager->checkNamedRoute('entity.feedback.canonical', $parameters, $this->author));
+    $this->assertTrue($access_manager->checkNamedRoute('entity.feedback.canonical', $parameters, $this->createSupervisor()));
+  }
+
+  /**
    * Tests that the author may not edit the fields set by the backend.
    */
   public function testFieldAccess(): void {
