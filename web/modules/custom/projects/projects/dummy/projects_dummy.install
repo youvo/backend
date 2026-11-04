@@ -117,11 +117,11 @@ function projects_dummy_generate_content(): void {
     // Increase created time randomly.
     $created += $created_increments[$i];
 
-    // A project has at most 17 steps up to its last feedback: submit,
-    // publish, five applications, mediate, complete, six feedbacks and two
+    // A project has at most 25 steps up to its last feedback: submit,
+    // publish, five applications, mediate, complete, six feedbacks and ten
     // edits. They take up to a week each, less for recent projects, so no step
     // lies in the future.
-    $step_max = max(3600, min(7 * 86400, intdiv($current_time - $created, 17)));
+    $step_max = max(3600, min(7 * 86400, intdiv($current_time - $created, 25)));
 
     // Choose a random final state (not draft, since all start as draft).
     $lifecycle_states = [
@@ -212,7 +212,8 @@ function projects_dummy_generate_content(): void {
     // The edits along the lifecycle end with these values, so the project
     // starts with earlier ones of the edited fields.
     $edits = projects_dummy_plan_edits($path_state, (bool) $manager, $edit_faker);
-    $project = Project::create(projects_dummy_earlier_values($values, $edits, $edit_faker));
+    [$initial_values, $edits] = projects_dummy_edit_values($values, $edits, $edit_faker);
+    $project = Project::create($initial_values);
 
     try {
       // Each step runs as the user who does it in the app, so the logs get
@@ -221,13 +222,13 @@ function projects_dummy_generate_content(): void {
       $transition_time = $created;
       $participant_entities = [];
       $transition_increment = random_int(min(86400, $step_max), $step_max);
-      projects_dummy_edit($project, $edits, 'draft', $values, $oid, $manager, $transition_time, $step_max);
+      projects_dummy_edit($project, $edits, 'draft', $oid, $manager, $transition_time, $step_max);
       // Always start in draft. Now transition up to the random final state
       // using events.
       if (in_array($path_state, ['pending', 'open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         projects_dummy_as($oid, fn () => $event_dispatcher->dispatch(new ProjectSubmitEvent($project, $transition_time)));
-        projects_dummy_edit($project, $edits, 'pending', $values, $oid, $manager, $transition_time, $step_max);
+        projects_dummy_edit($project, $edits, 'pending', $oid, $manager, $transition_time, $step_max);
       }
       if (in_array($path_state, ['open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
@@ -251,7 +252,7 @@ function projects_dummy_generate_content(): void {
             $actual_applicants[] = $applicant_id;
           }
         }
-        projects_dummy_edit($project, $edits, 'open', $values, $oid, $manager, $transition_time, $step_max);
+        projects_dummy_edit($project, $edits, 'open', $oid, $manager, $transition_time, $step_max);
       }
       if (in_array($path_state, ['ongoing', 'completed'])) {
         $transition_time += $transition_increment;
@@ -272,7 +273,7 @@ function projects_dummy_generate_content(): void {
         $mediate_event = new ProjectMediateEvent($project, $transition_time);
         $mediate_event->setCreatives($participant_entities);
         projects_dummy_as($manager, fn () => $event_dispatcher->dispatch($mediate_event));
-        projects_dummy_edit($project, $edits, 'mediated', $values, $oid, $manager, $transition_time, $step_max);
+        projects_dummy_edit($project, $edits, 'mediated', $oid, $manager, $transition_time, $step_max);
       }
       if ($final_state === 'completed') {
         $transition_time += $transition_increment;
@@ -546,14 +547,47 @@ function projects_dummy_as(int $uid, callable $step): void {
 }
 
 /**
+ * Gets the fields each author edits after a step, as their access allows.
+ *
+ * Organizations edit in draft, pending and open; managers polish open
+ * projects and adjust mediated ones.
+ */
+function projects_dummy_edit_fields(): array {
+  return [
+    'draft' => [
+      'organization' => [
+        'title', 'body', 'field_city', 'field_skills', 'field_material',
+        'field_appreciation', 'field_image', 'field_workload', 'field_local',
+        'field_allowance', 'field_image_copyright',
+      ],
+    ],
+    'pending' => [
+      'organization' => [
+        'body', 'field_deadline', 'field_material', 'field_skills',
+        'field_allowance', 'field_workload',
+      ],
+    ],
+    'open' => [
+      'organization' => [
+        'field_deadline', 'field_workload', 'field_appreciation',
+        'field_material', 'field_local', 'field_city', 'field_image',
+      ],
+      'manager' => ['title', 'body', 'field_image_copyright', 'field_skills'],
+    ],
+    'mediated' => [
+      'manager' => ['field_workload', 'field_deadline', 'field_material'],
+    ],
+  ];
+}
+
+/**
  * Plans the content edits of a project along its lifecycle.
  *
- * Organizations edit in draft, pending and open, as their edit access allows;
- * managers fix the title in open and adjust mediated projects. Each field is
- * edited at most once.
+ * Each step after which edits happen gets up to a few of them, each changing
+ * one to three fields. A field may change more than once.
  *
- * @return array<string, array{by: string, fields: string[]}>
- *   The edits, keyed by the step after which they happen.
+ * @return list<array{step: string, by: string, fields: string[]}>
+ *   The edits in order.
  */
 function projects_dummy_plan_edits(string $path_state, bool $has_manager, Generator $faker): array {
 
@@ -563,73 +597,115 @@ function projects_dummy_plan_edits(string $path_state, bool $has_manager, Genera
     'open' => ['draft', 'pending', 'open'],
     default => ['draft', 'pending', 'open', 'mediated'],
   };
+  // The most edits after a step; most projects get fewer.
+  $max_edits = ['draft' => 3, 'pending' => 2, 'open' => 3, 'mediated' => 2];
 
   $edits = [];
-  if ($faker->boolean()) {
-    $edits['draft'] = ['by' => 'organization', 'fields' => [$faker->randomElement(['title', 'body', 'field_city'])]];
-  }
-  if (in_array('pending', $reached) && $faker->boolean()) {
-    $edits['pending'] = ['by' => 'organization', 'fields' => [$faker->randomElement(['body', 'field_deadline'])]];
-  }
-  if (in_array('open', $reached) && $faker->boolean()) {
-    $edits['open'] = $has_manager && $faker->boolean(30)
-      ? ['by' => 'manager', 'fields' => ['title']]
-      : ['by' => 'organization', 'fields' => [$faker->randomElement(['field_deadline', 'field_workload'])]];
-  }
-  if (in_array('mediated', $reached) && $has_manager && $faker->boolean(25)) {
-    $edits['mediated'] = ['by' => 'manager', 'fields' => ['field_workload']];
-  }
-
-  // A field edited twice would show the same final value twice.
-  $used = [];
-  foreach ($edits as $step => $edit) {
-    $edits[$step]['fields'] = array_values(array_diff($edit['fields'], $used));
-    $used = array_merge($used, $edits[$step]['fields']);
-    if (!$edits[$step]['fields']) {
-      unset($edits[$step]);
+  foreach ($reached as $step) {
+    $authors = projects_dummy_edit_fields()[$step];
+    if (!$has_manager) {
+      unset($authors['manager']);
+    }
+    if (!$authors) {
+      continue;
+    }
+    $count = $faker->boolean(35) ? 0 : $faker->numberBetween(1, $max_edits[$step]);
+    for ($i = 0; $i < $count; $i++) {
+      $by = $faker->randomElement(array_keys($authors));
+      $fields = $faker->randomElements($authors[$by], min(count($authors[$by]), $faker->numberBetween(1, 3)));
+      $edits[] = ['step' => $step, 'by' => $by, 'fields' => array_values($fields)];
     }
   }
   return $edits;
 }
 
 /**
- * Gets the values a project starts with, before its edits.
+ * Gets the values a project starts with and the values of each edit.
+ *
+ * The values of a field go back from its final value, one earlier value per
+ * edit of the field, so the last edit sets the value the project ends with.
+ *
+ * @return array{0: array, 1: list<array{step: string, by: string, fields: string[], values: array}>}
+ *   The values to create the project with, and the edits with their values.
  */
-function projects_dummy_earlier_values(array $values, array $edits, Generator $faker): array {
+function projects_dummy_edit_values(array $values, array $edits, Generator $faker): array {
 
+  $chains = [];
   foreach ($edits as $edit) {
     foreach ($edit['fields'] as $field_name) {
-      $values[$field_name] = match ($field_name) {
-        'title' => ucwords($faker->words(4, TRUE)),
-        'body' => [
-          'value' => preg_replace('~^[^.]*\.~', rtrim($faker->sentence()), $values['body']['value']),
-          'summary' => $values['body']['summary'],
-        ],
-        'field_city' => $faker->city(),
-        // Organizations move the deadline back by one to three weeks.
-        'field_deadline' => date('Y-m-d', strtotime($values['field_deadline']) - $faker->numberBetween(7, 21) * 86400),
-        'field_workload' => $values['field_workload'] > 1 ? $values['field_workload'] - 1 : 2,
-        default => $values[$field_name],
-      };
+      $chains[$field_name] ??= [$values[$field_name]];
+      array_unshift($chains[$field_name], projects_dummy_earlier_value($field_name, $chains[$field_name][0], $faker));
     }
   }
-  return $values;
+
+  $initial = $values;
+  foreach ($chains as $field_name => $chain) {
+    $initial[$field_name] = $chain[0];
+  }
+
+  $positions = array_fill_keys(array_keys($chains), 0);
+  foreach ($edits as $index => $edit) {
+    foreach ($edit['fields'] as $field_name) {
+      $edits[$index]['values'][$field_name] = $chains[$field_name][++$positions[$field_name]];
+    }
+  }
+  return [$initial, $edits];
 }
 
 /**
- * Runs the edit planned after a step, as its author, one step later.
+ * Gets a plausible earlier value of a field.
  */
-function projects_dummy_edit(ProjectInterface $project, array $edits, string $step, array $values, int $oid, int $manager, int &$transition_time, int $step_max): void {
+function projects_dummy_earlier_value(string $field_name, mixed $value, Generator $faker): mixed {
+  return match ($field_name) {
+    'title' => ucwords($faker->words(4, TRUE)),
+    'body' => [
+      'value' => projects_dummy_replace_sentence((string) $value['value'], $faker),
+      'summary' => $value['summary'] ?? '',
+    ],
+    'field_material', 'field_appreciation' => projects_dummy_replace_sentence((string) $value, $faker),
+    'field_city' => $faker->city(),
+    'field_skills' => array_map(static fn (int $id) => ['target_id' => $id], $faker->randomElements([1, 2, 3, 4, 5, 6], $faker->numberBetween(1, 3))),
+    'field_image' => [
+      'target_id' => projects_dummy_get_stock_image($faker->numberBetween(1, 12))->id(),
+      'alt' => $faker->text(50),
+    ],
+    // Organizations move the deadline back by one to three weeks.
+    'field_deadline' => date('Y-m-d', strtotime($value) - $faker->numberBetween(7, 21) * 86400),
+    'field_workload' => $value > 1 ? $value - 1 : 2,
+    'field_local', 'field_allowance' => !$value,
+    'field_image_copyright' => $value ? NULL : $faker->name(),
+    default => $value,
+  };
+}
 
-  if (!isset($edits[$step])) {
-    return;
+/**
+ * Replaces one sentence of a text, or adds one to a single sentence.
+ */
+function projects_dummy_replace_sentence(string $text, Generator $faker): string {
+  $sentences = preg_split('~(?<=[.!?])\s+~', trim($text));
+  if (count($sentences) < 2) {
+    return trim($text . ' ' . $faker->sentence());
   }
-  $transition_time += random_int(min(86400, $step_max), $step_max);
-  foreach ($edits[$step]['fields'] as $field_name) {
-    $project->set($field_name, $values[$field_name]);
+  $sentences[$faker->numberBetween(0, count($sentences) - 1)] = $faker->sentence();
+  return implode(' ', $sentences);
+}
+
+/**
+ * Runs the edits planned after a step, each as its author, one step later.
+ */
+function projects_dummy_edit(ProjectInterface $project, array $edits, string $step, int $oid, int $manager, int &$transition_time, int $step_max): void {
+
+  foreach ($edits as $edit) {
+    if ($edit['step'] !== $step) {
+      continue;
+    }
+    $transition_time += random_int(min(86400, $step_max), $step_max);
+    foreach ($edit['values'] as $field_name => $value) {
+      $project->set($field_name, $value);
+    }
+    // The changed time dates the revision and the log of the edit.
+    $project->set('changed', $transition_time);
+    $author = $edit['by'] === 'manager' ? $manager : $oid;
+    projects_dummy_as($author, fn () => $project->save());
   }
-  // The changed time dates the revision and the log of the edit.
-  $project->set('changed', $transition_time);
-  $author = $edits[$step]['by'] === 'manager' ? $manager : $oid;
-  projects_dummy_as($author, fn () => $project->save());
 }
