@@ -101,6 +101,13 @@ function projects_dummy_generate_content(): void {
   /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
   $event_dispatcher = \Drupal::service('event_dispatcher');
 
+  // The images are attached on create. Without active updating, every later
+  // save makes filefield_paths log a notice about the file it skips; with it,
+  // a file already in place passes silently.
+  $image_field = 'field.field.project.project.field_image';
+  $GLOBALS['config'][$image_field]['third_party_settings']['filefield_paths']['active_updating'] = TRUE;
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+
   // Create random content.
   for ($i = 1; $i <= $total; $i++) {
 
@@ -194,6 +201,12 @@ function projects_dummy_generate_content(): void {
       'field_image_copyright' => $faker->optional()->name(),
       'field_lifecycle' => 'draft',
       'field_local' => $faker->boolean(),
+      // The image is there from the start, so the revisions don't show it as
+      // added by a later edit.
+      'field_image' => [
+        'target_id' => projects_dummy_get_stock_image($i)->id(),
+        'alt' => $faker->text(50),
+      ],
     ];
 
     // The edits along the lifecycle end with these values, so the project
@@ -284,17 +297,8 @@ function projects_dummy_generate_content(): void {
         $transition_time += $transition_increment;
         projects_dummy_as($manager, fn () => $event_dispatcher->dispatch(new ProjectNotifyEvent($project, $transition_time)));
       }
-      // Attach the image with the final save only. File paths moves the file
-      // when it is attached, and every further save of the project would
-      // log a notice about the already attached file.
-      $image_file = projects_dummy_get_stock_image($i);
-      $project->set('field_image', [
-        'target_id' => $image_file->id(),
-        'alt' => $faker->text(50),
-      ]);
       // Set the changed value to the last event timestamp and save. Syncing
-      // keeps the image out of the change log and the revisions: it is part
-      // of the dummy content, not a change by anyone.
+      // keeps this save out of the revisions and the change log.
       $project->set('changed', $transition_time);
       $project->setSyncing(TRUE);
       $project->save();
@@ -350,6 +354,9 @@ function projects_dummy_generate_content(): void {
         ->error('An error occurred while creating dummy projects. %type: @message in %function (line %line of %file).', $variables);
     }
   }
+
+  unset($GLOBALS['config'][$image_field]);
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 }
 
 /**
