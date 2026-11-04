@@ -121,16 +121,31 @@
       </section>
     {% endif %}
 
-    {# The people come from the display, the tasks matched to the participants
-       by their position. The manager belongs to the organization. #}
+    {# The contact of the organization is a name, not an account, so it gets
+       the markup of a person by hand. The organization is linked below the
+       title. #}
     {% set contact = content.field_contact|field_value %}
+    {% if contact %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ 'Contact'|t }}</h2>
+        <ul class="person-list">
+          <li>
+            <span class="person">
+              <span class="person-avatar" aria-hidden="true">{{ contact_initials }}</span>
+              <span class="person-name">{{ contact }}</span>
+            </span>
+          </li>
+        </ul>
+      </section>
+    {% endif %}
+
+    {# The tasks are matched to the participants by their position. The
+       manager belongs to the organization. #}
     {% set manager = drupal_field('field_manager', 'user', project.uid.target_id, {label: 'hidden', type: 'entity_reference_entity_view', settings: {view_mode: 'person'}})|field_value %}
-    {% set tasks = content.field_participants_tasks|field_value %}
     {% set groups = [
-      {title: 'Organization'|t, people: content.uid|field_value, roles: contact ? [contact] : [], prefix: 'Contact'|t ~ ': '},
-      {title: 'Manager'|t, people: manager, roles: [], prefix: ''},
-      {title: 'Participants'|t, people: content.field_participants|field_value, roles: tasks, prefix: ''},
-      {title: 'Applicants'|t, people: content.field_applicants|field_value, roles: [], prefix: ''},
+      {title: 'Manager'|t, people: manager, roles: []},
+      {title: 'Participants'|t, people: content.field_participants|field_value, roles: content.field_participants_tasks|field_value},
+      {title: 'Applicants'|t, people: content.field_applicants|field_value, roles: []},
     ] %}
     {% for group in groups|filter(group => group.people) %}
       <section class="project-page-side-section">
@@ -140,7 +155,7 @@
             <li>
               {{ person }}
               {% if group.roles[delta] %}
-                <span class="person-role">{{ group.prefix }}{{ group.roles[delta] }}</span>
+                <span class="person-role">{{ group.roles[delta] }}</span>
               {% endif %}
             </li>
           {% endfor %}

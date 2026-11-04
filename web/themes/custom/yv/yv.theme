@@ -365,6 +365,7 @@ function yv_preprocess_project(array &$variables): void {
 function yv_preprocess_project_full(array &$variables): void {
   $cache = new CacheableMetadata();
   yv_content_cache($variables['content'], $cache);
+  $variables['contact_initials'] = yv_initials(yv_field_value($variables['project'], 'field_contact', $cache));
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
 }

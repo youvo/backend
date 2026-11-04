@@ -145,6 +145,13 @@
   }
 }
 
+// Under a section title, filled circles and chips start at their top edge,
+// while text starts below its line spacing, as with the cards of the results.
+.user-profile-skills,
+section > .user-profile-tags {
+  padding-top: var(--gin-spacing-xxs);
+}
+
 // Line breaks of the text show.
 .user-profile-budget {
   margin: 0;
