@@ -280,9 +280,13 @@ function projects_dummy_generate_content(): void {
         'target_id' => $image_file->id(),
         'alt' => $faker->text(50),
       ]);
-      // Set the changed value to the last event timestamp and save.
+      // Set the changed value to the last event timestamp and save. Syncing
+      // keeps the image out of the change log and the revisions: it is part
+      // of the dummy content, not a change by anyone.
       $project->set('changed', $transition_time);
+      $project->setSyncing(TRUE);
       $project->save();
+      $project->setSyncing(FALSE);
       if ($final_state === 'completed') {
         projects_dummy_complete_feedbacks($project, $participant_entities, $transition_time, $step_max, $feedback_faker);
         // Each feedback saves the result again with its comment, and
