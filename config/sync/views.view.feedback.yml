@@ -1,0 +1,287 @@
+uuid: f7969c26-5b74-4d24-a0a1-3adf100a5c57
+langcode: de
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_name
+  module:
+    - feedback
+    - projects
+    - user
+id: feedback
+label: Feedback
+module: views
+description: 'The completed feedback of a project or an author, on their pages.'
+tag: ''
+base_table: feedback
+base_field: id
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: Feedback
+      fields:
+        view_feedback:
+          id: view_feedback
+          table: feedback
+          field: view_feedback
+          relationship: none
+          entity_type: feedback
+          plugin_id: entity_link
+          label: ''
+          exclude: true
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          text: ''
+          output_url_as_text: true
+          absolute: false
+        field_name:
+          id: field_name
+          table: user__field_name
+          field: field_name
+          relationship: author
+          entity_type: user
+          entity_field: field_name
+          plugin_id: field
+          label: ''
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          type: string
+          settings:
+            link_to_entity: false
+        completed:
+          id: completed
+          table: feedback
+          field: completed
+          relationship: none
+          entity_type: feedback
+          entity_field: completed
+          plugin_id: field
+          label: ''
+          alter:
+            alter_text: true
+            text: '{% if view_feedback %}<a href="{{ view_feedback }}">{{ completed|striptags|trim }}<span class="visually-hidden">: {{ ''Feedback''|t }}</span></a>{% else %}{{ completed|striptags|trim }}{% endif %}'
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          type: timestamp
+          settings:
+            date_format: custom
+            custom_date_format: d.m.Y
+            timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
+      pager:
+        type: none
+        options:
+          offset: 0
+      access:
+        type: perm
+        options:
+          perm: 'administer feedback'
+      cache:
+        type: tag
+      sorts:
+        completed:
+          id: completed
+          table: feedback
+          field: completed
+          relationship: none
+          plugin_id: date
+          order: DESC
+          granularity: second
+      arguments:
+        project:
+          id: project
+          table: feedback
+          field: project
+          relationship: none
+          plugin_id: entity_target_id
+          default_action: 'not found'
+          specify_validation: false
+          break_phrase: false
+          not: false
+          target_entity_type_id: project
+      filters:
+        completed:
+          id: completed
+          table: feedback
+          field: completed
+          relationship: none
+          plugin_id: date
+          operator: 'not empty'
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+      style:
+        type: default
+      row:
+        type: fields
+      query:
+        type: views_query
+        options: {  }
+      relationships:
+        author:
+          id: author
+          table: feedback
+          field: author
+          relationship: none
+          plugin_id: standard
+          required: true
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - user.permissions
+      tags:
+        - 'config:field.storage.user.field_name'
+  profile:
+    id: profile
+    display_title: Profile
+    display_plugin: block
+    position: 2
+    display_options:
+      fields:
+        view_feedback:
+          id: view_feedback
+          table: feedback
+          field: view_feedback
+          relationship: none
+          entity_type: feedback
+          plugin_id: entity_link
+          label: ''
+          exclude: true
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          text: ''
+          output_url_as_text: true
+          absolute: false
+        title:
+          id: title
+          table: project_field_data
+          field: title
+          relationship: project
+          entity_type: project
+          entity_field: title
+          plugin_id: field
+          label: ''
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          type: string
+          settings:
+            link_to_entity: false
+        completed:
+          id: completed
+          table: feedback
+          field: completed
+          relationship: none
+          entity_type: feedback
+          entity_field: completed
+          plugin_id: field
+          label: ''
+          alter:
+            alter_text: true
+            text: '{% if view_feedback %}<a href="{{ view_feedback }}">{{ completed|striptags|trim }}<span class="visually-hidden">: {{ ''feedback on @project''|t({''@project'': title}) }}</span></a>{% else %}{{ completed|striptags|trim }}{% endif %}'
+          element_type: '0'
+          element_label_type: '0'
+          element_wrapper_type: '0'
+          element_default_classes: false
+          type: timestamp
+          settings:
+            date_format: custom
+            custom_date_format: d.m.Y
+            timezone: ''
+            tooltip:
+              date_format: ''
+              custom_date_format: ''
+            time_diff:
+              enabled: false
+              future_format: '@interval hence'
+              past_format: '@interval ago'
+              granularity: 2
+              refresh: 60
+      access:
+        type: perm
+        options:
+          perm: 'general manager access'
+      arguments:
+        author:
+          id: author
+          table: feedback
+          field: author
+          relationship: none
+          plugin_id: entity_target_id
+          default_action: 'not found'
+          specify_validation: false
+          break_phrase: false
+          not: false
+          target_entity_type_id: user
+      defaults:
+        access: false
+        relationships: false
+        fields: false
+        arguments: false
+      relationships:
+        project:
+          id: project
+          table: feedback
+          field: project
+          relationship: none
+          plugin_id: standard
+          required: true
+      display_description: 'The completed feedback of an organization or a creative, on their profile.'
+      display_extenders: {  }
+      block_description: 'Feedback of an author'
+      block_hide_empty: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - user.permissions
+      tags: {  }
+  project:
+    id: project
+    display_title: Project
+    display_plugin: block
+    position: 1
+    display_options:
+      display_description: 'The completed feedback on a project, on its page.'
+      display_extenders: {  }
+      block_description: 'Feedback of a project'
+      block_hide_empty: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - user.permissions
+      tags:
+        - 'config:field.storage.user.field_name'
+

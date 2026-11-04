@@ -30,7 +30,7 @@ dependencies:
     - options
     - projects
     - text
-    - user
+    - youvo
 id: project.project.full
 targetEntityType: project
 bundle: project
@@ -91,12 +91,30 @@ content:
     third_party_settings: {  }
     weight: 6
     region: content
+  field_applicants:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: person
+      link: false
+    third_party_settings: {  }
+    weight: 19
+    region: content
   field_appreciation:
     type: basic_string
     label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 4
+    region: content
+  field_contact:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 20
     region: content
   field_deadline:
     type: datetime_custom
@@ -141,6 +159,22 @@ content:
     third_party_settings: {  }
     weight: 5
     region: content
+  field_participants:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: person
+      link: false
+    third_party_settings: {  }
+    weight: 17
+    region: content
+  field_participants_tasks:
+    type: list_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 18
+    region: content
   field_skills:
     type: entity_reference_entity_view
     label: hidden
@@ -149,6 +183,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_workload:
+    type: days
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 15
     region: content
   hidden:
     type: boolean
@@ -168,6 +209,15 @@ content:
       native_language: false
     third_party_settings: {  }
     weight: 8
+    region: content
+  project_result:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 21
     region: content
   promote:
     type: boolean
@@ -189,13 +239,17 @@ content:
     third_party_settings: {  }
     weight: 9
     region: content
+  uid:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: person
+      link: false
+    third_party_settings: {  }
+    weight: 16
+    region: content
 hidden:
-  field_applicants: true
   field_city: true
-  field_contact: true
   field_image_copyright: true
   field_local: true
-  field_participants: true
-  field_participants_tasks: true
-  field_workload: true
 

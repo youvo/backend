@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * The completed feedback on a project, as a section of its sidebar.
+ *
+ * Nothing shows without feedback, so the sidebar has no empty section.
+ */
+#}
+{% if rows %}
+  <section class="project-page-side-section">
+    <h2 class="project-page-section-title">{{ 'Feedback'|t }}</h2>
+    <dl class="project-page-details">
+      {{ rows }}
+    </dl>
+  </section>
+{% endif %}

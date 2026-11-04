@@ -476,6 +476,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setSetting('target_type', 'user')
       ->setTranslatable(FALSE)
       ->setDefaultValueCallback(static::class . '::getDefaultEntityOwner')
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'author',
@@ -546,7 +547,8 @@ class Project extends ContentEntityBase implements ProjectInterface {
     $fields['project_result'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Project Result'))
       ->setSetting('target_type', 'project_result')
-      ->setTranslatable(FALSE);
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['user_is_applicant'] = BaseFieldDefinition::create('cacheable_boolean')
       ->setLabel(t('User Status Applicant'))

@@ -60,41 +60,21 @@
       </section>
     {% endif %}
 
-    {% if profile.links %}
+{% set links = (content.field_url|field_value ?: [])|merge(content.field_portfolio|field_value ?: []) %}
+    {% if links %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Portfolio'|t }}</h2>
-        <ul class="user-profile-tags">
-          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
+        <ul class="user-profile-tags user-profile-links">
+          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: links} only %}
         </ul>
       </section>
     {% endif %}
 
-    {% if profile.organizations %}
-      <section>
-        <h2 class="user-profile-section-title">{{ 'Managed organizations'|t }}</h2>
-        {% set limit = 6 %}
-        <ul class="user-profile-organizations">
-          {% for organization in profile.organizations|slice(0, limit) %}
-            <li>{{ organization }}</li>
-          {% endfor %}
-        </ul>
-        {% if profile.organizations|length > limit %}
-          {# Opens once and stays open: all organizations are already on the page. #}
-          <details class="user-profile-more">
-            <summary class="button button--small">{{ 'and @count more'|t({'@count': profile.organizations|length - limit}) }}</summary>
-            <ul class="user-profile-organizations">
-              {% for organization in profile.organizations|slice(limit) %}
-                <li>{{ organization }}</li>
-              {% endfor %}
-            </ul>
-          </details>
-        {% endif %}
-      </section>
-    {% endif %}
+    {{ drupal_view('managed_organizations', 'profile', user.id) }}
   </div>
 
   <aside class="user-profile-side">
-    {% include '@yv/user/includes/user-profile-contact.html.twig' with {profile: profile} only %}
+    {% include '@yv/user/includes/user-profile-contact.html.twig' with {mail: profile.mail, phone: content.field_phone|field_value} only %}
 
     {% include '@yv/user/includes/user-profile-account.html.twig' with {account: profile.account} only %}
 
@@ -114,7 +94,7 @@
       </section>
     {% endif %}
 
-    {% include '@yv/user/includes/user-profile-feedback.html.twig' with {feedback: profile.feedback} only %}
+    {{ drupal_view('feedback', 'profile', user.id) }}
 
     {% if profile.courses %}
       <section class="user-profile-section">

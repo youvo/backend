@@ -30,6 +30,7 @@ dependencies:
   module:
     - image
     - text
+    - youvo
 id: user.organization.full
 targetEntityType: user
 bundle: organization
@@ -141,22 +142,18 @@ content:
     weight: 0
     region: content
   field_phone:
-    type: string
+    type: string_telephone
     label: hidden
-    settings:
-      link_to_entity: false
-      link_rel: canonical
+    settings: {  }
     third_party_settings: {  }
-    weight: 12
+    weight: 32
     region: content
   field_portfolio:
-    type: string
+    type: string_link
     label: hidden
-    settings:
-      link_to_entity: false
-      link_rel: canonical
+    settings: {  }
     third_party_settings: {  }
-    weight: 6
+    weight: 31
     region: content
   field_publicity:
     type: basic_string
@@ -202,13 +199,11 @@ content:
     weight: 13
     region: content
   field_url:
-    type: string
+    type: string_link
     label: hidden
-    settings:
-      link_to_entity: false
-      link_rel: canonical
+    settings: {  }
     third_party_settings: {  }
-    weight: 5
+    weight: 30
     region: content
   field_zip:
     type: string

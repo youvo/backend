@@ -5,19 +5,15 @@
  * Provides preprocess logic and other functionality for theming.
  */
 
-use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Render\Element;
-use Drupal\Core\Url;
 use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\FileInterface;
-use Drupal\image\ImageStyleInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
-use Drupal\projects\ProjectResultInterface;
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
@@ -38,6 +34,8 @@ function yv_theme_suggestions_user_alter(array &$suggestions, array $variables):
   $user = $variables['elements']['#user'];
   $user_type = $user->bundle();
   $view_mode = $variables['elements']['#view_mode'];
+  // A view mode shared by the user types, such as person, has one template.
+  $suggestions[] = 'user__' . $view_mode;
   $suggestions[] = 'user__' . $user_type . '__' . $view_mode;
 }
 
@@ -89,6 +87,20 @@ function yv_preprocess_user(array &$variables): void {
     return;
   }
 
+  // A person next to its role: the link to the profile if the viewer may
+  // open it, and the avatar as decoration.
+  if ($variables['elements']['#view_mode'] === 'person' && ($user instanceof Organization || $user instanceof Creative)) {
+    $cache = new CacheableMetadata();
+    $access = $user->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    $variables['url'] = $access->isAllowed() ? $user->toUrl()->toString() : NULL;
+    $variables['avatar'] = yv_avatar($user, $cache);
+    $variables['initials'] = yv_initials(yv_field_value($user, 'field_name', $cache));
+    $variables['person_cache'] = [];
+    $cache->applyTo($variables['person_cache']);
+    return;
+  }
+
   if ($variables['elements']['#view_mode'] !== 'full' ||
     !($user instanceof Organization || $user instanceof Creative)) {
     return;
@@ -105,42 +117,17 @@ function yv_preprocess_user(array &$variables): void {
     return $value !== '' ? $value : NULL;
   };
 
-  // Only http(s) values become links, so other schemes are shown as text.
-  $links = [];
-  foreach (['field_url', 'field_portfolio'] as $field_name) {
-    $access = $user->get($field_name)->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($access);
-    if (!$access->isAllowed()) {
-      continue;
-    }
-    foreach ($user->get($field_name) as $item) {
-      // A value without an address, such as "https://www.", is left out.
-      $link = trim((string) $item->get('value')->getValue());
-      $label = rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/');
-      if ($label === '') {
-        continue;
-      }
-      $links[] = [
-        'url' => preg_match('{^https?://}i', $link) ? $link : NULL,
-        'label' => $label,
-      ];
-    }
-  }
-
   $entity_type_manager = \Drupal::entityTypeManager();
   $date_formatter = \Drupal::service('date.formatter');
   $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
   $cache->addCacheableDependency($staff);
 
   $name = $value('field_name');
-  $phone = $value('field_phone');
   $profile = [
     'initials' => yv_initials($name),
     'avatar' => yv_avatar($user, $cache),
-    'links' => $links,
+    // The mail is a base field of users without a configurable display.
     'mail' => $value('mail'),
-    'phone' => $phone,
-    'phone_uri' => $phone ? 'tel:' . preg_replace('/[^\d+]/', '', $phone) : NULL,
   ];
 
   if ($user instanceof Organization) {
@@ -149,13 +136,6 @@ function yv_preprocess_user(array &$variables): void {
       // Only a short name that differs from the name says something.
       'short_name' => $short_name !== $name ? $short_name : NULL,
       'contact_initials' => yv_initials($value('field_contact')),
-      'address' => array_filter([
-        $value('field_street'),
-        trim($value('field_zip') . ' ' . $value('field_city')),
-        $value('field_country'),
-      ]),
-      'fulltime' => $value('field_count_fulltime'),
-      'volunteer' => $value('field_count_volunteer'),
     ];
 
     $profile['manager_name'] = NULL;
@@ -213,24 +193,6 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   if ($user instanceof Creative) {
-    $organizations = [];
-    $cache->addCacheTags(['user_list']);
-    $organization_ids = \Drupal::entityQuery('user')
-      ->accessCheck(FALSE)
-      ->condition('type', 'organization')
-      ->condition('field_manager', $user->id())
-      ->sort('field_name')
-      ->execute();
-    $view_builder = $entity_type_manager->getViewBuilder('user');
-    foreach (Organization::loadMultiple($organization_ids) as $organization) {
-      $access = $organization->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($organization);
-      if ($access->isAllowed()) {
-        $organizations[] = $view_builder->view($organization, 'teaser');
-      }
-    }
-    $profile['organizations'] = $organizations;
-
     // Counts only the projects the viewer may see, as the projects list does.
     $project_storage = $entity_type_manager->getStorage('project');
     $cache->addCacheTags(['project_list']);
@@ -296,32 +258,6 @@ function yv_preprocess_user(array &$variables): void {
             : t('@done of @total lectures', ['@done' => $completed_lectures, '@total' => count($lecture_ids)]),
         ];
       }
-    }
-  }
-
-  $profile['feedback'] = [];
-  if ($staff->isAllowed()) {
-    $cache->addCacheTags(['feedback_list']);
-    $feedback_ids = $entity_type_manager->getStorage('feedback')->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('bundle', $user instanceof Organization ? 'organization' : 'creative')
-      ->condition('author', $user->id())
-      ->condition('completed', NULL, 'IS NOT NULL')
-      ->sort('completed', 'DESC')
-      ->execute();
-    /** @var \Drupal\feedback\Entity\Feedback $feedback */
-    foreach ($entity_type_manager->getStorage('feedback')->loadMultiple($feedback_ids) as $feedback) {
-      $project = $feedback->get('project')->entity;
-      if (!$project instanceof ProjectInterface) {
-        continue;
-      }
-      $access = $feedback->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($project);
-      $profile['feedback'][] = [
-        'project' => $project->getTitle(),
-        'url' => $access->isAllowed() ? $feedback->toUrl()->toString() : NULL,
-        'date' => $date_formatter->format((int) $feedback->get('completed')->value, 'custom', 'd.m.Y'),
-      ];
     }
   }
 
@@ -452,20 +388,8 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   yv_content_cache($variables['content'], $cache);
 
   $page = [
-    'title' => $project->getTitle(),
-    // The raw values for the badges, whose labels come from the display.
-    'state' => (string) $project->get('field_lifecycle')->value,
-    'archived' => !$project->isPublished(),
-    'hidden' => $project->isHidden(),
-    'promoted' => $project->isPromoted(),
-    // The display shows the body, the summary is its own value.
-    'summary' => yv_field_shows($project, 'body', $cache) ? trim((string) $project->get('body')->summary) ?: NULL : NULL,
-    'facts' => yv_project_facts($project, $cache),
+    'location' => yv_project_location($project, $cache),
   ];
-  $page += yv_project_people($project, $cache);
-  $page += yv_project_result($project, $cache);
-  $page['reasons'] = yv_project_reasons($project, $page, $cache);
-  $page['feedback'] = yv_project_feedback($project, $cache);
 
   $variables['project_page'] = $page;
   $variables['project_cache'] = [];
@@ -503,34 +427,6 @@ function yv_field_value(FieldableEntityInterface $entity, string $field_name, Ca
 }
 
 /**
- * Gets the name of an organization or a creative, if the viewer may see it.
- */
-function yv_person_name(Organization|Creative $user, CacheableMetadata $cache): string {
-  $cache->addCacheableDependency($user);
-  return yv_field_value($user, 'field_name', $cache) ?? (string) t('Unknown');
-}
-
-/**
- * Gets a person as on the profiles.
- *
- * @return array
- *   The avatar or the initials, the name, the role and a link to the
- *   profile, if the viewer may open it.
- */
-function yv_person(Organization|Creative $user, ?string $role, CacheableMetadata $cache): array {
-  $name = yv_person_name($user, $cache);
-  $access = $user->access('view', NULL, TRUE);
-  $cache->addCacheableDependency($access);
-  return [
-    'name' => $name,
-    'initials' => yv_initials($name),
-    'avatar' => yv_avatar($user, $cache),
-    'role' => $role,
-    'url' => $access->isAllowed() ? $user->toUrl()->toString() : NULL,
-  ];
-}
-
-/**
  * Gets the avatar of an organization or a creative as decoration.
  *
  * The avatar always stands next to the name, so its alt text would only
@@ -554,260 +450,17 @@ function yv_avatar(Organization|Creative $user, CacheableMetadata $cache): ?arra
 }
 
 /**
- * Gets the label of a participant's task, as the sections of the sidebar.
+ * Gets the location: the city of a local project, or remote.
  *
- * The participants store the tasks capitalized, the comments in lowercase.
+ * It combines two fields, which a formatter of one field cannot.
  */
-function yv_project_task_label(string $task): ?string {
-  return match (mb_strtolower($task)) {
-    'creative' => (string) t('Creative'),
-    'manager' => (string) t('Manager'),
-    default => $task !== '' ? $task : NULL,
-  };
-}
-
-/**
- * Gets the workload and the location, the facts the display cannot show.
- */
-function yv_project_facts(ProjectInterface $project, CacheableMetadata $cache): array {
-  // The deadline comes from the display.
-  $facts = [];
-  $workload = (float) yv_field_value($project, 'field_workload', $cache);
-  if ($workload > 0) {
-    $days = (string) $workload;
-    $facts['workload'] = [
-      'label' => t('Workload'),
-      'value' => $days === '1' ? t('1 day') : t('@count days', ['@count' => $days]),
-    ];
+function yv_project_location(ProjectInterface $project, CacheableMetadata $cache): mixed {
+  if (!yv_field_shows($project, 'field_local', $cache)) {
+    return NULL;
   }
-  // Unset is not remote; a stored "no" does not count as empty.
-  if (yv_field_shows($project, 'field_local', $cache)) {
-    $facts['location'] = [
-      'label' => t('Location'),
-      'value' => $project->get('field_local')->value ? (yv_field_value($project, 'field_city', $cache) ?? t('On site')) : t('Remote'),
-    ];
-  }
-  return array_filter($facts, static fn (array $fact): bool => (string) $fact['value'] !== '');
-}
-
-/**
- * Gets the organization, manager, participants and applicants of a project.
- */
-function yv_project_people(ProjectInterface $project, CacheableMetadata $cache): array {
-
-  // The contact is a name, not an account, so it is shown as a detail of the
-  // organization: the contact at the time of the project.
-  $organization = $project->getOwner();
-  $contact = yv_field_value($project, 'field_contact', $cache);
-  $people = [
-    'organization' => yv_person($organization, $contact ? (string) t('Contact: @name', ['@name' => $contact]) : NULL, $cache),
-    'manager' => NULL,
-    'participants' => [],
-    'applicants' => [],
-  ];
-
-  if ($organization instanceof Organization) {
-    $access = $organization->get('field_manager')->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($access);
-    $manager = $access->isAllowed() ? $organization->getManager() : NULL;
-    if ($manager) {
-      $people['manager'] = yv_person($manager, NULL, $cache);
-    }
-  }
-
-  if (yv_field_shows($project, 'field_participants', $cache)) {
-    // The tasks have their own access, which can be stricter.
-    $tasks = yv_field_shows($project, 'field_participants_tasks', $cache);
-    foreach ($project->getParticipants() as $participant) {
-      if ($participant instanceof Creative) {
-        // @phpstan-ignore-next-line
-        $role = $tasks ? yv_project_task_label((string) $participant->task) : NULL;
-        $people['participants'][] = yv_person($participant, $role, $cache);
-      }
-    }
-  }
-  if (yv_field_shows($project, 'field_applicants', $cache)) {
-    foreach ($project->getApplicants() as $applicant) {
-      $people['applicants'][] = yv_person($applicant, NULL, $cache);
-    }
-  }
-  return $people;
-}
-
-/**
- * Gets the result of a completed project.
- *
- * @return array
- *   The result: the files and links in their order, each with its
- *   description, and the public comments of the feedback. And whether the
- *   page needs the lightbox for its images.
- */
-function yv_project_result(ProjectInterface $project, CacheableMetadata $cache): array {
-
-  // The result belongs to a completed project. Its field is viewable in every
-  // state, so the state is checked here.
-  $none = ['result' => [], 'lightbox' => FALSE];
-  if (!$project->lifecycle()->isCompleted() || !yv_field_shows($project, 'project_result', $cache)) {
-    return $none;
-  }
-  $result = $project->get('project_result')->entity;
-  if (!$result instanceof ProjectResultInterface) {
-    return $none;
-  }
-  $access = $result->access('view', NULL, TRUE);
-  $cache->addCacheableDependency($access)->addCacheableDependency($result);
-  if (!$access->isAllowed()) {
-    return $none;
-  }
-
-  $entity_type_manager = \Drupal::entityTypeManager();
-  $items = [];
-
-  // The lightbox shows the images in a style generated up front.
-  $lightbox_style = $entity_type_manager->getStorage('image_style')->load('content');
-  if ($lightbox_style instanceof ImageStyleInterface) {
-    $cache->addCacheableDependency($lightbox_style);
-  }
-  $file_values = $result->get('field_files')->getValue();
-  $files = $entity_type_manager->getStorage('file')->loadMultiple(array_column($file_values, 'target_id'));
-  foreach ($file_values as $value) {
-    $file = $files[$value['target_id']] ?? NULL;
-    if (!$file instanceof FileInterface) {
-      continue;
-    }
-    $cache->addCacheableDependency($file);
-    $image = str_starts_with((string) $file->getMimeType(), 'image/');
-    $items[] = [
-      'weight' => (int) ($value['weight'] ?? 0),
-      'url' => $file->createFileUrl(),
-      'name' => $file->getFilename(),
-      'description' => trim((string) ($value['description'] ?? '')),
-      // The teaser style is generated up front by image_style_warmer.
-      'preview' => $image ? [
-        '#theme' => 'image_style',
-        '#style_name' => 'teaser',
-        '#uri' => $file->getFileUri(),
-        '#alt' => '',
-      ] : NULL,
-      'type' => mb_strtoupper(pathinfo($file->getFilename(), PATHINFO_EXTENSION)),
-      'lightbox' => $image && $lightbox_style instanceof ImageStyleInterface ? $lightbox_style->buildUrl($file->getFileUri()) : NULL,
-      'external' => FALSE,
-    ];
-  }
-
-  // Url::isExternal() is TRUE for every absolute address, also for one of
-  // this site, so a link leaves the website only if it is not local.
-  $cache->addCacheContexts(['url.site']);
-  $request = \Drupal::request();
-  $base_url = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/';
-  foreach ($result->get('field_hyperlinks')->getValue() as $value) {
-    $link = trim((string) $value['value']);
-    if ($link === '') {
-      continue;
-    }
-    // A value without an address, such as "https://www.", is left out, as on
-    // the profiles.
-    $name = rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/');
-    if ($name === '') {
-      continue;
-    }
-    // Only http(s) values become links, as on the profiles.
-    $url = preg_match('{^https?://}i', $link) ? Url::fromUri($link) : NULL;
-    $items[] = [
-      'weight' => (int) ($value['weight'] ?? 0),
-      'url' => $url?->toString(),
-      'name' => $name,
-      'description' => trim((string) ($value['description'] ?? '')),
-      'preview' => NULL,
-      'type' => (string) t('Link'),
-      'lightbox' => NULL,
-      'external' => $url && $url->isExternal() && !UrlHelper::externalIsLocal($link, $base_url),
-    ];
-  }
-  usort($items, static fn (array $a, array $b): int => $a['weight'] <=> $b['weight']);
-
-  $comments = [];
-  foreach ($result->getComments() as $comment) {
-    $cache->addCacheableDependency($comment);
-    $author = $comment->getOwner();
-    if (!$comment->get('status')->value || trim($comment->getComment()) === '') {
-      continue;
-    }
-    if ($author instanceof Organization) {
-      $comments[] = yv_person($author, (string) t('Organization'), $cache) + ['comment' => $comment->getComment()];
-    }
-    elseif ($author instanceof Creative) {
-      $role = yv_project_task_label((string) $comment->get('task')->value);
-      $comments[] = yv_person($author, $role, $cache) + ['comment' => $comment->getComment()];
-    }
-  }
-
-  return [
-    'result' => array_filter(['items' => $items, 'comments' => $comments]),
-    'lightbox' => (bool) array_filter(array_column($items, 'lightbox')),
-  ];
-}
-
-/**
- * Gets why a project was declined or archived, from the logbook.
- *
- * @param \Drupal\projects\ProjectInterface $project
- *   The project.
- * @param array $page
- *   The page so far, with the state and the flags of the project.
- * @param \Drupal\Core\Cache\CacheableMetadata $cache
- *   The cacheability of the page.
- *
- * @return array
- *   The reasons, each with label and value.
- */
-function yv_project_reasons(ProjectInterface $project, array $page, CacheableMetadata $cache): array {
-
-  $reasons = [];
-  /** @var \Drupal\logbook\ProjectReasons $reader */
-  $reader = \Drupal::service('logbook.project_reasons');
-  if ($page['state'] === 'declined' && $reason = $reader->getDeclineReason($project, $cache)) {
-    $reasons[] = ['label' => t('Decline reason'), 'value' => $reason->label()];
-  }
-  if ($page['archived'] && $reason = $reader->getArchiveReason($project, $cache)) {
-    $reasons[] = ['label' => t('Archive reason'), 'value' => $reason->label()];
-  }
-  return $reasons;
-}
-
-/**
- * Gets the completed feedback on a project, as on the feedback page.
- *
- * Only the feedback the viewer may open is listed.
- */
-function yv_project_feedback(ProjectInterface $project, CacheableMetadata $cache): array {
-
-  $cache->addCacheTags(['feedback_list']);
-  $storage = \Drupal::entityTypeManager()->getStorage('feedback');
-  $ids = $storage->getQuery()
-    ->accessCheck(FALSE)
-    ->condition('project', $project->id())
-    ->condition('completed', NULL, 'IS NOT NULL')
-    ->sort('completed', 'DESC')
-    ->execute();
-  $date_formatter = \Drupal::service('date.formatter');
-  $feedback = [];
-  /** @var \Drupal\feedback\FeedbackInterface $item */
-  foreach ($storage->loadMultiple($ids) as $item) {
-    $access = $item->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($access);
-    if (!$access->isAllowed()) {
-      continue;
-    }
-    $cache->addCacheableDependency($item);
-    $author = $item->getOwner();
-    $feedback[] = [
-      'name' => $author instanceof Organization || $author instanceof Creative ? yv_person_name($author, $cache) : (string) $item->label(),
-      'url' => $item->toUrl()->toString(),
-      'date' => $date_formatter->format((int) $item->get('completed')->value, 'custom', 'd.m.Y'),
-    ];
-  }
-  return $feedback;
+  return $project->get('field_local')->value
+    ? (yv_field_value($project, 'field_city', $cache) ?? t('On site'))
+    : t('Remote');
 }
 
 /**

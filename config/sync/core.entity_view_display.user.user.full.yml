@@ -23,6 +23,7 @@ dependencies:
   module:
     - image
     - text
+    - youvo
 id: user.user.full
 targetEntityType: user
 bundle: user
@@ -93,6 +94,20 @@ content:
     third_party_settings: {  }
     weight: 21
     region: content
+  field_phone:
+    type: string_telephone
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 32
+    region: content
+  field_portfolio:
+    type: string_link
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 31
+    region: content
   field_position:
     type: string
     label: hidden
@@ -129,10 +144,14 @@ content:
     third_party_settings: {  }
     weight: 7
     region: content
+  field_url:
+    type: string_link
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 30
+    region: content
 hidden:
-  field_phone: true
-  field_portfolio: true
-  field_url: true
   langcode: true
   member_for: true
 

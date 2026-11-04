@@ -1,0 +1,37 @@
+{#
+/**
+ * @file
+ * A file or a link of a project result in the backend, as a card.
+ *
+ * The description links the whole card. An image opens in the lightbox, any
+ * other result in a new tab, which a hint tells screen readers.
+ */
+#}
+<li class="project-page-result">
+  {# The label of the link names the result, so the preview is decoration. #}
+  <div class="project-page-result-preview" aria-hidden="true">
+    {% if preview %}
+      {{ preview }}
+    {% else %}
+      <span class="project-page-result-type">{{ kind }}</span>
+    {% endif %}
+  </div>
+  <div class="project-page-result-body">
+    {% if url %}
+      <a class="project-page-result-label" href="{{ url }}" target="_blank" rel="noopener"
+        {%- if lightbox %} data-lightbox="{{ lightbox }}" data-lightbox-caption="{{ name ? label ~ ' · ' ~ name : label }}"{% endif %}>
+        {{- label -}}
+        {% if external -%}
+          <svg class="project-page-external" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M9 2h5v5M14 2 7 9M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        {%- endif -%}
+        {# The lightbox replaces the hint on the images it opens. #}
+        <span class="visually-hidden" data-lightbox-hint> {{ external ? '(external link, opens in a new tab)'|t : '(opens in a new tab)'|t }}</span>
+      </a>
+    {% else %}
+      <span class="project-page-result-label">{{ label }}</span>
+    {% endif %}
+    {% if name %}
+      <span class="project-page-result-name">{{ name }}</span>
+    {% endif %}
+  </div>
+</li>

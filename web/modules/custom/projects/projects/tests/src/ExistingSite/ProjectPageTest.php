@@ -2,10 +2,7 @@
 
 namespace Drupal\Tests\projects\ExistingSite;
 
-use Drupal\Component\Serialization\Json;
-use Drupal\logbook\Entity\Log;
 use Drupal\projects\Entity\ProjectComment;
-use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\Tests\projects\ExistingSite\Resource\ProjectResourceTestBase;
@@ -60,28 +57,16 @@ class ProjectPageTest extends ProjectResourceTestBase {
   }
 
   /**
-   * An archived project shows its status and the reason from its log.
+   * The status shows whether the project is active or archived.
    */
-  public function testArchiveReason(): void {
+  public function testArchiveStatus(): void {
 
     $project = $this->createProject(ProjectState::Open);
     $this->container->get('current_user')->setAccount(User::load(1));
-    $html = $this->renderProject($project);
-    $this->assertStringContainsString('<dt>Status</dt><dd>Active</dd>', $html);
-    $this->assertStringNotContainsString('Archive reason', $html);
+    $this->assertStringContainsString('<dt>Status</dt><dd>Active</dd>', $this->renderProject($project));
 
     $project->setArchived()->save();
-    $log = Log::create([
-      'type' => 'project_archive',
-      'author' => 1,
-      'project' => $project->id(),
-      'misc' => Json::encode(['reason' => ProjectArchiveReason::External->value]),
-    ]);
-    $log->save();
-    $this->markEntityForCleanup($log);
-    $html = $this->renderProject($project);
-    $this->assertStringContainsString('<dt>Status</dt><dd>Archived</dd>', $html);
-    $this->assertStringContainsString('<dt>Archive reason</dt><dd>' . ProjectArchiveReason::External->label() . '</dd>', $html);
+    $this->assertStringContainsString('<dt>Status</dt><dd>Archived</dd>', $this->renderProject($this->reloadProject($project)));
   }
 
   /**

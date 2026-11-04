@@ -1,0 +1,37 @@
+{#
+/**
+ * @file
+ * The result of a completed project in the backend, as a card: the files,
+ * then the links, and the public comments of the feedback.
+ */
+#}
+{% set items = (content.field_files|field_value ?: [])|merge(content.field_hyperlinks|field_value ?: []) %}
+{# Unpublished comments stay hidden, which the access of comments allows. #}
+{% set comments = (content.project_comments|field_value ?: [])|filter(comment => comment['#project_comment'].isPublished()) %}
+{% if items or comments %}
+  <div class="project-page-card project-page-content">
+    {% if items %}
+      <section>
+        <h2 class="project-page-section-title">{{ 'Result'|t }}</h2>
+        {% if content.field_files|field_value %}
+          {{ attach_library('yv/lightbox') }}
+        {% endif %}
+        <ul class="project-page-results" data-lightbox-group>
+          {% for item in items %}
+            {{ item }}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+    {% if comments %}
+      <section>
+        <h2 class="project-page-section-title">{{ 'Comments'|t }}</h2>
+        <ul class="project-page-comments">
+          {% for comment in comments %}
+            {{ comment }}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  </div>
+{% endif %}

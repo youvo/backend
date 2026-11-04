@@ -1,0 +1,8 @@
+{#
+/**
+ * @file
+ * A feedback as an item of a description list: who or what, then the date.
+ */
+#}
+{% set values = fields|map(field => field.content) %}
+<div><dt>{{ values|first }}</dt><dd>{{ values|last }}</dd></div>

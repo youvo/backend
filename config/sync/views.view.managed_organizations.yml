@@ -1,0 +1,108 @@
+uuid: 89d27665-6ca0-4a06-a07e-7e63d47e6291
+langcode: de
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.user.teaser
+    - user_bundle.user_type.organization
+  module:
+    - logbook
+    - user
+id: managed_organizations
+label: 'Managed organizations'
+module: views
+description: 'The organizations a creative manages, on their profile.'
+tag: ''
+base_table: users_field_data
+base_field: uid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Managed organizations'
+      pager:
+        type: logbook_load_more
+        options:
+          offset: 0
+          items_per_page: 6
+          total_pages: null
+          id: 2
+          step: 6
+      access:
+        type: perm
+        options:
+          perm: 'general manager access'
+      cache:
+        type: tag
+      sorts:
+        field_name_value:
+          id: field_name_value
+          table: user__field_name
+          field: field_name_value
+          relationship: none
+          plugin_id: standard
+          order: ASC
+      arguments:
+        field_manager_target_id:
+          id: field_manager_target_id
+          table: user__field_manager
+          field: field_manager_target_id
+          relationship: none
+          plugin_id: entity_target_id
+          default_action: 'not found'
+          specify_validation: false
+          break_phrase: false
+          not: false
+          target_entity_type_id: user
+      filters:
+        type:
+          id: type
+          table: users_field_data
+          field: type
+          relationship: none
+          entity_type: user
+          entity_field: type
+          plugin_id: bundle
+          operator: in
+          value:
+            organization: organization
+      style:
+        type: default
+      row:
+        type: 'entity:user'
+        options:
+          view_mode: teaser
+      query:
+        type: views_query
+        options: {  }
+      use_ajax: true
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }
+  profile:
+    id: profile
+    display_title: Profile
+    display_plugin: block
+    position: 1
+    display_options:
+      display_description: 'The organizations of a manager, on their profile.'
+      display_extenders: {  }
+      block_description: 'Managed organizations'
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags: {  }
+

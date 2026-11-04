@@ -58,11 +58,12 @@
       </section>
     {% endif %}
 
-    {% if profile.links %}
+{% set links = (content.field_url|field_value ?: [])|merge(content.field_portfolio|field_value ?: []) %}
+    {% if links %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Links'|t }}</h2>
-        <ul class="user-profile-tags">
-          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: profile.links} only %}
+        <ul class="user-profile-tags user-profile-links">
+          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: links} only %}
         </ul>
       </section>
     {% endif %}
@@ -109,11 +110,25 @@
   </div>
 
   <aside class="user-profile-side">
-    {% include '@yv/user/includes/user-profile-contact.html.twig' with {profile: profile} only %}
+    {# The address and the staff from their fields, printed one by one, as
+       joining rendered fields would escape them twice. #}
+    {% set street = content.field_street|field_value %}
+    {% set zip = content.field_zip|field_value %}
+    {% set city = content.field_city|field_value %}
+    {% set country = content.field_country|field_value %}
+    {% set address %}
+      {%- if street or zip or city or country -%}
+        {{ street }}{{ street and (zip or city or country) ? ', ' }}{{ zip }}{{ zip and city ? ' ' }}{{ city }}{{ (zip or city) and country ? ', ' }}{{ country }}
+      {%- endif -%}
+    {% endset %}
+    {% include '@yv/user/includes/user-profile-contact.html.twig' with {mail: profile.mail, phone: content.field_phone|field_value, address: address|trim} only %}
 
+    {% set fulltime = content.field_count_fulltime|field_value %}
+    {% set volunteer = content.field_count_volunteer|field_value %}
     {% set staff = [] %}
-    {% if profile.fulltime or profile.volunteer %}
-      {% set staff = [{label: 'Staff'|t, value: (profile.fulltime|default('–')) ~ ' ' ~ 'full-time'|t ~ ' · ' ~ (profile.volunteer|default('–')) ~ ' ' ~ 'volunteers'|t}] %}
+    {% if fulltime or volunteer %}
+      {% set staff_value %}{{ fulltime ?: '–' }} {{ 'full-time'|t }} · {{ volunteer ?: '–' }} {{ 'volunteers'|t }}{% endset %}
+      {% set staff = [{label: 'Staff'|t, value: staff_value}] %}
     {% endif %}
     {% include '@yv/user/includes/user-profile-account.html.twig' with {account: profile.account, extra: staff} only %}
 
@@ -132,7 +147,7 @@
       </section>
     {% endif %}
 
-    {% include '@yv/user/includes/user-profile-feedback.html.twig' with {feedback: profile.feedback} only %}
+    {{ drupal_view('feedback', 'profile', user.id) }}
   </aside>
 
   {% include '@yv/user/includes/user-profile-views.html.twig' with {user_id: user.id, projects_view: 'organization_projects'} only %}

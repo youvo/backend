@@ -29,6 +29,7 @@ use Drupal\user\EntityOwnerTrait;
     'view_builder' => 'Drupal\feedback\FeedbackViewBuilder',
     'access' => 'Drupal\feedback\Access\FeedbackEntityAccess',
     'list_builder' => 'Drupal\feedback\FeedbackListBuilder',
+    'views_data' => 'Drupal\views\EntityViewsData',
     'route_provider' => [
       'html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider',
     ],

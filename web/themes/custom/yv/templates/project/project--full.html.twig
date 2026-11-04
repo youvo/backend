@@ -8,30 +8,7 @@
  * cannot show, and are set only when the viewer may see the fields.
  */
 #}
-{% import _self as macros %}
 {% set page = project_page %}
-
-{% macro person(person) %}
-  {% set person_content %}
-    {% if person.avatar %}
-      <span class="project-page-avatar">{{ person.avatar }}</span>
-    {% else %}
-      <span class="project-page-avatar" aria-hidden="true">{{ person.initials }}</span>
-    {% endif %}
-    <span>
-      <span class="project-page-person-name">{{ person.name }}</span>
-      {% if person.role %}
-        <span class="project-page-person-role">{{ person.role }}</span>
-      {% endif %}
-    </span>
-  {% endset %}
-  {% if person.url %}
-    <a class="project-page-person" href="{{ person.url }}">{{ person_content }}</a>
-  {% else %}
-    <span class="project-page-person">{{ person_content }}</span>
-  {% endif %}
-{% endmacro %}
-
 {{ project_cache }}
 <article class="project-page">
   <div class="project-page-main">
@@ -44,45 +21,44 @@
 
       <div class="project-page-intro-body">
         <header class="project-page-header">
-          <h1 class="project-page-title">{{ page.title }}</h1>
-          {% if page.organization.url %}
-            <a class="project-page-organization" href="{{ page.organization.url }}">{{ page.organization.name }}</a>
-          {% else %}
-            <p class="project-page-organization">{{ page.organization.name }}</p>
-          {% endif %}
+          <h1 class="project-page-title">{{ content.title|field_value }}</h1>
+          {# The owner is the organization in the sidebar, so its name here needs
+             a display of its own. #}
+          <p class="project-page-organization">{{ drupal_field('uid', 'project', project.id(), {label: 'hidden', type: 'entity_reference_entity_view', settings: {view_mode: 'name'}})|field_value }}</p>
           {# The badges reuse the colors of the project teasers. #}
           <ul class="project-page-badges" aria-label="{{ 'Project status'|t }}">
-            <li><span class="project-teaser-badge" data-badge="{{ page.state|clean_class }}">{{ content.field_lifecycle|field_value }}</span></li>
-            {% if page.archived %}
+            <li><span class="project-teaser-badge" data-badge="{{ project.field_lifecycle.value|clean_class }}">{{ content.field_lifecycle|field_value }}</span></li>
+            {% if not project.isPublished() %}
               <li><span class="project-teaser-badge" data-badge="archived">{{ 'Archived'|t }}</span></li>
             {% endif %}
-            {% if page.hidden %}
+            {% if project.isHidden() %}
               <li><span class="project-teaser-badge" data-badge="hidden">{{ 'Hidden'|t }}</span></li>
             {% endif %}
-            {% if page.promoted %}
+            {% if project.isPromoted() %}
               <li><span class="project-teaser-badge">{{ 'Promoted'|t }}</span></li>
             {% endif %}
           </ul>
         </header>
 
-        {% if page.summary %}
-          <p class="project-page-summary">{{ page.summary }}</p>
+        {# The display shows the body as the briefing, so the summary needs a
+           display of its own. #}
+        {% set summary = drupal_field('body', 'project', project.id(), {label: 'hidden', type: 'text_summary_only'})|field_value %}
+        {% if summary %}
+          <p class="project-page-summary">{{ summary }}</p>
         {% endif %}
 
         {% if content.field_skills|field_value %}
           <div class="project-page-skills">{{ content.field_skills|field_value }}</div>
         {% endif %}
 
-        {% set deadline = content.field_deadline|field_value %}
-        {% if deadline or page.facts %}
+        {% set facts = [
+          {label: 'Deadline'|t, value: content.field_deadline|field_value},
+          {label: 'Workload'|t, value: content.field_workload|field_value},
+          {label: 'Location'|t, value: page.location},
+        ]|filter(fact => fact.value) %}
+        {% if facts %}
           <dl class="project-page-facts">
-            {% if deadline %}
-              <div>
-                <dt>{{ 'Deadline'|t }}</dt>
-                <dd>{{ deadline }}</dd>
-              </div>
-            {% endif %}
-            {% for fact in page.facts %}
+            {% for fact in facts %}
               <div>
                 <dt>{{ fact.label }}</dt>
                 <dd>{{ fact.value }}</dd>
@@ -110,63 +86,9 @@
       </div>
     {% endif %}
 
-    {% if page.result %}
-      <div class="project-page-card project-page-content">
-        {% if page.result.items %}
-          <section>
-            <h2 class="project-page-section-title">{{ 'Result'|t }}</h2>
-            {% if page.lightbox %}
-              {{ attach_library('yv/lightbox') }}
-            {% endif %}
-            <ul class="project-page-results" data-lightbox-group>
-              {% for item in page.result.items %}
-                <li class="project-page-result">
-                  {# The label of the link names the result, so the preview is decoration. #}
-                  <div class="project-page-result-preview" aria-hidden="true">
-                    {% if item.preview %}
-                      {{ item.preview }}
-                    {% else %}
-                      <span class="project-page-result-type">{{ item.type }}</span>
-                    {% endif %}
-                  </div>
-                  <div class="project-page-result-body">
-                    {% set label = item.description ?: item.name %}
-                    {% if item.url %}
-                      <a class="project-page-result-label" href="{{ item.url }}" target="_blank" rel="noopener"
-                        {%- if item.lightbox %} data-lightbox="{{ item.lightbox }}" data-lightbox-caption="{{ item.description ? item.description ~ ' · ' }}{{ item.name }}"{% endif %}>
-                        {{- label -}}
-                        {% if item.external -%}
-                          <svg class="project-page-external" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M9 2h5v5M14 2 7 9M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        {%- endif -%}
-                        {# The lightbox replaces the hint on the images it opens. #}
-                        <span class="visually-hidden" data-lightbox-hint> {{ item.external ? '(external link, opens in a new tab)'|t : '(opens in a new tab)'|t }}</span>
-                      </a>
-                    {% else %}
-                      <span class="project-page-result-label">{{ label }}</span>
-                    {% endif %}
-                    {% if item.description %}
-                      <span class="project-page-result-name">{{ item.name }}</span>
-                    {% endif %}
-                  </div>
-                </li>
-              {% endfor %}
-            </ul>
-          </section>
-        {% endif %}
-        {% if page.result.comments %}
-          <section>
-            <h2 class="project-page-section-title">{{ 'Comments'|t }}</h2>
-            <ul class="project-page-comments">
-              {% for comment in page.result.comments %}
-                <li>
-                  {{ macros.person(comment) }}
-                  <blockquote>{{ comment.comment }}</blockquote>
-                </li>
-              {% endfor %}
-            </ul>
-          </section>
-        {% endif %}
-      </div>
+    {# The result belongs to a completed project. #}
+    {% if project.field_lifecycle.value == 'completed' %}
+      {{ content.project_result|field_value }}
     {% endif %}
   </div>
 
@@ -178,9 +100,6 @@
         {% if content.status|field_value %}
           <div><dt>{{ 'Status'|t }}</dt><dd>{{ content.status|field_value }}</dd></div>
         {% endif %}
-        {% for reason in page.reasons %}
-          <div><dt>{{ reason.label }}</dt><dd>{{ reason.value }}</dd></div>
-        {% endfor %}
         {% set rows = [
           {label: 'Hidden'|t, value: content.hidden|field_value},
           {label: 'Promoted'|t, value: content.promote|field_value},
@@ -206,36 +125,34 @@
       </section>
     {% endif %}
 
+    {# The people come from the display, the tasks matched to the participants
+       by their position. The manager belongs to the organization. #}
+    {% set contact = content.field_contact|field_value %}
+    {% set manager = drupal_field('field_manager', 'user', project.uid.target_id, {label: 'hidden', type: 'entity_reference_entity_view', settings: {view_mode: 'person'}})|field_value %}
+    {% set tasks = content.field_participants_tasks|field_value %}
     {% set groups = [
-      {title: 'Organization'|t, people: [page.organization]},
-      {title: 'Manager'|t, people: page.manager ? [page.manager] : []},
-      {title: 'Participants'|t, people: page.participants},
-      {title: 'Applicants'|t, people: page.applicants},
+      {title: 'Organization'|t, people: content.uid|field_value, roles: contact ? [contact] : [], prefix: 'Contact'|t ~ ': '},
+      {title: 'Manager'|t, people: manager, roles: [], prefix: ''},
+      {title: 'Participants'|t, people: content.field_participants|field_value, roles: tasks, prefix: ''},
+      {title: 'Applicants'|t, people: content.field_applicants|field_value, roles: [], prefix: ''},
     ] %}
     {% for group in groups|filter(group => group.people) %}
       <section class="project-page-side-section">
         <h2 class="project-page-section-title">{{ group.title }}</h2>
         <ul class="project-page-people">
-          {% for person in group.people %}
-            <li>{{ macros.person(person) }}</li>
+          {% for delta, person in group.people %}
+            <li>
+              {{ person }}
+              {% if group.roles[delta] %}
+                <span class="project-page-role">{{ group.prefix }}{{ group.roles[delta] }}</span>
+              {% endif %}
+            </li>
           {% endfor %}
         </ul>
       </section>
     {% endfor %}
 
-    {% if page.feedback %}
-      <section class="project-page-side-section">
-        <h2 class="project-page-section-title">{{ 'Feedback'|t }}</h2>
-        <dl class="project-page-details">
-          {% for item in page.feedback %}
-            <div>
-              <dt>{{ item.name }}</dt>
-              <dd><a href="{{ item.url }}">{{ item.date }}<span class="visually-hidden">: {{ 'Feedback'|t }}</span></a></dd>
-            </div>
-          {% endfor %}
-        </dl>
-      </section>
-    {% endif %}
+    {{ drupal_view('feedback', 'project', project.id()) }}
   </aside>
 
   {# The logbook, below both columns. It is empty for viewers without access

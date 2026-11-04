@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * A public comment on a project result: the author with the task, and the
+ * comment below the name.
+ */
+#}
+{% if content.value|field_value %}
+  <li>
+    {{ content.author|field_value }}
+    {% if content.task|field_value %}
+      <span class="project-page-role">{{ content.task|field_value }}</span>
+    {% endif %}
+    <blockquote>{{ content.value|field_value }}</blockquote>
+  </li>
+{% endif %}

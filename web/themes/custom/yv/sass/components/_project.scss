@@ -85,7 +85,9 @@
   font-size: var(--gin-font-size-s);
   line-height: 1.3;
 
-  &[href] {
+  // The name view mode links the name to the organization.
+  a {
+    color: inherit;
     text-decoration: none;
 
     &:hover,
@@ -166,21 +168,17 @@
   @include section-label;
 }
 
-// Drupal's field classes are outside our naming pattern.
-// stylelint-disable selector-class-pattern
 .project-page-text {
   line-height: 1.6;
 
-  .field__item > :first-child {
+  > :first-child {
     margin-top: 0;
   }
 
-  .field__item > :last-child {
+  > :last-child {
     margin-bottom: 0;
   }
 }
-
-// stylelint-enable selector-class-pattern
 
 // The plain text fields, whose formatter turns line breaks into <br>.
 .project-page-plain {
@@ -269,52 +267,22 @@
   padding: var(--gin-spacing-xxs) 0 0;
   list-style: none;
 
-  // As a flex container, the item is as high as the person in it, without the
-  // space below the baseline of an inline element.
+  // As a grid, the item is as high as the person in it, without the space
+  // below the baseline of an inline element. The role goes below the name.
   > li {
-    display: flex;
-  }
-}
-
-// A person: a small avatar, then name and role.
-.project-page-person {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gin-spacing-s);
-  line-height: 1.25;
-
-  > span:last-child {
     display: grid;
-  }
-
-  &[href] {
-    color: inherit;
-    text-decoration: none;
-
-    &:hover,
-    &:focus-visible {
-      .project-page-person-name {
-        color: var(--yv-accent);
-        text-decoration: underline;
-      }
-    }
+    justify-items: start;
   }
 }
 
-.project-page-avatar {
-  @include initials-avatar(to-rem(32));
-
-  font-size: var(--gin-font-size-xxs);
-}
-
-.project-page-person-name {
-  color: var(--yv-ink);
-  font-weight: 600;
-}
-
-.project-page-person-role {
+// Below the name: indented by the avatar and the gap after it.
+.project-page-role {
+  // Close to the name, which is centered on the taller avatar.
+  margin-top: calc(var(--gin-spacing-xxs) * -1);
+  margin-inline-start: calc(#{to-rem(32)} + var(--gin-spacing-s));
   color: var(--yv-muted);
   font-size: var(--gin-font-size-xs);
+  line-height: 1.25;
 }
 
 .project-page-comments {
@@ -340,9 +308,9 @@
     border: 0;
     color: var(--yv-ink);
 
-    // Gin enlarges quotes; the comments read as the text around them.
+    // Gin enlarges quotes; the comments read as the text around them. The
+    // formatter turns line breaks into <br>.
     font-size: inherit;
-    white-space: pre-line;
 
     // Gin draws its own accent bar before a quote.
     &::before {

@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * A file or a link of a project result.
+ *
+ * Available variables:
+ * - url: The address of the file or link, if it is one.
+ * - label: The description, or the name if there is none.
+ * - name: The name of the file or the address, if the label is the
+ *   description.
+ * - preview: A preview image, if the result is one.
+ * - kind: The type of the file, or that it is a link.
+ * - lightbox: The address of a larger image, if the result is one.
+ * - external: Whether the link leaves the website.
+ */
+#}
+{% if url %}
+  <a href="{{ url }}">{{ label }}</a>
+{% else %}
+  {{ label }}
+{% endif %}
