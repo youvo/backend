@@ -43,10 +43,15 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
     $session->elementTextContains('css', '#revision-' . $revision_id, 'Project Title');
     $session->elementExists('css', '#revision-' . $revision_id . ' a[href$="/projects/' . $project->id() . '/revisions/' . $revision_id . '/view"]');
 
-    // Entries read like the logbook: a type pill and a sentence naming the
-    // author with a link.
+    // Entries read like the logbook rows: a type pill and the author with a
+    // link, without repeating the log text.
     $session->elementTextEquals('css', '#revision-' . $revision_id . ' .project-changes-type', 'Change');
-    $session->elementExists('css', '#revision-' . $revision_id . ' .project-changes-text a[href$="/user/' . $project->getOwner()->id() . '"]');
+    $session->elementExists('css', '#revision-' . $revision_id . ' .project-changes-author a[href$="/user/' . $project->getOwner()->id() . '"]');
+    $session->elementTextNotContains('css', '#revision-' . $revision_id, 'bearbeitet');
+
+    // The card is a details element of Gin, below the main column and the
+    // sidebar.
+    $session->elementExists('css', '.project-page > details.project-changes.claro-details');
   }
 
   /**
@@ -67,7 +72,7 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests that entries beyond the two newest are nested.
+   * Tests that entries beyond the two newest are hidden behind a button.
    */
   public function testOlderEntriesNested(): void {
 
@@ -77,9 +82,12 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
     $this->drupalGet($project->toUrl());
 
     $session = $this->assertSession();
-    $session->elementsCount('css', 'details.project-changes > .project-changes-entries > .project-changes-entry', 2);
-    $session->elementsCount('css', 'details.project-changes-older .project-changes-entry', 2);
-    $session->elementTextContains('css', 'details.project-changes-older > summary', 'Show 2 older changes');
+    // One list: the older entries are hidden behind a button, not nested in
+    // another details element.
+    $session->elementsCount('css', 'details.project-changes .project-changes-entry', 4);
+    $session->elementsCount('css', 'details.project-changes .project-changes-entry[hidden]', 2);
+    $session->elementNotExists('css', 'details.project-changes details');
+    $session->elementTextContains('css', 'details.project-changes button.project-changes-more', 'Show 2 older changes');
   }
 
 }

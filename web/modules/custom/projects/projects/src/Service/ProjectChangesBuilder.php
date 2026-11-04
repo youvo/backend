@@ -136,51 +136,80 @@ class ProjectChangesBuilder {
   }
 
   /**
-   * Marks the changed words of the changed paragraphs, with some context.
+   * Marks the changed words of the changed sentences, with one around them.
+   *
+   * Left out text at the start or the end shows as an ellipsis.
    */
   protected function passageDiff(string $old, string $new): string {
 
-    $old_paragraphs = $this->paragraphs($old);
-    $new_paragraphs = $this->paragraphs($new);
+    $old_sentences = $this->sentences($old);
+    $new_sentences = $this->sentences($new);
+    $old_texts = array_column($old_sentences, 'text');
+    $new_texts = array_column($new_sentences, 'text');
 
-    // Paragraphs equal at the start and at the end are context at most.
+    // Sentences equal at the start and at the end are context at most.
     $start = 0;
-    while (isset($old_paragraphs[$start], $new_paragraphs[$start]) && $old_paragraphs[$start] === $new_paragraphs[$start]) {
+    while (isset($old_texts[$start], $new_texts[$start]) && $old_texts[$start] === $new_texts[$start]) {
       $start++;
     }
     $end = 0;
     while (
-      $end < count($old_paragraphs) - $start &&
-      $end < count($new_paragraphs) - $start &&
-      $old_paragraphs[count($old_paragraphs) - 1 - $end] === $new_paragraphs[count($new_paragraphs) - 1 - $end]
+      $end < count($old_texts) - $start &&
+      $end < count($new_texts) - $start &&
+      $old_texts[count($old_texts) - 1 - $end] === $new_texts[count($new_texts) - 1 - $end]
     ) {
       $end++;
     }
     $from = max(0, $start - 1);
-    $old_passage = array_slice($old_paragraphs, $from, count($old_paragraphs) - $from - max(0, $end - 1));
-    $new_passage = array_slice($new_paragraphs, $from, count($new_paragraphs) - $from - max(0, $end - 1));
+    $cut_end = max(0, $end - 1);
+    $old_passage = array_slice($old_sentences, $from, count($old_sentences) - $from - $cut_end);
+    $new_passage = array_slice($new_sentences, $from, count($new_sentences) - $from - $cut_end);
 
-    $diff = HtmlDiff::create($this->html($old_passage), $this->html($new_passage))->build();
+    $diff = HtmlDiff::create(
+      $this->html($old_passage, $from > 0, $cut_end > 0),
+      $this->html($new_passage, $from > 0, $cut_end > 0),
+    )->build();
     return Xss::filter($diff, static::DIFF_TAGS);
   }
 
   /**
-   * Splits a text into paragraphs of plain text.
+   * Splits a text into sentences of plain text, with their paragraph.
    *
-   * @return string[]
-   *   The non-empty paragraphs.
+   * @return list<array{paragraph: int, text: string}>
+   *   The sentences in order.
    */
-  protected function paragraphs(string $text): array {
+  protected function sentences(string $text): array {
+
     $text = preg_replace('~</p>|<br\s*/?>~i', "\n\n", $text);
     $paragraphs = preg_split('~\n\s*\n~', html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5));
-    return array_values(array_filter(array_map('trim', $paragraphs), static fn (string $paragraph) => $paragraph !== ''));
+    $paragraphs = array_values(array_filter(array_map('trim', $paragraphs), static fn (string $paragraph) => $paragraph !== ''));
+
+    $sentences = [];
+    foreach ($paragraphs as $index => $paragraph) {
+      foreach (preg_split('~(?<=[.!?…])\s+~u', $paragraph) as $sentence) {
+        $sentences[] = ['paragraph' => $index, 'text' => $sentence];
+      }
+    }
+    return $sentences;
   }
 
   /**
-   * Joins paragraphs of plain text to escaped HTML.
+   * Joins sentences to escaped HTML, one element per paragraph.
    */
-  protected function html(array $paragraphs): string {
-    return implode('', array_map(static fn ($paragraph) => '<p>' . htmlspecialchars($paragraph, ENT_QUOTES) . '</p>', $paragraphs));
+  protected function html(array $sentences, bool $cut_start, bool $cut_end): string {
+
+    $paragraphs = [];
+    foreach ($sentences as $sentence) {
+      $paragraphs[$sentence['paragraph']][] = htmlspecialchars($sentence['text'], ENT_QUOTES);
+    }
+    $paragraphs = array_map(static fn (array $texts) => implode(' ', $texts), array_values($paragraphs));
+    if ($paragraphs && $cut_start) {
+      $paragraphs[0] = '… ' . $paragraphs[0];
+    }
+    if ($paragraphs && $cut_end) {
+      $paragraphs[count($paragraphs) - 1] .= ' …';
+    }
+    return implode('', array_map(static fn (string $paragraph) => '<p>' . $paragraph . '</p>', $paragraphs));
   }
 
   /**

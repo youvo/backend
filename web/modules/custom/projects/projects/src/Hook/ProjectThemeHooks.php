@@ -31,8 +31,7 @@ class ProjectThemeHooks {
       'project_changes' => [
         'variables' => [
           'entries' => [],
-          'earlier' => 0,
-          'count' => 0,
+          'visible' => 2,
         ],
       ],
       'project_result_item' => [

@@ -112,6 +112,29 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that a long text shows the changed sentence with its neighbors.
+   */
+  public function testLongTextContext(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $old = 'Eins ist hier. Zwei ist hier. Drei ist hier. Vier ist hier. Fünf ist hier.';
+    $project->set('body', ['value' => $old, 'format' => 'plain_text'])
+      ->setSyncing(TRUE)
+      ->save();
+    $project->setSyncing(FALSE);
+    $new = 'Eins ist hier. Zwei ist hier. Drei ist dort. Vier ist hier. Fünf ist hier.';
+    $project->set('body', ['value' => $new, 'format' => 'plain_text'])->save();
+
+    $diff = $this->fields($this->build($project)['entries'][0])['Project Details']['diff'];
+    $this->assertStringContainsString('Zwei', $diff);
+    $this->assertStringContainsString('Vier', $diff);
+    $this->assertStringNotContainsString('Eins', $diff);
+    $this->assertStringNotContainsString('Fünf', $diff);
+    $this->assertStringStartsWith('<p>…', $diff);
+    $this->assertStringEndsWith('…</p>', $diff);
+  }
+
+  /**
    * Tests that values are plain text, not escaped twice.
    */
   public function testPlainValues(): void {

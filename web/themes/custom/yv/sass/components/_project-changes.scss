@@ -1,45 +1,38 @@
 // =============================================================================
 // PROJECT CHANGES (project-changes)
 // =============================================================================
-// The revisions of a project at the end of the project page: a collapsed card
-// that opens to the entries, newest first. The logbook links to an entry.
+// The revisions of a project below both columns of the project page: a
+// details element of Gin, collapsed, with rows like the logbook's. The log
+// text already says who changed the project, so a row names the author next
+// to the date and shows the changed fields.
 
-@use "../abstracts/functions.scss" as *;
-@use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
 
+// Gin draws the details; it only spans both columns, like the logbook.
 .project-changes {
-  @include card-padding;
-}
+  min-width: 0;
+  margin: 0;
 
-.project-changes-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gin-spacing-xs) var(--gin-spacing-s);
-  align-items: baseline;
-  cursor: pointer;
-
-  .project-page-section-title {
-    margin: 0;
+  @media (min-width: $breakpoint-wide) {
+    grid-column: 1 / -1;
   }
 }
 
 .project-changes-meta {
+  margin-left: var(--gin-spacing-xs);
   color: var(--yv-muted);
   font-size: var(--gin-font-size-s);
+  font-weight: 400;
 }
 
-.project-changes-entries {
-  margin-top: var(--gin-spacing-s);
-}
-
-// A row like in the logbook: date, type pill and the event. On narrow
-// screens the pill and the date share a line above the event.
+// Rows: date and author, type pill, the changed fields and the revision
+// link. On narrow screens the pill and the date share a line above the rest.
 .project-changes-entry {
   display: grid;
   grid-template-areas:
-    "type date"
-    "event event";
+    "type meta"
+    "event event"
+    "link link";
   grid-template-columns: auto 1fr;
   gap: var(--gin-spacing-xs) var(--gin-spacing-s);
   align-items: baseline;
@@ -47,26 +40,51 @@
   border-bottom: 1px solid var(--yv-line);
   scroll-margin-top: var(--gin-spacing-xl);
 
-  &:last-child {
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child,
+  &:has(+ [hidden]) {
     border-bottom: 0;
   }
 
+  // The grid would override the hidden attribute of the older entries.
+  &[hidden] {
+    display: none;
+  }
+
   &.is-target {
+    margin-inline: calc(-1 * var(--gin-spacing-s));
+    padding-inline: var(--gin-spacing-s);
+    border-radius: var(--gin-border-s);
     background: var(--yv-chip);
   }
 
   @media (min-width: $breakpoint-medium) {
-    grid-template-areas: "date type event";
-    grid-template-columns: auto auto 1fr;
-    gap: var(--gin-spacing-s) var(--gin-spacing-m);
+    grid-template-areas: "meta type event link";
+    grid-template-columns: 11rem auto minmax(0, 1fr) auto;
+    gap: var(--gin-spacing-m);
   }
 }
 
+.project-changes-meta-column {
+  display: grid;
+  grid-area: meta;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
 .project-changes-date {
-  grid-area: date;
   color: var(--yv-text);
   font-size: var(--gin-font-size-xs);
   white-space: nowrap;
+}
+
+.project-changes-author {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  overflow-wrap: anywhere;
 }
 
 // The pill of the logbook: neutral, yellow for changes as their logs.
@@ -85,19 +103,18 @@
 }
 
 .project-changes-event {
+  display: grid;
   grid-area: event;
-  max-width: to-rem(680);
-}
-
-.project-changes-field {
-  margin-top: var(--gin-spacing-xs);
+  gap: var(--gin-spacing-s);
+  min-width: 0;
 }
 
 .project-changes-label {
-  margin-right: var(--gin-spacing-xs);
+  margin-bottom: 0.125rem;
   color: var(--yv-muted);
-  font-size: var(--gin-font-size-s);
+  font-size: var(--gin-font-size-xs);
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .project-changes-value,
@@ -116,20 +133,36 @@
 
   p {
     margin: 0 0 var(--gin-spacing-xs);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 
+.project-changes-arrow {
+  margin-inline: 0.25em;
+  color: var(--yv-muted);
+}
+
+.project-changes-created,
 .project-changes-earlier {
-  margin: var(--gin-spacing-xs) 0 0;
+  margin: 0;
   color: var(--yv-muted);
 }
 
 .project-changes-link {
+  grid-area: link;
+  font-size: var(--gin-font-size-s);
   white-space: nowrap;
 }
 
-.project-changes-older > summary {
-  margin-top: var(--gin-spacing-m);
-  color: var(--yv-accent);
-  cursor: pointer;
+// The button for the older changes, below the two newest.
+.project-changes-more {
+  margin: var(--gin-spacing-s) 0 0;
+}
+
+.project-changes-earlier {
+  margin-top: var(--gin-spacing-s);
+  font-size: var(--gin-font-size-s);
 }

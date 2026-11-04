@@ -1,72 +1,54 @@
 {#
 /**
  * @file
- * The changes of a project, collapsed, with the two newest entries first.
+ * A list of project changes, rows like in the logbook.
+ *
+ * The log text already says who changed the project, so a row only names the
+ * author next to the date and shows the changed fields.
  *
  * Available variables:
- * - entries: The entries, newest first. Each has revision_id, author (role
- *   and name), author_role, author_name, author_id, time, created, url and
- *   fields (label, long, old, new, diff).
- * - earlier: The number of earlier revisions without an entry.
- * - count: The number of all revisions.
+ * - entries: The entries, newest first. Each has revision_id, author_role,
+ *   author_name, author_id, time, created, url and fields (label, long, old,
+ *   new, diff).
+ * - visible: The number of entries shown before the button for the rest.
  */
 #}
-{% macro entry(entry) %}
-  {# A row like in the logbook: date, type pill and a sentence. #}
-  <article class="project-changes-entry" id="revision-{{ entry.revision_id }}">
-    <time class="project-changes-date" datetime="{{ entry.time|date('c') }}">{{ entry.time|format_date('custom', 'd.m.Y H:i') }}</time>
-    <span class="project-changes-type"{% if not entry.created %} data-tone="attention"{% endif %}>{{ entry.created ? 'Create'|t : 'Change'|t }}</span>
-    <div class="project-changes-event">
-      <div class="project-changes-text">
-        {# German like the log texts, which are German config. #}
-        Die {{ entry.author_role }}
-        {%- if entry.author_id %} <a href="{{ path('entity.user.canonical', {'user': entry.author_id}) }}">{{ entry.author_name }}</a>{% endif %}
-        hat das Projekt {{ entry.created ? 'erstellt' : 'bearbeitet' }}.
-        <a class="project-changes-link" href="{{ entry.url }}">{{ 'Revision ansehen'|t }}</a>
+<div class="project-changes-entries">
+  {% for entry in entries %}
+    <article class="project-changes-entry" id="revision-{{ entry.revision_id }}"{% if loop.index > visible %} hidden{% endif %}>
+      <div class="project-changes-meta-column">
+        <time class="project-changes-date" datetime="{{ entry.time|date('c') }}">{{ entry.time|format_date('custom', 'd.m.Y H:i') }}</time>
+        <span class="project-changes-author">
+          {{ entry.author_role }}
+          {%- if entry.author_id %} <a href="{{ path('entity.user.canonical', {'user': entry.author_id}) }}">{{ entry.author_name }}</a>{% endif %}
+        </span>
       </div>
-      {% for field in entry.fields %}
-        <div class="project-changes-field">
-          <span class="project-changes-label">{{ field.label }}</span>
-          {% if field.long %}
-            <div class="project-changes-diff">{{ field.diff }}</div>
-          {% else %}
-            <span class="project-changes-value">
-              {% if field.old %}<del>{{ field.old }}</del>{% endif %}
-              {% if field.old and field.new %}<span aria-hidden="true">→</span>{% endif %}
-              {% if field.new %}<ins>{{ field.new }}</ins>{% endif %}
-            </span>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  </article>
-{% endmacro %}
-{{ attach_library('projects/changes') }}
-<details class="project-page-card project-changes" data-project-changes>
-  <summary class="project-changes-summary">
-    <h2 class="project-page-section-title">{{ 'Changes'|t }}</h2>
-    <span class="project-changes-meta">
-      {% trans %}{{ count }} change{% plural count %}{{ count }} changes{% endtrans %}
-      · {{ 'last @date by @author'|t({'@date': entries|first.time|format_date('custom', 'd.m.Y'), '@author': entries|first.author}) }}
-    </span>
-  </summary>
-  <div class="project-changes-entries">
-    {% for entry in entries|slice(0, 2) %}
-      {{ _self.entry(entry) }}
-    {% endfor %}
-  </div>
-  {% if entries|length > 2 %}
-    {% set older = entries|length - 2 %}
-    <details class="project-changes-older">
-      <summary>{% trans %}Show {{ older }} older change{% plural older %}Show {{ older }} older changes{% endtrans %}</summary>
-      <div class="project-changes-entries">
-        {% for entry in entries|slice(2) %}
-          {{ _self.entry(entry) }}
+      <span class="project-changes-type"{% if not entry.created %} data-tone="attention"{% endif %}>{{ entry.created ? 'Create'|t : 'Change'|t }}</span>
+      <div class="project-changes-event">
+        {% for field in entry.fields %}
+          <div class="project-changes-field">
+            <div class="project-changes-label">{{ field.label }}</div>
+            {% if field.long %}
+              <div class="project-changes-diff">{{ field.diff }}</div>
+            {% else %}
+              <div class="project-changes-value">
+                {% if field.old %}<del>{{ field.old }}</del>{% endif %}
+                {% if field.old and field.new %}<span class="project-changes-arrow" aria-hidden="true">→</span>{% endif %}
+                {% if field.new %}<ins>{{ field.new }}</ins>{% endif %}
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="project-changes-created">{{ 'The first version of the project.'|t }}</p>
         {% endfor %}
       </div>
-    </details>
-  {% endif %}
-  {% if earlier %}
-    <p class="project-changes-earlier">{% trans %}{{ earlier }} earlier change{% plural earlier %}{{ earlier }} earlier changes{% endtrans %}</p>
-  {% endif %}
-</details>
+      <a class="project-changes-link" href="{{ entry.url }}">{{ 'View revision'|t }}</a>
+    </article>
+  {% endfor %}
+</div>
+{% if entries|length > visible %}
+  {% set older = entries|length - visible %}
+  <button type="button" class="button button--small project-changes-more" data-project-changes-more>
+    {% trans %}Show {{ older }} older change{% plural older %}Show {{ older }} older changes{% endtrans %}
+  </button>
+{% endif %}
