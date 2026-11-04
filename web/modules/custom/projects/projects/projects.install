@@ -30,3 +30,23 @@ function projects_update_11001(): void {
     $update_manager->updateFieldStorageDefinition($status);
   }
 }
+
+/**
+ * Makes projects revisionable.
+ *
+ * Converts the project tables to revisionable storage. Every project gets a
+ * first revision with its current values.
+ */
+function projects_update_11002(?array &$sandbox = NULL): void {
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  if ($update_manager->getEntityType('project')->isRevisionable()) {
+    return;
+  }
+
+  // Take the definitions of the code: the entity type with its revision
+  // tables and keys, and the field storages including the revision fields.
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('project');
+  $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('project');
+  $update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+}

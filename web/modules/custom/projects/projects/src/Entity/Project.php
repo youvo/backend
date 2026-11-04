@@ -5,12 +5,12 @@ namespace Drupal\projects\Entity;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
-use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -61,10 +61,14 @@ use Drupal\user_types\Utility\Profile;
   ],
   base_table: 'project',
   data_table: 'project_field_data',
+  revision_table: 'project_revision',
+  revision_data_table: 'project_field_revision',
+  show_revision_ui: FALSE,
   translatable: TRUE,
   admin_permission: 'administer projects',
   entity_keys: [
     'id' => 'id',
+    'revision' => 'revision_id',
     'label' => 'title',
     'langcode' => 'langcode',
     'uuid' => 'uuid',
@@ -72,6 +76,13 @@ use Drupal\user_types\Utility\Profile;
     'published' => 'status',
     'uid' => 'uid',
     'owner' => 'uid',
+    'revision_translation_affected' => 'revision_translation_affected',
+  ],
+  revision_metadata_keys: [
+    'revision_user' => 'revision_user',
+    'revision_created' => 'revision_created',
+    'revision_log_message' => 'revision_log_message',
+    'revision_default' => 'revision_default',
   ],
   links: [
     'canonical' => '/projects/{project}',
@@ -85,7 +96,7 @@ use Drupal\user_types\Utility\Profile;
     'fieldable' => TRUE,
   ],
 )]
-class Project extends ContentEntityBase implements ProjectInterface {
+class Project extends RevisionableContentEntityBase implements ProjectInterface {
 
   use EntityOwnerTrait;
   use EntityChangedTrait;
@@ -97,6 +108,18 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * The project lifecycle, created on the first call of lifecycle().
    */
   protected ?ProjectLifecycleInterface $lifecycle = NULL;
+
+  /**
+   * The content fields changed in the last save, in CONTENT_FIELDS order.
+   *
+   * @var string[]
+   */
+  protected array $changedContentFields = [];
+
+  /**
+   * The loaded revision ID before the last save.
+   */
+  protected ?int $previousRevisionId = NULL;
 
   /**
    * {@inheritdoc}
@@ -162,6 +185,20 @@ class Project extends ContentEntityBase implements ProjectInterface {
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage): void {
+
+    $this->changedContentFields = [];
+    $this->previousRevisionId = NULL;
+    if (!$this->isNew() && !$this->isSyncing()) {
+      $this->changedContentFields = $this->computeChangedContentFields();
+      $this->previousRevisionId = (int) $this->getLoadedRevisionId();
+      if ($this->changedContentFields) {
+        $this->setNewRevision();
+        $this->setRevisionUserId(\Drupal::currentUser()->id());
+        $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
+        $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
+      }
+    }
+
     parent::preSave($storage);
     if ($this->isNew()) {
       // Store the current organization contact in the project. We do this
@@ -189,7 +226,11 @@ class Project extends ContentEntityBase implements ProjectInterface {
       $this->set('project_result', ['target_id' => $project_result->id()]);
       // It is not ideal to have a recursive save here, but we trust the update
       // argument. Unfortunately, we somehow need to resolve the IDs, which are
-      // not available before the first save, to create the relation.
+      // not available before the first save, to create the relation. The
+      // storage marks the first revision as stored only after postSave(), so
+      // the second save would insert it again.
+      $this->updateLoadedRevisionId();
+      $this->setNewRevision(FALSE);
       $this->save();
 
       // Dispatch a project create event if this is a proper organization.
@@ -459,6 +500,7 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setLabel(t('Project Title'))
       ->setRequired(TRUE)
       ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -572,6 +614,67 @@ class Project extends ContentEntityBase implements ProjectInterface {
       ->setClass(UserIsManagerFieldItemList::class);
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getChangedContentFields(): array {
+    return $this->changedContentFields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPreviousRevisionId(): ?int {
+    return $this->previousRevisionId;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Every translation object reports the change set of the last save.
+   */
+  protected function initializeTranslation($langcode) {
+    /** @var static $translation */
+    $translation = parent::initializeTranslation($langcode);
+    $translation->changedContentFields = &$this->changedContentFields;
+    $translation->previousRevisionId = &$this->previousRevisionId;
+    return $translation;
+  }
+
+  /**
+   * Computes the content fields that differ from the original project.
+   *
+   * Every translation counts. A translation the original lacks changes its
+   * non-empty content fields.
+   *
+   * @return string[]
+   *   The changed field names, in CONTENT_FIELDS order.
+   */
+  protected function computeChangedContentFields(): array {
+
+    $original = $this->getOriginal();
+    if (!$original instanceof ProjectInterface) {
+      return [];
+    }
+
+    $changed = [];
+    foreach (array_keys($this->getTranslationLanguages()) as $langcode) {
+      $translation = $this->getTranslation($langcode);
+      $original_translation = $original->hasTranslation($langcode) ? $original->getTranslation($langcode) : NULL;
+      foreach (static::CONTENT_FIELDS as $field_name) {
+        $items = $translation->get($field_name);
+        $changed_items = $original_translation
+          ? $items->hasAffectingChanges($original_translation->get($field_name), $langcode)
+          : !$items->isEmpty();
+        if ($changed_items) {
+          $changed[$field_name] = $field_name;
+        }
+      }
+    }
+
+    return array_values(array_intersect(static::CONTENT_FIELDS, $changed));
   }
 
   /**
