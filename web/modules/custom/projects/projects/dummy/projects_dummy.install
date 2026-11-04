@@ -68,6 +68,9 @@ function projects_dummy_generate_content(): void {
   // The feedback has its own generator, so the projects stay as they were.
   $feedback_faker = Factory::create('de_DE');
   $feedback_faker->seed(43511);
+  // So do the edits of the projects.
+  $edit_faker = Factory::create('de_DE');
+  $edit_faker->seed(27183);
 
   // Array of cycle states.
   $lifecycle_states = [
@@ -107,11 +110,11 @@ function projects_dummy_generate_content(): void {
     // Increase created time randomly.
     $created += $created_increments[$i];
 
-    // A project has at most 15 steps up to its last feedback: submit,
-    // publish, five applications, mediate, complete and six feedbacks. They
-    // take up to a week each, less for recent projects, so no step lies in the
-    // future.
-    $step_max = max(3600, min(7 * 86400, intdiv($current_time - $created, 15)));
+    // A project has at most 17 steps up to its last feedback: submit,
+    // publish, five applications, mediate, complete, six feedbacks and two
+    // edits. They take up to a week each, less for recent projects, so no step
+    // lies in the future.
+    $step_max = max(3600, min(7 * 86400, intdiv($current_time - $created, 17)));
 
     // Choose a random final state (not draft, since all start as draft).
     $lifecycle_states = [
@@ -168,7 +171,7 @@ function projects_dummy_generate_content(): void {
       $path_state = Organization::load($oid)->hasRoleProspect() ? 'draft' : 'pending';
     }
 
-    $project = Project::create([
+    $values = [
       'type' => 'project',
       'title' => ucwords($faker->words(4, TRUE)),
       'body' => [
@@ -191,7 +194,12 @@ function projects_dummy_generate_content(): void {
       'field_image_copyright' => $faker->optional()->name(),
       'field_lifecycle' => 'draft',
       'field_local' => $faker->boolean(),
-    ]);
+    ];
+
+    // The edits along the lifecycle end with these values, so the project
+    // starts with earlier ones of the edited fields.
+    $edits = projects_dummy_plan_edits($path_state, (bool) $manager, $edit_faker);
+    $project = Project::create(projects_dummy_earlier_values($values, $edits, $edit_faker));
 
     try {
       // Each step runs as the user who does it in the app, so the logs get
@@ -200,11 +208,13 @@ function projects_dummy_generate_content(): void {
       $transition_time = $created;
       $participant_entities = [];
       $transition_increment = random_int(min(86400, $step_max), $step_max);
+      projects_dummy_edit($project, $edits, 'draft', $values, $oid, $manager, $transition_time, $step_max);
       // Always start in draft. Now transition up to the random final state
       // using events.
       if (in_array($path_state, ['pending', 'open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
         projects_dummy_as($oid, fn () => $event_dispatcher->dispatch(new ProjectSubmitEvent($project, $transition_time)));
+        projects_dummy_edit($project, $edits, 'pending', $values, $oid, $manager, $transition_time, $step_max);
       }
       if (in_array($path_state, ['open', 'ongoing', 'completed'])) {
         $transition_time += $transition_increment;
@@ -228,6 +238,7 @@ function projects_dummy_generate_content(): void {
             $actual_applicants[] = $applicant_id;
           }
         }
+        projects_dummy_edit($project, $edits, 'open', $values, $oid, $manager, $transition_time, $step_max);
       }
       if (in_array($path_state, ['ongoing', 'completed'])) {
         $transition_time += $transition_increment;
@@ -248,6 +259,7 @@ function projects_dummy_generate_content(): void {
         $mediate_event = new ProjectMediateEvent($project, $transition_time);
         $mediate_event->setCreatives($participant_entities);
         projects_dummy_as($manager, fn () => $event_dispatcher->dispatch($mediate_event));
+        projects_dummy_edit($project, $edits, 'mediated', $values, $oid, $manager, $transition_time, $step_max);
       }
       if ($final_state === 'completed') {
         $transition_time += $transition_increment;
@@ -524,4 +536,93 @@ function projects_dummy_as(int $uid, callable $step): void {
   finally {
     $account_switcher->switchBack();
   }
+}
+
+/**
+ * Plans the content edits of a project along its lifecycle.
+ *
+ * Organizations edit in draft, pending and open, as their edit access allows;
+ * managers fix the title in open and adjust mediated projects. Each field is
+ * edited at most once.
+ *
+ * @return array<string, array{by: string, fields: string[]}>
+ *   The edits, keyed by the step after which they happen.
+ */
+function projects_dummy_plan_edits(string $path_state, bool $has_manager, Generator $faker): array {
+
+  $reached = match ($path_state) {
+    'draft' => ['draft'],
+    'pending' => ['draft', 'pending'],
+    'open' => ['draft', 'pending', 'open'],
+    default => ['draft', 'pending', 'open', 'mediated'],
+  };
+
+  $edits = [];
+  if ($faker->boolean()) {
+    $edits['draft'] = ['by' => 'organization', 'fields' => [$faker->randomElement(['title', 'body', 'field_city'])]];
+  }
+  if (in_array('pending', $reached) && $faker->boolean()) {
+    $edits['pending'] = ['by' => 'organization', 'fields' => [$faker->randomElement(['body', 'field_deadline'])]];
+  }
+  if (in_array('open', $reached) && $faker->boolean()) {
+    $edits['open'] = $has_manager && $faker->boolean(30)
+      ? ['by' => 'manager', 'fields' => ['title']]
+      : ['by' => 'organization', 'fields' => [$faker->randomElement(['field_deadline', 'field_workload'])]];
+  }
+  if (in_array('mediated', $reached) && $has_manager && $faker->boolean(25)) {
+    $edits['mediated'] = ['by' => 'manager', 'fields' => ['field_workload']];
+  }
+
+  // A field edited twice would show the same final value twice.
+  $used = [];
+  foreach ($edits as $step => $edit) {
+    $edits[$step]['fields'] = array_values(array_diff($edit['fields'], $used));
+    $used = array_merge($used, $edits[$step]['fields']);
+    if (!$edits[$step]['fields']) {
+      unset($edits[$step]);
+    }
+  }
+  return $edits;
+}
+
+/**
+ * Gets the values a project starts with, before its edits.
+ */
+function projects_dummy_earlier_values(array $values, array $edits, Generator $faker): array {
+
+  foreach ($edits as $edit) {
+    foreach ($edit['fields'] as $field_name) {
+      $values[$field_name] = match ($field_name) {
+        'title' => ucwords($faker->words(4, TRUE)),
+        'body' => [
+          'value' => preg_replace('~^[^.]*\.~', rtrim($faker->sentence()), $values['body']['value']),
+          'summary' => $values['body']['summary'],
+        ],
+        'field_city' => $faker->city(),
+        // Organizations move the deadline back by one to three weeks.
+        'field_deadline' => date('Y-m-d', strtotime($values['field_deadline']) - $faker->numberBetween(7, 21) * 86400),
+        'field_workload' => $values['field_workload'] > 1 ? $values['field_workload'] - 1 : 2,
+        default => $values[$field_name],
+      };
+    }
+  }
+  return $values;
+}
+
+/**
+ * Runs the edit planned after a step, as its author, one step later.
+ */
+function projects_dummy_edit(ProjectInterface $project, array $edits, string $step, array $values, int $oid, int $manager, int &$transition_time, int $step_max): void {
+
+  if (!isset($edits[$step])) {
+    return;
+  }
+  $transition_time += random_int(min(86400, $step_max), $step_max);
+  foreach ($edits[$step]['fields'] as $field_name) {
+    $project->set($field_name, $values[$field_name]);
+  }
+  // The changed time dates the revision and the log of the edit.
+  $project->set('changed', $transition_time);
+  $author = $edits[$step]['by'] === 'manager' ? $manager : $oid;
+  projects_dummy_as($author, fn () => $project->save());
 }
