@@ -16,6 +16,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
+use Drupal\projects\Event\ProjectChangeEvent;
 use Drupal\projects\Event\ProjectCreateEvent;
 use Drupal\projects\Plugin\Field\UserIsApplicantFieldItemList;
 use Drupal\projects\Plugin\Field\UserIsManagerFieldItemList;
@@ -124,6 +125,11 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
   protected ?int $previousRevisionId = NULL;
 
   /**
+   * Whether the project was past draft before the last save.
+   */
+  protected bool $wasSubmitted = FALSE;
+
+  /**
    * {@inheritdoc}
    *
    * The lifecycle is a non-shared service, which can't be serialized by
@@ -190,9 +196,11 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
 
     $this->changedContentFields = [];
     $this->previousRevisionId = NULL;
+    $this->wasSubmitted = FALSE;
     if (!$this->isNew() && !$this->isSyncing()) {
       $this->changedContentFields = $this->computeChangedContentFields();
       $this->previousRevisionId = (int) $this->getLoadedRevisionId();
+      $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
       if ($this->changedContentFields) {
         $this->setNewRevision();
         $this->setRevisionUserId(\Drupal::currentUser()->id());
@@ -243,6 +251,12 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
 
       // Invalidate cache to recalculate the field projects of the organization.
       Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
+    }
+
+    // Content changes after draft are worth a note for the managers.
+    if ($update && $this->changedContentFields && $this->wasSubmitted) {
+      $event = new ProjectChangeEvent($this, $this->changedContentFields, (int) $this->previousRevisionId, (int) $this->getRevisionId());
+      \Drupal::service('event_dispatcher')->dispatch($event);
     }
 
     parent::postSave($storage, $update);
@@ -642,6 +656,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
     $translation = parent::initializeTranslation($langcode);
     $translation->changedContentFields = &$this->changedContentFields;
     $translation->previousRevisionId = &$this->previousRevisionId;
+    $translation->wasSubmitted = &$this->wasSubmitted;
     return $translation;
   }
 
