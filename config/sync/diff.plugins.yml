@@ -1,5 +1,8 @@
 fields:
   project:
+    body:
+      type: text_summary_field_diff_builder
+      settings: {  }
     changed:
       type: hidden
       settings: {  }
@@ -27,8 +30,29 @@ fields:
     default_langcode:
       type: hidden
       settings: {  }
+    field_allowance:
+      type: core_field_diff_builder
+      settings: {  }
     field_applicants:
       type: hidden
+      settings: {  }
+    field_appreciation:
+      type: core_field_diff_builder
+      settings: {  }
+    field_city:
+      type: core_field_diff_builder
+      settings: {  }
+    field_contact:
+      type: core_field_diff_builder
+      settings: {  }
+    field_deadline:
+      type: core_field_diff_builder
+      settings: {  }
+    field_image:
+      type: image_field_diff_builder
+      settings: {  }
+    field_image_copyright:
+      type: core_field_diff_builder
       settings: {  }
     field_lifecycle:
       type: hidden
@@ -36,11 +60,23 @@ fields:
     field_lifecycle_history:
       type: hidden
       settings: {  }
+    field_local:
+      type: core_field_diff_builder
+      settings: {  }
+    field_material:
+      type: core_field_diff_builder
+      settings: {  }
     field_participants:
       type: hidden
       settings: {  }
     field_participants_tasks:
       type: hidden
+      settings: {  }
+    field_skills:
+      type: entity_reference_field_diff_builder
+      settings: {  }
+    field_workload:
+      type: core_field_diff_builder
       settings: {  }
     hidden:
       type: hidden
@@ -77,6 +113,9 @@ fields:
       settings: {  }
     status:
       type: hidden
+      settings: {  }
+    title:
+      type: core_field_diff_builder
       settings: {  }
     uid:
       type: hidden

@@ -122,14 +122,26 @@ class ProjectChangesBuilder {
       $fields[] = [
         'label' => (string) $comparison['#name'],
         'long' => $long,
-        'old' => $type === 'datetime' ? $this->dates($old) : $this->plain($old),
-        'new' => $type === 'datetime' ? $this->dates($new) : $this->plain($new),
+        'old' => $this->value($old, $type),
+        'new' => $this->value($new, $type),
         'diff' => $long ? $this->passageDiff($old, $new) : '',
         'old_image' => $type === 'image' ? $this->imageUrl($previous, $field_name) : NULL,
         'new_image' => $type === 'image' ? $this->imageUrl($revision, $field_name) : NULL,
       ];
     }
     return $fields;
+  }
+
+  /**
+   * Turns a compared value into the text of an entry.
+   */
+  protected function value(string $value, ?string $type): string {
+    return match ($type) {
+      'datetime' => $this->dates($value),
+      // Diff shows decimals with all places of the scale: 2.00 reads as 2.
+      'decimal' => implode(', ', array_map(static fn (string $number) => rtrim(rtrim($number, '0'), '.'), explode(', ', $this->plain($value)))),
+      default => $this->plain($value),
+    };
   }
 
   /**

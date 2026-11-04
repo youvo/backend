@@ -48,7 +48,7 @@
             {% endif %}
           </div>
         {% else %}
-          <p class="project-changes-created">{{ 'The first version of the project.'|t }}</p>
+          <p class="project-changes-created">{{ entry.created ? 'The first version of the project.'|t : 'No visible changes.'|t }}</p>
         {% endfor %}
       </div>
       <a class="project-changes-link" href="{{ entry.url }}">{{ 'View revision'|t }}</a>

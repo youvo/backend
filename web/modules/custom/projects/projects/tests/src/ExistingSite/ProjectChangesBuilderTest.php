@@ -97,6 +97,21 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that fields hidden on the page and decimals show as well.
+   */
+  public function testHiddenAndDecimalFields(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->set('field_workload', '2')->setSyncing(TRUE)->save();
+    $project->setSyncing(FALSE);
+    $project->set('field_image_copyright', 'Erika Muster')->set('field_workload', '3.5')->save();
+
+    $fields = $this->fields($this->build($project)['entries'][0]);
+    $this->assertSame('Erika Muster', $fields['Image Copyright']['new']);
+    $this->assertSame(['2', '3.5'], [$fields['Workload']['old'], $fields['Workload']['new']]);
+  }
+
+  /**
    * Tests that an image change has the old and the new image.
    */
   public function testImageValues(): void {
