@@ -221,6 +221,12 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       }
     }
 
+    // The first revision is by the creator, at the created time.
+    if ($this->isNew()) {
+      $this->setRevisionUserId(\Drupal::currentUser()->id());
+      $this->setRevisionCreationTime((int) $this->getCreatedTime());
+    }
+
     parent::preSave($storage);
     if ($this->isNew()) {
       // Store the current organization contact in the project. We do this

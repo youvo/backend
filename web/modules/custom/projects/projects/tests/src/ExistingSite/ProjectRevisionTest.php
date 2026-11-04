@@ -3,6 +3,7 @@
 namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\file\Entity\File;
+use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\taxonomy\Entity\Term;
@@ -154,6 +155,27 @@ class ProjectRevisionTest extends ProjectResourceTestBase {
   public function testExplicitChangedDatesRevision(): void {
     $project = $this->createProject(ProjectState::Pending);
     $project->setTitle('Changed')->set('changed', 1700000000)->save();
+    $this->assertSame(1700000000, (int) $project->getRevisionCreationTime());
+  }
+
+  /**
+   * Tests that the first revision names the creator at the created time.
+   */
+  public function testFirstRevisionAuthor(): void {
+
+    $organization = $this->createOrganization();
+    $this->setCurrentUser($organization);
+    $project = Project::create([
+      'uid' => $organization->id(),
+      'title' => 'Neu',
+      'created' => 1700000000,
+      'field_lifecycle' => ProjectState::Draft->value,
+    ]);
+    $project->save();
+    $this->markEntityForCleanup($project);
+    $this->markEntityForCleanup($project->getResult());
+
+    $this->assertSame((int) $organization->id(), (int) $project->getRevisionUserId());
     $this->assertSame(1700000000, (int) $project->getRevisionCreationTime());
   }
 
