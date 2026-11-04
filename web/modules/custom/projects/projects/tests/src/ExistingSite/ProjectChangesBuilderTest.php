@@ -112,6 +112,20 @@ class ProjectChangesBuilderTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Tests that values are plain text, not escaped twice.
+   */
+  public function testPlainValues(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->setTitle('Plakate & Flyer')->save();
+    $project->setTitle('Plakate > Flyer')->save();
+
+    $title = $this->fields($this->build($project)['entries'][0])['Project Title'];
+    $this->assertSame('Plakate & Flyer', $title['old']);
+    $this->assertSame('Plakate > Flyer', $title['new']);
+  }
+
+  /**
    * Tests that only the newest revisions get entries.
    */
   public function testLimit(): void {

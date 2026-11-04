@@ -55,7 +55,7 @@ class ProjectChangesBuilder {
   /**
    * Builds the changes of a project.
    *
-   * @return array{entries: list<array{revision_id: int, author: string, time: int, created: bool, fields: list<array{label: string, long: bool, old: string, new: string, diff: string}>}>, earlier: int}
+   * @return array{entries: list<array{revision_id: int, author: string, author_role: string, author_name: string, author_id: int|null, time: int, created: bool, fields: list<array{label: string, long: bool, old: string, new: string, diff: string}>}>, earlier: int}
    *   The entries of the newest revisions, newest first, and the number of
    *   earlier revisions without an entry.
    */
@@ -87,7 +87,7 @@ class ProjectChangesBuilder {
       }
       $entries[] = [
         'revision_id' => (int) $revision->getRevisionId(),
-        'author' => $this->author($revision),
+        ...$this->author($revision),
         'time' => (int) $revision->getRevisionCreationTime(),
         'created' => $previous === NULL,
         'fields' => $previous ? $this->fields($previous, $revision) : [],
@@ -129,7 +129,9 @@ class ProjectChangesBuilder {
    * Turns a compared value into plain text, one line per value.
    */
   protected function plain(string $value): string {
-    $lines = array_filter(array_map('trim', explode("\n", strip_tags($value))), static fn (string $line) => $line !== '');
+    // Diff escapes the values; Twig escapes them again on output.
+    $text = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5);
+    $lines = array_filter(array_map('trim', explode("\n", $text)), static fn (string $line) => $line !== '');
     return implode(', ', $lines);
   }
 
@@ -170,7 +172,7 @@ class ProjectChangesBuilder {
    */
   protected function paragraphs(string $text): array {
     $text = preg_replace('~</p>|<br\s*/?>~i', "\n\n", $text);
-    $paragraphs = preg_split('~\n\s*\n~', strip_tags($text));
+    $paragraphs = preg_split('~\n\s*\n~', html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5));
     return array_values(array_filter(array_map('trim', $paragraphs), static fn (string $paragraph) => $paragraph !== ''));
   }
 
@@ -183,12 +185,20 @@ class ProjectChangesBuilder {
 
   /**
    * Names the author of a revision with the role, as the logbook does.
+   *
+   * @return array{author: string, author_role: string, author_name: string, author_id: int|null}
+   *   The role and name together, each of them, and the user ID if any.
    */
-  protected function author(ProjectInterface $revision): string {
+  protected function author(ProjectInterface $revision): array {
 
     $user = $revision->getRevisionUser();
     if (!$user instanceof UserInterface || $user->isAnonymous()) {
-      return static::ROLE_WORDS['platform'];
+      return [
+        'author' => static::ROLE_WORDS['platform'],
+        'author_role' => static::ROLE_WORDS['platform'],
+        'author_name' => '',
+        'author_id' => NULL,
+      ];
     }
 
     $role = 'creative';
@@ -210,7 +220,12 @@ class ProjectChangesBuilder {
 
     // The user types name their people; other accounts have a display name.
     $name = $user instanceof Organization || $user instanceof Creative ? $user->getName() : $user->getDisplayName();
-    return static::ROLE_WORDS[$role] . ' ' . $name;
+    return [
+      'author' => static::ROLE_WORDS[$role] . ' ' . $name,
+      'author_role' => static::ROLE_WORDS[$role],
+      'author_name' => $name,
+      'author_id' => (int) $user->id(),
+    ];
   }
 
 }
