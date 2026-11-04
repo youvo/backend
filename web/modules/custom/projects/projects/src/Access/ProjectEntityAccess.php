@@ -43,6 +43,12 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
         ->cachePerPermissions();
     }
 
+    // Nobody reverts or deletes revisions: a revision also holds the
+    // lifecycle, applicants and participants of its time.
+    if ($operation === 'revert' || $operation === 'delete revision') {
+      return AccessResult::forbidden()->cachePerPermissions();
+    }
+
     // Administrators skip the access checks.
     $admin_permission = $operation === 'delete' ? 'delete any project' : 'administer projects';
     if ($account->hasPermission($admin_permission)) {
@@ -60,6 +66,7 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       'view' => $this->checkViewAccess($entity, $account),
       'edit', 'update' => $this->checkEditAccess($entity, $account),
       'delete' => $this->checkDeleteAccess($entity, $account),
+      'view revision', 'view all revisions' => $this->checkRevisionAccess($entity, $account),
       default => AccessResult::neutral()->addCacheableDependency($entity),
     };
 
@@ -123,6 +130,35 @@ class ProjectEntityAccess extends EntityAccessControlHandler {
       $project->lifecycle()->isCompleted())
     ) {
       return AccessResult::allowed()->addCacheableDependency($project);
+    }
+
+    return AccessResult::neutral()
+      ->addCacheableDependency($organization)
+      ->addCacheableDependency($project)
+      ->cachePerUser();
+  }
+
+  /**
+   * Helps to check access for the revision view operations.
+   */
+  protected function checkRevisionAccess(ProjectInterface $project, AccountInterface $account): AccessResult {
+
+    // Staff outside the organization view the revisions of every project.
+    if ($account->hasPermission('view project revisions')) {
+      return AccessResult::allowed();
+    }
+
+    // Managers of the organization view the revisions of its projects.
+    $organization = $project->getOwner();
+    if (
+      $account->hasPermission('general manager access') &&
+      $organization instanceof Organization &&
+      $organization->isManager($account)
+    ) {
+      return AccessResult::allowed()
+        ->addCacheableDependency($organization)
+        ->addCacheableDependency($project)
+        ->cachePerUser();
     }
 
     return AccessResult::neutral()

@@ -56,6 +56,7 @@ use Drupal\user_types\Utility\Profile;
     ],
     'route_provider' => [
       'html' => 'Drupal\projects\Routing\ProjectHtmlRouteProvider',
+      'revision' => 'Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider',
     ],
     'views_data' => 'Drupal\views\EntityViewsData',
   ],
@@ -89,6 +90,7 @@ use Drupal\user_types\Utility\Profile;
     'add-form' => '/projects/add',
     'edit-form' => '/projects/{project}/edit',
     'delete-form' => '/projects/{project}/delete',
+    'revision' => '/projects/{project}/revisions/{project_revision}/view',
     'collection' => '/projects',
   ],
   field_ui_base_route: 'entity.project.settings',

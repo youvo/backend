@@ -11,6 +11,9 @@ access project admin forms:
 upload project result files:
   title: 'Upload project result files'
   description: 'Upload files for project results.'
+view project revisions:
+  title: 'View project revisions'
+  description: 'View earlier revisions of every project. Managers view the revisions of the projects of their organizations without it.'
 view hidden projects:
   title: 'View hidden projects'
   description: 'List the hidden projects of all organizations.'
