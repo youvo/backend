@@ -120,6 +120,45 @@ class LogbookProjectChangeTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that a manager's content change logs with the manager as author.
+   */
+  public function testManagerEditLogs(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $manager = $project->getOwner()->getManager();
+    $this->setCurrentUser($manager);
+
+    $project->setTitle('Changed')->save();
+
+    $logs = $this->changeLogs($project);
+    $this->assertCount(1, $logs);
+    $this->assertSame((int) $manager->id(), (int) $logs[0]->getOwnerId());
+    $this->assertStringContainsString('von der Managerin', (string) $logs[0]->get('markup')->value);
+  }
+
+  /**
+   * Tests that a project owned by an administrator saves without a log.
+   */
+  public function testAdministratorOwnedProjectSavesWithoutLog(): void {
+
+    $administrator = Creative::create([
+      'name' => $this->randomMachineName(),
+      'mail' => $this->randomMachineName() . '@example.com',
+      'status' => 1,
+    ]);
+    $administrator->addRole('administrator');
+    $administrator->save();
+    $this->markEntityForCleanup($administrator);
+    // Administrators may own projects, for example after changing the owner
+    // in the admin form.
+    $project = $this->createProject(ProjectState::Pending);
+    $project->setOwnerId($administrator->id())->setTitle('Changed')->save();
+
+    $this->assertSame('Changed', $this->container->get('entity_type.manager')->getStorage('project')->loadUnchanged($project->id())->getTitle());
+    $this->assertSame([], $this->changeLogs($project));
+  }
+
+  /**
    * Tests that draft edits and workflow saves don't log.
    */
   public function testDraftAndWorkflowSavesDontLog(): void {

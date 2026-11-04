@@ -253,8 +253,15 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       Cache::invalidateTags($this->getOwner()->getCacheTagsToInvalidate());
     }
 
-    // Content changes after draft are worth a note for the managers.
-    if ($update && $this->changedContentFields && $this->wasSubmitted) {
+    // Content changes after draft are worth a note for the managers, if this
+    // is a proper organization like for the create event.
+    if (
+      $update &&
+      $this->changedContentFields &&
+      $this->wasSubmitted &&
+      $this->getOwner() instanceof Organization &&
+      $this->getOwner()->hasRoleOrganization()
+    ) {
       $event = new ProjectChangeEvent($this, $this->changedContentFields, (int) $this->previousRevisionId, (int) $this->getRevisionId());
       \Drupal::service('event_dispatcher')->dispatch($event);
     }
