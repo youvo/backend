@@ -5,7 +5,9 @@
  * A link with data-lightbox opens the image at that address in a native
  * dialog, which brings the focus trap, Escape and the return of the focus.
  * With a modifier key or a middle click, the link opens as usual. The
- * caption comes from data-lightbox-caption.
+ * caption comes from data-lightbox-caption. A hint for screen readers in the
+ * link, marked with data-lightbox-hint, then names the dialog instead of the
+ * new tab the link opens without JavaScript.
  */
 
 ((Drupal, once) => {
@@ -61,6 +63,11 @@
         };
 
         links.forEach((link, i) => {
+          link.setAttribute('aria-haspopup', 'dialog');
+          const hint = link.querySelector('[data-lightbox-hint]');
+          if (hint) {
+            hint.textContent = ` ${Drupal.t('(opens a preview)')}`;
+          }
           link.addEventListener('click', (event) => {
             if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
               return;

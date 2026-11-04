@@ -146,6 +146,11 @@ services:
     tags:
       - { name: event_subscriber }
 
+  # The reasons of project declines and archivings, from their logs.
+  logbook.project_reasons:
+    class: Drupal\logbook\ProjectReasons
+    arguments: [ '@entity_type.manager' ]
+
   # Database logger channel.
   logger.channel.logbook:
     parent: logger.channel_base

@@ -11,7 +11,7 @@
 {% set page = project_page %}
 
 {% macro person(person) %}
-  {% set pill %}
+  {% set person_content %}
     {% if person.avatar %}
       <span class="project-page-avatar">{{ person.avatar }}</span>
     {% else %}
@@ -25,9 +25,9 @@
     </span>
   {% endset %}
   {% if person.url %}
-    <a class="project-page-person" href="{{ person.url }}">{{ pill }}</a>
+    <a class="project-page-person" href="{{ person.url }}">{{ person_content }}</a>
   {% else %}
-    <span class="project-page-person">{{ pill }}</span>
+    <span class="project-page-person">{{ person_content }}</span>
   {% endif %}
 {% endmacro %}
 
@@ -140,8 +140,9 @@
                         {{- label -}}
                         {% if item.external -%}
                           <svg class="project-page-external" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M9 2h5v5M14 2 7 9M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          <span class="visually-hidden">{{ '(external link)'|t }}</span>
                         {%- endif -%}
+                        {# The lightbox replaces the hint on the images it opens. #}
+                        <span class="visually-hidden" data-lightbox-hint> {{ item.external ? '(external link, opens in a new tab)'|t : '(opens in a new tab)'|t }}</span>
                       </a>
                     {% else %}
                       <span class="project-page-result-label">{{ label }}</span>

@@ -43,6 +43,23 @@ class ProjectPageTest extends ProjectResourceTestBase {
   }
 
   /**
+   * The manager of the organization sees the lifecycle, other managers don't.
+   */
+  public function testLifecycleForManagers(): void {
+
+    $project = $this->createProject(ProjectState::Open);
+    $title = '<h2 class="project-page-section-title">Lifecycle</h2>';
+    $current_user = $this->container->get('current_user');
+
+    $current_user->setAccount($project->getOwner()->getManager());
+    $this->assertStringContainsString($title, $this->renderProject($project));
+
+    // Rendered right after, so a cached result of the first manager would show.
+    $current_user->setAccount($this->createManager());
+    $this->assertStringNotContainsString($title, $this->renderProject($project));
+  }
+
+  /**
    * An archived project shows its status and the reason from its log.
    */
   public function testArchiveReason(): void {

@@ -91,6 +91,7 @@ class ProjectFieldAccess extends FieldAccess {
   ];
 
   const APPLICANTS_FIELD = 'field_applicants';
+  const LIFECYCLE_HISTORY_FIELD = 'field_lifecycle_history';
   const PARTICIPANTS_FIELD = 'field_participants';
   const OWNER_FIELD = 'uid';
 
@@ -213,6 +214,19 @@ class ProjectFieldAccess extends FieldAccess {
         ->cachePerUser();
     }
 
+    // Managers of the organization may view the lifecycle history.
+    if ($operation === 'view' &&
+      $field->getName() === self::LIFECYCLE_HISTORY_FIELD &&
+      $account->hasPermission('general manager access') &&
+      $entity->getOwner()->isManager($account)
+    ) {
+      return AccessResult::neutral()
+        ->addCacheableDependency($entity)
+        ->addCacheableDependency($entity->getOwner())
+        ->cachePerPermissions()
+        ->cachePerUser();
+    }
+
     // Only these fields may be granted depending on the identity of the
     // account, e.g. the author or manager status. All other fields are denied
     // for any account that does not administer projects.
@@ -221,6 +235,11 @@ class ProjectFieldAccess extends FieldAccess {
       ->addCacheableDependency($entity->getOwner())
       ->cachePerPermissions();
     if (in_array($field->getName(), [self::APPLICANTS_FIELD, self::PARTICIPANTS_FIELD, self::OWNER_FIELD], TRUE)) {
+      $access_result->cachePerUser();
+    }
+    // For managers, the lifecycle history depends on whether they manage the
+    // organization. For everyone else, it depends on the permissions only.
+    if ($field->getName() === self::LIFECYCLE_HISTORY_FIELD && $account->hasPermission('general manager access')) {
       $access_result->cachePerUser();
     }
     return $access_result;

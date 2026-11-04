@@ -22,6 +22,11 @@
   }
 }
 
+// The page behind the open lightbox does not scroll.
+html:has(.lightbox[open]) {
+  overflow: hidden;
+}
+
 .lightbox-figure {
   margin: 0;
 }

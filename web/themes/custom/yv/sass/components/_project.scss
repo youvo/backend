@@ -44,12 +44,6 @@
   gap: var(--gin-spacing-m);
 }
 
-// An empty card, such as the people of a project without contacts, takes no
-// room.
-.project-page-content:empty {
-  display: none;
-}
-
 // The image spans the top of the card.
 .project-page-intro {
   overflow: hidden;
