@@ -3,6 +3,7 @@ packages:
     behat/mink: v1.13.0
     behat/mink-browserkit-driver: v2.3.0
     brick/math: 1.0.0
+    caxy/php-htmldiff: v0.1.17
     chi-teck/drupal-code-generator: 4.2.0
     colinodell/psr-testlogger: v1.3.1
     composer/ca-bundle: 1.6.1
@@ -43,6 +44,7 @@ packages:
     drupal/core-recommended: 11.4.11
     drupal/core-vendor-hardening: 11.4.11
     drupal/dashboard: 2.2.1
+    drupal/diff: 2.1.1
     drupal/entity: 1.8.0
     drupal/file_mdm: 3.2.0
     drupal/filefield_paths: 1.0.0
@@ -79,6 +81,7 @@ packages:
     drush/drush: 13.8.0
     e0ipso/shaper: 1.2.7
     egulias/email-validator: 4.0.4
+    ezyang/htmlpurifier: v4.19.1
     fakerphp/faker: v1.24.1
     fileeye/mimemap: 2.2.6
     fileeye/pel: 0.12.1
@@ -110,6 +113,7 @@ packages:
     mglaman/phpstan-drupal: 2.2.2
     micheh/phpcs-gitlab: 2.1.0
     mikey179/vfsstream: v1.6.12
+    mkalkbrenner/php-htmldiff-advanced: 0.0.8
     myclabs/deep-copy: 1.14.0
     nikic/php-parser: v5.9.0
     nyholm/psr7-server: 1.1.0
