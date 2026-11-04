@@ -105,6 +105,8 @@ $project-teaser-badge-colors: (
   }
 }
 
+// Archived and hidden are no states, so they show as outlines.
+.project-teaser-badge[data-badge="archived"],
 .project-teaser-badge[data-badge="hidden"] {
   background: transparent;
   box-shadow: inset 0 0 0 1px currentcolor;

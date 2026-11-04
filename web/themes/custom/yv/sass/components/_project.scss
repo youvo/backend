@@ -1,0 +1,342 @@
+// =============================================================================
+// PROJECT PAGE (project--full)
+// =============================================================================
+// The admin page of a project, in the layout of the profiles: cards in the
+// main column, the details in a sidebar. The intro card follows the top of
+// the frontend's project page: image, title, badges and the key facts.
+
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+.project-page {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  align-items: start;
+  color: var(--yv-text);
+  hyphens: manual;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+  }
+}
+
+// As on the profiles, only keyboard focus shows Gin's focus ring.
+.project-page :focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.project-page-main {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  min-width: 0;
+}
+
+.project-page-card {
+  @include card;
+}
+
+.project-page-content,
+.project-page-intro-body {
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+// An empty card, such as the people of a project without contacts, takes no
+// room.
+.project-page-content:empty {
+  display: none;
+}
+
+// The image spans the top of the card, its copyright below it.
+.project-page-intro {
+  overflow: hidden;
+}
+
+.project-page-image {
+  margin: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 1;
+    object-fit: cover;
+    background: var(--yv-chip);
+  }
+
+  figcaption {
+    padding: var(--gin-spacing-xxs) var(--gin-spacing-m) 0;
+    color: var(--yv-muted);
+    font-size: var(--gin-font-size-xxs);
+    text-align: end;
+
+    @media (min-width: $breakpoint-medium) {
+      padding-inline: var(--gin-spacing-l);
+    }
+  }
+}
+
+// The title, the organization and the badges belong together: tighter
+// than the summary and the facts below them.
+.project-page-header {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+}
+
+.project-page-header .project-page-badges {
+  margin-top: var(--gin-spacing-xxs);
+}
+
+.project-page-title {
+  @include page-title;
+}
+
+// As the subtitle of the profiles.
+.project-page-organization {
+  justify-self: start;
+  margin: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+  line-height: 1.3;
+
+  &[href] {
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--yv-accent);
+      text-decoration: underline;
+    }
+  }
+}
+
+.project-page-badges,
+.project-page-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The skills in the size of the profiles.
+.project-page-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs);
+
+  .skill {
+    @include skill-size("small");
+  }
+}
+
+.project-page-summary {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-l);
+  line-height: 1.5;
+}
+
+// The key facts side by side, the value above its label, as in the
+// frontend's fact bar. The gaps show the line color behind the facts, so
+// the facts are divided in rows and columns however they wrap. They grow
+// to fill each row, so no gap is left at the end of one.
+.project-page-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--yv-line);
+  border-radius: var(--gin-border-m);
+  background: var(--yv-line);
+
+  > div {
+    display: flex;
+    flex: 1 1 8rem;
+    flex-direction: column-reverse;
+    padding: var(--gin-spacing-s) var(--gin-spacing-m);
+    background: var(--yv-surface);
+  }
+
+  dt {
+    color: var(--yv-muted);
+    font-size: var(--gin-font-size-xs);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--yv-ink);
+
+    // In the size of the text, so the facts don't outweigh the title.
+    font-size: var(--gin-font-size-m);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.project-page-section-title {
+  @include section-label;
+}
+
+// Drupal's field classes are outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.project-page-text {
+  line-height: 1.6;
+
+  .field__item > :first-child {
+    margin-top: 0;
+  }
+
+  .field__item > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+// stylelint-enable selector-class-pattern
+
+// Line breaks of the text show.
+.project-page-plain {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.project-page-chip {
+  @include chip;
+
+  display: inline-block;
+  overflow-wrap: anywhere;
+
+  &[href] {
+    text-decoration: none;
+    transition: background-color var(--gin-transition-fast);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--yv-chip-hover);
+      color: var(--yv-chip-text);
+      text-decoration: none;
+    }
+  }
+}
+
+// The people in the sidebar, one below the other, as compact rows that fit
+// the size of the details.
+// The avatars start at the top edge, while text starts below its line
+// spacing, so the list keeps a little more distance from the title above.
+.project-page-people {
+  display: grid;
+  justify-items: start;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+
+  // Padding, as a margin would collapse with the one of the title.
+  padding: var(--gin-spacing-xxs) 0 0;
+  list-style: none;
+
+  // As a flex container, the item is as high as the person in it, without the
+  // space below the baseline of an inline element.
+  > li {
+    display: flex;
+  }
+}
+
+// A person: a small avatar, then name and role.
+.project-page-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gin-spacing-s);
+  line-height: 1.25;
+
+  > span:last-child {
+    display: grid;
+  }
+
+  &[href] {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      .project-page-person-name {
+        color: var(--yv-accent);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.project-page-avatar {
+  @include initials-avatar(to-rem(32));
+
+  font-size: var(--gin-font-size-xxs);
+}
+
+.project-page-person-name {
+  color: var(--yv-ink);
+  font-weight: 600;
+}
+
+.project-page-person-role {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+}
+
+.project-page-comments {
+  display: grid;
+  gap: var(--gin-spacing-m);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: var(--gin-spacing-xs);
+    justify-items: start;
+  }
+
+  blockquote {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: var(--yv-ink);
+    white-space: pre-line;
+
+    // Gin draws its own accent bar before a quote.
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.project-page-side {
+  @include card;
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-m);
+}
+
+.project-page-side-section + .project-page-side-section {
+  padding-top: var(--gin-spacing-m);
+  border-top: 1px solid var(--yv-line);
+}
+
+.project-page-details {
+  @include facts;
+}
+
+// The logbook, below both columns.
+.project-page-wide {
+  min-width: 0;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-column: 1 / -1;
+  }
+}

@@ -7,10 +7,14 @@
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
+use Drupal\file\FileInterface;
+use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
+use Drupal\projects\ProjectResultInterface;
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
@@ -46,8 +50,8 @@ function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables):
 /**
  * Implements hook_preprocess_HOOK() for page_title.
  *
- * The profiles of organizations and creatives and the feedback page show
- * their title themselves.
+ * The profiles of organizations and creatives, the feedback page and the
+ * project page show their title themselves.
  */
 function yv_preprocess_page_title(array &$variables): void {
   $route_match = \Drupal::routeMatch();
@@ -56,7 +60,7 @@ function yv_preprocess_page_title(array &$variables): void {
     $route_match->getParameter('user') instanceof Creative)) {
     $variables['title'] = '';
   }
-  if ($route_match->getRouteName() === 'entity.feedback.canonical') {
+  if (in_array($route_match->getRouteName(), ['entity.feedback.canonical', 'entity.project.canonical'], TRUE)) {
     $variables['title'] = '';
   }
 }
@@ -403,10 +407,15 @@ function yv_preprocess_views_view_unformatted(array &$variables): void {
  * Implements hook_preprocess_HOOK() for project.
  *
  * The teaser names the organization by its short name, as the frontend does.
+ * The full view is prepared by yv_preprocess_project_full().
  */
 function yv_preprocess_project(array &$variables): void {
 
   $project = $variables['elements']['#project'];
+  if ($project instanceof ProjectInterface && $variables['elements']['#view_mode'] === 'full') {
+    yv_preprocess_project_full($variables, $project);
+    return;
+  }
   if (!$project instanceof ProjectInterface || $variables['elements']['#view_mode'] !== 'teaser') {
     return;
   }
@@ -432,6 +441,256 @@ function yv_preprocess_project(array &$variables): void {
     }
   }
 
+  $variables['project_cache'] = [];
+  $cache->applyTo($variables['project_cache']);
+}
+
+/**
+ * Prepares the full view of a project, its page in the backend.
+ *
+ * As on the profiles, the template prints plain values, each set only when
+ * the viewer may see its field. The cacheability bubbles up through
+ * project_cache.
+ */
+function yv_preprocess_project_full(array &$variables, ProjectInterface $project): void {
+
+  $cache = CacheableMetadata::createFromObject($project);
+  $date_formatter = \Drupal::service('date.formatter');
+  $date = static fn (int $timestamp): string => $date_formatter->format($timestamp, 'custom', 'd.m.Y');
+
+  // Whether the viewer may see a field of an entity, and it has a value.
+  $shows = static function (FieldableEntityInterface $entity, string $field_name) use ($cache): bool {
+    $access = $entity->get($field_name)->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    return $access->isAllowed() && !$entity->get($field_name)->isEmpty();
+  };
+  $value = static function (string $field_name) use ($project, $shows): ?string {
+    $value = $shows($project, $field_name) ? trim((string) $project->get($field_name)->value) : '';
+    return $value !== '' ? $value : NULL;
+  };
+
+  // A person as on the profiles: the avatar or the initials, the name, the
+  // role and a link to the profile, if the viewer may open it.
+  $person = static function (Organization|Creative $user, ?string $role) use ($cache, $shows): array {
+    $cache->addCacheableDependency($user);
+    $name = $shows($user, 'field_name') ? trim((string) $user->get('field_name')->value) : '';
+    $name = $name !== '' ? $name : (string) t('Unknown');
+    $access = $user->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    return [
+      'name' => $name,
+      'initials' => yv_initials($name),
+      'avatar' => $shows($user, 'field_avatar') ? $user->get('field_avatar')->view([
+        'label' => 'hidden',
+        'type' => 'image',
+        'settings' => ['image_style' => 'avatar'],
+      ]) : NULL,
+      'role' => $role,
+      'url' => $access->isAllowed() ? $user->toUrl()->toString() : NULL,
+    ];
+  };
+
+  $lifecycle = $project->get('field_lifecycle')->first();
+  $states = [];
+  if ($lifecycle instanceof LifecycleItem) {
+    $states = $lifecycle->getPossibleOptions();
+    if ($workflow = $lifecycle->getWorkflow()) {
+      $cache->addCacheableDependency($workflow);
+    }
+  }
+  $state = (string) $project->get('field_lifecycle')->value;
+
+  $page = [
+    'title' => $project->getTitle(),
+    'state' => $state,
+    'state_label' => $states[$state] ?? $state,
+    'archived' => !$project->isPublished(),
+    'hidden' => $project->isHidden(),
+    'promoted' => $project->isPromoted(),
+    'image' => $shows($project, 'field_image') ? $project->get('field_image')->view([
+      'label' => 'hidden',
+      'type' => 'image',
+      'settings' => ['image_style' => 'wide'],
+    ]) : NULL,
+    'copyright' => $value('field_image_copyright'),
+    'summary' => $shows($project, 'body') ? trim((string) $project->get('body')->summary) ?: NULL : NULL,
+    'body' => $shows($project, 'body') ? $project->get('body')->view([
+      'label' => 'hidden',
+      'type' => 'text_default',
+    ]) : NULL,
+    'appreciation' => $value('field_appreciation'),
+    'material' => $value('field_material'),
+    'allowance' => NULL,
+    'skills' => $shows($project, 'field_skills') ? $project->get('field_skills')->view([
+      'label' => 'hidden',
+      'type' => 'entity_reference_entity_view',
+      'settings' => ['view_mode' => 'icon'],
+    ]) : NULL,
+  ];
+
+  $access = $project->get('field_allowance')->access('view', NULL, TRUE);
+  $cache->addCacheableDependency($access);
+  if ($access->isAllowed()) {
+    $page['allowance'] = $project->get('field_allowance')->value ? t('Yes') : t('No');
+  }
+
+  // The key facts below the title, as on the project page of the frontend.
+  $facts = [];
+  if ($shows($project, 'field_deadline')) {
+    $deadline = $project->get('field_deadline')->date;
+    $facts['deadline'] = ['label' => t('Deadline'), 'value' => $deadline?->format('d.m.Y')];
+  }
+  if ($workload = $value('field_workload')) {
+    $days = (string) (float) $workload;
+    $facts['workload'] = [
+      'label' => t('Workload'),
+      'value' => $days === '1' ? t('1 day') : t('@count days', ['@count' => $days]),
+    ];
+  }
+  $access = $project->get('field_local')->access('view', NULL, TRUE);
+  $cache->addCacheableDependency($access);
+  if ($access->isAllowed()) {
+    $facts['location'] = [
+      'label' => t('Location'),
+      'value' => $project->get('field_local')->value ? ($value('field_city') ?? t('On site')) : t('Remote'),
+    ];
+  }
+  $page['facts'] = array_filter($facts, static fn (array $fact): bool => (string) $fact['value'] !== '');
+
+  // The organization with its contact at the time of the project. The contact
+  // is a name, not an account, so it is shown as a detail of the organization.
+  $organization = $project->getOwner();
+  $contact = $value('field_contact');
+  $page['organization'] = $person($organization, $contact ? (string) t('Contact: @name', ['@name' => $contact]) : NULL);
+
+  $page['manager'] = NULL;
+  if ($organization instanceof Organization) {
+    $manager_access = $organization->get('field_manager')->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($manager_access);
+    $manager = $manager_access->isAllowed() ? $organization->getManager() : NULL;
+    if ($manager) {
+      $page['manager'] = $person($manager, NULL);
+    }
+  }
+
+  // The tasks of the participants, named as the sections of the sidebar.
+  $page['participants'] = [];
+  if ($shows($project, 'field_participants')) {
+    $tasks = [
+      'Creative' => (string) t('Creative'),
+      'Manager' => (string) t('Manager'),
+    ];
+    foreach ($project->getParticipants() as $participant) {
+      if ($participant instanceof Creative) {
+        // @phpstan-ignore-next-line
+        $page['participants'][] = $person($participant, $tasks[$participant->task] ?? $participant->task);
+      }
+    }
+  }
+  $page['applicants'] = [];
+  if ($shows($project, 'field_applicants')) {
+    foreach ($project->getApplicants() as $applicant) {
+      $page['applicants'][] = $person($applicant, NULL);
+    }
+  }
+
+  // The result of a completed project: files, links and the comments of the
+  // participants.
+  $page['result'] = [];
+  if ($shows($project, 'project_result')) {
+    $result = $project->get('project_result')->entity;
+    $access = $result?->access('view', NULL, TRUE);
+    if ($result instanceof ProjectResultInterface && $access) {
+      $cache->addCacheableDependency($access)->addCacheableDependency($result);
+    }
+    if ($result instanceof ProjectResultInterface && $access?->isAllowed()) {
+      $links = [];
+      /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $files */
+      $files = $result->get('field_files');
+      foreach ($files->referencedEntities() as $file) {
+        if ($file instanceof FileInterface) {
+          $cache->addCacheableDependency($file);
+          $links[] = ['url' => $file->createFileUrl(), 'label' => $file->getFilename()];
+        }
+      }
+      foreach (array_column($result->get('field_hyperlinks')->getValue(), 'value') as $link) {
+        $link = trim((string) $link);
+        if ($link !== '') {
+          $links[] = [
+            'url' => preg_match('{^https?://}i', $link) ? $link : NULL,
+            'label' => rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/'),
+          ];
+        }
+      }
+      $comments = [];
+      foreach ($result->getComments() as $comment) {
+        $cache->addCacheableDependency($comment);
+        $author = $comment->getOwner();
+        if ($comment->get('status')->value && trim($comment->getComment()) !== '' && $author instanceof Creative) {
+          $comments[] = $person($author, NULL) + ['comment' => $comment->getComment()];
+        }
+      }
+      $page['result'] = array_filter(['links' => $links, 'comments' => $comments]);
+    }
+  }
+
+  // The details in the sidebar.
+  $details = [['label' => t('Status'), 'value' => $page['state_label']]];
+  if ($page['archived']) {
+    $details[] = ['label' => t('Archive status'), 'value' => t('Archived')];
+  }
+  $details[] = ['label' => t('Hidden'), 'value' => $page['hidden'] ? t('Yes') : t('No')];
+  $details[] = ['label' => t('Promoted'), 'value' => $page['promoted'] ? t('Yes') : t('No')];
+  if ($shows($project, 'langcode')) {
+    $details[] = ['label' => t('Language'), 'value' => $project->language()->getName()];
+  }
+  if ($shows($project, 'created')) {
+    $details[] = ['label' => t('Created'), 'value' => $date($project->getCreatedTime())];
+  }
+  if ($shows($project, 'changed')) {
+    $details[] = ['label' => t('Changed'), 'value' => $date((int) $project->get('changed')->value)];
+  }
+  $page['details'] = $details;
+
+  // The lifecycle, newest first: each state with the date it was reached.
+  $page['history'] = [];
+  if ($shows($project, 'field_lifecycle_history')) {
+    foreach (array_reverse($project->get('field_lifecycle_history')->getValue()) as $item) {
+      $page['history'][] = [
+        'label' => $states[$item['to']] ?? $item['to'],
+        'date' => $date((int) $item['timestamp']),
+      ];
+    }
+  }
+
+  // The completed feedback on the project, as on the feedback page: only
+  // the feedback the viewer may open.
+  $page['feedback'] = [];
+  $cache->addCacheTags(['feedback_list']);
+  $feedback_storage = \Drupal::entityTypeManager()->getStorage('feedback');
+  $feedback_ids = $feedback_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('project', $project->id())
+    ->condition('completed', NULL, 'IS NOT NULL')
+    ->sort('completed', 'DESC')
+    ->execute();
+  /** @var \Drupal\feedback\FeedbackInterface $feedback */
+  foreach ($feedback_storage->loadMultiple($feedback_ids) as $feedback) {
+    $access = $feedback->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access);
+    if (!$access->isAllowed()) {
+      continue;
+    }
+    $cache->addCacheableDependency($feedback);
+    $author = $feedback->getOwner();
+    $page['feedback'][] = [
+      'name' => $author instanceof Organization || $author instanceof Creative ? $person($author, NULL)['name'] : (string) $feedback->label(),
+      'url' => $feedback->toUrl()->toString(),
+      'date' => $date((int) $feedback->get('completed')->value),
+    ];
+  }
+
+  $variables['project_page'] = $page;
   $variables['project_cache'] = [];
   $cache->applyTo($variables['project_cache']);
 }

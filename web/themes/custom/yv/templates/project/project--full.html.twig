@@ -1,0 +1,215 @@
+{#
+/**
+ * @file
+ * Full view of a project in the backend, in the layout of the profiles.
+ *
+ * The plain values in "project_page" come from yv_preprocess_project_full()
+ * and are set only when the viewer may see the field.
+ */
+#}
+{% import _self as macros %}
+{% set page = project_page %}
+
+{% macro person(person) %}
+  {% set pill %}
+    {% if person.avatar %}
+      <span class="project-page-avatar">{{ person.avatar }}</span>
+    {% else %}
+      <span class="project-page-avatar" aria-hidden="true">{{ person.initials }}</span>
+    {% endif %}
+    <span>
+      <span class="project-page-person-name">{{ person.name }}</span>
+      {% if person.role %}
+        <span class="project-page-person-role">{{ person.role }}</span>
+      {% endif %}
+    </span>
+  {% endset %}
+  {% if person.url %}
+    <a class="project-page-person" href="{{ person.url }}">{{ pill }}</a>
+  {% else %}
+    <span class="project-page-person">{{ pill }}</span>
+  {% endif %}
+{% endmacro %}
+
+{{ project_cache }}
+<article class="project-page">
+  <div class="project-page-main">
+    <section class="project-page-card project-page-intro">
+      {% if page.image %}
+        <figure class="project-page-image">
+          {{ page.image|field_value }}
+          {% if page.copyright %}
+            <figcaption>© {{ page.copyright }}</figcaption>
+          {% endif %}
+        </figure>
+      {% endif %}
+
+      <div class="project-page-intro-body">
+        <header class="project-page-header">
+          <h1 class="project-page-title">{{ page.title }}</h1>
+          {% if page.organization.url %}
+            <a class="project-page-organization" href="{{ page.organization.url }}">{{ page.organization.name }}</a>
+          {% else %}
+            <p class="project-page-organization">{{ page.organization.name }}</p>
+          {% endif %}
+          {# The badges reuse the colors of the project teasers. #}
+          <ul class="project-page-badges">
+            <li><span class="project-teaser-badge" data-badge="{{ page.state|clean_class }}">{{ page.state_label }}</span></li>
+            {% if page.archived %}
+              <li><span class="project-teaser-badge" data-badge="archived">{{ 'Archived'|t }}</span></li>
+            {% endif %}
+            {% if page.hidden %}
+              <li><span class="project-teaser-badge" data-badge="hidden">{{ 'Hidden'|t }}</span></li>
+            {% endif %}
+            {% if page.promoted %}
+              <li><span class="project-teaser-badge">{{ 'Promoted'|t }}</span></li>
+            {% endif %}
+          </ul>
+        </header>
+
+        {% if page.summary %}
+          <p class="project-page-summary">{{ page.summary }}</p>
+        {% endif %}
+
+        {% if page.skills %}
+          <div class="project-page-skills">{{ page.skills|field_value }}</div>
+        {% endif %}
+
+        {% if page.facts %}
+          <dl class="project-page-facts">
+            {% for fact in page.facts %}
+              <div>
+                <dt>{{ fact.label }}</dt>
+                <dd>{{ fact.value }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if page.body or page.appreciation or page.material or page.allowance %}
+      <div class="project-page-card project-page-content">
+        {% if page.body %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Briefing'|t }}</h2>
+            <div class="project-page-text">{{ page.body }}</div>
+          </section>
+        {% endif %}
+        {% if page.appreciation %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Appreciation'|t }}</h2>
+            <p class="project-page-plain">{{ page.appreciation }}</p>
+          </section>
+        {% endif %}
+        {% if page.material %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Material'|t }}</h2>
+            <p class="project-page-plain">{{ page.material }}</p>
+          </section>
+        {% endif %}
+        {% if page.allowance %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Allowance'|t }}</h2>
+            <p class="project-page-plain">{{ page.allowance }}</p>
+          </section>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if page.result %}
+      <div class="project-page-card project-page-content">
+        {% if page.result.links %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Result'|t }}</h2>
+            <ul class="project-page-links">
+              {% for link in page.result.links %}
+                <li>
+                  {% if link.url %}
+                    <a class="project-page-chip" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+                  {% else %}
+                    <span class="project-page-chip">{{ link.label }}</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </section>
+        {% endif %}
+        {% if page.result.comments %}
+          <section>
+            <h2 class="project-page-section-title">{{ 'Comments of the participants'|t }}</h2>
+            <ul class="project-page-comments">
+              {% for comment in page.result.comments %}
+                <li>
+                  {{ macros.person(comment) }}
+                  <blockquote>{{ comment.comment }}</blockquote>
+                </li>
+              {% endfor %}
+            </ul>
+          </section>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <aside class="project-page-side">
+    <section class="project-page-side-section">
+      <h2 class="project-page-section-title">{{ 'Details'|t }}</h2>
+      <dl class="project-page-details">
+        {% for detail in page.details %}
+          <div><dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd></div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    {% if page.history %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ 'Lifecycle'|t }}</h2>
+        <dl class="project-page-details">
+          {% for item in page.history %}
+            <div><dt>{{ item.label }}</dt><dd>{{ item.date }}</dd></div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+
+    {% set groups = [
+      {title: 'Organization'|t, people: [page.organization]},
+      {title: 'Manager'|t, people: page.manager ? [page.manager] : []},
+      {title: 'Participants'|t, people: page.participants},
+      {title: 'Applicants'|t, people: page.applicants},
+    ] %}
+    {% for group in groups|filter(group => group.people) %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ group.title }}</h2>
+        <ul class="project-page-people">
+          {% for person in group.people %}
+            <li>{{ macros.person(person) }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+
+    {% if page.feedback %}
+      <section class="project-page-side-section">
+        <h2 class="project-page-section-title">{{ 'Feedback'|t }}</h2>
+        <dl class="project-page-details">
+          {% for item in page.feedback %}
+            <div>
+              <dt>{{ item.name }}</dt>
+              <dd><a href="{{ item.url }}">{{ item.date }}<span class="visually-hidden">: {{ 'feedback by @name'|t({'@name': item.name}) }}</span></a></dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+  </aside>
+
+  {# The logbook, below both columns. It is empty for viewers without access to it. #}
+  {% set logbook = drupal_view('logbook', 'project', project.id()) %}
+  {% if logbook %}
+    <section class="project-page-wide" aria-label="{{ 'Logbook'|t }}">
+      {{ logbook }}
+    </section>
+  {% endif %}
+</article>

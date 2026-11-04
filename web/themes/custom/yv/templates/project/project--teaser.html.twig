@@ -33,6 +33,9 @@
         <span class="project-teaser-badge" data-badge="{{ creative_role }}">{{ role_labels[creative_role] }}</span>
       {% endif %}
       {% if not project.isPublished() %}
+        <span class="project-teaser-badge" data-badge="archived">{{ 'Archived'|t }}</span>
+      {% endif %}
+      {% if project.isHidden() %}
         <span class="project-teaser-badge" data-badge="hidden">{{ 'Hidden'|t }}</span>
       {% endif %}
       <span class="project-teaser-skills">{{ elements.field_skills|field_value }}</span>
