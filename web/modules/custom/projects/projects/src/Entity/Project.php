@@ -131,6 +131,11 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
   protected bool $wasSubmitted = FALSE;
 
   /**
+   * The changed time set explicitly for the last save, if any.
+   */
+  protected ?int $changeTime = NULL;
+
+  /**
    * {@inheritdoc}
    *
    * The lifecycle is a non-shared service, which can't be serialized by
@@ -198,14 +203,20 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
     $this->changedContentFields = [];
     $this->previousRevisionId = NULL;
     $this->wasSubmitted = FALSE;
+    $this->changeTime = NULL;
     if (!$this->isNew() && !$this->isSyncing()) {
       $this->changedContentFields = $this->computeChangedContentFields();
       $this->previousRevisionId = (int) $this->getLoadedRevisionId();
       $this->wasSubmitted = $this->getOriginal() instanceof ProjectInterface && !$this->getOriginal()->lifecycle()->isDraft();
+      // A changed time set by hand, such as in the dummy content, dates the
+      // change.
+      if ((int) $this->getChangedTime() !== (int) $this->getOriginal()?->getChangedTime()) {
+        $this->changeTime = (int) $this->getChangedTime();
+      }
       if ($this->changedContentFields) {
         $this->setNewRevision();
         $this->setRevisionUserId(\Drupal::currentUser()->id());
-        $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
+        $this->setRevisionCreationTime($this->changeTime ?? \Drupal::time()->getRequestTime());
         $this->setRevisionLogMessage(implode(', ', $this->changedContentFields));
       }
     }
@@ -261,7 +272,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
       $this->getOwner() instanceof Organization &&
       $this->getOwner()->hasRoleOrganization()
     ) {
-      $event = new ProjectChangeEvent($this, $this->changedContentFields, (int) $this->previousRevisionId, (int) $this->getRevisionId());
+      $event = new ProjectChangeEvent($this, $this->changedContentFields, (int) $this->previousRevisionId, (int) $this->getRevisionId(), $this->changeTime);
       \Drupal::service('event_dispatcher')->dispatch($event);
     }
 
@@ -663,6 +674,7 @@ class Project extends RevisionableContentEntityBase implements ProjectInterface 
     $translation->changedContentFields = &$this->changedContentFields;
     $translation->previousRevisionId = &$this->previousRevisionId;
     $translation->wasSubmitted = &$this->wasSubmitted;
+    $translation->changeTime = &$this->changeTime;
     return $translation;
   }
 

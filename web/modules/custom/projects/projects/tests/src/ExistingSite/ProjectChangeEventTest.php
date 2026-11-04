@@ -115,4 +115,18 @@ class ProjectChangeEventTest extends ProjectResourceTestBase {
     $this->assertSame((int) $organization->id(), (int) $revision->getRevisionUserId());
   }
 
+  /**
+   * Tests that an explicit changed time dates the event.
+   */
+  public function testExplicitChangedDatesEvent(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $project->setTitle('Changed')->set('changed', 1700000000)->save();
+    $project->setTitle('Changed again')->save();
+
+    $this->assertCount(2, $this->events);
+    $this->assertSame(1700000000, $this->events[0]->getTimestamp());
+    $this->assertNull($this->events[1]->getTimestamp());
+  }
+
 }

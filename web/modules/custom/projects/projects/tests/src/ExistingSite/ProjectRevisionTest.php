@@ -148,4 +148,13 @@ class ProjectRevisionTest extends ProjectResourceTestBase {
     $this->assertCount($revision_count + 2, $this->revisionIds($project));
   }
 
+  /**
+   * Tests that an explicit changed time dates the revision.
+   */
+  public function testExplicitChangedDatesRevision(): void {
+    $project = $this->createProject(ProjectState::Pending);
+    $project->setTitle('Changed')->set('changed', 1700000000)->save();
+    $this->assertSame(1700000000, (int) $project->getRevisionCreationTime());
+  }
+
 }
