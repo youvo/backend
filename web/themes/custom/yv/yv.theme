@@ -5,12 +5,15 @@
  * Provides preprocess logic and other functionality for theming.
  */
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Url;
 use Drupal\courses\Entity\Course;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\FileInterface;
+use Drupal\image\ImageStyleInterface;
 use Drupal\lifecycle\Plugin\Field\FieldType\LifecycleItem;
 use Drupal\logbook\LogInterface;
 use Drupal\organizations\Entity\Organization;
@@ -18,7 +21,6 @@ use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectResultInterface;
-use Drupal\user\UserInterface;
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
@@ -514,7 +516,8 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
     'image' => $shows($project, 'field_image') ? $project->get('field_image')->view([
       'label' => 'hidden',
       'type' => 'image',
-      'settings' => ['image_style' => 'wide'],
+      // A style that image_style_warmer generates up front.
+      'settings' => ['image_style' => 'content'],
     ]) : NULL,
     'summary' => $shows($project, 'body') ? trim((string) $project->get('body')->summary) ?: NULL : NULL,
     'body' => $shows($project, 'body') ? $project->get('body')->view([
@@ -576,17 +579,18 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
     }
   }
 
-  // The tasks of the participants, named as the sections of the sidebar.
+  // The tasks of the participants, named as the sections of the sidebar. The
+  // participants store them capitalized, the comments in lowercase.
   $tasks = [
-    'Creative' => (string) t('Creative'),
-    'Manager' => (string) t('Manager'),
+    'creative' => (string) t('Creative'),
+    'manager' => (string) t('Manager'),
   ];
   $page['participants'] = [];
   if ($shows($project, 'field_participants')) {
     foreach ($project->getParticipants() as $participant) {
       if ($participant instanceof Creative) {
         // @phpstan-ignore-next-line
-        $page['participants'][] = $person($participant, $tasks[$participant->task] ?? $participant->task);
+        $page['participants'][] = $person($participant, $tasks[mb_strtolower($participant->task)] ?? $participant->task);
       }
     }
   }
@@ -597,9 +601,10 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
     }
   }
 
-  // The result of a completed project: files, links and the comments of the
-  // participants.
+  // The result of a completed project: the files and links in their order,
+  // each with its description, and the public comments of the feedback.
   $page['result'] = [];
+  $page['lightbox'] = FALSE;
   if ($shows($project, 'project_result')) {
     $result = $project->get('project_result')->entity;
     $access = $result?->access('view', NULL, TRUE);
@@ -607,34 +612,79 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
       $cache->addCacheableDependency($access)->addCacheableDependency($result);
     }
     if ($result instanceof ProjectResultInterface && $access?->isAllowed()) {
-      $links = [];
-      /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $files */
-      $files = $result->get('field_files');
-      foreach ($files->referencedEntities() as $file) {
+      $items = [];
+      // The lightbox shows images in a style generated up front.
+      $lightbox_style = \Drupal::entityTypeManager()->getStorage('image_style')->load('content');
+      if ($lightbox_style instanceof ImageStyleInterface) {
+        $cache->addCacheableDependency($lightbox_style);
+      }
+      $file_values = $result->get('field_files')->getValue();
+      $files = \Drupal::entityTypeManager()->getStorage('file')->loadMultiple(array_column($file_values, 'target_id'));
+      foreach ($file_values as $value) {
+        $file = $files[$value['target_id']] ?? NULL;
         if ($file instanceof FileInterface) {
           $cache->addCacheableDependency($file);
-          $links[] = ['url' => $file->createFileUrl(), 'label' => $file->getFilename()];
-        }
-      }
-      foreach (array_column($result->get('field_hyperlinks')->getValue(), 'value') as $link) {
-        $link = trim((string) $link);
-        if ($link !== '') {
-          $links[] = [
-            'url' => preg_match('{^https?://}i', $link) ? $link : NULL,
-            'label' => rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/'),
+          $image = str_starts_with((string) $file->getMimeType(), 'image/');
+          $items[] = [
+            'weight' => (int) ($value['weight'] ?? 0),
+            'url' => $file->createFileUrl(),
+            'name' => $file->getFilename(),
+            'description' => trim((string) ($value['description'] ?? '')),
+            // The teaser style is generated up front by image_style_warmer.
+            'preview' => $image ? [
+              '#theme' => 'image_style',
+              '#style_name' => 'teaser',
+              '#uri' => $file->getFileUri(),
+              '#alt' => '',
+            ] : NULL,
+            'type' => mb_strtoupper(pathinfo($file->getFilename(), PATHINFO_EXTENSION)),
+            'lightbox' => $image && $lightbox_style instanceof ImageStyleInterface ? $lightbox_style->buildUrl($file->getFileUri()) : NULL,
+            'external' => FALSE,
           ];
         }
       }
+      // Url::isExternal() is TRUE for every absolute address, also for one of
+      // this site, so a link leaves the website only if it is not local.
+      $cache->addCacheContexts(['url.site']);
+      $request = \Drupal::request();
+      $base_url = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/';
+      foreach ($result->get('field_hyperlinks')->getValue() as $value) {
+        $link = trim((string) $value['value']);
+        if ($link !== '') {
+          // Only http(s) values become links, as on the profiles.
+          $url = preg_match('{^https?://}i', $link) ? Url::fromUri($link) : NULL;
+          $items[] = [
+            'weight' => (int) ($value['weight'] ?? 0),
+            'url' => $url?->toString(),
+            'name' => rtrim(preg_replace('{^(https?://)?(www\.)?}i', '', $link), '/'),
+            'description' => trim((string) ($value['description'] ?? '')),
+            'preview' => NULL,
+            'type' => (string) t('Link'),
+            'lightbox' => NULL,
+            'external' => $url && $url->isExternal() && !UrlHelper::externalIsLocal($link, $base_url),
+          ];
+        }
+      }
+      usort($items, static fn (array $a, array $b): int => $a['weight'] <=> $b['weight']);
+
       $comments = [];
       foreach ($result->getComments() as $comment) {
         $cache->addCacheableDependency($comment);
         $author = $comment->getOwner();
-        if ($comment->get('status')->value && trim($comment->getComment()) !== '' && $author instanceof Creative) {
-          $task = (string) $comment->get('task')->value;
-          $comments[] = $person($author, $tasks[$task] ?? ($task ?: NULL)) + ['comment' => $comment->getComment()];
+        if (!$comment->get('status')->value || trim($comment->getComment()) === '') {
+          continue;
+        }
+        $task = (string) $comment->get('task')->value;
+        $role = match (TRUE) {
+          $author instanceof Organization => (string) t('Organization'),
+          default => $tasks[mb_strtolower($task)] ?? ($task ?: NULL),
+        };
+        if ($author instanceof Organization || $author instanceof Creative) {
+          $comments[] = $person($author, $role) + ['comment' => $comment->getComment()];
         }
       }
-      $page['result'] = array_filter(['links' => $links, 'comments' => $comments]);
+      $page['result'] = array_filter(['items' => $items, 'comments' => $comments]);
+      $page['lightbox'] = (bool) array_filter(array_column($items, 'lightbox'));
     }
   }
 
@@ -687,21 +737,13 @@ function yv_preprocess_project_full(array &$variables, ProjectInterface $project
   }
   $page['details'] = $details;
 
-  // The lifecycle, newest first: each state with the date it was reached and
-  // who made the transition.
+  // The lifecycle, newest first: each state with the date it was reached.
   $page['history'] = [];
   if ($shows($project, 'field_lifecycle_history')) {
-    $user_storage = \Drupal::entityTypeManager()->getStorage('user');
     foreach (array_reverse($project->get('field_lifecycle_history')->getValue()) as $item) {
-      $by = $item['uid'] ? $user_storage->load($item['uid']) : NULL;
       $page['history'][] = [
         'label' => $states[$item['to']] ?? $item['to'],
         'date' => $date((int) $item['timestamp']),
-        'by' => match (TRUE) {
-          $by instanceof Organization, $by instanceof Creative => $person($by, NULL)['name'],
-          $by instanceof UserInterface => $by->getDisplayName(),
-          default => NULL,
-        },
       ];
     }
   }

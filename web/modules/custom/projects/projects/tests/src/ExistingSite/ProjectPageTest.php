@@ -4,6 +4,7 @@ namespace Drupal\Tests\projects\ExistingSite;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\logbook\Entity\Log;
+use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
@@ -64,6 +65,46 @@ class ProjectPageTest extends ProjectResourceTestBase {
     $html = $this->renderProject($project);
     $this->assertStringContainsString('<dt>Status</dt><dd>Archived</dd>', $html);
     $this->assertStringContainsString('<dt>Archive reason</dt><dd>' . ProjectArchiveReason::External->label() . '</dd>', $html);
+  }
+
+  /**
+   * The result lists its links in order and the comments of all givers.
+   */
+  public function testResult(): void {
+
+    $project = $this->createProject(ProjectState::Completed);
+    $result = $project->getResult();
+    $result->setLinks([
+      ['value' => 'https://example.org/film', 'weight' => 1, 'description' => 'Imagefilm'],
+      ['value' => 'https://example.org/site', 'weight' => 0, 'description' => ''],
+    ]);
+    $creative = $this->createCreative();
+    $creative->set('field_name', 'Mara Völker')->save();
+    foreach ([$creative, $project->getOwner()] as $author) {
+      $comment = ProjectComment::create([
+        'value' => 'Kommentar von ' . $author->id(),
+        'project_result' => $result->id(),
+        'author' => $author->id(),
+      ]);
+      $comment->save();
+      $this->markEntityForCleanup($comment);
+      $result->appendComment($comment);
+    }
+    $result->save();
+
+    $this->container->get('current_user')->setAccount(User::load(1));
+    $html = $this->renderProject($this->reloadProject($project));
+    // Without a description, the address is the label.
+    $site = strpos($html, '>example.org/site<');
+    $film = strpos($html, '>Imagefilm<');
+    $this->assertNotFalse($site);
+    $this->assertNotFalse($film);
+    $this->assertLessThan($film, $site);
+    $this->assertStringContainsString('example.org/film</span>', $html);
+    // Both links leave the website.
+    $this->assertSame(2, substr_count($html, 'class="project-page-external"'));
+    $this->assertStringContainsString('Kommentar von ' . $creative->id(), $html);
+    $this->assertStringContainsString('Kommentar von ' . $project->getOwner()->id(), $html);
   }
 
   /**

@@ -102,8 +102,7 @@
   }
 }
 
-.project-page-badges,
-.project-page-links {
+.project-page-badges {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -196,23 +195,72 @@
   white-space: pre-line;
 }
 
-.project-page-chip {
-  @include chip;
+// The results as small cards with a preview: the image, or the type of the
+// file or link. The description links the whole card.
+.project-page-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--gin-spacing-s);
+  margin: 0;
 
-  display: inline-block;
-  overflow-wrap: anywhere;
+  // As in the sidebar: the borders start at the top edge, while text starts
+  // below its line spacing.
+  padding: var(--gin-spacing-xxs) 0 0;
+  list-style: none;
+}
 
-  &[href] {
-    text-decoration: none;
-    transition: background-color var(--gin-transition-fast);
+.project-page-result {
+  @include card-link(".project-page-result-label");
 
-    &:hover,
-    &:focus-visible {
-      background: var(--yv-chip-hover);
-      color: var(--yv-chip-text);
-      text-decoration: none;
-    }
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--yv-line);
+  border-radius: var(--gin-border-m);
+}
+
+.project-page-result-preview {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 8 / 5;
+  background: var(--yv-chip);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
+}
+
+.project-page-result-type {
+  color: var(--yv-chip-text);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.project-page-result-body {
+  display: grid;
+  gap: var(--gin-spacing-xxxs);
+  padding: var(--gin-spacing-xs) var(--gin-spacing-s);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.project-page-result-label {
+  font-weight: 600;
+}
+
+// After the label of a link that leaves the website.
+.project-page-external {
+  margin-inline-start: var(--gin-spacing-xxs);
+  vertical-align: baseline;
+}
+
+.project-page-result-name {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
 }
 
 // The people in the sidebar, one below the other, as compact rows that fit
@@ -281,7 +329,9 @@
   display: grid;
   gap: var(--gin-spacing-m);
   margin: 0;
-  padding: 0;
+
+  // The avatars start at the top edge, see the results.
+  padding: var(--gin-spacing-xxs) 0 0;
   list-style: none;
 
   > li {
@@ -290,11 +340,16 @@
     justify-items: start;
   }
 
+  // Below the name, so the comment reads as the author's: the width of the
+  // avatar and the gap after it.
   blockquote {
-    margin: 0;
+    margin: 0 0 0 calc(#{to-rem(32)} + var(--gin-spacing-s));
     padding: 0;
     border: 0;
     color: var(--yv-ink);
+
+    // Gin enlarges quotes; the comments read as the text around them.
+    font-size: inherit;
     white-space: pre-line;
 
     // Gin draws its own accent bar before a quote.
@@ -319,13 +374,6 @@
 
 .project-page-details {
   @include facts;
-}
-
-// Who made a transition, below its date.
-.project-page-history-by {
-  display: block;
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
 }
 
 // The logbook, below both columns.

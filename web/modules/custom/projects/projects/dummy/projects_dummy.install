@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\Utility\Error;
 use Drupal\creatives\Entity\Creative;
 use Drupal\feedback\Entity\Feedback;
@@ -15,6 +16,7 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\file\FileInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
+use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectDeclineEvent;
@@ -252,8 +254,11 @@ function projects_dummy_generate_content(): void {
         // Not drawn with Faker, which would change the rest of the content.
         $completers = array_merge([$oid, $manager], array_map(static fn ($creative) => (int) $creative->id(), $participant_entities));
         $completer = $completers[random_int(0, count($completers) - 1)];
-        projects_dummy_as($completer, fn () => $event_dispatcher->dispatch(new ProjectCompleteEvent($project, $transition_time)));
-        // @todo Add project results if needed.
+        [$result_files, $result_links] = projects_dummy_get_results($project);
+        $complete_event = new ProjectCompleteEvent($project, $transition_time);
+        // The files are attached after the feedback, see below.
+        $complete_event->setLinks($result_links);
+        projects_dummy_as($completer, fn () => $event_dispatcher->dispatch($complete_event));
       }
       if ($final_state === 'declined') {
         $transition_time += $transition_increment;
@@ -280,6 +285,10 @@ function projects_dummy_generate_content(): void {
       $project->save();
       if ($final_state === 'completed') {
         projects_dummy_complete_feedbacks($project, $participant_entities, $transition_time, $step_max, $feedback_faker);
+        // Each feedback saves the result again with its comment, and
+        // filefield_paths logs a notice per attached file on every later save.
+        // So the files are attached in the last save of the result.
+        $project->getResult()->setFiles($result_files)->save();
       }
     }
     catch (EntityStorageException $e) {
@@ -342,6 +351,50 @@ function projects_dummy_get_stock_image(int $i): FileInterface {
 }
 
 /**
+ * Returns the results of a completed project, as the complete form sends them.
+ *
+ * Each result is an image or a link with a description. The images are copies
+ * of the stock images, because the result field moves its files into the
+ * folder of the project. Not drawn with Faker, which would change the rest of
+ * the content.
+ *
+ * @param \Drupal\projects\ProjectInterface $project
+ *   The completed project.
+ *
+ * @return array
+ *   The files and the links, in the shape of the complete event.
+ */
+function projects_dummy_get_results(ProjectInterface $project): array {
+  $file_descriptions = ['Logo', 'Flyer', 'Plakat', 'Styleguide', 'Social-Media-Vorlagen'];
+  $link_descriptions = ['Website', 'Imagefilm', 'Online-Galerie', 'Präsentation'];
+  $slug = trim(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($project->getTitle())), '-');
+  /** @var \Drupal\file\FileRepositoryInterface $file_repository */
+  $file_repository = \Drupal::service('file.repository');
+  $files = [];
+  $links = [];
+  $count = random_int(1, 4);
+  for ($delta = 0; $delta < $count; $delta++) {
+    if (random_int(0, 1)) {
+      $stock = projects_dummy_get_stock_image(random_int(1, 12));
+      $file = $file_repository->copy($stock, $stock->getFileUri(), FileExists::Rename);
+      $files[] = [
+        'target_id' => $file->id(),
+        'weight' => $delta,
+        'description' => $file_descriptions[random_int(0, count($file_descriptions) - 1)],
+      ];
+    }
+    else {
+      $links[] = [
+        'value' => 'https://www.example.org/' . $slug . '/' . ($delta + 1),
+        'weight' => $delta,
+        'description' => $link_descriptions[random_int(0, count($link_descriptions) - 1)],
+      ];
+    }
+  }
+  return [$files, $links];
+}
+
+/**
  * Completes feedback for some of the people of a completed project.
  *
  * The feedback is created completed, and the event is dispatched here with
@@ -386,6 +439,16 @@ function projects_dummy_complete_feedbacks(ProjectInterface $project, array $par
         'completed' => $time,
       ] + projects_dummy_get_feedback_answers($bundle, $faker));
       $feedback->save();
+      // Feedback::preSave() adds the public comment to the result only when a
+      // save completes the feedback, not when it is created completed.
+      $comment = ProjectComment::create([
+        'value' => $feedback->get('project_comment')->value,
+        'project_result' => $project->getResult()->id(),
+        'author' => $account->id(),
+        'created' => $time,
+      ]);
+      $comment->save();
+      $project->getResult()->appendComment($comment)->save();
       $account_switcher->switchTo($account);
       try {
         $event_dispatcher->dispatch(new FeedbackCompleteEvent($feedback, $time));

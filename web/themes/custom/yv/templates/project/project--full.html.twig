@@ -116,17 +116,40 @@
 
     {% if page.result %}
       <div class="project-page-card project-page-content">
-        {% if page.result.links %}
+        {% if page.result.items %}
           <section>
             <h2 class="project-page-section-title">{{ 'Result'|t }}</h2>
-            <ul class="project-page-links">
-              {% for link in page.result.links %}
-                <li>
-                  {% if link.url %}
-                    <a class="project-page-chip" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
-                  {% else %}
-                    <span class="project-page-chip">{{ link.label }}</span>
-                  {% endif %}
+            {% if page.lightbox %}
+              {{ attach_library('yv/lightbox') }}
+            {% endif %}
+            <ul class="project-page-results" data-lightbox-group>
+              {% for item in page.result.items %}
+                <li class="project-page-result">
+                  <div class="project-page-result-preview">
+                    {% if item.preview %}
+                      {{ item.preview }}
+                    {% else %}
+                      <span class="project-page-result-type">{{ item.type }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="project-page-result-body">
+                    {% set label = item.description ?: item.name %}
+                    {% if item.url %}
+                      <a class="project-page-result-label" href="{{ item.url }}" target="_blank" rel="noopener"
+                        {%- if item.lightbox %} data-lightbox="{{ item.lightbox }}" data-lightbox-caption="{{ item.description ? item.description ~ ' · ' }}{{ item.name }}"{% endif %}>
+                        {{- label -}}
+                        {% if item.external -%}
+                          <svg class="project-page-external" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M9 2h5v5M14 2 7 9M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          <span class="visually-hidden">{{ '(external link)'|t }}</span>
+                        {%- endif -%}
+                      </a>
+                    {% else %}
+                      <span class="project-page-result-label">{{ label }}</span>
+                    {% endif %}
+                    {% if item.description %}
+                      <span class="project-page-result-name">{{ item.name }}</span>
+                    {% endif %}
+                  </div>
                 </li>
               {% endfor %}
             </ul>
@@ -134,7 +157,7 @@
         {% endif %}
         {% if page.result.comments %}
           <section>
-            <h2 class="project-page-section-title">{{ 'Comments of the participants'|t }}</h2>
+            <h2 class="project-page-section-title">{{ 'Comments'|t }}</h2>
             <ul class="project-page-comments">
               {% for comment in page.result.comments %}
                 <li>
@@ -164,15 +187,7 @@
         <h2 class="project-page-section-title">{{ 'Lifecycle'|t }}</h2>
         <dl class="project-page-details">
           {% for item in page.history %}
-            <div>
-              <dt>{{ item.label }}</dt>
-              <dd>
-                {{ item.date }}
-                {% if item.by %}
-                  <span class="project-page-history-by">{{ item.by }}</span>
-                {% endif %}
-              </dd>
-            </div>
+            <div><dt>{{ item.label }}</dt><dd>{{ item.date }}</dd></div>
           {% endfor %}
         </dl>
       </section>

@@ -1,0 +1,84 @@
+// =============================================================================
+// LIGHTBOX (js/lightbox.js)
+// =============================================================================
+// An image in a native dialog, with its caption below and round buttons to
+// close it and to go to the previous or next image.
+
+@use "../abstracts/functions.scss" as *;
+
+.lightbox {
+  overflow: visible;
+  max-width: min(90vw, 80rem);
+  max-height: 90vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gin-border-l);
+  background: var(--yv-surface);
+  color: var(--yv-text);
+  box-shadow: var(--gin-shadow-l2);
+
+  &::backdrop {
+    background: rgb(0 0 0 / 75%);
+  }
+}
+
+.lightbox-figure {
+  margin: 0;
+}
+
+.lightbox-image {
+  display: block;
+  max-width: min(90vw, 80rem);
+  max-height: calc(90vh - 2.5rem);
+  border-radius: var(--gin-border-l) var(--gin-border-l) 0 0;
+  object-fit: contain;
+}
+
+.lightbox-caption {
+  padding: var(--gin-spacing-xs) var(--gin-spacing-s);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+}
+
+.lightbox-button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: to-rem(40);
+  height: to-rem(40);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--yv-surface);
+  color: var(--yv-ink);
+  box-shadow: var(--gin-shadow-l1);
+  font-size: var(--gin-font-size-xl);
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--yv-accent);
+  }
+}
+
+// On the corner and the sides, half outside the image, so they cover little
+// of it.
+.lightbox-close {
+  top: to-rem(-20);
+  right: to-rem(-20);
+}
+
+.lightbox-previous,
+.lightbox-next {
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.lightbox-previous {
+  left: to-rem(-20);
+}
+
+.lightbox-next {
+  right: to-rem(-20);
+}

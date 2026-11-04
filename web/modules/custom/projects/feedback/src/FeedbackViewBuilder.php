@@ -190,19 +190,13 @@ class FeedbackViewBuilder extends EntityViewBuilder {
       unset($build[$name]);
     }
 
-    // As on the profiles, a card opens the main column: the title of the
-    // page, then the public comment.
-    $build['main']['intro'] = [
+    // The page keeps its title for screen readers only.
+    $build['main']['title'] = [
       '#type' => 'html_tag',
-      '#tag' => 'section',
-      '#attributes' => ['class' => ['feedback-intro']],
-      '#weight' => -95,
-      'title' => [
-        '#type' => 'html_tag',
-        '#tag' => 'h1',
-        'text' => ['#plain_text' => $entity->label()],
-        '#attributes' => ['class' => ['feedback-title']],
-      ],
+      '#tag' => 'h1',
+      'text' => ['#plain_text' => $entity->label()],
+      '#attributes' => ['class' => ['visually-hidden']],
+      '#weight' => -100,
     ];
 
     $project = $entity->get('project')->entity;
@@ -210,9 +204,16 @@ class FeedbackViewBuilder extends EntityViewBuilder {
       $this->buildOtherFeedback($build, $entity, $project);
     }
 
-    // The public comment for the project, as a quote.
+    // The public comment for the project, as a quote in a card that opens
+    // the main column.
     if ($this->hasContent($build, 'project_comment')) {
       $build['project_comment']['#label_display'] = 'visually_hidden';
+      $build['main']['intro'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'section',
+        '#attributes' => ['class' => ['feedback-intro']],
+        '#weight' => -95,
+      ];
       $build['main']['intro']['comment'] = [
         '#type' => 'html_tag',
         '#tag' => 'figure',
