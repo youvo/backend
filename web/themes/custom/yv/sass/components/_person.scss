@@ -37,3 +37,40 @@
   color: var(--yv-ink);
   font-weight: 600;
 }
+
+// People one below the other, each with a role below the name.
+.person-list {
+  display: grid;
+  justify-items: start;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+
+  // The avatars start at the top edge, while text starts below its line
+  // spacing; padding, as a margin would collapse with the one of the title.
+  padding: var(--gin-spacing-xxs) 0 0;
+  list-style: none;
+
+  // As a grid, the item is as high as the person in it, without the space
+  // below the baseline of an inline element.
+  > li {
+    display: grid;
+    justify-items: start;
+  }
+}
+
+// With a role, the name moves to the top of the avatar, so that the avatar
+// stands next to both lines: the role is not part of the person, which a view
+// mode renders without knowing it.
+:has(> .person-role) > .person {
+  align-items: flex-start;
+}
+
+// Right below the name: pulled up by the avatar's height less the name's
+// line, and indented by the avatar and the gap after it.
+.person-role {
+  margin-top: calc(var(--gin-font-size) * 1.25 - #{to-rem(32)});
+  margin-inline-start: calc(#{to-rem(32)} + var(--gin-spacing-s));
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  line-height: 1.25;
+}

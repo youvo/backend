@@ -135,12 +135,12 @@
     {% for group in groups|filter(group => group.people) %}
       <section class="project-page-side-section">
         <h2 class="project-page-section-title">{{ group.title }}</h2>
-        <ul class="project-page-people">
+        <ul class="person-list">
           {% for delta, person in group.people %}
             <li>
               {{ person }}
               {% if group.roles[delta] %}
-                <span class="project-page-role">{{ group.prefix }}{{ group.roles[delta] }}</span>
+                <span class="person-role">{{ group.prefix }}{{ group.roles[delta] }}</span>
               {% endif %}
             </li>
           {% endfor %}

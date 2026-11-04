@@ -253,38 +253,6 @@
   font-size: var(--gin-font-size-xs);
 }
 
-// The people in the sidebar, one below the other, as compact rows that fit
-// the size of the details.
-// The avatars start at the top edge, while text starts below its line
-// spacing, so the list keeps a little more distance from the title above.
-.project-page-people {
-  display: grid;
-  justify-items: start;
-  gap: var(--gin-spacing-xs);
-  margin: 0;
-
-  // Padding, as a margin would collapse with the one of the title.
-  padding: var(--gin-spacing-xxs) 0 0;
-  list-style: none;
-
-  // As a grid, the item is as high as the person in it, without the space
-  // below the baseline of an inline element. The role goes below the name.
-  > li {
-    display: grid;
-    justify-items: start;
-  }
-}
-
-// Below the name: indented by the avatar and the gap after it.
-.project-page-role {
-  // Close to the name, which is centered on the taller avatar.
-  margin-top: calc(var(--gin-spacing-xxs) * -1);
-  margin-inline-start: calc(#{to-rem(32)} + var(--gin-spacing-s));
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
-  line-height: 1.25;
-}
-
 .project-page-comments {
   display: grid;
   gap: var(--gin-spacing-m);
@@ -294,16 +262,16 @@
   padding: var(--gin-spacing-xxs) 0 0;
   list-style: none;
 
+  // The role sits close below the name, as in the sidebar.
   > li {
     display: grid;
-    gap: var(--gin-spacing-xs);
     justify-items: start;
   }
 
   // Below the name, so the comment reads as the author's: the width of the
   // avatar and the gap after it.
   blockquote {
-    margin: 0 0 0 calc(#{to-rem(32)} + var(--gin-spacing-s));
+    margin: var(--gin-spacing-xs) 0 0 calc(#{to-rem(32)} + var(--gin-spacing-s));
     padding: 0;
     border: 0;
     color: var(--yv-ink);
@@ -327,9 +295,16 @@
   gap: var(--gin-spacing-m);
 }
 
-.project-page-side-section + .project-page-side-section {
+// Divided from the section above. Embedded views wrap their section, which a
+// sibling selector would miss.
+.project-page-side-section {
   padding-top: var(--gin-spacing-m);
   border-top: 1px solid var(--yv-line);
+}
+
+.project-page-side > .project-page-side-section:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .project-page-details {

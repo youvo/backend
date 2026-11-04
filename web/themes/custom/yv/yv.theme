@@ -138,24 +138,6 @@ function yv_preprocess_user(array &$variables): void {
       'contact_initials' => yv_initials($value('field_contact')),
     ];
 
-    $profile['manager_name'] = NULL;
-    $profile['manager_url'] = NULL;
-    $profile['manager_avatar'] = NULL;
-    $profile['manager_initials'] = NULL;
-    $manager_access = $user->get('field_manager')->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($manager_access);
-    $manager = $manager_access->isAllowed() ? $user->getManager() : NULL;
-    if ($manager) {
-      $profile['manager_name'] = $manager->getName();
-      $profile['manager_avatar'] = yv_avatar($manager, $cache);
-      $profile['manager_initials'] = yv_initials($manager->getName());
-      $access = $manager->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($manager);
-      if ($access->isAllowed()) {
-        $profile['manager_url'] = $manager->toUrl()->toString();
-      }
-    }
-
     // Counts only the projects the viewer may see, as the projects list does.
     $project_storage = $entity_type_manager->getStorage('project');
     $cache->addCacheTags(['project_list']);

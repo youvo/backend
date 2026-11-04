@@ -145,61 +145,6 @@
   }
 }
 
-.user-profile-people {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gin-spacing-s);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.user-profile-person {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gin-spacing-xs);
-  padding: var(--gin-spacing-xxs) var(--gin-spacing-m) var(--gin-spacing-xxs) var(--gin-spacing-xxs);
-  border: 1px solid var(--yv-outline);
-  border-radius: 50vh;
-  line-height: 1.25;
-
-  // Name and role, one below the other.
-  > span:last-child {
-    display: grid;
-  }
-
-  &[href] {
-    color: inherit;
-    text-decoration: none;
-    transition: border-color var(--gin-transition-fast);
-
-    &:hover,
-    &:focus-visible {
-      border-color: var(--yv-accent);
-
-      .user-profile-person-name {
-        color: var(--yv-accent);
-      }
-    }
-  }
-}
-
-.user-profile-initials {
-  @include initials-avatar(to-rem(48));
-
-  font-size: var(--gin-font-size-s);
-}
-
-.user-profile-person-name {
-  color: var(--yv-ink);
-  font-weight: 600;
-}
-
-.user-profile-person-role {
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
-}
-
 // Line breaks of the text show.
 .user-profile-budget {
   margin: 0;
@@ -211,9 +156,16 @@
   gap: var(--gin-spacing-m);
 }
 
-.user-profile-section + .user-profile-section {
+// Divided from the section above. Embedded views wrap their section, which a
+// sibling selector would miss.
+.user-profile-section {
   padding-top: var(--gin-spacing-m);
   border-top: 1px solid var(--yv-line);
+}
+
+.user-profile-side > .user-profile-section:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .user-profile-section-title {
@@ -264,7 +216,10 @@
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: var(--gin-spacing-s);
   margin: 0;
-  padding: 0;
+
+  // The borders of the cards start at the top edge, while text starts below
+  // its line spacing, as on the results of the project page.
+  padding: var(--gin-spacing-xxs) 0 0;
   list-style: none;
 }
 

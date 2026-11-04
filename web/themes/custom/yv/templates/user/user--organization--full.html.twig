@@ -68,40 +68,27 @@
       </section>
     {% endif %}
 
+    {# The contact is a name, not an account, so it gets the markup of a
+       person by hand. #}
     {% set contact = content.field_contact|field_value %}
-    {% if contact or profile.manager_name %}
+    {% set manager = content.field_manager|field_value %}
+    {% if contact or manager %}
       <section>
         <h2 class="user-profile-section-title">{{ 'Contacts'|t }}</h2>
-        <ul class="user-profile-people">
+        <ul class="person-list">
           {% if contact %}
             <li>
-              <span class="user-profile-person">
-                <span class="user-profile-initials" aria-hidden="true">{{ profile.contact_initials }}</span>
-                <span>
-                  <span class="user-profile-person-name">{{ contact }}</span>
-                  <span class="user-profile-person-role">{{ 'Organization Contact'|t }}</span>
-                </span>
+              <span class="person">
+                <span class="person-avatar" aria-hidden="true">{{ profile.contact_initials }}</span>
+                <span class="person-name">{{ contact }}</span>
               </span>
+              <span class="person-role">{{ 'Organization Contact'|t }}</span>
             </li>
           {% endif %}
-          {% if profile.manager_name %}
+          {% if manager %}
             <li>
-              {% set manager_pill %}
-                {% if profile.manager_avatar %}
-                  <span class="user-profile-initials">{{ profile.manager_avatar }}</span>
-                {% else %}
-                  <span class="user-profile-initials" aria-hidden="true">{{ profile.manager_initials }}</span>
-                {% endif %}
-                <span>
-                  <span class="user-profile-person-name">{{ profile.manager_name }}</span>
-                  <span class="user-profile-person-role">{{ 'Project Manager'|t }}</span>
-                </span>
-              {% endset %}
-              {% if profile.manager_url %}
-                <a class="user-profile-person" href="{{ profile.manager_url }}">{{ manager_pill }}</a>
-              {% else %}
-                <span class="user-profile-person">{{ manager_pill }}</span>
-              {% endif %}
+              {{ manager }}
+              <span class="person-role">{{ 'Project Manager'|t }}</span>
             </li>
           {% endif %}
         </ul>

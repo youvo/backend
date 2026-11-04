@@ -127,7 +127,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: avatar
+      view_mode: person
       link: false
     third_party_settings: {  }
     weight: 9
