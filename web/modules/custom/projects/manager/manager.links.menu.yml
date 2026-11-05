@@ -3,3 +3,8 @@ manager.dashboard.project_manager:
   route_name: view.project_manager.project_manager
   menu_name: dashboard-moderation
   weight: 1
+manager.dashboard.creatives:
+  title: Creatives
+  route_name: view.creatives.page
+  menu_name: dashboard-moderation
+  weight: 2
