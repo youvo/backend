@@ -27,7 +27,7 @@ class CreativesViewsHooks {
   /**
    * Implements hook_views_data_alter().
    *
-   * Adds the city filter of the creatives finder to the city field table. The
+   * Adds the filters and the mode toggle of the creatives finder. The
    * preferences of a creative who never set them count as "No": their boolean
    * filters accept a missing value as false.
    */
@@ -65,13 +65,6 @@ class CreativesViewsHooks {
       'real field' => 'uid',
       'filter' => ['id' => 'creative_has_link', 'real field' => 'uid'],
     ];
-    if (isset($data['user__field_city']['field_city_value'])) {
-      $data['user__field_city']['creatives_city'] = [
-        'title' => $this->t('Creatives: City'),
-        'help' => $this->t('The city of the creative. A creative without a city never contains the text.'),
-        'filter' => ['id' => 'creatives_city', 'real field' => 'field_city_value'],
-      ];
-    }
     $data['views']['creatives_mode_toggle'] = [
       'title' => $this->t('Creatives: Mode toggle'),
       'help' => $this->t('Links the table and the profiles mode of the creatives finder.'),

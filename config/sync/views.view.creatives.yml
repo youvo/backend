@@ -453,14 +453,14 @@ display:
               authenticated: authenticated
             placeholder: ''
           is_grouped: false
-        creatives_city:
-          id: creatives_city
+        field_city_value:
+          id: field_city_value
           table: user__field_city
-          field: creatives_city
+          field: field_city_value
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: creatives_city
+          plugin_id: string
           operator: contains
           value: ''
           group: 1
