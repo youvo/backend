@@ -6,5 +6,6 @@ package: youvo
 core_version_requirement: ^10.3 || ^11
 
 dependencies:
+  - password_policy:password_policy
   - simple_oauth:simple_oauth
   - youvo:youvo

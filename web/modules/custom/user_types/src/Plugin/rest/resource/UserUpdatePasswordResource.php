@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\rest\Attribute\RestResource;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -43,12 +44,18 @@ class UserUpdatePasswordResource extends ResourceBase {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The password policy validator.
+   */
+  protected PasswordPolicyValidatorInterface $passwordPolicyValidator;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, ...$defaults) {
     $instance = parent::create($container, ...$defaults);
     $instance->currentUser = $container->get('current_user');
     $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->passwordPolicyValidator = $container->get('password_policy.validator');
     return $instance;
   }
 
@@ -98,6 +105,15 @@ class UserUpdatePasswordResource extends ResourceBase {
         'message' => 'The provided current password is incorrect.',
         'field' => 'current_password',
       ], 409);
+    }
+
+    // Check the new password against the password policies.
+    $report = $this->passwordPolicyValidator->validatePassword(trim($content['new_password']), $account);
+    if ($report->isInvalid()) {
+      return new ResourceResponse([
+        'message' => 'The new password does not satisfy the password policies.',
+        'field' => 'new_password',
+      ], 422);
     }
 
     // Sets the new password and saves the user.

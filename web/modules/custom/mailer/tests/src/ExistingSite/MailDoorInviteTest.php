@@ -317,6 +317,21 @@ class MailDoorInviteTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that a password below the policy length is refused.
+   */
+  public function testShortPasswordIsRefused(): void {
+
+    $project = $this->createProject();
+    $this->visitDoor($this->door($project));
+    $this->submitPassword('Kurz-1');
+
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->pageTextContains('at least 10 characters');
+    $this->assertSession()->fieldExists('password[pass1]');
+    $this->assertUntouched($project);
+  }
+
+  /**
    * Tests that a password form posted from another site changes nothing.
    */
   public function testCrossSitePasswordChangesNothing(): void {

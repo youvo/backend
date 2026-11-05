@@ -16,6 +16,7 @@ use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Door\DoorLinks;
 use Drupal\mailer\Door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
+use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
@@ -53,6 +54,7 @@ class DoorForm extends FormBase {
     protected EventDispatcherInterface $eventDispatcher,
     protected TimeInterface $time,
     protected LoggerInterface $logger,
+    protected PasswordPolicyValidatorInterface $passwordPolicyValidator,
   ) {}
 
   /**
@@ -68,6 +70,7 @@ class DoorForm extends FormBase {
       $container->get('event_dispatcher'),
       $container->get('datetime.time'),
       $container->get('logger.channel.mailer'),
+      $container->get('password_policy.validator'),
     );
   }
 
@@ -222,8 +225,19 @@ class DoorForm extends FormBase {
    * account, the login and the follow log unchanged.
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
-    if ($form_state->get('door')['password'] && !$this->isSameSiteRequest()) {
+    $door = $form_state->get('door');
+    if (!$door['password']) {
+      return;
+    }
+    if (!$this->isSameSiteRequest()) {
       $form_state->setErrorByName('', $this->t('Das Passwort konnte nicht gespeichert werden. Öffnet den Link aus der Mail bitte erneut.'));
+      return;
+    }
+
+    // The prospect becomes an organization with this password.
+    $report = $this->passwordPolicyValidator->validatePassword((string) $form_state->getValue('password'), $door['recipient'], ['organization' => 'organization']);
+    if ($report->isInvalid()) {
+      $form_state->setErrorByName('password', $report->getErrors());
     }
   }
 
