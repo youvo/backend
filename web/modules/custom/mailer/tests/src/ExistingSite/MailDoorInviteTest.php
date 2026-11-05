@@ -331,6 +331,20 @@ class MailDoorInviteTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that a cross-site password form without an origin changes nothing.
+   */
+  public function testCrossSiteFetchPasswordChangesNothing(): void {
+
+    $project = $this->createProject();
+    $this->visitDoor($this->door($project));
+    $this->setRequestHeader('HTTP_SEC_FETCH_SITE', 'cross-site');
+    $this->submitPassword(static::PASSWORD);
+
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertUntouched($project);
+  }
+
+  /**
    * Tests that an expired door offers no password and leads to the login.
    */
   public function testExpiredProspectDoor(): void {
