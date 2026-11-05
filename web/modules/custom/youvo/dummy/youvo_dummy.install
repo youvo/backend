@@ -94,6 +94,33 @@ function youvo_dummy_site_install_finished(): void {
 }
 
 /**
+ * Runs a step that dispatches events without sending mails.
+ *
+ * For dummy steps run on an existing site, outside the install hook. Applies
+ * the same runtime override of the global mailer policy as the hook.
+ */
+function youvo_dummy_without_mails(callable $step): void {
+  $override_key = 'mailer_policy.mailer_policy._';
+  $previous = $GLOBALS['config'][$override_key] ?? NULL;
+  $GLOBALS['config'][$override_key]['configuration']['email_skip_sending'] = [
+    'message' => 'Dummy content is being generated.',
+  ];
+  youvo_dummy_reset_policy($override_key);
+  try {
+    $step();
+  }
+  finally {
+    if ($previous === NULL) {
+      unset($GLOBALS['config'][$override_key]);
+    }
+    else {
+      $GLOBALS['config'][$override_key] = $previous;
+    }
+    youvo_dummy_reset_policy($override_key);
+  }
+}
+
+/**
  * Drops cached copies of a mailer policy, so config overrides apply.
  */
 function youvo_dummy_reset_policy(string $config_name): void {

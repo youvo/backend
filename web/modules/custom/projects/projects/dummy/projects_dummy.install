@@ -18,12 +18,14 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Entity\ProjectComment;
 use Drupal\projects\Event\ProjectApplyEvent;
+use Drupal\projects\Event\ProjectArchiveEvent;
 use Drupal\projects\Event\ProjectCompleteEvent;
 use Drupal\projects\Event\ProjectDeclineEvent;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
+use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\Entity\User;
@@ -43,18 +45,32 @@ function projects_dummy_install(): void {
  * Called by youvo_dummy_site_install_finished() to guarantee the order.
  */
 function projects_dummy_generate_content(): void {
+  projects_dummy_with_active_updating(projects_dummy_generate_projects(...));
+  projects_dummy_archive_projects();
+}
 
-  // The images are attached on create. Without active updating, every later
-  // save makes filefield_paths log a notice about the file it skips; with it,
-  // a file already in place passes silently.
+/**
+ * Runs a step that saves projects with active updating of the image paths.
+ *
+ * The images are attached on create. Without active updating, every later
+ * save makes filefield_paths log a notice about the file it skips; with it, a
+ * file already in place passes silently.
+ */
+function projects_dummy_with_active_updating(callable $step): void {
   $image_field = 'field.field.project.project.field_image';
+  $previous = $GLOBALS['config'][$image_field] ?? NULL;
   $GLOBALS['config'][$image_field]['third_party_settings']['filefield_paths']['active_updating'] = TRUE;
   \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
   try {
-    projects_dummy_generate_projects();
+    $step();
   }
   finally {
-    unset($GLOBALS['config'][$image_field]);
+    if ($previous === NULL) {
+      unset($GLOBALS['config'][$image_field]);
+    }
+    else {
+      $GLOBALS['config'][$image_field] = $previous;
+    }
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
   }
 }
@@ -369,6 +385,104 @@ function projects_dummy_generate_projects(): void {
     }
   }
 
+}
+
+/**
+ * Archives some dummy projects as their managers.
+ *
+ * Open projects that never found creatives, one mediated externally, and an
+ * ongoing and a completed project for a custom reason with a message. The
+ * archive event writes the log, dated after the last log of the project.
+ * Skips archived projects and stops when enough projects are archived, so it
+ * also runs on an existing site. Uses random_int() instead of Faker, which is
+ * seeded.
+ */
+function projects_dummy_archive_projects(): void {
+
+  // The lifecycle state, reason and mail of each archived project.
+  $plan = [
+    ['open', ProjectArchiveReason::Unattractive, NULL],
+    ['open', ProjectArchiveReason::External, NULL],
+    ['ongoing', ProjectArchiveReason::Custom, [
+      'Euer Projekt ist archiviert',
+      "Hallo,\n\nleider hat sich das Projektteam aufgelöst, bevor es fertig wurde. Wir haben das Projekt deshalb archiviert. Meldet euch gerne, wenn ihr es noch einmal ausschreiben möchtet.\n\nViele Grüße",
+    ],
+    ],
+    ['open', ProjectArchiveReason::Unattractive, NULL],
+    ['completed', ProjectArchiveReason::Custom, [
+      'Euer Projekt ist archiviert',
+      "Hallo,\n\nihr habt uns gebeten, das abgeschlossene Projekt nicht mehr zu zeigen. Wir haben es archiviert.\n\nViele Grüße",
+    ],
+    ],
+  ];
+
+  $database = \Drupal::database();
+  $archived = (int) $database->select('log', 'l')
+    ->condition('l.type', 'project_archive')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  $plan = array_slice($plan, $archived);
+  if (!$plan) {
+    return;
+  }
+
+  \Drupal::moduleHandler()->loadInclude('youvo_dummy', 'install');
+  youvo_dummy_without_mails(static fn () => projects_dummy_with_active_updating(static function () use ($plan, $database) {
+
+    $current_time = \Drupal::time()->getRequestTime();
+    $manager_ids = array_values(\Drupal::entityQuery('user')
+      ->accessCheck(FALSE)
+      ->condition('roles', 'manager')
+      ->condition('uid', 1, '!=')
+      ->execute());
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher */
+    $event_dispatcher = \Drupal::service('event_dispatcher');
+
+    foreach ($plan as [$state, $reason, $mail]) {
+      $ids = array_values(\Drupal::entityQuery('project')
+        ->accessCheck(FALSE)
+        ->condition('status', 1)
+        ->condition('field_lifecycle', $state)
+        ->execute());
+      if (!$ids) {
+        continue;
+      }
+      $project = Project::load($ids[random_int(0, count($ids) - 1)]);
+      if (!$project instanceof ProjectInterface) {
+        continue;
+      }
+
+      // Between the last log of the project and now.
+      $query = $database->select('log', 'l')
+        ->condition('l.project', $project->id());
+      $query->addExpression('MAX(l.created)');
+      $last = max((int) $query->execute()->fetchField(), (int) $project->get('changed')->value);
+      $time = random_int(min($last + 3600, $current_time - 60), $current_time - 60);
+
+      $owner = $project->getOwner();
+      $manager = $owner instanceof Organization && $owner->hasManager()
+        ? (int) $owner->getManager()->id()
+        : $manager_ids[random_int(0, count($manager_ids) - 1)];
+
+      $event = new ProjectArchiveEvent($project, $time);
+      $event->setReason($reason);
+      // The log keeps the mail. Without a sender, no mail is sent.
+      if ($mail) {
+        $event->setMail(...$mail);
+      }
+      // The changed time dates the revision of the archive.
+      $project->set('changed', $time);
+      try {
+        projects_dummy_as($manager, fn () => $event_dispatcher->dispatch($event));
+      }
+      catch (\Throwable $e) {
+        $variables = Error::decodeException($e);
+        \Drupal::logger('youvo')
+          ->error('An error occurred while archiving dummy projects. %type: @message in %function (line %line of %file).', $variables);
+      }
+    }
+  }));
 }
 
 /**
