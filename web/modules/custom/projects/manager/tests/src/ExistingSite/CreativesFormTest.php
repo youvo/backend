@@ -44,7 +44,8 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
       $session->elementExists('css', 'form.views-exposed-form [name="' . $name . '"]');
       $session->elementNotExists('css', 'form.views-exposed-form details [name="' . $name . '"]');
     }
-    $session->elementExists('xpath', $this->groupXpath('Activity') . '//*[@name="registered[value]"]');
+    $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="registered[value]" and @type="date"]');
+    $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="last_access[value]" and @type="date"]');
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//*[@name="newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//label[normalize-space() = "Newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Activity') . '//legend[normalize-space() = "Registered"]');

@@ -136,6 +136,16 @@ class CreativesViewsHooks {
       }
     }
 
+    // The dates get a date picker. It submits YYYY-MM-DD, as typed before.
+    foreach (['registered', 'last_access'] as $date) {
+      if (isset($form[$date . '_wrapper'][$date]['value'])) {
+        $value = &$form[$date . '_wrapper'][$date]['value'];
+        $value['#type'] = 'date';
+        unset($value['#placeholder'], $value['#size'], $value['#maxlength']);
+        unset($value);
+      }
+    }
+
     // The skills are checkboxes showing the skill icons, as on the profiles.
     if (isset($form['skills'])) {
       $form['skills']['#type'] = 'checkboxes';
