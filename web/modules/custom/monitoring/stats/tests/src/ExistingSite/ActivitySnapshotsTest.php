@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
-use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\stats\Activity\ActivitySnapshots;
 use Drupal\stats\StatsPeriod;
 use PHPUnit\Framework\Attributes\Group;
@@ -29,13 +28,6 @@ class ActivitySnapshotsTest extends StatsTestBase {
   protected ?string $originalLastDay;
 
   /**
-   * The days whose rows the test writes, with the rows they had before.
-   *
-   * @var array<string, array<int, array<string, mixed>>>
-   */
-  protected array $touchedDays = [];
-
-  /**
    * Gets the snapshots service and remembers the last recorded day.
    */
   protected function setUp(): void {
@@ -45,7 +37,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
   }
 
   /**
-   * Restores the last recorded day and the touched snapshot rows.
+   * Restores the last recorded day.
    */
   protected function tearDown(): void {
 
@@ -56,28 +48,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
     else {
       $state->set(static::STATE_KEY, $this->originalLastDay);
     }
-
-    $database = $this->container->get('database');
-    foreach ($this->touchedDays as $day => $rows) {
-      $database->delete('stats_activity')->condition('day', $day)->execute();
-      foreach ($rows as $row) {
-        $database->insert('stats_activity')->fields($row)->execute();
-      }
-    }
-
     parent::tearDown();
-  }
-
-  /**
-   * Remembers the rows of a day, so tearDown() can restore them.
-   */
-  protected function touchDay(string $day): void {
-    $this->touchedDays[$day] = $this->container->get('database')
-      ->select('stats_activity', 'a')
-      ->fields('a')
-      ->condition('day', $day)
-      ->execute()
-      ->fetchAll(FetchAs::Associative);
   }
 
   /**
@@ -106,7 +77,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
    */
   public function testRecordDailyOncePerDay(): void {
 
-    $timezone = new \DateTimeZone($this->container->get('config.factory')->get('system.date')->get('timezone.default'));
+    $timezone = $this->timezone();
     $now = $this->container->get('datetime.time')->getRequestTime();
     $yesterday = (new \DateTimeImmutable('@' . $now))->setTimezone($timezone)->modify('-1 day')->format('Y-m-d');
     $this->touchDay($yesterday);
@@ -139,7 +110,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
       $this->touchDay($day);
       $this->snapshots->write($day, 'creative', $active_1d, $active_30d);
     }
-    $timezone = new \DateTimeZone($this->container->get('config.factory')->get('system.date')->get('timezone.default'));
+    $timezone = $this->timezone();
     $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
 
     $series = $this->snapshots->series($period)['creative'];

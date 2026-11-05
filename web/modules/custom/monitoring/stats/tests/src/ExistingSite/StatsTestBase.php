@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
+use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\creatives\Entity\Creative;
 use Drupal\feedback\Entity\Feedback;
 use Drupal\logbook\Entity\Log;
@@ -25,9 +26,25 @@ abstract class StatsTestBase extends ExistingSiteBase {
   protected array $projectIds = [];
 
   /**
-   * Deletes the logs of the created projects, which are no children of them.
+   * The activity rows of the days the test changes, keyed by day.
+   *
+   * @var array<string, array<int, array<string, mixed>>>
+   */
+  protected array $touchedDays = [];
+
+  /**
+   * Deletes the logs of the created projects and restores the activity rows.
+   *
+   * The logs are no children of the projects.
    */
   protected function tearDown(): void {
+    $database = $this->container->get('database');
+    foreach ($this->touchedDays as $day => $rows) {
+      $database->delete('stats_activity')->condition('day', $day)->execute();
+      foreach ($rows as $row) {
+        $database->insert('stats_activity')->fields($row)->execute();
+      }
+    }
     if ($this->projectIds) {
       $storage = $this->container->get('entity_type.manager')->getStorage('log');
       $ids = $storage->getQuery()
@@ -39,6 +56,18 @@ abstract class StatsTestBase extends ExistingSiteBase {
       }
     }
     parent::tearDown();
+  }
+
+  /**
+   * Remembers the activity rows of a day, so tearDown() restores them.
+   */
+  protected function touchDay(string $day): void {
+    $this->touchedDays[$day] = $this->container->get('database')
+      ->select('stats_activity', 'a')
+      ->fields('a')
+      ->condition('day', $day)
+      ->execute()
+      ->fetchAll(FetchAs::Associative);
   }
 
   /**

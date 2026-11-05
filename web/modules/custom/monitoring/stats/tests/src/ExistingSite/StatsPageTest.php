@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
-use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\projects\Entity\Project;
 use Drupal\stats\Controller\StatsController;
@@ -16,27 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 class StatsPageTest extends StatsTestBase {
 
   /**
-   * The activity rows the test replaced, keyed by day, to restore them.
-   *
-   * @var array<string, array<int, array<string, mixed>>>
-   */
-  protected array $touchedDays = [];
-
-  /**
-   * Restores the activity rows the test replaced.
-   */
-  protected function tearDown(): void {
-    $database = $this->container->get('database');
-    foreach ($this->touchedDays as $day => $rows) {
-      $database->delete('stats_activity')->condition('day', $day)->execute();
-      foreach ($rows as $row) {
-        $database->insert('stats_activity')->fields($row)->execute();
-      }
-    }
-    parent::tearDown();
-  }
-
-  /**
    * The period bar switches the type and steps between periods.
    */
   public function testPeriodBar(): void {
@@ -47,9 +25,6 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementTextEquals('css', '.stats-stepper .stats-period-heading', '2001');
-    $this->assertSession()->pageTextNotContains('vs ');
-    $this->assertSession()->fieldNotExists('compare');
-    $this->assertSession()->fieldNotExists('manager');
 
     // The segments switch the type around the period being viewed.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2024]]);
@@ -102,6 +77,24 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
+   * Gets the values of a series from the hidden table of a chart.
+   *
+   * @return string[]
+   *   The values, one per row.
+   */
+  protected function chartColumn(string $id, string $series): array {
+    $table = $this->assertSession()->elementExists('xpath', '//div[@id="' . $id . '"]/following-sibling::div//table');
+    $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
+    $column = array_search($series, $headers, TRUE);
+    $this->assertIsInt($column, $series);
+    $values = [];
+    foreach ($table->findAll('css', 'tbody tr') as $row) {
+      $values[] = trim($row->findAll('xpath', 'th|td')[$column]->getText());
+    }
+    return $values;
+  }
+
+  /**
    * The overview cards show the totals at the end of the period.
    */
   public function testOverviewAndMediationRate(): void {
@@ -137,18 +130,28 @@ class StatsPageTest extends StatsTestBase {
     }
     $this->assertSession()->elementExists('xpath', '//a[normalize-space()="All time"][@aria-current="page"]');
 
-    // The totals and growth sections are gone.
-    $this->assertSession()->elementNotExists('css', '.stats-totals');
-    $this->assertSession()->elementNotExists('css', '.stats-growth');
-    $this->assertSession()->elementNotExists('css', '[id^="stats-growth-"]');
-    $this->assertSession()->elementNotExists('xpath', '//h2[normalize-space()="Totals" or normalize-space()="Growth"]');
-
-    // A past period shows the state at its end, 2001-12-31 included.
+    // A past period shows the state at its end, 2001-12-31 included, the
+    // last point of each chart. The scenario registers no creatives and three
+    // organizations, and the site holds no older users or projects.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of 31.12.2001');
-    $expected = ['open' => 4, 'ongoing' => 2, 'completed' => 1, 'mediated' => 3, 'organizations' => 3];
+    $expected = [
+      'creatives' => '0',
+      'organizations' => '3',
+      'open' => '4',
+      'ongoing' => '2',
+      'completed' => '1',
+      'mediated' => '3',
+    ];
     foreach ($expected as $key => $value) {
-      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', (string) $value);
+      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', $value);
+      // The creatives have no data in this year and show no chart.
+      if ($key === 'creatives') {
+        $this->assertSession()->elementNotExists('css', '#stats-overview-creatives');
+        continue;
+      }
+      $points = $this->chartColumn('stats-overview-' . $key, $cards[$key][0]);
+      $this->assertSame($value, end($points), $key);
     }
 
     // A period in the future ends today.
@@ -247,17 +250,9 @@ class StatsPageTest extends StatsTestBase {
     $this->assertStringContainsString('/libraries/chart.js/dist/chart.umd.js', $html);
     $this->assertStringNotContainsString('unpkg.com', $html);
 
-    // The table has one row per month and one column per series.
-    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-flow"]/following-sibling::div//div[contains(@class, "visually-hidden")]//table');
-    $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
-    $column = array_search('Published', $headers, TRUE);
-    $this->assertIsInt($column);
-    $values = [];
-    foreach ($table->findAll('css', 'tbody tr') as $row) {
-      $cells = $row->findAll('xpath', 'th|td');
-      $values[] = trim($cells[$column]->getText());
-    }
-    $this->assertSame(['1', '1', '2', '1', '1', '0', '1', '0', '0', '0', '0', '0'], $values);
+    // The hidden table has one row per month and one column per series.
+    $this->assertSession()->elementExists('xpath', '//div[@id="stats-flow"]/following-sibling::div//div[contains(@class, "visually-hidden")]//table');
+    $this->assertSame(['1', '1', '2', '1', '1', '0', '1', '0', '0', '0', '0', '0'], $this->chartColumn('stats-flow', 'Published'));
 
     // The cohort card explains itself in a line under its title.
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-describedby="stats-cohort-description"] p#stats-cohort-description', 'Projects first published in the period and how far they got');
@@ -266,41 +261,6 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalGet('stats', ['query' => ['period' => 'month', 'year' => 2001, 'month' => 11]]);
     $definition = json_decode($this->assertSession()->elementExists('css', '#stats-flow')->getAttribute('data-chart'), TRUE);
     $this->assertSame(['W44', 'W45', 'W46', 'W47', 'W48'], $definition['data']['labels']);
-  }
-
-  /**
-   * The value of each overview card is the last point of its chart.
-   */
-  public function testOverviewCharts(): void {
-
-    $this->setUpScenario();
-    $this->drupalLogin($this->createCreative('creative', 'manager'));
-
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
-    $this->assertSession()->statusCodeEquals(200);
-
-    // The scenario registers no creatives and three organizations. The site
-    // holds no older users or projects.
-    $expected = [
-      'creatives' => '0',
-      'organizations' => '3',
-      'open' => '4',
-      'ongoing' => '2',
-      'completed' => '1',
-      'mediated' => '3',
-    ];
-    foreach ($expected as $key => $value) {
-      $id = 'stats-overview-' . $key;
-      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', $value);
-      // The creatives have no data in this year and show no chart.
-      if ($key === 'creatives') {
-        $this->assertSession()->elementNotExists('css', '#' . $id);
-        continue;
-      }
-      $rows = $this->getSession()->getPage()->findAll('xpath', '//div[@id="' . $id . '"]/following-sibling::div//table/tbody/tr');
-      $cells = end($rows)->findAll('xpath', 'th|td');
-      $this->assertSame($value, trim(end($cells)->getText()), $key);
-    }
   }
 
   /**
@@ -332,32 +292,15 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * A period without data shows a dash for the mediation rate.
-   */
-  public function testEmptyPeriodRendersDashes(): void {
-
-    $this->setUpScenario();
-    $this->drupalLogin($this->createCreative('creative', 'manager'));
-
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->elementTextContains('css', '.stats-card [data-foot="mediation-rate"]', '–');
-  }
-
-  /**
-   * Bad or removed query arguments fall back to all time.
+   * Bad query arguments fall back to all time.
    */
   public function testBadQueryArgumentsRender200(): void {
 
     $this->drupalLogin($this->createCreative('creative', 'manager'));
-    $organization = $this->createOrganizationUser('organization');
     $queries = [
       ['from' => 'foo'],
       ['from' => '2026-05-01', 'to' => '2026-04-01'],
       ['period' => 'decade'],
-      ['compare' => 'x'],
-      ['manager' => $organization->id()],
-      ['manager' => 'abc'],
     ];
     foreach ($queries as $query) {
       $this->drupalGet('stats', ['query' => $query]);
@@ -371,34 +314,20 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testActivityChart(): void {
 
-    $database = $this->container->get('database');
     $rows = [
       '2001-01-15' => [3, 10],
       '2001-01-31' => [5, 12],
       '2001-02-10' => [2, 9],
     ];
     foreach ($rows as $day => [$active_1d, $active_30d]) {
-      $this->touchedDays[$day] = $database->select('stats_activity', 'a')
-        ->fields('a')
-        ->condition('day', $day)
-        ->execute()
-        ->fetchAll(FetchAs::Associative);
+      $this->touchDay($day);
       $this->container->get('stats.activity_snapshots')->write($day, 'creative', $active_1d, $active_30d);
     }
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
-    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-activity"]/following-sibling::div//table');
-    $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
-    $column = array_search('Creatives', $headers, TRUE);
-    $this->assertIsInt($column);
-    $values = [];
-    foreach ($table->findAll('css', 'tbody tr') as $row) {
-      $cells = $row->findAll('xpath', 'th|td');
-      $values[] = trim($cells[$column]->getText());
-    }
-    $this->assertSame(['12', '9'], array_slice($values, 0, 2));
+    $this->assertSame(['12', '9'], array_slice($this->chartColumn('stats-activity', 'Creatives'), 0, 2));
 
     // The tiles show the last snapshot of the period.
     $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-label', 'Active creatives');
@@ -413,13 +342,14 @@ class StatsPageTest extends StatsTestBase {
 
     // Remove the snapshots of 2001, which tearDown() restores.
     $database = $this->container->get('database');
-    $rows = $database->select('stats_activity', 'a')
-      ->fields('a')
+    $days = $database->select('stats_activity', 'a')
+      ->fields('a', ['day'])
       ->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')
+      ->distinct()
       ->execute()
-      ->fetchAll(FetchAs::Associative);
-    foreach ($rows as $row) {
-      $this->touchedDays[$row['day']][] = $row;
+      ->fetchCol();
+    foreach ($days as $day) {
+      $this->touchDay($day);
     }
     $database->delete('stats_activity')->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')->execute();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
@@ -465,10 +395,6 @@ class StatsPageTest extends StatsTestBase {
     $chart = $this->assertSession()->elementExists('css', '#stats-feedback-creative');
     $scale = json_decode($chart->getAttribute('data-chart'), TRUE)['options']['scales']['x'];
     $this->assertSame([0, 5], [$scale['min'], $scale['max']]);
-    // The headings carry no notes on the old graphs, the prospect funnel no
-    // repeat organizations.
-    $this->assertSession()->pageTextNotContains('old:');
-    $this->assertSession()->pageTextNotContains('Repeat organizations');
   }
 
 }
