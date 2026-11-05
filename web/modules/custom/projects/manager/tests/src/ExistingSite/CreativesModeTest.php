@@ -53,7 +53,7 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
   }
 
   /**
-   * The table sorts by its name, mail, registered and last access headers.
+   * The table sorts by all headers but the skills.
    *
    * The profiles have no headers and keep the newest registration first.
    */
@@ -63,12 +63,10 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
     $session = $this->assertSession();
 
     $this->drupalGet('creatives', ['query' => ['name' => $this->prefix]]);
-    foreach (['Name', 'Mail', 'Registered', 'Last access'] as $header) {
+    foreach (['Name', 'Mail', 'City', 'Registered', 'Last access'] as $header) {
       $session->elementExists('xpath', '//table//th//a[starts-with(normalize-space(), "' . $header . '")]');
     }
-    foreach (['City', 'Skills'] as $header) {
-      $session->elementNotExists('xpath', '//table//th//a[starts-with(normalize-space(), "' . $header . '")]');
-    }
+    $session->elementNotExists('xpath', '//table//th//a[starts-with(normalize-space(), "Skills")]');
     $session->elementNotExists('css', 'form.views-exposed-form [name="sort_by"]');
     $session->elementNotExists('css', 'form.views-exposed-form [name="sort_order"]');
 
