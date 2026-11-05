@@ -82,9 +82,11 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame('2027', $year->next()->label());
 
     $month = $this->period(['period' => 'month', 'year' => '2026', 'month' => '11']);
-    $this->assertSame(StatsGranularity::Day, $month->granularity());
+    $this->assertSame(StatsGranularity::Week, $month->granularity());
     $this->assertSame('November 2026', $month->label());
-    $this->assertCount(30, $month->buckets());
+    // November 2026 starts on a Sunday and ends on a Monday: its first and
+    // last week are clipped to a day.
+    $this->assertSame(['2026-W44', '2026-W45', '2026-W46', '2026-W47', '2026-W48', '2026-W49'], array_keys($month->buckets()));
     $this->assertSame('October 2026', $month->previous()->label());
     $this->assertSame('December 2025', $this->period(['period' => 'month', 'year' => '2026', 'month' => '1'])->previous()->label());
 
@@ -127,6 +129,23 @@ class StatsPeriodTest extends UnitTestCase {
     $march = $this->period(['period' => 'month', 'year' => '2026', 'month' => '3']);
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '3'], $march->query());
     $buckets = $march->buckets();
+    $this->assertSame('2026-W09', array_key_first($buckets));
+    $this->assertSame('2026-W14', array_key_last($buckets));
+
+    // Custom ranges take days up to 31 days, weeks up to 92 and months up to
+    // 366.
+    $lengths = [
+      ['2026-01-01', '2026-01-31', StatsGranularity::Day],
+      ['2026-01-01', '2026-02-01', StatsGranularity::Week],
+      ['2026-01-01', '2026-04-02', StatsGranularity::Week],
+      ['2026-01-01', '2026-04-03', StatsGranularity::Month],
+    ];
+    foreach ($lengths as [$from, $to, $granularity]) {
+      $this->assertSame($granularity, $this->period(['period' => 'custom', 'from' => $from, 'to' => $to])->granularity(), $from . ' – ' . $to);
+    }
+
+    // The day buckets of a custom March follow DST.
+    $buckets = $this->period(['period' => 'custom', 'from' => '2026-03-01', 'to' => '2026-03-31'])->buckets();
     $this->assertCount(31, $buckets);
     $this->assertSame(23 * 3600, $buckets['2026-03-29'][1] - $buckets['2026-03-29'][0]);
     $this->assertSame($buckets['2026-03-29'][1], $buckets['2026-03-30'][0]);
@@ -163,13 +182,13 @@ class StatsPeriodTest extends UnitTestCase {
       'month' => [
         ['from' => '2026-02-01', 'to' => '2026-02-28'],
         ['period' => 'month', 'year' => '2026', 'month' => '2'],
-        StatsGranularity::Day,
+        StatsGranularity::Week,
         'January 2026',
       ],
       'leap month' => [
         ['from' => '2024-02-01', 'to' => '2024-02-29'],
         ['period' => 'month', 'year' => '2024', 'month' => '2'],
-        StatsGranularity::Day,
+        StatsGranularity::Week,
         'January 2024',
       ],
       'year' => [
@@ -238,7 +257,7 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame(['period' => 'quarter', 'year' => '2025', 'quarter' => '2'], $switch($range, 'quarter'));
     $this->assertSame(['period' => 'custom', 'from' => '2014-01-01', 'to' => '2026-11-05'], $switch(['period' => 'all'], 'custom'));
     $custom = $this->period(['period' => 'quarter', 'year' => '2024', 'quarter' => '2'])->withGranularity('custom', $this->now());
-    $this->assertSame(StatsGranularity::Month, $custom->granularity());
+    $this->assertSame(StatsGranularity::Week, $custom->granularity());
   }
 
   /**
@@ -256,13 +275,17 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame('W53', end($labels));
 
     $month = $this->period(['period' => 'month', 'year' => '2026', 'month' => '11']);
-    $this->assertSame(['01.11.', '02.11.'], array_slice($month->bucketLabels(), 0, 2));
-    $this->assertSame('30.11.', $month->bucketLabels()[29]);
+    $this->assertSame(['W44', 'W45', 'W46', 'W47', 'W48', 'W49'], $month->bucketLabels());
+
+    // Short custom ranges label days.
+    $days = $this->period(['period' => 'custom', 'from' => '2026-11-01', 'to' => '2026-11-30']);
+    $this->assertSame(['01.11.', '02.11.'], array_slice($days->bucketLabels(), 0, 2));
+    $this->assertSame('30.11.', $days->bucketLabels()[29]);
 
     // Months get the year when the period spans more than one.
-    $across = $this->period(['period' => 'custom', 'from' => '2025-11-15', 'to' => '2026-02-10']);
+    $across = $this->period(['period' => 'custom', 'from' => '2025-10-15', 'to' => '2026-02-10']);
     $this->assertSame(StatsGranularity::Month, $across->granularity());
-    $this->assertSame(['Nov 25', 'Dec 25', 'Jan 26', 'Feb 26'], $across->bucketLabels());
+    $this->assertSame(['Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26'], $across->bucketLabels());
 
     // Year buckets are integer keys, their labels strings.
     $all = $this->period(['period' => 'all']);

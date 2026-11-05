@@ -167,11 +167,15 @@ class StatsPeriod {
 
   /**
    * Creates a custom period, with buckets fitting its length.
+   *
+   * Up to a month has days, up to a quarter weeks, up to a year months and
+   * anything longer years.
    */
   protected static function forRange(\DateTimeImmutable $from, \DateTimeImmutable $to): static {
     $days = (int) $from->diff($to)->days;
     $granularity = match (TRUE) {
-      $days <= 62 => StatsGranularity::Day,
+      $days <= 31 => StatsGranularity::Day,
+      $days <= 92 => StatsGranularity::Week,
       $days <= 366 => StatsGranularity::Month,
       default => StatsGranularity::Year,
     };
@@ -195,9 +199,11 @@ class StatsPeriod {
 
   /**
    * Creates the period of the calendar month starting at a date.
+   *
+   * Its buckets are weeks, as 31 days would crowd the charts.
    */
   protected static function forMonth(\DateTimeImmutable $from): static {
-    return new static(static::MONTH, $from, $from->modify('+1 month'), StatsGranularity::Day);
+    return new static(static::MONTH, $from, $from->modify('+1 month'), StatsGranularity::Week);
   }
 
   /**
