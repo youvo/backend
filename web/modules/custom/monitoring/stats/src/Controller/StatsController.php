@@ -8,7 +8,9 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
+use Drupal\projects\ProjectTransition;
 use Drupal\stats\Stats\ProjectStats;
+use Drupal\stats\StatsCharts;
 use Drupal\stats\StatsPeriod;
 use Drupal\stats\StatsScope;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -77,10 +79,12 @@ class StatsController implements ContainerInjectionInterface {
     }
 
     $current = [
+      'flow' => $this->projectStats->flow($period, $scope),
       'cohort' => $this->projectStats->cohort($period, $scope),
       'medians' => $this->projectStats->stageMedians($period, $scope),
     ];
     $before = $comparison ? [
+      'flow' => $this->projectStats->flow($comparison, $scope),
       'cohort' => $this->projectStats->cohort($comparison, $scope),
       'medians' => $this->projectStats->stageMedians($comparison, $scope),
     ] : NULL;
@@ -97,13 +101,98 @@ class StatsController implements ContainerInjectionInterface {
       '#theme' => 'stats_page',
       '#period_bar' => $this->periodBar($period, $scope, $compare, $timezone, $now),
       '#kpis' => $kpis,
-      '#sections' => [],
+      '#sections' => [
+        'projects' => $this->projectsSection($period, $comparison, $current, $before),
+      ],
       '#attached' => ['library' => ['stats/page']],
       '#cache' => [
         'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list', 'course_progress_list'],
         'contexts' => ['url.query_args', 'user.permissions'],
         'max-age' => 3600,
       ],
+    ];
+  }
+
+  /**
+   * Builds the projects section: flow, cohort funnel and stage medians.
+   *
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param \Drupal\stats\StatsPeriod|null $comparison
+   *   The comparison period, NULL if there is none.
+   * @param array<string, mixed> $current
+   *   The project stats of the period.
+   * @param array<string, mixed>|null $before
+   *   The project stats of the comparison period, NULL if there is none.
+   *
+   * @return array<string, mixed>
+   *   The section render array.
+   */
+  protected function projectsSection(StatsPeriod $period, ?StatsPeriod $comparison, array $current, ?array $before): array {
+
+    $labels = array_map('strval', array_keys($period->buckets()));
+    $transitions = [
+      ProjectTransition::Submit->value => $this->t('Submitted'),
+      ProjectTransition::Publish->value => $this->t('Published'),
+      ProjectTransition::Mediate->value => $this->t('Mediated'),
+      ProjectTransition::Complete->value => $this->t('Completed'),
+      ProjectTransition::Decline->value => $this->t('Declined'),
+    ];
+
+    // Each transition is followed by its lighter twin of the comparison
+    // period, aligned by bucket position.
+    $series = [];
+    $colors = [];
+    $index = 0;
+    foreach ($transitions as $transition => $name) {
+      $series[(string) $name] = array_values($current['flow'][$transition]);
+      $colors[(string) $name] = StatsCharts::COLORS[$index];
+      if ($comparison && $before) {
+        $twin = (string) $this->t('@series (@period)', ['@series' => $name, '@period' => $comparison->label()]);
+        $values = array_slice(array_values($before['flow'][$transition]), 0, count($labels));
+        $series[$twin] = array_pad($values, count($labels), 0);
+        $colors[$twin] = StatsCharts::COLORS_LIGHT[$index];
+      }
+      $index++;
+    }
+
+    $cohort = $current['cohort'];
+    $funnel_labels = [
+      (string) $this->t('Published'),
+      (string) $this->t('Mediated'),
+      (string) $this->t('Completed'),
+    ];
+    $funnel = [
+      (string) $this->t('Projects') => [$cohort['published'], $cohort['mediated'], $cohort['completed']],
+    ];
+
+    $medians = $current['medians'];
+    $stage_labels = [
+      (string) $this->t('Submit → publish'),
+      (string) $this->t('Publish → mediate'),
+      (string) $this->t('Mediate → complete'),
+    ];
+    $stages = [
+      (string) $this->t('Days') => [
+        $medians['submit_publish'],
+        $medians['publish_mediate'],
+        $medians['mediate_complete'],
+      ],
+    ];
+
+    $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['stats-section', 'stats-section--projects']],
+      'heading' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#value' => $this->t('Projects'),
+        '#attributes' => ['class' => ['stats-section__heading']],
+      ],
+      'flow' => StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series, colors: $colors),
+      'funnel' => StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE),
+      'stages' => StatsCharts::bar('stats-stages', (string) $this->t('Median days per stage'), $stage_labels, $stages, horizontal: TRUE),
     ];
   }
 

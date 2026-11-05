@@ -72,6 +72,37 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
+   * The projects section renders its charts with local Chart.js and tables.
+   */
+  public function testProjectChartsRender(): void {
+
+    $manager = $this->setUpScenario();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $query = ['period' => 'year', 'year' => 2001, 'manager' => $manager->id()];
+    $this->drupalGet('stats', ['query' => $query]);
+    $this->assertSession()->statusCodeEquals(200);
+    foreach (['stats-flow', 'stats-funnel', 'stats-stages'] as $id) {
+      $this->assertSession()->elementExists('css', '#' . $id);
+    }
+    $html = $this->getSession()->getPage()->getContent();
+    $this->assertStringContainsString('/libraries/chart.js/dist/chart.umd.js', $html);
+    $this->assertStringNotContainsString('unpkg.com', $html);
+
+    // The table has one row per month and one column per series.
+    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-flow"]/following-sibling::div//table');
+    $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
+    $column = array_search('Published', $headers, TRUE);
+    $this->assertIsInt($column);
+    $values = [];
+    foreach ($table->findAll('css', 'tbody tr') as $row) {
+      $cells = $row->findAll('xpath', 'th|td');
+      $values[] = trim($cells[$column]->getText());
+    }
+    $this->assertSame(['1', '1', '2', '1', '1', '0', '1', '0', '0', '0', '0', '0'], $values);
+  }
+
+  /**
    * The page render array bubbles its cache metadata to the response.
    */
   public function testCacheMetadata(): void {
