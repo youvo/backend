@@ -55,41 +55,6 @@
   font-weight: 600;
 }
 
-.stats-period-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.stats-period-form label {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--stats-muted);
-}
-
-.stats-period-form input,
-.stats-period-form select {
-  padding: 0.125rem 0.375rem;
-  border: 1px solid var(--stats-line);
-  border-radius: var(--stats-radius);
-  background: var(--stats-surface);
-  color: var(--stats-ink);
-  font: inherit;
-}
-
-.stats-apply {
-  padding: 0.1875rem 0.75rem;
-  border: 0;
-  border-radius: var(--stats-radius);
-  background: var(--stats-accent);
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .stats-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -110,15 +75,9 @@
   line-height: 1.1;
 }
 
-.stats-kpi__label,
-.stats-kpi__change {
+.stats-kpi__label {
   color: var(--stats-muted);
   font-size: var(--stats-text-xs);
-}
-
-.stats-kpi__delta {
-  font-style: normal;
-  font-weight: 600;
 }
 
 @media (max-width: 720px) {
@@ -187,11 +146,6 @@
 /* Chart.js honors a max-height on the canvas when it sizes the chart. */
 .stats-card canvas {
   max-height: 20rem;
-}
-
-.stats-card .charts-accessible-table-wrapper {
-  margin-top: 0.5rem;
-  font-size: var(--stats-text-xs);
 }
 
 @media (max-width: 900px) {

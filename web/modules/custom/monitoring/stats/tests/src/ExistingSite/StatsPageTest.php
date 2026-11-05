@@ -44,53 +44,30 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * Gets the text of a KPI tile change.
-   */
-  protected function delta(string $key): ?string {
-    $element = $this->getSession()->getPage()->find('css', '.stats-kpi--' . $key . ' .stats-kpi__delta');
-    return $element ? trim($element->getText()) : NULL;
-  }
-
-  /**
-   * The tiles show the cohort numbers, the changes and the cache metadata.
+   * The tiles show the cohort numbers and the bar links between periods.
    */
   public function testKpisForScenario(): void {
 
-    $manager = $this->setUpScenario();
+    $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $query = ['period' => 'year', 'year' => 2001, 'manager' => $manager->id()];
-    $this->drupalGet('stats', ['query' => $query]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2001');
     $this->assertSame('6', $this->kpi('published'));
     $this->assertSame('3', $this->kpi('mediated'));
     $this->assertSame('75 %', $this->kpi('mediation-rate'));
     $this->assertSame('9.0 d', $this->kpi('median'));
+    $this->assertSession()->pageTextNotContains('vs ');
 
-    // The year 2000 holds project F only, published and mediated (in 2001).
-    $this->assertSame('+5', $this->delta('published'));
-    $this->assertSame('+2', $this->delta('mediated'));
-    $this->assertSame('−25 pp', $this->delta('mediation-rate'));
-    $this->assertNull($this->delta('median'));
-
-    // Against the same period one year earlier, 2002 has no data at all.
-    $this->drupalGet('stats', [
-      'query' => [
-        'period' => 'year',
-        'year' => 2002,
-        'compare' => 'last_year',
-        'manager' => $manager->id(),
-      ],
-    ]);
-    $this->assertSame('0', $this->kpi('published'));
-    $this->assertSame('−6', $this->delta('published'));
-    $this->assertSame('−3', $this->delta('mediated'));
-
-    // The period bar carries the form, the presets and the navigation.
-    $this->assertSession()->elementExists('css', 'form.stats-period-form select[name="manager"] option[value="' . $manager->id() . '"]');
-    $this->assertSession()->elementExists('css', 'form.stats-period-form select[name="compare"]');
+    // The period bar holds links only: presets and the neighbor years.
+    $this->assertSession()->elementNotExists('css', '.stats-period-bar form');
     $this->assertSession()->linkExists('All time');
+    $this->assertSession()->linkExists('‹ 2000');
+    $this->assertSession()->linkExists('2002 ›');
+    $this->clickLink('2002 ›');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2002');
+    $this->assertSame('0', $this->kpi('published'));
   }
 
   /**
@@ -98,21 +75,22 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testProjectChartsRender(): void {
 
-    $manager = $this->setUpScenario();
+    $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $query = ['period' => 'year', 'year' => 2001, 'manager' => $manager->id()];
-    $this->drupalGet('stats', ['query' => $query]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     foreach (['stats-flow', 'stats-funnel', 'stats-stages'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
+    // The tables are hidden for screen readers, without a button to show them.
+    $this->assertSession()->elementNotExists('css', '.charts-accordion-trigger');
     $html = $this->getSession()->getPage()->getContent();
     $this->assertStringContainsString('/libraries/chart.js/dist/chart.umd.js', $html);
     $this->assertStringNotContainsString('unpkg.com', $html);
 
     // The table has one row per month and one column per series.
-    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-flow"]/following-sibling::div//table');
+    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-flow"]/following-sibling::div//div[contains(@class, "visually-hidden")]//table');
     $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
     $column = array_search('Published', $headers, TRUE);
     $this->assertIsInt($column);
@@ -134,7 +112,14 @@ class StatsPageTest extends StatsTestBase {
     $this->container->get('renderer')->renderInIsolation($page);
     $bubbled = BubbleableMetadata::createFromRenderArray($page);
 
-    foreach (['url.query_args', 'user.permissions'] as $context) {
+    $contexts = [
+      'url.query_args:period',
+      'url.query_args:year',
+      'url.query_args:quarter',
+      'url.query_args:month',
+      'user.permissions',
+    ];
+    foreach ($contexts as $context) {
       $this->assertContains($context, $bubbled->getCacheContexts());
     }
     $this->assertSame(3600, $bubbled->getCacheMaxAge());
@@ -148,20 +133,18 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testEmptyPeriodRendersDashes(): void {
 
-    $manager = $this->setUpScenario();
+    $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $query = ['period' => 'year', 'year' => 2002, 'manager' => $manager->id()];
-    $this->drupalGet('stats', ['query' => $query]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSame('0', $this->kpi('published'));
     $this->assertSame('–', $this->kpi('mediation-rate'));
     $this->assertSame('–', $this->kpi('median'));
-    $this->assertNull($this->delta('mediation-rate'));
   }
 
   /**
-   * Bad query arguments fall back to the default period with a 200.
+   * Bad or removed query arguments fall back to the default period.
    */
   public function testBadQueryArgumentsRender200(): void {
 
@@ -173,6 +156,7 @@ class StatsPageTest extends StatsTestBase {
       ['from' => 'foo'],
       ['from' => '2026-05-01', 'to' => '2026-04-01'],
       ['period' => 'decade'],
+      ['period' => 'custom', 'from' => '2001-01-01', 'to' => '2001-12-31'],
       ['compare' => 'x'],
       ['manager' => $organization->id()],
       ['manager' => 'abc'],
@@ -224,10 +208,10 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testFeedbackSectionRenders(): void {
 
-    $manager = $this->setUpScenario();
+    $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001, 'manager' => $manager->id()]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('Feedback and academy');
     foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {

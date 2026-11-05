@@ -5,7 +5,6 @@ namespace Drupal\stats\Stats;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 
 /**
  * Computes the stats of feedback and the academy.
@@ -53,11 +52,11 @@ class FeedbackStats {
    *   The count, the average of each scale field and the share of positive
    *   recommendations per bundle. Averages are NULL without answers.
    */
-  public function feedback(StatsPeriod $period, StatsScope $scope): array {
+  public function feedback(StatsPeriod $period): array {
 
     $result = [];
     foreach (static::BUNDLES as $bundle) {
-      $ids = $this->feedbackIds($bundle, $period, $scope);
+      $ids = $this->feedbackIds($bundle, $period);
       $scales = [];
       foreach (array_keys($this->scaleFields($bundle)) as $field) {
         $average = $this->average($this->values('feedback__' . $field, $field . '_value', $ids));
@@ -97,14 +96,9 @@ class FeedbackStats {
    * Gets the ids of the feedback of a bundle completed in the period.
    *
    * @return int[]
-   *   The feedback ids whose project owner is in the scope.
+   *   The feedback ids of existing projects.
    */
-  protected function feedbackIds(string $bundle, StatsPeriod $period, StatsScope $scope): array {
-
-    $organization_ids = $scope->organizationIds();
-    if ($organization_ids === []) {
-      return [];
-    }
+  protected function feedbackIds(string $bundle, StatsPeriod $period): array {
 
     $query = $this->database->select('feedback', 'f');
     $query->innerJoin('project_field_data', 'p', 'p.id = f.project');
@@ -112,9 +106,6 @@ class FeedbackStats {
     $query->condition('f.bundle', $bundle)
       ->condition('f.completed', $period->from()->getTimestamp(), '>=')
       ->condition('f.completed', $period->to()->getTimestamp(), '<');
-    if ($organization_ids !== NULL) {
-      $query->condition('p.uid', $organization_ids, 'IN');
-    }
     return array_map('intval', array_unique($query->execute()->fetchCol()));
   }
 

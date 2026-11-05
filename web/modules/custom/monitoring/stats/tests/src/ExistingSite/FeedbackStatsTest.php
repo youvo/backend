@@ -7,7 +7,6 @@ use Drupal\progress\Entity\CourseProgress;
 use Drupal\projects\Entity\Project;
 use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -65,8 +64,7 @@ class FeedbackStatsTest extends StatsTestBase {
    */
   public function testFeedbackAverages(): void {
 
-    $manager = $this->setUpScenario();
-    $scope = StatsScope::fromQuery(['manager' => (string) $manager->id()], $this->container->get('database'));
+    $this->setUpScenario();
     [$a, $b] = array_map(fn($id) => Project::load($id), array_slice($this->projectIds, 0, 2));
 
     $this->createFeedback('creative', $a, '2001-03-05', ['field_satisfied_scale' => 4, 'field_recommend_boolean' => 1]);
@@ -75,7 +73,7 @@ class FeedbackStatsTest extends StatsTestBase {
     // Outside the period.
     $this->createFeedback('creative', $a, '2002-03-05', ['field_satisfied_scale' => 1]);
 
-    $feedback = $this->feedbackStats->feedback($this->period, $scope);
+    $feedback = $this->feedbackStats->feedback($this->period);
 
     $this->assertSame(2, $feedback['creative']['count']);
     $this->assertSame(3.0, $feedback['creative']['scales']['field_satisfied_scale']);

@@ -4,7 +4,6 @@ namespace Drupal\stats\Controller;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
@@ -17,7 +16,6 @@ use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\Stats\ProjectStats;
 use Drupal\stats\StatsCharts;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -29,21 +27,6 @@ class StatsController implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The comparison with the period right before.
-   */
-  const string COMPARE_PREVIOUS = 'previous';
-
-  /**
-   * The comparison with the same period one year earlier.
-   */
-  const string COMPARE_LAST_YEAR = 'last_year';
-
-  /**
-   * The U+2212 minus sign used in changes.
-   */
-  const string MINUS = '−';
-
-  /**
    * Constructs the stats controller.
    */
   public function __construct(
@@ -53,7 +36,6 @@ class StatsController implements ContainerInjectionInterface {
     protected ActivitySnapshots $activitySnapshots,
     protected ConfigFactoryInterface $configFactory,
     protected TimeInterface $time,
-    protected Connection $database,
   ) {}
 
   /**
@@ -67,7 +49,6 @@ class StatsController implements ContainerInjectionInterface {
       $container->get('stats.activity_snapshots'),
       $container->get('config.factory'),
       $container->get('datetime.time'),
-      $container->get('database'),
     );
   }
 
@@ -76,55 +57,46 @@ class StatsController implements ContainerInjectionInterface {
    */
   public function page(Request $request): array {
 
-    $query = $request->query->all();
     $timezone = new \DateTimeZone($this->configFactory->get('system.date')->get('timezone.default'));
     $now = (new \DateTimeImmutable('@' . $this->time->getRequestTime()))->setTimezone($timezone);
-    $period = StatsPeriod::fromQuery($query, $timezone, $now);
-    $scope = StatsScope::fromQuery($query, $this->database);
-    $compare = ($query['compare'] ?? NULL) === static::COMPARE_LAST_YEAR ? static::COMPARE_LAST_YEAR : static::COMPARE_PREVIOUS;
-
-    $is_all = $period->query() === ['period' => 'all'];
-    $comparison = NULL;
-    if (!$is_all) {
-      $comparison = $compare === static::COMPARE_LAST_YEAR ? $period->sameLastYear() : $period->previous();
-    }
+    $period = StatsPeriod::fromQuery($request->query->all(), $timezone, $now);
 
     $current = [
-      'flow' => $this->projectStats->flow($period, $scope),
-      'cohort' => $this->projectStats->cohort($period, $scope),
-      'medians' => $this->projectStats->stageMedians($period, $scope),
-      'first_application' => $this->activityStats->firstApplicationMedian($period, $scope, $this->projectStats->publishRows($period, $scope)),
+      'flow' => $this->projectStats->flow($period),
+      'cohort' => $this->projectStats->cohort($period),
+      'medians' => $this->projectStats->stageMedians($period),
+      'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
     ];
-    $before = $comparison ? [
-      'flow' => $this->projectStats->flow($comparison, $scope),
-      'cohort' => $this->projectStats->cohort($comparison, $scope),
-      'medians' => $this->projectStats->stageMedians($comparison, $scope),
-    ] : NULL;
 
-    $versus = $comparison ? $this->t('vs @period', ['@period' => $comparison->label()]) : NULL;
     $kpis = [
-      $this->tile('published', $this->t('Published'), $current['cohort']['published'], $before['cohort']['published'] ?? NULL, 'count', $versus),
-      $this->tile('mediated', $this->t('Mediated'), $current['cohort']['mediated'], $before['cohort']['mediated'] ?? NULL, 'count', $versus),
-      $this->tile('mediation-rate', $this->t('Mediation rate (cohort)'), $current['cohort']['mediation_rate'], $before['cohort']['mediation_rate'] ?? NULL, 'rate', $versus),
-      $this->tile('median', $this->t('Median publish → mediate'), $current['medians']['publish_mediate'], $before['medians']['publish_mediate'] ?? NULL, 'days', $versus),
+      $this->tile('published', $this->t('Published'), $current['cohort']['published'], 'count'),
+      $this->tile('mediated', $this->t('Mediated'), $current['cohort']['mediated'], 'count'),
+      $this->tile('mediation-rate', $this->t('Mediation rate (cohort)'), $current['cohort']['mediation_rate'], 'rate'),
+      $this->tile('median', $this->t('Median publish → mediate'), $current['medians']['publish_mediate'], 'days'),
     ];
 
     return [
       '#theme' => 'stats_page',
-      '#period_bar' => $this->periodBar($period, $scope, $compare, $timezone, $now),
+      '#period_bar' => $this->periodBar($period, $timezone, $now),
       '#kpis' => $kpis,
       '#sections' => [
-        'growth' => $this->growthSection($period, $scope),
-        'projects' => $this->projectsSection($period, $comparison, $current, $before),
-        'applications' => $this->applicationsSection($period, $comparison, $scope, $versus),
-        'creatives' => $this->creativesSection($period, $comparison, $versus),
-        'organizations' => $this->organizationsSection($period, $scope),
-        'feedback' => $this->feedbackSection($period, $comparison, $scope, $versus),
+        'growth' => $this->growthSection($period),
+        'projects' => $this->projectsSection($period, $current),
+        'applications' => $this->applicationsSection($period),
+        'creatives' => $this->creativesSection($period),
+        'organizations' => $this->organizationsSection($period),
+        'feedback' => $this->feedbackSection($period),
       ],
       '#attached' => ['library' => ['stats/page']],
       '#cache' => [
         'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list', 'course_progress_list'],
-        'contexts' => ['url.query_args', 'user.permissions'],
+        'contexts' => [
+          'url.query_args:period',
+          'url.query_args:year',
+          'url.query_args:quarter',
+          'url.query_args:month',
+          'user.permissions',
+        ],
         'max-age' => 3600,
       ],
     ];
@@ -135,17 +107,13 @@ class StatsController implements ContainerInjectionInterface {
    *
    * @param \Drupal\stats\StatsPeriod $period
    *   The period.
-   * @param \Drupal\stats\StatsPeriod|null $comparison
-   *   The comparison period, NULL if there is none.
    * @param array<string, mixed> $current
    *   The project stats of the period.
-   * @param array<string, mixed>|null $before
-   *   The project stats of the comparison period, NULL if there is none.
    *
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function projectsSection(StatsPeriod $period, ?StatsPeriod $comparison, array $current, ?array $before): array {
+  protected function projectsSection(StatsPeriod $period, array $current): array {
 
     $labels = array_map('strval', array_keys($period->buckets()));
     $transitions = [
@@ -156,21 +124,9 @@ class StatsController implements ContainerInjectionInterface {
       ProjectTransition::Decline->value => $this->t('Declined'),
     ];
 
-    // Each transition is followed by its lighter twin of the comparison
-    // period, aligned by bucket position.
     $series = [];
-    $colors = [];
-    $index = 0;
     foreach ($transitions as $transition => $name) {
       $series[(string) $name] = array_values($current['flow'][$transition]);
-      $colors[(string) $name] = StatsCharts::COLORS[$index];
-      if ($comparison && $before) {
-        $twin = (string) $this->t('@series (@period)', ['@series' => $name, '@period' => $comparison->label()]);
-        $values = array_slice(array_values($before['flow'][$transition]), 0, count($labels));
-        $series[$twin] = array_pad($values, count($labels), 0);
-        $colors[$twin] = StatsCharts::COLORS_LIGHT[$index];
-      }
-      $index++;
     }
 
     $cohort = $current['cohort'];
@@ -199,7 +155,7 @@ class StatsController implements ContainerInjectionInterface {
       ],
     ];
 
-    $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series, colors: $colors);
+    $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series);
     $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
     $funnel_chart = StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE);
     $stages_title = (string) $this->t('Median days per stage');
@@ -219,11 +175,11 @@ class StatsController implements ContainerInjectionInterface {
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function growthSection(StatsPeriod $period, StatsScope $scope): array {
+  protected function growthSection(StatsPeriod $period): array {
 
     $labels = array_map('strval', array_keys($period->buckets()));
     $registrations = $this->activityStats->registrations($period);
-    $projects = $this->projectStats->cumulative($period, $scope);
+    $projects = $this->projectStats->cumulative($period);
     $series = [
       (string) $this->t('Creatives') => array_values($registrations['creatives_total']),
       (string) $this->t('Organizations') => array_values($registrations['organizations_total']),
@@ -244,17 +200,12 @@ class StatsController implements ContainerInjectionInterface {
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function applicationsSection(StatsPeriod $period, ?StatsPeriod $comparison, StatsScope $scope, mixed $versus): array {
+  protected function applicationsSection(StatsPeriod $period): array {
 
     $labels = array_map('strval', array_keys($period->buckets()));
-    $applications = $this->activityStats->applications($period, $scope);
-    $engaged = $this->activityStats->engagedCreatives($period, $scope);
-    $returned = $this->activityStats->returnAfterRejection($period, $scope);
-    $before = $comparison ? [
-      'applications' => $this->activityStats->applications($comparison, $scope),
-      'engaged' => $this->activityStats->engagedCreatives($comparison, $scope),
-      'returned' => $this->activityStats->returnAfterRejection($comparison, $scope),
-    ] : NULL;
+    $applications = $this->activityStats->applications($period);
+    $engaged = $this->activityStats->engagedCreatives($period);
+    $returned = $this->activityStats->returnAfterRejection($period);
 
     $series = [
       (string) $this->t('Applications') => array_values($applications['per_bucket']),
@@ -262,10 +213,10 @@ class StatsController implements ContainerInjectionInterface {
     ];
     $chart = StatsCharts::bar('stats-applications', (string) $this->t('Applications and applicants'), $labels, $series);
     $tiles = [
-      $this->tile('active-applicants', $this->t('Active applicants'), $applications['active'], $before['applications']['active'] ?? NULL, 'count', $versus),
-      $this->tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], $before['applications']['first_time'] ?? NULL, 'count', $versus),
-      $this->tile('engaged-creatives', $this->t('Engaged (mediated)'), $engaged, $before['engaged'] ?? NULL, 'count', $versus),
-      $this->tile('came-back', $this->t('Came back after rejection'), $returned, $before['returned'] ?? NULL, 'rate', $versus),
+      $this->tile('active-applicants', $this->t('Active applicants'), $applications['active'], 'count'),
+      $this->tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], 'count'),
+      $this->tile('engaged-creatives', $this->t('Engaged (mediated)'), $engaged, 'count'),
+      $this->tile('came-back', $this->t('Came back after rejection'), $returned, 'rate'),
     ];
 
     $heading = $this->heading($this->t('Applications'), $this->t('old: interests per month, distinct interested creatives'));
@@ -281,18 +232,17 @@ class StatsController implements ContainerInjectionInterface {
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function creativesSection(StatsPeriod $period, ?StatsPeriod $comparison, mixed $versus): array {
+  protected function creativesSection(StatsPeriod $period): array {
 
     $labels = array_map('strval', array_keys($period->buckets()));
     $activation = $this->activityStats->activation($period);
-    $activation_before = $comparison ? $this->activityStats->activation($comparison) : NULL;
     $series = [
       (string) $this->t('Registered') => array_values($activation['registered']),
       (string) $this->t('Applied within 30 days') => array_values($activation['activated']),
     ];
     $activation_chart = StatsCharts::bar('stats-activation', (string) $this->t('Registrations and activation'), $labels, $series);
     $activation_card = StatsCharts::card($activation_chart, wide: TRUE);
-    $rate = $this->tile('activation-rate', $this->t('Activation rate'), $activation['rate'], $activation_before['rate'] ?? NULL, 'rate', $versus);
+    $rate = $this->tile('activation-rate', $this->t('Activation rate'), $activation['rate'], 'rate');
     $activation_card['foot'] = $this->foot($rate);
 
     $histogram = $this->activityStats->firstApplicationHistogram($period);
@@ -312,15 +262,14 @@ class StatsController implements ContainerInjectionInterface {
 
     // Buckets without a snapshot hold NULL and leave a gap in the line.
     $activity = $this->activitySnapshots->series($period);
-    $activity_before = $comparison ? $this->activitySnapshots->series($comparison) : NULL;
     $activity_series = [
       (string) $this->t('Creatives') => array_values(array_column($activity['creative'], 'active_30d')),
       (string) $this->t('Organizations') => array_values(array_column($activity['organization'], 'active_30d')),
     ];
     $activity_chart = StatsCharts::line('stats-activity', (string) $this->t('Active users, last 30 days'), $labels, $activity_series);
     $tiles = [
-      $this->tile('active-creatives', $this->t('Active creatives (30 d)'), $this->lastActive($activity['creative']), $activity_before ? $this->lastActive($activity_before['creative']) : NULL, 'count', $versus),
-      $this->tile('active-organizations', $this->t('Active organizations (30 d)'), $this->lastActive($activity['organization']), $activity_before ? $this->lastActive($activity_before['organization']) : NULL, 'count', $versus),
+      $this->tile('active-creatives', $this->t('Active creatives (30 d)'), $this->lastActive($activity['creative']), 'count'),
+      $this->tile('active-organizations', $this->t('Active organizations (30 d)'), $this->lastActive($activity['organization']), 'count'),
     ];
 
     $heading = $this->heading($this->t('Creatives'), $this->t('old: registrations and returns, relative returns, first interest after registration, daily visits'));
@@ -338,7 +287,7 @@ class StatsController implements ContainerInjectionInterface {
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function organizationsSection(StatsPeriod $period, StatsScope $scope): array {
+  protected function organizationsSection(StatsPeriod $period): array {
 
     $funnel = $this->activityStats->prospectFunnel($period);
     $funnel_labels = [
@@ -350,13 +299,13 @@ class StatsController implements ContainerInjectionInterface {
       (string) $this->t('Organizations') => array_values($funnel),
     ], horizontal: TRUE);
     $funnel_card = StatsCharts::card($funnel_chart);
-    $repeat = $this->activityStats->repeatOrganizations($period, $scope);
-    $funnel_card['foot'] = $this->foot($this->tile('repeat-organizations', $this->t('Repeat organizations'), $repeat, NULL, 'rate', NULL));
+    $repeat = $this->activityStats->repeatOrganizations($period);
+    $funnel_card['foot'] = $this->foot($this->tile('repeat-organizations', $this->t('Repeat organizations'), $repeat, 'rate'));
 
-    $declines = $this->activityStats->reasons($period, $scope, 'project_decline');
+    $declines = $this->activityStats->reasons($period, 'project_decline');
     $decline_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectDeclineReason::tryFrom($reason)?->label() ?? $reason), array_keys($declines));
     $decline_chart = StatsCharts::doughnut('stats-decline-reasons', (string) $this->t('Decline reasons'), $decline_labels, array_values($declines));
-    $archives = $this->activityStats->reasons($period, $scope, 'project_archive');
+    $archives = $this->activityStats->reasons($period, 'project_archive');
     $archive_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
     $archive_chart = StatsCharts::doughnut('stats-archive-reasons', (string) $this->t('Archive reasons'), $archive_labels, array_values($archives));
 
@@ -374,11 +323,10 @@ class StatsController implements ContainerInjectionInterface {
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function feedbackSection(StatsPeriod $period, ?StatsPeriod $comparison, StatsScope $scope, mixed $versus): array {
+  protected function feedbackSection(StatsPeriod $period): array {
 
-    $feedback = $this->feedbackStats->feedback($period, $scope);
+    $feedback = $this->feedbackStats->feedback($period);
     $academy = $this->feedbackStats->academy($period);
-    $academy_before = $comparison ? $this->feedbackStats->academy($comparison) : NULL;
     $bundle_titles = [
       'creative' => $this->t('Feedback from creatives'),
       'organization' => $this->t('Feedback from organizations'),
@@ -402,8 +350,8 @@ class StatsController implements ContainerInjectionInterface {
     }
 
     $tiles = [
-      $this->tile('academy-enrolled', $this->t('Enrolled in courses'), $academy['enrolled'], $academy_before['enrolled'] ?? NULL, 'count', $versus),
-      $this->tile('academy-completed', $this->t('Completed courses'), $academy['completed'], $academy_before['completed'] ?? NULL, 'count', $versus),
+      $this->tile('academy-enrolled', $this->t('Enrolled in courses'), $academy['enrolled'], 'count'),
+      $this->tile('academy-completed', $this->t('Completed courses'), $academy['completed'], 'count'),
     ];
     $cards['tiles'] = $this->tiles($tiles);
 
@@ -477,7 +425,7 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the line under a chart with a tile value and its change.
+   * Builds the line under a chart with a tile value.
    *
    * @param array<string, mixed> $tile
    *   The tile from tile().
@@ -488,13 +436,13 @@ class StatsController implements ContainerInjectionInterface {
   protected function foot(array $tile): array {
     return [
       '#type' => 'inline_template',
-      '#template' => '<p class="stats-card__foot stats-foot--{{ tile.key }}">{{ tile.label }}: <b class="stats-foot__value">{{ tile.value }}</b>{% if tile.delta %} <i class="stats-kpi__delta stats-kpi__delta--{{ tile.direction }}">{{ tile.delta }}</i> {{ tile.versus }}{% endif %}</p>',
+      '#template' => '<p class="stats-card__foot stats-foot--{{ tile.key }}">{{ tile.label }}: <b class="stats-foot__value">{{ tile.value }}</b></p>',
       '#context' => ['tile' => $tile],
     ];
   }
 
   /**
-   * Builds a KPI tile with its change against the comparison.
+   * Builds a KPI tile.
    *
    * @param string $key
    *   The tile key.
@@ -502,18 +450,13 @@ class StatsController implements ContainerInjectionInterface {
    *   The label.
    * @param int|float|null $value
    *   The value, NULL if undefined.
-   * @param int|float|null $before
-   *   The value of the comparison period, NULL if undefined.
    * @param string $type
    *   One of count, rate (a fraction) and days.
-   * @param mixed $versus
-   *   The text naming the comparison period.
    *
    * @return array<string, mixed>
    *   The tile.
    */
-  protected function tile(string $key, mixed $label, int|float|null $value, int|float|null $before, string $type, mixed $versus): array {
-
+  protected function tile(string $key, mixed $label, int|float|null $value, string $type): array {
     $text = '–';
     if ($value !== NULL) {
       $text = match ($type) {
@@ -522,59 +465,22 @@ class StatsController implements ContainerInjectionInterface {
         default => number_format($value, 1, '.', '') . ' d',
       };
     }
-
-    $delta = NULL;
-    $direction = 'same';
-    if ($value !== NULL && $before !== NULL) {
-      $difference = match ($type) {
-        'count' => $value - $before,
-        'rate' => round($value * 100) - round($before * 100),
-        default => round($value - $before, 1),
-      };
-      $unit = match ($type) {
-        'count' => '',
-        'rate' => ' pp',
-        default => ' d',
-      };
-      $number = match ($type) {
-        'days' => number_format(abs($difference), 1, '.', ''),
-        default => (string) abs($difference),
-      };
-      if ($difference == 0) {
-        $delta = '±' . $number . $unit;
-      }
-      else {
-        $direction = $difference > 0 ? 'up' : 'down';
-        $delta = ($difference > 0 ? '+' : static::MINUS) . $number . $unit;
-      }
-    }
-
     return [
       'key' => $key,
       'label' => $label,
       'value' => $text,
-      'delta' => $delta,
-      'direction' => $direction,
-      'versus' => $delta !== NULL ? $versus : NULL,
     ];
   }
 
   /**
-   * Builds the period bar: presets, navigation and the filter form.
+   * Builds the period bar: presets and navigation links.
    *
    * @return array<string, mixed>
    *   The variables of the bar.
    */
-  protected function periodBar(StatsPeriod $period, StatsScope $scope, string $compare, \DateTimeZone $timezone, \DateTimeImmutable $now): array {
+  protected function periodBar(StatsPeriod $period, \DateTimeZone $timezone, \DateTimeImmutable $now): array {
 
-    $extra = [];
-    if ($compare !== static::COMPARE_PREVIOUS) {
-      $extra['compare'] = $compare;
-    }
-    if ($scope->managerId() !== NULL) {
-      $extra['manager'] = (string) $scope->managerId();
-    }
-    $link = fn(array $query): string => Url::fromRoute('stats.overview', [], ['query' => $query + $extra])->toString();
+    $link = fn(array $query): string => Url::fromRoute('stats.overview', [], ['query' => $query])->toString();
 
     $presets = [];
     $labels = [
@@ -592,45 +498,19 @@ class StatsController implements ContainerInjectionInterface {
       ];
     }
 
-    $is_all = $period->query() === ['period' => 'all'];
-    $previous = $period->previous();
-    $next = $period->next();
     $navigation = [];
-    if (!$is_all) {
+    if ($period->query() !== ['period' => 'all']) {
+      $previous = $period->previous();
+      $next = $period->next();
       $navigation['previous'] = ['label' => '‹ ' . $previous->label(), 'url' => $link($previous->query())];
       // No period beyond the current time.
       $navigation['next'] = $next->from() <= $now ? ['label' => $next->label() . ' ›', 'url' => $link($next->query())] : NULL;
-    }
-
-    $managers = [['id' => '', 'name' => $this->t('All'), 'selected' => $scope->managerId() === NULL]];
-    $query = $this->database->select('user__roles', 'r');
-    $query->innerJoin('users_field_data', 'u', 'u.uid = r.entity_id');
-    $rows = $query->fields('u', ['uid', 'name'])
-      ->condition('r.roles_target_id', StatsScope::MANAGER_ROLE)
-      ->condition('r.deleted', 0)
-      ->orderBy('u.name')
-      ->execute()
-      ->fetchAll();
-    foreach ($rows as $row) {
-      $managers[] = [
-        'id' => (int) $row->uid,
-        'name' => $row->name,
-        'selected' => $scope->managerId() === (int) $row->uid,
-      ];
     }
 
     return [
       'heading' => $period->label(),
       'presets' => $presets,
       'navigation' => $navigation,
-      'from' => $period->from()->format('Y-m-d'),
-      'to' => $period->to()->modify('-1 day')->format('Y-m-d'),
-      'compare' => $compare,
-      'compare_options' => [
-        static::COMPARE_PREVIOUS => $this->t('Previous period'),
-        static::COMPARE_LAST_YEAR => $this->t('Same period last year'),
-      ],
-      'managers' => $managers,
     ];
   }
 

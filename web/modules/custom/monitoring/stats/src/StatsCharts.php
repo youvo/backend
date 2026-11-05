@@ -5,7 +5,8 @@ namespace Drupal\stats;
 /**
  * Builds Chart.js chart render elements for the stats page.
  *
- * Each chart also renders its numbers as a collapsible table.
+ * Each chart also renders its numbers as a visually hidden table for screen
+ * readers, without a button to show it.
  */
 class StatsCharts {
 
@@ -13,11 +14,6 @@ class StatsCharts {
    * The series colors, from the yv palette: blue, orange, turquoise, red, grey.
    */
   const array COLORS = ['#3f78b5', '#f79b6a', '#3ec4c2', '#e15554', '#526079'];
-
-  /**
-   * The lighter series colors for comparison datasets, in the same order.
-   */
-  const array COLORS_LIGHT = ['#7e98b5', '#ffb793', '#96d1cf', '#e08b8b', '#52607966'];
 
   /**
    * The slice colors of doughnuts, distinct for up to eleven slices.
@@ -89,14 +85,12 @@ class StatsCharts {
    *   Whether to stack the series.
    * @param bool $horizontal
    *   Whether to draw horizontal bars.
-   * @param array<string, string> $colors
-   *   Colors per series name that replace the palette colors.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function bar(string $id, string $title, array $labels, array $series, bool $stacked = FALSE, bool $horizontal = FALSE, array $colors = []): array {
-    $chart = static::chart($id, $title, $horizontal ? 'bar' : 'column', $labels, $series, $colors);
+  public static function bar(string $id, string $title, array $labels, array $series, bool $stacked = FALSE, bool $horizontal = FALSE): array {
+    $chart = static::chart($id, $title, $horizontal ? 'bar' : 'column', $labels, $series);
     $chart['#stacking'] = $stacked;
     return $chart;
   }
@@ -157,13 +151,11 @@ class StatsCharts {
    *   The category labels.
    * @param array<string, array<int, int|float|null>> $series
    *   The values per series name, in the order of the labels.
-   * @param array<string, string> $colors
-   *   Colors per series name that replace the palette colors.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  protected static function chart(string $id, string $title, string $type, array $labels, array $series, array $colors = []): array {
+  protected static function chart(string $id, string $title, string $type, array $labels, array $series): array {
 
     $chart = [
       '#type' => 'chart',
@@ -174,7 +166,7 @@ class StatsCharts {
       '#title' => $title,
       // Chart.js's default text color stays readable in Gin's dark mode.
       '#title_color' => '',
-      '#accessible_table' => 'collapsible',
+      '#accessible_table' => 'invisible',
       '#legend' => count($series) > 1,
       '#legend_position' => 'bottom',
     ];
@@ -185,7 +177,7 @@ class StatsCharts {
         '#type' => 'chart_data',
         '#title' => (string) $name,
         '#data' => array_values($values),
-        '#color' => $colors[$name] ?? static::COLORS[$index % count(static::COLORS)],
+        '#color' => static::COLORS[$index % count(static::COLORS)],
       ];
       $index++;
     }

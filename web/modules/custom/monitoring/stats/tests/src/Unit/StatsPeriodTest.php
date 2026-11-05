@@ -44,7 +44,7 @@ class StatsPeriodTest extends UnitTestCase {
   }
 
   /**
-   * Tests the default period and the presets with their comparisons.
+   * Tests the default period and the presets with their neighbors.
    */
   public function testDefaultsAndPresets(): void {
     $year = $this->period([]);
@@ -69,10 +69,6 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame('2026-04-01 00:00', $this->local($previous->from()));
     $this->assertSame('2026-07-01 00:00', $this->local($previous->to()));
     $this->assertSame('Q2 2026', $previous->label());
-    $last_year = $quarter->sameLastYear();
-    $this->assertSame('2025-07-01 00:00', $this->local($last_year->from()));
-    $this->assertSame('2025-10-01 00:00', $this->local($last_year->to()));
-    $this->assertSame('Q3 2025', $last_year->label());
 
     $first_quarter = $this->period(['period' => 'quarter', 'year' => '2026', 'quarter' => '1']);
     $this->assertSame('Q4 2025', $first_quarter->previous()->label());
@@ -85,7 +81,6 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame('November 2026', $month->label());
     $this->assertCount(30, $month->buckets());
     $this->assertSame('October 2026', $month->previous()->label());
-    $this->assertSame('November 2025', $month->sameLastYear()->label());
     $this->assertSame('December 2025', $this->period(['period' => 'month', 'year' => '2026', 'month' => '1'])->previous()->label());
 
     $all = $this->period(['period' => 'all']);
@@ -96,37 +91,19 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame(2026, array_key_last($all->buckets()));
     $this->assertSame(['period' => 'all'], $all->query());
     $this->assertSame('All time', $all->previous()->label());
-    $this->assertSame('All time', $all->sameLastYear()->label());
     $this->assertSame('All time', $all->next()->label());
   }
 
   /**
-   * Tests custom ranges, DST, instants around New Year and ISO weeks.
+   * Tests DST, instants around New Year and ISO weeks.
    */
   public function testBoundaries(): void {
-    $custom = $this->period(['period' => 'custom', 'from' => '2026-03-28', 'to' => '2026-03-30']);
-    $this->assertSame('2026-03-28 00:00', $this->local($custom->from()));
-    $this->assertSame('2026-03-31 00:00', $this->local($custom->to()));
-    $this->assertSame(StatsGranularity::Day, $custom->granularity());
-    $this->assertSame('28.03.2026 – 30.03.2026', $custom->label());
-    $this->assertSame(['period' => 'custom', 'from' => '2026-03-28', 'to' => '2026-03-30'], $custom->query());
-    $buckets = $custom->buckets();
-    $this->assertSame(['2026-03-28', '2026-03-29', '2026-03-30'], array_keys($buckets));
+    $march = $this->period(['period' => 'month', 'year' => '2026', 'month' => '3']);
+    $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '3'], $march->query());
+    $buckets = $march->buckets();
+    $this->assertCount(31, $buckets);
     $this->assertSame(23 * 3600, $buckets['2026-03-29'][1] - $buckets['2026-03-29'][0]);
     $this->assertSame($buckets['2026-03-29'][1], $buckets['2026-03-30'][0]);
-
-    $previous = $custom->previous();
-    $this->assertSame('2026-03-25 00:00', $this->local($previous->from()));
-    $this->assertSame('2026-03-28 00:00', $this->local($previous->to()));
-    $this->assertSame(StatsGranularity::Day, $previous->granularity());
-    $last_year = $custom->sameLastYear();
-    $this->assertSame('2025-03-28 00:00', $this->local($last_year->from()));
-    $this->assertSame('2025-03-31 00:00', $this->local($last_year->to()));
-
-    $long = $this->period(['period' => 'custom', 'from' => '2026-01-01', 'to' => '2026-06-30']);
-    $this->assertSame(StatsGranularity::Month, $long->granularity());
-    $longer = $this->period(['period' => 'custom', 'from' => '2024-01-01', 'to' => '2026-06-30']);
-    $this->assertSame(StatsGranularity::Year, $longer->granularity());
 
     $instant = (new \DateTimeImmutable('2026-01-01 00:30', $this->timezone()))->getTimestamp();
     $year = $this->period(['period' => 'year', 'year' => '2026']);
@@ -144,53 +121,6 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame($quarter->from()->getTimestamp(), reset($buckets)[0]);
     $new_year_eve = (new \DateTimeImmutable('2026-12-31 12:00', $this->timezone()))->getTimestamp();
     $this->assertSame('2026-W53', $quarter->bucketOf($new_year_eve));
-  }
-
-  /**
-   * Tests that a range covering a calendar unit yields that preset.
-   */
-  public function testAlignedRangesArePresets(): void {
-    $presets = [
-      'quarter' => [
-        ['from' => '2026-07-01', 'to' => '2026-09-30'],
-        ['period' => 'quarter', 'year' => '2026', 'quarter' => '3'],
-        StatsGranularity::Week,
-        'Q2 2026',
-      ],
-      'month' => [
-        ['from' => '2026-02-01', 'to' => '2026-02-28'],
-        ['period' => 'month', 'year' => '2026', 'month' => '2'],
-        StatsGranularity::Day,
-        'January 2026',
-      ],
-      'leap month' => [
-        ['period' => 'custom', 'from' => '2024-02-01', 'to' => '2024-02-29'],
-        ['period' => 'month', 'year' => '2024', 'month' => '2'],
-        StatsGranularity::Day,
-        'January 2024',
-      ],
-      'year' => [
-        ['from' => '2024-01-01', 'to' => '2024-12-31'],
-        ['period' => 'year', 'year' => '2024'],
-        StatsGranularity::Month,
-        '2023',
-      ],
-    ];
-    foreach ($presets as $name => [$range, $preset_query, $granularity, $previous]) {
-      $custom = $this->period($range);
-      $preset = $this->period($preset_query);
-      $this->assertSame($preset->query(), $custom->query(), $name);
-      $this->assertSame($preset->label(), $custom->label(), $name);
-      $this->assertSame($preset->from()->getTimestamp(), $custom->from()->getTimestamp(), $name);
-      $this->assertSame($preset->to()->getTimestamp(), $custom->to()->getTimestamp(), $name);
-      $this->assertSame($granularity, $custom->granularity(), $name);
-      $this->assertSame($previous, $custom->previous()->label(), $name);
-      $this->assertSame($preset->sameLastYear()->label(), $custom->sameLastYear()->label(), $name);
-    }
-
-    $unaligned = $this->period(['from' => '2026-03-28', 'to' => '2026-03-30']);
-    $this->assertSame(['period' => 'custom', 'from' => '2026-03-28', 'to' => '2026-03-30'], $unaligned->query());
-    $this->assertSame(StatsGranularity::Day, $unaligned->granularity());
   }
 
   /**

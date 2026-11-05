@@ -201,11 +201,8 @@ abstract class StatsTestBase extends ExistingSiteBase {
 
   /**
    * Builds the 2001 scenario of three organizations of one manager.
-   *
-   * @return \Drupal\creatives\Entity\Creative
-   *   The manager.
    */
-  protected function setUpScenario(): Creative {
+  protected function setUpScenario(): void {
 
     $manager = $this->createManager();
 
@@ -265,8 +262,6 @@ abstract class StatsTestBase extends ExistingSiteBase {
       ['publish', '2001-07-05'],
     ]);
     $this->archive($h, 'unattractive', '2001-08-01');
-
-    return $manager;
   }
 
 }

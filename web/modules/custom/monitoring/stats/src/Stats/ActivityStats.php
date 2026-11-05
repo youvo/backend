@@ -6,14 +6,13 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Database\Connection;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 
 /**
  * Computes the stats of applications, creatives and organizations.
  *
  * The applicant of a project_apply log and the creatives of a
  * project_mediate log are its log__creatives. Log methods read the logs they
- * need beyond the period or scope, and apply the windows in PHP. The log
+ * need beyond the period, and apply the windows in PHP. The log
  * status is never filtered, because archived logs count too.
  */
 class ActivityStats {
@@ -52,11 +51,10 @@ class ActivityStats {
   /**
    * The application and mediation log rows, once read in this request.
    *
-   * A page with a comparison period needs them for both periods. They are
-   * read for all organizations and all time, and the methods apply the scope
-   * and the windows.
+   * Several metrics of the page need them. They are read for all time, and
+   * the methods apply the windows.
    *
-   * @var array<int, object{id: int, type: string, created: int, organization: ?int, project: ?int, creative: ?int}>|null
+   * @var array<int, object{id: int, type: string, created: int, project: ?int, creative: ?int}>|null
    */
   protected ?array $logRows = NULL;
 
@@ -82,14 +80,13 @@ class ActivityStats {
    *   The applications and distinct applicants per bucket, their totals and
    *   the applicants whose first application ever lies in the period.
    */
-  public function applications(StatsPeriod $period, StatsScope $scope): array {
+  public function applications(StatsPeriod $period): array {
 
     $empty = array_fill_keys(array_keys($period->buckets()), 0);
     $logs = [];
     $applicants = [];
     $bucket_applicants = [];
     $first = [];
-    $organizations = $this->organizations($scope);
 
     // Applications before the period give the first application ever.
     $to = $period->to()->getTimestamp();
@@ -104,7 +101,7 @@ class ActivityStats {
       if ($creative !== NULL) {
         $first[$creative] ??= $row->created;
       }
-      if (!$period->contains($row->created) || !$this->inScope($row->organization, $organizations)) {
+      if (!$period->contains($row->created)) {
         continue;
       }
       $bucket = $period->bucketOf($row->created);
@@ -140,11 +137,10 @@ class ActivityStats {
   /**
    * Counts the distinct creatives of the mediations in the period.
    */
-  public function engagedCreatives(StatsPeriod $period, StatsScope $scope): int {
-    $organizations = $this->organizations($scope);
+  public function engagedCreatives(StatsPeriod $period): int {
     $creatives = [];
     foreach ($this->logRows() as $row) {
-      if ($row->type === static::LOG_MEDIATE && $row->creative !== NULL && $period->contains($row->created) && $this->inScope($row->organization, $organizations)) {
+      if ($row->type === static::LOG_MEDIATE && $row->creative !== NULL && $period->contains($row->created)) {
         $creatives[$row->creative] = TRUE;
       }
     }
@@ -161,9 +157,8 @@ class ActivityStats {
    * @return float|null
    *   The share between 0 and 1, NULL if nobody was rejected.
    */
-  public function returnAfterRejection(StatsPeriod $period, StatsScope $scope): ?float {
+  public function returnAfterRejection(StatsPeriod $period): ?float {
 
-    $organizations = $this->organizations($scope);
     $applicants = [];
     $last_application = [];
     $mediations = [];
@@ -176,7 +171,7 @@ class ActivityStats {
           $last_application[$creative] = max($last_application[$creative] ?? 0, $created);
         }
       }
-      elseif ($period->contains($created) && $this->inScope($row->organization, $organizations)) {
+      elseif ($period->contains($created)) {
         $mediations[$row->id]['project'] = (int) $row->project;
         $mediations[$row->id]['created'] = $created;
         $mediations[$row->id]['creatives'] ??= [];
@@ -205,24 +200,21 @@ class ActivityStats {
    *
    * @param \Drupal\stats\StatsPeriod $period
    *   The period.
-   * @param \Drupal\stats\StatsScope $scope
-   *   The scope.
    * @param array<int, array{project: int, ts: int}> $publishRows
    *   The publish rows in the period, from ProjectStats::publishRows().
    *
    * @return float|null
    *   The median in days with one decimal, NULL without applications.
    */
-  public function firstApplicationMedian(StatsPeriod $period, StatsScope $scope, array $publishRows): ?float {
+  public function firstApplicationMedian(StatsPeriod $period, array $publishRows): ?float {
 
-    $organizations = $this->organizations($scope);
     $projects = array_unique(array_column($publishRows, 'project'));
-    if (!$projects || $organizations === []) {
+    if (!$projects) {
       return NULL;
     }
 
     $query = $this->database->select('log', 'l')
-      ->fields('l', ['project', 'organization', 'created'])
+      ->fields('l', ['project', 'created'])
       ->condition('l.type', static::LOG_APPLY)
       ->condition('l.project', $projects, 'IN')
       ->condition('l.created', $period->from()->getTimestamp(), '>')
@@ -230,9 +222,7 @@ class ActivityStats {
       ->orderBy('l.id');
     $applications = [];
     foreach ($query->execute() as $row) {
-      if ($this->inScope($row->organization, $organizations)) {
-        $applications[(int) $row->project][] = (int) $row->created;
-      }
+      $applications[(int) $row->project][] = (int) $row->created;
     }
 
     $durations = [];
@@ -337,12 +327,7 @@ class ActivityStats {
    * @return float|null
    *   The share between 0 and 1, NULL if no organization published.
    */
-  public function repeatOrganizations(StatsPeriod $period, StatsScope $scope): ?float {
-
-    $organizations = $scope->organizationIds();
-    if ($organizations === []) {
-      return NULL;
-    }
+  public function repeatOrganizations(StatsPeriod $period): ?float {
 
     $query = $this->database->select('project__field_lifecycle_history', 'h');
     $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode AND p.default_langcode = 1');
@@ -351,9 +336,6 @@ class ActivityStats {
     $query->condition('h.deleted', 0)
       ->condition('h.field_lifecycle_history_transition', ProjectTransition::Publish->value)
       ->condition('h.field_lifecycle_history_timestamp', $period->to()->getTimestamp(), '<');
-    if ($organizations !== NULL) {
-      $query->condition('p.uid', $organizations, 'IN');
-    }
 
     $in_period = [];
     $before = [];
@@ -377,8 +359,6 @@ class ActivityStats {
    *
    * @param \Drupal\stats\StatsPeriod $period
    *   The period.
-   * @param \Drupal\stats\StatsScope $scope
-   *   The scope.
    * @param string $type
    *   The log pattern, project_decline or project_archive.
    *
@@ -386,14 +366,10 @@ class ActivityStats {
    *   The counts keyed by reason in alphabetical order. Logs without a reason
    *   count as "unknown".
    */
-  public function reasons(StatsPeriod $period, StatsScope $scope, string $type): array {
+  public function reasons(StatsPeriod $period, string $type): array {
 
     if (!in_array($type, static::REASON_LOGS, TRUE)) {
       throw new \InvalidArgumentException(sprintf('No reasons for the log pattern %s.', $type));
-    }
-    $organizations = $scope->organizationIds();
-    if ($organizations === []) {
-      return [];
     }
 
     $query = $this->database->select('log', 'l')
@@ -401,9 +377,6 @@ class ActivityStats {
       ->condition('l.type', $type)
       ->condition('l.created', $period->from()->getTimestamp(), '>=')
       ->condition('l.created', $period->to()->getTimestamp(), '<');
-    if ($organizations !== NULL) {
-      $query->condition('l.organization', $organizations, 'IN');
-    }
 
     $reasons = [];
     foreach ($query->execute() as $row) {
@@ -521,7 +494,7 @@ class ActivityStats {
    * Logs without creatives give one row with a NULL creative. The rows are
    * read once per request.
    *
-   * @return array<int, object{id: int, type: string, created: int, organization: ?int, project: ?int, creative: ?int}>
+   * @return array<int, object{id: int, type: string, created: int, project: ?int, creative: ?int}>
    *   The rows ordered by creation time and log id.
    */
   protected function logRows(): array {
@@ -532,7 +505,7 @@ class ActivityStats {
 
     $query = $this->database->select('log', 'l');
     $query->leftJoin('log__creatives', 'c', 'c.entity_id = l.id AND c.deleted = 0');
-    $query->fields('l', ['id', 'type', 'created', 'organization', 'project']);
+    $query->fields('l', ['id', 'type', 'created', 'project']);
     $query->addField('c', 'creatives_target_id', 'creative');
     $query->condition('l.type', [static::LOG_APPLY, static::LOG_MEDIATE], 'IN')
       ->orderBy('l.created')
@@ -544,35 +517,11 @@ class ActivityStats {
         'id' => (int) $row->id,
         'type' => (string) $row->type,
         'created' => (int) $row->created,
-        'organization' => $row->organization === NULL ? NULL : (int) $row->organization,
         'project' => $row->project === NULL ? NULL : (int) $row->project,
         'creative' => $row->creative === NULL ? NULL : (int) $row->creative,
       ];
     }
     return $this->logRows;
-  }
-
-  /**
-   * Gets the organizations of a scope as keys, NULL for all.
-   *
-   * @return array<int, true>|null
-   *   The organization ids as keys.
-   */
-  protected function organizations(StatsScope $scope): ?array {
-    $ids = $scope->organizationIds();
-    return $ids === NULL ? NULL : array_fill_keys($ids, TRUE);
-  }
-
-  /**
-   * Checks whether a log organization lies in the scope.
-   *
-   * @param int|string|null $organization
-   *   The organization of the log.
-   * @param array<int, true>|null $organizations
-   *   The organizations of the scope as keys, NULL for all.
-   */
-  protected function inScope(int|string|null $organization, ?array $organizations): bool {
-    return $organizations === NULL || ($organization !== NULL && isset($organizations[(int) $organization]));
   }
 
 }

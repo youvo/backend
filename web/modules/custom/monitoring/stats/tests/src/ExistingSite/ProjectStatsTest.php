@@ -2,10 +2,8 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
-use Drupal\creatives\Entity\Creative;
 use Drupal\stats\Stats\ProjectStats;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -28,18 +26,11 @@ class ProjectStatsTest extends StatsTestBase {
   }
 
   /**
-   * Builds the period and scope of a year and a manager.
-   *
-   * @return array{0: \Drupal\stats\StatsPeriod, 1: \Drupal\stats\StatsScope}
-   *   The period and the scope.
+   * Builds the period of a year.
    */
-  protected function periodAndScope(string $year, int|string $manager): array {
-    $query = ['period' => 'year', 'year' => $year, 'manager' => (string) $manager];
+  protected function year(string $year): StatsPeriod {
     $timezone = $this->timezone();
-    return [
-      StatsPeriod::fromQuery($query, $timezone, new \DateTimeImmutable('now', $timezone)),
-      StatsScope::fromQuery($query, $this->container->get('database')),
-    ];
+    return StatsPeriod::fromQuery(['period' => 'year', 'year' => $year], $timezone, new \DateTimeImmutable('now', $timezone));
   }
 
   /**
@@ -47,9 +38,10 @@ class ProjectStatsTest extends StatsTestBase {
    */
   public function testFlowAndCohort(): void {
 
-    [$period, $scope] = $this->periodAndScope('2001', $this->setUpScenario()->id());
+    $this->setUpScenario();
+    $period = $this->year('2001');
 
-    $flow = $this->projectStats->flow($period, $scope);
+    $flow = $this->projectStats->flow($period);
     $totals = array_map('array_sum', $flow);
     $this->assertSame([
       'submit' => 7,
@@ -67,9 +59,9 @@ class ProjectStatsTest extends StatsTestBase {
     $expected['2001-05'] = 1;
     $expected['2001-07'] = 1;
     $this->assertSame($expected, $flow['publish']);
-    $this->assertCount(7, $this->projectStats->publishRows($period, $scope));
+    $this->assertCount(7, $this->projectStats->publishRows($period));
 
-    $cohort = $this->projectStats->cohort($period, $scope);
+    $cohort = $this->projectStats->cohort($period);
     $this->assertSame(6, $cohort['published']);
     $this->assertCount(6, $cohort['project_ids']);
     $this->assertSame(3, $cohort['mediated']);
@@ -83,12 +75,13 @@ class ProjectStatsTest extends StatsTestBase {
    * Tests the median days between the stages of the 2001 scenario.
    */
   public function testStageMedians(): void {
-    [$period, $scope] = $this->periodAndScope('2001', $this->setUpScenario()->id());
+    $this->setUpScenario();
+    $period = $this->year('2001');
     $this->assertSame([
       'submit_publish' => 4.0,
       'publish_mediate' => 9.0,
       'mediate_complete' => 28.0,
-    ], $this->projectStats->stageMedians($period, $scope));
+    ], $this->projectStats->stageMedians($period));
   }
 
   /**
@@ -96,7 +89,8 @@ class ProjectStatsTest extends StatsTestBase {
    */
   public function testCumulative(): void {
 
-    [$period, $scope] = $this->periodAndScope('2001', $this->setUpScenario()->id());
+    $this->setUpScenario();
+    $period = $this->year('2001');
 
     $mediated = array_fill_keys(array_keys($period->buckets()), 4);
     $mediated['2001-01'] = 1;
@@ -108,13 +102,13 @@ class ProjectStatsTest extends StatsTestBase {
     $this->assertSame([
       'mediated' => $mediated,
       'completed' => $completed,
-    ], $this->projectStats->cumulative($period, $scope));
+    ], $this->projectStats->cumulative($period));
   }
 
   /**
-   * Creates a manager with a reset and an archived mediated project in 2001.
+   * Creates a reset and an archived mediated project in 2001.
    */
-  protected function setUpMediatedTwice(): Creative {
+  protected function setUpMediatedTwice(): void {
 
     $manager = $this->createManager();
     $organization = $this->createOrganization($manager, '2001-01-01');
@@ -132,16 +126,14 @@ class ProjectStatsTest extends StatsTestBase {
       ['publish', '2001-02-05'],
       ['mediate', '2001-03-01'],
     ]);
-
-    return $manager;
   }
 
   /**
    * Tests that reset or archived mediated projects keep the rate at 100 %.
    */
   public function testRateNeverExceedsHundred(): void {
-    [$period, $scope] = $this->periodAndScope('2001', $this->setUpMediatedTwice()->id());
-    $cohort = $this->projectStats->cohort($period, $scope);
+    $this->setUpMediatedTwice();
+    $cohort = $this->projectStats->cohort($this->year('2001'));
     $this->assertSame(2, $cohort['published']);
     $this->assertSame(2, $cohort['mediated']);
     $this->assertSame(0, $cohort['excluded']);
@@ -153,16 +145,16 @@ class ProjectStatsTest extends StatsTestBase {
    */
   public function testEmptyPeriod(): void {
 
-    [$period, $scope] = $this->periodAndScope('2002', $this->setUpMediatedTwice()->id());
-    $this->assertNotEmpty($scope->organizationIds());
+    $this->setUpMediatedTwice();
+    $period = $this->year('2002');
 
-    $flow = $this->projectStats->flow($period, $scope);
+    $flow = $this->projectStats->flow($period);
     $this->assertCount(6, $flow);
     foreach ($flow as $buckets) {
       $this->assertSame(array_fill_keys(array_keys($period->buckets()), 0), $buckets);
     }
 
-    $cohort = $this->projectStats->cohort($period, $scope);
+    $cohort = $this->projectStats->cohort($period);
     $this->assertSame(0, $cohort['published']);
     $this->assertNull($cohort['mediation_rate']);
     $this->assertNull($cohort['completion_rate']);
@@ -171,29 +163,7 @@ class ProjectStatsTest extends StatsTestBase {
       'submit_publish' => NULL,
       'publish_mediate' => NULL,
       'mediate_complete' => NULL,
-    ], $this->projectStats->stageMedians($period, $scope));
-
-    // A manager without organizations yields zeros as well.
-    [$period, $scope] = $this->periodAndScope('2002', $this->createManager()->id());
-    $this->assertSame([], $scope->organizationIds());
-    $this->assertSame(0, $this->projectStats->cohort($period, $scope)['published']);
-  }
-
-  /**
-   * Tests that the scope only filters by users with the manager role.
-   */
-  public function testScopeIgnoresNonManager(): void {
-
-    $database = $this->container->get('database');
-    $creative = $this->createCreative();
-    $this->assertNull(StatsScope::fromQuery(['manager' => (string) $creative->id()], $database)->organizationIds());
-    $this->assertNull(StatsScope::fromQuery(['manager' => 'abc'], $database)->organizationIds());
-
-    $manager = $this->createManager();
-    $organization = $this->createOrganization($manager, '2001-01-01');
-    $scope = StatsScope::fromQuery(['manager' => (string) $manager->id()], $database);
-    $this->assertSame((int) $manager->id(), $scope->managerId());
-    $this->assertSame([(int) $organization->id()], $scope->organizationIds());
+    ], $this->projectStats->stageMedians($period));
   }
 
 }

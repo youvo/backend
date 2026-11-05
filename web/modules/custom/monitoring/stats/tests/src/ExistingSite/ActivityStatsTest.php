@@ -7,7 +7,6 @@ use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\stats\Stats\ActivityStats;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -27,11 +26,6 @@ class ActivityStatsTest extends StatsTestBase {
   protected StatsPeriod $period;
 
   /**
-   * The organizations of the scenario manager.
-   */
-  protected StatsScope $scope;
-
-  /**
    * Builds the scenario with applications, mediations and a prospect.
    */
   protected function setUp(): void {
@@ -41,8 +35,7 @@ class ActivityStatsTest extends StatsTestBase {
     $timezone = $this->timezone();
     $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
 
-    $manager = $this->setUpScenario();
-    $this->scope = StatsScope::fromQuery(['manager' => (string) $manager->id()], $this->container->get('database'));
+    $this->setUpScenario();
     // The scenario creates the projects A to H in this order.
     [$a, $b, $c, , , $f, $g] = array_map(fn($id) => Project::load($id), $this->projectIds);
 
@@ -118,19 +111,19 @@ class ActivityStatsTest extends StatsTestBase {
       ->fetchField();
     $this->assertEquals(11, $logs);
 
-    $applications = $this->activityStats->applications($this->period, $this->scope);
+    $applications = $this->activityStats->applications($this->period);
     $this->assertSame(6, $applications['total']);
     $this->assertSame($this->months([2, 2, 2]), $applications['per_bucket']);
     $this->assertSame(4, $applications['active']);
     $this->assertSame($this->months([2, 2, 2]), $applications['active_per_bucket']);
     $this->assertSame(3, $applications['first_time']);
 
-    $this->assertSame(2, $this->activityStats->engagedCreatives($this->period, $this->scope));
+    $this->assertSame(2, $this->activityStats->engagedCreatives($this->period));
     // Y, rejected on A, applied to C later; W, rejected on B, did not.
-    $this->assertSame(0.5, $this->activityStats->returnAfterRejection($this->period, $this->scope));
+    $this->assertSame(0.5, $this->activityStats->returnAfterRejection($this->period));
 
-    $publish_rows = $this->container->get('stats.project_stats')->publishRows($this->period, $this->scope);
-    $this->assertSame(1.0, $this->activityStats->firstApplicationMedian($this->period, $this->scope, $publish_rows));
+    $publish_rows = $this->container->get('stats.project_stats')->publishRows($this->period);
+    $this->assertSame(1.0, $this->activityStats->firstApplicationMedian($this->period, $publish_rows));
   }
 
   /**
@@ -145,10 +138,10 @@ class ActivityStatsTest extends StatsTestBase {
     $this->assertSame($this->months([2, 2, 3, 3], 4), $registrations['organizations_total']);
 
     $this->assertSame(['created' => 3, 'managed' => 2, 'published' => 2], $this->activityStats->prospectFunnel($this->period));
-    $this->assertEqualsWithDelta(1 / 3, $this->activityStats->repeatOrganizations($this->period, $this->scope), 0.001);
+    $this->assertEqualsWithDelta(1 / 3, $this->activityStats->repeatOrganizations($this->period), 0.001);
 
-    $this->assertSame(['imprecise' => 1], $this->activityStats->reasons($this->period, $this->scope, 'project_decline'));
-    $this->assertSame(['external' => 1, 'unattractive' => 1], $this->activityStats->reasons($this->period, $this->scope, 'project_archive'));
+    $this->assertSame(['imprecise' => 1], $this->activityStats->reasons($this->period, 'project_decline'));
+    $this->assertSame(['external' => 1, 'unattractive' => 1], $this->activityStats->reasons($this->period, 'project_archive'));
   }
 
   /**

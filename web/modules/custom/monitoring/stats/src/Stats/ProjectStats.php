@@ -7,12 +7,11 @@ use Drupal\Core\Database\Connection;
 use Drupal\projects\ProjectState;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\StatsPeriod;
-use Drupal\stats\StatsScope;
 
 /**
  * Computes the project stats from the lifecycle history.
  *
- * The history of every project in the scope is read up to now, and each
+ * The history of every project is read up to now, and each
  * metric applies its own window in PHP: the flow counts rows in the period,
  * while the cohort follows its projects beyond the end of the period.
  */
@@ -33,14 +32,14 @@ class ProjectStats {
   ];
 
   /**
-   * The lifecycle histories read in this request, keyed by scope.
+   * The lifecycle history, once read in this request.
    *
-   * A page with a comparison period asks for the same history several
-   * times. The history has no time bound, so the scope is the whole key.
+   * Every metric of the page reads it. It has no time bound, so one read
+   * serves all periods.
    *
-   * @var array<string, array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>>
+   * @var array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>|null
    */
-  protected array $histories = [];
+  protected ?array $history = NULL;
 
   /**
    * Constructs a ProjectStats object.
@@ -55,7 +54,7 @@ class ProjectStats {
    * @return array<string, array<string, int>>
    *   The counts keyed by transition and bucket. Every bucket is present.
    */
-  public function flow(StatsPeriod $period, StatsScope $scope): array {
+  public function flow(StatsPeriod $period): array {
 
     $empty = array_fill_keys(array_keys($period->buckets()), 0);
     $flow = [];
@@ -63,7 +62,7 @@ class ProjectStats {
       $flow[$transition->value] = $empty;
     }
 
-    foreach ($this->history($scope) as $project) {
+    foreach ($this->history() as $project) {
       foreach ($project['rows'] as [$transition, $timestamp]) {
         if (isset($flow[$transition]) && $period->contains($timestamp)) {
           $flow[$transition][$period->bucketOf($timestamp)]++;
@@ -80,10 +79,10 @@ class ProjectStats {
    * @return array{published: int, mediated: int, completed: int, excluded: int, mediation_rate: ?float, completion_rate: ?float, project_ids: int[]}
    *   The cohort counts and rates between 0 and 1.
    */
-  public function cohort(StatsPeriod $period, StatsScope $scope): array {
+  public function cohort(StatsPeriod $period): array {
 
     $cohort = [];
-    foreach ($this->history($scope) as $id => $project) {
+    foreach ($this->history() as $id => $project) {
       $published = FALSE;
       $mediated = FALSE;
       $completed = FALSE;
@@ -150,10 +149,10 @@ class ProjectStats {
    * @return array{submit_publish: ?float, publish_mediate: ?float, mediate_complete: ?float}
    *   The medians in days with one decimal, NULL without pairs.
    */
-  public function stageMedians(StatsPeriod $period, StatsScope $scope): array {
+  public function stageMedians(StatsPeriod $period): array {
 
     $durations = array_fill_keys(array_keys(static::STAGES), []);
-    foreach ($this->history($scope) as $project) {
+    foreach ($this->history() as $project) {
       $last = [];
       foreach ($project['rows'] as [$transition, $timestamp]) {
         foreach (static::STAGES as $stage => [$from, $to]) {
@@ -179,10 +178,10 @@ class ProjectStats {
    * @return array<int, array{project: int, ts: int}>
    *   The publish rows ordered by time.
    */
-  public function publishRows(StatsPeriod $period, StatsScope $scope): array {
+  public function publishRows(StatsPeriod $period): array {
 
     $rows = [];
-    foreach ($this->history($scope) as $id => $project) {
+    foreach ($this->history() as $id => $project) {
       foreach ($project['rows'] as [$transition, $timestamp]) {
         if ($transition === ProjectTransition::Publish->value && $period->contains($timestamp)) {
           $rows[] = ['project' => $id, 'ts' => $timestamp];
@@ -202,13 +201,13 @@ class ProjectStats {
    * @return array{mediated: array<string, int>, completed: array<string, int>}
    *   The running totals per bucket.
    */
-  public function cumulative(StatsPeriod $period, StatsScope $scope): array {
+  public function cumulative(StatsPeriod $period): array {
 
     $first = [
       ProjectTransition::Mediate->value => [],
       ProjectTransition::Complete->value => [],
     ];
-    foreach ($this->history($scope) as $id => $project) {
+    foreach ($this->history() as $id => $project) {
       foreach ($project['rows'] as [$transition, $timestamp]) {
         if (isset($first[$transition]) && !isset($first[$transition][$id])) {
           $first[$transition][$id] = $timestamp;
@@ -226,21 +225,16 @@ class ProjectStats {
   }
 
   /**
-   * Gets the lifecycle history of the projects in the scope.
+   * Gets the lifecycle history of all projects.
    *
    * @return array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>
    *   The project status and the transitions with timestamps in history
    *   order, keyed by project.
    */
-  protected function history(StatsScope $scope): array {
+  protected function history(): array {
 
-    $organization_ids = $scope->organizationIds();
-    if ($organization_ids === []) {
-      return [];
-    }
-    $key = $organization_ids === NULL ? 'all' : implode(',', $organization_ids);
-    if (isset($this->histories[$key])) {
-      return $this->histories[$key];
+    if ($this->history !== NULL) {
+      return $this->history;
     }
 
     $query = $this->database->select('project__field_lifecycle_history', 'h');
@@ -253,9 +247,6 @@ class ProjectStats {
       ->isNotNull('h.field_lifecycle_history_transition')
       ->orderBy('h.entity_id')
       ->orderBy('h.delta');
-    if ($organization_ids !== NULL) {
-      $query->condition('p.uid', $organization_ids, 'IN');
-    }
 
     $history = [];
     foreach ($query->execute() as $row) {
@@ -263,7 +254,7 @@ class ProjectStats {
       $history[$id]['status'] = (int) $row->status;
       $history[$id]['rows'][] = [$row->transition, (int) $row->timestamp];
     }
-    $this->histories[$key] = $history;
+    $this->history = $history;
     return $history;
   }
 

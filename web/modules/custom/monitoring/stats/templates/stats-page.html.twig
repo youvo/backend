@@ -4,8 +4,8 @@
  * The stats page: period bar, KPI tiles and the sections of the charts.
  *
  * Available variables:
- * - period_bar: The heading, presets, navigation and values of the filter form.
- * - kpis: The KPI tiles with value, change and label.
+ * - period_bar: The heading, the preset links and the navigation links.
+ * - kpis: The KPI tiles with value and label.
  * - sections: The render array of the chart sections.
  */
 #}
@@ -27,26 +27,6 @@
         {% endif %}
       </ul>
     {% endif %}
-
-    <form class="stats-period-form" method="get" action="">
-      <label>{{ 'From'|t }} <input type="date" name="from" value="{{ period_bar.from }}"></label>
-      <label>{{ 'To'|t }} <input type="date" name="to" value="{{ period_bar.to }}"></label>
-      <label>{{ 'Compare'|t }}
-        <select name="compare">
-          {% for value, label in period_bar.compare_options %}
-            <option value="{{ value }}"{{ value == period_bar.compare ? ' selected' }}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label>{{ 'Manager'|t }}
-        <select name="manager">
-          {% for manager in period_bar.managers %}
-            <option value="{{ manager.id }}"{{ manager.selected ? ' selected' }}>{{ manager.name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <button type="submit" class="stats-apply">{{ 'Apply'|t }}</button>
-    </form>
   </div>
 
   {% include '@stats/stats-tiles.html.twig' with {tiles: kpis, attributes: create_attribute()} only %}
