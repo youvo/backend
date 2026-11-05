@@ -540,41 +540,7 @@ display:
             identifier: tags
             required: false
             remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            reduce: false
-          is_grouped: false
-          reduce_duplicates: false
-          vid: tags
-          type: textfield
-          hierarchy: false
-          limit: true
-          error_message: true
-        field_tags_target_id_1:
-          id: field_tags_target_id_1
-          table: user__field_tags
-          field: field_tags_target_id
-          relationship: none
-          group_type: group
-          admin_label: 'Tags (none of)'
-          plugin_id: taxonomy_index_tid
-          operator: not
-          value: {  }
-          group: 1
-          exposed: true
-          expose:
-            operator_id: tags_not_op
-            label: 'Without tags'
-            description: ''
-            use_operator: false
-            operator: tags_not_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: tags_not
-            required: false
-            remember: false
-            multiple: false
+            multiple: true
             remember_roles:
               authenticated: authenticated
             reduce: false

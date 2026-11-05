@@ -166,6 +166,23 @@ class CreativesViewsHooks {
       $cache->applyTo($form);
     }
 
+    // The tags are a Tagify input, as the tags on the creative form. In this
+    // GET form, Tagify submits the chosen tags as tags[]=<tid>.
+    if (isset($form['tags']['#target_type'])) {
+      $form['tags'] = [
+        '#type' => 'entity_autocomplete_tagify',
+        '#target_type' => 'taxonomy_term',
+        '#tags' => TRUE,
+        '#cardinality' => -1,
+        '#max_items' => 20,
+        '#selection_handler' => $form['tags']['#selection_handler'] ?? 'default',
+        '#selection_settings' => $form['tags']['#selection_settings'] ?? [],
+        '#placeholder' => $this->t('Search tags'),
+        '#attributes' => ['class' => ['creatives-tags']],
+        '#element_validate' => [[static::class, 'validateTags']],
+      ];
+    }
+
     // Views sets the labels of the filters at the top level of the form when
     // it renders it. The filters in a group take them along instead.
     foreach ($form['#info'] ?? [] as $id => $info) {
@@ -181,7 +198,7 @@ class CreativesViewsHooks {
     $groups = [
       'skills_and_tags' => [
         'title' => $this->t('Skills and tags'),
-        'filters' => ['skills' => 'skills', 'tags' => 'tags', 'tags_not' => 'tags_not'],
+        'filters' => ['skills' => 'skills', 'tags' => 'tags'],
       ],
       'activity' => [
         'title' => $this->t('Activity'),
@@ -245,6 +262,23 @@ class CreativesViewsHooks {
   public static function validateSkills(array &$element, FormStateInterface $form_state): void {
     $value = array_filter((array) $element['#value']);
     $form_state->setValueForElement($element, array_combine($value, $value));
+  }
+
+  /**
+   * Turns the Tagify value into the term references the tags filter expects.
+   *
+   * Tagify's value is a JSON list of the chosen tags with their entity IDs.
+   */
+  public static function validateTags(array &$element, FormStateInterface $form_state): void {
+    $value = $form_state->getValue($element['#parents']);
+    $items = is_string($value) && $value !== '' ? json_decode($value, TRUE) : NULL;
+    $tags = [];
+    foreach (is_array($items) ? $items : [] as $item) {
+      if (isset($item['entity_id']) && is_numeric($item['entity_id'])) {
+        $tags[] = ['target_id' => (int) $item['entity_id']];
+      }
+    }
+    $form_state->setValueForElement($element, $tags ?: NULL);
   }
 
   /**

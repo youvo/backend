@@ -99,7 +99,7 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
   }
 
   /**
-   * The skills match any of the chosen, the tags include and exclude.
+   * The skills and the tags match any of the chosen.
    */
   public function testTermFilters(): void {
 
@@ -129,19 +129,16 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
     $t2 = $this->createTag();
     $t3 = $this->createTag();
     $only_t1 = $this->creative(['field_tags' => [$t1->id()]]);
-    $this->creative(['field_tags' => [$t1->id(), $t2->id()]]);
+    $t1_and_t2 = $this->creative(['field_tags' => [$t1->id(), $t2->id()]]);
     $t1_and_t3 = $this->creative(['field_tags' => [$t1->id(), $t3->id()]]);
 
-    $result = $this->uids([
-      'tags' => $this->autocomplete($t1),
-      'tags_not' => $this->autocomplete($t2),
-    ]);
-    $this->assertEqualsCanonicalizing([(int) $only_t1->id(), (int) $t1_and_t3->id()], $result);
+    // Tagify submits the chosen tags as tags[]=<tid>.
+    $result = $this->uids(['tags' => [$t1->id()]]);
+    $this->assertEqualsCanonicalizing([(int) $only_t1->id(), (int) $t1_and_t2->id(), (int) $t1_and_t3->id()], $result);
 
-    // Two matching tags list the creative once.
-    $result = $this->uids(['tags' => $this->autocomplete($t1, $t3)]);
-    $this->assertCount(1, array_keys($result, (int) $t1_and_t3->id(), TRUE));
-    $this->assertCount(3, $result);
+    // Several tags match any of them, and list each creative once.
+    $result = $this->uids(['tags' => [$t2->id(), $t3->id()]]);
+    $this->assertEqualsCanonicalizing([(int) $t1_and_t2->id(), (int) $t1_and_t3->id()], $result);
   }
 
   /**
@@ -302,13 +299,6 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
     $term->save();
     $this->markEntityForCleanup($term);
     return $term;
-  }
-
-  /**
-   * Formats terms as the input of an autocomplete field.
-   */
-  protected function autocomplete(TermInterface ...$terms): string {
-    return implode(', ', array_map(static fn (TermInterface $term): string => $term->label() . ' (' . $term->id() . ')', $terms));
   }
 
   /**

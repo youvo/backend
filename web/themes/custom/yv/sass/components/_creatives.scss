@@ -155,6 +155,20 @@
 
 }
 
+// The tags: a wide Tagify input, so several chosen tags fit on one line.
+// Tagify takes over the classes of the input it replaces.
+// Tagify's classes, outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.creatives-filter-group .form-item:has(.tagify.creatives-tags) {
+  flex: 1 1 28rem;
+}
+
+.tagify.creatives-tags {
+  width: 100%;
+  min-height: 2.5rem;
+}
+// stylelint-enable selector-class-pattern
+
 // The skills: the skill icons themselves are the checkboxes. The native box
 // stays focusable and clickable on top of the icon but invisible. A skill that
 // is not chosen is muted; a chosen one shows its color with a ring.

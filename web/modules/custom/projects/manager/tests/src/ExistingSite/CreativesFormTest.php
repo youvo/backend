@@ -54,6 +54,8 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $this->assertSame(['before', 'after'], $this->optionLabels('last_access_op'));
     $session->elementNotExists('css', 'form.views-exposed-form [name="skills_op"]');
     $session->elementExists('xpath', $this->groupXpath('Skills and tags') . '//label/span[@class="skill" and @data-skill="design" and @title="Design"]');
+    $session->elementExists('xpath', $this->groupXpath('Skills and tags') . '//input[@name="tags" and contains(@class, "creatives-tags")]');
+    $session->elementNotExists('css', 'form.views-exposed-form [name="tags_not"]');
   }
 
   /**
