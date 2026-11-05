@@ -58,8 +58,99 @@
 
 // Gin lines up the fields of the form and wraps them, but keeps an operator
 // and its value on one line, which cuts the operator off on small screens.
-// Gin's class, outside our naming pattern.
-// stylelint-disable-next-line selector-class-pattern
-.view-creatives .views-exposed-form .fieldset__wrapper {
-  flex-wrap: wrap;
+// Gin's classes, outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.view-creatives .views-exposed-form {
+  // An operator and its value read as one field: no frame around them, the
+  // legend in the place and style of a label.
+  .fieldset {
+    margin-block: var(--gin-spacing-s) 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .fieldset__legend {
+    margin: 0;
+    padding: 0;
+  }
+
+  // Doubled: Gin's small-screen rules indent them with more specificity.
+  .fieldset__label.fieldset__label {
+    padding: 0;
+    font-size: var(--gin-font-size-s);
+  }
+
+  .fieldset__wrapper.fieldset__wrapper {
+    flex-wrap: wrap;
+    gap: var(--gin-spacing-xs);
+    margin: 0;
+    padding: var(--gin-spacing-xxs) 0 0;
+  }
+
+  .fieldset .form-item {
+    margin: 0;
+  }
+
+  // Shorter text fields keep the main filters, the sorts and the buttons in
+  // one row on a desktop.
+  input.form-text {
+    width: 12rem;
+    max-width: 100%;
+  }
+}
+// stylelint-enable selector-class-pattern
+
+// The filter groups: one block below the main filters, the groups stacked as
+// the rows of a list with hairlines between them. Inside a group the filters
+// line up in a row and wrap.
+.creatives-filter-groups {
+  flex-basis: 100%;
+  margin-block-start: var(--gin-spacing-m);
+  border-radius: var(--gin-border-m);
+  box-shadow: inset 0 0 0 1px var(--yv-outline);
+}
+
+.creatives-filter-group.creatives-filter-group {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+
+  & + & {
+    border-block-start: 1px solid var(--yv-outline);
+  }
+
+  // Gin's classes, outside our naming pattern.
+  // stylelint-disable selector-class-pattern
+  .claro-details__summary {
+    font-size: var(--gin-font-size-s);
+  }
+
+  .claro-details__wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--gin-spacing-xs) var(--gin-spacing-m);
+    margin: 0;
+    padding: 0 var(--gin-spacing-m) var(--gin-spacing-m);
+  }
+
+  .form-item,
+  .fieldset {
+    max-width: 100%;
+    margin-block: 0;
+  }
+
+  .form-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--gin-spacing-m);
+    align-self: center;
+  }
+  // stylelint-enable selector-class-pattern
+
 }
