@@ -75,9 +75,11 @@ class StatsController implements ContainerInjectionInterface {
       'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
     ];
 
-    // The totals show the state at the end of the period, or now.
-    $until = min($period->to()->getTimestamp(), $now->getTimestamp());
-    $last_day = $until === $now->getTimestamp() ? $now : $period->to()->modify('-1 day');
+    // The totals show the state at the end of the period. A period that has not
+    // ended yet shows the exact current totals.
+    $ended = $period->to() <= $now;
+    $until = $ended ? $period->to()->getTimestamp() : NULL;
+    $last_day = $ended ? $period->to()->modify('-1 day') : $now;
     $kpis = [
       $this->tile('creatives', $this->t('Registered creatives'), $this->calculator->countCreatives($until), 'count'),
       $this->tile('organizations', $this->t('Registered organizations'), $this->calculator->countOrganizations($until), 'count'),
