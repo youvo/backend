@@ -14,15 +14,22 @@
 
   let tokens = {};
 
+  // The tokens the defaults were last set from, as JSON.
+  let applied = '';
+
   /**
    * Reads the theme tokens from the body, where Gin sets its colors.
+   *
+   * A token the theme does not set reads as an empty string, which Chart.js
+   * ignores in favor of its defaults. A missing palette color is transparent,
+   * so the series keep their indexes.
    */
   const readTokens = () => {
     const style = getComputedStyle(document.body);
     const get = (name) => style.getPropertyValue(name).trim();
     const palette = [];
     for (let i = 1; i <= PALETTE_SIZE; i++) {
-      palette.push(get(`--yv-chart-${i}`) || '#526079');
+      palette.push(get(`--yv-chart-${i}`) || 'transparent');
     }
     tokens = {
       ink: get('--yv-ink'),
@@ -50,6 +57,7 @@
    */
   const applyDefaults = () => {
     const { defaults, overrides } = Chart;
+    applied = JSON.stringify(tokens);
 
     defaults.font.family = tokens.font;
     defaults.font.size = 12;
@@ -120,7 +128,12 @@
     Object.assign(defaults.elements.bar, { borderRadius: 5, borderWidth: 0 });
 
     // Smooth lines with points on hover only.
-    Object.assign(defaults.elements.line, { tension: 0.35, borderWidth: 2 });
+    // Monotone curves never overshoot, so running totals never seem to dip.
+    Object.assign(defaults.elements.line, {
+      tension: 0.35,
+      cubicInterpolationMode: 'monotone',
+      borderWidth: 2,
+    });
     Object.assign(defaults.elements.point, {
       radius: 0,
       hoverRadius: 4,
@@ -164,15 +177,21 @@
       const { datasets } = chart.data;
       datasets.forEach((dataset, index) => {
         if (type === 'doughnut') {
-          dataset.backgroundColor = dataset.data.map((value, i) =>
-            paletteColor(i),
-          );
+          dataset.backgroundColor = dataset.data.map((_, i) => paletteColor(i));
           return;
         }
         const color = datasets.length === 1 ? tokens.accent : paletteColor(index);
         dataset.borderColor = color;
+        if (type === 'line' && datasets.length > 1) {
+          // Several areas would blend into a haze: lines only.
+          dataset.fill = false;
+          dataset.backgroundColor = color;
+          dataset.pointBackgroundColor = color;
+          dataset.pointBorderColor = tokens.surface;
+          return;
+        }
         if (type === 'line') {
-          // A soft gradient from the line down to the axis.
+          // A soft gradient from the single line down to the axis.
           dataset.fill = 'origin';
           dataset.backgroundColor = (context) => {
             const area = context.chart.chartArea;
@@ -296,8 +315,8 @@
    * by then, so the listener sits on the element itself.
    */
   const configure = (event) => {
-    // Gin's accent behavior has run by now: read the tokens it sets.
-    readTokens();
+    // Gin's accent behavior has run by now: take over the tokens it sets.
+    refresh(false);
     const config = event.detail;
     const options = config.options || {};
     config.options = options;
@@ -333,9 +352,8 @@
   // accent, and redraw the charts. Once the font has loaded, redraw them in it. A plain update keeps
   // a running animation intact, which update('none') would freeze midway.
   const refresh = (force) => {
-    const before = JSON.stringify(tokens);
     readTokens();
-    if (!force && JSON.stringify(tokens) === before) {
+    if (!force && JSON.stringify(tokens) === applied) {
       return;
     }
     applyDefaults();
