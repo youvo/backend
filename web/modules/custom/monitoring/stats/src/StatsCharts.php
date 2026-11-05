@@ -24,13 +24,13 @@ class StatsCharts {
    *   Whether the card spans two columns.
    * @param bool $tall
    *   Whether the card spans two rows, with a taller chart.
-   * @param bool $full
-   *   Whether the card spans the whole row.
+   * @param bool $compact
+   *   Whether the card holds a small chart of a fixed low height.
    *
    * @return array<string, mixed>
    *   The card render array.
    */
-  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $full = FALSE): array {
+  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $compact = FALSE): array {
     $title_id = $chart['#id'] . '-title';
     $attributes = [
       'class' => ['stats-card'],
@@ -39,11 +39,11 @@ class StatsCharts {
     if ($wide) {
       $attributes['data-wide'] = '';
     }
-    if ($full) {
-      $attributes['data-full'] = '';
-    }
     if ($tall) {
       $attributes['data-tall'] = '';
+    }
+    if ($compact) {
+      $attributes['data-compact'] = '';
     }
     // The stylesheet sizes the figure of the chart: square for tall cards and
     // doughnuts, which keeps room for the plot under a long legend.

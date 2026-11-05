@@ -261,6 +261,41 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
+   * The growth section shows one small chart per running total.
+   */
+  public function testGrowthCards(): void {
+
+    $this->setUpScenario();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->elementNotExists('css', '#stats-growth');
+
+    // The scenario registers no creatives, three organizations and mediates
+    // four projects, one reset later, of which one is completed. The site holds
+    // no older users or projects.
+    $expected = [
+      'creatives' => ['Creatives', '0'],
+      'organizations' => ['Organizations', '3'],
+      'mediated' => ['Projects mediated', '4'],
+      'completed' => ['Projects completed', '1'],
+    ];
+    foreach ($expected as $key => [$title, $value]) {
+      $id = 'stats-growth-' . $key;
+      $card = '.stats-growth .stats-card[aria-labelledby="' . $id . '-title"]';
+      $this->assertSession()->elementExists('css', $card . ' #' . $id);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-title', $title);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-value[data-value="' . $key . '"]', $value);
+
+      // The value is the last point of the chart.
+      $rows = $this->getSession()->getPage()->findAll('xpath', '//div[@id="' . $id . '"]/following-sibling::div//table/tbody/tr');
+      $cells = end($rows)->findAll('xpath', 'th|td');
+      $this->assertSame($value, trim(end($cells)->getText()), $key);
+    }
+  }
+
+  /**
    * The page render array bubbles its cache metadata to the response.
    */
   public function testCacheMetadata(): void {

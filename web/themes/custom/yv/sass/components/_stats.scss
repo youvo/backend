@@ -275,10 +275,6 @@
     }
   }
 
-  &[data-full] {
-    grid-column: 1 / -1;
-  }
-
   // Chart.js fills the figure (the script turns off its aspect ratio), so the
   // figure sets the size: twice as wide as high, square in tall cards and for
   // doughnuts, at most 20rem high and on narrow screens at least 220px.
@@ -298,6 +294,40 @@
   &[data-square] .charts-figure {
     aspect-ratio: 1;
   }
+
+  // A small chart of a fixed low height under its value.
+  &[data-compact] .charts-figure {
+    min-height: 0;
+    height: 8.5rem;
+    aspect-ratio: auto;
+  }
+}
+
+// The growth cards: one row of four on wide screens, two by two on medium
+// ones, one column on phones.
+.stats-growth {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+// The total at the end of the period, as large as a tile value.
+.stats-card-value {
+  margin: 0 0 var(--gin-spacing-s);
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h3);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 .stats-card-title {

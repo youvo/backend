@@ -192,7 +192,10 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the growth section: running totals of users and projects.
+   * Builds the growth section: one small chart per running total.
+   *
+   * Each card shows the total at the end of the period, the last point of its
+   * chart, over the chart with its own scale.
    *
    * @return array<string, mixed>
    *   The section render array.
@@ -203,16 +206,42 @@ class StatsController implements ContainerInjectionInterface {
     $registrations = $this->activityStats->registrations($period);
     $projects = $this->projectStats->cumulative($period);
     $series = [
-      (string) $this->t('Creatives') => array_values($registrations['creatives_total']),
-      (string) $this->t('Organizations') => array_values($registrations['organizations_total']),
-      (string) $this->t('Projects mediated') => array_values($projects['mediated']),
-      (string) $this->t('Projects completed') => array_values($projects['completed']),
+      'creatives' => [$this->t('Creatives'), $registrations['creatives_total']],
+      'organizations' => [$this->t('Organizations'), $registrations['organizations_total']],
+      'mediated' => [$this->t('Projects mediated'), $projects['mediated']],
+      'completed' => [$this->t('Projects completed'), $projects['completed']],
     ];
-    $chart = StatsCharts::line('stats-growth', (string) $this->t('Running totals'), $labels, $series);
+
+    $cards = [];
+    foreach ($series as $key => [$title, $values]) {
+      $values = array_values($values);
+      $chart = StatsCharts::line('stats-growth-' . $key, (string) $title, $labels, [(string) $title => $values]);
+      // Few ticks keep the small chart readable.
+      $chart['#raw_options']['options']['scales']['y']['ticks']['maxTicksLimit'] = 3;
+      $chart['#raw_options']['options']['scales']['x']['ticks'] = [
+        'maxTicksLimit' => 4,
+        'maxRotation' => 0,
+        'autoSkipPadding' => 12,
+      ];
+      $card = StatsCharts::card($chart, compact: TRUE);
+      $chart = $card['chart'];
+      unset($card['chart']);
+      $card['value'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $values === [] ? '–' : (string) end($values),
+        '#attributes' => ['class' => ['stats-card-value'], 'data-value' => $key],
+      ];
+      $card['chart'] = $chart;
+      $cards[$key] = $card;
+    }
 
     $heading = $this->heading($this->t('Growth'));
     return $this->section($heading, [
-      'growth' => StatsCharts::card($chart, full: TRUE),
+      'growth' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['stats-growth']],
+      ] + $cards,
     ]);
   }
 
