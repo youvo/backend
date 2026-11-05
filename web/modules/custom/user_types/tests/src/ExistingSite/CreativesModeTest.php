@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\manager\ExistingSite;
+namespace Drupal\Tests\user_types\ExistingSite;
 
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
@@ -12,8 +12,8 @@ use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 /**
  * Tests the table and the profiles mode of the creatives finder.
  */
-#[Group('manager')]
-class CreativesModeTest extends ManagerExistingSiteTestBase {
+#[Group('user_types')]
+class CreativesModeTest extends CreativesTestBase {
 
   /**
    * The shared name prefix of the created creatives.

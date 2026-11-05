@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\manager\Hook;
+namespace Drupal\user_types\Hook;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheableMetadata;
@@ -40,39 +40,36 @@ class CreativesViewsHooks {
         $data['user__' . $field][$field . '_value']['filter']['type'] = 'yes-no';
       }
     }
-    foreach ([
-      'creative_applied' => [
-        'title' => $this->t('Creatives: Applied to a project'),
-        'field' => 'field_applicants',
-      ],
-      'creative_participated' => [
-        'title' => $this->t('Creatives: Took part in a project'),
-        'field' => 'field_participants',
-      ],
-    ] as $key => $info) {
-      $data['users_field_data'][$key] = [
-        'title' => $info['title'],
-        'help' => $this->t('Whether a project lists the creative in the field %field.', ['%field' => $info['field']]),
-        'real field' => 'uid',
-        'filter' => [
-          'id' => 'creative_project_activity',
-          'real field' => 'uid',
-          'project_field' => $info['field'],
-          'type' => 'yes-no',
+    // The projects build on the user types, so their filters are optional.
+    if ($this->entityTypeManager->hasDefinition('project')) {
+      foreach ([
+        'creative_applied' => [
+          'title' => $this->t('Creatives: Applied to a project'),
+          'field' => 'field_applicants',
         ],
-      ];
+        'creative_participated' => [
+          'title' => $this->t('Creatives: Took part in a project'),
+          'field' => 'field_participants',
+        ],
+      ] as $key => $info) {
+        $data['users_field_data'][$key] = [
+          'title' => $info['title'],
+          'help' => $this->t('Whether a project lists the creative in the field %field.', ['%field' => $info['field']]),
+          'real field' => 'uid',
+          'filter' => [
+            'id' => 'creative_project_activity',
+            'real field' => 'uid',
+            'project_field' => $info['field'],
+            'type' => 'yes-no',
+          ],
+        ];
+      }
     }
     $data['users_field_data']['creative_has_link'] = [
       'title' => $this->t('Creatives: Has a portfolio or website'),
       'help' => $this->t('Whether the creative entered a website or a portfolio link.'),
       'real field' => 'uid',
       'filter' => ['id' => 'creative_has_link', 'real field' => 'uid', 'type' => 'yes-no'],
-    ];
-    $data['users_field_data']['creative_returned'] = [
-      'title' => $this->t('Creatives: Returned'),
-      'help' => $this->t('Whether the creative accessed the site at least a day after registering.'),
-      'real field' => 'uid',
-      'filter' => ['id' => 'creative_returned', 'real field' => 'uid', 'type' => 'yes-no'],
     ];
     $data['views']['creatives_mode_toggle'] = [
       'title' => $this->t('Creatives: Mode toggle'),

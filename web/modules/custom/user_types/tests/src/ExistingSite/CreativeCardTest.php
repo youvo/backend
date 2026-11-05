@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\manager\ExistingSite;
+namespace Drupal\Tests\user_types\ExistingSite;
 
 use Behat\Mink\Element\NodeElement;
 use Drupal\creatives\Entity\Creative;
@@ -11,8 +11,8 @@ use PHPUnit\Framework\Attributes\Group;
 /**
  * Tests the profile cards of the creatives finder.
  */
-#[Group('manager')]
-class CreativeCardTest extends ManagerExistingSiteTestBase {
+#[Group('user_types')]
+class CreativeCardTest extends CreativesTestBase {
 
   /**
    * The card shows the main section of the profile, but no contact data.

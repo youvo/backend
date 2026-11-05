@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\manager\ExistingSite;
+namespace Drupal\Tests\user_types\ExistingSite;
 
 use Behat\Mink\Element\NodeElement;
 use PHPUnit\Framework\Attributes\Group;
@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Group;
 /**
  * Tests the layout of the filter form of the creatives finder.
  */
-#[Group('manager')]
-class CreativesFormTest extends ManagerExistingSiteTestBase {
+#[Group('user_types')]
+class CreativesFormTest extends CreativesTestBase {
 
   /**
    * The summaries of the filter groups, in their order.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\manager\Plugin\views\area;
+namespace Drupal\user_types\Plugin\views\area;
 
 use Drupal\Core\Url;
 use Drupal\views\Attribute\ViewsArea;

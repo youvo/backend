@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\manager\Plugin\views\filter;
+namespace Drupal\user_types\Plugin\views\filter;
 
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\BooleanOperator;
 
 /**
- * Filters the creatives by whether they came back after registering.
+ * Filters users by whether they came back after registering.
  *
- * A creative returned when the last access lies at least a day after the
- * registration, as on the old site. Creatives who never logged in did not.
+ * A user returned when the last access lies at least a day after the
+ * registration, as on the old site. Users who never logged in did not.
  */
-#[ViewsFilter('creative_returned')]
-class CreativeReturned extends BooleanOperator {
+#[ViewsFilter('user_returned')]
+class UserReturned extends BooleanOperator {
 
   /**
    * The seconds after the registration from which an access is a return.

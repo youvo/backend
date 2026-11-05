@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\manager\ExistingSite;
+namespace Drupal\Tests\user_types\ExistingSite;
 
 use Drupal\Core\File\FileExists;
 use Drupal\Core\Session\AnonymousUserSession;
@@ -16,8 +16,8 @@ use PHPUnit\Framework\Attributes\Group;
 /**
  * Tests the creatives finder view and its filters.
  */
-#[Group('manager')]
-class CreativesViewTest extends ManagerExistingSiteTestBase {
+#[Group('user_types')]
+class CreativesViewTest extends CreativesTestBase {
 
   /**
    * The ids of the creatives this test created.
