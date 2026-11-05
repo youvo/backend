@@ -219,4 +219,22 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSame(['12', '9'], array_slice($values, 0, 2));
   }
 
+  /**
+   * The feedback and academy section renders its charts and tiles.
+   */
+  public function testFeedbackSectionRenders(): void {
+
+    $manager = $this->setUpScenario();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001, 'manager' => $manager->id()]]);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->pageTextContains('Feedback and academy');
+    foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {
+      $this->assertSession()->elementExists('css', '#' . $id);
+    }
+    $this->assertSession()->elementExists('css', '.stats-kpi--academy-enrolled .stats-kpi__value');
+    $this->assertSession()->elementExists('css', '.stats-kpi--academy-completed .stats-kpi__value');
+  }
+
 }

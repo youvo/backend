@@ -13,6 +13,7 @@ use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\Activity\ActivitySnapshots;
 use Drupal\stats\Stats\ActivityStats;
+use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\Stats\ProjectStats;
 use Drupal\stats\StatsCharts;
 use Drupal\stats\StatsPeriod;
@@ -48,6 +49,7 @@ class StatsController implements ContainerInjectionInterface {
   public function __construct(
     protected ProjectStats $projectStats,
     protected ActivityStats $activityStats,
+    protected FeedbackStats $feedbackStats,
     protected ActivitySnapshots $activitySnapshots,
     protected ConfigFactoryInterface $configFactory,
     protected TimeInterface $time,
@@ -61,6 +63,7 @@ class StatsController implements ContainerInjectionInterface {
     return new static(
       $container->get('stats.project_stats'),
       $container->get('stats.activity_stats'),
+      $container->get('stats.feedback_stats'),
       $container->get('stats.activity_snapshots'),
       $container->get('config.factory'),
       $container->get('datetime.time'),
@@ -116,6 +119,7 @@ class StatsController implements ContainerInjectionInterface {
         'applications' => $this->applicationsSection($period, $comparison, $scope, $versus),
         'creatives' => $this->creativesSection($period, $comparison, $versus),
         'organizations' => $this->organizationsSection($period, $scope),
+        'feedback' => $this->feedbackSection($period, $comparison, $scope, $versus),
       ],
       '#attached' => ['library' => ['stats/page']],
       '#cache' => [
@@ -362,6 +366,48 @@ class StatsController implements ContainerInjectionInterface {
       'decline_reasons' => StatsCharts::card($decline_chart),
       'archive_reasons' => StatsCharts::card($archive_chart),
     ]);
+  }
+
+  /**
+   * Builds the feedback and academy section.
+   *
+   * @return array<string, mixed>
+   *   The section render array.
+   */
+  protected function feedbackSection(StatsPeriod $period, ?StatsPeriod $comparison, StatsScope $scope, mixed $versus): array {
+
+    $feedback = $this->feedbackStats->feedback($period, $scope);
+    $academy = $this->feedbackStats->academy($period);
+    $academy_before = $comparison ? $this->feedbackStats->academy($comparison) : NULL;
+    $bundle_titles = [
+      'creative' => $this->t('Feedback from creatives'),
+      'organization' => $this->t('Feedback from organizations'),
+    ];
+
+    $cards = [];
+    foreach ($feedback as $bundle => $data) {
+      $fields = $this->feedbackStats->scaleFields($bundle);
+      $series = [
+        (string) $this->t('Average (max 5)') => array_values($data['scales']),
+      ];
+      $recommend = $data['recommend'] === NULL ? '–' : round($data['recommend'] * 100) . ' %';
+      $title = (string) $this->t('@title: @count answers, recommend @share', [
+        '@title' => $bundle_titles[$bundle] ?? $bundle,
+        '@count' => $data['count'],
+        '@share' => $recommend,
+      ]);
+      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, array_values($fields), $series, horizontal: TRUE);
+      $cards['feedback_' . $bundle] = StatsCharts::card($chart, wide: TRUE);
+    }
+
+    $tiles = [
+      $this->tile('academy-enrolled', $this->t('Enrolled in courses'), $academy['enrolled'], $academy_before['enrolled'] ?? NULL, 'count', $versus),
+      $this->tile('academy-completed', $this->t('Completed courses'), $academy['completed'], $academy_before['completed'] ?? NULL, 'count', $versus),
+    ];
+    $cards['tiles'] = $this->tiles($tiles);
+
+    $heading = $this->heading($this->t('Feedback and academy'), $this->t('old: feedback stats per year'));
+    return $this->section($heading, $cards);
   }
 
   /**

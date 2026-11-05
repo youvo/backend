@@ -17,3 +17,8 @@ services:
     class: Drupal\stats\Stats\ActivityStats
     arguments: [ '@database' ]
   Drupal\stats\Stats\ActivityStats: '@stats.activity_stats'
+
+  stats.feedback_stats:
+    class: Drupal\stats\Stats\FeedbackStats
+    arguments: [ '@database', '@entity_field.manager' ]
+  Drupal\stats\Stats\FeedbackStats: '@stats.feedback_stats'
