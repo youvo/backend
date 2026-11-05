@@ -152,9 +152,9 @@ $field-height: 2.5rem;
   }
 
   // The top row is spaced by gaps alone, so an element that wraps starts
-  // flush with the fields. Gin spaces the elements with margins instead, on
-  // top of a slim top padding it forces with an ID-level specificity hack;
-  // the card now keeps Gin's padding of its sides at the top as well.
+  // flush with the fields; Gin spaces them with margins. The card keeps
+  // Gin's padding of its sides at the top as well, where Gin forces a slimmer
+  // one with an ID-level specificity hack.
   gap: var(--gin-spacing-s) var(--gin-spacing-m);
   padding-block-start: var(--gin-spacing-s) !important;
 

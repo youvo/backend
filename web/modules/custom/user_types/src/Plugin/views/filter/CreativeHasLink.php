@@ -53,15 +53,18 @@ class CreativeHasLink extends BooleanOperator {
    * Adds the existence condition for a website or portfolio value.
    */
   public function query(): void {
+
+    $this->ensureMyTable();
+    $user = '[' . $this->tableAlias . '].[' . $this->realField . ']';
     $url = $this->database->select('user__field_url', 'link_url');
     $url->addExpression('1');
-    $url->where('[link_url].[entity_id] = [users_field_data].[uid]');
+    $url->where('[link_url].[entity_id] = ' . $user);
     $url->isNotNull('link_url.field_url_value');
     $url->condition('link_url.field_url_value', '', '<>');
 
     $portfolio = $this->database->select('user__field_portfolio', 'link_portfolio');
     $portfolio->addExpression('1');
-    $portfolio->where('[link_portfolio].[entity_id] = [users_field_data].[uid]');
+    $portfolio->where('[link_portfolio].[entity_id] = ' . $user);
     $portfolio->isNotNull('link_portfolio.field_portfolio_value');
     $portfolio->condition('link_portfolio.field_portfolio_value', '', '<>');
 

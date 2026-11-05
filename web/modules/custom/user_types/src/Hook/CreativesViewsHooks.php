@@ -315,12 +315,9 @@ class CreativesViewsHooks {
       unset($wrapper);
     }
 
-    // Apply is the primary action, Reset the secondary one next to it.
+    // Apply is the primary action; Reset stays Gin's secondary button.
     if (isset($form['actions']['submit'])) {
       $form['actions']['submit']['#attributes']['class'][] = 'button--primary';
-    }
-    if (isset($form['actions']['reset'])) {
-      $form['actions']['reset']['#attributes']['class'][] = 'creatives-reset';
     }
 
     if ($this->isProfilesMode()) {

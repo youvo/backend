@@ -3,7 +3,6 @@ langcode: de
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.taxonomy_term.icon
     - core.entity_view_mode.user.card
     - field.storage.user.field_city
     - field.storage.user.field_name
@@ -1101,6 +1100,18 @@ display:
       header: {  }
       footer: {  }
       display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags:
+        - 'config:field.storage.user.field_city'
+        - 'config:field.storage.user.field_name'
+        - 'config:field.storage.user.field_skills'
   page:
     id: page
     display_title: Page
@@ -1111,6 +1122,18 @@ display:
       display_extenders: {  }
       path: creatives
       use_admin_theme: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags:
+        - 'config:field.storage.user.field_city'
+        - 'config:field.storage.user.field_name'
+        - 'config:field.storage.user.field_skills'
   profiles:
     id: profiles
     display_title: Profiles
@@ -1157,3 +1180,15 @@ display:
         row: false
       display_description: ''
       display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - user.permissions
+      tags:
+        - 'config:field.storage.user.field_city'
+        - 'config:field.storage.user.field_name'
+        - 'config:field.storage.user.field_skills'

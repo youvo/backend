@@ -59,6 +59,9 @@ class CreativeProjectActivity extends BooleanOperator {
    * Adds the existence condition for a project that lists the creative.
    */
   public function query(): void {
+
+    $this->ensureMyTable();
+    $user = '[' . $this->tableAlias . '].[' . $this->realField . ']';
     $project_field = $this->definition['project_field'];
     $table_mapping = $this->entityTypeManager->getStorage('project')->getTableMapping();
     $table = $table_mapping->getFieldTableName($project_field);
@@ -66,7 +69,7 @@ class CreativeProjectActivity extends BooleanOperator {
 
     $subquery = $this->database->select($table, 'project_activity');
     $subquery->addExpression('1');
-    $subquery->where('[project_activity].[' . $column . '] = [users_field_data].[uid]');
+    $subquery->where('[project_activity].[' . $column . '] = ' . $user);
 
     $condition = $this->database->condition('AND');
     if (empty($this->value)) {

@@ -64,7 +64,7 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
-   * Filled-in fields stand out, Apply is primary and Reset a quiet link.
+   * Filled-in fields stand out, Apply is primary and Reset secondary.
    */
   public function testActiveFieldsAndButtons(): void {
 
@@ -84,7 +84,8 @@ class CreativesFormTest extends CreativesTestBase {
     $session->elementExists('css', 'fieldset.creatives-segmented-quiet input[name="last_access_op"]');
     $session->elementNotExists('css', 'fieldset.creatives-segmented-quiet input[name="registered_op"]');
     $session->elementExists('css', 'form.views-exposed-form input[type="submit"][value="Apply"].button--primary');
-    $session->elementExists('css', 'form.views-exposed-form input[type="submit"][value="Reset"].creatives-reset');
+    $session->elementExists('css', 'form.views-exposed-form input[type="submit"][value="Reset"]');
+    $session->elementNotExists('css', 'form.views-exposed-form input[type="submit"][value="Reset"].button--primary');
 
     foreach (['Avatar', 'About text', 'Portfolio', 'Open to jobs'] as $label) {
       $session->elementExists('xpath', $this->groupXpath('Profile') . '//legend[normalize-space() = "' . $label . '"]');
@@ -116,7 +117,7 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
-   * The skills checkboxes filter the creatives, as do links to the old list.
+   * The skills checkboxes filter the creatives, as does a skills[] link.
    */
   public function testSkillsFilterStillWorks(): void {
 
