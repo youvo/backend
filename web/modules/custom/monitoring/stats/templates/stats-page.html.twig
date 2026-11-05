@@ -6,7 +6,7 @@
  * Available variables:
  * - period_bar: The heading, the preset links and the navigation links.
  * - range_form: The form of a custom date range.
- * - kpis: The KPI tiles with value and label.
+ * - kpis: The tiles of the current totals with value and label.
  * - sections: The render array of the chart sections.
  */
 #}
@@ -37,7 +37,11 @@
     </div>
   </div>
 
-  {% include '@stats/stats-tiles.html.twig' with {tiles: kpis, attributes: create_attribute()} only %}
+  <section class="stats-totals" aria-labelledby="stats-totals-title">
+    <h2 class="stats-totals-title" id="stats-totals-title">{{ 'Totals'|t }}</h2>
+    <p class="stats-totals-hint">{{ 'Current, independent of the period'|t }}</p>
+    {% include '@stats/stats-tiles.html.twig' with {tiles: kpis, attributes: create_attribute()} only %}
+  </section>
 
   {{ sections }}
 </div>

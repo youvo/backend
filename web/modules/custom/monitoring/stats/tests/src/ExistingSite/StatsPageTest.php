@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Tests the stats page with the period bar and the KPI tiles.
+ * Tests the stats page with the period bar and the totals tiles.
  */
 #[Group('stats')]
 class StatsPageTest extends StatsTestBase {
@@ -36,17 +36,9 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * Gets the text of a KPI tile value.
+   * The period bar links between periods.
    */
-  protected function kpi(string $key): string {
-    $element = $this->assertSession()->elementExists('css', '.stats-tile[data-tile="' . $key . '"] .stats-tile-value');
-    return trim($element->getText());
-  }
-
-  /**
-   * The tiles show the cohort numbers and the bar links between periods.
-   */
-  public function testKpisForScenario(): void {
+  public function testPeriodBar(): void {
 
     $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
@@ -54,10 +46,6 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2001');
-    $this->assertSame('6', $this->kpi('published'));
-    $this->assertSame('3', $this->kpi('mediated'));
-    $this->assertSame('75 %', $this->kpi('mediation-rate'));
-    $this->assertSame('9.0 d', $this->kpi('median'));
     $this->assertSession()->pageTextNotContains('vs ');
 
     // The period bar holds the presets, the neighbor years and the range form,
@@ -69,7 +57,48 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->linkExists('2002 ›');
     $this->clickLink('2002 ›');
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2002');
-    $this->assertSame('0', $this->kpi('published'));
+  }
+
+  /**
+   * The top tiles show the current totals, the cohort card the mediation rate.
+   */
+  public function testTotalsAndMediationRate(): void {
+
+    $this->setUpScenario();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $calculator = $this->container->get('stats.calculator');
+    $totals = [
+      'creatives' => ['Registered creatives', $calculator->countCreatives()],
+      'organizations' => ['Registered organizations', $calculator->countOrganizations()],
+      'open' => ['Open projects', $calculator->countOpenProjects()],
+      'ongoing' => ['Ongoing projects', $calculator->countOngoingProjects()],
+      'completed' => ['Completed projects', $calculator->countCompletedProjects()],
+      'mediated' => ['Mediated projects', $calculator->countMediatedProjects()],
+    ];
+
+    // The totals ignore the period.
+    foreach ([['period' => 'year', 'year' => 2001], ['period' => 'year', 'year' => 2002]] as $query) {
+      $this->drupalGet('stats', ['query' => $query]);
+      $this->assertSession()->statusCodeEquals(200);
+      $this->assertSession()->elementTextContains('css', '.stats-totals-title', 'Totals');
+      $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'Current, independent of the period');
+      $this->assertCount(6, $this->getSession()->getPage()->findAll('css', '.stats-totals .stats-tile'));
+      foreach ($totals as $key => [$label, $value]) {
+        $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] ';
+        $this->assertSession()->elementTextEquals('css', $tile . '.stats-tile-label', $label);
+        $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile . '.stats-tile-value')->getText()));
+      }
+      foreach (['Published', 'Mediation rate (cohort)', 'Median publish → mediate'] as $label) {
+        $this->assertSession()->elementTextNotContains('css', '.stats-totals', $label);
+      }
+    }
+
+    // The mediation rate of the cohort moved to the footnote of its card.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//p[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//p[@data-foot="mediation-rate"]', 'Mediation rate: –');
   }
 
   /**
@@ -179,7 +208,7 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * A period without data shows dashes for rate and median, zeros for counts.
+   * A period without data shows a dash for the mediation rate.
    */
   public function testEmptyPeriodRendersDashes(): void {
 
@@ -188,9 +217,7 @@ class StatsPageTest extends StatsTestBase {
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSame('0', $this->kpi('published'));
-    $this->assertSame('–', $this->kpi('mediation-rate'));
-    $this->assertSame('–', $this->kpi('median'));
+    $this->assertSession()->elementTextContains('css', '.stats-card [data-foot="mediation-rate"]', '–');
   }
 
   /**

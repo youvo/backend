@@ -16,6 +16,7 @@ use Drupal\stats\Form\StatsRangeForm;
 use Drupal\stats\Stats\ActivityStats;
 use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\Stats\ProjectStats;
+use Drupal\stats\StatsCalculator;
 use Drupal\stats\StatsCharts;
 use Drupal\stats\StatsPeriod;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,6 +37,7 @@ class StatsController implements ContainerInjectionInterface {
     protected ActivityStats $activityStats,
     protected FeedbackStats $feedbackStats,
     protected ActivitySnapshots $activitySnapshots,
+    protected StatsCalculator $calculator,
     protected ConfigFactoryInterface $configFactory,
     protected TimeInterface $time,
     protected FormBuilderInterface $formBuilder,
@@ -50,6 +52,7 @@ class StatsController implements ContainerInjectionInterface {
       $container->get('stats.activity_stats'),
       $container->get('stats.feedback_stats'),
       $container->get('stats.activity_snapshots'),
+      $container->get('stats.calculator'),
       $container->get('config.factory'),
       $container->get('datetime.time'),
       $container->get('form_builder'),
@@ -72,11 +75,14 @@ class StatsController implements ContainerInjectionInterface {
       'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
     ];
 
+    // The totals are current and ignore the period.
     $kpis = [
-      $this->tile('published', $this->t('Published'), $current['cohort']['published'], 'count'),
-      $this->tile('mediated', $this->t('Mediated'), $current['cohort']['mediated'], 'count'),
-      $this->tile('mediation-rate', $this->t('Mediation rate (cohort)'), $current['cohort']['mediation_rate'], 'rate'),
-      $this->tile('median', $this->t('Median publish → mediate'), $current['medians']['publish_mediate'], 'days'),
+      $this->tile('creatives', $this->t('Registered creatives'), $this->calculator->countCreatives(), 'count'),
+      $this->tile('organizations', $this->t('Registered organizations'), $this->calculator->countOrganizations(), 'count'),
+      $this->tile('open', $this->t('Open projects'), $this->calculator->countOpenProjects(), 'count'),
+      $this->tile('ongoing', $this->t('Ongoing projects'), $this->calculator->countOngoingProjects(), 'count'),
+      $this->tile('completed', $this->t('Completed projects'), $this->calculator->countCompletedProjects(), 'count'),
+      $this->tile('mediated', $this->t('Mediated projects'), $this->calculator->countMediatedProjects(), 'count'),
     ];
 
     return [
@@ -165,13 +171,16 @@ class StatsController implements ContainerInjectionInterface {
     $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series);
     $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
     $funnel_chart = StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE);
+    $funnel_card = StatsCharts::card($funnel_chart);
+    $rate = $this->tile('mediation-rate', $this->t('Mediation rate'), $cohort['mediation_rate'], 'rate');
+    $funnel_card['foot'] = $this->foot($rate);
     $stages_title = (string) $this->t('Median days per stage');
     $stages_chart = StatsCharts::bar('stats-stages', $stages_title, $stage_labels, $stages, horizontal: TRUE);
 
     $heading = $this->heading($this->t('Projects'));
     return $this->section($heading, [
       'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
-      'funnel' => StatsCharts::card($funnel_chart),
+      'funnel' => $funnel_card,
       'stages' => StatsCharts::card($stages_chart),
     ]);
   }
