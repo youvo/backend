@@ -10,8 +10,6 @@
  * to or from dark mode.
  */
 ((Drupal, Chart, once) => {
-  const PALETTE_SIZE = 13;
-
   let tokens = {};
 
   // The tokens the defaults were last set from, as JSON.
@@ -21,21 +19,25 @@
    * Reads the theme tokens from the body, where Gin sets its colors.
    *
    * A token the theme does not set reads as an empty string, which Chart.js
-   * ignores in favor of its defaults. A missing palette color is transparent,
-   * so the series keep their indexes.
+   * ignores in favor of its defaults. The palette holds the chart colors up to
+   * the first one the theme does not set, at least the accent.
    */
   const readTokens = () => {
     const style = getComputedStyle(document.body);
     const get = (name) => style.getPropertyValue(name).trim();
+    const accent = get('--yv-accent');
     const palette = [];
-    for (let i = 1; i <= PALETTE_SIZE; i++) {
-      palette.push(get(`--yv-chart-${i}`) || 'transparent');
+    for (let i = 1; get(`--yv-chart-${i}`); i++) {
+      palette.push(get(`--yv-chart-${i}`));
+    }
+    if (!palette.length) {
+      palette.push(accent);
     }
     tokens = {
       ink: get('--yv-ink'),
       text: get('--yv-text'),
       muted: get('--yv-muted'),
-      accent: get('--yv-accent') || palette[0],
+      accent: accent || palette[0],
       surface: get('--yv-surface'),
       line: get('--yv-line'),
       outline: get('--yv-outline'),
@@ -116,10 +118,7 @@
     Object.assign(defaults.scale.ticks, { color: () => tokens.muted, padding: 8 });
     defaults.scale.ticks.font = { size: 11 };
     defaults.scales.category.grid = { display: false };
-    defaults.scales.linear.ticks = {
-      ...defaults.scales.linear.ticks,
-      maxTicksLimit: 5,
-    };
+    defaults.scales.linear.ticks.maxTicksLimit = 5;
     defaults.scales.linear.beginAtZero = true;
 
     // Slim bars with rounded ends.
@@ -154,13 +153,7 @@
     overrides.doughnut.interaction = { mode: 'nearest', intersect: true };
     // The many reasons of a doughnut need a denser legend to leave the ring
     // its room.
-    overrides.doughnut.plugins = {
-      ...overrides.doughnut.plugins,
-      legend: {
-        ...overrides.doughnut.plugins?.legend,
-        labels: { ...overrides.doughnut.plugins?.legend?.labels, padding: 10 },
-      },
-    };
+    overrides.doughnut.plugins.legend.labels.padding = 10;
   };
 
   /**
@@ -376,6 +369,26 @@
   );
 
   /**
+   * Reads the tokens again and redraws the charts if they changed.
+   *
+   * Runs when Gin switches the color scheme or sets its accent, and forced
+   * once the font has loaded, to redraw the charts in it. A plain update keeps
+   * a running animation intact, which update('none') would freeze midway.
+   */
+  const refresh = (force) => {
+    readTokens();
+    if (!force && JSON.stringify(tokens) === applied) {
+      return;
+    }
+    applyDefaults();
+    Object.values(Chart.instances).forEach((chart) => {
+      // Chart.js caches the resolved options, defaults included.
+      chart.config.clearCache();
+      chart.update();
+    });
+  };
+
+  /**
    * Sets the options that depend on the single chart.
    *
    * The charts module hands each chart config to listeners on the chart's
@@ -419,21 +432,6 @@
     },
   };
 
-  // Read the tokens again when Gin switches the color scheme or sets its
-  // accent, and redraw the charts. Once the font has loaded, redraw them in it. A plain update keeps
-  // a running animation intact, which update('none') would freeze midway.
-  const refresh = (force) => {
-    readTokens();
-    if (!force && JSON.stringify(tokens) === applied) {
-      return;
-    }
-    applyDefaults();
-    Object.values(Chart.instances).forEach((chart) => {
-      // Chart.js caches the resolved options, defaults included.
-      chart.config.clearCache();
-      chart.update();
-    });
-  };
   // Gin sets the dark mode class on the html element and its accent on the
   // body, the latter in a behavior that may run after the charts are built.
   const observer = new MutationObserver(() => refresh(false));

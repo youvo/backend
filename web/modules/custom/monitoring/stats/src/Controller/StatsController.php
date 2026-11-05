@@ -122,30 +122,16 @@ class StatsController implements ContainerInjectionInterface {
       'mediated' => [$this->t('Mediated projects'), $states['mediated'], 'countMediatedProjects'],
     ];
 
-    $section = [
-      'header' => [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['stats-section-header']],
-        'heading' => StatsCharts::heading($this->t('Overview')),
-        'hint' => [
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('As of @date', ['@date' => $last_day->format('d.m.Y')]),
-          '#attributes' => ['class' => ['stats-section-hint']],
-        ],
-      ],
-    ];
+    $overview = [];
     foreach ($cards as $key => [$title, $values, $count]) {
       $values = $this->beforeNow($period, $now, $values);
       $total = $this->last($values) ?? $this->calculator->{$count}();
       $chart = StatsCharts::line('stats-overview-' . $key, $title, $labels, [(string) $title => $values]);
-      $section[$key] = StatsCharts::card($chart, compact: TRUE, value: (string) $total);
+      $overview[$key] = StatsCharts::card($chart, compact: TRUE, value: (string) $total);
     }
 
-    return [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section', 'stats-overview']],
-    ] + $section;
+    $hint = $this->t('As of @date', ['@date' => $last_day->format('d.m.Y')]);
+    return StatsCharts::section('overview', $this->t('Overview'), $overview, ['class' => ['stats-overview']], $hint);
   }
 
   /**
@@ -194,7 +180,7 @@ class StatsController implements ContainerInjectionInterface {
       (string) $this->t('Days') => $medians,
     ], horizontal: TRUE);
 
-    return StatsCharts::section($this->t('Projects'), [
+    return StatsCharts::section('projects', $this->t('Projects'), [
       'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
       'cohort' => $cohort_card,
       'stages' => StatsCharts::card($stages_chart, description: $this->t('Median days to each step reached in the period')),
@@ -224,7 +210,7 @@ class StatsController implements ContainerInjectionInterface {
       StatsCharts::tile('came-back', $this->t('Came back'), $returned, $this->t('Applicants not chosen in the period who applied again later'), TRUE),
     ];
 
-    return StatsCharts::section($this->t('Applications'), [
+    return StatsCharts::section('applications', $this->t('Applications'), [
       'applications' => StatsCharts::card($chart, wide: TRUE),
       'tiles' => StatsCharts::tiles($tiles),
     ]);
@@ -285,7 +271,7 @@ class StatsController implements ContainerInjectionInterface {
       ]);
     }
 
-    return StatsCharts::section($this->t('Creatives'), $cards);
+    return StatsCharts::section('creatives', $this->t('Creatives'), $cards);
   }
 
   /**
@@ -312,7 +298,7 @@ class StatsController implements ContainerInjectionInterface {
 
     // The decline reasons span two columns and rows, the prospect funnel and
     // the archive reasons stack beside them.
-    return StatsCharts::section($this->t('Organizations and reasons'), [
+    return StatsCharts::section('organizations', $this->t('Organizations and reasons'), [
       'decline_reasons' => StatsCharts::card($decline_chart, wide: TRUE, tall: TRUE),
       'prospects' => StatsCharts::card($funnel_chart),
       'archive_reasons' => StatsCharts::card($archive_chart),
@@ -347,7 +333,7 @@ class StatsController implements ContainerInjectionInterface {
     }
 
     // The two bundles side by side.
-    return StatsCharts::section($this->t('Feedback'), $cards, ['data-columns' => '2']);
+    return StatsCharts::section('feedback', $this->t('Feedback'), $cards, ['data-columns' => '2']);
   }
 
   /**

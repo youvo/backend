@@ -54,31 +54,36 @@ class StatsCharts {
     if ($compact) {
       $attributes['data-compact'] = '';
     }
-    // The stylesheet sizes the figure of the chart. Horizontal bars take a
-    // height by their number of rows, a chart without data a low height.
+    // The stylesheet sizes the figure by the kind of chart. Horizontal bars
+    // take a height by their number of rows, a chart without data a low one.
     if ($chart['#chart_type'] === 'bar') {
-      $attributes['data-rows'] = '';
+      $attributes['data-kind'] = 'hbar';
       $attributes['style'] = '--stats-rows: ' . count($chart['xaxis']['#labels']);
     }
     if ($chart['#chart_type'] === 'donut') {
-      $attributes['data-doughnut'] = '';
+      $attributes['data-kind'] = 'doughnut';
     }
     if (static::isEmpty($chart)) {
       $attributes['data-empty'] = '';
     }
     $card = [
       '#type' => 'html_tag',
-      '#tag' => 'section',
+      '#tag' => 'div',
       '#attributes' => $attributes,
-      'title' => [
+      'header' => [
         '#type' => 'html_tag',
-        '#tag' => 'h3',
-        '#value' => $chart['#title'],
-        '#attributes' => ['id' => $title_id, 'class' => ['stats-card-title']],
+        '#tag' => 'div',
+        '#attributes' => ['class' => ['stats-card-header']],
+        'title' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h3',
+          '#value' => $chart['#title'],
+          '#attributes' => ['id' => $title_id, 'class' => ['stats-card-title']],
+        ],
       ],
     ];
     if ($description !== NULL) {
-      $card['description'] = [
+      $card['header']['description'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
         '#value' => $description,
@@ -101,39 +106,50 @@ class StatsCharts {
   }
 
   /**
-   * Builds a section of the stats grid.
+   * Builds a section of the stats grid: a header over its cards.
    *
+   * @param string $key
+   *   The key of the section, which gives the id of its title.
    * @param string|\Stringable $title
    *   The title.
    * @param array<string, mixed> $cards
    *   The cards keyed by name.
-   * @param array<string, string> $attributes
+   * @param array<string, mixed> $attributes
    *   More attributes of the section.
+   * @param string|\Stringable|null $hint
+   *   A muted line under the title.
    *
    * @return array<string, mixed>
    *   The section render array.
    */
-  public static function section(string|\Stringable $title, array $cards, array $attributes = []): array {
-    return [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section']] + $attributes,
-      'heading' => static::heading($title),
-    ] + $cards;
-  }
-
-  /**
-   * Builds a section heading.
-   *
-   * @return array<string, mixed>
-   *   The heading render array.
-   */
-  public static function heading(string|\Stringable $title): array {
-    return [
+  public static function section(string $key, string|\Stringable $title, array $cards, array $attributes = [], string|\Stringable|null $hint = NULL): array {
+    $title_id = 'stats-section-' . $key;
+    $attributes['class'] = ['stats-section', ...($attributes['class'] ?? [])];
+    $section = [
       '#type' => 'html_tag',
-      '#tag' => 'h2',
-      '#value' => $title,
-      '#attributes' => ['class' => ['stats-section-title']],
+      '#tag' => 'section',
+      '#attributes' => ['aria-labelledby' => $title_id] + $attributes,
+      'header' => [
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        '#attributes' => ['class' => ['stats-section-header']],
+        'title' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $title,
+          '#attributes' => ['id' => $title_id, 'class' => ['stats-section-title']],
+        ],
+      ],
     ];
+    if ($hint !== NULL) {
+      $section['header']['hint'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $hint,
+        '#attributes' => ['class' => ['stats-section-hint']],
+      ];
+    }
+    return $section + $cards;
   }
 
   /**

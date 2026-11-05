@@ -1,12 +1,22 @@
 // =============================================================================
 // STATS (StatsController)
 // =============================================================================
-// The stats page: a card with the period and its filters and sections of
-// chart cards, the overview first. All cards are Gin layer cards with a small label,
-// as on the feedback page.
+// The stats page: a card with the period, then sections of chart cards, the
+// overview first. All cards are Gin layer cards with a small label, as on the
+// feedback page.
 
 @use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
+
+// A figure of a fixed height, which ignores the aspect ratio and the room of
+// its card.
+@mixin stats-fixed-figure($height) {
+  flex: none;
+  height: $height;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+}
 
 .stats-page {
   display: grid;
@@ -41,15 +51,16 @@
 }
 
 // A segmented control: flat pills in one hairline frame, the current one a
-// chip in the single accent. It scrolls sideways instead of wrapping.
+// chip in the single accent. It scrolls sideways on the narrowest phones,
+// with the focus ring inside (base/_focus.scss).
 .stats-segments {
   display: flex;
   flex: 0 1 auto;
-  gap: 1px;
+  gap: var(--gin-spacing-xxxs);
   min-width: 0;
   max-width: 100%;
   margin: 0;
-  padding: 3px;
+  padding: var(--gin-spacing-xxxs);
   overflow-x: auto;
   border: 1px solid var(--yv-outline);
   border-radius: var(--gin-border-m);
@@ -78,21 +89,15 @@
     padding-inline: var(--gin-spacing-s);
   }
 
-  // The frame scrolls and would clip Gin's ring outside the segment, whose
-  // selector carries an ID: draw it inside.
-  &:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--gin-color-focus) !important;
-  }
-
-  &:hover {
-    background: var(--yv-chip);
-    color: var(--yv-chip-text);
-  }
-
   &[aria-current] {
     background: var(--yv-chip);
     color: var(--yv-chip-text);
     font-weight: 600;
+  }
+
+  &:hover {
+    background: var(--yv-chip-hover);
+    color: var(--yv-chip-text);
   }
 }
 
@@ -104,26 +109,12 @@
   min-width: 0;
 }
 
-.stats-period-heading {
-  @include page-title;
-
-  min-width: 0;
-  padding: 0 var(--gin-spacing-xxs);
-  font-size: var(--gin-font-size-l);
-  font-variant-numeric: tabular-nums;
-
-  @media (min-width: $breakpoint-medium) {
-    font-size: var(--gin-font-size-h3);
-    white-space: nowrap;
-  }
-}
-
 .stats-step {
+  @include icon-size("small");
+
   display: grid;
   flex: none;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
   border-radius: 50%;
   color: var(--yv-text);
   transition:
@@ -131,13 +122,12 @@
     color var(--gin-transition-fast);
 
   &:hover {
-    background: var(--yv-chip);
+    background: var(--yv-chip-hover);
     color: var(--yv-chip-text);
   }
 
   // A step without a target, as beyond today.
   &[aria-disabled] {
-    color: var(--yv-muted);
     opacity: 0.4;
     pointer-events: none;
   }
@@ -174,43 +164,31 @@
 
 // stylelint-enable selector-class-pattern
 
-// KPI tiles in a section fill one grid cell, two by two, the label above a
-// large value, calm as Gin's cards.
-.stats-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-content: start;
-  gap: var(--gin-spacing-m);
-}
+// The period heading and the section titles, as Gin's headings: larger and
+// in normal case, above the small uppercase labels of the cards.
+.stats-period-heading,
+.stats-section-title {
+  @include page-title;
 
-.stats-tile {
-  @include card;
-
-  display: flex;
-  flex-direction: column;
-  gap: var(--gin-spacing-xxs);
-  padding: var(--gin-spacing-m);
-}
-
-.stats-tile-label {
-  @include section-label;
-
-  margin: 0;
-}
-
-// The value sits at the bottom, so the values of a row line up under
-// descriptions of different lengths.
-.stats-tile-value {
-  margin: auto 0 0;
-  padding-top: var(--gin-spacing-xxs);
-  color: var(--yv-ink);
-  font-size: var(--gin-font-size-h2);
+  font-size: var(--gin-font-size-xl);
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+
+  @media (min-width: $breakpoint-medium) {
+    font-size: var(--gin-font-size-h3);
+  }
 }
 
-// A section: its title over a grid of cards. Wide cards span two columns,
+.stats-period-heading {
+  min-width: 0;
+  padding: 0 var(--gin-spacing-xxs);
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: $breakpoint-medium) {
+    white-space: nowrap;
+  }
+}
+
+// A section: its header over a grid of cards. Wide cards span two columns,
 // tall cards two rows.
 .stats-section {
   display: grid;
@@ -233,6 +211,17 @@
   }
 }
 
+.stats-section + .stats-section {
+  margin-top: var(--gin-spacing-m);
+}
+
+// The header of a section: its title and a muted hint below.
+.stats-section-header {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--gin-spacing-xxs);
+}
+
 // The overview keeps two columns on phones, with lower charts, so its six
 // cards take three rows.
 .stats-overview {
@@ -247,38 +236,22 @@
   }
 }
 
-// The header of a section: its title and a muted hint below.
-.stats-section-header {
+// KPI tiles in a section fill one grid cell, two by two, the label above a
+// large value, calm as Gin's cards.
+.stats-tiles {
   display: grid;
-  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: var(--gin-spacing-m);
+}
+
+.stats-tile {
+  @include card;
+
+  display: flex;
+  flex-direction: column;
   gap: var(--gin-spacing-xxs);
-}
-
-.stats-section-hint {
-  margin: 0;
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
-}
-
-// The title of a section, as Gin's headings: larger and in normal case,
-// above the small uppercase labels of its cards.
-.stats-section-title {
-  grid-column: 1 / -1;
-  margin: var(--gin-spacing-m) 0 0;
-  color: var(--yv-ink);
-  font-size: var(--gin-font-size-xl);
-  font-weight: var(--gin-font-weight-semibold);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-
-  @media (min-width: $breakpoint-medium) {
-    font-size: var(--gin-font-size-h3);
-  }
-}
-
-// The overview title sits in its header, which the section gap separates.
-.stats-section-header .stats-section-title {
-  margin-top: 0;
+  padding: var(--gin-spacing-m);
 }
 
 .stats-card {
@@ -289,7 +262,6 @@
   flex-direction: column;
   gap: var(--gin-spacing-s);
   min-width: 0;
-  container-type: inline-size;
 
   @media (min-width: $breakpoint-medium) {
     &[data-wide] {
@@ -303,14 +275,14 @@
 
   // Chart.js fills the figure (the script turns off its aspect ratio), so the
   // figure sets the size: twice as wide as high, on narrow screens at least
-  // 220px and in wide cards at most 20rem. It grows into a card stretched by
-  // its row. Its size ignores the canvas inside, which Chart.js sizes to it,
-  // so the two never push each other.
+  // 13.75rem and in wide cards at most 20rem. It grows into a card stretched
+  // by its row. Its size ignores the canvas inside, which Chart.js sizes to
+  // it, so the two never push each other.
   .charts-figure {
     position: relative;
     flex: 1 0 auto;
     width: 100%;
-    min-height: 220px;
+    min-height: 13.75rem;
     aspect-ratio: 2;
     contain: size;
 
@@ -339,31 +311,26 @@
   // Horizontal bars: 2rem a row and room for the axis labels. The card keeps
   // its height instead of stretching to its row, which would only move the
   // bars apart.
-  &[data-rows] {
+  &[data-kind="hbar"] {
     align-self: start;
 
     .charts-figure {
-      flex: none;
-      height: calc(var(--stats-rows, 4) * 2rem + 2rem);
-      min-height: 0;
-      aspect-ratio: auto;
+      @include stats-fixed-figure(calc((var(--stats-rows) + 1) * 2rem));
     }
   }
 
   // A doughnut with its legend under the ring, or beside it in a wide card.
-  &[data-doughnut] .charts-figure {
-    height: 20rem;
-    min-height: 0;
-    aspect-ratio: auto;
+  &[data-kind="doughnut"] .charts-figure {
+    @include stats-fixed-figure(20rem);
+
+    flex: 1 0 auto;
   }
 
   // A tall doughnut keeps the size of the others, centered in the two rows
   // of the cards beside it.
-  &[data-tall][data-doughnut] .charts-figure {
+  &[data-tall][data-kind="doughnut"] .charts-figure {
     @media (min-width: $breakpoint-medium) {
       flex: none;
-      height: 20rem;
-      min-height: 0;
       margin-block: auto;
     }
   }
@@ -373,11 +340,7 @@
     align-self: start;
 
     .charts-figure {
-      flex: none;
-      height: 8rem;
-      min-height: 0;
-      max-height: none;
-      aspect-ratio: auto;
+      @include stats-fixed-figure(8rem);
     }
   }
 
@@ -396,10 +359,7 @@
     align-self: stretch;
 
     .charts-figure {
-      flex: none;
-      height: 5.5rem;
-      min-height: 0;
-      aspect-ratio: auto;
+      @include stats-fixed-figure(5.5rem);
 
       @media (min-width: $breakpoint-medium) {
         height: 8.5rem;
@@ -408,9 +368,9 @@
   }
 }
 
-// The halves of a two-column section stretch to one height; their charts
-// take the room, so no gap opens above the footnote.
-.stats-section[data-columns="2"] > .stats-card[data-rows] {
+// The horizontal bars of a two-column section stretch to one height; their
+// charts take the room, so no gap opens above the footnote.
+[data-columns="2"] > .stats-card[data-kind="hbar"] {
   align-self: stretch;
 
   .charts-figure {
@@ -418,8 +378,22 @@
   }
 }
 
-// The total at the end of the period, as large as a tile value.
-.stats-card-value {
+// The title of a card and its description, close together.
+.stats-card-header {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+}
+
+.stats-card-title,
+.stats-tile-label {
+  @include section-label;
+
+  margin: 0;
+}
+
+// The number of a card: the total of an overview card or a tile value.
+.stats-card-value,
+.stats-tile-value {
   margin: 0;
   color: var(--yv-ink);
   font-size: var(--gin-font-size-xl);
@@ -432,24 +406,27 @@
   }
 }
 
-.stats-card-title {
-  @include section-label;
-
-  margin: 0;
+// The value sits at the bottom, so the values of a row line up under
+// descriptions of different lengths.
+.stats-tile-value {
+  margin-top: auto;
+  padding-top: var(--gin-spacing-xxs);
 }
 
-// A short muted line under a card or tile label that explains the metric.
+// A short muted line that explains a section, a metric or a value.
+.stats-section-hint,
 .stats-card-description,
-.stats-tile-description {
+.stats-tile-description,
+.stats-card-foot-description {
   margin: 0;
   color: var(--yv-muted);
   font-size: var(--gin-font-size-xxs);
   line-height: 1.4;
 }
 
-// The card title keeps its description close.
-.stats-card-title:has(+ .stats-card-description) {
-  margin-bottom: calc(-1 * var(--gin-spacing-xs));
+// The hint belongs to the large section title.
+.stats-section-hint {
+  font-size: var(--gin-font-size-xs);
 }
 
 // The values under a chart, their descriptions in a smaller line below.
@@ -462,10 +439,6 @@
   p {
     margin: 0;
   }
-}
-
-.stats-card-foot-description {
-  font-size: var(--gin-font-size-xxs);
 }
 
 .stats-card-foot-value {

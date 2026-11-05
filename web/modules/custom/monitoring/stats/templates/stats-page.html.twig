@@ -13,7 +13,7 @@
 <div class="stats-page">
   <nav class="stats-period" aria-label="{{ 'Period'|t }}">
     <div class="stats-period-bar">
-      <ul class="stats-segments" aria-label="{{ 'Period type'|t }}">
+      <ul class="stats-segments" data-focus-inset aria-label="{{ 'Period type'|t }}">
         {% for segment in period_bar.segments %}
           <li><a href="{{ segment.url }}" class="stats-segment" data-segment="{{ segment.type }}"{% if segment.active %} aria-current="page"{% endif %}>{{ segment.label }}</a></li>
         {% endfor %}

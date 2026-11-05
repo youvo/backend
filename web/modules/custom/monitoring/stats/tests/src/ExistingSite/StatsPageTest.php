@@ -231,7 +231,7 @@ class StatsPageTest extends StatsTestBase {
     }
     // The card labels the chart, which draws no title of its own but keeps it
     // for the figure label and the caption of its table.
-    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-flow-title"] > h3#stats-flow-title', 'Project flow');
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-flow-title"] h3#stats-flow-title', 'Project flow');
     $chart = $this->assertSession()->elementExists('css', '#stats-flow');
     $definition = json_decode($chart->getAttribute('data-chart'), TRUE);
     $this->assertFalse($definition['options']['plugins']['title']['display']);
