@@ -5,6 +5,9 @@
  * Custom module which handles business logic for user types.
  */
 
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\user\UserInterface;
 use Drupal\user_types\Plugin\TopBarItem\UserTypePageContext;
 use Drupal\user_types\UserTypeAccessControlHandler;
 
@@ -15,6 +18,31 @@ function user_types_entity_type_build(array &$entity_types): void {
   // Be careful here, because user_bundle_entity_type_build() already alters the
   // entity handlers.
   $entity_types['user']->setHandlerClass('access', UserTypeAccessControlHandler::class);
+}
+
+/**
+ * Implements hook_entity_operation().
+ *
+ * User lists offer the profile page next to edit and delete, which core
+ * lists for users.
+ */
+function user_types_entity_operation(EntityInterface $entity, ?CacheableMetadata $cacheability = NULL): array {
+  if (!$entity instanceof UserInterface) {
+    return [];
+  }
+  $access = $entity->access('view', NULL, TRUE);
+  $cacheability?->addCacheableDependency($access);
+  if (!$access->isAllowed()) {
+    return [];
+  }
+  return [
+    'view' => [
+      'title' => t('View'),
+      'url' => $entity->toUrl(),
+      // Between edit and delete.
+      'weight' => 20,
+    ],
+  ];
 }
 
 /**

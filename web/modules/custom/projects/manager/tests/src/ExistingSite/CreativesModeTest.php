@@ -21,21 +21,21 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
   protected string $prefix;
 
   /**
-   * Creates three creatives with a shared name prefix, registered B, C, A.
+   * Creates three creatives with a shared name prefix, last seen B, C, A.
    */
   protected function setUp(): void {
     parent::setUp();
     $this->prefix = $this->randomMachineName();
-    foreach (['B' => 1000, 'C' => 2000, 'A' => 3000] as $suffix => $created) {
+    foreach (['B' => 1000, 'C' => 2000, 'A' => 3000] as $suffix => $access) {
       $this->createCreative()
         ->set('field_name', $this->prefix . ' ' . $suffix)
-        ->set('created', $created)
+        ->set('access', $access)
         ->save();
     }
   }
 
   /**
-   * Both modes list the same filtered creatives, newest registration first.
+   * Both modes list the same filtered creatives, latest access first.
    */
   public function testModesShareFiltersAndOrder(): void {
 
@@ -55,7 +55,7 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
   /**
    * The table sorts by all headers but the skills.
    *
-   * The profiles have no headers and keep the newest registration first.
+   * The profiles have no headers and keep the latest access first.
    */
   public function testTableHeadersSort(): void {
 
@@ -76,6 +76,25 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
 
     $this->drupalGet('creatives', ['query' => $sorted + ['mode' => 'profiles']]);
     $this->assertNamesInOrder(['A', 'C', 'B']);
+  }
+
+  /**
+   * The operations offer what the viewer may do with a creative.
+   *
+   * Managers view the profiles, but may not edit or delete other accounts.
+   */
+  public function testOperations(): void {
+
+    $this->drupalLogin($this->createManager());
+    $session = $this->assertSession();
+
+    $this->drupalGet('creatives', ['query' => ['name' => $this->prefix]]);
+    $session->elementExists('xpath', '//table//th[normalize-space() = "Operations"]');
+    $views = $this->getSession()->getPage()->findAll('xpath', '//table//td//a[normalize-space() = "View"]');
+    $this->assertCount(3, $views);
+    $this->assertMatchesRegularExpression('#/user/\d+(\?|$)#', (string) $views[0]->getAttribute('href'));
+    $session->elementNotExists('xpath', '//table//td//a[normalize-space() = "Edit"]');
+    $session->elementNotExists('xpath', '//table//td//a[normalize-space() = "Delete"]');
   }
 
   /**
