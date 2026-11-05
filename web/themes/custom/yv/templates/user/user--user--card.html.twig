@@ -1,0 +1,15 @@
+{#
+/**
+ * @file
+ * A creative as a card in the creatives finder.
+ *
+ * Variables: content (the card display), profile (the values of
+ * yv_preprocess_user()).
+ */
+#}
+
+{{ profile_cache }}
+<article{{ attributes.addClass('user-profile-card') }}>
+  {% include '@yv/user/includes/user-profile-header.html.twig' with {content: content, profile: profile, name_url: path('entity.user.canonical', {user: user.id}), heading_level: 'h2'} only %}
+  {% include '@yv/user/includes/user-profile-main.html.twig' with {content: content, heading_level: 'h3'} only %}
+</article>

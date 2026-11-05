@@ -31,7 +31,7 @@ class CreativeFieldAccess extends FieldAccess {
   ];
 
   /**
-   * Private fields: only the creative sees them.
+   * Private fields: the creative and the managers see them.
    */
   const PRIVATE_FIELDS = [
     'field_newsletter',
@@ -49,7 +49,6 @@ class CreativeFieldAccess extends FieldAccess {
     AccountInterface $account,
   ): AccessResultInterface {
 
-    // Only creative fields should be controlled by this class.
     if (!$entity instanceof Creative) {
       return AccessResult::forbidden();
     }
@@ -69,7 +68,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
     }
 
-    // Managers may view contact fields, but only the creative edits them.
     if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
       if ($operation === 'view' && $account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();
@@ -80,12 +78,20 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
     }
 
-    // Private fields are only accessible for the creative itself.
     if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
-      if ($entity->id() == $account->id()) {
-        return AccessResult::neutral()->cachePerUser();
+      if ($operation === 'view' && $account->hasPermission('general manager access')) {
+        return AccessResult::neutral()->cachePerPermissions();
       }
-      return AccessResult::forbidden()->cachePerUser();
+      if ($entity->id() == $account->id()) {
+        return AccessResult::neutral()->cachePerPermissions()->cachePerUser();
+      }
+      return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
+    }
+
+    // The creatives finder lists the last access. Core keeps it to
+    // administrators, so this has to allow, not stay neutral.
+    if ($field->getName() === 'access' && $operation === 'view') {
+      return AccessResult::allowedIfHasPermission($account, 'general manager access');
     }
 
     return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
@@ -96,7 +102,7 @@ class CreativeFieldAccess extends FieldAccess {
    *
    * Filters and sorts are checked this way. Without it, a filter on a hidden
    * field like the phone reveals its value character by character. There is
-   * no own profile here, so private fields stay closed.
+   * no own profile here, so only managers view the private fields.
    */
   public static function checkFieldAccessWithoutEntity(
     string $operation,
@@ -121,7 +127,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
     }
 
-    // Managers may view contact fields.
     if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
       if ($account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();
@@ -129,8 +134,10 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions();
     }
 
-    // Private fields are only accessible on the own profile.
     if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
+      if ($account->hasPermission('general manager access')) {
+        return AccessResult::neutral()->cachePerPermissions();
+      }
       return AccessResult::forbidden()->cachePerPermissions();
     }
 

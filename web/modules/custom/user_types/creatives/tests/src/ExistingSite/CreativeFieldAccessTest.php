@@ -38,16 +38,46 @@ class CreativeFieldAccessTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Only the creative sees the private fields, managers do not.
+   * Managers see the private fields, other creatives don't; only owners edit.
    */
   public function testPrivateFields(): void {
 
     $creative = $this->createCreative();
+    $other = $this->createCreative();
     $manager = $this->createManager();
 
-    $this->assertTrue($this->viewAccess($creative, 'field_newsletter', $creative)->isAllowed());
-    $this->assertFalse($this->viewAccess($creative, 'field_newsletter', $manager)->isAllowed());
-    $this->assertContains('user', $this->viewAccess($creative, 'field_newsletter', $manager)->getCacheContexts());
+    foreach (['field_newsletter', 'field_jobs', 'field_public_profile'] as $field_name) {
+      $this->assertTrue($this->viewAccess($creative, $field_name, $creative)->isAllowed(), "$field_name, own");
+      $this->assertTrue($this->viewAccess($creative, $field_name, $manager)->isAllowed(), "$field_name, manager");
+      $this->assertFalse($this->viewAccess($creative, $field_name, $other)->isAllowed(), "$field_name, other creative");
+      $this->assertFalse($this->viewAccess($creative, $field_name, new AnonymousUserSession())->isAllowed(), "$field_name, anonymous");
+    }
+
+    $this->assertFalse($creative->get('field_newsletter')->access('edit', $manager));
+
+    // The result varies by user, so a cached own view is not shown to others.
+    $this->assertContains('user', $this->viewAccess($creative, 'field_newsletter', $other)->getCacheContexts());
+  }
+
+  /**
+   * Managers see when a creative last logged in, other creatives do not.
+   */
+  public function testLastAccess(): void {
+
+    $creative = $this->createCreative();
+    $other = $this->createCreative();
+    $manager = $this->createManager();
+
+    $this->assertTrue($this->viewAccess($creative, 'access', $manager)->isAllowed(), 'manager');
+    $this->assertFalse($this->viewAccess($creative, 'access', $other)->isAllowed(), 'other creative');
+    $this->assertFalse($this->viewAccess($creative, 'access', new AnonymousUserSession())->isAllowed(), 'anonymous');
+    $this->assertFalse($creative->get('access')->access('edit', $manager));
+
+    // The creatives finder lists it, so Views checks it without an entity.
+    $definition = $creative->getFieldDefinition('access');
+    $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('user');
+    $this->assertTrue($handler->fieldAccess('view', $definition, $manager), 'manager, without entity');
+    $this->assertFalse($handler->fieldAccess('view', $definition, $other), 'other creative, without entity');
   }
 
   /**

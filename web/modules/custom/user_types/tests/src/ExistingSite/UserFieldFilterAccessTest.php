@@ -51,6 +51,20 @@ class UserFieldFilterAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Only managers filter by the preferences of creatives.
+   */
+  public function testCreativePreferences(): void {
+
+    $creative = $this->createCreative();
+    $creative->set('field_newsletter', TRUE)->save();
+    $path = '/api/users?filter[newsletter]=1&filter[id]=' . $creative->uuid();
+
+    $this->assertSame(401, $this->get($path, NULL)->getStatusCode());
+    $this->assertSame(403, $this->get($path, $this->createCreative())->getStatusCode());
+    $this->assertSame([$creative->uuid()], $this->ids($this->get($path, $this->createManager())));
+  }
+
+  /**
    * Only supervisors filter by the phone of organizations.
    */
   public function testOrganizationPhone(): void {

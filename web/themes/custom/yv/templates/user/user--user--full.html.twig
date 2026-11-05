@@ -12,63 +12,9 @@
 {{ profile_cache }}
 <article{{ attributes.addClass('user-profile') }}>
   <div class="user-profile-main">
-    <header class="user-profile-header">
-      {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: profile.avatar, initials: profile.initials, shape: 'round'} only %}
-      <div class="user-profile-heading">
-        <h1 class="user-profile-name">{{ content.field_name|field_value }}</h1>
-        {% if content.field_position|field_value %}
-          <p class="user-profile-subtitle">{{ content.field_position|field_value }}</p>
-        {% endif %}
-        {# Printed one by one, as joining rendered fields would escape them twice. #}
-        {% set city = content.field_city|field_value %}
-        {% set education = content.field_education|field_value %}
-        {% if city or education %}
-          <p class="user-profile-subtitle">{{ city }}{{ city and education ? ' · ' }}{{ education }}</p>
-        {% endif %}
-        {% if profile.projects %}
-          <p class="user-profile-subtitle">
-            {{ 'Projects'|t }}:
-            {% for count in profile.projects %}
-              <span class="user-profile-count">{{ count }}</span>{{ not loop.last ? ' · ' }}
-            {% endfor %}
-          </p>
-        {% endif %}
-      </div>
-    </header>
+    {% include '@yv/user/includes/user-profile-header.html.twig' with {content: content, profile: profile} only %}
 
-    {% if content.field_about|field_value %}
-      <div class="user-profile-about">{{ content.field_about|field_value }}</div>
-    {% endif %}
-
-    {% set skills = content.field_skills|field_value %}
-    {% if skills %}
-      <section>
-        <h2 class="user-profile-section-title">{{ 'Skills'|t }}</h2>
-        <div class="user-profile-skills">{{ skills }}</div>
-      </section>
-    {% endif %}
-
-    {% set tags = content.field_tags|field_value %}
-    {% if tags %}
-      <section>
-        <h2 class="user-profile-section-title">{{ 'Tags'|t }}</h2>
-        <ul class="user-profile-tags">
-          {% for tag in tags %}
-            <li><span class="user-profile-chip">{{ tag }}</span></li>
-          {% endfor %}
-        </ul>
-      </section>
-    {% endif %}
-
-{% set links = (content.field_url|field_value ?: [])|merge(content.field_portfolio|field_value ?: []) %}
-    {% if links %}
-      <section>
-        <h2 class="user-profile-section-title">{{ 'Portfolio'|t }}</h2>
-        <ul class="user-profile-tags user-profile-links">
-          {% include '@yv/user/includes/user-profile-links.html.twig' with {links: links} only %}
-        </ul>
-      </section>
-    {% endif %}
+    {% include '@yv/user/includes/user-profile-main.html.twig' with {content: content} only %}
 
     {{ drupal_view('managed_organizations', 'profile', user.id) }}
   </div>

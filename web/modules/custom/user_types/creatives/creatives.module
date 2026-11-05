@@ -37,6 +37,15 @@ function creatives_entity_field_access(string $operation, FieldDefinitionInterfa
   ) {
     return CreativeFieldAccess::checkFieldAccessWithoutEntity($operation, $field_definition, $account);
   }
+  // The last access is a base field of all users, so the bundle check above
+  // misses it. Staff may filter and sort by it, as they may see it.
+  if ($items === NULL &&
+    $operation === 'view' &&
+    $field_definition->getTargetEntityTypeId() === 'user' &&
+    $field_definition->getName() === 'access'
+  ) {
+    return AccessResult::allowedIfHasPermission($account, 'general manager access');
+  }
   return AccessResult::neutral();
 }
 

@@ -1,0 +1,5 @@
+user_types.dashboard.creatives:
+  title: Creatives
+  route_name: view.creatives.page
+  menu_name: dashboard-moderation
+  weight: 2

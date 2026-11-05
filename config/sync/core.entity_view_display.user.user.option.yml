@@ -72,6 +72,7 @@ hidden:
   field_position: true
   field_public_profile: true
   field_skills: true
+  field_tags: true
   field_url: true
   langcode: true
   member_for: true

@@ -67,6 +67,54 @@ function yv_preprocess_page_title(array &$variables): void {
 }
 
 /**
+ * Builds the project counts of a creative as translated strings.
+ *
+ * Counts only the projects the viewer may see, as the projects list does.
+ *
+ * @param \Drupal\creatives\Entity\Creative $creative
+ *   The creative.
+ * @param \Drupal\Core\Cache\CacheableMetadata $cache
+ *   The cache metadata to collect the dependencies in.
+ *
+ * @return array
+ *   The strings like "2 completed", without the counts of zero.
+ */
+function yv_creative_project_counts(Creative $creative, CacheableMetadata $cache): array {
+
+  $project_storage = \Drupal::entityTypeManager()->getStorage('project');
+  $cache->addCacheTags(['project_list']);
+  $project_ids = $project_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition($project_storage->getQuery()->orConditionGroup()
+      ->condition('field_participants', $creative->id())
+      ->condition('field_applicants', $creative->id()))
+    ->execute();
+  $counts = ['completed' => 0, 'ongoing' => 0, 'applied' => 0];
+  /** @var \Drupal\projects\ProjectInterface $project */
+  foreach ($project_storage->loadMultiple($project_ids) as $project) {
+    $access = $project->access('view', NULL, TRUE);
+    $cache->addCacheableDependency($access)->addCacheableDependency($project);
+    if (!$access->isAllowed()) {
+      continue;
+    }
+    $lifecycle = $project->lifecycle();
+    $participant = $project->isParticipant($creative);
+    match (TRUE) {
+      $participant && $lifecycle->isCompleted() => $counts['completed']++,
+      $participant && $lifecycle->isOngoing() => $counts['ongoing']++,
+      $project->isApplicant($creative) && $lifecycle->isOpen() => $counts['applied']++,
+      default => NULL,
+    };
+  }
+
+  return array_filter([
+    $counts['completed'] ? \Drupal::translation()->formatPlural($counts['completed'], '1 completed', '@count completed') : NULL,
+    $counts['ongoing'] ? \Drupal::translation()->formatPlural($counts['ongoing'], '1 ongoing', '@count ongoing') : NULL,
+    $counts['applied'] ? \Drupal::translation()->formatPlural($counts['applied'], '1 application', '@count applications') : NULL,
+  ]);
+}
+
+/**
  * Implements hook_preprocess_HOOK() for user.
  *
  * The templates print plain values, so field access is checked here and its
@@ -101,6 +149,20 @@ function yv_preprocess_user(array &$variables): void {
     return;
   }
 
+  // Cards in the creatives finder leave out the account data.
+  if ($variables['elements']['#view_mode'] === 'card' && $user instanceof Creative) {
+    $cache = new CacheableMetadata();
+    yv_content_cache($variables['content'], $cache);
+    $variables['profile'] = [
+      'initials' => yv_initials(yv_field_value($user, 'field_name', $cache)),
+      'avatar' => yv_avatar($user, $cache),
+      'projects' => yv_creative_project_counts($user, $cache),
+    ];
+    $variables['profile_cache'] = [];
+    $cache->applyTo($variables['profile_cache']);
+    return;
+  }
+
   if ($variables['elements']['#view_mode'] !== 'full' ||
     !($user instanceof Organization || $user instanceof Creative)) {
     return;
@@ -110,32 +172,26 @@ function yv_preprocess_user(array &$variables): void {
   // here are what the display cannot show.
   $cache = new CacheableMetadata();
   yv_content_cache($variables['content'], $cache);
-  $value = static function (string $field_name) use ($user, $cache): ?string {
-    $access = $user->get($field_name)->access('view', NULL, TRUE);
-    $cache->addCacheableDependency($access);
-    $value = $access->isAllowed() ? trim((string) $user->get($field_name)->value) : '';
-    return $value !== '' ? $value : NULL;
-  };
 
   $entity_type_manager = \Drupal::entityTypeManager();
   $date_formatter = \Drupal::service('date.formatter');
   $staff = AccessResult::allowedIfHasPermission(\Drupal::currentUser(), 'general manager access');
   $cache->addCacheableDependency($staff);
 
-  $name = $value('field_name');
+  $name = yv_field_value($user, 'field_name', $cache);
   $profile = [
     'initials' => yv_initials($name),
     'avatar' => yv_avatar($user, $cache),
     // The mail is a base field of users without a configurable display.
-    'mail' => $value('mail'),
+    'mail' => yv_field_value($user, 'mail', $cache),
   ];
 
   if ($user instanceof Organization) {
-    $short_name = $value('field_short_name');
+    $short_name = yv_field_value($user, 'field_short_name', $cache);
     $profile += [
       // Only a short name that differs from the name says something.
       'short_name' => $short_name !== $name ? $short_name : NULL,
-      'contact_initials' => yv_initials($value('field_contact')),
+      'contact_initials' => yv_initials(yv_field_value($user, 'field_contact', $cache)),
     ];
 
     // Counts only the projects the viewer may see, as the projects list does.
@@ -175,37 +231,7 @@ function yv_preprocess_user(array &$variables): void {
   }
 
   if ($user instanceof Creative) {
-    // Counts only the projects the viewer may see, as the projects list does.
-    $project_storage = $entity_type_manager->getStorage('project');
-    $cache->addCacheTags(['project_list']);
-    $project_ids = $project_storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition($project_storage->getQuery()->orConditionGroup()
-        ->condition('field_participants', $user->id())
-        ->condition('field_applicants', $user->id()))
-      ->execute();
-    $counts = ['completed' => 0, 'ongoing' => 0, 'applied' => 0];
-    /** @var \Drupal\projects\ProjectInterface $project */
-    foreach ($project_storage->loadMultiple($project_ids) as $project) {
-      $access = $project->access('view', NULL, TRUE);
-      $cache->addCacheableDependency($access)->addCacheableDependency($project);
-      if (!$access->isAllowed()) {
-        continue;
-      }
-      $lifecycle = $project->lifecycle();
-      $participant = $project->isParticipant($user);
-      match (TRUE) {
-        $participant && $lifecycle->isCompleted() => $counts['completed']++,
-        $participant && $lifecycle->isOngoing() => $counts['ongoing']++,
-        $project->isApplicant($user) && $lifecycle->isOpen() => $counts['applied']++,
-        default => NULL,
-      };
-    }
-    $profile['projects'] = array_filter([
-      $counts['completed'] ? \Drupal::translation()->formatPlural($counts['completed'], '1 completed', '@count completed') : NULL,
-      $counts['ongoing'] ? \Drupal::translation()->formatPlural($counts['ongoing'], '1 ongoing', '@count ongoing') : NULL,
-      $counts['applied'] ? \Drupal::translation()->formatPlural($counts['applied'], '1 application', '@count applications') : NULL,
-    ]);
+    $profile['projects'] = yv_creative_project_counts($user, $cache);
 
     $profile['courses'] = [];
     if ($staff->isAllowed()) {

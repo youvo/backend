@@ -1,0 +1,421 @@
+// =============================================================================
+// CREATIVES FINDER (views.view.creatives)
+// =============================================================================
+// The cards themselves are profile cards, styled in _profile.scss. Gin's
+// classes appear throughout, outside our naming pattern.
+// stylelint-disable selector-class-pattern
+
+@use "../abstracts/variables.scss" as *;
+
+// The height of Gin's text fields, which the switches and pickers share.
+$field-height: 2.5rem;
+
+@mixin segmented {
+  display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: $field-height;
+  gap: var(--gin-spacing-xxs);
+  padding: var(--gin-spacing-xxs);
+  border-radius: var(--gin-border-m);
+  background: var(--gin-bg-input);
+  box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
+}
+
+@mixin segment {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--gin-spacing-s);
+  border-radius: var(--gin-border-s);
+  color: var(--gin-color-text);
+  font-size: var(--gin-font-size-s);
+  font-weight: var(--gin-font-weight-bold);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: background-color var(--gin-transition-fast);
+}
+
+// Gin's translucent accent tints the box below in both modes; the darkened
+// accent of the chips keeps the text readable on it.
+@mixin segment-current {
+  background: var(--gin-color-primary-light);
+  color: var(--yv-chip-text);
+}
+
+// Invisible but focusable and clickable; the label shows the state.
+@mixin covering-input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+// A label drawn by us, without Gin's checkbox or radio.
+@mixin plain-option-label {
+  margin: 0;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+// Gin shows the rows in a layer card, but the profiles are cards themselves.
+.view-creatives .view-content:has(.user-profile-card) {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.view-creatives .views-exposed-form {
+  // A filter of several elements reads as one field, its legend as a label.
+  .fieldset {
+    margin-block: var(--gin-spacing-s) 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .fieldset__legend {
+    margin: 0;
+    padding: 0;
+  }
+
+  // Tripled: Gin's group legends and small-screen rules indent them with more
+  // specificity.
+  .fieldset__label.fieldset__label.fieldset__label {
+    padding: 0;
+    font-size: var(--gin-font-size-s);
+    line-height: 1.125rem;
+  }
+
+  .fieldset__wrapper.fieldset__wrapper {
+    flex-wrap: wrap;
+    gap: var(--gin-spacing-xs);
+    margin: 0;
+    padding: var(--gin-spacing-xxs) 0 0;
+  }
+
+  // The switch of a date filter sits in the date's fieldset, which spaces it.
+  .fieldset .fieldset .fieldset__wrapper {
+    padding-block-start: 0;
+  }
+
+  .fieldset .form-item {
+    margin: 0;
+  }
+
+  .form-item--name,
+  .form-item--mail,
+  .form-item--city {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  input.form-text {
+    width: 100%;
+  }
+
+  // Wide enough for the whole date next to the picker icon.
+  input.form-date {
+    box-sizing: border-box;
+    width: 11rem;
+    height: $field-height;
+  }
+
+  // A filled-in field takes the accent color, so the filters in use stand out.
+  .creatives-filter-active {
+    border-color: var(--gin-color-primary);
+    box-shadow: inset 0 0 0 1px var(--gin-color-primary);
+  }
+
+  // Gaps instead of Gin's margins, so a wrapped element starts flush with the
+  // fields. Gin slims the top padding with an ID-level specificity hack.
+  gap: var(--gin-spacing-s) var(--gin-spacing-m);
+  padding-block-start: var(--gin-spacing-s) !important;
+
+  @media (min-width: 48em) {
+    padding-block-start: var(--gin-spacing-l) !important;
+  }
+
+  // Gin's margins carry an ID-level specificity hack.
+  > .form-item,
+  > .fieldset,
+  > .form-actions {
+    margin-block: 0 !important;
+    margin-inline: 0;
+  }
+
+  // Sets the buttons apart from the skills; on the right, it never indents a
+  // wrapped row.
+  > .creatives-skills {
+    margin-inline-end: var(--gin-spacing-m);
+  }
+
+  > .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--gin-spacing-s) var(--gin-spacing-xs);
+    margin-inline-start: auto;
+  }
+}
+
+.creatives-skills.creatives-skills {
+  display: block;
+
+  .form-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gin-spacing-s);
+    min-height: $field-height;
+  }
+
+  // Gin spaces checkboxes with an ID-level specificity hack.
+  .form-item {
+    position: relative;
+    margin: 0 !important;
+    padding: 0;
+  }
+
+  .form-checkbox {
+    @include covering-input;
+  }
+
+  .form-item__label.option {
+    @include plain-option-label;
+
+    display: block;
+    padding: 0;
+  }
+
+  .skill {
+    filter: grayscale(1);
+    opacity: 0.4;
+    transition:
+      filter var(--gin-transition-fast),
+      opacity var(--gin-transition-fast),
+      box-shadow var(--gin-transition-fast);
+  }
+
+  .form-checkbox:hover + .form-item__label .skill {
+    opacity: 0.75;
+  }
+
+  .form-checkbox:checked + .form-item__label .skill {
+    filter: none;
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--gin-bg-layer),
+      0 0 0 4px var(--skill-color);
+  }
+
+  .form-checkbox:focus-visible + .form-item__label .skill {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 4px;
+  }
+}
+
+.creatives-mode-toggle {
+  @include segmented;
+
+  margin: 0 0 0 var(--gin-spacing-xs);
+  list-style: none;
+
+  li {
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    @include segment;
+
+    &:hover {
+      background: var(--gin-bg-item-hover);
+      color: var(--gin-color-text);
+      text-decoration: none;
+    }
+
+    &[aria-current="page"] {
+      @include segment-current;
+    }
+  }
+}
+
+fieldset.creatives-segmented .form-radios {
+  @include segmented;
+
+  .form-item {
+    display: flex;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-radio {
+    @include covering-input;
+  }
+
+  .form-item__label.option {
+    @include segment;
+    @include plain-option-label;
+  }
+
+  .form-radio:hover + .form-item__label {
+    background: var(--gin-bg-item-hover);
+  }
+
+  .form-radio:checked + .form-item__label {
+    @include segment-current;
+  }
+
+  // "Any" filters nothing, nor does "after" or "before" without a date:
+  // chosen, they stay quiet, so the filters in use stand out.
+  .form-radio[value="All"]:checked + .form-item__label,
+  &:is(.creatives-segmented-quiet *) .form-radio:checked + .form-item__label {
+    background: var(--gin-bg-item-hover);
+    color: var(--gin-color-text);
+  }
+
+  .form-radio:focus-visible + .form-item__label {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 2px;
+  }
+}
+
+// On a phone the switch spans a row in two equal halves, easier to tap.
+@media (width < $breakpoint-medium) {
+  .view-creatives .views-exposed-form > .creatives-skills {
+    margin-inline-end: 0;
+  }
+
+  .view-creatives .views-exposed-form > .form-actions,
+  .creatives-mode-toggle {
+    flex-basis: 100%;
+    margin: 0;
+  }
+
+  .creatives-mode-toggle li {
+    flex: 1;
+  }
+
+  .creatives-mode-toggle a {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.creatives-filter-groups {
+  flex-basis: 100%;
+
+  // With the row gap, as far below the filters as on a details page.
+  margin-block-start: var(--gin-spacing-xxs);
+  border-radius: var(--gin-border-m);
+  box-shadow: inset 0 0 0 1px var(--gin-border-color);
+}
+
+.creatives-filter-group.creatives-filter-group {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+
+  & + & {
+    border-block-start: 1px solid var(--gin-border-color);
+  }
+
+  .claro-details__summary {
+    font-size: var(--gin-font-size-s);
+  }
+
+  .claro-details__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gin-spacing-m);
+    margin: 0;
+    padding: 0 var(--gin-spacing-m) var(--gin-spacing-m);
+  }
+
+  .creatives-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--gin-spacing-s) var(--gin-spacing-m);
+  }
+
+  // Doubled: the fieldset margin of the exposed form has more specificity.
+  .form-item.form-item,
+  .fieldset.fieldset {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .form-item:has(.tagify) {
+    flex: 1 1 28rem;
+  }
+}
+
+.creatives-filter-group--active > .claro-details__summary {
+  color: var(--gin-color-primary);
+}
+
+.creatives-filter-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-inline-start: var(--gin-spacing-xs);
+  padding: 0 0.45em;
+  border-radius: var(--gin-border-xl);
+  background: var(--gin-color-primary);
+  color: var(--gin-color-button-text);
+  font-size: var(--gin-font-size-xs);
+  font-weight: var(--gin-font-weight-heavy);
+  line-height: 1.5;
+  text-align: center;
+}
+
+// Tagify takes over the classes of the input it replaces.
+.tagify.creatives-tags {
+  // Tagify's light grey placeholder is too faint to read.
+  --placeholder-color: var(--gin-color-text-light);
+
+  width: 100%;
+  min-height: $field-height;
+  padding-inline-start: var(--gin-spacing-xxs) !important;
+
+  // Tagify makes the typing line higher, with the text at the top. As high as
+  // a tag, it shares a line with the tags, as in the logbook search.
+  > .tagify__input {
+    min-width: 4rem;
+    height: auto;
+    min-height: 2rem;
+    margin: var(--gin-spacing-xxxs) var(--gin-spacing-xxs);
+    padding-block: 0;
+    line-height: 2rem;
+  }
+
+  // Wrapped tags keep a gap between their rows.
+  .tagify__tag {
+    margin-block: var(--gin-spacing-xxxs) !important;
+  }
+}
+
+// The suggestions lie over the filters below, so they get an edge, as in the
+// logbook search. Tagify attaches them outside the field. They open below or
+// above it, so all corners are round.
+.tagify__dropdown .tagify__dropdown__wrapper {
+  border: 1px solid var(--gin-border-color);
+  border-radius: var(--gin-border-m);
+  box-shadow: var(--gin-shadow-l2);
+}
