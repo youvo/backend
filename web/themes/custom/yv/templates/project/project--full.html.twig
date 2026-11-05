@@ -166,6 +166,9 @@
     {{ drupal_view('feedback', 'project', project.id()) }}
   </aside>
 
+  {# Only staff get the changes, at full width below both columns. #}
+  {{ content.project_changes }}
+
   {# The logbook, below both columns. It is empty for viewers without access
      to it. The heading is for screen readers, so navigating by headings
      reaches it. #}

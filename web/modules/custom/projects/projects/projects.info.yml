@@ -6,7 +6,9 @@ package: Projects
 core_version_requirement: '^10.3 || ^11'
 
 dependencies:
+  - diff:diff
   - drupal:field
+  - drupal:image
   - drupal:taxonomy
   - drupal:user
   - drupal:workflows

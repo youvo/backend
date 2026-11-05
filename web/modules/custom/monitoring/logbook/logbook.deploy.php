@@ -36,3 +36,11 @@ function logbook_deploy_mediate_log_text(): void {
     }
   }
 }
+
+/**
+ * Imports the log text of the project change pattern.
+ */
+function logbook_deploy_change_log_text(): void {
+  \Drupal::moduleHandler()->loadInclude('logbook', 'install');
+  logbook_import_log_texts();
+}

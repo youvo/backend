@@ -4,6 +4,7 @@ namespace Drupal\projects;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\organizations\Entity\Organization;
@@ -13,7 +14,7 @@ use Drupal\user\EntityOwnerInterface;
 /**
  * Interface that provides methods for a project node entity.
  */
-interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface {
+interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface, RevisionLogInterface {
 
   /**
    * Denotes that the project is not published.
@@ -37,6 +38,27 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
 
   // @todo Add available fields.
   public const string FIELD_DEADLINE = 'field_deadline';
+
+  /**
+   * The fields that make up the content of a project.
+   *
+   * Changing one creates a revision. Other fields hold workflow state.
+   */
+  public const array CONTENT_FIELDS = [
+    'title',
+    'body',
+    'field_allowance',
+    'field_appreciation',
+    'field_city',
+    'field_local',
+    'field_contact',
+    'field_deadline',
+    'field_image',
+    'field_image_copyright',
+    'field_material',
+    'field_skills',
+    'field_workload',
+  ];
 
   /**
    * Calls project workflow manager which holds/manipulates the state.
@@ -212,5 +234,18 @@ interface ProjectInterface extends ContentEntityInterface, EntityOwnerInterface,
    * Might be a creative user during administrative tasks.
    */
   public function getOwner(): Organization|Creative;
+
+  /**
+   * Gets the content fields that the last save changed.
+   *
+   * @return string[]
+   *   The field names, in CONTENT_FIELDS order; empty when none changed.
+   */
+  public function getChangedContentFields(): array;
+
+  /**
+   * Gets the revision ID the project had before the last save.
+   */
+  public function getPreviousRevisionId(): ?int;
 
 }

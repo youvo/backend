@@ -149,6 +149,7 @@ content:
     settings:
       workflow: project_lifecycle
       date_format: d.m.Y
+      oldest_first: true
     third_party_settings: {  }
     weight: 14
     region: content
@@ -217,6 +218,11 @@ content:
       native_language: false
     third_party_settings: {  }
     weight: 8
+    region: content
+  project_changes:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 30
     region: content
   project_result:
     type: entity_reference_entity_view

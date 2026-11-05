@@ -1,0 +1,240 @@
+// =============================================================================
+// PROJECT CHANGES (project-changes)
+// =============================================================================
+// The revisions of a project below both columns of the project page: a
+// details element of Gin, collapsed, with rows like the logbook's. The log
+// text already says who changed the project, so a row names the author next
+// to the date and shows the changed fields.
+
+@use "../abstracts/variables.scss" as *;
+
+// The columns the changes share with the logbook below: the widest date and
+// the widest pill, and the cell padding of the logbook's table. The logbook
+// sizes its columns by their content, so on the project page it gets these
+// widths too, and both lists line up.
+$date-column: 7rem;
+$type-column: 5.25rem;
+$cell-padding: 1rem;
+$link-column: 2.25rem;
+
+// Gin draws the details; it only spans both columns, like the logbook.
+.project-changes {
+  min-width: 0;
+  margin: 0;
+
+  @media (min-width: $breakpoint-wide) {
+    grid-column: 1 / -1;
+  }
+}
+
+.project-changes-meta {
+  margin-left: var(--gin-spacing-xs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+  font-weight: 400;
+}
+
+// The rows line up with the logbook below: Gin indents the details content
+// by its border and 20px, the logbook card by 24px. The rest of the indent
+// and the cell padding of the logbook go here, so the row lines and the
+// columns start where the logbook's do.
+.project-changes-entries {
+  margin-inline: -1rem;
+
+  @media (min-width: $breakpoint-medium) {
+    margin-inline: 0.25rem;
+  }
+}
+
+// Rows: date and author, type pill, the changed fields and the revision
+// link. On narrow screens the pill and the date share a line above the rest.
+.project-changes-entry {
+  display: grid;
+  grid-template-areas:
+    "type meta"
+    "event event"
+    "link link";
+  grid-template-columns: auto 1fr;
+  gap: var(--gin-spacing-xs) var(--gin-spacing-s);
+  align-items: baseline;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--yv-line);
+  scroll-margin-top: var(--gin-spacing-xl);
+
+  &:last-child,
+  &:has(+ [hidden]) {
+    border-bottom: 0;
+  }
+
+  // The grid would override the hidden attribute of the older entries.
+  &[hidden] {
+    display: none;
+  }
+
+  &.is-target {
+    border-radius: var(--gin-border-s);
+    background: var(--yv-chip);
+  }
+
+  // The column widths and the gap of the logbook's table: its cells have
+  // 1rem padding on each side.
+  @media (min-width: $breakpoint-medium) {
+    grid-template-areas: "meta type event link";
+    grid-template-columns: $date-column $type-column minmax(0, 1fr) auto;
+    gap: 0.5rem 2 * $cell-padding;
+  }
+}
+
+.project-changes-meta-column {
+  display: grid;
+  grid-area: meta;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.project-changes-date {
+  color: var(--yv-text);
+  font-size: var(--gin-font-size-xs);
+  white-space: nowrap;
+}
+
+.project-changes-author {
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+// The pill of the logbook: neutral, yellow for changes as their logs.
+.project-changes-type {
+  grid-area: type;
+  justify-self: start;
+  padding: 0.15em 0.65em;
+  border-radius: var(--gin-border-s);
+  background: var(--yv-chip);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+
+  &[data-tone="attention"] {
+    background: color-mix(in srgb, var(--gin-color-warning) 40%, var(--yv-surface));
+  }
+}
+
+.project-changes-event {
+  display: grid;
+  grid-area: event;
+  gap: var(--gin-spacing-s);
+  min-width: 0;
+}
+
+.project-changes-label {
+  margin-bottom: 0.125rem;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.project-changes-value,
+.project-changes-diff {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  del {
+    background: var(--gin-color-danger-lightest);
+  }
+
+  ins {
+    background: var(--gin-color-green-lightest);
+    text-decoration: none;
+  }
+
+  p {
+    margin: 0 0 var(--gin-spacing-xs);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.project-changes-arrow {
+  margin-inline: 0.25em;
+  color: var(--yv-muted);
+}
+
+.project-changes-created,
+.project-changes-earlier {
+  margin: 0;
+  color: var(--yv-muted);
+}
+
+.project-changes-link {
+  grid-area: link;
+  font-size: var(--gin-font-size-s);
+  white-space: nowrap;
+}
+
+// The button for the older changes, centered like the logbook's Load more.
+// Scoped to the card, as Gin's button margin would win.
+.project-changes .project-changes-more {
+  display: block;
+  margin: var(--gin-spacing-s) auto 0;
+}
+
+.project-changes-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-s);
+  align-items: center;
+}
+
+// Old and new image, framed in the colors of removed and added text.
+.project-changes-image {
+  display: block;
+  padding: 0.25rem;
+  border-radius: var(--gin-border-m);
+  background: var(--gin-color-green-lightest);
+  text-decoration: none;
+
+  &:is(del) {
+    background: var(--gin-color-danger-lightest);
+  }
+
+  img {
+    display: block;
+    width: auto;
+    max-width: 10rem;
+    height: 5rem;
+    border-radius: var(--gin-border-s);
+    object-fit: cover;
+  }
+}
+
+.project-changes-earlier {
+  margin-top: var(--gin-spacing-s);
+  font-size: var(--gin-font-size-s);
+}
+
+// The logbook on the project page, in the columns of the changes. Below this
+// width it shows each log as a card of its own.
+@media (min-width: 40.0625rem) {
+  .project-page-wide .view-logbook table {
+    table-layout: fixed;
+  }
+
+  .project-page-wide .view-logbook :is(th, td) {
+    box-sizing: border-box;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-created {
+    width: $date-column + 2 * $cell-padding;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-log-type {
+    width: $type-column + 2 * $cell-padding;
+  }
+
+  .project-page-wide .view-logbook :is(th, td).views-field-log-visibility {
+    width: $link-column + $cell-padding;
+  }
+}

@@ -1,0 +1,15 @@
+// =============================================================================
+// FOCUS
+// =============================================================================
+// Gin and Claro draw their focus ring on :focus, so a mouse click on a button,
+// a details summary or a link leaves the ring behind. Only keyboard focus
+// (:focus-visible) keeps it; text fields count as keyboard focus when clicked.
+// Claro draws some rings on ::before or ::after, and Gin's selectors carry an
+// ID for specificity, hence the pseudo elements and !important.
+
+:focus:not(:focus-visible),
+:focus:not(:focus-visible)::before,
+:focus:not(:focus-visible)::after {
+  outline: none !important;
+  box-shadow: none !important;
+}

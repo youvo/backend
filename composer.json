@@ -11,6 +11,7 @@
         }
     ],
     "require": {
+        "caxy/php-htmldiff": "^0.1",
         "composer/installers": "^1.12",
         "cweagans/composer-patches": "^1.7",
         "drupal/config_ignore": "^3.3",
@@ -22,6 +23,7 @@
         "drupal/core-recommended": "^11.2",
         "drupal/core-vendor-hardening": "^11.2",
         "drupal/dashboard": "^2.2",
+        "drupal/diff": "^2.1",
         "drupal/entity": "^1.4",
         "drupal/filefield_paths": "^1.0@beta",
         "drupal/gin": "^5.0",

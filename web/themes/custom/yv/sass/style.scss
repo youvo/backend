@@ -3,6 +3,7 @@
 // =============================================================================
 
 @use "abstracts/tokens.scss";
+@use "base/focus.scss";
 
 @use "components/skills.scss";
 @use "components/avatar.scss";
@@ -11,6 +12,7 @@
 @use "components/project-teaser.scss";
 @use "components/person.scss";
 @use "components/project.scss";
+@use "components/project-changes.scss";
 @use "components/lightbox.scss";
 @use "components/organization-teaser.scss";
 @use "components/feedback.scss";

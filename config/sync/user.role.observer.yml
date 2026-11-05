@@ -41,4 +41,5 @@ permissions:
   - 'view detectable log'
   - 'view hidden projects'
   - 'view observable log'
+  - 'view project revisions'
   - 'view youvo dashboard'

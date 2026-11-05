@@ -30,3 +30,58 @@ function projects_update_11001(): void {
     $update_manager->updateFieldStorageDefinition($status);
   }
 }
+
+/**
+ * Makes projects revisionable.
+ *
+ * Converts the project tables to revisionable storage. Every project gets a
+ * first revision with its current values.
+ */
+function projects_update_11002(?array &$sandbox = NULL): void {
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  if ($update_manager->getEntityType('project')->isRevisionable()) {
+    return;
+  }
+
+  // Take the definitions of the code: the entity type with its revision
+  // tables and keys, and the field storages including the revision fields.
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('project');
+  $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('project');
+  $update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+
+  if ($sandbox['#finished'] ?? 1) {
+    projects_backfill_revision_metadata();
+  }
+}
+
+/**
+ * Names the creator and the created time in revisions without them.
+ *
+ * The storage conversion copies the projects without revision metadata, so
+ * their first revisions would read as by the platform in 1970.
+ */
+function projects_backfill_revision_metadata(): void {
+
+  $database = \Drupal::database();
+  $revisions = $database->select('project_revision', 'r')
+    ->fields('r', ['revision_id', 'id'])
+    ->isNull('r.revision_created')
+    ->execute()
+    ->fetchAllKeyed();
+
+  foreach ($revisions as $revision_id => $project_id) {
+    $project = $database->select('project_field_data', 'd')
+      ->fields('d', ['uid', 'created'])
+      ->condition('d.id', $project_id)
+      ->condition('d.default_langcode', 1)
+      ->execute()
+      ->fetchAssoc();
+    if ($project) {
+      $database->update('project_revision')
+        ->fields(['revision_user' => $project['uid'], 'revision_created' => $project['created']])
+        ->condition('revision_id', $revision_id)
+        ->execute();
+    }
+  }
+}

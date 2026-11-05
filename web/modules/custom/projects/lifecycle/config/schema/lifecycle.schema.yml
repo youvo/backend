@@ -40,3 +40,17 @@ field.formatter.settings.lifecycle_state_list:
       sequence:
         type: string
         label: 'The excluded state'
+
+field.formatter.settings.lifecycle_history:
+  type: mapping
+  label: 'Lifecycle history settings'
+  mapping:
+    workflow:
+      type: string
+      label: 'Workflow'
+    date_format:
+      type: string
+      label: 'Date format'
+    oldest_first:
+      type: boolean
+      label: 'Oldest first'

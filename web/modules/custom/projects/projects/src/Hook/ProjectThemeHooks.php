@@ -28,6 +28,12 @@ class ProjectThemeHooks {
         'render element' => 'elements',
         'initial preprocess' => static::class . ':preprocessProjectComment',
       ],
+      'project_changes' => [
+        'variables' => [
+          'entries' => [],
+          'visible' => 2,
+        ],
+      ],
       'project_result_item' => [
         'variables' => [
           'url' => NULL,

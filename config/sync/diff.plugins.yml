@@ -1,0 +1,127 @@
+fields:
+  project:
+    body:
+      type: text_summary_field_diff_builder
+      settings: {  }
+    changed:
+      type: hidden
+      settings: {  }
+    content_translation_changed:
+      type: hidden
+      settings: {  }
+    content_translation_created:
+      type: hidden
+      settings: {  }
+    content_translation_outdated:
+      type: hidden
+      settings: {  }
+    content_translation_source:
+      type: hidden
+      settings: {  }
+    content_translation_status:
+      type: hidden
+      settings: {  }
+    content_translation_uid:
+      type: hidden
+      settings: {  }
+    created:
+      type: hidden
+      settings: {  }
+    default_langcode:
+      type: hidden
+      settings: {  }
+    field_allowance:
+      type: core_field_diff_builder
+      settings: {  }
+    field_applicants:
+      type: hidden
+      settings: {  }
+    field_appreciation:
+      type: core_field_diff_builder
+      settings: {  }
+    field_city:
+      type: core_field_diff_builder
+      settings: {  }
+    field_contact:
+      type: core_field_diff_builder
+      settings: {  }
+    field_deadline:
+      type: core_field_diff_builder
+      settings: {  }
+    field_image:
+      type: image_field_diff_builder
+      settings:
+        compare_alt_field: 0
+        compare_title_field: 0
+    field_image_copyright:
+      type: core_field_diff_builder
+      settings: {  }
+    field_lifecycle:
+      type: hidden
+      settings: {  }
+    field_lifecycle_history:
+      type: hidden
+      settings: {  }
+    field_local:
+      type: core_field_diff_builder
+      settings: {  }
+    field_material:
+      type: core_field_diff_builder
+      settings: {  }
+    field_participants:
+      type: hidden
+      settings: {  }
+    field_participants_tasks:
+      type: hidden
+      settings: {  }
+    field_skills:
+      type: entity_reference_field_diff_builder
+      settings: {  }
+    field_workload:
+      type: core_field_diff_builder
+      settings: {  }
+    hidden:
+      type: hidden
+      settings: {  }
+    id:
+      type: hidden
+      settings: {  }
+    langcode:
+      type: hidden
+      settings: {  }
+    project_result:
+      type: hidden
+      settings: {  }
+    promote:
+      type: hidden
+      settings: {  }
+    revision_created:
+      type: hidden
+      settings: {  }
+    revision_default:
+      type: hidden
+      settings: {  }
+    revision_id:
+      type: hidden
+      settings: {  }
+    revision_log_message:
+      type: hidden
+      settings: {  }
+    revision_translation_affected:
+      type: hidden
+      settings: {  }
+    revision_user:
+      type: hidden
+      settings: {  }
+    status:
+      type: hidden
+      settings: {  }
+    title:
+      type: core_field_diff_builder
+      settings: {  }
+    uid:
+      type: hidden
+      settings: {  }
+    uuid:
+      type: hidden
+      settings: {  }

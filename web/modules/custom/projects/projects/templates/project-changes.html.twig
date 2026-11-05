@@ -1,0 +1,63 @@
+{#
+/**
+ * @file
+ * A list of project changes, rows like in the logbook.
+ *
+ * The log text already says who changed the project, so a row only names the
+ * author next to the date and shows the changed fields.
+ *
+ * Available variables:
+ * - entries: The entries, newest first. Each has revision_id, author_role,
+ *   author_name, author_id, time, created, url and fields (label, long, old,
+ *   new, diff, old_image, new_image).
+ * - visible: The number of entries shown before the button for the rest.
+ */
+#}
+<div class="project-changes-entries">
+  {% for entry in entries %}
+    <article class="project-changes-entry" id="revision-{{ entry.revision_id }}"{% if loop.index > visible %} hidden{% endif %}>
+      <div class="project-changes-meta-column">
+        <time class="project-changes-date" datetime="{{ entry.time|date('c') }}">{{ entry.time|format_date('custom', 'd.m.Y H:i') }}</time>
+        <span class="project-changes-author">
+          {%- if entry.author_id -%}
+            <a href="{{ path('entity.user.canonical', {'user': entry.author_id}) }}">{{ entry.author_name }}</a>
+          {%- else -%}
+            {{ entry.author_role }}
+          {%- endif -%}
+        </span>
+      </div>
+      <span class="project-changes-type"{% if not entry.created %} data-tone="attention"{% endif %}>{{ entry.created ? 'Create'|t : 'Change'|t }}</span>
+      <div class="project-changes-event">
+        {% for field in entry.fields %}
+          <div class="project-changes-field">
+            <div class="project-changes-label">{{ field.label }}</div>
+            {% if field.old_image or field.new_image %}
+              <div class="project-changes-images">
+                {% if field.old_image %}<del class="project-changes-image"><img src="{{ field.old_image }}" alt="{{ 'Previous image'|t }}" loading="lazy"></del>{% endif %}
+                {% if field.old_image and field.new_image %}<span class="project-changes-arrow" aria-hidden="true">→</span>{% endif %}
+                {% if field.new_image %}<ins class="project-changes-image"><img src="{{ field.new_image }}" alt="{{ 'New image'|t }}" loading="lazy"></ins>{% endif %}
+              </div>
+            {% elseif field.long %}
+              <div class="project-changes-diff">{{ field.diff }}</div>
+            {% else %}
+              <div class="project-changes-value">
+                {% if field.old %}<del>{{ field.old }}</del>{% endif %}
+                {% if field.old and field.new %}<span class="project-changes-arrow" aria-hidden="true">→</span>{% endif %}
+                {% if field.new %}<ins>{{ field.new }}</ins>{% endif %}
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="project-changes-created">{{ entry.created ? 'The first version of the project.'|t : 'No visible changes.'|t }}</p>
+        {% endfor %}
+      </div>
+      <a class="project-changes-link" href="{{ entry.url }}">{{ 'View revision'|t }}</a>
+    </article>
+  {% endfor %}
+</div>
+{% if entries|length > visible %}
+  {% set older = entries|length - visible %}
+  <button type="button" class="button button--small project-changes-more" data-project-changes-more>
+    {% trans %}Show {{ older }} older change{% plural older %}Show {{ older }} older changes{% endtrans %}
+  </button>
+{% endif %}
