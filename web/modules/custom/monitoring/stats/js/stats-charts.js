@@ -296,6 +296,8 @@
    * by then, so the listener sits on the element itself.
    */
   const configure = (event) => {
+    // Gin's accent behavior has run by now: read the tokens it sets.
+    readTokens();
     const config = event.detail;
     const options = config.options || {};
     config.options = options;
