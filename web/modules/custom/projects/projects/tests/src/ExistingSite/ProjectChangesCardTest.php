@@ -14,10 +14,10 @@ use PHPUnit\Framework\Attributes\Group;
 class ProjectChangesCardTest extends ProjectResourceTestBase {
 
   /**
-   * Creates a pending project with title changes by its organization.
+   * Creates a project with title changes by its organization.
    */
-  protected function createChangedProject(int $changes): ProjectInterface {
-    $project = $this->createProject(ProjectState::Pending);
+  protected function createChangedProject(int $changes, ProjectState $state = ProjectState::Pending): ProjectInterface {
+    $project = $this->createProject($state);
     $this->setCurrentUser($project->getOwner());
     for ($i = 1; $i <= $changes; $i++) {
       $project->setTitle('Titel ' . $i)->save();
@@ -56,17 +56,21 @@ class ProjectChangesCardTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Tests that the organization doesn't see the card, after staff did.
+   * Tests that a viewer without revision access doesn't see the card.
+   *
+   * Only staff open the project page, and a manager of another organization
+   * sees open projects but not their revisions. Staff render the card first,
+   * so a cached card would show.
    */
-  public function testOrganizationDoesNotSeeCard(): void {
+  public function testOtherManagerDoesNotSeeCard(): void {
 
-    $project = $this->createChangedProject(1);
+    $project = $this->createChangedProject(1, ProjectState::Open);
 
     $this->drupalLogin($this->createSupervisor());
     $this->drupalGet($project->toUrl());
     $this->assertSession()->elementExists('css', 'details.project-changes');
 
-    $this->drupalLogin($project->getOwner());
+    $this->drupalLogin($this->createManager());
     $this->drupalGet($project->toUrl());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementNotExists('css', '.project-changes');
