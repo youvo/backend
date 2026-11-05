@@ -219,28 +219,37 @@ class CreativesViewsHooks {
     }
 
     $input = $view->getExposedInput();
+    // Each group lays out its filters in rows that belong together.
     $groups = [
       'activity' => [
         'title' => $this->t('Activity'),
-        'filters' => [
-          'registered' => 'registered_wrapper',
-          'last_access' => 'last_access_wrapper',
-          'participated' => 'participated',
-          'applied' => 'applied',
-          'returned' => 'returned',
-          'accessed' => 'accessed',
+        'rows' => [
+          'dates' => [
+            'registered' => 'registered_wrapper',
+            'last_access' => 'last_access_wrapper',
+          ],
+          'states' => [
+            'participated' => 'participated',
+            'applied' => 'applied',
+            'returned' => 'returned',
+            'accessed' => 'accessed',
+          ],
         ],
       ],
       'profile' => [
         'title' => $this->t('Profile'),
-        'filters' => [
-          'has_avatar' => 'has_avatar',
-          'has_about' => 'has_about',
-          'has_link' => 'has_link',
-          'jobs' => 'jobs',
-          'newsletter' => 'newsletter',
-          'public_profile' => 'public_profile',
-          'tags' => 'tags',
+        'rows' => [
+          'states' => [
+            'has_avatar' => 'has_avatar',
+            'has_about' => 'has_about',
+            'has_link' => 'has_link',
+            'jobs' => 'jobs',
+            'newsletter' => 'newsletter',
+            'public_profile' => 'public_profile',
+          ],
+          'tags' => [
+            'tags' => 'tags',
+          ],
         ],
       ],
     ];
@@ -259,14 +268,20 @@ class CreativesViewsHooks {
         '#attributes' => ['class' => ['creatives-filter-group']],
       ];
       $active = 0;
-      foreach ($info['filters'] as $identifier => $key) {
-        if (!isset($form[$key])) {
-          continue;
-        }
-        $form['groups'][$group][$key] = $form[$key];
-        unset($form[$key]);
-        if (static::isActive($input[$identifier] ?? NULL)) {
-          $active++;
+      foreach ($info['rows'] as $row => $filters) {
+        $form['groups'][$group][$row] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['creatives-filter-row']],
+        ];
+        foreach ($filters as $identifier => $key) {
+          if (!isset($form[$key])) {
+            continue;
+          }
+          $form['groups'][$group][$row][$key] = $form[$key];
+          unset($form[$key]);
+          if (static::isActive($input[$identifier] ?? NULL)) {
+            $active++;
+          }
         }
       }
       // A group with active filters opens and counts them in its summary, so
@@ -290,7 +305,7 @@ class CreativesViewsHooks {
     // Without a date, the switch between "after" and "before" filters nothing
     // and stays quiet.
     foreach (['registered', 'last_access'] as $date) {
-      $wrapper = &$form['groups']['activity'][$date . '_wrapper'];
+      $wrapper = &$form['groups']['activity']['dates'][$date . '_wrapper'];
       if (static::isActive($input[$date]['value'] ?? NULL)) {
         $wrapper[$date]['value']['#attributes']['class'][] = 'creatives-filter-active';
       }

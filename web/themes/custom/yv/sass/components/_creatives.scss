@@ -11,6 +11,9 @@
 .creatives-mode-toggle {
   display: inline-flex;
   align-self: flex-end;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 2.5rem;
   gap: var(--gin-spacing-xxs);
   margin: 0 0 0 auto;
   padding: var(--gin-spacing-xxs);
@@ -20,13 +23,15 @@
   list-style: none;
 
   li {
+    display: flex;
     margin: 0;
     padding: 0;
   }
 
   a {
-    display: block;
-    padding: 0.3em 1em;
+    display: flex;
+    align-items: center;
+    padding: 0 1em;
     border-radius: var(--gin-border-s);
     color: var(--yv-ink);
     font-size: var(--gin-font-size-s);
@@ -125,6 +130,12 @@
     box-shadow: inset 0 0 0 1px var(--gin-color-primary);
   }
 
+  // The buttons keep the same distance from the skills as the skills from
+  // the fields.
+  .form-actions {
+    margin-inline-start: var(--gin-spacing-xs);
+  }
+
   // Reset is a quiet link next to the primary Apply button.
   // Gin forces the border of buttons with !important.
   .button.creatives-reset {
@@ -166,23 +177,30 @@
 
   // Gin's classes, outside our naming pattern.
   // stylelint-disable selector-class-pattern
-  // A slimmer summary row, so the closed groups don't outweigh the filters.
   .claro-details__summary {
-    padding-block: var(--gin-spacing-s);
     font-size: var(--gin-font-size-s);
   }
 
   input.form-date {
+    box-sizing: border-box;
     width: 9.5rem;
+    height: 2.5rem;
   }
 
+  // The rows of a group stack; the filters of a row line up and wrap.
   .claro-details__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gin-spacing-m);
+    margin: 0;
+    padding: 0 var(--gin-spacing-m) var(--gin-spacing-m);
+  }
+
+  .creatives-filter-row {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--gin-spacing-s) var(--gin-spacing-m);
-    margin: 0;
-    padding: 0 var(--gin-spacing-m) var(--gin-spacing-m);
   }
 
   // Doubled: the fieldset margin of the exposed form has more specificity.
@@ -223,18 +241,21 @@
 // stylelint-disable selector-class-pattern
 .creatives-skills.creatives-skills {
   display: block;
+  margin-inline: var(--gin-spacing-s);
 
+  // As high as the fields next to them, the icons centered in the row.
   .form-checkboxes {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--gin-spacing-xs);
+    gap: var(--gin-spacing-s);
     min-height: 2.5rem;
   }
 
+  // Gin spaces checkboxes with an ID-level specificity hack.
   .form-item {
     position: relative;
-    margin: 0;
+    margin: 0 !important;
     padding: 0;
   }
 
@@ -295,6 +316,9 @@
 // stylelint-disable selector-class-pattern
 fieldset.creatives-segmented .form-radios {
   display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 2.5rem;
   gap: var(--gin-spacing-xxs);
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
@@ -302,6 +326,7 @@ fieldset.creatives-segmented .form-radios {
   box-shadow: inset 0 0 0 1px var(--yv-outline);
 
   .form-item {
+    display: flex;
     position: relative;
     margin: 0;
     padding: 0;
@@ -319,9 +344,10 @@ fieldset.creatives-segmented .form-radios {
   }
 
   .form-item__label.option {
-    display: block;
+    display: flex;
+    align-items: center;
     margin: 0;
-    padding: 0.3em 0.8em;
+    padding: 0 0.8em;
     border-radius: var(--gin-border-s);
     color: var(--yv-ink);
     font-size: var(--gin-font-size-s);
