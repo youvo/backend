@@ -151,6 +151,11 @@ jobs:
           mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db;'
       - name: Install Drupal
         run: bash scripts/install-ci.sh
+      # Browser tests (drupalLogin, drupalGet) need the site served over HTTP.
+      - name: Serve Drupal
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 nohup php -S 127.0.0.1:8080 -t web web/.ht.router.php > /tmp/php-server.log 2>&1 &
+          curl --retry 10 --retry-connrefused --retry-delay 1 -sf -o /dev/null http://127.0.0.1:8080/user/login
       # Each shard installs its own site and runs every third test file.
       - name: Existing Site Tests
         run: |
