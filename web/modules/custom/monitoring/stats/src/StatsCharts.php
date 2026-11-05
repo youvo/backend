@@ -26,16 +26,22 @@ class StatsCharts {
    *   Whether the card spans two rows, with a chart that fills it.
    * @param bool $compact
    *   Whether the card holds a small chart of a fixed low height.
+   * @param string|\Stringable|null $description
+   *   A short line under the title that explains the chart.
    *
    * @return array<string, mixed>
    *   The card render array.
    */
-  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $compact = FALSE): array {
+  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $compact = FALSE, string|\Stringable|null $description = NULL): array {
     $title_id = $chart['#id'] . '-title';
+    $description_id = $chart['#id'] . '-description';
     $attributes = [
       'class' => ['stats-card'],
       'aria-labelledby' => $title_id,
     ];
+    if ($description !== NULL) {
+      $attributes['aria-describedby'] = $description_id;
+    }
     if ($wide) {
       $attributes['data-wide'] = '';
     }
@@ -57,19 +63,27 @@ class StatsCharts {
     if (static::isEmpty($chart)) {
       $attributes['data-empty'] = '';
     }
-    $title = $chart['#title'];
-    return [
+    $card = [
       '#type' => 'html_tag',
       '#tag' => 'section',
       '#attributes' => $attributes,
       'title' => [
         '#type' => 'html_tag',
         '#tag' => 'h3',
-        '#value' => $title,
+        '#value' => $chart['#title'],
         '#attributes' => ['id' => $title_id, 'class' => ['stats-card-title']],
       ],
-      'chart' => $chart,
     ];
+    if ($description !== NULL) {
+      $card['description'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $description,
+        '#attributes' => ['id' => $description_id, 'class' => ['stats-card-description']],
+      ];
+    }
+    $card['chart'] = $chart;
+    return $card;
   }
 
   /**

@@ -4,6 +4,7 @@ namespace Drupal\Tests\stats\ExistingSite;
 
 use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\projects\Entity\Project;
 use Drupal\stats\Controller\StatsController;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
@@ -164,9 +165,9 @@ class StatsPageTest extends StatsTestBase {
 
     // The mediation rate of the cohort moved to the footnote of its card.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
-    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//p[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
-    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//p[@data-foot="mediation-rate"]', 'Mediation rate: –');
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: –');
   }
 
   /**
@@ -257,6 +258,14 @@ class StatsPageTest extends StatsTestBase {
       $values[] = trim($cells[$column]->getText());
     }
     $this->assertSame(['1', '1', '2', '1', '1', '0', '1', '0', '0', '0', '0', '0'], $values);
+
+    // The cohort card explains itself in a line under its title.
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-describedby="stats-funnel-description"] p#stats-funnel-description', 'Projects first published in the period and how far they got');
+
+    // A month counts by week.
+    $this->drupalGet('stats', ['query' => ['period' => 'month', 'year' => 2001, 'month' => 11]]);
+    $definition = json_decode($this->assertSession()->elementExists('css', '#stats-flow')->getAttribute('data-chart'), TRUE);
+    $this->assertSame(['W44', 'W45', 'W46', 'W47', 'W48'], $definition['data']['labels']);
   }
 
   /**
@@ -390,6 +399,37 @@ class StatsPageTest extends StatsTestBase {
       $values[] = trim($cells[$column]->getText());
     }
     $this->assertSame(['12', '9'], array_slice($values, 0, 2));
+
+    // The tiles show the last snapshot of the period.
+    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-label', 'Active creatives');
+    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-value', '9');
+    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="active-organizations"]');
+  }
+
+  /**
+   * A period without snapshots hides the activity chart and its tiles.
+   */
+  public function testActivityHiddenWithoutSnapshots(): void {
+
+    // Remove the snapshots of 2001, which tearDown() restores.
+    $database = $this->container->get('database');
+    $rows = $database->select('stats_activity', 'a')
+      ->fields('a')
+      ->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')
+      ->execute()
+      ->fetchAll(FetchAs::Associative);
+    foreach ($rows as $row) {
+      $this->touchedDays[$row['day']][] = $row;
+    }
+    $database->delete('stats_activity')->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')->execute();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->elementExists('css', '#stats-activation');
+    $this->assertSession()->elementNotExists('css', '#stats-activity');
+    $this->assertSession()->elementNotExists('css', '[data-tile="active-creatives"], [data-tile="active-organizations"]');
+    $this->assertSession()->pageTextNotContains('Active users, last 30 days');
   }
 
   /**
@@ -398,11 +438,26 @@ class StatsPageTest extends StatsTestBase {
   public function testFeedbackSectionRenders(): void {
 
     $this->setUpScenario();
+    $project = Project::load(reset($this->projectIds));
+    $this->createFeedback('creative', $project, '2001-03-05', ['field_recommend_boolean' => 1]);
+    $this->createFeedback('creative', $project, '2001-03-10', ['field_recommend_boolean' => 0]);
+    $this->createFeedback('organization', $project, '2001-03-12', ['field_recommend_boolean' => 1]);
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementExists('xpath', '//h2[contains(@class, "stats-section-title")][normalize-space()="Feedback"]');
+    // The answers and the recommend share sit in the footnote, not the title.
+    $footers = [
+      'creative' => ['Feedback from creatives', 'Answers: 2', 'Recommend: 50 %'],
+      'organization' => ['Feedback from organizations', 'Answers: 1', 'Recommend: 100 %'],
+    ];
+    foreach ($footers as $bundle => [$title, $answers, $recommend]) {
+      $card = '.stats-card[aria-labelledby="stats-feedback-' . $bundle . '-title"]';
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-title', $title);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-foot [data-foot="answers-' . $bundle . '"]', $answers);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-foot [data-foot="recommend-' . $bundle . '"]', $recommend);
+    }
     foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }

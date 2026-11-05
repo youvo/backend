@@ -161,17 +161,18 @@ class StatsController implements ContainerInjectionInterface {
     $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series);
     $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
     $funnel_chart = StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE);
-    $funnel_card = StatsCharts::card($funnel_chart);
-    $rate = $this->tile('mediation-rate', $this->t('Mediation rate'), $cohort['mediation_rate'], 'rate');
+    $funnel_card = StatsCharts::card($funnel_chart, description: $this->t('Projects first published in the period and how far they got'));
+    $rate = $this->tile('mediation-rate', $this->t('Mediation rate'), $cohort['mediation_rate'], 'rate', $this->t('Mediated ÷ published, without open or externally archived ones'));
     $funnel_card['foot'] = $this->foot($rate);
     $stages_title = (string) $this->t('Median days per stage');
     $stages_chart = StatsCharts::bar('stats-stages', $stages_title, $stage_labels, $stages, horizontal: TRUE);
+    $stages_card = StatsCharts::card($stages_chart, description: $this->t('Median days to each step reached in the period'));
 
     $heading = $this->heading($this->t('Projects'));
     return $this->section($heading, [
       'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
       'funnel' => $funnel_card,
-      'stages' => StatsCharts::card($stages_chart),
+      'stages' => $stages_card,
     ]);
   }
 
@@ -313,10 +314,10 @@ class StatsController implements ContainerInjectionInterface {
     ];
     $chart = StatsCharts::bar('stats-applications', (string) $this->t('Applications and applicants'), $labels, $series);
     $tiles = [
-      $this->tile('active-applicants', $this->t('Active applicants'), $applications['active'], 'count'),
-      $this->tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], 'count'),
-      $this->tile('engaged-creatives', $this->t('Engaged (mediated)'), $engaged, 'count'),
-      $this->tile('came-back', $this->t('Came back after rejection'), $returned, 'rate'),
+      $this->tile('active-applicants', $this->t('Active applicants'), $applications['active'], 'count', $this->t('Creatives who applied at least once in the period')),
+      $this->tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], 'count', $this->t('Creatives whose first application falls in the period')),
+      $this->tile('engaged-creatives', $this->t('Engaged'), $engaged, 'count', $this->t('Creatives mediated to a project in the period')),
+      $this->tile('came-back', $this->t('Came back'), $returned, 'rate', $this->t('Applicants not chosen in the period who applied again later')),
     ];
 
     $heading = $this->heading($this->t('Applications'));
@@ -342,7 +343,7 @@ class StatsController implements ContainerInjectionInterface {
     ];
     $activation_chart = StatsCharts::bar('stats-activation', (string) $this->t('Registrations and activation'), $labels, $series);
     $activation_card = StatsCharts::card($activation_chart, wide: TRUE);
-    $rate = $this->tile('activation-rate', $this->t('Activation rate'), $activation['rate'], 'rate');
+    $rate = $this->tile('activation-rate', $this->t('Activation rate'), $activation['rate'], 'rate', $this->t('Registered creatives who applied within 30 days'));
     $activation_card['foot'] = $this->foot($rate);
 
     $histogram = $this->activityStats->firstApplicationHistogram($period);
@@ -360,25 +361,32 @@ class StatsController implements ContainerInjectionInterface {
       (string) $this->t('Creatives') => array_values($histogram),
     ]);
 
-    // Buckets without a snapshot hold NULL and leave a gap in the line.
-    $activity = $this->activitySnapshots->series($period);
-    $activity_series = [
-      (string) $this->t('Creatives') => array_values(array_column($activity['creative'], 'active_30d')),
-      (string) $this->t('Organizations') => array_values(array_column($activity['organization'], 'active_30d')),
-    ];
-    $activity_chart = StatsCharts::line('stats-activity', (string) $this->t('Active users, last 30 days'), $labels, $activity_series);
-    $tiles = [
-      $this->tile('active-creatives', $this->t('Active creatives (30 d)'), $this->lastActive($activity['creative']), 'count'),
-      $this->tile('active-organizations', $this->t('Active organizations (30 d)'), $this->lastActive($activity['organization']), 'count'),
-    ];
-
-    $heading = $this->heading($this->t('Creatives'));
-    return $this->section($heading, [
+    $cards = [
       'activation' => $activation_card,
       'first_application' => StatsCharts::card($histogram_chart),
-      'activity' => StatsCharts::card($activity_chart, wide: TRUE),
-      'tiles' => $this->tiles($tiles),
-    ]);
+    ];
+
+    // The activity shows only for periods with snapshots. Buckets without a
+    // snapshot hold NULL and leave a gap in the line; a snapshot of 0 users
+    // is data.
+    $activity = $this->activitySnapshots->series($period);
+    $creatives = array_column($activity['creative'], 'active_30d');
+    $organizations = array_column($activity['organization'], 'active_30d');
+    if (array_filter([...$creatives, ...$organizations], fn($value) => $value !== NULL)) {
+      $activity_series = [
+        (string) $this->t('Creatives') => array_values($creatives),
+        (string) $this->t('Organizations') => array_values($organizations),
+      ];
+      $activity_chart = StatsCharts::line('stats-activity', (string) $this->t('Active users, last 30 days'), $labels, $activity_series);
+      $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $this->t('Users who visited in the 30 days up to each point'));
+      $cards['tiles'] = $this->tiles([
+        $this->tile('active-creatives', $this->t('Active creatives'), $this->lastActive($activity['creative']), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
+        $this->tile('active-organizations', $this->t('Active organizations'), $this->lastActive($activity['organization']), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
+      ]);
+    }
+
+    $heading = $this->heading($this->t('Creatives'));
+    return $this->section($heading, $cards);
   }
 
   /**
@@ -406,10 +414,12 @@ class StatsController implements ContainerInjectionInterface {
     $archive_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
     $archive_chart = StatsCharts::doughnut('stats-archive-reasons', (string) $this->t('Archive reasons'), $archive_labels, array_values($archives));
 
+    // The decline reasons span two columns and rows, the prospect funnel and
+    // the archive reasons stack beside them.
     $heading = $this->heading($this->t('Organizations and reasons'));
     return $this->section($heading, [
+      'decline_reasons' => StatsCharts::card($decline_chart, wide: TRUE, tall: TRUE),
       'prospects' => StatsCharts::card($funnel_chart),
-      'decline_reasons' => StatsCharts::card($decline_chart),
       'archive_reasons' => StatsCharts::card($archive_chart),
     ]);
   }
@@ -434,19 +444,20 @@ class StatsController implements ContainerInjectionInterface {
       $series = [
         (string) $this->t('Average (max 5)') => array_values($data['scales']),
       ];
-      $recommend = $data['recommend'] === NULL ? '–' : round($data['recommend'] * 100) . ' %';
-      $title = (string) $this->t('@title: @count answers, recommend @share', [
-        '@title' => $bundle_titles[$bundle] ?? $bundle,
-        '@count' => $data['count'],
-        '@share' => $recommend,
-      ]);
+      $title = (string) ($bundle_titles[$bundle] ?? $bundle);
       $labels = array_map(fn($label) => preg_replace('/ Scale$/', '', $label), array_values($fields));
       $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, $labels, $series, horizontal: TRUE, max: 5);
-      $cards['feedback_' . $bundle] = StatsCharts::card($chart, wide: TRUE);
+      $card = StatsCharts::card($chart);
+      $card['foot'] = $this->foot(
+        $this->tile('answers-' . $bundle, $this->t('Answers'), $data['count'], 'count'),
+        $this->tile('recommend-' . $bundle, $this->t('Recommend'), $data['recommend'], 'rate'),
+      );
+      $cards['feedback_' . $bundle] = $card;
     }
 
+    // The two bundles side by side.
     $heading = $this->heading($this->t('Feedback'));
-    return $this->section($heading, $cards);
+    return $this->section($heading, $cards, ['data-columns' => '2']);
   }
 
   /**
@@ -471,14 +482,16 @@ class StatsController implements ContainerInjectionInterface {
    *   The heading render array.
    * @param array<string, mixed> $cards
    *   The cards keyed by name.
+   * @param array<string, string> $attributes
+   *   More attributes of the section.
    *
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function section(array $heading, array $cards): array {
+  protected function section(array $heading, array $cards, array $attributes = []): array {
     return [
       '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section']],
+      '#attributes' => ['class' => ['stats-section']] + $attributes,
       'heading' => $heading,
     ] + $cards;
   }
@@ -516,19 +529,24 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the line under a chart with a tile value.
+   * Builds the line under a chart with tile values.
    *
-   * @param array<string, mixed> $tile
-   *   The tile from tile().
+   * The descriptions of the tiles follow in a muted line below.
+   *
+   * @param array<string, mixed> ...$tiles
+   *   The tiles from tile().
    *
    * @return array<string, mixed>
    *   The render array.
    */
-  protected function foot(array $tile): array {
+  protected function foot(array ...$tiles): array {
     return [
       '#type' => 'inline_template',
-      '#template' => '<p class="stats-card-foot" data-foot="{{ tile.key }}">{{ tile.label }}: <b class="stats-card-foot-value">{{ tile.value }}</b></p>',
-      '#context' => ['tile' => $tile],
+      '#template' => '<div class="stats-card-foot">'
+      . '<p class="stats-card-foot-values">{% for tile in tiles %}<span data-foot="{{ tile.key }}">{{ tile.label }}: <b class="stats-card-foot-value">{{ tile.value }}</b></span>{% if not loop.last %}<span aria-hidden="true"> · </span>{% endif %}{% endfor %}</p>'
+      . '{% for tile in tiles|filter(tile => tile.description) %}<p class="stats-card-foot-description">{{ tile.description }}</p>{% endfor %}'
+      . '</div>',
+      '#context' => ['tiles' => $tiles],
     ];
   }
 
@@ -543,11 +561,13 @@ class StatsController implements ContainerInjectionInterface {
    *   The value, NULL if undefined.
    * @param string $type
    *   One of count, rate (a fraction) and days.
+   * @param mixed $description
+   *   A short line that explains the value, if any.
    *
    * @return array<string, mixed>
    *   The tile.
    */
-  protected function tile(string $key, mixed $label, int|float|null $value, string $type): array {
+  protected function tile(string $key, mixed $label, int|float|null $value, string $type, mixed $description = NULL): array {
     $text = '–';
     if ($value !== NULL) {
       $text = match ($type) {
@@ -560,6 +580,7 @@ class StatsController implements ContainerInjectionInterface {
       'key' => $key,
       'label' => $label,
       'value' => $text,
+      'description' => $description,
     ];
   }
 

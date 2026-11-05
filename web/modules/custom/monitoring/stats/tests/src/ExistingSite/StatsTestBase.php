@@ -3,6 +3,7 @@
 namespace Drupal\Tests\stats\ExistingSite;
 
 use Drupal\creatives\Entity\Creative;
+use Drupal\feedback\Entity\Feedback;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
 use Drupal\organizations\Entity\Organization;
@@ -38,6 +39,30 @@ abstract class StatsTestBase extends ExistingSiteBase {
       }
     }
     parent::tearDown();
+  }
+
+  /**
+   * Creates a completed feedback of a bundle on a Y-m-d date.
+   *
+   * @param string $bundle
+   *   The feedback bundle.
+   * @param \Drupal\projects\Entity\Project $project
+   *   The project.
+   * @param string $date
+   *   The completion date.
+   * @param array<string, int> $values
+   *   The extra field values.
+   */
+  protected function createFeedback(string $bundle, Project $project, string $date, array $values): void {
+    $feedback = Feedback::create($values + [
+      'bundle' => $bundle,
+      'project' => $project->id(),
+      'author' => $bundle === 'organization' ? $project->getOwnerId() : $this->createCreative()->id(),
+      'step' => 0,
+      'completed' => $this->noon($date),
+    ]);
+    $feedback->save();
+    $this->markEntityForCleanup($feedback);
   }
 
   /**

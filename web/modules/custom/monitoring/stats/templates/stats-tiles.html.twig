@@ -5,13 +5,17 @@
  *
  * Available variables:
  * - attributes: The attributes of the wrapper.
- * - tiles: The tiles, each with key, label and value.
+ * - tiles: The tiles, each with key, label, value and an optional
+ *   description, a short line under the label.
  */
 #}
 <div{{ attributes.addClass('stats-tiles') }}>
   {% for tile in tiles %}
     <div class="stats-tile" data-tile="{{ tile.key }}">
       <p class="stats-tile-label">{{ tile.label }}</p>
+      {% if tile.description %}
+        <p class="stats-tile-description">{{ tile.description }}</p>
+      {% endif %}
       <p class="stats-tile-value">{{ tile.value }}</p>
     </div>
   {% endfor %}

@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
-use Drupal\feedback\Entity\Feedback;
 use Drupal\projects\Entity\Project;
 use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\StatsPeriod;
@@ -32,30 +31,6 @@ class FeedbackStatsTest extends StatsTestBase {
     $this->feedbackStats = $this->container->get('stats.feedback_stats');
     $timezone = $this->timezone();
     $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
-  }
-
-  /**
-   * Creates a completed feedback of a bundle on a Y-m-d date.
-   *
-   * @param string $bundle
-   *   The feedback bundle.
-   * @param \Drupal\projects\Entity\Project $project
-   *   The project.
-   * @param string $date
-   *   The completion date.
-   * @param array<string, int> $values
-   *   The extra field values.
-   */
-  protected function createFeedback(string $bundle, Project $project, string $date, array $values): void {
-    $feedback = Feedback::create($values + [
-      'bundle' => $bundle,
-      'project' => $project->id(),
-      'author' => $bundle === 'organization' ? $project->getOwnerId() : $this->createCreative()->id(),
-      'step' => 0,
-      'completed' => $this->noon($date),
-    ]);
-    $feedback->save();
-    $this->markEntityForCleanup($feedback);
   }
 
   /**
