@@ -259,7 +259,10 @@ class StatsController implements ContainerInjectionInterface {
         '#value' => (string) $total,
         '#attributes' => ['class' => ['stats-card-value'], 'data-value' => $key],
       ];
-      $card['chart'] = $chart;
+      // A card without data shows its value only.
+      if (!StatsCharts::isEmpty($chart)) {
+        $card['chart'] = $chart;
+      }
       $section[$key] = $card;
     }
 

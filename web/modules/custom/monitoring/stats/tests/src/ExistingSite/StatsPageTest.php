@@ -157,6 +157,11 @@ class StatsPageTest extends StatsTestBase {
       $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$cards[$key][1]}());
     }
 
+    // A period without data hides the overview charts, not the values.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
+    $this->assertSession()->elementExists('css', '.stats-overview .stats-card-value[data-value="creatives"]');
+    $this->assertSession()->elementNotExists('css', '#stats-overview-creatives');
+
     // The mediation rate of the cohort moved to the footnote of its card.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//p[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
@@ -278,6 +283,11 @@ class StatsPageTest extends StatsTestBase {
     foreach ($expected as $key => $value) {
       $id = 'stats-overview-' . $key;
       $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', $value);
+      // The creatives have no data in this year and show no chart.
+      if ($key === 'creatives') {
+        $this->assertSession()->elementNotExists('css', '#' . $id);
+        continue;
+      }
       $rows = $this->getSession()->getPage()->findAll('xpath', '//div[@id="' . $id . '"]/following-sibling::div//table/tbody/tr');
       $cells = end($rows)->findAll('xpath', 'th|td');
       $this->assertSame($value, trim(end($cells)->getText()), $key);
