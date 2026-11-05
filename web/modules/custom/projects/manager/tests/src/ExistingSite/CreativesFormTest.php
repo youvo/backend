@@ -52,7 +52,8 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $this->assertSame(['contains', 'does not contain'], $this->optionLabels('city_op'));
     $this->assertSame(['before', 'after'], $this->optionLabels('registered_op'));
     $this->assertSame(['before', 'after'], $this->optionLabels('last_access_op'));
-    $this->assertSame(['any of', 'all of'], $this->optionLabels('skills_op'));
+    $session->elementNotExists('css', 'form.views-exposed-form [name="skills_op"]');
+    $session->elementExists('xpath', $this->groupXpath('Skills and tags') . '//label/span[@class="skill" and @data-skill="design" and @title="Design"]');
   }
 
   /**
@@ -102,13 +103,9 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $session->checkboxChecked('edit-skills-' . $skill);
     $this->assertTrue($this->group('Skills and tags')->hasAttribute('open'));
 
-    foreach (['or', 'and'] as $operator) {
-      $this->drupalGet('creatives', [
-        'query' => ['name' => $prefix, 'skills_op' => $operator, 'skills' => [$skill]],
-      ]);
-      $session->pageTextContains($with);
-      $session->pageTextNotContains($without);
-    }
+    $this->drupalGet('creatives', ['query' => ['name' => $prefix, 'skills' => [$skill]]]);
+    $session->pageTextContains($with);
+    $session->pageTextNotContains($without);
   }
 
   /**

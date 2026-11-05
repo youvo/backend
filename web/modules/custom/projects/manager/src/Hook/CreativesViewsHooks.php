@@ -2,8 +2,12 @@
 
 namespace Drupal\manager\Hook;
 
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -17,6 +21,7 @@ class CreativesViewsHooks {
 
   public function __construct(
     protected RequestStack $requestStack,
+    protected EntityTypeManagerInterface $entityTypeManager,
   ) {}
 
   /**
@@ -112,7 +117,8 @@ class CreativesViewsHooks {
    *
    * Keeps the main filters, the sorts and the buttons in one row and moves the
    * other filters into three groups, which open when one of their filters is
-   * set. The operators get short labels, the skills become checkboxes.
+   * set. The operators get short labels, the skills become checkboxes with
+   * the skill icons.
    * Filtering and resetting in the profiles mode stays in it.
    */
   #[Hook('form_views_exposed_form_alter')]
@@ -127,7 +133,6 @@ class CreativesViewsHooks {
       'city_wrapper' => ['city_op' => ['contains' => $this->t('contains'), 'not' => $this->t('does not contain')]],
       'registered_wrapper' => ['registered_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
       'last_access_wrapper' => ['last_access_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
-      'skills_wrapper' => ['skills_op' => ['or' => $this->t('any of'), 'and' => $this->t('all of')]],
     ];
     foreach ($labels as $wrapper => $operators) {
       foreach ($operators as $operator => $options) {
@@ -139,12 +144,26 @@ class CreativesViewsHooks {
       }
     }
 
-    if (isset($form['skills_wrapper']['skills'])) {
-      $skills = &$form['skills_wrapper']['skills'];
-      $skills['#type'] = 'checkboxes';
-      unset($skills['#multiple'], $skills['#size']);
-      $skills['#element_validate'][] = [static::class, 'validateSkills'];
-      unset($skills);
+    // The skills are checkboxes showing the skill icons, as on the profiles.
+    if (isset($form['skills'])) {
+      $form['skills']['#type'] = 'checkboxes';
+      unset($form['skills']['#multiple'], $form['skills']['#size']);
+      $form['skills']['#element_validate'][] = [static::class, 'validateSkills'];
+      $form['skills']['#attributes']['class'][] = 'creatives-skills';
+      $terms = $this->entityTypeManager->getStorage('taxonomy_term')
+        ->loadMultiple(array_keys($form['skills']['#options']));
+      $cache = CacheableMetadata::createFromRenderArray($form);
+      foreach ($terms as $tid => $term) {
+        $cache->addCacheableDependency($term);
+        $label = Html::escape((string) $term->label());
+        $form['skills']['#options'][$tid] = Markup::create(sprintf(
+          '<span class="skill" data-skill="%s" data-size="small" title="%s" aria-hidden="true"></span><span class="visually-hidden">%s</span>',
+          Html::escape((string) $term->get('machine_name')->value),
+          $label,
+          $label,
+        ));
+      }
+      $cache->applyTo($form);
     }
 
     // Views sets the labels of the filters at the top level of the form when
@@ -162,7 +181,7 @@ class CreativesViewsHooks {
     $groups = [
       'skills_and_tags' => [
         'title' => $this->t('Skills and tags'),
-        'filters' => ['skills' => 'skills_wrapper', 'tags' => 'tags', 'tags_not' => 'tags_not'],
+        'filters' => ['skills' => 'skills', 'tags' => 'tags', 'tags_not' => 'tags_not'],
       ],
       'activity' => [
         'title' => $this->t('Activity'),

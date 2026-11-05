@@ -499,12 +499,10 @@ display:
             operator_id: skills_op
             label: Skills
             description: ''
-            use_operator: true
+            use_operator: false
             operator: skills_op
-            operator_limit_selection: true
-            operator_list:
-              or: or
-              and: and
+            operator_limit_selection: false
+            operator_list: {  }
             identifier: skills
             required: false
             remember: false

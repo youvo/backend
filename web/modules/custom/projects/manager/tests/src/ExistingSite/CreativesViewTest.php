@@ -99,7 +99,7 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
   }
 
   /**
-   * The skills match any or all, the tags include and exclude.
+   * The skills match any of the chosen, the tags include and exclude.
    */
   public function testTermFilters(): void {
 
@@ -120,10 +120,10 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
     $with_both = $this->creative(['field_skills' => [$skill_a, $skill_b]]);
     $this->creative();
 
-    $or = $this->uids(['skills_op' => 'or', 'skills' => [$skill_a, $skill_b]]);
-    $this->assertEqualsCanonicalizing([(int) $with_a->id(), (int) $with_b->id(), (int) $with_both->id()], $or);
-    $and = $this->uids(['skills_op' => 'and', 'skills' => [$skill_a, $skill_b]]);
-    $this->assertSame([(int) $with_both->id()], $and);
+    $any = [(int) $with_a->id(), (int) $with_b->id(), (int) $with_both->id()];
+    $this->assertEqualsCanonicalizing($any, $this->uids(['skills' => [$skill_a, $skill_b]]));
+    // There is no operator to choose: an old link asking for all gets any.
+    $this->assertEqualsCanonicalizing($any, $this->uids(['skills_op' => 'and', 'skills' => [$skill_a, $skill_b]]));
 
     $t1 = $this->createTag();
     $t2 = $this->createTag();
