@@ -40,7 +40,7 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     foreach (static::GROUPS as $group) {
       $this->assertFalse($this->group($group)->hasAttribute('open'), $group);
     }
-    foreach (['name', 'mail', 'city', 'sort_by', 'sort_order'] as $name) {
+    foreach (['name', 'mail', 'city'] as $name) {
       $session->elementExists('css', 'form.views-exposed-form [name="' . $name . '"]');
       $session->elementNotExists('css', 'form.views-exposed-form details [name="' . $name . '"]');
     }

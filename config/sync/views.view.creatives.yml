@@ -289,67 +289,10 @@ display:
           plugin_id: date
           order: DESC
           expose:
-            label: Registered
-            field_identifier: created
-          exposed: true
+            label: ''
+            field_identifier: ''
+          exposed: false
           granularity: second
-        field_name_value:
-          id: field_name_value
-          table: user__field_name
-          field: field_name_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: Name
-            field_identifier: field_name_value
-          exposed: true
-        access:
-          id: access
-          table: users_field_data
-          field: access
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: user
-          entity_field: access
-          plugin_id: date
-          order: DESC
-          expose:
-            label: 'Last access'
-            field_identifier: access
-          exposed: true
-          granularity: second
-        mail:
-          id: mail
-          table: users_field_data
-          field: mail
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: user
-          entity_field: mail
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: Email
-            field_identifier: mail
-          exposed: true
-        field_city_value:
-          id: field_city_value
-          table: user__field_city
-          field: field_city_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: City
-            field_identifier: field_city_value
-          exposed: true
         uid:
           id: uid
           table: users_field_data
@@ -978,14 +921,14 @@ display:
           default: '-1'
           info:
             field_name:
-              sortable: false
+              sortable: true
               default_sort_order: asc
               align: views-align-left
               separator: ''
               empty_column: false
               responsive: ''
             mail:
-              sortable: false
+              sortable: true
               default_sort_order: asc
               align: views-align-left
               separator: ''
@@ -1006,14 +949,14 @@ display:
               empty_column: false
               responsive: priority-low
             created:
-              sortable: false
+              sortable: true
               default_sort_order: desc
               align: views-align-left
               separator: ''
               empty_column: false
               responsive: ''
             access:
-              sortable: false
+              sortable: true
               default_sort_order: desc
               align: views-align-left
               separator: ''

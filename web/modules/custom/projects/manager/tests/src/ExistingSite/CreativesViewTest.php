@@ -236,37 +236,6 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
   }
 
   /**
-   * The exposed sorts order by city and by mail.
-   */
-  public function testSortByCityAndMail(): void {
-
-    $prefix = $this->randomMachineName();
-    $mail_suffix = strtolower($this->randomMachineName()) . '@example.com';
-    $koeln = $this->creative([
-      'field_name' => $prefix . ' Köln',
-      'field_city' => 'Köln',
-      'mail' => 'b' . $mail_suffix,
-    ]);
-    $augsburg = $this->creative([
-      'field_name' => $prefix . ' Augsburg',
-      'field_city' => 'Augsburg',
-      'mail' => 'c' . $mail_suffix,
-    ]);
-    $bremen = $this->creative([
-      'field_name' => $prefix . ' Bremen',
-      'field_city' => 'Bremen',
-      'mail' => 'a' . $mail_suffix,
-    ]);
-
-    $result = $this->uids(['name' => $prefix, 'sort_by' => 'field_city_value', 'sort_order' => 'ASC']);
-    $this->assertSame([(int) $augsburg->id(), (int) $bremen->id(), (int) $koeln->id()], $result);
-
-    // Descending mail: c, b, a.
-    $result = $this->uids(['name' => $prefix, 'sort_by' => 'mail', 'sort_order' => 'DESC']);
-    $this->assertSame([(int) $augsburg->id(), (int) $koeln->id(), (int) $bremen->id()], $result);
-  }
-
-  /**
    * Creates a creative with the given values.
    */
   protected function creative(array $values = []): Creative {

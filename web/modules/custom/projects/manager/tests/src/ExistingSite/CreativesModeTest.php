@@ -21,36 +21,63 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
   protected string $prefix;
 
   /**
-   * Creates three creatives with a shared name prefix.
+   * Creates three creatives with a shared name prefix, registered B, C, A.
    */
   protected function setUp(): void {
     parent::setUp();
     $this->prefix = $this->randomMachineName();
-    foreach (['B', 'C', 'A'] as $suffix) {
-      $this->createCreative()->set('field_name', $this->prefix . ' ' . $suffix)->save();
+    foreach (['B' => 1000, 'C' => 2000, 'A' => 3000] as $suffix => $created) {
+      $this->createCreative()
+        ->set('field_name', $this->prefix . ' ' . $suffix)
+        ->set('created', $created)
+        ->save();
     }
   }
 
   /**
-   * Both modes list the same filtered creatives in the same order.
+   * Both modes list the same filtered creatives, newest registration first.
    */
   public function testModesShareFiltersAndOrder(): void {
 
     $this->drupalLogin($this->createManager());
-    $query = [
-      'name' => $this->prefix,
-      'sort_by' => 'field_name_value',
-      'sort_order' => 'ASC',
-    ];
+    $query = ['name' => $this->prefix];
     $session = $this->assertSession();
 
     $this->drupalGet('creatives', ['query' => $query]);
     $session->elementExists('css', 'table');
-    $this->assertNamesInOrder();
+    $this->assertNamesInOrder(['A', 'C', 'B']);
 
     $this->drupalGet('creatives', ['query' => $query + ['mode' => 'profiles']]);
     $session->elementNotExists('css', 'table');
-    $this->assertNamesInOrder();
+    $this->assertNamesInOrder(['A', 'C', 'B']);
+  }
+
+  /**
+   * The table sorts by its name, mail, registered and last access headers.
+   *
+   * The profiles have no headers and keep the newest registration first.
+   */
+  public function testTableHeadersSort(): void {
+
+    $this->drupalLogin($this->createManager());
+    $session = $this->assertSession();
+
+    $this->drupalGet('creatives', ['query' => ['name' => $this->prefix]]);
+    foreach (['Name', 'Mail', 'Registered', 'Last access'] as $header) {
+      $session->elementExists('xpath', '//table//th//a[normalize-space() = "' . $header . '"]');
+    }
+    foreach (['City', 'Skills'] as $header) {
+      $session->elementNotExists('xpath', '//table//th//a[normalize-space() = "' . $header . '"]');
+    }
+    $session->elementNotExists('css', 'form.views-exposed-form [name="sort_by"]');
+    $session->elementNotExists('css', 'form.views-exposed-form [name="sort_order"]');
+
+    $sorted = ['name' => $this->prefix, 'order' => 'field_name', 'sort' => 'asc'];
+    $this->drupalGet('creatives', ['query' => $sorted]);
+    $this->assertNamesInOrder(['A', 'B', 'C']);
+
+    $this->drupalGet('creatives', ['query' => $sorted + ['mode' => 'profiles']]);
+    $this->assertNamesInOrder(['A', 'C', 'B']);
   }
 
   /**
@@ -99,12 +126,15 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
   }
 
   /**
-   * Asserts that the page lists the created creatives by name.
+   * Asserts that the page lists the created creatives in the given order.
+   *
+   * @param string[] $suffixes
+   *   The name suffixes of the creatives, in the expected order.
    */
-  protected function assertNamesInOrder(): void {
+  protected function assertNamesInOrder(array $suffixes): void {
     $content = $this->getSession()->getPage()->getContent();
     $positions = [];
-    foreach (['A', 'B', 'C'] as $suffix) {
+    foreach ($suffixes as $suffix) {
       $position = strpos($content, $this->prefix . ' ' . $suffix);
       $this->assertNotFalse($position, $suffix);
       $positions[] = $position;

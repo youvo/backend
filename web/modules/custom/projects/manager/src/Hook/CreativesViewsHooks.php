@@ -108,7 +108,7 @@ class CreativesViewsHooks {
   /**
    * Implements hook_form_FORM_ID_alter() for views_exposed_form.
    *
-   * Keeps the main filters, the sorts and the buttons in one row and moves the
+   * Keeps the main filters and the buttons in one row and moves the
    * other filters into three groups, which open when one of their filters is
    * set. The operators get short labels, the skills become checkboxes with
    * the skill icons.
