@@ -4,6 +4,7 @@ namespace Drupal\Tests\manager\ExistingSite;
 
 use Behat\Mink\Element\NodeElement;
 use Drupal\creatives\Entity\Creative;
+use Drupal\projects\ProjectState;
 use Drupal\taxonomy\Entity\Term;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -75,6 +76,25 @@ class CreativeCardTest extends ManagerExistingSiteTestBase {
     $this->drupalLogin($this->createManager());
     $this->drupalGet('creatives', ['query' => ['mode' => 'profiles', 'name' => 'Max Bauer']]);
     $this->assertStringContainsString('MB', $this->card($creative)->getText());
+  }
+
+  /**
+   * The card shows the project counts of the profile header.
+   */
+  public function testCardShowsProjectCounts(): void {
+    $name = $this->randomMachineName();
+    $creative = $this->createCreative();
+    $creative->set('field_name', $name)->save();
+    $this->createProject(ProjectState::Completed)->appendApplicant($creative)->appendParticipant($creative)->save();
+    $this->createProject(ProjectState::Open)->appendApplicant($creative)->save();
+
+    $this->drupalLogin($this->createManager());
+    $this->drupalGet('creatives', ['query' => ['mode' => 'profiles', 'name' => $name]]);
+
+    $text = $this->card($creative)->getText();
+    $this->assertStringContainsString('1 completed', $text);
+    $this->assertStringContainsString('1 application', $text);
+    $this->assertStringNotContainsString('ongoing', $text);
   }
 
   /**
