@@ -49,7 +49,7 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//label[normalize-space() = "Newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Activity') . '//legend[normalize-space() = "Registered"]');
 
-    $this->assertSame(['contains', 'does not contain'], $this->optionLabels('city_op'));
+    $session->elementNotExists('css', 'form.views-exposed-form [name="city_op"]');
     $this->assertSame(['before', 'after'], $this->optionLabels('registered_op'));
     $this->assertSame(['before', 'after'], $this->optionLabels('last_access_op'));
     $session->elementNotExists('css', 'form.views-exposed-form [name="skills_op"]');

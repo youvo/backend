@@ -130,7 +130,6 @@ class CreativesViewsHooks {
     }
 
     $labels = [
-      'city_wrapper' => ['city_op' => ['contains' => $this->t('contains'), 'not' => $this->t('does not contain')]],
       'registered_wrapper' => ['registered_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
       'last_access_wrapper' => ['last_access_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
     ];

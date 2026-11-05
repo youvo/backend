@@ -469,12 +469,10 @@ display:
             operator_id: city_op
             label: City
             description: ''
-            use_operator: true
+            use_operator: false
             operator: city_op
-            operator_limit_selection: true
-            operator_list:
-              contains: contains
-              not: not
+            operator_limit_selection: false
+            operator_list: {  }
             identifier: city
             required: false
             remember: false

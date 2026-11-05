@@ -83,19 +83,10 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
     $this->assertSame([(int) $koeln->id()], $this->uids(['name' => $prefix . ' Kö']));
     $mail = $nowhere->getEmail();
     $this->assertSame([(int) $nowhere->id()], $this->uids(['mail' => substr($mail, 2, 6)]));
-    $this->assertSame([(int) $hamburg->id()], $this->uids([
-      'name' => $prefix,
-      'city_op' => 'contains',
-      'city' => 'mburg',
-    ]));
-
-    // A creative without a city doesn't live in Hamburg either.
-    $result = $this->uids([
-      'name' => $prefix,
-      'city_op' => 'not',
-      'city' => 'Hamburg',
-    ]);
-    $this->assertEqualsCanonicalizing([(int) $koeln->id(), (int) $nowhere->id()], $result);
+    $this->assertSame([(int) $hamburg->id()], $this->uids(['name' => $prefix, 'city' => 'mburg']));
+    // There is no operator to choose: an old link asking for "not" still
+    // gets "contains".
+    $this->assertSame([(int) $hamburg->id()], $this->uids(['name' => $prefix, 'city_op' => 'not', 'city' => 'mburg']));
   }
 
   /**
