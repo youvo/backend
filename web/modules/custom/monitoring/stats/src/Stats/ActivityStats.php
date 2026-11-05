@@ -241,8 +241,13 @@ class ActivityStats {
   /**
    * Counts the registrations per bucket, with running totals.
    *
+   * The users count as the totals tiles of StatsCalculator count them:
+   * creatives who have logged in, and organizations with the organization
+   * role, so prospects are left out. The registrations and activation chart
+   * counts all new creatives in activation() instead.
+   *
    * @return array{creatives: array<string, int>, organizations: array<string, int>, creatives_total: array<string, int>, organizations_total: array<string, int>}
-   *   The registrations per bucket, and all users registered before each
+   *   The registrations per bucket, and the users registered before each
    *   bucket end.
    */
   public function registrations(StatsPeriod $period): array {
@@ -257,12 +262,21 @@ class ActivityStats {
     ];
     $keys = ['user' => 'creatives', 'organization' => 'organizations'];
 
-    $query = $this->database->select('users_field_data', 'u')
-      ->fields('u', ['type', 'created'])
-      ->condition('u.type', array_keys($keys), 'IN')
-      ->condition('u.uid', 0, '>')
+    $query = $this->database->select('users_field_data', 'u');
+    $query->leftJoin('user__roles', 'r', 'r.entity_id = u.uid AND r.deleted = 0 AND r.roles_target_id = :role', [':role' => 'organization']);
+    $query->fields('u', ['type', 'created']);
+    $query->condition('u.uid', 0, '>')
       ->condition('u.default_langcode', 1)
       ->condition('u.created', $period->to()->getTimestamp(), '<');
+    $creatives = $query->andConditionGroup()
+      ->condition('u.type', 'user')
+      ->condition('u.access', 0, '>');
+    $organizations = $query->andConditionGroup()
+      ->condition('u.type', 'organization')
+      ->isNotNull('r.entity_id');
+    $query->condition($query->orConditionGroup()
+      ->condition($creatives)
+      ->condition($organizations));
     $before = ['creatives' => 0, 'organizations' => 0];
     foreach ($query->execute() as $row) {
       $key = $keys[$row->type];

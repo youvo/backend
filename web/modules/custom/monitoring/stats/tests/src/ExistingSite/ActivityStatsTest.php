@@ -39,10 +39,11 @@ class ActivityStatsTest extends StatsTestBase {
     // The scenario creates the projects A to H in this order.
     [$a, $b, $c, , , $f, $g] = array_map(fn($id) => Project::load($id), $this->projectIds);
 
-    $x = $this->createCreativeOn('2001-01-02');
-    $y = $this->createCreativeOn('2001-01-03');
+    // W and the last creative never logged in.
+    $x = $this->createCreativeOn('2001-01-02', TRUE);
+    $y = $this->createCreativeOn('2001-01-03', TRUE);
     $w = $this->createCreativeOn('2001-02-01');
-    $z = $this->createCreativeOn('2000-12-01');
+    $z = $this->createCreativeOn('2000-12-01', TRUE);
     $this->createCreativeOn('2001-03-01');
 
     $this->apply($z, $f, '2000-12-29');
@@ -64,10 +65,19 @@ class ActivityStatsTest extends StatsTestBase {
 
   /**
    * Creates a creative registered on a Y-m-d date.
+   *
+   * @param string $date
+   *   The registration date.
+   * @param bool $logged_in
+   *   Whether the creative has logged in since, on the same day.
    */
-  protected function createCreativeOn(string $date): Creative {
+  protected function createCreativeOn(string $date, bool $logged_in = FALSE): Creative {
     $creative = $this->createCreative();
-    $creative->set('created', $this->noon($date))->save();
+    $creative->set('created', $this->noon($date));
+    if ($logged_in) {
+      $creative->set('access', $this->noon($date) + 3600);
+    }
+    $creative->save();
     return $creative;
   }
 
@@ -132,10 +142,13 @@ class ActivityStatsTest extends StatsTestBase {
   public function testOrganizationsAndReasons(): void {
 
     $registrations = $this->activityStats->registrations($this->period);
-    $this->assertSame($this->months([2, 1, 1]), $registrations['creatives']);
-    $this->assertSame($this->months([1, 0, 1, 0, 1]), $registrations['organizations']);
-    $this->assertSame($this->months([3, 4], 5), $registrations['creatives_total']);
-    $this->assertSame($this->months([2, 2, 3, 3], 4), $registrations['organizations_total']);
+    // They count as the totals tiles: creatives who logged in, X and Y in
+    // January after Z in 2000, and organizations without the prospect, O1 in
+    // January and O2 in March after O3 in 2000.
+    $this->assertSame($this->months([2]), $registrations['creatives']);
+    $this->assertSame($this->months([1, 0, 1]), $registrations['organizations']);
+    $this->assertSame($this->months([], 3), $registrations['creatives_total']);
+    $this->assertSame($this->months([2, 2], 3), $registrations['organizations_total']);
 
     $this->assertSame(['created' => 3, 'managed' => 2, 'published' => 2], $this->activityStats->prospectFunnel($this->period));
 

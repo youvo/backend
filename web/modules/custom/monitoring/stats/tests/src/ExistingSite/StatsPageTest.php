@@ -293,6 +293,13 @@ class StatsPageTest extends StatsTestBase {
       $cells = end($rows)->findAll('xpath', 'th|td');
       $this->assertSame($value, trim(end($cells)->getText()), $key);
     }
+
+    // All time runs until now, so the users count as in the totals tiles.
+    $this->drupalGet('stats');
+    foreach (['creatives', 'organizations'] as $key) {
+      $total = $this->assertSession()->elementExists('css', '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value')->getText();
+      $this->assertSession()->elementTextEquals('css', '.stats-growth .stats-card-value[data-value="' . $key . '"]', trim($total));
+    }
   }
 
   /**
