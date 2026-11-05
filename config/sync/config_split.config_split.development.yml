@@ -25,6 +25,7 @@ module:
   academy_dummy: 3
   organizations_dummy: 3
   projects_dummy: 3
+  stats_dummy: 4
 theme: {  }
 complete_list: {  }
 partial_list: {  }

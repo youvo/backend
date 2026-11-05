@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the stats_dummy module.
+ */
+
+use Drupal\stats\Activity\ActivityAggregator;
+use Drupal\stats\Activity\ActivitySnapshots;
+
+/**
+ * Generates the daily activity snapshots from simulated visits.
+ *
+ * Called by youvo_dummy_site_install_finished() after the account times are
+ * final. Each dummy creative, organization and prospect that ever logged in
+ * visits on the day it registered, on the day of its last access, and on
+ * random days in between: one to three days a week at first, fewer later.
+ * Writes the days up to yesterday and only fills an empty table. Uses
+ * random_int() instead of Faker, which is seeded.
+ */
+function stats_dummy_generate(): void {
+
+  $database = \Drupal::database();
+  if ($database->select('stats_activity', 'a')->countQuery()->execute()->fetchField()) {
+    return;
+  }
+
+  $timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
+  $visits = [];
+  foreach (stats_dummy_get_accounts() as $account) {
+    array_push($visits, ...stats_dummy_simulate_visits((int) $account->uid, $account->role, (int) $account->created, (int) $account->access, $timezone));
+  }
+
+  $now = (new \DateTimeImmutable('@' . \Drupal::time()->getRequestTime()))->setTimezone($timezone);
+  $today = $now->format('Y-m-d');
+  /** @var \Drupal\stats\Activity\ActivitySnapshots $snapshots */
+  $snapshots = \Drupal::service('stats.activity_snapshots');
+  foreach (ActivityAggregator::aggregate($visits, $timezone) as $day => $roles) {
+    if ($day >= $today) {
+      continue;
+    }
+    foreach ($roles as $role => $row) {
+      $snapshots->write($day, $role, $row['active_1d'], $row['active_30d']);
+    }
+  }
+
+  // Yesterday is stored, so the daily snapshot does not replace it.
+  \Drupal::state()->set(ActivitySnapshots::STATE_LAST_DAY, $now->modify('-1 day')->format('Y-m-d'));
+}
+
+/**
+ * Gets the accounts of the activity roles that ever accessed the site.
+ *
+ * @return object[]
+ *   The accounts with uid, role, created and access.
+ */
+function stats_dummy_get_accounts(): array {
+
+  $database = \Drupal::database();
+  $accounts = [];
+
+  // Creatives without a staff role, as ActivitySnapshots::countActive().
+  $creatives = $database->select('users_field_data', 'u');
+  $creatives->join('user__roles', 'r', 'r.entity_id = u.uid');
+  $creatives->fields('u', ['uid', 'created', 'access'])
+    ->condition('u.type', 'user')
+    ->condition('r.roles_target_id', 'creative')
+    ->condition('u.access', 0, '>');
+  $staff = $database->select('user__roles', 's');
+  $staff->addExpression('1');
+  $staff->where('s.entity_id = u.uid')
+    ->condition('s.roles_target_id', ActivitySnapshots::STAFF_ROLES, 'IN');
+  $creatives->notExists($staff);
+  $creatives->addExpression("'creative'", 'role');
+  array_push($accounts, ...$creatives->execute()->fetchAll());
+
+  foreach (['organization', 'prospect'] as $role) {
+    $query = $database->select('users_field_data', 'u');
+    $query->join('user__roles', 'r', 'r.entity_id = u.uid');
+    $query->fields('u', ['uid', 'created', 'access'])
+      ->condition('u.type', 'organization')
+      ->condition('r.roles_target_id', $role)
+      ->condition('u.access', 0, '>');
+    $query->addExpression(':role', 'role', [':role' => $role]);
+    array_push($accounts, ...$query->execute()->fetchAll());
+  }
+
+  return $accounts;
+}
+
+/**
+ * Simulates the visits of an account between its registration and access.
+ *
+ * @return array<array{0: int, 1: string, 2: int}>
+ *   The visits as [uid, role, timestamp].
+ */
+function stats_dummy_simulate_visits(int $uid, string $role, int $created, int $access, \DateTimeZone $timezone): array {
+
+  $created = min($created, $access);
+  $visits = [[$uid, $role, $created], [$uid, $role, $access]];
+
+  // Visits per week at first, fading to a third over a year.
+  $per_week = random_int(1, 3);
+  $first_day = (new \DateTimeImmutable('@' . $created))->setTimezone($timezone)->setTime(0, 0);
+  $last_day = (new \DateTimeImmutable('@' . $access))->setTimezone($timezone)->setTime(0, 0);
+  $age = 0;
+  for ($day = $first_day->modify('+1 day'); $day < $last_day; $day = $day->modify('+1 day')) {
+    $age++;
+    $fade = $age <= 30 ? 1 : max(1 / 3, 1 - ($age - 30) / 335);
+    if (random_int(1, 7000) <= (int) round($per_week * 1000 * $fade)) {
+      $start = $day->getTimestamp();
+      $visits[] = [$uid, $role, random_int($start, $day->modify('+1 day')->getTimestamp() - 1)];
+    }
+  }
+
+  return $visits;
+}
