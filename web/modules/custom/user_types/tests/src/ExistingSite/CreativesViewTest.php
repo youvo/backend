@@ -145,12 +145,12 @@ class CreativesViewTest extends CreativesTestBase {
     ]);
     $new = $this->creative([
       'field_name' => $prefix . ' New',
-      'created' => strtotime('2022-06-01'),
+      'created' => strtotime('2022-06-01 12:00'),
       'access' => strtotime('2023-06-01'),
     ]);
     $never = $this->creative([
       'field_name' => $prefix . ' Never',
-      'created' => strtotime('2022-06-01'),
+      'created' => strtotime('2022-06-01 12:00'),
       'access' => 0,
       'field_about' => ['value' => 'Hello', 'format' => 'plain_text'],
       'field_avatar' => $this->createImage(),
@@ -166,16 +166,20 @@ class CreativesViewTest extends CreativesTestBase {
     $old->set('field_newsletter', NULL)->save();
     $new->set('field_newsletter', NULL)->save();
 
+    // Either end of a date range may stay open.
     $this->assertEqualsCanonicalizing([(int) $new->id(), (int) $never->id()], $this->uids([
       'name' => $prefix,
-      'registered_op' => '>=',
-      'registered' => ['value' => '2020-01-01'],
+      'registered' => ['min' => '2020-01-01', 'max' => ''],
     ]));
     // Never is before any date.
     $this->assertEqualsCanonicalizing([(int) $old->id(), (int) $never->id()], $this->uids([
       'name' => $prefix,
-      'last_access_op' => '<',
-      'last_access' => ['value' => '2020-01-01'],
+      'last_access' => ['min' => '', 'max' => '2019-12-31'],
+    ]));
+    // A range includes both of its days.
+    $this->assertEqualsCanonicalizing([(int) $new->id(), (int) $never->id()], $this->uids([
+      'name' => $prefix,
+      'registered' => ['min' => '2022-06-01', 'max' => '2022-06-01'],
     ]));
 
     // Group 1 is "Yes", group 2 is "No".

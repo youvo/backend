@@ -124,27 +124,22 @@ class CreativesViewsHooks {
       return;
     }
 
-    $labels = [
-      'registered_wrapper' => ['registered_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
-      'last_access_wrapper' => ['last_access_op' => ['>=' => $this->t('after'), '<' => $this->t('before')]],
-    ];
-    foreach ($labels as $wrapper => $operators) {
-      foreach ($operators as $operator => $options) {
-        foreach ($options as $key => $label) {
-          if (isset($form[$wrapper][$operator]['#options'][$key])) {
-            $form[$wrapper][$operator]['#options'][$key] = $label;
-          }
+    // The dates are ranges of days with a date picker at each end. Either end
+    // may stay open. The pickers submit YYYY-MM-DD.
+    foreach (['registered', 'last_access'] as $date) {
+      foreach (['min' => $this->t('From'), 'max' => $this->t('To')] as $end => $title) {
+        if (isset($form[$date . '_wrapper'][$date][$end])) {
+          $element = &$form[$date . '_wrapper'][$date][$end];
+          $element['#type'] = 'date';
+          $element['#title'] = $title;
+          $element['#title_display'] = 'invisible';
+          unset($element['#placeholder'], $element['#size'], $element['#maxlength']);
+          unset($element);
         }
       }
-    }
-
-    // The dates get a date picker. It submits YYYY-MM-DD, as typed before.
-    foreach (['registered', 'last_access'] as $date) {
-      if (isset($form[$date . '_wrapper'][$date]['value'])) {
-        $value = &$form[$date . '_wrapper'][$date]['value'];
-        $value['#type'] = 'date';
-        unset($value['#placeholder'], $value['#size'], $value['#maxlength']);
-        unset($value);
+      if (isset($form[$date . '_wrapper'][$date]['min'])) {
+        $form[$date . '_wrapper'][$date]['min']['#suffix'] = '<span class="creatives-range-dash" aria-hidden="true">–</span>';
+        $form[$date . '_wrapper']['#attributes']['class'][] = 'creatives-range';
       }
     }
 
@@ -198,6 +193,30 @@ class CreativesViewsHooks {
       }
     }
 
+    // The yes/no filters are segmented controls: every state shows at a glance
+    // and takes one click.
+    $segmented = [
+      'participated',
+      'applied',
+      'returned',
+      'accessed',
+      'has_avatar',
+      'has_about',
+      'has_link',
+      'jobs',
+      'newsletter',
+      'public_profile',
+    ];
+    foreach ($segmented as $key) {
+      if (isset($form[$key]['#options']['All'])) {
+        $form[$key]['#type'] = 'radios';
+        $form[$key]['#options']['All'] = $this->t('Any');
+        $form[$key]['#default_value'] = 'All';
+        $form[$key]['#attributes']['class'][] = 'creatives-segmented';
+        unset($form[$key]['#size']);
+      }
+    }
+
     $input = $view->getExposedInput();
     $groups = [
       'activity' => [
@@ -238,6 +257,7 @@ class CreativesViewsHooks {
         '#open' => FALSE,
         '#attributes' => ['class' => ['creatives-filter-group']],
       ];
+      $active = 0;
       foreach ($info['filters'] as $identifier => $key) {
         if (!isset($form[$key])) {
           continue;
@@ -245,8 +265,18 @@ class CreativesViewsHooks {
         $form['groups'][$group][$key] = $form[$key];
         unset($form[$key]);
         if (static::isActive($input[$identifier] ?? NULL)) {
-          $form['groups'][$group]['#open'] = TRUE;
+          $active++;
         }
+      }
+      // A group with active filters opens and counts them in its summary, so
+      // they show even when it is closed again.
+      if ($active) {
+        $form['groups'][$group]['#open'] = TRUE;
+        $form['groups'][$group]['#title'] = $this->t('@group <span class="creatives-filter-count">@count<span class="visually-hidden"> active</span></span>', [
+          '@group' => $info['title'],
+          '@count' => $active,
+        ]);
+        $form['groups'][$group]['#attributes']['class'][] = 'creatives-filter-group--active';
       }
     }
 

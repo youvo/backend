@@ -30,6 +30,17 @@ function user_types_views_data_alter(array &$data): void {
     'real field' => 'uid',
     'filter' => ['id' => 'user_returned', 'real field' => 'uid', 'type' => 'yes-no'],
   ];
+  foreach ([
+    'user_created_range' => [t('Registered between'), 'created'],
+    'user_access_range' => [t('Last access between'), 'access'],
+  ] as $key => [$title, $field]) {
+    $data['users_field_data'][$key] = [
+      'title' => $title,
+      'help' => t('Limits the users to a range of days, either end may stay open.'),
+      'real field' => $field,
+      'filter' => ['id' => 'user_date_range', 'real field' => $field],
+    ];
+  }
 }
 
 /**

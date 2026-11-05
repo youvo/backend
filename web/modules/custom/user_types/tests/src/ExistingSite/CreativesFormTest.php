@@ -44,15 +44,21 @@ class CreativesFormTest extends CreativesTestBase {
       $session->elementExists('css', 'form.views-exposed-form [name="' . $name . '"]');
       $session->elementNotExists('css', 'form.views-exposed-form details [name="' . $name . '"]');
     }
-    $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="registered[value]" and @type="date"]');
-    $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="last_access[value]" and @type="date"]');
+    foreach (['registered', 'last_access'] as $date) {
+      foreach (['min', 'max'] as $end) {
+        $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="' . $date . '[' . $end . ']" and @type="date"]');
+      }
+    }
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//*[@name="newsletter"]');
-    $session->elementExists('xpath', $this->groupXpath('Profile') . '//label[normalize-space() = "Newsletter"]');
+    $session->elementExists('xpath', $this->groupXpath('Profile') . '//legend[normalize-space() = "Newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Activity') . '//legend[normalize-space() = "Registered"]');
 
     $session->elementNotExists('css', 'form.views-exposed-form [name="city_op"]');
-    $this->assertSame(['before', 'after'], $this->optionLabels('registered_op'));
-    $this->assertSame(['before', 'after'], $this->optionLabels('last_access_op'));
+    $session->elementNotExists('css', 'form.views-exposed-form [name="registered_op"]');
+    $session->elementNotExists('css', 'form.views-exposed-form [name="last_access_op"]');
+    foreach (['applied', 'participated', 'returned', 'accessed', 'has_avatar', 'jobs', 'newsletter'] as $name) {
+      $this->assertSame(['Any', 'Yes', 'No'], $this->radioLabels($name), $name);
+    }
     $session->elementNotExists('css', 'form.views-exposed-form [name="skills_op"]');
     $session->elementExists('css', 'form.views-exposed-form label > span.skill[data-skill="design"][title="Design"]');
     $session->elementNotExists('css', 'form.views-exposed-form details .creatives-skills');
@@ -61,12 +67,27 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
-   * A group with an active filter is open.
+   * A group with active filters is open and counts them in its summary.
    */
   public function testGroupOpensWithActiveFilter(): void {
-    $this->drupalGet('creatives', ['query' => ['newsletter' => '0', 'registered' => ['value' => '']]]);
-    $this->assertTrue($this->group('Profile')->hasAttribute('open'));
-    $this->assertFalse($this->group('Activity')->hasAttribute('open'));
+
+    $this->drupalGet('creatives', [
+      'query' => [
+        'newsletter' => '0',
+        'jobs' => '1',
+        'registered' => ['min' => '', 'max' => ''],
+      ],
+    ]);
+    $session = $this->assertSession();
+
+    $profile = $this->group('Profile');
+    $this->assertTrue($profile->hasAttribute('open'));
+    $this->assertStringContainsString('creatives-filter-group--active', (string) $profile->getAttribute('class'));
+    $session->elementTextEquals('xpath', $this->groupXpath('Profile') . '/summary//span[contains(@class, "creatives-filter-count")]', '2 active');
+
+    $activity = $this->group('Activity');
+    $this->assertFalse($activity->hasAttribute('open'));
+    $session->elementNotExists('xpath', $this->groupXpath('Activity') . '/summary//span[contains(@class, "creatives-filter-count")]');
   }
 
   /**
@@ -126,7 +147,7 @@ class CreativesFormTest extends CreativesTestBase {
    * Returns the XPath of the filter group with a summary.
    */
   protected function groupXpath(string $summary): string {
-    return "//form[contains(@class, 'views-exposed-form')]//details[summary[normalize-space() = '" . $summary . "']]";
+    return "//form[contains(@class, 'views-exposed-form')]//details[summary[starts-with(normalize-space(), '" . $summary . "')]]";
   }
 
   /**
@@ -139,17 +160,18 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
-   * Returns the option labels of a select of the filter form.
+   * Gets the labels of the radios of a filter, in their order.
    *
    * @return string[]
-   *   The labels in their order.
+   *   The labels.
    */
-  protected function optionLabels(string $name): array {
-    $select = $this->assertSession()->elementExists('css', 'form.views-exposed-form select[name="' . $name . '"]');
-    return array_map(
-      fn (NodeElement $option): string => trim($option->getText()),
-      $select->findAll('css', 'option'),
-    );
+  protected function radioLabels(string $name): array {
+    $labels = [];
+    foreach ($this->getSession()->getPage()->findAll('css', 'form.views-exposed-form input[type="radio"][name="' . $name . '"]') as $radio) {
+      $label = $this->assertSession()->elementExists('css', 'label[for="' . $radio->getAttribute('id') . '"]');
+      $labels[] = trim($label->getText());
+    }
+    return $labels;
   }
 
 }

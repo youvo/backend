@@ -545,17 +545,16 @@ display:
           hierarchy: false
           limit: true
           error_message: true
-        created:
-          id: created
+        user_created_range:
+          id: user_created_range
           table: users_field_data
-          field: created
+          field: user_created_range
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: user
-          entity_field: created
-          plugin_id: date
-          operator: '>='
+          plugin_id: user_date_range
+          operator: between
           value:
             min: ''
             max: ''
@@ -567,12 +566,10 @@ display:
             operator_id: registered_op
             label: Registered
             description: ''
-            use_operator: true
+            use_operator: false
             operator: registered_op
-            operator_limit_selection: true
-            operator_list:
-              '>=': '>='
-              '<': '<'
+            operator_limit_selection: false
+            operator_list: {  }
             identifier: registered
             required: false
             remember: false
@@ -581,19 +578,18 @@ display:
               authenticated: authenticated
             min_placeholder: ''
             max_placeholder: ''
-            placeholder: YYYY-MM-DD
+            placeholder: ''
           is_grouped: false
-        access:
-          id: access
+        user_access_range:
+          id: user_access_range
           table: users_field_data
-          field: access
+          field: user_access_range
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: user
-          entity_field: access
-          plugin_id: date
-          operator: '>='
+          plugin_id: user_date_range
+          operator: between
           value:
             min: ''
             max: ''
@@ -605,12 +601,10 @@ display:
             operator_id: last_access_op
             label: 'Last access'
             description: ''
-            use_operator: true
+            use_operator: false
             operator: last_access_op
-            operator_limit_selection: true
-            operator_list:
-              '>=': '>='
-              '<': '<'
+            operator_limit_selection: false
+            operator_list: {  }
             identifier: last_access
             required: false
             remember: false
@@ -619,7 +613,7 @@ display:
               authenticated: authenticated
             min_placeholder: ''
             max_placeholder: ''
-            placeholder: YYYY-MM-DD
+            placeholder: ''
           is_grouped: false
         access_1:
           id: access_1

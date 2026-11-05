@@ -243,3 +243,111 @@
   }
 }
 // stylelint-enable selector-class-pattern
+
+// The yes/no filters: Any, Yes and No as one segmented control, in the style
+// of the switch between the table and the profiles. The native radios stay
+// focusable and clickable on top of their segment but invisible.
+// Gin's classes, outside our naming pattern.
+// stylelint-disable selector-class-pattern
+fieldset.creatives-segmented .form-radios {
+  display: inline-flex;
+  gap: var(--gin-spacing-xxs);
+  padding: var(--gin-spacing-xxs);
+  border-radius: var(--gin-border-m);
+  background: var(--yv-surface);
+  box-shadow: inset 0 0 0 1px var(--yv-outline);
+
+  .form-item {
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-radio {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  .form-item__label.option {
+    display: block;
+    margin: 0;
+    padding: 0.3em 0.8em;
+    border-radius: var(--gin-border-s);
+    color: var(--yv-ink);
+    font-size: var(--gin-font-size-s);
+    font-weight: 600;
+    line-height: 1.5;
+    transition: background-color var(--gin-transition-fast);
+  }
+
+  .form-item__label.option::before,
+  .form-item__label.option::after {
+    display: none;
+  }
+
+  .form-radio:hover + .form-item__label {
+    background: var(--gin-bg-item-hover);
+  }
+
+  .form-radio:checked + .form-item__label {
+    background: var(--yv-chip);
+    color: var(--yv-chip-text);
+  }
+
+  // "Any" filters nothing: chosen, it stays quiet, so the filters in use
+  // stand out.
+  .form-radio[value="All"]:checked + .form-item__label {
+    background: var(--gin-bg-item-hover);
+    color: var(--yv-ink);
+  }
+
+  .form-radio:focus-visible + .form-item__label {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 2px;
+  }
+}
+
+// A date range: two pickers with a dash between them, as narrow as a date
+// allows.
+.creatives-range .fieldset__wrapper {
+  align-items: center;
+}
+
+.creatives-range input.form-date {
+  width: 9.5rem;
+}
+
+.creatives-range-dash {
+  margin-inline-start: var(--gin-spacing-xs);
+  color: var(--yv-ink);
+}
+// stylelint-enable selector-class-pattern
+
+// The number of active filters in a group, as a small pill after its title.
+// A group with active filters also takes the accent color in its summary.
+.creatives-filter-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-inline-start: var(--gin-spacing-xs);
+  padding: 0 0.45em;
+  border-radius: 999px;
+  background: var(--gin-color-primary);
+  color: var(--gin-color-button-text, #fff);
+  font-size: var(--gin-font-size-xs);
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+// Gin's classes, outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.creatives-filter-group--active > .claro-details__summary {
+  color: var(--gin-color-primary);
+}
+// stylelint-enable selector-class-pattern
