@@ -75,6 +75,8 @@ services:
       $logger: '@logger.channel.mailer'
       $mailVariables: '@mailer.variables'
       $configFactory: '@config.factory'
+      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $uuid: '@uuid'
   Drupal\mailer\Mailer\ProjectActionMailerInterface:
     class: Drupal\mailer\Mailer\ProjectActionMailer
     autowire: true

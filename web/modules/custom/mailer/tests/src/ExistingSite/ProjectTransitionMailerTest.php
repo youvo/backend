@@ -283,9 +283,9 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
   }
 
   /**
-   * Complete mails the organization and each participant with their links.
+   * Complete mails carry feedback doors per recipient and record no link.
    */
-  public function testComplete(): void {
+  public function testCompleteCarriesFeedbackDoors(): void {
 
     $project = $this->createMailableProject(ProjectState::Ongoing);
     $a = $this->createCreative('a');
@@ -293,15 +293,30 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
     $project->appendParticipant($a)->appendParticipant($b)->save();
     $this->assertTrue($this->mailer()->complete($project));
 
+    $this->assertCount(3, $this->interceptedMails);
+    $owner = $project->getOwner();
+    $recipients = [$owner->getEmail() => $owner, $a->getEmail() => $a, $b->getEmail() => $b];
+    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
+    foreach ($this->interceptedMails as $mail) {
+      $recipient = $recipients[$mail['to'][0]];
+      $this->assertSame(1, preg_match('#/door/' . $recipient->id() . '/[0-9a-f-]{36}/feedback/#', $mail['html']), 'Door of the recipient: ' . $mail['to'][0]);
+      $this->assertStringNotContainsString('/feedback/creative/', $mail['html']);
+      $this->assertStringNotContainsString('/feedback/organization/', $mail['html']);
+    }
+    // The results link stays plain.
+    $this->assertStringContainsString($website_url . '/results/' . $project->uuid(), $this->interceptedMails[1]['html']);
+
     $this->assertCount(3, $this->loadEntries($project));
     $entries = $this->loadEntriesBySubtype($project);
     $organization_body = $entries['mailer.project_transition.complete_organization'][0]->get('body')->value;
     $this->assertStringContainsString($a->getName() . ', ' . $b->getName(), $organization_body);
-    $this->assertStringContainsString('feedback/organization/' . $project->uuid(), $organization_body);
+    $this->assertStringContainsString('[Link entfernt]', $organization_body);
+    $this->assertStringNotContainsString('/door/', $organization_body);
     $this->assertCount(2, $entries['mailer.project_transition.complete_creative']);
     foreach ($entries['mailer.project_transition.complete_creative'] as $entry) {
       $body = $entry->get('body')->value;
-      $this->assertStringContainsString('feedback/creative/' . $project->uuid(), $body);
+      $this->assertStringContainsString('[Link entfernt]', $body);
+      $this->assertStringNotContainsString('/door/', $body);
       $this->assertStringContainsString('results/' . $project->uuid(), $body);
     }
   }

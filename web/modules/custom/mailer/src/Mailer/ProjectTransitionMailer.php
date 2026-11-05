@@ -2,10 +2,13 @@
 
 namespace Drupal\mailer\Mailer;
 
+use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
+use Drupal\mailer\Door\DoorLinks;
+use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\MailVariables;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -65,6 +68,8 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     LoggerInterface $logger,
     ConfigFactoryInterface $configFactory,
     protected MailVariables $mailVariables,
+    protected DoorLinks $doorLinks,
+    protected UuidInterface $uuid,
   ) {
     parent::__construct($mailer, $mailerLookup, $baseTag, $recorder, $logger, $configFactory);
   }
@@ -147,21 +152,28 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     $participants = $project->getParticipants('Creative');
     $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
 
+    // Each recipient gets a feedback door of their own. It never logs in, but
+    // it is still never stored.
+    $to = $this->ownerEmail($project);
+    $uuid = $this->uuid->generate();
+    $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Feedback);
     $email = $this->projectEmail('complete_organization', $project, $base + [
       'participants' => $this->names($participants),
-      'feedback_link' => $website_url . '/feedback/organization/' . $project->uuid(),
+      'feedback_link' => $door,
     ]);
-    $success = $this->deliver($email, $project, 'complete_organization', $this->ownerEmail($project));
+    $success = $this->deliver($email, $project, 'complete_organization', $to, [$door], 'automatic', NULL, $uuid);
 
     foreach ($participants as $participant) {
       if (!$participant instanceof Creative) {
         continue;
       }
+      $uuid = $this->uuid->generate();
+      $door = $this->doorLinks->build($participant, $uuid, DoorTarget::Feedback);
       $email = $this->projectEmail('complete_creative', $project, $this->mailVariables->creative($participant) + $base + [
-        'feedback_link' => $website_url . '/feedback/creative/' . $project->uuid(),
+        'feedback_link' => $door,
         'results_link' => $website_url . '/results/' . $project->uuid(),
       ]);
-      $success = $this->deliver($email, $project, 'complete_creative', $participant->getEmail()) && $success;
+      $success = $this->deliver($email, $project, 'complete_creative', $participant->getEmail(), [$door], 'automatic', NULL, $uuid) && $success;
     }
     return $success;
   }

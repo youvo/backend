@@ -531,6 +531,44 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that a feedback door never logs in and sends to the feedback page.
+   */
+  public function testFeedbackDoorNeverLogsIn(): void {
+
+    $project = $this->createProject(ProjectState::Completed);
+    $creative = $this->createCreative();
+    $project->appendParticipant($creative)->save();
+    $path = $this->door($creative, $project, DoorTarget::Feedback);
+
+    $this->pressDoor($path);
+
+    $follows = $this->follows($project);
+    $this->assertCount(1, $follows);
+    $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
+    $this->assertSame(0, $this->lastLogin($creative));
+    $this->assertFalse($this->drupalUserIsLoggedIn($creative));
+    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
+    $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
+  }
+
+  /**
+   * Tests that a feedback door of a removed participant gives no log.
+   */
+  public function testFeedbackDoorOfRemovedParticipant(): void {
+
+    $project = $this->createProject(ProjectState::Completed);
+    $creative = $this->createCreative();
+    $project->appendParticipant($creative)->save();
+    $path = $this->door($creative, $project, DoorTarget::Feedback);
+    $project->setParticipants([])->save();
+
+    $this->pressDoor($path);
+
+    $this->assertCount(0, $this->follows($project));
+    $this->assertSame(0, $this->lastLogin($creative));
+  }
+
+  /**
    * Tests that a door with a subject opens.
    */
   public function testApplicantDoorWithSubject(): void {
