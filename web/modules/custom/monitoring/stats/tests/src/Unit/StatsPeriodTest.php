@@ -147,6 +147,53 @@ class StatsPeriodTest extends UnitTestCase {
   }
 
   /**
+   * Tests that a range covering a calendar unit yields that preset.
+   */
+  public function testAlignedRangesArePresets(): void {
+    $presets = [
+      'quarter' => [
+        ['from' => '2026-07-01', 'to' => '2026-09-30'],
+        ['period' => 'quarter', 'year' => '2026', 'quarter' => '3'],
+        StatsGranularity::Week,
+        'Q2 2026',
+      ],
+      'month' => [
+        ['from' => '2026-02-01', 'to' => '2026-02-28'],
+        ['period' => 'month', 'year' => '2026', 'month' => '2'],
+        StatsGranularity::Day,
+        'January 2026',
+      ],
+      'leap month' => [
+        ['period' => 'custom', 'from' => '2024-02-01', 'to' => '2024-02-29'],
+        ['period' => 'month', 'year' => '2024', 'month' => '2'],
+        StatsGranularity::Day,
+        'January 2024',
+      ],
+      'year' => [
+        ['from' => '2024-01-01', 'to' => '2024-12-31'],
+        ['period' => 'year', 'year' => '2024'],
+        StatsGranularity::Month,
+        '2023',
+      ],
+    ];
+    foreach ($presets as $name => [$range, $preset_query, $granularity, $previous]) {
+      $custom = $this->period($range);
+      $preset = $this->period($preset_query);
+      $this->assertSame($preset->query(), $custom->query(), $name);
+      $this->assertSame($preset->label(), $custom->label(), $name);
+      $this->assertSame($preset->from()->getTimestamp(), $custom->from()->getTimestamp(), $name);
+      $this->assertSame($preset->to()->getTimestamp(), $custom->to()->getTimestamp(), $name);
+      $this->assertSame($granularity, $custom->granularity(), $name);
+      $this->assertSame($previous, $custom->previous()->label(), $name);
+      $this->assertSame($preset->sameLastYear()->label(), $custom->sameLastYear()->label(), $name);
+    }
+
+    $unaligned = $this->period(['from' => '2026-03-28', 'to' => '2026-03-30']);
+    $this->assertSame(['period' => 'custom', 'from' => '2026-03-28', 'to' => '2026-03-30'], $unaligned->query());
+    $this->assertSame(StatsGranularity::Day, $unaligned->granularity());
+  }
+
+  /**
    * Tests that invalid arguments fall back to the default year period.
    */
   public function testInvalidInputFallsBack(): void {

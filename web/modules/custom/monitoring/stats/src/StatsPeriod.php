@@ -54,7 +54,8 @@ class StatsPeriod {
    *
    * Reads period (all, year, quarter, month, custom), year, quarter, month and
    * from/to (Y-m-d, to inclusive). Without a period, a valid from and to
-   * select a custom period. Anything invalid yields the current year.
+   * select a custom period; one that covers exactly a calendar year, quarter
+   * or month yields that preset. Anything invalid yields the current year.
    */
   public static function fromQuery(array $query, \DateTimeZone $timezone, \DateTimeImmutable $now): static {
     $now = $now->setTimezone($timezone);
@@ -82,6 +83,20 @@ class StatsPeriod {
         return $default;
       }
       $to = $last->modify('+1 day');
+      // A range covering a calendar year, quarter or month is that preset, so
+      // the form keeps presets when it submits their dates.
+      if ((int) $from->format('j') === 1) {
+        $month = (int) $from->format('n');
+        if ($month === 1 && $to == $from->modify('+1 year')) {
+          return static::forYear((int) $from->format('Y'), $timezone);
+        }
+        if ($month % 3 === 1 && $to == $from->modify('+3 months')) {
+          return static::forQuarter($from);
+        }
+        if ($to == $from->modify('+1 month')) {
+          return static::forMonth($from);
+        }
+      }
       $days = (int) $from->diff($to)->days;
       $granularity = match (TRUE) {
         $days <= 62 => StatsGranularity::Day,
@@ -103,16 +118,14 @@ class StatsPeriod {
       if ($quarter === NULL) {
         return $default;
       }
-      $from = static::midnight(sprintf('%04d-%02d-01', $year, ($quarter - 1) * 3 + 1), $timezone);
-      return new static(static::QUARTER, $from, $from->modify('+3 months'), StatsGranularity::Week);
+      return static::forQuarter(static::midnight(sprintf('%04d-%02d-01', $year, ($quarter - 1) * 3 + 1), $timezone));
     }
     if ($period === static::MONTH) {
       $month = static::parseInt($query['month'] ?? $now->format('n'), 1, 12);
       if ($month === NULL) {
         return $default;
       }
-      $from = static::midnight(sprintf('%04d-%02d-01', $year, $month), $timezone);
-      return new static(static::MONTH, $from, $from->modify('+1 month'), StatsGranularity::Day);
+      return static::forMonth(static::midnight(sprintf('%04d-%02d-01', $year, $month), $timezone));
     }
     return $default;
   }
@@ -123,6 +136,20 @@ class StatsPeriod {
   protected static function forYear(int $year, \DateTimeZone $timezone): static {
     $from = static::midnight(sprintf('%04d-01-01', $year), $timezone);
     return new static(static::YEAR, $from, $from->modify('+1 year'), StatsGranularity::Month);
+  }
+
+  /**
+   * Creates the period of the calendar quarter starting at a date.
+   */
+  protected static function forQuarter(\DateTimeImmutable $from): static {
+    return new static(static::QUARTER, $from, $from->modify('+3 months'), StatsGranularity::Week);
+  }
+
+  /**
+   * Creates the period of the calendar month starting at a date.
+   */
+  protected static function forMonth(\DateTimeImmutable $from): static {
+    return new static(static::MONTH, $from, $from->modify('+1 month'), StatsGranularity::Day);
   }
 
   /**
