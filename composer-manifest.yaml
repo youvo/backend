@@ -32,6 +32,7 @@ packages:
     doctrine/lexer: 3.0.3
     dompdf/php-font-lib: 1.0.2
     drupal/admin_toolbar: 3.6.3
+    drupal/charts: 5.2.4
     drupal/coder: 8.3.31
     drupal/config_ignore: 3.4.0
     drupal/config_split: 2.0.2
@@ -118,6 +119,10 @@ packages:
     mkalkbrenner/php-htmldiff-advanced: 0.0.8
     myclabs/deep-copy: 1.14.0
     nikic/php-parser: v5.9.0
+    npm-asset/chart.js: 4.5.1
+    npm-asset/chartjs-adapter-date-fns: 3.0.0
+    npm-asset/chartjs-plugin-annotation: 3.1.0
+    npm-asset/chartjs-plugin-datalabels: 2.0.0
     nyholm/psr7-server: 1.1.0
     open-telemetry/api: 1.11.0
     open-telemetry/context: 1.6.0

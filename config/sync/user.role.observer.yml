@@ -17,6 +17,7 @@ dependencies:
     - navigation
     - projects
     - rest
+    - stats
     - system
 _core:
   default_config_hash: JNUgbm2ITni7RJBcAfR6jcC4WNnLwOVL4V2xyUfjVw4
@@ -42,4 +43,5 @@ permissions:
   - 'view hidden projects'
   - 'view observable log'
   - 'view project revisions'
+  - 'view statistics'
   - 'view youvo dashboard'

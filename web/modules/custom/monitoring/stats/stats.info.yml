@@ -6,5 +6,7 @@ package: youvo
 core_version_requirement: ^10.3 || ^11
 
 dependencies:
+  - charts:charts
+  - charts:charts_chartjs
   - logbook:logbook
   - youvo:youvo

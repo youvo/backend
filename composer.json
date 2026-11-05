@@ -8,12 +8,61 @@
         {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/chart.js",
+                "version": "4.5.1",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz",
+                    "type": "tar"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/chartjs-adapter-date-fns",
+                "version": "3.0.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://registry.npmjs.org/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz",
+                    "type": "tar"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/chartjs-plugin-datalabels",
+                "version": "2.0.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://registry.npmjs.org/chartjs-plugin-datalabels/-/chartjs-plugin-datalabels-2.0.0.tgz",
+                    "type": "tar"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/chartjs-plugin-annotation",
+                "version": "3.1.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://registry.npmjs.org/chartjs-plugin-annotation/-/chartjs-plugin-annotation-3.1.0.tgz",
+                    "type": "tar"
+                }
+            }
         }
     ],
     "require": {
         "caxy/php-htmldiff": "^0.1",
         "composer/installers": "^1.12",
         "cweagans/composer-patches": "^1.7",
+        "drupal/charts": "^5.2",
         "drupal/config_ignore": "^3.3",
         "drupal/config_split": "^2.0",
         "drupal/consumer_image_styles": "^4.0",
@@ -49,7 +98,11 @@
         "drupal/views_autocomplete_filters": "^2.0",
         "drush/drush": "^13.3",
         "lcobucci/clock": "^3.2",
-        "mglaman/composer-drupal-lenient": "*"
+        "mglaman/composer-drupal-lenient": "*",
+        "npm-asset/chart.js": "4.5.1",
+        "npm-asset/chartjs-adapter-date-fns": "3.0.0",
+        "npm-asset/chartjs-plugin-annotation": "3.1.0",
+        "npm-asset/chartjs-plugin-datalabels": "2.0.0"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -92,6 +145,18 @@
         "installer-paths": {
             "web/core": [
                 "type:drupal-core"
+            ],
+            "web/libraries/chart.js": [
+                "npm-asset/chart.js"
+            ],
+            "web/libraries/chartjs-adapter-date-fns": [
+                "npm-asset/chartjs-adapter-date-fns"
+            ],
+            "web/libraries/chartjs-plugin-datalabels": [
+                "npm-asset/chartjs-plugin-datalabels"
+            ],
+            "web/libraries/chartjs-plugin-annotation": [
+                "npm-asset/chartjs-plugin-annotation"
             ],
             "web/libraries/{$name}": [
                 "type:drupal-library"
