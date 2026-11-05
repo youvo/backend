@@ -14,7 +14,7 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
   /**
    * The summaries of the filter groups, in their order.
    */
-  const array GROUPS = ['Skills and tags', 'Activity', 'Profile'];
+  const array GROUPS = ['Activity', 'Profile'];
 
   /**
    * Logs in a manager.
@@ -54,8 +54,9 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $this->assertSame(['before', 'after'], $this->optionLabels('registered_op'));
     $this->assertSame(['before', 'after'], $this->optionLabels('last_access_op'));
     $session->elementNotExists('css', 'form.views-exposed-form [name="skills_op"]');
-    $session->elementExists('xpath', $this->groupXpath('Skills and tags') . '//label/span[@class="skill" and @data-skill="design" and @title="Design"]');
-    $session->elementExists('xpath', $this->groupXpath('Skills and tags') . '//input[@name="tags" and contains(@class, "creatives-tags")]');
+    $session->elementExists('css', 'form.views-exposed-form label > span.skill[data-skill="design"][title="Design"]');
+    $session->elementNotExists('css', 'form.views-exposed-form details .creatives-skills');
+    $session->elementExists('xpath', $this->groupXpath('Profile') . '//input[@name="tags" and contains(@class, "creatives-tags")]');
     $session->elementNotExists('css', 'form.views-exposed-form [name="tags_not"]');
   }
 
@@ -66,7 +67,6 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $this->drupalGet('creatives', ['query' => ['newsletter' => '0', 'registered' => ['value' => '']]]);
     $this->assertTrue($this->group('Profile')->hasAttribute('open'));
     $this->assertFalse($this->group('Activity')->hasAttribute('open'));
-    $this->assertFalse($this->group('Skills and tags')->hasAttribute('open'));
   }
 
   /**
@@ -104,7 +104,6 @@ class CreativesFormTest extends ManagerExistingSiteTestBase {
     $session->pageTextContains($with);
     $session->pageTextNotContains($without);
     $session->checkboxChecked('edit-skills-' . $skill);
-    $this->assertTrue($this->group('Skills and tags')->hasAttribute('open'));
 
     $this->drupalGet('creatives', ['query' => ['name' => $prefix, 'skills' => [$skill]]]);
     $session->pageTextContains($with);

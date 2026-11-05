@@ -109,7 +109,7 @@ class CreativesViewsHooks {
    * Implements hook_form_FORM_ID_alter() for views_exposed_form.
    *
    * Keeps the main filters and the buttons in one row and moves the
-   * other filters into three groups, which open when one of their filters is
+   * other filters into two groups, which open when one of their filters is
    * set. The operators get short labels, the skills become checkboxes with
    * the skill icons.
    * Filtering and resetting in the profiles mode stays in it.
@@ -198,10 +198,6 @@ class CreativesViewsHooks {
 
     $input = $view->getExposedInput();
     $groups = [
-      'skills_and_tags' => [
-        'title' => $this->t('Skills and tags'),
-        'filters' => ['skills' => 'skills', 'tags' => 'tags'],
-      ],
       'activity' => [
         'title' => $this->t('Activity'),
         'filters' => [
@@ -221,6 +217,7 @@ class CreativesViewsHooks {
           'jobs' => 'jobs',
           'newsletter' => 'newsletter',
           'public_profile' => 'public_profile',
+          'tags' => 'tags',
         ],
       ],
     ];

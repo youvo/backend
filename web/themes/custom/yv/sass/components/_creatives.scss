@@ -175,7 +175,15 @@
 // Gin's classes, outside our naming pattern.
 // stylelint-disable selector-class-pattern
 .creatives-skills.creatives-skills {
-  gap: var(--gin-spacing-xs);
+  display: block;
+
+  .form-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gin-spacing-xs);
+    min-height: 2.5rem;
+  }
 
   .form-item {
     position: relative;
