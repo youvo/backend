@@ -315,7 +315,7 @@ class CreativesViewsHooks {
       unset($wrapper);
     }
 
-    // Apply is the primary action, reset a quiet link next to it.
+    // Apply is the primary action, Reset the secondary one next to it.
     if (isset($form['actions']['submit'])) {
       $form['actions']['submit']['#attributes']['class'][] = 'button--primary';
     }

@@ -15,7 +15,7 @@
   box-sizing: border-box;
   height: 2.5rem;
   gap: var(--gin-spacing-xxs);
-  margin: 0 0 0 auto;
+  margin: 0 0 0 var(--gin-spacing-l);
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   background: var(--yv-surface);
@@ -133,22 +133,6 @@
   // A clear gap sets the buttons apart from the filters.
   .form-actions {
     margin-inline-start: var(--gin-spacing-l);
-  }
-
-  // Reset is a quiet link next to the primary Apply button.
-  // Gin forces the border of buttons with !important.
-  .button.creatives-reset {
-    padding-inline: var(--gin-spacing-xs);
-    border-color: transparent !important;
-    background: none;
-    box-shadow: none;
-    color: var(--gin-color-primary);
-
-    &:hover,
-    &:focus {
-      background: none;
-      text-decoration: underline;
-    }
   }
 }
 // stylelint-enable selector-class-pattern
