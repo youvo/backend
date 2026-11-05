@@ -44,7 +44,7 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
     $this->assertStringContainsString('Hallo', $body);
     $this->assertStringContainsString($creative->getEmail(), $body);
     $this->assertStringContainsString('0123 456', $body);
-    $this->assertStringContainsString('/users/' . $creative->uuid(), $body);
+    $this->assertStringContainsString('[Link entfernt]', $body);
     $this->assertStringContainsString($manager->getName(), $body);
     $this->assertStringContainsString($creative->getName(), $to_organization->get('subject')->value);
     $this->assertStringContainsString($project->getTitle(), $to_organization->get('subject')->value);
@@ -86,9 +86,7 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
   }
 
   /**
-   * The notify event mails the draft link that the organizations module sets.
-   *
-   * The sent mail has the link, the recorded one has it removed.
+   * The notify event mails the organization.
    */
   public function testNotify(): void {
     $project = $this->createMailableProject(ProjectState::Draft);
@@ -96,12 +94,46 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
     $this->assertCount(1, $this->interceptedMails);
     $this->assertSame([$project->getOwner()->getEmail()], $this->interceptedMails[0]['to']);
     $this->assertStringContainsString($project->getOwner()->getContact(), $this->interceptedMails[0]['html']);
-    $this->assertStringContainsString('/draft/' . $project->uuid(), $this->interceptedMails[0]['html']);
-    $entries = $this->loadEntriesBySubtype($project);
-    $this->assertCount(1, $entries['mailer.project_action.notify_organization']);
-    $body = $entries['mailer.project_action.notify_organization'][0]->get('body')->value;
-    $this->assertStringNotContainsString('/draft/' . $project->uuid(), $body);
+    $this->assertCount(1, $this->loadEntriesBySubtype($project)['mailer.project_action.notify_organization']);
+  }
+
+  /**
+   * The notify mail links a draft door that is not recorded.
+   */
+  public function testNotifyCarriesDraftDoor(): void {
+
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->assertTrue($this->mailer()->notify($project, 'https://example.org/ignored'));
+
+    $entry = $this->loadEntriesBySubtype($project)['mailer.project_action.notify_organization'][0];
+    $html = $this->interceptedMails[0]['html'];
+    $this->assertStringContainsString('/door/' . $project->getOwner()->id() . '/' . $entry->uuid() . '/draft/', $html);
+    $this->assertStringNotContainsString('example.org/ignored', $html);
+    $body = $entry->get('body')->value;
     $this->assertStringContainsString('[Link entfernt]', $body);
+    $this->assertStringNotContainsString('/door/', $body);
+  }
+
+  /**
+   * The organization gets a door to the applicant, the applicant none.
+   */
+  public function testApplyCarriesApplicantDoor(): void {
+
+    $project = $this->createMailableProject();
+    $creative = $this->createCreative();
+    $this->assertTrue($this->mailer()->apply($project, $creative, 'Hallo', ''));
+
+    $entries = $this->loadEntriesBySubtype($project);
+    $to_organization = $entries['mailer.project_action.apply_organization'][0];
+    $door = '#/door/' . $project->getOwner()->id() . '/' . $to_organization->uuid() . '/applicant/\\d+/[^/"]+/' . $creative->uuid() . '"#';
+    $this->assertSame([$project->getOwner()->getEmail()], $this->interceptedMails[0]['to']);
+    $this->assertMatchesRegularExpression($door, $this->interceptedMails[0]['html']);
+    $body = $to_organization->get('body')->value;
+    $this->assertStringContainsString('[Link entfernt]', $body);
+    $this->assertStringNotContainsString('/door/', $body);
+
+    $this->assertSame([$creative->getEmail()], $this->interceptedMails[1]['to']);
+    $this->assertStringNotContainsString('/door/', $this->interceptedMails[1]['html']);
   }
 
   /**

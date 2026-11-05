@@ -83,6 +83,8 @@ services:
       $logger: '@logger.channel.mailer'
       $configFactory: '@config.factory'
       $mailVariables: '@mailer.variables'
+      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $uuid: '@uuid'
   Drupal\mailer\Mailer\YouvoUserMailerInterface:
     class: Drupal\mailer\Mailer\YouvoUserMailer
     autowire: true
@@ -102,6 +104,9 @@ services:
       $registry: '@mailer.manager_mail_registry'
       $lateTokens: '@mailer.late_tokens'
       $plainText: '@mailer.plain_text_body'
+      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $uuid: '@uuid'
+      $eventDispatcher: '@event_dispatcher'
   logger.channel.mailer:
     parent: logger.channel_base
     arguments: [ 'mailer' ]

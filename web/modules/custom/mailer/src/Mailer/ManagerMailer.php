@@ -2,10 +2,13 @@
 
 namespace Drupal\mailer\Mailer;
 
+use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\mailer\CorrespondenceRecorder;
+use Drupal\mailer\Door\DoorLinks;
+use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\HubUrls;
 use Drupal\mailer\MailVariables;
 use Drupal\mailer\Manager\LateTokens;
@@ -13,12 +16,14 @@ use Drupal\mailer\Manager\ManagerMailPreview;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\mailer\Manager\PlainTextBody;
 use Drupal\mailer\Manager\PreviewStop;
+use Drupal\projects\Event\ProjectRemindEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\symfony_mailer\Attribute\MailerInfo;
 use Drupal\symfony_mailer\EmailInterface;
 use Drupal\symfony_mailer\MailerLookupInterface;
 use Drupal\symfony_mailer\MailerPlusInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Mails a manager sends from the project manager.
@@ -62,6 +67,19 @@ use Psr\Log\LoggerInterface;
 class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
 
   /**
+   * The door targets of the reminders, keyed by subtype.
+   *
+   * A sent reminder carries a door instead of the plain project link and is
+   * logged as a reminder of the manager.
+   */
+  const array DOOR_TARGETS = [
+    'reminder_draft' => DoorTarget::Draft,
+    'reminder_open' => DoorTarget::Applicants,
+    'reminder_open_noone' => DoorTarget::Edit,
+    'reminder_ongoing' => DoorTarget::Complete,
+  ];
+
+  /**
    * Constructs the mailer.
    */
   public function __construct(
@@ -76,6 +94,9 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
     protected ManagerMailRegistry $registry,
     protected LateTokens $lateTokens,
     protected PlainTextBody $plainText,
+    protected DoorLinks $doorLinks,
+    protected UuidInterface $uuid,
+    protected EventDispatcherInterface $eventDispatcher,
   ) {
     parent::__construct($mailer, $mailerLookup, $baseTag, $recorder, $logger, $configFactory);
   }
@@ -156,7 +177,18 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
       ]);
       return FALSE;
     }
-    $values = ['project_link' => $this->hubUrls->project($project)];
+    // A reminder links a door, which can log the owner in: it is recorded
+    // under a UUID chosen here, which the door carries, and never stored.
+    $target = static::DOOR_TARGETS[$subtype] ?? NULL;
+    $uuid = NULL;
+    $secrets = [];
+    $link = $this->hubUrls->project($project);
+    if ($target !== NULL && $this->ownerEmail($project) !== NULL) {
+      $uuid = $this->uuid->generate();
+      $link = $this->doorLinks->build($project->getOwner(), $uuid, $target);
+      $secrets = [$link];
+    }
+    $values = ['project_link' => $link];
     $success = TRUE;
     foreach ([$this->ownerEmail($project)] as $to) {
       // Late tokens are resolved on the plain text, then everything is
@@ -170,7 +202,10 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
         $e->setSubject($subject);
         $e->setBody(['#type' => 'processed_text', '#text' => $body, '#format' => 'email_html']);
       }, EmailInterface::PHASE_BUILD, 950, 'manager_override');
-      $success = $this->deliver($email, $project, $subtype, $to, [], 'manager', (int) $sender->id()) && $success;
+      $success = $this->deliver($email, $project, $subtype, $to, $secrets, 'manager', (int) $sender->id(), $uuid) && $success;
+    }
+    if ($success && $uuid !== NULL) {
+      $this->eventDispatcher->dispatch(new ProjectRemindEvent($project, $this->getBaseTag() . '.' . $subtype, $uuid));
     }
     return $success;
   }

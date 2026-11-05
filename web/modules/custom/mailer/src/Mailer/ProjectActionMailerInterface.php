@@ -34,7 +34,7 @@ interface ProjectActionMailerInterface extends ComponentMailerInterface {
    * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    * @param string $link
-   *   The link to complete the project.
+   *   Ignored: the mail carries a door to the draft.
    */
   public function notify(ProjectInterface $project, string $link): bool;
 

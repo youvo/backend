@@ -6,6 +6,7 @@ use Drupal\correspondence\Entity\Correspondence;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\Log;
 use Drupal\logbook\LogInterface;
+use Drupal\mailer\Mailer\ManagerMailerInterface;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\Event\ProjectFollowEvent;
@@ -107,6 +108,30 @@ class LogbookMailDoorTest extends ExistingSiteBase {
     $this->assertSame((int) $project->getOwner()->id(), (int) $logs[0]->getOrganization()?->id());
     $this->assertSame((int) $manager->id(), (int) $logs[0]->getManager()?->id());
     $this->assertSame(['subtype' => 'mailer.manager.reminder_open', 'correspondence' => $uuid], $logs[0]->getMisc());
+  }
+
+  /**
+   * Tests that a sent reminder writes a log with its correspondence.
+   */
+  public function testReminderSendWritesRemindLog(): void {
+
+    $project = $this->createProject(ProjectState::Draft);
+    $manager = $project->getOwner()->getManager();
+    $this->setCurrentUser($manager);
+
+    $this->assertTrue($this->container->get(ManagerMailerInterface::class)->send($project, 'reminder_draft', 'Betreff', 'Text [mail:project_link]', $manager));
+
+    $ids = $this->container->get('entity_type.manager')->getStorage('correspondence')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('project', $project->id())
+      ->execute();
+    $this->assertCount(1, $ids);
+    $entry = Correspondence::load(reset($ids));
+    $this->markEntityForCleanup($entry);
+    $logs = $this->logs($project, 'project_remind');
+    $this->assertCount(1, $logs);
+    $this->assertSame((int) $manager->id(), (int) $logs[0]->getOwnerId());
+    $this->assertSame(['subtype' => 'mailer.manager.reminder_draft', 'correspondence' => $entry->uuid()], $logs[0]->getMisc());
   }
 
   /**
