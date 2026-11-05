@@ -64,10 +64,10 @@ class CreativesModeTest extends ManagerExistingSiteTestBase {
 
     $this->drupalGet('creatives', ['query' => ['name' => $this->prefix]]);
     foreach (['Name', 'Mail', 'Registered', 'Last access'] as $header) {
-      $session->elementExists('xpath', '//table//th//a[normalize-space() = "' . $header . '"]');
+      $session->elementExists('xpath', '//table//th//a[starts-with(normalize-space(), "' . $header . '")]');
     }
     foreach (['City', 'Skills'] as $header) {
-      $session->elementNotExists('xpath', '//table//th//a[normalize-space() = "' . $header . '"]');
+      $session->elementNotExists('xpath', '//table//th//a[starts-with(normalize-space(), "' . $header . '")]');
     }
     $session->elementNotExists('css', 'form.views-exposed-form [name="sort_by"]');
     $session->elementNotExists('css', 'form.views-exposed-form [name="sort_order"]');

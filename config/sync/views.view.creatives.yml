@@ -918,7 +918,7 @@ display:
             field_skills: field_skills
             created: created
             access: access
-          default: '-1'
+          default: created
           info:
             field_name:
               sortable: true
