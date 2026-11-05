@@ -29,13 +29,12 @@ class CorrespondenceRecorder {
    * Mails without a project are not recorded, because correspondence is a
    * child entity of a project.
    */
-  public function recordMail(?ProjectInterface $project, string $subtype, array $recipients, string $subject, string $body, bool $success, string $origin = 'automatic', ?int $sender = NULL): ?CorrespondenceInterface {
+  public function recordMail(?ProjectInterface $project, string $subtype, array $recipients, string $subject, string $body, bool $success, string $origin = 'automatic', ?int $sender = NULL, ?string $uuid = NULL): ?CorrespondenceInterface {
     if (!$project instanceof ProjectInterface) {
       return NULL;
     }
     try {
-      /** @var \Drupal\correspondence\CorrespondenceInterface $entry */
-      $entry = $this->entityTypeManager->getStorage('correspondence')->create([
+      $values = [
         'type' => 'mail',
         'project' => $project->id(),
         'sender' => $sender,
@@ -46,7 +45,12 @@ class CorrespondenceRecorder {
         'origin' => $origin,
         'result' => $success ? 'sent' : 'failed',
         'occurred' => $this->time->getRequestTime(),
-      ]);
+      ];
+      if ($uuid !== NULL) {
+        $values['uuid'] = $uuid;
+      }
+      /** @var \Drupal\correspondence\CorrespondenceInterface $entry */
+      $entry = $this->entityTypeManager->getStorage('correspondence')->create($values);
       $entry->save();
       return $entry;
     }

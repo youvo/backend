@@ -144,4 +144,22 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
     $this->assertStringContainsString('[Link entfernt]', $entry->get('body')->value);
   }
 
+  /**
+   * The correspondence is recorded under a UUID chosen before sending.
+   */
+  public function testDeliverKeepsGivenUuid(): void {
+
+    $project = $this->createMailableProject();
+    $uuid = $this->container->get('uuid')->generate();
+    $mailer = $this->mailer();
+    $create = new \ReflectionMethod($mailer, 'projectEmail');
+    $deliver = new \ReflectionMethod($mailer, 'deliver');
+    $email = $create->invoke($mailer, 'notify_organization', $project, ['link' => 'https://example.org/x']);
+    $this->assertTrue($deliver->invoke($mailer, $email, $project, 'notify_organization', $project->getOwner()->getEmail(), [], 'automatic', NULL, $uuid));
+
+    $entries = $this->loadEntries($project);
+    $this->assertCount(1, $entries);
+    $this->assertSame($uuid, $entries[0]->uuid());
+  }
+
 }
