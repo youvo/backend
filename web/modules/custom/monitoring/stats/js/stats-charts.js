@@ -314,6 +314,34 @@
   };
 
   /**
+   * Thins the ticks of the small overview charts in narrow cards.
+   *
+   * On phones the overview shows two cards a row, too narrow for the ticks
+   * the server sets. The first resize keeps those ticks to restore them on
+   * wider cards. The card width decides, as for the doughnut legend.
+   */
+  const COMPACT_NARROW = 240;
+  const thinTicks = (chart) => {
+    const card = chart.canvas.closest('.stats-card[data-compact]');
+    const { scales } = chart.options;
+    if (!card || !scales?.x || !scales?.y) {
+      return;
+    }
+    chart.$statsTicks ??= {
+      x: scales.x.ticks.maxTicksLimit,
+      y: scales.y.ticks.maxTicksLimit,
+    };
+    const narrow = card.offsetWidth < COMPACT_NARROW;
+    scales.x.ticks.maxTicksLimit = narrow ? 2 : chart.$statsTicks.x;
+    scales.y.ticks.maxTicksLimit = narrow ? 2 : chart.$statsTicks.y;
+  };
+  const compactTicks = {
+    id: 'statsCompactTicks',
+    afterInit: thinTicks,
+    resize: thinTicks,
+  };
+
+  /**
    * Draws a muted note in the middle of a chart without data.
    */
   const emptyState = {
@@ -339,7 +367,14 @@
 
   readTokens();
   applyDefaults();
-  Chart.register(paint, hoverLine, doughnutTotal, doughnutLegend, emptyState);
+  Chart.register(
+    paint,
+    hoverLine,
+    doughnutTotal,
+    doughnutLegend,
+    compactTicks,
+    emptyState,
+  );
 
   /**
    * Sets the options that depend on the single chart.

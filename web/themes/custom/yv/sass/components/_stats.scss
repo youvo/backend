@@ -186,8 +186,8 @@
 .stats-tile {
   @include card;
 
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: var(--gin-spacing-xxs);
   padding: var(--gin-spacing-m);
 }
@@ -198,8 +198,11 @@
   margin: 0;
 }
 
+// The value sits at the bottom, so the values of a row line up under
+// descriptions of different lengths.
 .stats-tile-value {
-  margin: 0;
+  margin: auto 0 0;
+  padding-top: var(--gin-spacing-xxs);
   color: var(--yv-ink);
   font-size: var(--gin-font-size-h2);
   font-weight: 600;
@@ -221,6 +224,27 @@
   @media (min-width: $breakpoint-wide) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  // A section of two halves, as the feedback of both sides.
+  &[data-columns="2"] {
+    @media (min-width: $breakpoint-wide) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+// The overview keeps two columns on phones, with lower charts, so its six
+// cards take three rows.
+.stats-overview {
+  @media (width < $breakpoint-medium) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gin-spacing-s);
+
+    .stats-card {
+      gap: var(--gin-spacing-xs);
+      padding: var(--gin-spacing-s);
+    }
+  }
 }
 
 // The header of a section: its title and a muted hint below.
@@ -236,13 +260,25 @@
   font-size: var(--gin-font-size-xs);
 }
 
-// The title of a section in ink.
+// The title of a section, as Gin's headings: larger and in normal case,
+// above the small uppercase labels of its cards.
 .stats-section-title {
-  @include section-label;
-
   grid-column: 1 / -1;
-  margin: var(--gin-spacing-s) 0 0;
+  margin: var(--gin-spacing-m) 0 0;
   color: var(--yv-ink);
+  font-size: var(--gin-font-size-xl);
+  font-weight: var(--gin-font-weight-semibold);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+
+  @media (min-width: $breakpoint-medium) {
+    font-size: var(--gin-font-size-h3);
+  }
+}
+
+// The overview title sits in its header, which the section gap separates.
+.stats-section-header .stats-section-title {
+  margin-top: 0;
 }
 
 .stats-card {
@@ -321,6 +357,17 @@
     aspect-ratio: auto;
   }
 
+  // A tall doughnut keeps the size of the others, centered in the two rows
+  // of the cards beside it.
+  &[data-tall][data-doughnut] .charts-figure {
+    @media (min-width: $breakpoint-medium) {
+      flex: none;
+      height: 20rem;
+      min-height: 0;
+      margin-block: auto;
+    }
+  }
+
   // A chart without data shows a note only and needs no more room for it.
   &[data-empty] {
     align-self: start;
@@ -350,10 +397,24 @@
 
     .charts-figure {
       flex: none;
-      height: 8.5rem;
+      height: 5.5rem;
       min-height: 0;
       aspect-ratio: auto;
+
+      @media (min-width: $breakpoint-medium) {
+        height: 8.5rem;
+      }
     }
+  }
+}
+
+// The halves of a two-column section stretch to one height; their charts
+// take the room, so no gap opens above the footnote.
+.stats-section[data-columns="2"] > .stats-card[data-rows] {
+  align-self: stretch;
+
+  .charts-figure {
+    flex: 1 0 auto;
   }
 }
 
@@ -361,10 +422,14 @@
 .stats-card-value {
   margin: 0;
   color: var(--yv-ink);
-  font-size: var(--gin-font-size-h3);
+  font-size: var(--gin-font-size-xl);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+
+  @media (min-width: $breakpoint-medium) {
+    font-size: var(--gin-font-size-h3);
+  }
 }
 
 .stats-card-title {
@@ -373,10 +438,34 @@
   margin: 0;
 }
 
-.stats-card-foot {
+// A short muted line under a card or tile label that explains the metric.
+.stats-card-description,
+.stats-tile-description {
   margin: 0;
   color: var(--yv-muted);
+  font-size: var(--gin-font-size-xxs);
+  line-height: 1.4;
+}
+
+// The card title keeps its description close.
+.stats-card-title:has(+ .stats-card-description) {
+  margin-bottom: calc(-1 * var(--gin-spacing-xs));
+}
+
+// The values under a chart, their descriptions in a smaller line below.
+.stats-card-foot {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+  color: var(--yv-muted);
   font-size: var(--gin-font-size-xs);
+
+  p {
+    margin: 0;
+  }
+}
+
+.stats-card-foot-description {
+  font-size: var(--gin-font-size-xxs);
 }
 
 .stats-card-foot-value {
