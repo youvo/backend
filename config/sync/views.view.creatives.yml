@@ -923,47 +923,47 @@ display:
             field_name:
               sortable: true
               default_sort_order: asc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: ''
             mail:
               sortable: true
               default_sort_order: asc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: priority-medium
             field_city:
               sortable: false
               default_sort_order: asc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: priority-low
             field_skills:
               sortable: false
               default_sort_order: asc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: priority-low
             created:
               sortable: true
               default_sort_order: desc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: ''
             access:
               sortable: true
               default_sort_order: desc
-              align: views-align-left
+              align: ''
               separator: ''
               empty_column: false
               responsive: ''
           override: true
-          sticky: false
+          sticky: true
           summary: ''
           empty_table: false
           caption: ''
