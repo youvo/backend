@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * The page behind a link in a mail.
+ *
+ * Available variables:
+ * - heading: The heading of the door target.
+ * - context: The project title.
+ * - note: A note above the button, or empty.
+ * - form: The form with the button.
+ */
+#}
+<div class="mail-door">
+  <h2 class="mail-door-heading">{{ heading }}</h2>
+  <p class="mail-door-context">{{ context }}</p>
+  {% if note %}
+    <p class="mail-door-note">{{ note }}</p>
+  {% endif %}
+  {{ form }}
+</div>

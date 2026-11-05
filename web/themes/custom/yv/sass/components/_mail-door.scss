@@ -1,0 +1,50 @@
+// =============================================================================
+// MAIL DOOR (DoorForm)
+// =============================================================================
+// The page behind a link in a mail: one card with the heading, the project
+// and the button, centered on wider screens.
+
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+.mail-door {
+  @include card;
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-s);
+  max-width: 32rem;
+  margin-inline: auto;
+  color: var(--yv-text);
+
+  // Core's form actions add their own margins.
+  // stylelint-disable-next-line selector-class-pattern
+  .form-actions {
+    margin: var(--gin-spacing-xs) 0 0;
+  }
+
+  .button {
+    width: 100%;
+    margin: 0;
+
+    @media (min-width: $breakpoint-medium) {
+      width: auto;
+    }
+  }
+}
+
+.mail-door-heading {
+  @include page-title;
+}
+
+.mail-door-context {
+  margin: 0;
+  color: var(--yv-ink);
+  font-weight: 600;
+}
+
+.mail-door-note {
+  margin: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+}
