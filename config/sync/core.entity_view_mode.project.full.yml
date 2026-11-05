@@ -9,4 +9,3 @@ label: Full
 description: 'The project page in the backend, built by the yv theme.'
 targetEntityType: project
 cache: true
-

@@ -31,6 +31,25 @@ targetEntityType: project
 bundle: project
 mode: teaser
 content:
+  created:
+    type: timestamp
+    label: hidden
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 0
+    region: content
   field_image:
     type: image
     label: hidden
@@ -58,8 +77,16 @@ content:
     third_party_settings: {  }
     weight: 3
     region: content
+  uid:
+    type: author
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
 hidden:
   body: true
+  changed: true
   field_allowance: true
   field_applicants: true
   field_appreciation: true
@@ -73,5 +100,9 @@ hidden:
   field_participants: true
   field_participants_tasks: true
   field_workload: true
+  hidden: true
   langcode: true
-
+  project_changes: true
+  project_result: true
+  promote: true
+  status: true

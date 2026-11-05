@@ -9,4 +9,3 @@ label: Person
 description: 'A person or an organization next to its role, with avatar, name and link.'
 targetEntityType: user
 cache: true
-
