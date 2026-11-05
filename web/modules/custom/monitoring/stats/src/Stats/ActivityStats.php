@@ -239,26 +239,21 @@ class ActivityStats {
   }
 
   /**
-   * Counts the registrations per bucket, with running totals.
+   * Counts the users registered before each bucket end.
    *
-   * The users count as the totals tiles of StatsCalculator count them:
-   * creatives who have logged in, and organizations with the organization
-   * role, so prospects are left out. The registrations and activation chart
-   * counts all new creatives in activation() instead.
+   * The users count as the totals of StatsCalculator count them: creatives
+   * who have logged in, and organizations with the organization role, so
+   * prospects are left out. The registrations and activation chart counts
+   * all new creatives in activation() instead.
    *
-   * @return array{creatives: array<string, int>, organizations: array<string, int>, creatives_total: array<string, int>, organizations_total: array<string, int>}
-   *   The registrations per bucket, and the users registered before each
-   *   bucket end.
+   * @return array{creatives: array<string, int>, organizations: array<string, int>}
+   *   The running totals per bucket.
    */
   public function registrations(StatsPeriod $period): array {
 
-    $buckets = $period->buckets();
-    $empty = array_fill_keys(array_keys($buckets), 0);
-    $result = [
-      'creatives' => $empty,
-      'organizations' => $empty,
-      'creatives_total' => $empty,
-      'organizations_total' => $empty,
+    $per_bucket = [
+      'creatives' => $period->emptyBuckets(),
+      'organizations' => $period->emptyBuckets(),
     ];
     $keys = ['user' => 'creatives', 'organization' => 'organizations'];
 
@@ -277,21 +272,22 @@ class ActivityStats {
     $query->condition($query->orConditionGroup()
       ->condition($creatives)
       ->condition($organizations));
-    $before = ['creatives' => 0, 'organizations' => 0];
+    $totals = ['creatives' => 0, 'organizations' => 0];
     foreach ($query->execute() as $row) {
       $key = $keys[$row->type];
       if ($period->contains((int) $row->created)) {
-        $result[$key][$period->bucketOf((int) $row->created)]++;
+        $per_bucket[$key][$period->bucketOf((int) $row->created)]++;
       }
       else {
-        $before[$key]++;
+        $totals[$key]++;
       }
     }
 
-    foreach ($before as $key => $total) {
-      foreach ($result[$key] as $bucket => $count) {
-        $total += $count;
-        $result[$key . '_total'][$bucket] = $total;
+    $result = [];
+    foreach ($per_bucket as $key => $counts) {
+      foreach ($counts as $bucket => $count) {
+        $totals[$key] += $count;
+        $result[$key][$bucket] = $totals[$key];
       }
     }
     return $result;

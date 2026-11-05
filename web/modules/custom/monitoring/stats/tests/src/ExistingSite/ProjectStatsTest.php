@@ -106,18 +106,10 @@ class ProjectStatsTest extends StatsTestBase {
       'mediated' => $series([1, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3]),
     ];
     $this->assertSame($expected, $states);
-
-    // The last point is the total of the calculator at the end of the year.
-    $calculator = $this->container->get('stats.calculator');
-    $until = $period->to()->getTimestamp();
-    $this->assertSame($calculator->countOpenProjects($until), $states['open']['2001-12']);
-    $this->assertSame($calculator->countOngoingProjects($until), $states['ongoing']['2001-12']);
-    $this->assertSame($calculator->countCompletedProjects($until), $states['completed']['2001-12']);
-    $this->assertSame($calculator->countMediatedProjects($until), $states['mediated']['2001-12']);
   }
 
   /**
-   * Tests the current and the later buckets of a running period.
+   * Tests that the buckets of a running period from now on count now.
    */
   public function testStatesInRunningPeriod(): void {
 
@@ -127,17 +119,18 @@ class ProjectStatsTest extends StatsTestBase {
     $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => $now->format('Y')], $timezone, $now);
     $states = $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp());
 
-    // The current month counts the current states, later months none.
+    // The current and the later months count the current states.
     $calculator = $this->container->get('stats.calculator');
-    $current = $now->format('Y-m');
-    $this->assertSame($calculator->countOpenProjects(), $states['open'][$current]);
-    $this->assertSame($calculator->countOngoingProjects(), $states['ongoing'][$current]);
-    $this->assertSame($calculator->countCompletedProjects(), $states['completed'][$current]);
-    $this->assertSame($calculator->countMediatedProjects(), $states['mediated'][$current]);
-    foreach ($states as $values) {
+    $current = [
+      'open' => $calculator->countOpenProjects(),
+      'ongoing' => $calculator->countOngoingProjects(),
+      'completed' => $calculator->countCompletedProjects(),
+      'mediated' => $calculator->countMediatedProjects(),
+    ];
+    foreach ($states as $state => $values) {
       foreach ($values as $bucket => $value) {
-        if ($bucket > $current) {
-          $this->assertNull($value, $bucket);
+        if ($bucket >= $now->format('Y-m')) {
+          $this->assertSame($current[$state], $value, $state . ' ' . $bucket);
         }
       }
     }

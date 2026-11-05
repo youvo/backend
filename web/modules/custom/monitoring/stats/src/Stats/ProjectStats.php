@@ -197,26 +197,24 @@ class ProjectStats {
    * Counts the projects per lifecycle state at each bucket end.
    *
    * A project is in the state its last history item before the bucket end
-   * went to, by timestamp and then by delta, as in StatsCalculator. Archived
-   * projects count too. The bucket that holds the current time counts the
-   * current states instead, a bucket after it counts none.
+   * went to, by timestamp and then by delta. Archived projects count too.
+   * The buckets that have not ended count the current states.
    *
    * @param \Drupal\stats\StatsPeriod $period
    *   The period.
    * @param int $now
    *   The current time.
    *
-   * @return array{open: array<string, ?int>, ongoing: array<string, ?int>, completed: array<string, ?int>, mediated: array<string, ?int>}
-   *   The counts per bucket, mediated being ongoing plus completed. A bucket
-   *   after the current time holds NULL.
+   * @return array{open: array<string, int>, ongoing: array<string, int>, completed: array<string, int>, mediated: array<string, int>}
+   *   The counts per bucket, mediated being ongoing plus completed.
    */
   public function statesAtBucketEnds(StatsPeriod $period, int $now): array {
 
     $buckets = $period->buckets();
     $states = [
-      ProjectState::Open->value => array_fill_keys(array_keys($buckets), 0),
-      ProjectState::Ongoing->value => array_fill_keys(array_keys($buckets), 0),
-      ProjectState::Completed->value => array_fill_keys(array_keys($buckets), 0),
+      ProjectState::Open->value => $period->emptyBuckets(),
+      ProjectState::Ongoing->value => $period->emptyBuckets(),
+      ProjectState::Completed->value => $period->emptyBuckets(),
     ];
 
     // The buckets that have ended, in their order.
@@ -245,25 +243,18 @@ class ProjectStats {
       }
     }
 
-    // The current bucket counts the current states, the later ones none.
-    $current = NULL;
-    foreach ($buckets as $bucket => [$start, $end]) {
-      if ($end <= $now) {
-        continue;
-      }
-      if ($start <= $now) {
-        $current ??= $this->currentStateCounts();
-      }
-      foreach ($states as $state => $values) {
-        $states[$state][$bucket] = $start <= $now ? ($current[$state] ?? 0) : NULL;
+    if (count($ends) < count($buckets)) {
+      $current = $this->currentStateCounts();
+      foreach (array_keys(array_diff_key($buckets, $ends)) as $bucket) {
+        foreach (array_keys($states) as $state) {
+          $states[$state][$bucket] = $current[$state] ?? 0;
+        }
       }
     }
 
     $mediated = [];
-    foreach (array_keys($buckets) as $bucket) {
-      $ongoing = $states[ProjectState::Ongoing->value][$bucket];
-      $completed = $states[ProjectState::Completed->value][$bucket];
-      $mediated[$bucket] = $ongoing === NULL ? NULL : $ongoing + $completed;
+    foreach ($states[ProjectState::Ongoing->value] as $bucket => $ongoing) {
+      $mediated[$bucket] = $ongoing + $states[ProjectState::Completed->value][$bucket];
     }
 
     return [
@@ -277,7 +268,7 @@ class ProjectStats {
   /**
    * Counts the projects per current lifecycle state.
    *
-   * It counts as StatsCalculator does without a timestamp.
+   * It counts as StatsCalculator does.
    *
    * @return array<string, int>
    *   The counts keyed by state.

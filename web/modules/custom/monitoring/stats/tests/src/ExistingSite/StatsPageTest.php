@@ -154,7 +154,7 @@ class StatsPageTest extends StatsTestBase {
     // A period in the future ends today.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2090]]);
     $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of ' . $today);
-    foreach (['open', 'ongoing', 'completed', 'mediated'] as $key) {
+    foreach (array_keys($cards) as $key) {
       $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$cards[$key][1]}());
     }
 

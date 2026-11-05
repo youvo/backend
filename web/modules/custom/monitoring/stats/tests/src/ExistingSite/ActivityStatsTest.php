@@ -142,13 +142,11 @@ class ActivityStatsTest extends StatsTestBase {
   public function testOrganizationsAndReasons(): void {
 
     $registrations = $this->activityStats->registrations($this->period);
-    // They count as the totals tiles: creatives who logged in, X and Y in
+    // They count as the calculator: creatives who logged in, X and Y in
     // January after Z in 2000, and organizations without the prospect, O1 in
     // January and O2 in March after O3 in 2000.
-    $this->assertSame($this->months([2]), $registrations['creatives']);
-    $this->assertSame($this->months([1, 0, 1]), $registrations['organizations']);
-    $this->assertSame($this->months([], 3), $registrations['creatives_total']);
-    $this->assertSame($this->months([2, 2], 3), $registrations['organizations_total']);
+    $this->assertSame($this->months([], 3), $registrations['creatives']);
+    $this->assertSame($this->months([2, 2], 3), $registrations['organizations']);
 
     $this->assertSame(['created' => 3, 'managed' => 2, 'published' => 2], $this->activityStats->prospectFunnel($this->period));
 

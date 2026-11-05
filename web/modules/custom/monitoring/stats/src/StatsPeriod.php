@@ -371,6 +371,16 @@ class StatsPeriod {
   }
 
   /**
+   * Gets a value for every bucket, keyed by bucket.
+   *
+   * @return array<string, mixed>
+   *   The value for each bucket.
+   */
+  public function emptyBuckets(mixed $value = 0): array {
+    return array_fill_keys(array_keys($this->buckets()), $value);
+  }
+
+  /**
    * Gets short chart labels of the buckets, in their order.
    *
    * Days read "05.11.", ISO weeks "W45", months "Jan" and years "2026". Months

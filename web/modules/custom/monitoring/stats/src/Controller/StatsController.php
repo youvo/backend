@@ -179,54 +179,28 @@ class StatsController implements ContainerInjectionInterface {
   /**
    * Builds the overview section: one card per total with its course.
    *
-   * Each card shows the total at the end of the period over a small chart of
-   * the total at the end of each bucket, so the last point is the total. A
-   * period that has not ended yet shows the current totals. Its buckets after
-   * the current one stay empty.
+   * Each card shows a small chart of the total at the end of each bucket and
+   * the last of those totals as its value. A period that has not ended yet
+   * shows the current totals in its current bucket. Its later buckets stay
+   * empty, and a period entirely in the future shows the current totals.
    *
    * @return array<string, mixed>
    *   The section render array.
    */
   protected function overviewSection(StatsPeriod $period, \DateTimeImmutable $now): array {
 
-    $ended = $period->to() <= $now;
-    $until = $ended ? $period->to()->getTimestamp() : NULL;
-    $last_day = $ended ? $period->to()->modify('-1 day') : $now;
+    $last_day = $period->to() <= $now ? $period->to()->modify('-1 day') : $now;
 
     $labels = $period->bucketLabels();
     $registrations = $this->activityStats->registrations($period);
     $states = $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp());
     $cards = [
-      'creatives' => [
-        $this->t('Registered creatives'),
-        $this->calculator->countCreatives($until),
-        $this->beforeNow($period, $now, $registrations['creatives_total']),
-      ],
-      'organizations' => [
-        $this->t('Registered organizations'),
-        $this->calculator->countOrganizations($until),
-        $this->beforeNow($period, $now, $registrations['organizations_total']),
-      ],
-      'open' => [
-        $this->t('Open projects'),
-        $this->calculator->countOpenProjects($until),
-        $states['open'],
-      ],
-      'ongoing' => [
-        $this->t('Ongoing projects'),
-        $this->calculator->countOngoingProjects($until),
-        $states['ongoing'],
-      ],
-      'completed' => [
-        $this->t('Completed projects'),
-        $this->calculator->countCompletedProjects($until),
-        $states['completed'],
-      ],
-      'mediated' => [
-        $this->t('Mediated projects'),
-        $this->calculator->countMediatedProjects($until),
-        $states['mediated'],
-      ],
+      'creatives' => [$this->t('Registered creatives'), $registrations['creatives'], 'countCreatives'],
+      'organizations' => [$this->t('Registered organizations'), $registrations['organizations'], 'countOrganizations'],
+      'open' => [$this->t('Open projects'), $states['open'], 'countOpenProjects'],
+      'ongoing' => [$this->t('Ongoing projects'), $states['ongoing'], 'countOngoingProjects'],
+      'completed' => [$this->t('Completed projects'), $states['completed'], 'countCompletedProjects'],
+      'mediated' => [$this->t('Mediated projects'), $states['mediated'], 'countMediatedProjects'],
     ];
 
     $section = [
@@ -242,7 +216,9 @@ class StatsController implements ContainerInjectionInterface {
         ],
       ],
     ];
-    foreach ($cards as $key => [$title, $total, $values]) {
+    foreach ($cards as $key => [$title, $values, $count]) {
+      $values = $this->beforeNow($period, $now, $values);
+      $total = $this->last($values) ?? $this->calculator->{$count}();
       $chart = StatsCharts::line('stats-overview-' . $key, (string) $title, $labels, [(string) $title => array_values($values)]);
       // Few ticks keep the small chart readable.
       $chart['#raw_options']['options']['scales']['y']['ticks']['maxTicksLimit'] = 3;
@@ -280,7 +256,7 @@ class StatsController implements ContainerInjectionInterface {
    *   The period.
    * @param \DateTimeImmutable $now
    *   The current time.
-   * @param array<string, int> $values
+   * @param array<string, ?int> $values
    *   The values keyed by bucket.
    *
    * @return array<string, ?int>
@@ -380,8 +356,8 @@ class StatsController implements ContainerInjectionInterface {
       $activity_chart = StatsCharts::line('stats-activity', (string) $this->t('Active users, last 30 days'), $labels, $activity_series);
       $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $this->t('Users who visited in the 30 days up to each point'));
       $cards['tiles'] = $this->tiles([
-        $this->tile('active-creatives', $this->t('Active creatives'), $this->lastActive($activity['creative']), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
-        $this->tile('active-organizations', $this->t('Active organizations'), $this->lastActive($activity['organization']), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
+        $this->tile('active-creatives', $this->t('Active creatives'), $this->last(array_column($activity['creative'], 'active_30d')), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
+        $this->tile('active-organizations', $this->t('Active organizations'), $this->last(array_column($activity['organization'], 'active_30d')), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
       ]);
     }
 
@@ -461,15 +437,15 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets the active_30d of the last bucket with a snapshot.
+   * Gets the last value that is not NULL.
    *
-   * @param array<string, array{active_1d: ?float, active_30d: ?int}> $buckets
-   *   The activity of a role per bucket.
+   * @param array<int|string, ?int> $values
+   *   The values.
    */
-  protected function lastActive(array $buckets): ?int {
-    foreach (array_reverse($buckets) as $bucket) {
-      if ($bucket['active_30d'] !== NULL) {
-        return $bucket['active_30d'];
+  protected function last(array $values): ?int {
+    foreach (array_reverse($values) as $value) {
+      if ($value !== NULL) {
+        return $value;
       }
     }
     return NULL;
