@@ -6,6 +6,7 @@ use Drupal\Core\File\FileExists;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\creatives\Entity\Creative;
 use Drupal\file\Entity\File;
+use Drupal\projects\ProjectState;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\views\ViewExecutable;
@@ -204,6 +205,46 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
       [(int) $old->id(), (int) $new->id(), (int) $no_newsletter->id()],
       $this->uids(['name' => $prefix, 'newsletter' => '0']),
     );
+  }
+
+  /**
+   * The project activity and the portfolio link filters.
+   */
+  public function testProjectAndLinkFilters(): void {
+
+    $prefix = $this->randomMachineName();
+    $a = $this->creative(['field_name' => $prefix . ' A']);
+    $b = $this->creative(['field_name' => $prefix . ' B']);
+    $c = $this->creative(['field_name' => $prefix . ' C']);
+    $d = $this->creative(['field_name' => $prefix . ' D']);
+
+    $open = $this->createProject(ProjectState::Open)->appendApplicant($a)->appendApplicant($d);
+    $open->save();
+    $second = $this->createProject(ProjectState::Open)->appendApplicant($d);
+    $second->save();
+    $completed = $this->createProject(ProjectState::Completed)->appendApplicant($b)->appendParticipant($b);
+    $completed->save();
+
+    $this->assertEqualsCanonicalizing(
+      [(int) $a->id(), (int) $b->id(), (int) $d->id()],
+      $this->uids(['name' => $prefix, 'applied' => '1']),
+    );
+    $this->assertSame([(int) $c->id()], $this->uids(['name' => $prefix, 'applied' => '0']));
+    $this->assertSame([(int) $b->id()], $this->uids(['name' => $prefix, 'participated' => '1']));
+    $this->assertEqualsCanonicalizing(
+      [(int) $a->id(), (int) $c->id(), (int) $d->id()],
+      $this->uids(['name' => $prefix, 'participated' => '0']),
+    );
+
+    $prefix = $this->randomMachineName();
+    $e = $this->creative(['field_name' => $prefix . ' E', 'field_url' => 'https://example.com']);
+    $f = $this->creative(['field_name' => $prefix . ' F', 'field_portfolio' => 'https://example.org']);
+    $g = $this->creative(['field_name' => $prefix . ' G']);
+    $this->assertEqualsCanonicalizing(
+      [(int) $e->id(), (int) $f->id()],
+      $this->uids(['name' => $prefix, 'has_link' => '1']),
+    );
+    $this->assertSame([(int) $g->id()], $this->uids(['name' => $prefix, 'has_link' => '0']));
   }
 
   /**

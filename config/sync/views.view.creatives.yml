@@ -869,6 +869,90 @@ display:
             remember_roles:
               authenticated: authenticated
           is_grouped: false
+        creative_applied:
+          id: creative_applied
+          table: users_field_data
+          field: creative_applied
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: user
+          plugin_id: creative_project_activity
+          operator: '='
+          value: All
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Applied
+            description: ''
+            use_operator: false
+            operator: creative_applied_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: applied
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+        creative_participated:
+          id: creative_participated
+          table: users_field_data
+          field: creative_participated
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: user
+          plugin_id: creative_project_activity
+          operator: '='
+          value: All
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Took part'
+            description: ''
+            use_operator: false
+            operator: creative_participated_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: participated
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+        creative_has_link:
+          id: creative_has_link
+          table: users_field_data
+          field: creative_has_link
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: user
+          plugin_id: creative_has_link
+          operator: '='
+          value: All
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Portfolio or website'
+            description: ''
+            use_operator: false
+            operator: creative_has_link_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: has_link
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
       filter_groups:
         operator: AND
         groups:
@@ -963,3 +1047,4 @@ display:
       display_extenders: {  }
       path: creatives
       use_admin_theme: true
+
