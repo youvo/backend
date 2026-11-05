@@ -328,9 +328,9 @@ class CreativesViewsHooks {
       $form['#submit'][] = [static::class, 'resetToProfiles'];
     }
 
-    // The switch between the table and the profiles ends the row of the main
-    // filters. Its links keep the filters and the sort, and drop the page,
-    // because the modes show a different number of creatives per page.
+    // The switch between the table and the profiles follows the buttons, so
+    // they wrap together. Its links keep the filters and the sort, and drop the
+    // page, because the modes show a different number of creatives per page.
     $query = $this->requestStack->getCurrentRequest()?->query->all() ?? [];
     unset($query['page'], $query['mode']);
     $profiles = $this->isProfilesMode();
@@ -345,11 +345,11 @@ class CreativesViewsHooks {
         'attributes' => $active ? ['aria-current' => 'page', 'class' => ['is-active']] : [],
       ];
     }
-    $form['mode_toggle'] = [
+    $form['actions']['mode_toggle'] = [
       '#theme' => 'links',
       '#links' => $links,
       '#attributes' => ['class' => ['creatives-mode-toggle']],
-      '#weight' => 55,
+      '#weight' => 100,
       '#cache' => ['contexts' => ['url.query_args']],
     ];
   }

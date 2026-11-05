@@ -151,9 +151,32 @@ $field-height: 2.5rem;
     box-shadow: inset 0 0 0 1px var(--gin-color-primary);
   }
 
-  // A clear gap sets the buttons apart from the filters.
-  .form-actions {
-    margin-inline-start: var(--gin-spacing-l);
+  // The top row is spaced by gaps alone, so an element that wraps starts
+  // flush with the fields. Gin spaces the elements with margins instead.
+  gap: var(--gin-spacing-s) var(--gin-spacing-m);
+
+  // Gin's margins carry an ID-level specificity hack.
+  > .form-item,
+  > .fieldset,
+  > .form-actions {
+    margin-block: 0 !important;
+    margin-inline: 0;
+  }
+
+  // A clear gap sets the buttons apart from the skills. On the right, it never
+  // indents a wrapped row.
+  > .creatives-skills {
+    margin-inline-end: var(--gin-spacing-m);
+  }
+
+  // The buttons and the switch follow the filters, or end a row of their own
+  // on the right.
+  > .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--gin-spacing-s) var(--gin-spacing-xs);
+    margin-inline-start: auto;
   }
 }
 
@@ -161,7 +184,6 @@ $field-height: 2.5rem;
 // not chosen is muted; a chosen one shows its color with a ring.
 .creatives-skills.creatives-skills {
   display: block;
-  margin-inline: var(--gin-spacing-s);
 
   // As high as the fields next to them, the icons centered in the row.
   .form-checkboxes {
@@ -222,8 +244,7 @@ $field-height: 2.5rem;
 .creatives-mode-toggle {
   @include segmented;
 
-  align-self: flex-end;
-  margin: 0 0 0 var(--gin-spacing-l);
+  margin: 0 0 0 var(--gin-spacing-xs);
   list-style: none;
 
   li {
@@ -291,19 +312,17 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// On a phone the filters stack; a gap that sets elements apart side by side
-// would only indent them.
-// The buttons and the switch take a row each, the switch across the full
-// width with two equal halves, which are easier to tap.
+// On a phone the switch takes a row of its own below the buttons, across the
+// full width with two equal halves, which are easier to tap.
 @media (width < $breakpoint-medium) {
-  .creatives-skills.creatives-skills {
-    margin-inline: 0;
+  .view-creatives .views-exposed-form > .creatives-skills {
+    margin-inline-end: 0;
   }
 
-  .view-creatives .views-exposed-form .form-actions,
+  .view-creatives .views-exposed-form > .form-actions,
   .creatives-mode-toggle {
     flex-basis: 100%;
-    margin: var(--gin-spacing-s) 0 0;
+    margin: 0;
   }
 
   .creatives-mode-toggle li {
@@ -324,7 +343,10 @@ fieldset.creatives-segmented .form-radios {
 // with hairlines between them.
 .creatives-filter-groups {
   flex-basis: 100%;
-  margin-block-start: var(--gin-spacing-m);
+
+  // With the row gap, the groups lie as far below the filters as on a
+  // details page.
+  margin-block-start: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   box-shadow: inset 0 0 0 1px var(--gin-border-color);
 }
