@@ -4,12 +4,14 @@ namespace Drupal\Tests\blocker_mode\Unit;
 
 use Drupal\blocker_mode\BlockerMode;
 use Drupal\Core\Routing\RouteMatch;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Tests\UnitTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -51,6 +53,33 @@ class BlockerModeTest extends UnitTestCase {
       'staff on a user path' => [$staff, '/user/{user}', TRUE],
       'organization on the manager pane' => [[], $pane, FALSE],
       'administrator on a user path' => [$admin, '/user/{user}', TRUE],
+    ];
+  }
+
+  /**
+   * Tests which routes blocker mode lets through without a client.
+   */
+  #[DataProvider('appliesProvider')]
+  public function testApplies(string $route_name, bool $expected): void {
+
+    $state = $this->createMock(StateInterface::class);
+    $state->method('get')->with('system.blocker_mode')->willReturn(TRUE);
+    $request = Request::create('/test');
+    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, $route_name);
+    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('/test'));
+
+    $blocker_mode = new BlockerMode($state);
+    $this->assertSame($expected, $blocker_mode->applies($request));
+  }
+
+  /**
+   * Provides a route name and whether blocker mode applies.
+   */
+  public static function appliesProvider(): array {
+    return [
+      'login' => ['user.login', FALSE],
+      'mail door' => ['mailer.door', FALSE],
+      'logbook' => ['logbook.page', TRUE],
     ];
   }
 
