@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Tests the stats page with the period bar and the totals tiles.
+ * Tests the stats page with the period bar and the overview cards.
  */
 #[Group('stats')]
 class StatsPageTest extends StatsTestBase {
@@ -101,29 +101,21 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The top tiles show the totals at the end of the period.
+   * The overview cards show the totals at the end of the period.
    */
-  public function testTotalsAndMediationRate(): void {
+  public function testOverviewAndMediationRate(): void {
 
     $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     $calculator = $this->container->get('stats.calculator');
-    $labels = [
-      'creatives' => 'Registered creatives',
-      'organizations' => 'Registered organizations',
-      'open' => 'Open projects',
-      'ongoing' => 'Ongoing projects',
-      'completed' => 'Completed projects',
-      'mediated' => 'Mediated projects',
-    ];
-    $methods = [
-      'creatives' => 'countCreatives',
-      'organizations' => 'countOrganizations',
-      'open' => 'countOpenProjects',
-      'ongoing' => 'countOngoingProjects',
-      'completed' => 'countCompletedProjects',
-      'mediated' => 'countMediatedProjects',
+    $cards = [
+      'creatives' => ['Registered creatives', 'countCreatives'],
+      'organizations' => ['Registered organizations', 'countOrganizations'],
+      'open' => ['Open projects', 'countOpenProjects'],
+      'ongoing' => ['Ongoing projects', 'countOngoingProjects'],
+      'completed' => ['Completed projects', 'countCompletedProjects'],
+      'mediated' => ['Mediated projects', 'countMediatedProjects'],
     ];
 
     // Without a period, the page starts on all time and its totals equal the
@@ -131,36 +123,38 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalGet('stats');
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementTextEquals('css', '.stats-period-heading', 'All time');
-    $this->assertSession()->elementTextContains('css', '.stats-totals-title', 'Totals');
+    $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-section-title', 'Overview');
     $today = (new \DateTimeImmutable('now', $this->timezone()))->format('d.m.Y');
-    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of ' . $today);
-    $this->assertCount(6, $this->getSession()->getPage()->findAll('css', '.stats-totals .stats-tile'));
-    foreach ($labels as $key => $label) {
-      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] ';
-      $this->assertSession()->elementTextEquals('css', $tile . '.stats-tile-label', $label);
-      $value = $calculator->{$methods[$key]}();
-      $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile . '.stats-tile-value')->getText()));
+    $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of ' . $today);
+    $this->assertCount(6, $this->getSession()->getPage()->findAll('css', '.stats-overview > .stats-card'));
+    foreach ($cards as $key => [$title, $method]) {
+      $id = 'stats-overview-' . $key;
+      $card = '.stats-overview .stats-card[aria-labelledby="' . $id . '-title"]';
+      $this->assertSession()->elementExists('css', $card . ' #' . $id);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-title', $title);
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$method}());
     }
     $this->assertSession()->elementExists('xpath', '//a[normalize-space()="All time"][@aria-current="page"]');
 
+    // The totals and growth sections are gone.
+    $this->assertSession()->elementNotExists('css', '.stats-totals');
+    $this->assertSession()->elementNotExists('css', '.stats-growth');
+    $this->assertSession()->elementNotExists('css', '[id^="stats-growth-"]');
+    $this->assertSession()->elementNotExists('xpath', '//h2[normalize-space()="Totals" or normalize-space()="Growth"]');
+
     // A past period shows the state at its end, 2001-12-31 included.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
-    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of 31.12.2001');
+    $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of 31.12.2001');
     $expected = ['open' => 4, 'ongoing' => 2, 'completed' => 1, 'mediated' => 3, 'organizations' => 3];
     foreach ($expected as $key => $value) {
-      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value';
-      $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile)->getText()));
+      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $value);
     }
 
     // A period in the future ends today.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2090]]);
-    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of ' . $today);
+    $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of ' . $today);
     foreach (['open', 'ongoing', 'completed', 'mediated'] as $key) {
-      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value';
-      $this->assertSame((string) $calculator->{$methods[$key]}(), trim($this->assertSession()->elementExists('css', $tile)->getText()));
-    }
-    foreach (['Published', 'Mediation rate (cohort)', 'Median publish → mediate'] as $label) {
-      $this->assertSession()->elementTextNotContains('css', '.stats-totals', $label);
+      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$cards[$key][1]}());
     }
 
     // The mediation rate of the cohort moved to the footnote of its card.
@@ -261,44 +255,32 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The growth section shows one small chart per running total.
+   * The value of each overview card is the last point of its chart.
    */
-  public function testGrowthCards(): void {
+  public function testOverviewCharts(): void {
 
     $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->elementNotExists('css', '#stats-growth');
 
-    // The scenario registers no creatives, three organizations and mediates
-    // four projects, one reset later, of which one is completed. The site holds
-    // no older users or projects.
+    // The scenario registers no creatives and three organizations. The site
+    // holds no older users or projects.
     $expected = [
-      'creatives' => ['Creatives', '0'],
-      'organizations' => ['Organizations', '3'],
-      'mediated' => ['Projects mediated', '4'],
-      'completed' => ['Projects completed', '1'],
+      'creatives' => '0',
+      'organizations' => '3',
+      'open' => '4',
+      'ongoing' => '2',
+      'completed' => '1',
+      'mediated' => '3',
     ];
-    foreach ($expected as $key => [$title, $value]) {
-      $id = 'stats-growth-' . $key;
-      $card = '.stats-growth .stats-card[aria-labelledby="' . $id . '-title"]';
-      $this->assertSession()->elementExists('css', $card . ' #' . $id);
-      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-title', $title);
-      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-value[data-value="' . $key . '"]', $value);
-
-      // The value is the last point of the chart.
+    foreach ($expected as $key => $value) {
+      $id = 'stats-overview-' . $key;
+      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', $value);
       $rows = $this->getSession()->getPage()->findAll('xpath', '//div[@id="' . $id . '"]/following-sibling::div//table/tbody/tr');
       $cells = end($rows)->findAll('xpath', 'th|td');
       $this->assertSame($value, trim(end($cells)->getText()), $key);
-    }
-
-    // All time runs until now, so the users count as in the totals tiles.
-    $this->drupalGet('stats');
-    foreach (['creatives', 'organizations'] as $key) {
-      $total = $this->assertSession()->elementExists('css', '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value')->getText();
-      $this->assertSession()->elementTextEquals('css', '.stats-growth .stats-card-value[data-value="' . $key . '"]', trim($total));
     }
   }
 

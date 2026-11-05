@@ -37,7 +37,7 @@ class ProjectStats {
    * Every metric of the page reads it. It has no time bound, so one read
    * serves all periods.
    *
-   * @var array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>|null
+   * @var array<int, array{status: int, rows: array<int, array{0: string, 1: int}>, states: array<int, array{0: ?string, 1: int}>}>|null
    */
   protected ?array $history = NULL;
 
@@ -194,42 +194,114 @@ class ProjectStats {
   }
 
   /**
-   * Counts the projects ever mediated and completed by each bucket end.
+   * Counts the projects per lifecycle state at each bucket end.
    *
-   * Rows before the period count too.
+   * A project is in the state its last history item before the bucket end
+   * went to, by timestamp and then by delta, as in StatsCalculator. Archived
+   * projects count too. The bucket that holds the current time counts the
+   * current states instead, a bucket after it counts none.
    *
-   * @return array{mediated: array<string, int>, completed: array<string, int>}
-   *   The running totals per bucket.
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param int $now
+   *   The current time.
+   *
+   * @return array{open: array<string, ?int>, ongoing: array<string, ?int>, completed: array<string, ?int>, mediated: array<string, ?int>}
+   *   The counts per bucket, mediated being ongoing plus completed. A bucket
+   *   after the current time holds NULL.
    */
-  public function cumulative(StatsPeriod $period): array {
+  public function statesAtBucketEnds(StatsPeriod $period, int $now): array {
 
-    $first = [
-      ProjectTransition::Mediate->value => [],
-      ProjectTransition::Complete->value => [],
+    $buckets = $period->buckets();
+    $states = [
+      ProjectState::Open->value => array_fill_keys(array_keys($buckets), 0),
+      ProjectState::Ongoing->value => array_fill_keys(array_keys($buckets), 0),
+      ProjectState::Completed->value => array_fill_keys(array_keys($buckets), 0),
     ];
-    foreach ($this->history() as $id => $project) {
-      foreach ($project['rows'] as [$transition, $timestamp]) {
-        if (isset($first[$transition]) && !isset($first[$transition][$id])) {
-          $first[$transition][$id] = $timestamp;
+
+    // The buckets that have ended, in their order.
+    $ends = [];
+    foreach ($buckets as $bucket => [, $end]) {
+      if ($end <= $now) {
+        $ends[$bucket] = $end;
+      }
+    }
+
+    foreach ($this->history() as $project) {
+      // The sort is stable, so items of one timestamp keep their delta order.
+      $items = $project['states'];
+      usort($items, fn($a, $b) => $a[1] <=> $b[1]);
+      $index = 0;
+      $count = count($items);
+      $state = NULL;
+      foreach ($ends as $bucket => $end) {
+        while ($index < $count && $items[$index][1] < $end) {
+          $state = $items[$index][0];
+          $index++;
+        }
+        if ($state !== NULL && isset($states[$state])) {
+          $states[$state][$bucket]++;
         }
       }
     }
 
-    $totals = ['mediated' => [], 'completed' => []];
-    foreach ($period->buckets() as $bucket => [, $end]) {
-      $totals['mediated'][$bucket] = count(array_filter($first[ProjectTransition::Mediate->value], fn($timestamp) => $timestamp < $end));
-      $totals['completed'][$bucket] = count(array_filter($first[ProjectTransition::Complete->value], fn($timestamp) => $timestamp < $end));
+    // The current bucket counts the current states, the later ones none.
+    $current = NULL;
+    foreach ($buckets as $bucket => [$start, $end]) {
+      if ($end <= $now) {
+        continue;
+      }
+      if ($start <= $now) {
+        $current ??= $this->currentStateCounts();
+      }
+      foreach ($states as $state => $values) {
+        $states[$state][$bucket] = $start <= $now ? ($current[$state] ?? 0) : NULL;
+      }
     }
 
-    return $totals;
+    $mediated = [];
+    foreach (array_keys($buckets) as $bucket) {
+      $ongoing = $states[ProjectState::Ongoing->value][$bucket];
+      $completed = $states[ProjectState::Completed->value][$bucket];
+      $mediated[$bucket] = $ongoing === NULL ? NULL : $ongoing + $completed;
+    }
+
+    return [
+      'open' => $states[ProjectState::Open->value],
+      'ongoing' => $states[ProjectState::Ongoing->value],
+      'completed' => $states[ProjectState::Completed->value],
+      'mediated' => $mediated,
+    ];
+  }
+
+  /**
+   * Counts the projects per current lifecycle state.
+   *
+   * It counts as StatsCalculator does without a timestamp.
+   *
+   * @return array<string, int>
+   *   The counts keyed by state.
+   */
+  protected function currentStateCounts(): array {
+    $query = $this->database->select('project', 'p');
+    $query->join('project__field_lifecycle', 'l', 'p.id = l.entity_id');
+    $query->addField('l', 'field_lifecycle_value', 'state');
+    $query->addExpression('COUNT(*)', 'count');
+    $query->groupBy('l.field_lifecycle_value');
+    $counts = [];
+    foreach ($query->execute() as $row) {
+      $counts[(string) $row->state] = (int) $row->count;
+    }
+    return $counts;
   }
 
   /**
    * Gets the lifecycle history of all projects.
    *
-   * @return array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>
-   *   The project status and the transitions with timestamps in history
-   *   order, keyed by project.
+   * @return array<int, array{status: int, rows: array<int, array{0: string, 1: int}>, states: array<int, array{0: ?string, 1: int}>}>
+   *   The project status, the transitions with timestamps and the states the
+   *   items went to with timestamps, both in history order, keyed by project.
+   *   The states include the first item without a transition.
    */
   protected function history(): array {
 
@@ -242,9 +314,9 @@ class ProjectStats {
     $query->addField('h', 'entity_id');
     $query->addField('h', 'field_lifecycle_history_transition', 'transition');
     $query->addField('h', 'field_lifecycle_history_timestamp', 'timestamp');
+    $query->addField('h', 'field_lifecycle_history_to', 'to_state');
     $query->addField('p', 'status');
     $query->condition('h.deleted', 0)
-      ->isNotNull('h.field_lifecycle_history_transition')
       ->orderBy('h.entity_id')
       ->orderBy('h.delta');
 
@@ -252,7 +324,11 @@ class ProjectStats {
     foreach ($query->execute() as $row) {
       $id = (int) $row->entity_id;
       $history[$id]['status'] = (int) $row->status;
-      $history[$id]['rows'][] = [$row->transition, (int) $row->timestamp];
+      $history[$id]['rows'] ??= [];
+      if ($row->transition !== NULL) {
+        $history[$id]['rows'][] = [$row->transition, (int) $row->timestamp];
+      }
+      $history[$id]['states'][] = [$row->to_state, (int) $row->timestamp];
     }
     $this->history = $history;
     return $history;

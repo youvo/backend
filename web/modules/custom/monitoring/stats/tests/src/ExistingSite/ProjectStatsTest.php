@@ -85,24 +85,62 @@ class ProjectStatsTest extends StatsTestBase {
   }
 
   /**
-   * Tests the running totals of mediated and completed projects.
+   * Tests the projects per state at each month end of 2001.
    */
-  public function testCumulative(): void {
+  public function testStatesAtBucketEnds(): void {
 
     $this->setUpScenario();
     $period = $this->year('2001');
+    $states = $this->projectStats->statesAtBucketEnds($period, time());
 
-    $mediated = array_fill_keys(array_keys($period->buckets()), 4);
-    $mediated['2001-01'] = 1;
-    $mediated['2001-02'] = 3;
-    $mediated['2001-03'] = 3;
-    $completed = array_fill_keys(array_keys($period->buckets()), 1);
-    $completed['2001-01'] = 0;
-    $completed['2001-02'] = 0;
-    $this->assertSame([
-      'mediated' => $mediated,
-      'completed' => $completed,
-    ], $this->projectStats->cumulative($period));
+    // The month ends of the scenario, archived D and H included: A open in
+    // January, F ongoing since January, A and B ongoing in February, A
+    // completed and C and D open in March, E ongoing in April and open again
+    // in May, H open in July.
+    $months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+    $series = fn(array $values) => array_combine(array_map(fn($month) => '2001-' . $month, $months), $values);
+    $expected = [
+      'open' => $series([1, 0, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4]),
+      'ongoing' => $series([1, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2]),
+      'completed' => $series([0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+      'mediated' => $series([1, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3]),
+    ];
+    $this->assertSame($expected, $states);
+
+    // The last point is the total of the calculator at the end of the year.
+    $calculator = $this->container->get('stats.calculator');
+    $until = $period->to()->getTimestamp();
+    $this->assertSame($calculator->countOpenProjects($until), $states['open']['2001-12']);
+    $this->assertSame($calculator->countOngoingProjects($until), $states['ongoing']['2001-12']);
+    $this->assertSame($calculator->countCompletedProjects($until), $states['completed']['2001-12']);
+    $this->assertSame($calculator->countMediatedProjects($until), $states['mediated']['2001-12']);
+  }
+
+  /**
+   * Tests the current and the later buckets of a running period.
+   */
+  public function testStatesInRunningPeriod(): void {
+
+    $this->setUpScenario();
+    $timezone = $this->timezone();
+    $now = new \DateTimeImmutable('now', $timezone);
+    $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => $now->format('Y')], $timezone, $now);
+    $states = $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp());
+
+    // The current month counts the current states, later months none.
+    $calculator = $this->container->get('stats.calculator');
+    $current = $now->format('Y-m');
+    $this->assertSame($calculator->countOpenProjects(), $states['open'][$current]);
+    $this->assertSame($calculator->countOngoingProjects(), $states['ongoing'][$current]);
+    $this->assertSame($calculator->countCompletedProjects(), $states['completed'][$current]);
+    $this->assertSame($calculator->countMediatedProjects(), $states['mediated'][$current]);
+    foreach ($states as $values) {
+      foreach ($values as $bucket => $value) {
+        if ($bucket > $current) {
+          $this->assertNull($value, $bucket);
+        }
+      }
+    }
   }
 
   /**

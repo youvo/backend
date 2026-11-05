@@ -1,8 +1,8 @@
 // =============================================================================
 // STATS (StatsController)
 // =============================================================================
-// The stats page: a card with the period and its filters, the KPI tiles and
-// sections of chart cards. All cards are Gin layer cards with a small label,
+// The stats page: a card with the period and its filters and sections of
+// chart cards, the overview first. All cards are Gin layer cards with a small label,
 // as on the feedback page.
 
 @use "../abstracts/mixins.scss" as *;
@@ -174,40 +174,13 @@
 
 // stylelint-enable selector-class-pattern
 
-// The totals: a label and a muted hint over the tiles.
-.stats-totals {
-  display: grid;
-  gap: var(--gin-spacing-xs);
-}
-
-.stats-totals-title {
-  @include section-label;
-
-  margin: 0;
-  color: var(--yv-ink);
-}
-
-.stats-totals-hint {
-  margin: 0 0 var(--gin-spacing-xxs);
-  color: var(--yv-muted);
-  font-size: var(--gin-font-size-xs);
-}
-
-// KPI tiles: the label above a large value, calm as Gin's cards.
+// KPI tiles in a section fill one grid cell, two by two, the label above a
+// large value, calm as Gin's cards.
 .stats-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--gin-spacing-m);
-
-  @media (min-width: $breakpoint-medium) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-// In a section, the tiles fill one grid cell, two by two.
-.stats-section .stats-tiles {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
+  gap: var(--gin-spacing-m);
 }
 
 .stats-tile {
@@ -248,6 +221,19 @@
   @media (min-width: $breakpoint-wide) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+// The header of a section: its title and a muted hint below.
+.stats-section-header {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--gin-spacing-xxs);
+}
+
+.stats-section-hint {
+  margin: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
 }
 
 // The title of a section in ink.
@@ -358,7 +344,7 @@
   }
 
   // A small chart of a fixed low height under its value, also without data,
-  // so the growth cards stay alike.
+  // so the overview cards stay alike.
   &[data-compact] {
     align-self: stretch;
 
@@ -368,23 +354,6 @@
       min-height: 0;
       aspect-ratio: auto;
     }
-  }
-}
-
-// The growth cards: one row of four on wide screens, two by two on medium
-// ones, one column on phones.
-.stats-growth {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--gin-spacing-m);
-
-  @media (min-width: $breakpoint-medium) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (min-width: $breakpoint-wide) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

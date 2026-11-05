@@ -75,30 +75,14 @@ class StatsController implements ContainerInjectionInterface {
       'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
     ];
 
-    // The totals show the state at the end of the period. A period that has not
-    // ended yet shows the exact current totals.
-    $ended = $period->to() <= $now;
-    $until = $ended ? $period->to()->getTimestamp() : NULL;
-    $last_day = $ended ? $period->to()->modify('-1 day') : $now;
-    $kpis = [
-      $this->tile('creatives', $this->t('Registered creatives'), $this->calculator->countCreatives($until), 'count'),
-      $this->tile('organizations', $this->t('Registered organizations'), $this->calculator->countOrganizations($until), 'count'),
-      $this->tile('open', $this->t('Open projects'), $this->calculator->countOpenProjects($until), 'count'),
-      $this->tile('ongoing', $this->t('Ongoing projects'), $this->calculator->countOngoingProjects($until), 'count'),
-      $this->tile('completed', $this->t('Completed projects'), $this->calculator->countCompletedProjects($until), 'count'),
-      $this->tile('mediated', $this->t('Mediated projects'), $this->calculator->countMediatedProjects($until), 'count'),
-    ];
-
     return [
       '#theme' => 'stats_page',
       '#attached' => ['library' => ['stats/charts']],
       '#period_bar' => $this->periodBar($period, $now),
       // The range form belongs to custom periods only.
       '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')) : [],
-      '#kpis' => $kpis,
-      '#totals_date' => $last_day->format('d.m.Y'),
       '#sections' => [
-        'growth' => $this->growthSection($period),
+        'overview' => $this->overviewSection($period, $now),
         'projects' => $this->projectsSection($period, $current),
         'applications' => $this->applicationsSection($period),
         'creatives' => $this->creativesSection($period),
@@ -192,30 +176,73 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the growth section: one small chart per running total.
+   * Builds the overview section: one card per total with its course.
    *
-   * Each card shows the total at the end of the period, the last point of its
-   * chart, over the chart with its own scale.
+   * Each card shows the total at the end of the period over a small chart of
+   * the total at the end of each bucket, so the last point is the total. A
+   * period that has not ended yet shows the current totals. Its buckets after
+   * the current one stay empty.
    *
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function growthSection(StatsPeriod $period): array {
+  protected function overviewSection(StatsPeriod $period, \DateTimeImmutable $now): array {
+
+    $ended = $period->to() <= $now;
+    $until = $ended ? $period->to()->getTimestamp() : NULL;
+    $last_day = $ended ? $period->to()->modify('-1 day') : $now;
 
     $labels = $period->bucketLabels();
     $registrations = $this->activityStats->registrations($period);
-    $projects = $this->projectStats->cumulative($period);
-    $series = [
-      'creatives' => [$this->t('Creatives'), $registrations['creatives_total']],
-      'organizations' => [$this->t('Organizations'), $registrations['organizations_total']],
-      'mediated' => [$this->t('Projects mediated'), $projects['mediated']],
-      'completed' => [$this->t('Projects completed'), $projects['completed']],
+    $states = $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp());
+    $cards = [
+      'creatives' => [
+        $this->t('Registered creatives'),
+        $this->calculator->countCreatives($until),
+        $this->beforeNow($period, $now, $registrations['creatives_total']),
+      ],
+      'organizations' => [
+        $this->t('Registered organizations'),
+        $this->calculator->countOrganizations($until),
+        $this->beforeNow($period, $now, $registrations['organizations_total']),
+      ],
+      'open' => [
+        $this->t('Open projects'),
+        $this->calculator->countOpenProjects($until),
+        $states['open'],
+      ],
+      'ongoing' => [
+        $this->t('Ongoing projects'),
+        $this->calculator->countOngoingProjects($until),
+        $states['ongoing'],
+      ],
+      'completed' => [
+        $this->t('Completed projects'),
+        $this->calculator->countCompletedProjects($until),
+        $states['completed'],
+      ],
+      'mediated' => [
+        $this->t('Mediated projects'),
+        $this->calculator->countMediatedProjects($until),
+        $states['mediated'],
+      ],
     ];
 
-    $cards = [];
-    foreach ($series as $key => [$title, $values]) {
-      $values = array_values($values);
-      $chart = StatsCharts::line('stats-growth-' . $key, (string) $title, $labels, [(string) $title => $values]);
+    $section = [
+      'header' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['stats-section-header']],
+        'heading' => $this->heading($this->t('Overview')),
+        'hint' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('As of @date', ['@date' => $last_day->format('d.m.Y')]),
+          '#attributes' => ['class' => ['stats-section-hint']],
+        ],
+      ],
+    ];
+    foreach ($cards as $key => [$title, $total, $values]) {
+      $chart = StatsCharts::line('stats-overview-' . $key, (string) $title, $labels, [(string) $title => array_values($values)]);
       // Few ticks keep the small chart readable.
       $chart['#raw_options']['options']['scales']['y']['ticks']['maxTicksLimit'] = 3;
       $chart['#raw_options']['options']['scales']['x']['ticks'] = [
@@ -229,20 +256,39 @@ class StatsController implements ContainerInjectionInterface {
       $card['value'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => $values === [] ? '–' : (string) end($values),
+        '#value' => (string) $total,
         '#attributes' => ['class' => ['stats-card-value'], 'data-value' => $key],
       ];
       $card['chart'] = $chart;
-      $cards[$key] = $card;
+      $section[$key] = $card;
     }
 
-    $heading = $this->heading($this->t('Growth'));
-    return $this->section($heading, [
-      'growth' => [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['stats-growth']],
-      ] + $cards,
-    ]);
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['stats-section', 'stats-overview']],
+    ] + $section;
+  }
+
+  /**
+   * Empties the values of the buckets that start after the current time.
+   *
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param \DateTimeImmutable $now
+   *   The current time.
+   * @param array<string, int> $values
+   *   The values keyed by bucket.
+   *
+   * @return array<string, ?int>
+   *   The values, NULL after the current time.
+   */
+  protected function beforeNow(StatsPeriod $period, \DateTimeImmutable $now, array $values): array {
+    foreach ($period->buckets() as $bucket => [$start]) {
+      if ($start > $now->getTimestamp()) {
+        $values[$bucket] = NULL;
+      }
+    }
+    return $values;
   }
 
   /**
