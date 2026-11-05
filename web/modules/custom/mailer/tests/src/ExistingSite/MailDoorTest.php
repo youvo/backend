@@ -475,6 +475,31 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that an origin of this host with the other scheme still logs in.
+   *
+   * TLS ends at a proxy, so the site may see http while the browser sends
+   * https, or the other way round.
+   */
+  public function testOriginWithOtherSchemeLogsIn(): void {
+
+    $project = $this->createProject();
+    $organization = $project->getOwner();
+    $path = $this->door($organization, $project, DoorTarget::Applicants);
+
+    $this->visitDoor($path);
+    $this->assertSession()->statusCodeEquals(200);
+    $base = parse_url($this->getSession()->getCurrentUrl());
+    $scheme = $base['scheme'] === 'https' ? 'http' : 'https';
+    $port = isset($base['port']) ? ':' . $base['port'] : '';
+    $this->setRequestHeader('HTTP_ORIGIN', $scheme . '://' . $base['host'] . $port);
+    $this->press();
+
+    $this->assertCount(1, $this->follows($project));
+    $this->assertGreaterThan(0, $this->lastLogin($organization));
+    $this->assertSame($this->doorLinks()->loginUrl() . '?check_logged_in=1', $this->location());
+  }
+
+  /**
    * Tests that a cross-site press follows without login.
    */
   public function testCrossSiteFetchDoesNotLogIn(): void {

@@ -15,7 +15,7 @@ class LogbookProjectFollowSubscriber extends LogbookSubscriberBase {
   const string LOG_PATTERN = 'project_follow';
 
   /**
-   * {@inheritdoc}
+   * Logs that a recipient followed a mail door.
    */
   public function log(Event $event): void {
     if (!$log = $this->createLog($event)) {

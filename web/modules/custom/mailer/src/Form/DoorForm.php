@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Door\DoorLinks;
@@ -18,6 +19,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -50,6 +52,7 @@ class DoorForm extends FormBase {
     protected KeyValueExpirableFactoryInterface $keyValue,
     protected EventDispatcherInterface $eventDispatcher,
     protected TimeInterface $time,
+    protected LoggerInterface $logger,
   ) {}
 
   /**
@@ -64,6 +67,7 @@ class DoorForm extends FormBase {
       $container->get('keyvalue.expirable'),
       $container->get('event_dispatcher'),
       $container->get('datetime.time'),
+      $container->get('logger.channel.mailer'),
     );
   }
 
@@ -252,7 +256,14 @@ class DoorForm extends FormBase {
     // It is needed only as long as the door is valid.
     $key = $entry->uuid() . ':' . $target->value;
     if ($door['follow'] && $this->keyValue->get(static::FOLLOW_COLLECTION)->setWithExpireIfNotExists($key, $this->time->getRequestTime(), DoorLinks::LIFETIME)) {
-      $this->eventDispatcher->dispatch(new ProjectFollowEvent($project, $recipient, $entry->getSubtype(), $entry->uuid(), $target->value));
+      // A failing follow log must not cost the recipient the login.
+      try {
+        $this->eventDispatcher->dispatch(new ProjectFollowEvent($project, $recipient, $entry->getSubtype(), $entry->uuid(), $target->value));
+      }
+      catch (\Throwable $e) {
+        $variables = Error::decodeException($e);
+        $this->logger->error('Logging the mail door follow failed unexpectedly. %type: @message in %function (line %line of %file).', $variables);
+      }
     }
 
     // The password form was checked to be posted from this site.
@@ -276,6 +287,9 @@ class DoorForm extends FormBase {
    * Anonymous forms carry no form token, so a foreign page could post a door
    * and log its visitor in to the recipient account (login CSRF). Browsers
    * without these headers are allowed.
+   *
+   * The origin is compared by host and port, not by scheme: TLS ends at a
+   * proxy, so PHP may see http while the browser sends https.
    */
   protected function isSameSiteRequest(): bool {
 
@@ -287,8 +301,18 @@ class DoorForm extends FormBase {
     }
 
     $origin = $request->headers->get('Origin');
-    if ($origin !== NULL && $origin !== $request->getSchemeAndHttpHost()) {
-      return FALSE;
+    if ($origin !== NULL) {
+      $host = parse_url($origin, PHP_URL_HOST);
+      if (!is_string($host)) {
+        return FALSE;
+      }
+      if (strcasecmp($host, $request->getHost()) !== 0) {
+        return FALSE;
+      }
+      $port = parse_url($origin, PHP_URL_PORT);
+      if (is_int($port) && strcasecmp($host . ':' . $port, $request->getHttpHost()) !== 0) {
+        return FALSE;
+      }
     }
 
     return TRUE;

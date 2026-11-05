@@ -14,7 +14,7 @@ class LogbookProjectRemindSubscriber extends LogbookSubscriberBase {
   const string LOG_PATTERN = 'project_remind';
 
   /**
-   * {@inheritdoc}
+   * Logs that a manager sent a reminder mail.
    */
   public function log(Event $event): void {
     if (!$log = $this->createLog($event)) {
