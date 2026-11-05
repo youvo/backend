@@ -79,8 +79,10 @@ class StatsController implements ContainerInjectionInterface {
         'organizations' => $this->organizationsSection($period),
         'feedback' => $this->feedbackSection($period),
       ],
+      // The page expires after an hour instead of on every change: the list
+      // cache tags of projects, logs and users would invalidate it on almost
+      // every request of an active site.
       '#cache' => [
-        'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list'],
         'contexts' => [
           'url.query_args:period',
           'url.query_args:year',

@@ -322,8 +322,9 @@ class StatsPageTest extends StatsTestBase {
       $this->assertContains($context, $bubbled->getCacheContexts());
     }
     $this->assertSame(3600, $bubbled->getCacheMaxAge());
+    // The page expires by time, not by the changes of the lists.
     foreach (['project_list', 'log_list', 'feedback_list', 'user_list'] as $tag) {
-      $this->assertContains($tag, $bubbled->getCacheTags());
+      $this->assertNotContains($tag, $bubbled->getCacheTags());
     }
   }
 
