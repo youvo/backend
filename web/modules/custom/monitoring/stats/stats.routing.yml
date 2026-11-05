@@ -1,7 +1,7 @@
 stats.overview:
   path: '/stats'
   defaults:
-    _controller: '\Drupal\stats\Controller\StatsController::overview'
+    _controller: '\Drupal\stats\Controller\StatsController::page'
     _title: 'Stats'
   requirements:
     _permission: 'view statistics'

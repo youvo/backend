@@ -220,6 +220,20 @@ class StatsPeriod {
   }
 
   /**
+   * Gets the period right after this one, moving like previous().
+   */
+  public function next(): static {
+    $days = $this->from->diff($this->to)->days;
+    return match ($this->type) {
+      static::ALL => $this,
+      static::YEAR => $this->shift('+1 year'),
+      static::QUARTER => $this->shift('+3 months'),
+      static::MONTH => $this->shift('+1 month'),
+      default => $this->shift('+' . $days . ' days'),
+    };
+  }
+
+  /**
    * Gets the same period one year earlier, keeping the granularity.
    *
    * The "all" period has no counterpart and returns the same "all" period.

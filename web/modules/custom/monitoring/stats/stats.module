@@ -10,9 +10,13 @@
  */
 function stats_theme(array $existing, string $type, string $theme, string $path): array {
   return [
-    'stats-overview' => [
-      'template' => 'content--overview',
-      'variables' => ['page' => NULL],
+    'stats_page' => [
+      'template' => 'stats-page',
+      'variables' => [
+        'period_bar' => [],
+        'kpis' => [],
+        'sections' => [],
+      ],
     ],
   ];
 }

@@ -1,0 +1,128 @@
+/*
+ * The stats page: period bar and KPI tiles. The tokens follow the Gin theme
+ * with the values of the default Gin theme as fallbacks.
+ */
+.stats-page {
+  --stats-ink: var(--gin-color-title, #222330);
+  --stats-muted: var(--gin-color-text-light, #545560);
+  --stats-accent: var(--gin-color-primary, #3f78b5);
+  --stats-surface: var(--gin-bg-layer, #fff);
+  --stats-tile: color-mix(in srgb, var(--stats-accent) 8%, var(--stats-surface));
+  --stats-line: var(--gin-border-color-table, rgb(0 0 0 / 10%));
+  --stats-radius: var(--gin-border-s, 0.375rem);
+  --stats-text-xs: var(--gin-font-size-xs, small);
+  display: grid;
+  gap: 1rem;
+}
+
+.stats-period-heading {
+  margin: 0;
+}
+
+.stats-period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.625rem;
+  border-radius: var(--stats-radius);
+  background: var(--stats-tile);
+  font-size: var(--stats-text-xs);
+}
+
+.stats-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stats-pill {
+  display: block;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--stats-line);
+  border-radius: 999px;
+  background: var(--stats-surface);
+  color: var(--stats-ink);
+  text-decoration: none;
+}
+
+.stats-pill.is-active {
+  border-color: var(--stats-accent);
+  color: var(--stats-accent);
+  font-weight: 600;
+}
+
+.stats-period-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.stats-period-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--stats-muted);
+}
+
+.stats-period-form input,
+.stats-period-form select {
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--stats-line);
+  border-radius: var(--stats-radius);
+  background: var(--stats-surface);
+  color: var(--stats-ink);
+  font: inherit;
+}
+
+.stats-apply {
+  padding: 0.1875rem 0.75rem;
+  border: 0;
+  border-radius: var(--stats-radius);
+  background: var(--stats-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stats-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.stats-kpi {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--stats-radius);
+  background: var(--stats-tile);
+}
+
+.stats-kpi__value {
+  color: var(--stats-ink);
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.stats-kpi__label,
+.stats-kpi__change {
+  color: var(--stats-muted);
+  font-size: var(--stats-text-xs);
+}
+
+.stats-kpi__delta {
+  font-style: normal;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .stats-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

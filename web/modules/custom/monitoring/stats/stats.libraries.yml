@@ -1,0 +1,4 @@
+page:
+  css:
+    component:
+      css/stats.css: {}

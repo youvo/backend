@@ -76,6 +76,9 @@ class StatsPeriodTest extends UnitTestCase {
 
     $first_quarter = $this->period(['period' => 'quarter', 'year' => '2026', 'quarter' => '1']);
     $this->assertSame('Q4 2025', $first_quarter->previous()->label());
+    $this->assertSame('Q4 2026', $this->period(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'])->previous()->next()->label());
+    $this->assertSame('Q1 2027', $this->period(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'])->next()->label());
+    $this->assertSame('2027', $year->next()->label());
 
     $month = $this->period(['period' => 'month', 'year' => '2026', 'month' => '11']);
     $this->assertSame(StatsGranularity::Day, $month->granularity());
@@ -94,6 +97,7 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame(['period' => 'all'], $all->query());
     $this->assertSame('All time', $all->previous()->label());
     $this->assertSame('All time', $all->sameLastYear()->label());
+    $this->assertSame('All time', $all->next()->label());
   }
 
   /**

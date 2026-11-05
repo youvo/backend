@@ -1,0 +1,65 @@
+{#
+/**
+ * @file
+ * The stats page: period bar, KPI tiles and the sections of the charts.
+ *
+ * Available variables:
+ * - period_bar: The heading, presets, navigation and values of the filter form.
+ * - kpis: The KPI tiles with value, change and label.
+ * - sections: The render array of the chart sections.
+ */
+#}
+<div class="stats-page">
+  <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
+
+  <div class="stats-period-bar">
+    <ul class="stats-pills">
+      {% for preset in period_bar.presets %}
+        <li><a href="{{ preset.url }}" class="stats-pill{{ preset.active ? ' is-active' }}"{% if preset.active %} aria-current="page"{% endif %}>{{ preset.label }}</a></li>
+      {% endfor %}
+    </ul>
+
+    {% if period_bar.navigation %}
+      <ul class="stats-pills">
+        <li><a href="{{ period_bar.navigation.previous.url }}" class="stats-pill" rel="prev">{{ period_bar.navigation.previous.label }}</a></li>
+        {% if period_bar.navigation.next %}
+          <li><a href="{{ period_bar.navigation.next.url }}" class="stats-pill" rel="next">{{ period_bar.navigation.next.label }}</a></li>
+        {% endif %}
+      </ul>
+    {% endif %}
+
+    <form class="stats-period-form" method="get" action="">
+      <label>{{ 'From'|t }} <input type="date" name="from" value="{{ period_bar.from }}"></label>
+      <label>{{ 'To'|t }} <input type="date" name="to" value="{{ period_bar.to }}"></label>
+      <label>{{ 'Compare'|t }}
+        <select name="compare">
+          {% for value, label in period_bar.compare_options %}
+            <option value="{{ value }}"{{ value == period_bar.compare ? ' selected' }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>{{ 'Manager'|t }}
+        <select name="manager">
+          {% for manager in period_bar.managers %}
+            <option value="{{ manager.id }}"{{ manager.selected ? ' selected' }}>{{ manager.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="stats-apply">{{ 'Apply'|t }}</button>
+    </form>
+  </div>
+
+  <div class="stats-kpis">
+    {% for kpi in kpis %}
+      <div class="stats-kpi stats-kpi--{{ kpi.key }}">
+        <b class="stats-kpi__value">{{ kpi.value }}</b>
+        <span class="stats-kpi__label">{{ kpi.label }}</span>
+        {% if kpi.delta %}
+          <span class="stats-kpi__change"><i class="stats-kpi__delta stats-kpi__delta--{{ kpi.direction }}">{{ kpi.delta }}</i> {{ kpi.versus }}</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {{ sections }}
+</div>
