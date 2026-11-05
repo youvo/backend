@@ -4,9 +4,11 @@
  * The main section of a profile below the header: about, skills, tags and
  * the website and portfolio links.
  *
- * Variables: content (the rendered display).
+ * Variables: content (the rendered display), heading_level (the element of
+ * the section titles, h2 if not set).
  */
 #}
+{% set heading = heading_level|default('h2') %}
 {% if content.field_about|field_value %}
   <div class="user-profile-about">{{ content.field_about|field_value }}</div>
 {% endif %}
@@ -14,7 +16,7 @@
 {% set skills = content.field_skills|field_value %}
 {% if skills %}
   <section>
-    <h2 class="user-profile-section-title">{{ 'Skills'|t }}</h2>
+    <{{ heading }} class="user-profile-section-title">{{ 'Skills'|t }}</{{ heading }}>
     <div class="user-profile-skills">{{ skills }}</div>
   </section>
 {% endif %}
@@ -22,7 +24,7 @@
 {% set tags = content.field_tags|field_value %}
 {% if tags %}
   <section>
-    <h2 class="user-profile-section-title">{{ 'Tags'|t }}</h2>
+    <{{ heading }} class="user-profile-section-title">{{ 'Tags'|t }}</{{ heading }}>
     <ul class="user-profile-tags">
       {% for tag in tags %}
         <li><span class="user-profile-chip">{{ tag }}</span></li>
@@ -34,7 +36,7 @@
 {% set links = (content.field_url|field_value ?: [])|merge(content.field_portfolio|field_value ?: []) %}
 {% if links %}
   <section>
-    <h2 class="user-profile-section-title">{{ 'Portfolio'|t }}</h2>
+    <{{ heading }} class="user-profile-section-title">{{ 'Portfolio'|t }}</{{ heading }}>
     <ul class="user-profile-tags user-profile-links">
       {% include '@yv/user/includes/user-profile-links.html.twig' with {links: links} only %}
     </ul>
