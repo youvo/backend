@@ -10,8 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Filters the creatives by whether they entered a portfolio or website.
  *
- * The filter asks for the existence of a value in either link field. It joins
- * nothing, so a creative with both links still appears once.
+ * EXISTS instead of a join, so a creative with both links appears once.
  */
 #[ViewsFilter('creative_has_link')]
 class CreativeHasLink extends BooleanOperator {

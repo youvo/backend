@@ -35,8 +35,7 @@ function user_types_views_data_alter(array &$data): void {
 /**
  * Implements hook_entity_operation().
  *
- * User lists offer the profile page next to edit and delete, which core
- * lists for users.
+ * Core lists only edit and delete for users; lists need the profile too.
  */
 function user_types_entity_operation(EntityInterface $entity, ?CacheableMetadata $cacheability = NULL): array {
   if (!$entity instanceof UserInterface) {

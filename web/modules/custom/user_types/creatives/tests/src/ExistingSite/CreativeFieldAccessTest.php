@@ -38,9 +38,7 @@ class CreativeFieldAccessTest extends ProjectResourceTestBase {
   }
 
   /**
-   * Managers see the private fields, other creatives do not.
-   *
-   * Only the creative edits them.
+   * Managers see the private fields, other creatives don't; only owners edit.
    */
   public function testPrivateFields(): void {
 
@@ -63,9 +61,6 @@ class CreativeFieldAccessTest extends ProjectResourceTestBase {
 
   /**
    * Managers see when a creative last logged in, other creatives do not.
-   *
-   * The creatives finder lists the last access, so Views checks the field
-   * without an entity as well.
    */
   public function testLastAccess(): void {
 
@@ -78,6 +73,7 @@ class CreativeFieldAccessTest extends ProjectResourceTestBase {
     $this->assertFalse($this->viewAccess($creative, 'access', new AnonymousUserSession())->isAllowed(), 'anonymous');
     $this->assertFalse($creative->get('access')->access('edit', $manager));
 
+    // The creatives finder lists it, so Views checks it without an entity.
     $definition = $creative->getFieldDefinition('access');
     $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('user');
     $this->assertTrue($handler->fieldAccess('view', $definition, $manager), 'manager, without entity');

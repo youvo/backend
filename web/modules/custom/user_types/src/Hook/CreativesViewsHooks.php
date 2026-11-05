@@ -28,10 +28,7 @@ class CreativesViewsHooks {
   /**
    * Implements hook_views_data_alter().
    *
-   * Adds the filters of the creatives finder. Their boolean filters offer
-   * "Yes" and "No". The preferences of a creative who
-   * never set them count as "No": their filters accept a missing value as
-   * false.
+   * A preference the creative never set counts as "No", hence "accept null".
    */
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data): void {
@@ -77,11 +74,7 @@ class CreativesViewsHooks {
   /**
    * Implements hook_views_pre_view().
    *
-   * With ?mode=profiles, the page of the creatives finder shows the cards of
-   * the profiles display: it takes over its style, row and pager. The filters,
-   * the sorts and the exposed form stay those of the page. The hook runs
-   * before the view builds, so the style and pager plugins are not created
-   * yet and take the overridden options.
+   * Runs before the view builds, so its plugins take the overridden options.
    */
   #[Hook('views_pre_view')]
   public function viewsPreView(ViewExecutable $view, string $display_id, array &$args): void {
@@ -109,12 +102,6 @@ class CreativesViewsHooks {
 
   /**
    * Implements hook_form_FORM_ID_alter() for views_exposed_form.
-   *
-   * Keeps the main filters, the buttons and the switch between the table and
-   * the profiles in one row and moves the other filters into two groups,
-   * which open when one of their filters is set. The operators get short
-   * labels, the skills become checkboxes with the skill icons.
-   * Filtering and resetting in the profiles mode stays in it.
    */
   #[Hook('form_views_exposed_form_alter')]
   public function formViewsExposedFormAlter(array &$form, FormStateInterface $form_state): void {
@@ -124,8 +111,7 @@ class CreativesViewsHooks {
       return;
     }
 
-    // A date filter is a switch between "after" and "before", in the style of
-    // the yes/no filters, and a date picker. The picker submits YYYY-MM-DD.
+    // The date picker submits YYYY-MM-DD.
     foreach (['registered', 'last_access'] as $date) {
       if (isset($form[$date . '_wrapper'][$date . '_op']['#options'])) {
         $operator = &$form[$date . '_wrapper'][$date . '_op'];
@@ -144,7 +130,7 @@ class CreativesViewsHooks {
       }
     }
 
-    // The skills are checkboxes showing the skill icons, as on the profiles.
+    // Skill icons, as on the profiles.
     if (isset($form['skills'])) {
       $form['skills']['#type'] = 'checkboxes';
       unset($form['skills']['#multiple'], $form['skills']['#size']);
@@ -166,8 +152,8 @@ class CreativesViewsHooks {
       $cache->applyTo($form);
     }
 
-    // The tags are a Tagify input, as the tags on the creative form. In this
-    // GET form, Tagify submits the chosen tags as tags[]=<tid>.
+    // Tagify, as on the creative form. In this GET form, it submits the chosen
+    // tags as tags[]=<tid>.
     if (isset($form['tags']['#target_type'])) {
       $form['tags'] = [
         '#type' => 'entity_autocomplete_tagify',
@@ -219,7 +205,6 @@ class CreativesViewsHooks {
     }
 
     $input = $view->getExposedInput();
-    // Each group lays out its filters in rows that belong together.
     $groups = [
       'activity' => [
         'title' => $this->t('Activity'),
@@ -315,7 +300,6 @@ class CreativesViewsHooks {
       unset($wrapper);
     }
 
-    // Apply is the primary action; Reset stays Gin's secondary button.
     if (isset($form['actions']['submit'])) {
       $form['actions']['submit']['#attributes']['class'][] = 'button--primary';
     }
@@ -325,8 +309,7 @@ class CreativesViewsHooks {
       $form['#submit'][] = [static::class, 'resetToProfiles'];
     }
 
-    // The switch between the table and the profiles follows the buttons, so
-    // they wrap together. Its links keep the filters and the sort, and drop the
+    // The switch follows the buttons, so they wrap together. Its links drop the
     // page, because the modes show a different number of creatives per page.
     $query = $this->requestStack->getCurrentRequest()?->query->all() ?? [];
     unset($query['page'], $query['mode']);
@@ -363,8 +346,6 @@ class CreativesViewsHooks {
 
   /**
    * Turns the Tagify value into the term references the tags filter expects.
-   *
-   * Tagify's value is a JSON list of the chosen tags with their entity IDs.
    */
   public static function validateTags(array &$element, FormStateInterface $form_state): void {
     $value = $form_state->getValue($element['#parents']);
@@ -391,8 +372,7 @@ class CreativesViewsHooks {
   /**
    * Whether an exposed input value differs from the empty default.
    *
-   * Empty strings, "All" and arrays of them, such as a date without a value,
-   * are the default. "0" is a value.
+   * A date without a value is an array of empty strings. "0" is a value.
    */
   protected static function isActive(mixed $value): bool {
     if (is_array($value)) {
@@ -408,8 +388,6 @@ class CreativesViewsHooks {
 
   /**
    * Whether the current request asks for the profiles mode.
-   *
-   * Only "profiles" is a mode; any other value means the table.
    */
   protected function isProfilesMode(): bool {
     return $this->requestStack->getCurrentRequest()?->query->get('mode') === 'profiles';

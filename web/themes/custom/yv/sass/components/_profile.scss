@@ -72,8 +72,7 @@
 .user-profile-name {
   @include page-title;
 
-  // Linked on a card: in the color of the title, as on the profile page,
-  // and in the accent on hover, as the linked titles of the teasers.
+  // As the title on the profile page, and on hover as the teaser titles.
   a {
     color: inherit;
     text-decoration: none;

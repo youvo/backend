@@ -11,10 +11,6 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
 
 /**
  * Provides a base for the creatives finder tests on the installed site.
- *
- * The accounts use the roles of the site and can log in. Saving a project
- * writes logs, which are deleted after each test, because logs are no
- * children of their project.
  */
 abstract class CreativesTestBase extends ExistingSiteBase {
 
@@ -26,7 +22,7 @@ abstract class CreativesTestBase extends ExistingSiteBase {
   protected array $projectIds = [];
 
   /**
-   * Deletes the logs of the created projects.
+   * Deletes the logs of the created projects, which are no children of them.
    */
   protected function tearDown(): void {
     if ($this->projectIds) {

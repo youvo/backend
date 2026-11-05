@@ -8,8 +8,7 @@ use Drupal\views\Plugin\views\filter\BooleanOperator;
 /**
  * Filters users by whether they came back after registering.
  *
- * A user returned when the last access lies at least a day after the
- * registration, as on the old site. Users who never logged in did not.
+ * A day after registering, as on the old site.
  */
 #[ViewsFilter('user_returned')]
 class UserReturned extends BooleanOperator {

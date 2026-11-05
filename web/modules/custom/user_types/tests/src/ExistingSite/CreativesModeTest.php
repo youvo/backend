@@ -53,9 +53,7 @@ class CreativesModeTest extends CreativesTestBase {
   }
 
   /**
-   * The table sorts by all headers but the skills.
-   *
-   * The profiles have no headers and keep the latest access first.
+   * The table sorts by all headers but the skills, the profiles keep theirs.
    */
   public function testTableHeadersSort(): void {
 
@@ -79,9 +77,7 @@ class CreativesModeTest extends CreativesTestBase {
   }
 
   /**
-   * The operations offer what the viewer may do with a creative.
-   *
-   * Managers view the profiles, but may not edit or delete other accounts.
+   * Managers may view other creatives, but not edit or delete them.
    */
   public function testOperations(): void {
 

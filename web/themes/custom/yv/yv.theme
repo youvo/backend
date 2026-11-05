@@ -149,8 +149,7 @@ function yv_preprocess_user(array &$variables): void {
     return;
   }
 
-  // A creative as a card in the creatives finder: the header and the main
-  // section of the profile, without account data.
+  // Cards in the creatives finder leave out the account data.
   if ($variables['elements']['#view_mode'] === 'card' && $user instanceof Creative) {
     $cache = new CacheableMetadata();
     yv_content_cache($variables['content'], $cache);

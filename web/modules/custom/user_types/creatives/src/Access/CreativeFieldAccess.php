@@ -49,7 +49,6 @@ class CreativeFieldAccess extends FieldAccess {
     AccountInterface $account,
   ): AccessResultInterface {
 
-    // Only creative fields should be controlled by this class.
     if (!$entity instanceof Creative) {
       return AccessResult::forbidden();
     }
@@ -69,7 +68,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
     }
 
-    // Managers may view contact fields, but only the creative edits them.
     if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
       if ($operation === 'view' && $account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();
@@ -80,7 +78,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
     }
 
-    // Managers may view private fields, but only the creative edits them.
     if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
       if ($operation === 'view' && $account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();
@@ -91,8 +88,8 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
     }
 
-    // Managers may view the last access, which the creatives finder lists.
-    // Core keeps it to administrators, so this has to allow, not stay neutral.
+    // The creatives finder lists the last access. Core keeps it to
+    // administrators, so this has to allow, not stay neutral.
     if ($field->getName() === 'access' && $operation === 'view') {
       return AccessResult::allowedIfHasPermission($account, 'general manager access');
     }
@@ -130,7 +127,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->addCacheContexts(['user.roles:anonymous']);
     }
 
-    // Managers may view contact fields.
     if (self::isFieldOfGroup($field, self::CONTACT_FIELDS)) {
       if ($account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();
@@ -138,7 +134,6 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions();
     }
 
-    // Managers may view private fields.
     if (self::isFieldOfGroup($field, self::PRIVATE_FIELDS)) {
       if ($account->hasPermission('general manager access')) {
         return AccessResult::neutral()->cachePerPermissions();

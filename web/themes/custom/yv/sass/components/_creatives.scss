@@ -10,7 +10,6 @@
 // The height of Gin's text fields, which the switches and pickers share.
 $field-height: 2.5rem;
 
-// A row of segments in one box, outlined and as high as a field.
 @mixin segmented {
   display: inline-flex;
   align-items: stretch;
@@ -23,7 +22,6 @@ $field-height: 2.5rem;
   box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
 }
 
-// One segment; the current one takes the tone of a chip.
 @mixin segment {
   display: flex;
   align-items: center;
@@ -44,8 +42,7 @@ $field-height: 2.5rem;
   color: var(--yv-chip-text);
 }
 
-// A native checkbox or radio that stays focusable and clickable on top of its
-// label, but invisible: the label shows the state.
+// Invisible but focusable and clickable; the label shows the state.
 @mixin covering-input {
   position: absolute;
   z-index: 1;
@@ -67,8 +64,7 @@ $field-height: 2.5rem;
   }
 }
 
-// The profiles mode: Gin shows the rows in a layer card; the profiles are
-// cards themselves, full width and stacked as on a profile page.
+// Gin shows the rows in a layer card, but the profiles are cards themselves.
 .view-creatives .view-content:has(.user-profile-card) {
   display: grid;
   gap: var(--gin-spacing-l);
@@ -78,13 +74,8 @@ $field-height: 2.5rem;
   box-shadow: none;
 }
 
-// -----------------------------------------------------------------------------
-// The filter form
-// -----------------------------------------------------------------------------
-
 .view-creatives .views-exposed-form {
-  // A filter of several elements reads as one field: no frame around them,
-  // the legend in the place and style of a label.
+  // A filter of several elements reads as one field, its legend as a label.
   .fieldset {
     margin-block: var(--gin-spacing-s) 0;
     padding: 0;
@@ -114,8 +105,7 @@ $field-height: 2.5rem;
     padding: var(--gin-spacing-xxs) 0 0;
   }
 
-  // The switch of a date filter sits in the fieldset of the date: it needs no
-  // space of its own above it.
+  // The switch of a date filter sits in the date's fieldset, which spaces it.
   .fieldset .fieldset .fieldset__wrapper {
     padding-block-start: 0;
   }
@@ -124,8 +114,6 @@ $field-height: 2.5rem;
     margin: 0;
   }
 
-  // Name, mail and city share the free width of the top row; on a phone each
-  // takes a row of its own.
   .form-item--name,
   .form-item--mail,
   .form-item--city {
@@ -144,17 +132,14 @@ $field-height: 2.5rem;
     height: $field-height;
   }
 
-  // A filled-in field takes the accent color, so the filters in use stand
-  // out.
+  // A filled-in field takes the accent color, so the filters in use stand out.
   .creatives-filter-active {
     border-color: var(--gin-color-primary);
     box-shadow: inset 0 0 0 1px var(--gin-color-primary);
   }
 
-  // The top row is spaced by gaps alone, so an element that wraps starts
-  // flush with the fields; Gin spaces them with margins. The card keeps
-  // Gin's padding of its sides at the top as well, where Gin forces a slimmer
-  // one with an ID-level specificity hack.
+  // Gaps instead of Gin's margins, so a wrapped element starts flush with the
+  // fields. Gin slims the top padding with an ID-level specificity hack.
   gap: var(--gin-spacing-s) var(--gin-spacing-m);
   padding-block-start: var(--gin-spacing-s) !important;
 
@@ -170,14 +155,11 @@ $field-height: 2.5rem;
     margin-inline: 0;
   }
 
-  // A clear gap sets the buttons apart from the skills. On the right, it never
-  // indents a wrapped row.
+  // Sets the buttons apart; on the right, it never indents a wrapped row.
   > .creatives-skills {
     margin-inline-end: var(--gin-spacing-m);
   }
 
-  // The buttons and the switch follow the filters, or end a row of their own
-  // on the right.
   > .form-actions {
     display: flex;
     flex-wrap: wrap;
@@ -187,12 +169,9 @@ $field-height: 2.5rem;
   }
 }
 
-// The skills: the skill icons themselves are the checkboxes. A skill that is
-// not chosen is muted; a chosen one shows its color with a ring.
 .creatives-skills.creatives-skills {
   display: block;
 
-  // As high as the fields next to them, the icons centered in the row.
   .form-checkboxes {
     display: flex;
     flex-wrap: wrap;
@@ -246,8 +225,6 @@ $field-height: 2.5rem;
   }
 }
 
-// The switch between the table and the profiles ends the row of the main
-// filters, level with the fields.
 .creatives-mode-toggle {
   @include segmented;
 
@@ -275,9 +252,6 @@ $field-height: 2.5rem;
   }
 }
 
-// The yes/no filters and the "after"/"before" of the dates: one segmented
-// control each, in the style of the switch between the table and the
-// profiles.
 fieldset.creatives-segmented .form-radios {
   @include segmented;
 
@@ -319,8 +293,7 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// On a phone the switch takes a row of its own below the buttons, across the
-// full width with two equal halves, which are easier to tap.
+// On a phone the switch spans a row in two equal halves, easier to tap.
 @media (width < $breakpoint-medium) {
   .view-creatives .views-exposed-form > .creatives-skills {
     margin-inline-end: 0;
@@ -342,17 +315,10 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// -----------------------------------------------------------------------------
-// The filter groups
-// -----------------------------------------------------------------------------
-
-// One block below the main filters, the groups stacked as the rows of a list
-// with hairlines between them.
 .creatives-filter-groups {
   flex-basis: 100%;
 
-  // With the row gap, the groups lie as far below the filters as on a
-  // details page.
+  // With the row gap, as far below the filters as on a details page.
   margin-block-start: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   box-shadow: inset 0 0 0 1px var(--gin-border-color);
@@ -373,7 +339,6 @@ fieldset.creatives-segmented .form-radios {
     font-size: var(--gin-font-size-s);
   }
 
-  // The rows of a group stack; the filters of a row line up and wrap.
   .claro-details__wrapper {
     display: flex;
     flex-direction: column;
@@ -401,8 +366,6 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// A group with active filters takes the accent color in its summary and
-// counts them in a small pill after its title.
 .creatives-filter-group--active > .claro-details__summary {
   color: var(--gin-color-primary);
 }
@@ -421,10 +384,7 @@ fieldset.creatives-segmented .form-radios {
   text-align: center;
 }
 
-// -----------------------------------------------------------------------------
-// The tags (Tagify, which takes over the classes of the input it replaces)
-// -----------------------------------------------------------------------------
-
+// Tagify takes over the classes of the input it replaces.
 .tagify.creatives-tags {
   // Tagify's light grey placeholder is too faint to read.
   --placeholder-color: var(--gin-color-text-light);
@@ -433,9 +393,8 @@ fieldset.creatives-segmented .form-radios {
   min-height: $field-height;
   padding-inline-start: var(--gin-spacing-xxs) !important;
 
-  // The typing line is as high as a tag, its text centered as in the tags, so
-  // tags, placeholder and text share one line, as in the logbook search.
-  // Tagify makes it higher, with the text at the top.
+  // Tagify makes the typing line higher, with the text at the top. As high as
+  // a tag, tags, placeholder and text share a line, as in the logbook search.
   > .tagify__input {
     min-width: 4rem;
     height: auto;
@@ -451,9 +410,9 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// The suggestions lie over the filters below: give them an edge, as in the
-// logbook search. Tagify attaches them to the page, outside the field. They
-// open below or above the field, so all their corners are round.
+// The suggestions lie over the filters below, so they get an edge, as in the
+// logbook search. Tagify attaches them outside the field. They open below or
+// above it, so all corners are round.
 .tagify__dropdown .tagify__dropdown__wrapper {
   border: 1px solid var(--gin-border-color);
   border-radius: var(--gin-border-m);

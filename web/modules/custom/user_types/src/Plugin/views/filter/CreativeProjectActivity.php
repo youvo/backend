@@ -11,9 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Filters the creatives by whether a project lists them in a user field.
  *
- * The filter asks for the existence of a project that references the creative
- * in the configured project field. It joins nothing, so a creative who is
- * listed in several projects still appears once.
+ * EXISTS instead of a join, so a creative in several projects appears once.
  */
 #[ViewsFilter('creative_project_activity')]
 class CreativeProjectActivity extends BooleanOperator {
