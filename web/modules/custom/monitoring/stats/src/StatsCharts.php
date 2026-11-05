@@ -5,7 +5,7 @@ namespace Drupal\stats;
 /**
  * Builds Chart.js chart render elements for the stats page.
  *
- * Each chart also renders its numbers as a visible table.
+ * Each chart also renders its numbers as a collapsible table.
  */
 class StatsCharts {
 
@@ -18,6 +18,37 @@ class StatsCharts {
    * The lighter series colors for comparison datasets, in the same order.
    */
   const array COLORS_LIGHT = ['#7e98b5', '#ffb793', '#96d1cf', '#e08b8b', '#52607966'];
+
+  /**
+   * Wraps a chart in a card of the stats grid.
+   *
+   * @param array<string, mixed> $chart
+   *   The chart render element.
+   * @param bool $wide
+   *   Whether the card spans two columns.
+   * @param bool $tall
+   *   Whether the card spans two rows, with a taller chart.
+   *
+   * @return array<string, mixed>
+   *   The card render array.
+   */
+  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE): array {
+    $classes = ['stats-card'];
+    if ($wide) {
+      $classes[] = 'stats-card--wide';
+    }
+    if ($tall) {
+      $classes[] = 'stats-card--tall';
+      // A square chart keeps room for the plot under a long legend on narrow
+      // screens; the CSS max-height caps it on wide ones.
+      $chart['#raw_options']['options']['aspectRatio'] = 1;
+    }
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => $classes],
+      'chart' => $chart,
+    ];
+  }
 
   /**
    * Builds a bar chart.
@@ -119,7 +150,7 @@ class StatsCharts {
       '#title' => $title,
       // Chart.js's default text color stays readable in Gin's dark mode.
       '#title_color' => '',
-      '#accessible_table' => 'visible',
+      '#accessible_table' => 'collapsible',
       '#legend' => count($series) > 1,
       '#legend_position' => 'bottom',
     ];

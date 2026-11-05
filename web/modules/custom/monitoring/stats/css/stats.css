@@ -1,6 +1,6 @@
 /*
- * The stats page: period bar and KPI tiles. The tokens follow the Gin theme
- * with the values of the default Gin theme as fallbacks.
+ * The stats page: period bar, KPI tiles and chart cards. The tokens follow
+ * the Gin theme with the values of the default Gin theme as fallbacks.
  */
 .stats-page {
   --stats-ink: var(--gin-color-title, #222330);
@@ -124,5 +124,64 @@
 @media (max-width: 720px) {
   .stats-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * The chart sections: a heading over a grid of cards. Wide cards span two
+ * columns and tall cards two rows.
+ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.stats-section__heading {
+  grid-column: 1 / -1;
+  margin: 0.5rem 0 0;
+}
+
+.stats-card {
+  min-width: 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--stats-line);
+  border-radius: var(--stats-radius);
+  background: var(--stats-surface);
+}
+
+.stats-card--wide {
+  grid-column: span 2;
+}
+
+.stats-card--tall {
+  grid-row: span 2;
+}
+
+/* Chart.js honors a max-height on the canvas when it sizes the chart. */
+.stats-card canvas {
+  max-height: 20rem;
+}
+
+.stats-card .charts-accessible-table-wrapper {
+  margin-top: 0.5rem;
+  font-size: var(--stats-text-xs);
+}
+
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-card--wide,
+  .stats-card--tall {
+    grid-column: auto;
+    grid-row: auto;
   }
 }

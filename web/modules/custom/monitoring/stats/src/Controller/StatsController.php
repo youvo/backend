@@ -180,19 +180,24 @@ class StatsController implements ContainerInjectionInterface {
       ],
     ];
 
+    $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series, colors: $colors);
     $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
+    $funnel_chart = StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE);
+    $stages_title = (string) $this->t('Median days per stage');
+    $stages_chart = StatsCharts::bar('stats-stages', $stages_title, $stage_labels, $stages, horizontal: TRUE);
+
     return [
       '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section', 'stats-section--projects']],
+      '#attributes' => ['class' => ['stats-section', 'stats-grid']],
       'heading' => [
         '#type' => 'html_tag',
         '#tag' => 'h3',
         '#value' => $this->t('Projects'),
         '#attributes' => ['class' => ['stats-section__heading']],
       ],
-      'flow' => StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series, colors: $colors),
-      'funnel' => StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE),
-      'stages' => StatsCharts::bar('stats-stages', (string) $this->t('Median days per stage'), $stage_labels, $stages, horizontal: TRUE),
+      'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
+      'funnel' => StatsCharts::card($funnel_chart),
+      'stages' => StatsCharts::card($stages_chart),
     ];
   }
 
