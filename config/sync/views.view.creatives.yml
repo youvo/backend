@@ -545,16 +545,17 @@ display:
           hierarchy: false
           limit: true
           error_message: true
-        user_created_range:
-          id: user_created_range
+        created:
+          id: created
           table: users_field_data
-          field: user_created_range
+          field: created
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: user
-          plugin_id: user_date_range
-          operator: between
+          entity_field: created
+          plugin_id: date
+          operator: '>='
           value:
             min: ''
             max: ''
@@ -566,10 +567,12 @@ display:
             operator_id: registered_op
             label: Registered
             description: ''
-            use_operator: false
+            use_operator: true
             operator: registered_op
-            operator_limit_selection: false
-            operator_list: {  }
+            operator_limit_selection: true
+            operator_list:
+              '>=': '>='
+              '<': '<'
             identifier: registered
             required: false
             remember: false
@@ -578,18 +581,19 @@ display:
               authenticated: authenticated
             min_placeholder: ''
             max_placeholder: ''
-            placeholder: ''
+            placeholder: YYYY-MM-DD
           is_grouped: false
-        user_access_range:
-          id: user_access_range
+        access:
+          id: access
           table: users_field_data
-          field: user_access_range
+          field: access
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: user
-          plugin_id: user_date_range
-          operator: between
+          entity_field: access
+          plugin_id: date
+          operator: '>='
           value:
             min: ''
             max: ''
@@ -601,10 +605,12 @@ display:
             operator_id: last_access_op
             label: 'Last access'
             description: ''
-            use_operator: false
+            use_operator: true
             operator: last_access_op
-            operator_limit_selection: false
-            operator_list: {  }
+            operator_limit_selection: true
+            operator_list:
+              '>=': '>='
+              '<': '<'
             identifier: last_access
             required: false
             remember: false
@@ -613,7 +619,7 @@ display:
               authenticated: authenticated
             min_placeholder: ''
             max_placeholder: ''
-            placeholder: ''
+            placeholder: YYYY-MM-DD
           is_grouped: false
         access_1:
           id: access_1
@@ -695,7 +701,7 @@ display:
           exposed: true
           expose:
             operator_id: field_avatar_target_id_op
-            label: 'Has avatar'
+            label: Avatar
             description: ''
             use_operator: false
             operator: field_avatar_target_id_op
@@ -712,7 +718,7 @@ display:
             placeholder: ''
           is_grouped: true
           group_info:
-            label: 'Has avatar'
+            label: Avatar
             description: ''
             identifier: has_avatar
             optional: true
@@ -750,7 +756,7 @@ display:
           exposed: true
           expose:
             operator_id: field_about_value_op
-            label: 'Has about text'
+            label: 'About text'
             description: ''
             use_operator: false
             operator: field_about_value_op
@@ -765,7 +771,7 @@ display:
             placeholder: ''
           is_grouped: true
           group_info:
-            label: 'Has about text'
+            label: 'About text'
             description: ''
             identifier: has_about
             optional: true
@@ -797,7 +803,7 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: Jobs
+            label: 'Open to jobs'
             description: ''
             use_operator: false
             operator: field_jobs_value_op
@@ -935,7 +941,7 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: 'Portfolio or website'
+            label: Portfolio
             description: ''
             use_operator: false
             operator: creative_has_link_op

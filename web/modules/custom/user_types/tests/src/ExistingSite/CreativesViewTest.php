@@ -166,20 +166,16 @@ class CreativesViewTest extends CreativesTestBase {
     $old->set('field_newsletter', NULL)->save();
     $new->set('field_newsletter', NULL)->save();
 
-    // Either end of a date range may stay open.
     $this->assertEqualsCanonicalizing([(int) $new->id(), (int) $never->id()], $this->uids([
       'name' => $prefix,
-      'registered' => ['min' => '2020-01-01', 'max' => ''],
+      'registered_op' => '>=',
+      'registered' => ['value' => '2020-01-01'],
     ]));
     // Never is before any date.
     $this->assertEqualsCanonicalizing([(int) $old->id(), (int) $never->id()], $this->uids([
       'name' => $prefix,
-      'last_access' => ['min' => '', 'max' => '2019-12-31'],
-    ]));
-    // A range includes both of its days.
-    $this->assertEqualsCanonicalizing([(int) $new->id(), (int) $never->id()], $this->uids([
-      'name' => $prefix,
-      'registered' => ['min' => '2022-06-01', 'max' => '2022-06-01'],
+      'last_access_op' => '<',
+      'last_access' => ['value' => '2020-01-01'],
     ]));
 
     // Group 1 is "Yes", group 2 is "No".

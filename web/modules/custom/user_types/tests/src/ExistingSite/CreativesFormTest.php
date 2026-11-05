@@ -45,17 +45,14 @@ class CreativesFormTest extends CreativesTestBase {
       $session->elementNotExists('css', 'form.views-exposed-form details [name="' . $name . '"]');
     }
     foreach (['registered', 'last_access'] as $date) {
-      foreach (['min', 'max'] as $end) {
-        $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="' . $date . '[' . $end . ']" and @type="date"]');
-      }
+      $session->elementExists('xpath', $this->groupXpath('Activity') . '//input[@name="' . $date . '[value]" and @type="date"]');
+      $this->assertSame(['after', 'before'], $this->radioLabels($date . '_op'));
     }
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//*[@name="newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Profile') . '//legend[normalize-space() = "Newsletter"]');
     $session->elementExists('xpath', $this->groupXpath('Activity') . '//legend[normalize-space() = "Registered"]');
 
     $session->elementNotExists('css', 'form.views-exposed-form [name="city_op"]');
-    $session->elementNotExists('css', 'form.views-exposed-form [name="registered_op"]');
-    $session->elementNotExists('css', 'form.views-exposed-form [name="last_access_op"]');
     foreach (['applied', 'participated', 'returned', 'accessed', 'has_avatar', 'jobs', 'newsletter'] as $name) {
       $this->assertSame(['Any', 'Yes', 'No'], $this->radioLabels($name), $name);
     }
@@ -67,6 +64,34 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
+   * Filled-in fields stand out, Apply is primary and Reset a quiet link.
+   */
+  public function testActiveFieldsAndButtons(): void {
+
+    $this->drupalGet('creatives', [
+      'query' => [
+        'name' => 'x',
+        'registered_op' => '<',
+        'registered' => ['value' => '2026-01-01'],
+      ],
+    ]);
+    $session = $this->assertSession();
+
+    $session->elementExists('css', 'input[name="name"].creatives-filter-active');
+    $session->elementNotExists('css', 'input[name="mail"].creatives-filter-active');
+    $session->elementExists('css', 'input[name="registered[value]"].creatives-filter-active');
+    // Without a date, "after" and "before" filter nothing and stay quiet.
+    $session->elementExists('css', 'fieldset.creatives-segmented-quiet input[name="last_access_op"]');
+    $session->elementNotExists('css', 'fieldset.creatives-segmented-quiet input[name="registered_op"]');
+    $session->elementExists('css', 'form.views-exposed-form input[type="submit"][value="Apply"].button--primary');
+    $session->elementExists('css', 'form.views-exposed-form input[type="submit"][value="Reset"].creatives-reset');
+
+    foreach (['Avatar', 'About text', 'Portfolio', 'Open to jobs'] as $label) {
+      $session->elementExists('xpath', $this->groupXpath('Profile') . '//legend[normalize-space() = "' . $label . '"]');
+    }
+  }
+
+  /**
    * A group with active filters is open and counts them in its summary.
    */
   public function testGroupOpensWithActiveFilter(): void {
@@ -75,7 +100,7 @@ class CreativesFormTest extends CreativesTestBase {
       'query' => [
         'newsletter' => '0',
         'jobs' => '1',
-        'registered' => ['min' => '', 'max' => ''],
+        'registered' => ['value' => ''],
       ],
     ]);
     $session = $this->assertSession();

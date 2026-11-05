@@ -1,7 +1,0 @@
-views.filter.user_date_range:
-  type: views.filter.date
-  label: 'User date range'
-
-views.filter_value.user_date_range:
-  type: views.filter_value.date
-  label: 'User date range'

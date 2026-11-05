@@ -124,22 +124,23 @@ class CreativesViewsHooks {
       return;
     }
 
-    // The dates are ranges of days with a date picker at each end. Either end
-    // may stay open. The pickers submit YYYY-MM-DD.
+    // A date filter is a switch between "after" and "before", in the style of
+    // the yes/no filters, and a date picker. The picker submits YYYY-MM-DD.
     foreach (['registered', 'last_access'] as $date) {
-      foreach (['min' => $this->t('From'), 'max' => $this->t('To')] as $end => $title) {
-        if (isset($form[$date . '_wrapper'][$date][$end])) {
-          $element = &$form[$date . '_wrapper'][$date][$end];
-          $element['#type'] = 'date';
-          $element['#title'] = $title;
-          $element['#title_display'] = 'invisible';
-          unset($element['#placeholder'], $element['#size'], $element['#maxlength']);
-          unset($element);
-        }
+      if (isset($form[$date . '_wrapper'][$date . '_op']['#options'])) {
+        $operator = &$form[$date . '_wrapper'][$date . '_op'];
+        $operator['#type'] = 'radios';
+        $operator['#options'] = ['>=' => $this->t('after'), '<' => $this->t('before')];
+        $operator['#default_value'] = '>=';
+        $operator['#title'] = $this->t('Compare');
+        $operator['#title_display'] = 'invisible';
+        $operator['#attributes']['class'][] = 'creatives-segmented';
+        unset($operator['#size'], $operator);
       }
-      if (isset($form[$date . '_wrapper'][$date]['min'])) {
-        $form[$date . '_wrapper'][$date]['min']['#suffix'] = '<span class="creatives-range-dash" aria-hidden="true">–</span>';
-        $form[$date . '_wrapper']['#attributes']['class'][] = 'creatives-range';
+      if (isset($form[$date . '_wrapper'][$date]['value'])) {
+        $value = &$form[$date . '_wrapper'][$date]['value'];
+        $value['#type'] = 'date';
+        unset($value['#placeholder'], $value['#size'], $value['#maxlength'], $value);
       }
     }
 
@@ -278,6 +279,33 @@ class CreativesViewsHooks {
         ]);
         $form['groups'][$group]['#attributes']['class'][] = 'creatives-filter-group--active';
       }
+    }
+
+    // Filled-in fields take the accent color, so the filters in use stand out.
+    foreach (['name', 'mail', 'city'] as $key) {
+      if (isset($form[$key]) && static::isActive($input[$key] ?? NULL)) {
+        $form[$key]['#attributes']['class'][] = 'creatives-filter-active';
+      }
+    }
+    // Without a date, the switch between "after" and "before" filters nothing
+    // and stays quiet.
+    foreach (['registered', 'last_access'] as $date) {
+      $wrapper = &$form['groups']['activity'][$date . '_wrapper'];
+      if (static::isActive($input[$date]['value'] ?? NULL)) {
+        $wrapper[$date]['value']['#attributes']['class'][] = 'creatives-filter-active';
+      }
+      elseif (isset($wrapper[$date . '_op'])) {
+        $wrapper[$date . '_op']['#attributes']['class'][] = 'creatives-segmented-quiet';
+      }
+      unset($wrapper);
+    }
+
+    // Apply is the primary action, reset a quiet link next to it.
+    if (isset($form['actions']['submit'])) {
+      $form['actions']['submit']['#attributes']['class'][] = 'button--primary';
+    }
+    if (isset($form['actions']['reset'])) {
+      $form['actions']['reset']['#attributes']['class'][] = 'creatives-reset';
     }
 
     if ($this->isProfilesMode()) {

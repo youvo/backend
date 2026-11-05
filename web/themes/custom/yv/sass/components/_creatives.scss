@@ -80,10 +80,18 @@
     padding: 0;
   }
 
-  // Doubled: Gin's small-screen rules indent them with more specificity.
-  .fieldset__label.fieldset__label {
+  // Tripled: Gin's group legends and small-screen rules indent them with more
+  // specificity.
+  .fieldset__label.fieldset__label.fieldset__label {
     padding: 0;
     font-size: var(--gin-font-size-s);
+    line-height: 1.125rem;
+  }
+
+  // The switch of a date filter sits in the fieldset of the date: it needs
+  // no space of its own above it.
+  .fieldset .fieldset .fieldset__wrapper {
+    padding-block-start: 0;
   }
 
   .fieldset__wrapper.fieldset__wrapper {
@@ -97,11 +105,40 @@
     margin: 0;
   }
 
-  // Shorter text fields keep the main filters and the buttons in one row on a
-  // desktop.
+  // Name, mail and city share the free width of the top row; on a phone each
+  // takes a row of its own.
+  .form-item--name,
+  .form-item--mail,
+  .form-item--city {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
   input.form-text {
-    width: 12rem;
-    max-width: 100%;
+    width: 100%;
+  }
+
+  // A filled-in field takes the accent color, so the filters in use stand
+  // out.
+  .creatives-filter-active {
+    border-color: var(--gin-color-primary);
+    box-shadow: inset 0 0 0 1px var(--gin-color-primary);
+  }
+
+  // Reset is a quiet link next to the primary Apply button.
+  // Gin forces the border of buttons with !important.
+  .button.creatives-reset {
+    padding-inline: var(--gin-spacing-xs);
+    border-color: transparent !important;
+    background: none;
+    box-shadow: none;
+    color: var(--gin-color-primary);
+
+    &:hover,
+    &:focus {
+      background: none;
+      text-decoration: underline;
+    }
   }
 }
 // stylelint-enable selector-class-pattern
@@ -129,23 +166,30 @@
 
   // Gin's classes, outside our naming pattern.
   // stylelint-disable selector-class-pattern
+  // A slimmer summary row, so the closed groups don't outweigh the filters.
   .claro-details__summary {
+    padding-block: var(--gin-spacing-s);
     font-size: var(--gin-font-size-s);
+  }
+
+  input.form-date {
+    width: 9.5rem;
   }
 
   .claro-details__wrapper {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
-    gap: var(--gin-spacing-xs) var(--gin-spacing-m);
+    align-items: flex-start;
+    gap: var(--gin-spacing-s) var(--gin-spacing-m);
     margin: 0;
     padding: 0 var(--gin-spacing-m) var(--gin-spacing-m);
   }
 
-  .form-item,
-  .fieldset {
+  // Doubled: the fieldset margin of the exposed form has more specificity.
+  .form-item.form-item,
+  .fieldset.fieldset {
     max-width: 100%;
-    margin-block: 0;
+    margin: 0;
   }
 
   .form-checkboxes {
@@ -300,9 +344,10 @@ fieldset.creatives-segmented .form-radios {
     color: var(--yv-chip-text);
   }
 
-  // "Any" filters nothing: chosen, it stays quiet, so the filters in use
-  // stand out.
-  .form-radio[value="All"]:checked + .form-item__label {
+  // "Any" filters nothing, nor does "after" or "before" without a date:
+  // chosen, they stay quiet, so the filters in use stand out.
+  .form-radio[value="All"]:checked + .form-item__label,
+  &:is(.creatives-segmented-quiet *) .form-radio:checked + .form-item__label {
     background: var(--gin-bg-item-hover);
     color: var(--yv-ink);
   }
@@ -313,20 +358,6 @@ fieldset.creatives-segmented .form-radios {
   }
 }
 
-// A date range: two pickers with a dash between them, as narrow as a date
-// allows.
-.creatives-range .fieldset__wrapper {
-  align-items: center;
-}
-
-.creatives-range input.form-date {
-  width: 9.5rem;
-}
-
-.creatives-range-dash {
-  margin-inline-start: var(--gin-spacing-xs);
-  color: var(--yv-ink);
-}
 // stylelint-enable selector-class-pattern
 
 // The number of active filters in a group, as a small pill after its title.
