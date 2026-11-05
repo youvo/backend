@@ -130,10 +130,9 @@
     box-shadow: inset 0 0 0 1px var(--gin-color-primary);
   }
 
-  // The buttons keep the same distance from the skills as the skills from
-  // the fields.
+  // A clear gap sets the buttons apart from the filters.
   .form-actions {
-    margin-inline-start: var(--gin-spacing-xs);
+    margin-inline-start: var(--gin-spacing-l);
   }
 
   // Reset is a quiet link next to the primary Apply button.
