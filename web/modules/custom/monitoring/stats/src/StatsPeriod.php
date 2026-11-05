@@ -22,11 +22,18 @@ class StatsPeriod {
 
   /**
    * The first day of the "all" period, the start of the old Logbuch.
+   *
+   * No period starts before it.
    */
   const string ALL_START = '2014-01-01';
 
   /**
-   * The earliest and latest year accepted from a query.
+   * The year of the first day of the "all" period.
+   */
+  const int FIRST_YEAR = 2014;
+
+  /**
+   * The earliest and latest year parseDate() accepts.
    */
   const int MIN_YEAR = 1970;
 
@@ -80,7 +87,7 @@ class StatsPeriod {
     if ($period === static::CUSTOM) {
       $from = static::parseDate($query['from'] ?? NULL, $timezone);
       $last = static::parseDate($query['to'] ?? NULL, $timezone);
-      if (!$from || !$last || $last < $from) {
+      if (!$from || !$last || $last < $from || $from < static::midnight(static::ALL_START, $timezone) || (int) $last->format('Y') > $current_year) {
         return $default;
       }
       $to = $last->modify('+1 day');
@@ -101,7 +108,7 @@ class StatsPeriod {
       return static::forRange($from, $to);
     }
 
-    $year = static::parseInt($query['year'] ?? $current_year, static::MIN_YEAR, static::MAX_YEAR);
+    $year = static::parseInt($query['year'] ?? $current_year, static::FIRST_YEAR, $current_year);
     if ($year === NULL) {
       return $default;
     }
@@ -311,6 +318,15 @@ class StatsPeriod {
       static::MONTH => $this->shift('-1 month'),
       default => $this->shift('-' . $days . ' days'),
     };
+  }
+
+  /**
+   * Checks whether the period right before this one starts in 2014 or later.
+   *
+   * The "all" period has none.
+   */
+  public function hasPrevious(): bool {
+    return $this->type !== static::ALL && $this->previous()->from() >= static::midnight(static::ALL_START, $this->from->getTimezone());
   }
 
   /**

@@ -21,7 +21,7 @@ class ActivityStatsTest extends StatsTestBase {
   protected ActivityStats $activityStats;
 
   /**
-   * The year 2001.
+   * The year 2018.
    */
   protected StatsPeriod $period;
 
@@ -33,34 +33,34 @@ class ActivityStatsTest extends StatsTestBase {
     parent::setUp();
     $this->activityStats = $this->container->get('stats.activity_stats');
     $timezone = $this->timezone();
-    $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
+    $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2018'], $timezone, new \DateTimeImmutable('now', $timezone));
 
     $this->setUpScenario();
     // The scenario creates the projects A to H in this order.
     [$a, $b, $c, , , $f, $g] = array_map(fn($id) => Project::load($id), $this->projectIds);
 
     // W and the last creative never logged in.
-    $x = $this->createCreativeOn('2001-01-02', TRUE);
-    $y = $this->createCreativeOn('2001-01-03', TRUE);
-    $w = $this->createCreativeOn('2001-02-01');
-    $z = $this->createCreativeOn('2000-12-01', TRUE);
-    $this->createCreativeOn('2001-03-01');
+    $x = $this->createCreativeOn('2018-01-02', TRUE);
+    $y = $this->createCreativeOn('2018-01-03', TRUE);
+    $w = $this->createCreativeOn('2018-02-01');
+    $z = $this->createCreativeOn('2017-12-01', TRUE);
+    $this->createCreativeOn('2018-03-01');
 
-    $this->apply($z, $f, '2000-12-29');
-    $this->apply($x, $a, '2001-01-16');
-    $this->apply($y, $a, '2001-01-18');
-    $this->apply($x, $b, '2001-02-11');
-    $this->apply($w, $b, '2001-02-12');
-    $this->apply($z, $c, '2001-03-08');
-    $this->apply($y, $c, '2001-03-09');
+    $this->apply($z, $f, '2017-12-29');
+    $this->apply($x, $a, '2018-01-16');
+    $this->apply($y, $a, '2018-01-18');
+    $this->apply($x, $b, '2018-02-11');
+    $this->apply($w, $b, '2018-02-12');
+    $this->apply($z, $c, '2018-03-08');
+    $this->apply($y, $c, '2018-03-09');
 
-    $this->createLog('project_mediate', '2001-02-01', ['project' => $a, 'creatives' => [$x]]);
-    $this->createLog('project_mediate', '2001-02-20', ['project' => $b, 'creatives' => [$x]]);
-    $this->createLog('project_mediate', '2001-01-05', ['project' => $f, 'creatives' => [$z]]);
-    $this->createLog('project_decline', '2001-06-05', ['project' => $g, 'misc' => ['reason' => 'imprecise']]);
+    $this->createLog('project_mediate', '2018-02-01', ['project' => $a, 'creatives' => [$x]]);
+    $this->createLog('project_mediate', '2018-02-20', ['project' => $b, 'creatives' => [$x]]);
+    $this->createLog('project_mediate', '2018-01-05', ['project' => $f, 'creatives' => [$z]]);
+    $this->createLog('project_decline', '2018-06-05', ['project' => $g, 'misc' => ['reason' => 'imprecise']]);
 
     $prospect = $this->createOrganizationUser('prospect');
-    $prospect->set('created', $this->noon('2001-05-01'))->save();
+    $prospect->set('created', $this->noon('2018-05-01'))->save();
   }
 
   /**
@@ -97,12 +97,12 @@ class ActivityStatsTest extends StatsTestBase {
    *   The value of the remaining months.
    *
    * @return array<string, int>
-   *   The values keyed by month of 2001.
+   *   The values keyed by month of 2018.
    */
   protected function months(array $values, int $rest = 0): array {
     $months = [];
     for ($month = 1; $month <= 12; $month++) {
-      $months[sprintf('2001-%02d', $month)] = $values[$month - 1] ?? $rest;
+      $months[sprintf('2018-%02d', $month)] = $values[$month - 1] ?? $rest;
     }
     return $months;
   }
@@ -142,8 +142,8 @@ class ActivityStatsTest extends StatsTestBase {
 
     $registrations = $this->activityStats->registrations($this->period);
     // They count as the calculator: creatives who logged in, X and Y in
-    // January after Z in 2000, and organizations without the prospect, O1 in
-    // January and O2 in March after O3 in 2000.
+    // January after Z in 2017, and organizations without the prospect, O1 in
+    // January and O2 in March after O3 in 2017.
     $this->assertSame($this->months([], 3), $registrations['creatives']);
     $this->assertSame($this->months([2, 2], 3), $registrations['organizations']);
 
@@ -163,7 +163,7 @@ class ActivityStatsTest extends StatsTestBase {
     $this->assertSame($this->months([2, 1]), $activation['activated']);
     $this->assertSame(0.75, $activation['rate']);
 
-    // Z registered in 2000 and is not counted.
+    // Z registered in 2017 and is not counted.
     $this->assertSame([
       '1d' => 0,
       '7d' => 0,

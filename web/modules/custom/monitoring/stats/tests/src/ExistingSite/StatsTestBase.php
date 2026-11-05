@@ -33,6 +33,18 @@ abstract class StatsTestBase extends ExistingSiteBase {
   protected array $touchedDays = [];
 
   /**
+   * Clears the cached pages.
+   *
+   * The stats page has no cache tags but a max-age, so a page cached by an
+   * earlier test would hide the data of this one.
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $this->container->get('cache.dynamic_page_cache')->deleteAll();
+    $this->container->get('cache.render')->deleteAll();
+  }
+
+  /**
    * Deletes the logs of the created projects and restores the activity rows.
    *
    * The logs are no children of the projects.
@@ -254,68 +266,68 @@ abstract class StatsTestBase extends ExistingSiteBase {
   }
 
   /**
-   * Builds the 2001 scenario of three organizations of one manager.
+   * Builds the 2018 scenario of three organizations of one manager.
    */
   protected function setUpScenario(): void {
 
     $manager = $this->createManager();
 
-    $o1 = $this->createOrganization($manager, '2001-01-01');
+    $o1 = $this->createOrganization($manager, '2018-01-01');
     // A.
     $this->createProjectWithHistory($o1, [
-      ['submit', '2001-01-10'],
-      ['publish', '2001-01-15'],
-      ['mediate', '2001-02-01'],
-      ['complete', '2001-03-01'],
+      ['submit', '2018-01-10'],
+      ['publish', '2018-01-15'],
+      ['mediate', '2018-02-01'],
+      ['complete', '2018-03-01'],
     ]);
     // B.
     $this->createProjectWithHistory($o1, [
-      ['submit', '2001-01-20'],
-      ['publish', '2001-02-10'],
-      ['mediate', '2001-02-20'],
+      ['submit', '2018-01-20'],
+      ['publish', '2018-02-10'],
+      ['mediate', '2018-02-20'],
     ]);
     // C.
     $this->createProjectWithHistory($o1, [
-      ['submit', '2001-03-01'],
-      ['publish', '2001-03-05'],
+      ['submit', '2018-03-01'],
+      ['publish', '2018-03-05'],
     ]);
 
-    $o2 = $this->createOrganization($manager, '2001-03-01');
+    $o2 = $this->createOrganization($manager, '2018-03-01');
     $d = $this->createProjectWithHistory($o2, [
-      ['submit', '2001-03-10'],
-      ['publish', '2001-03-12'],
+      ['submit', '2018-03-10'],
+      ['publish', '2018-03-12'],
     ]);
-    $this->archive($d, 'external', '2001-04-01');
+    $this->archive($d, 'external', '2018-04-01');
     // E.
     $this->createProjectWithHistory($o2, [
-      ['submit', '2001-04-01'],
-      ['publish', '2001-04-02'],
-      ['mediate', '2001-04-10'],
-      ['reset', '2001-05-01'],
-      ['submit', '2001-05-05'],
-      ['publish', '2001-05-10'],
+      ['submit', '2018-04-01'],
+      ['publish', '2018-04-02'],
+      ['mediate', '2018-04-10'],
+      ['reset', '2018-05-01'],
+      ['submit', '2018-05-05'],
+      ['publish', '2018-05-10'],
     ]);
 
-    $o3 = $this->createOrganization($manager, '2000-06-01');
+    $o3 = $this->createOrganization($manager, '2017-06-01');
     // F.
     $this->createProjectWithHistory($o3, [
-      ['submit', '2000-12-20'],
-      ['publish', '2000-12-28'],
-      ['mediate', '2001-01-05'],
+      ['submit', '2017-12-20'],
+      ['publish', '2017-12-28'],
+      ['mediate', '2018-01-05'],
     ]);
     // G, declined from draft, which needs the prospect role.
     $o3->addRole(Organization::ROLE_PROSPECT);
     $o3->save();
     $this->createProjectWithHistory($o3, [
-      ['decline', '2001-06-05'],
+      ['decline', '2018-06-05'],
     ]);
     $o3->removeRole(Organization::ROLE_PROSPECT);
     $o3->save();
     $h = $this->createProjectWithHistory($o3, [
-      ['submit', '2001-07-01'],
-      ['publish', '2001-07-05'],
+      ['submit', '2018-07-01'],
+      ['publish', '2018-07-05'],
     ]);
-    $this->archive($h, 'unattractive', '2001-08-01');
+    $this->archive($h, 'unattractive', '2018-08-01');
   }
 
 }

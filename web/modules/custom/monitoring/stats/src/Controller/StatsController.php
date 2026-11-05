@@ -70,7 +70,7 @@ class StatsController implements ContainerInjectionInterface {
       '#attached' => ['library' => ['stats/charts']],
       '#period_bar' => $this->periodBar($period, $now),
       // The range form belongs to custom periods only.
-      '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')) : [],
+      '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d'), $now->format('Y-m-d')) : [],
       '#sections' => [
         'overview' => $this->overviewSection($period, $now),
         'projects' => $this->projectsSection($period),
@@ -426,15 +426,15 @@ class StatsController implements ContainerInjectionInterface {
       ];
     }
 
-    // All time has no neighbors. A neighbor beyond the current time is shown
-    // disabled.
+    // All time has no neighbors. A neighbor starting before 2014 or after the
+    // current time is shown disabled.
     $steps = [];
     if ($period->type() !== StatsPeriod::ALL) {
       $previous = $period->previous();
       $next = $period->next();
       $steps['previous'] = [
-        'label' => $this->t('Previous period: @period', ['@period' => $previous->label()]),
-        'url' => $link($previous),
+        'label' => $period->hasPrevious() ? $this->t('Previous period: @period', ['@period' => $previous->label()]) : $this->t('No previous period'),
+        'url' => $period->hasPrevious() ? $link($previous) : NULL,
       ];
       $steps['next'] = [
         'label' => $next->from() <= $now ? $this->t('Next period: @period', ['@period' => $next->label()]) : $this->t('No next period'),

@@ -102,23 +102,23 @@ class ActivitySnapshotsTest extends StatsTestBase {
   public function testSeries(): void {
 
     $rows = [
-      '2001-01-15' => [3, 10],
-      '2001-01-31' => [5, 12],
-      '2001-02-10' => [2, 9],
+      '2018-01-15' => [3, 10],
+      '2018-01-31' => [5, 12],
+      '2018-02-10' => [2, 9],
     ];
     foreach ($rows as $day => [$active_1d, $active_30d]) {
       $this->touchDay($day);
       $this->snapshots->write($day, 'creative', $active_1d, $active_30d);
     }
     $timezone = $this->timezone();
-    $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
+    $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2018'], $timezone, new \DateTimeImmutable('now', $timezone));
 
     $series = $this->snapshots->series($period)['creative'];
 
     $this->assertCount(12, $series);
-    $this->assertSame(12, $series['2001-01']);
-    $this->assertSame(9, $series['2001-02']);
-    $this->assertNull($series['2001-03']);
+    $this->assertSame(12, $series['2018-01']);
+    $this->assertSame(9, $series['2018-02']);
+    $this->assertNull($series['2018-03']);
   }
 
 }

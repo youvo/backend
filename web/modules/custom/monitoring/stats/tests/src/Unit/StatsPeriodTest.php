@@ -246,8 +246,10 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'], $switch($current, 'quarter'));
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch($current, 'month'));
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch(['period' => 'all'], 'month'));
-    $future = ['period' => 'year', 'year' => '2030'];
-    $this->assertSame(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'], $switch($future, 'quarter'));
+    $future = ['period' => 'month', 'year' => '2026', 'month' => '12'];
+    $this->assertSame(['period' => 'year', 'year' => '2026'], $switch($future, 'year'));
+    $current_quarter = ['period' => 'quarter', 'year' => '2026', 'quarter' => '4'];
+    $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch($current_quarter, 'month'));
     $this->assertSame(['period' => 'all'], $switch($quarter, 'all'));
 
     // Custom keeps the days, all time runs until today.
@@ -295,6 +297,37 @@ class StatsPeriodTest extends UnitTestCase {
   }
 
   /**
+   * Tests that the first periods of 2014 have no previous period.
+   */
+  public function testFirstPeriods(): void {
+    $first = [
+      ['period' => 'year', 'year' => '2014'],
+      ['period' => 'quarter', 'year' => '2014', 'quarter' => '1'],
+      ['period' => 'month', 'year' => '2014', 'month' => '1'],
+      ['period' => 'custom', 'from' => '2014-01-01', 'to' => '2014-01-10'],
+      ['period' => 'custom', 'from' => '2014-01-05', 'to' => '2014-01-10'],
+      ['period' => 'all'],
+    ];
+    foreach ($first as $query) {
+      $this->assertSame($query['period'], $this->period($query)->type(), json_encode($query));
+      $this->assertFalse($this->period($query)->hasPrevious(), json_encode($query));
+    }
+
+    $second = [
+      ['period' => 'year', 'year' => '2015'],
+      ['period' => 'quarter', 'year' => '2014', 'quarter' => '2'],
+      ['period' => 'month', 'year' => '2014', 'month' => '2'],
+      ['period' => 'custom', 'from' => '2014-01-11', 'to' => '2014-01-20'],
+    ];
+    foreach ($second as $query) {
+      $this->assertTrue($this->period($query)->hasPrevious(), json_encode($query));
+    }
+
+    // The current year is the last one.
+    $this->assertSame('2026', $this->period(['period' => 'year', 'year' => '2026'])->label());
+  }
+
+  /**
    * Tests that invalid arguments fall back to the all time period.
    */
   public function testInvalidInputFallsBack(): void {
@@ -312,6 +345,14 @@ class StatsPeriodTest extends UnitTestCase {
       ['period' => 'month', 'month' => '13'],
       ['period' => 'year', 'year' => 'abc'],
       ['period' => ['all']],
+      // Periods lie between 2014 and the current year.
+      ['period' => 'year', 'year' => '2013'],
+      ['period' => 'year', 'year' => '2027'],
+      ['period' => 'quarter', 'year' => '2013', 'quarter' => '4'],
+      ['period' => 'month', 'year' => '2027', 'month' => '1'],
+      ['period' => 'custom', 'from' => '2013-12-31', 'to' => '2014-01-10'],
+      ['period' => 'custom', 'from' => '2026-12-01', 'to' => '2027-01-01'],
+      ['from' => '2013-01-01', 'to' => '2013-12-31'],
     ];
     foreach ($invalid as $query) {
       $period = $this->period($query);

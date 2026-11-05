@@ -19,7 +19,7 @@ class FeedbackStatsTest extends StatsTestBase {
   protected FeedbackStats $feedbackStats;
 
   /**
-   * The year 2001.
+   * The year 2018.
    */
   protected StatsPeriod $period;
 
@@ -30,7 +30,7 @@ class FeedbackStatsTest extends StatsTestBase {
     parent::setUp();
     $this->feedbackStats = $this->container->get('stats.feedback_stats');
     $timezone = $this->timezone();
-    $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2001'], $timezone, new \DateTimeImmutable('now', $timezone));
+    $this->period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2018'], $timezone, new \DateTimeImmutable('now', $timezone));
   }
 
   /**
@@ -41,11 +41,11 @@ class FeedbackStatsTest extends StatsTestBase {
     $this->setUpScenario();
     [$a, $b] = array_map(fn($id) => Project::load($id), array_slice($this->projectIds, 0, 2));
 
-    $this->createFeedback('creative', $a, '2001-03-05', ['field_satisfied_scale' => 4, 'field_recommend_boolean' => 1]);
-    $this->createFeedback('creative', $b, '2001-03-10', ['field_satisfied_scale' => 2, 'field_recommend_boolean' => 0]);
-    $this->createFeedback('organization', $a, '2001-03-06', ['field_satisfied_scale' => 5]);
+    $this->createFeedback('creative', $a, '2018-03-05', ['field_satisfied_scale' => 4, 'field_recommend_boolean' => 1]);
+    $this->createFeedback('creative', $b, '2018-03-10', ['field_satisfied_scale' => 2, 'field_recommend_boolean' => 0]);
+    $this->createFeedback('organization', $a, '2018-03-06', ['field_satisfied_scale' => 5]);
     // Outside the period.
-    $this->createFeedback('creative', $a, '2002-03-05', ['field_satisfied_scale' => 1]);
+    $this->createFeedback('creative', $a, '2019-03-05', ['field_satisfied_scale' => 1]);
 
     $feedback = $this->feedbackStats->feedback($this->period);
 

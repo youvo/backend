@@ -33,20 +33,26 @@ class StatsRangeForm extends FormBase {
    *   The first day of the current period, Y-m-d.
    * @param string $to
    *   The last day of the current period, Y-m-d.
+   * @param string $today
+   *   The current day, Y-m-d, the latest day to pick.
    *
    * @return array
    *   The form.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, string $from = '', string $to = ''): array {
+  public function buildForm(array $form, FormStateInterface $form_state, string $from = '', string $to = '', string $today = ''): array {
     $form['#attributes']['class'][] = 'stats-range-form';
     // The days come from the period, whose query arguments the stats page
     // varies by. Opting in to caching keeps the page cacheable; the form token
     // is a placeholder anyway.
     $form['#cache']['max-age'] = Cache::PERMANENT;
+    $form_state->set('today', $today);
+    // The days run from the start of the old Logbuch to today.
+    $limits = ['min' => StatsPeriod::ALL_START, 'max' => $today];
     $form['from'] = [
       '#type' => 'date',
       '#title' => $this->t('From'),
       '#default_value' => $from,
+      '#attributes' => $limits,
       // validateForm() asks for missing days, without the required markers.
       '#required' => FALSE,
     ];
@@ -54,6 +60,7 @@ class StatsRangeForm extends FormBase {
       '#type' => 'date',
       '#title' => $this->t('To'),
       '#default_value' => $to,
+      '#attributes' => $limits,
       '#required' => FALSE,
     ];
     $form['actions'] = ['#type' => 'actions'];
@@ -66,7 +73,7 @@ class StatsRangeForm extends FormBase {
   }
 
   /**
-   * Validates that both days exist and the range does not end before it starts.
+   * Validates the days: both exist, lie from 2014 to today, in order.
    *
    * @param array $form
    *   The form.
@@ -98,6 +105,13 @@ class StatsRangeForm extends FormBase {
       $form_state->setErrorByName('to', $this->t('Enter a valid end date.'));
     }
 
+    if ($from !== NULL && $from_value < StatsPeriod::ALL_START) {
+      $form_state->setErrorByName('from', $this->t('The start date must not be before 01.01.2014, as there is no data before.'));
+    }
+    $today = $form_state->get('today');
+    if ($to !== NULL && $today && $to_value > $today) {
+      $form_state->setErrorByName('to', $this->t('The end date must not be after today.'));
+    }
     if ($from !== NULL && $to !== NULL && $to < $from) {
       $form_state->setErrorByName('to', $this->t('The end date must not be before the start date.'));
     }

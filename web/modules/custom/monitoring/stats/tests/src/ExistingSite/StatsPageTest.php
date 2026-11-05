@@ -22,9 +22,9 @@ class StatsPageTest extends StatsTestBase {
     $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->elementTextEquals('css', '.stats-stepper .stats-period-heading', '2001');
+    $this->assertSession()->elementTextEquals('css', '.stats-stepper .stats-period-heading', '2018');
 
     // The segments switch the type around the period being viewed.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2024]]);
@@ -57,6 +57,28 @@ class StatsPageTest extends StatsTestBase {
     $disabled = $this->assertSession()->elementExists('css', '.stats-stepper [data-step="next"][aria-disabled="true"]');
     $this->assertFalse($disabled->hasAttribute('href'));
     $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"][href]');
+
+    // The first periods of 2014 have a disabled previous step.
+    $first = [
+      ['period' => 'year', 'year' => 2014],
+      ['period' => 'quarter', 'year' => 2014, 'quarter' => 1],
+      ['period' => 'month', 'year' => 2014, 'month' => 1],
+      ['period' => 'custom', 'from' => '2014-01-01', 'to' => '2014-01-10'],
+    ];
+    foreach ($first as $query) {
+      $this->drupalGet('stats', ['query' => $query]);
+      $disabled = $this->assertSession()->elementExists('css', '.stats-stepper [data-step="previous"][aria-disabled="true"]');
+      $this->assertFalse($disabled->hasAttribute('href'), json_encode($query));
+      $this->assertSame('No previous period', $disabled->getAttribute('aria-label'));
+    }
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2015]]);
+    $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"][href]');
+
+    // Years before 2014 or after the current one fall back to all time.
+    foreach ([2013, (int) $now->format('Y') + 1] as $year) {
+      $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => $year]]);
+      $this->assertSession()->elementTextEquals('css', '.stats-period-heading', 'All time');
+    }
 
     // All time has no steps.
     $this->drupalGet('stats');
@@ -130,11 +152,11 @@ class StatsPageTest extends StatsTestBase {
     }
     $this->assertSession()->elementExists('xpath', '//a[normalize-space()="All time"][@aria-current="page"]');
 
-    // A past period shows the state at its end, 2001-12-31 included, the
+    // A past period shows the state at its end, 2018-12-31 included, the
     // last point of each chart. The scenario registers no creatives and three
     // organizations, and the site holds no older users or projects.
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
-    $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of 31.12.2001');
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
+    $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of 31.12.2018');
     $expected = [
       'creatives' => '0',
       'organizations' => '3',
@@ -154,22 +176,23 @@ class StatsPageTest extends StatsTestBase {
       $this->assertSame($value, end($points), $key);
     }
 
-    // A period in the future ends today.
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2090]]);
+    // The running year ends today.
+    $year = (new \DateTimeImmutable('now', $this->timezone()))->format('Y');
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => $year]]);
     $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of ' . $today);
     foreach (array_keys($cards) as $key) {
       $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', (string) $calculator->{$cards[$key][1]}());
     }
 
     // A period without data hides the overview charts, not the values.
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2019]]);
     $this->assertSession()->elementExists('css', '.stats-card[aria-labelledby="stats-overview-creatives-title"] .stats-card-value');
     $this->assertSession()->elementNotExists('css', '#stats-overview-creatives');
 
     // The mediation rate of the cohort moved to the footnote of its card.
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-cohort"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2019]]);
     $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-cohort"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: –');
   }
 
@@ -181,42 +204,55 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     // Presets have no range form.
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->elementNotExists('css', '.stats-range-form');
     $this->drupalGet('stats');
     $this->assertSession()->elementNotExists('css', '.stats-range-form');
 
     // Gin styles the date fields and the primary button of the native form,
     // without required markers.
-    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => '2001-01-01', 'to' => '2001-12-31']]);
-    $this->assertSession()->elementTextEquals('css', '.stats-period-heading', '01.01.2001 – 31.12.2001');
+    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => '2018-01-01', 'to' => '2018-12-31']]);
+    $this->assertSession()->elementTextEquals('css', '.stats-period-heading', '01.01.2018 – 31.12.2018');
     $this->assertSession()->elementExists('css', 'a.stats-segment[data-segment="custom"][aria-current="page"]');
     $from = $this->assertSession()->elementExists('css', '.stats-range-form input[name="from"].form-element--type-date');
-    $this->assertSame('2001-01-01', $from->getValue());
+    $this->assertSame('2018-01-01', $from->getValue());
     $to = $this->assertSession()->elementExists('css', '.stats-range-form input[name="to"].form-element--type-date');
-    $this->assertSame('2001-12-31', $to->getValue());
+    $this->assertSame('2018-12-31', $to->getValue());
     $this->assertSession()->elementExists('css', '.stats-range-form input.button--primary[value="Apply"]');
     $this->assertSession()->elementNotExists('css', '.stats-range-form [required], .stats-range-form .form-required');
 
-    $this->submitForm(['from' => '2001-03-05', 'to' => '2001-04-20'], 'Apply');
-    $this->assertSame(['period' => 'custom', 'from' => '2001-03-05', 'to' => '2001-04-20'], $this->linkQuery($this->getUrl()));
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '05.03.2001 – 20.04.2001');
+    $this->submitForm(['from' => '2018-03-05', 'to' => '2018-04-20'], 'Apply');
+    $this->assertSame(['period' => 'custom', 'from' => '2018-03-05', 'to' => '2018-04-20'], $this->linkQuery($this->getUrl()));
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '05.03.2018 – 20.04.2018');
     $previous = $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"]');
-    $this->assertSame('Previous period: 17.01.2001 – 04.03.2001', $previous->getAttribute('aria-label'));
-    $this->assertSame('2001-03-05', $this->assertSession()->fieldExists('from')->getValue());
+    $this->assertSame('Previous period: 17.01.2018 – 04.03.2018', $previous->getAttribute('aria-label'));
+    $this->assertSame('2018-03-05', $this->assertSession()->fieldExists('from')->getValue());
 
     // A range covering a calendar quarter stays custom, so the form stays.
-    $this->submitForm(['from' => '2001-04-01', 'to' => '2001-06-30'], 'Apply');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2001 – 30.06.2001');
+    $this->submitForm(['from' => '2018-04-01', 'to' => '2018-06-30'], 'Apply');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2018 – 30.06.2018');
     $this->assertSession()->elementExists('css', '.stats-range-form');
 
     // Missing days and a range ending before it starts stay on the form.
     $this->submitForm(['from' => '', 'to' => ''], 'Apply');
     $this->assertSession()->pageTextContains('Enter a start date.');
     $this->assertSession()->pageTextContains('Enter an end date.');
-    $this->submitForm(['from' => '2001-05-01', 'to' => '2001-04-01'], 'Apply');
+    $this->submitForm(['from' => '2018-05-01', 'to' => '2018-04-01'], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be before the start date.');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2001 – 30.06.2001');
+
+    // The days lie between 2014 and today.
+    $today = (new \DateTimeImmutable('now', $this->timezone()))->format('Y-m-d');
+    foreach (['from', 'to'] as $name) {
+      $field = $this->assertSession()->fieldExists($name);
+      $this->assertSame('2014-01-01', $field->getAttribute('min'));
+      $this->assertSame($today, $field->getAttribute('max'));
+    }
+    $this->submitForm(['from' => '2013-12-31', 'to' => '2014-01-10'], 'Apply');
+    $this->assertSession()->pageTextContains('The start date must not be before 01.01.2014, as there is no data before.');
+    $tomorrow = (new \DateTimeImmutable('tomorrow', $this->timezone()))->format('Y-m-d');
+    $this->submitForm(['from' => '2014-01-01', 'to' => $tomorrow], 'Apply');
+    $this->assertSession()->pageTextContains('The end date must not be after today.');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2018 – 30.06.2018');
   }
 
   /**
@@ -227,7 +263,7 @@ class StatsPageTest extends StatsTestBase {
     $this->setUpScenario();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
     foreach (['stats-flow', 'stats-cohort', 'stats-stages'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
@@ -258,7 +294,7 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-describedby="stats-cohort-description"] p#stats-cohort-description', 'Projects first published in the period and how far they got');
 
     // A month counts by week.
-    $this->drupalGet('stats', ['query' => ['period' => 'month', 'year' => 2001, 'month' => 11]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'month', 'year' => 2018, 'month' => 11]]);
     $definition = json_decode($this->assertSession()->elementExists('css', '#stats-flow')->getAttribute('data-chart'), TRUE);
     $this->assertSame(['W44', 'W45', 'W46', 'W47', 'W48'], $definition['data']['labels']);
   }
@@ -315,9 +351,9 @@ class StatsPageTest extends StatsTestBase {
   public function testActivityChart(): void {
 
     $rows = [
-      '2001-01-15' => [3, 10],
-      '2001-01-31' => [5, 12],
-      '2001-02-10' => [2, 9],
+      '2018-01-15' => [3, 10],
+      '2018-01-31' => [5, 12],
+      '2018-02-10' => [2, 9],
     ];
     foreach ($rows as $day => [$active_1d, $active_30d]) {
       $this->touchDay($day);
@@ -325,7 +361,7 @@ class StatsPageTest extends StatsTestBase {
     }
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSame(['12', '9'], array_slice($this->chartColumn('stats-activity', 'Creatives'), 0, 2));
 
@@ -340,21 +376,21 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testActivityHiddenWithoutSnapshots(): void {
 
-    // Remove the snapshots of 2001, which tearDown() restores.
+    // Remove the snapshots of 2018, which tearDown() restores.
     $database = $this->container->get('database');
     $days = $database->select('stats_activity', 'a')
       ->fields('a', ['day'])
-      ->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')
+      ->condition('day', ['2018-01-01', '2018-12-31'], 'BETWEEN')
       ->distinct()
       ->execute()
       ->fetchCol();
     foreach ($days as $day) {
       $this->touchDay($day);
     }
-    $database->delete('stats_activity')->condition('day', ['2001-01-01', '2001-12-31'], 'BETWEEN')->execute();
+    $database->delete('stats_activity')->condition('day', ['2018-01-01', '2018-12-31'], 'BETWEEN')->execute();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementExists('css', '#stats-activation');
     $this->assertSession()->elementNotExists('css', '#stats-activity');
@@ -369,12 +405,12 @@ class StatsPageTest extends StatsTestBase {
 
     $this->setUpScenario();
     $project = Project::load(reset($this->projectIds));
-    $this->createFeedback('creative', $project, '2001-03-05', ['field_recommend_boolean' => 1]);
-    $this->createFeedback('creative', $project, '2001-03-10', ['field_recommend_boolean' => 0]);
-    $this->createFeedback('organization', $project, '2001-03-12', ['field_recommend_boolean' => 1]);
+    $this->createFeedback('creative', $project, '2018-03-05', ['field_recommend_boolean' => 1]);
+    $this->createFeedback('creative', $project, '2018-03-10', ['field_recommend_boolean' => 0]);
+    $this->createFeedback('organization', $project, '2018-03-12', ['field_recommend_boolean' => 1]);
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementExists('xpath', '//h2[contains(@class, "stats-section-title")][normalize-space()="Feedback"]');
     // The answers and the recommend share sit in the footnote, not the title.
