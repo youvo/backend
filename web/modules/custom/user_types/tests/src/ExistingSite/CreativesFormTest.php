@@ -157,6 +157,31 @@ class CreativesFormTest extends CreativesTestBase {
   }
 
   /**
+   * Name, mail and city suggest values of active creatives to staff only.
+   */
+  public function testTextFieldsSuggestCreatives(): void {
+
+    $prefix = $this->randomMachineName();
+    $this->createCreative()->set('field_name', $prefix . ' Creative')->set('field_city', $prefix . 'stadt')->save();
+    $this->createOrganization()->set('field_name', $prefix . ' Organization')->save();
+    $blocked = $this->createCreative();
+    $blocked->set('field_name', $prefix . ' Blocked')->block()->save();
+    $session = $this->assertSession();
+
+    $this->drupalGet('views-autocomplete-filters/creatives/page/field_name_value/0', ['query' => ['q' => $prefix]]);
+    $names = array_column(json_decode($this->getSession()->getPage()->getContent(), TRUE), 'value');
+    $this->assertSame([$prefix . ' Creative'], $names);
+
+    $this->drupalGet('views-autocomplete-filters/creatives/page/field_city_value/0', ['query' => ['q' => $prefix]]);
+    $cities = array_column(json_decode($this->getSession()->getPage()->getContent(), TRUE), 'value');
+    $this->assertSame([$prefix . 'stadt'], $cities);
+
+    $this->drupalLogin($this->createCreative());
+    $this->drupalGet('views-autocomplete-filters/creatives/page/field_name_value/0', ['query' => ['q' => $prefix]]);
+    $session->statusCodeEquals(403);
+  }
+
+  /**
    * Reset in the profiles mode stays in the profiles mode.
    */
   public function testResetKeepsMode(): void {

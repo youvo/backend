@@ -88,6 +88,7 @@ module:
   user: 0
   user_bundle: 0
   user_types: 0
+  views_autocomplete_filters: 0
   views_ui: 0
   warmer: 0
   workflows: 0

@@ -418,6 +418,15 @@ display:
             remember_roles:
               authenticated: authenticated
             placeholder: ''
+            autocomplete_filter: 1
+            autocomplete_min_chars: '1'
+            autocomplete_items: '10'
+            autocomplete_field: field_name
+            autocomplete_raw_suggestion: 1
+            autocomplete_raw_dropdown: 1
+            autocomplete_dependent: 1
+            autocomplete_contextual: 0
+            autocomplete_autosubmit: 0
           is_grouped: false
         mail:
           id: mail
@@ -448,6 +457,15 @@ display:
             remember_roles:
               authenticated: authenticated
             placeholder: ''
+            autocomplete_filter: 1
+            autocomplete_min_chars: '1'
+            autocomplete_items: '10'
+            autocomplete_field: mail
+            autocomplete_raw_suggestion: 1
+            autocomplete_raw_dropdown: 1
+            autocomplete_dependent: 1
+            autocomplete_contextual: 0
+            autocomplete_autosubmit: 0
           is_grouped: false
         field_city_value:
           id: field_city_value
@@ -476,6 +494,15 @@ display:
             remember_roles:
               authenticated: authenticated
             placeholder: ''
+            autocomplete_filter: 1
+            autocomplete_min_chars: '1'
+            autocomplete_items: '10'
+            autocomplete_field: field_city
+            autocomplete_raw_suggestion: 1
+            autocomplete_raw_dropdown: 1
+            autocomplete_dependent: 1
+            autocomplete_contextual: 0
+            autocomplete_autosubmit: 0
           is_grouped: false
         field_skills_target_id:
           id: field_skills_target_id
