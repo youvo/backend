@@ -293,16 +293,26 @@ fieldset.creatives-segmented .form-radios {
 
 // On a phone the filters stack; a gap that sets elements apart side by side
 // would only indent them.
+// The buttons and the switch take a row each, the switch across the full
+// width with two equal halves, which are easier to tap.
 @media (width < $breakpoint-medium) {
-  .creatives-skills.creatives-skills,
-  .view-creatives .views-exposed-form .form-actions,
-  .creatives-mode-toggle {
+  .creatives-skills.creatives-skills {
     margin-inline: 0;
   }
 
-  // The switch wraps below the buttons.
+  .view-creatives .views-exposed-form .form-actions,
   .creatives-mode-toggle {
-    margin-block-start: var(--gin-spacing-s);
+    flex-basis: 100%;
+    margin: var(--gin-spacing-s) 0 0;
+  }
+
+  .creatives-mode-toggle li {
+    flex: 1;
+  }
+
+  .creatives-mode-toggle a {
+    flex: 1;
+    justify-content: center;
   }
 }
 
