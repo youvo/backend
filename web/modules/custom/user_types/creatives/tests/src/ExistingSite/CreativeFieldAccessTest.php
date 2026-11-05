@@ -62,6 +62,29 @@ class CreativeFieldAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Managers see when a creative last logged in, other creatives do not.
+   *
+   * The creatives finder lists the last access, so Views checks the field
+   * without an entity as well.
+   */
+  public function testLastAccess(): void {
+
+    $creative = $this->createCreative();
+    $other = $this->createCreative();
+    $manager = $this->createManager();
+
+    $this->assertTrue($this->viewAccess($creative, 'access', $manager)->isAllowed(), 'manager');
+    $this->assertFalse($this->viewAccess($creative, 'access', $other)->isAllowed(), 'other creative');
+    $this->assertFalse($this->viewAccess($creative, 'access', new AnonymousUserSession())->isAllowed(), 'anonymous');
+    $this->assertFalse($creative->get('access')->access('edit', $manager));
+
+    $definition = $creative->getFieldDefinition('access');
+    $handler = $this->container->get('entity_type.manager')->getAccessControlHandler('user');
+    $this->assertTrue($handler->fieldAccess('view', $definition, $manager), 'manager, without entity');
+    $this->assertFalse($handler->fieldAccess('view', $definition, $other), 'other creative, without entity');
+  }
+
+  /**
    * Gets the view access to a field of a creative for an account.
    */
   protected function viewAccess(Creative $creative, string $field_name, AccountInterface $account): AccessResult {

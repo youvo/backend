@@ -91,6 +91,12 @@ class CreativeFieldAccess extends FieldAccess {
       return AccessResult::forbidden()->cachePerPermissions()->cachePerUser();
     }
 
+    // Managers may view the last access, which the creatives finder lists.
+    // Core keeps it to administrators, so this has to allow, not stay neutral.
+    if ($field->getName() === 'access' && $operation === 'view') {
+      return AccessResult::allowedIfHasPermission($account, 'general manager access');
+    }
+
     return AccessResult::neutral()->addCacheContexts(['user.roles:anonymous']);
   }
 

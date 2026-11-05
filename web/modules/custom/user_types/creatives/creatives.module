@@ -37,6 +37,15 @@ function creatives_entity_field_access(string $operation, FieldDefinitionInterfa
   ) {
     return CreativeFieldAccess::checkFieldAccessWithoutEntity($operation, $field_definition, $account);
   }
+  // Views checks the last access of the creatives finder without an entity.
+  // It is a base field of all users, so the bundle check above misses it.
+  if ($items === NULL &&
+    $operation === 'view' &&
+    $field_definition->getTargetEntityTypeId() === 'user' &&
+    $field_definition->getName() === 'access'
+  ) {
+    return AccessResult::allowedIfHasPermission($account, 'general manager access');
+  }
   return AccessResult::neutral();
 }
 
