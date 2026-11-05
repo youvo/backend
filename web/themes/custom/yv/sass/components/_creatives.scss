@@ -19,7 +19,7 @@
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   background: var(--yv-surface);
-  box-shadow: inset 0 0 0 1px var(--yv-outline);
+  box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
   list-style: none;
 
   li {
@@ -180,9 +180,10 @@
     font-size: var(--gin-font-size-s);
   }
 
+  // Wide enough for the whole date next to the picker icon.
   input.form-date {
     box-sizing: border-box;
-    width: 9.5rem;
+    width: 11rem;
     height: 2.5rem;
   }
 
@@ -228,8 +229,40 @@
 }
 
 .tagify.creatives-tags {
+  // Tagify's light grey placeholder is too faint to read.
+  --placeholder-color: var(--gin-color-text-light);
+
   width: 100%;
   min-height: 2.5rem;
+  padding-inline-start: 4px !important;
+
+  // The typing line is as high as a tag, its text centered as in the tags,
+  // so tags, placeholder and text share one line, as in the logbook search.
+  // Tagify makes it higher, with the text at the top.
+  > .tagify__input {
+    min-width: 4rem;
+    height: auto;
+    min-height: 32px;
+    margin-block: 2px;
+    margin-inline: 3px 5px;
+    padding-block: 0;
+    line-height: 32px;
+  }
+
+  // Wrapped tags keep a gap between their rows.
+  .tagify__tag {
+    margin-block: 2px !important;
+  }
+}
+
+// The suggestions lie over the filters below: give them an edge, as in the
+// logbook search. Tagify attaches them to the page, outside the field.
+.tagify__dropdown .tagify__dropdown__wrapper {
+  border: 1px solid var(--gin-border-color);
+
+  // It opens below or above the field, so all its corners are round.
+  border-radius: var(--gin-border-m);
+  box-shadow: var(--gin-shadow-l2);
 }
 // stylelint-enable selector-class-pattern
 
@@ -322,7 +355,7 @@ fieldset.creatives-segmented .form-radios {
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   background: var(--yv-surface);
-  box-shadow: inset 0 0 0 1px var(--yv-outline);
+  box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
 
   .form-item {
     display: flex;
