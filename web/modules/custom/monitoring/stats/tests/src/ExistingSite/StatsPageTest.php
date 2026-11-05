@@ -60,7 +60,7 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The top tiles show the current totals, the cohort card the mediation rate.
+   * The top tiles show the totals at the end of the period.
    */
   public function testTotalsAndMediationRate(): void {
 
@@ -68,30 +68,58 @@ class StatsPageTest extends StatsTestBase {
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     $calculator = $this->container->get('stats.calculator');
-    $totals = [
-      'creatives' => ['Registered creatives', $calculator->countCreatives()],
-      'organizations' => ['Registered organizations', $calculator->countOrganizations()],
-      'open' => ['Open projects', $calculator->countOpenProjects()],
-      'ongoing' => ['Ongoing projects', $calculator->countOngoingProjects()],
-      'completed' => ['Completed projects', $calculator->countCompletedProjects()],
-      'mediated' => ['Mediated projects', $calculator->countMediatedProjects()],
+    $labels = [
+      'creatives' => 'Registered creatives',
+      'organizations' => 'Registered organizations',
+      'open' => 'Open projects',
+      'ongoing' => 'Ongoing projects',
+      'completed' => 'Completed projects',
+      'mediated' => 'Mediated projects',
+    ];
+    $methods = [
+      'creatives' => 'countCreatives',
+      'organizations' => 'countOrganizations',
+      'open' => 'countOpenProjects',
+      'ongoing' => 'countOngoingProjects',
+      'completed' => 'countCompletedProjects',
+      'mediated' => 'countMediatedProjects',
     ];
 
-    // The totals ignore the period.
-    foreach ([['period' => 'year', 'year' => 2001], ['period' => 'year', 'year' => 2002]] as $query) {
-      $this->drupalGet('stats', ['query' => $query]);
-      $this->assertSession()->statusCodeEquals(200);
-      $this->assertSession()->elementTextContains('css', '.stats-totals-title', 'Totals');
-      $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'Current, independent of the period');
-      $this->assertCount(6, $this->getSession()->getPage()->findAll('css', '.stats-totals .stats-tile'));
-      foreach ($totals as $key => [$label, $value]) {
-        $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] ';
-        $this->assertSession()->elementTextEquals('css', $tile . '.stats-tile-label', $label);
-        $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile . '.stats-tile-value')->getText()));
-      }
-      foreach (['Published', 'Mediation rate (cohort)', 'Median publish → mediate'] as $label) {
-        $this->assertSession()->elementTextNotContains('css', '.stats-totals', $label);
-      }
+    // Without a period, the page starts on all time and its totals equal the
+    // calculator without a timestamp.
+    $this->drupalGet('stats');
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->elementTextEquals('css', '.stats-period-heading', 'All time');
+    $this->assertSession()->elementTextContains('css', '.stats-totals-title', 'Totals');
+    $today = (new \DateTimeImmutable('now', $this->timezone()))->format('d.m.Y');
+    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of ' . $today);
+    $this->assertCount(6, $this->getSession()->getPage()->findAll('css', '.stats-totals .stats-tile'));
+    foreach ($labels as $key => $label) {
+      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] ';
+      $this->assertSession()->elementTextEquals('css', $tile . '.stats-tile-label', $label);
+      $value = $calculator->{$methods[$key]}();
+      $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile . '.stats-tile-value')->getText()));
+    }
+    $this->assertSession()->elementExists('xpath', '//a[normalize-space()="All time"][@aria-current="page"]');
+
+    // A past period shows the state at its end, 2001-12-31 included.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of 31.12.2001');
+    $expected = ['open' => 4, 'ongoing' => 2, 'completed' => 1, 'mediated' => 3, 'organizations' => 3];
+    foreach ($expected as $key => $value) {
+      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value';
+      $this->assertSame((string) $value, trim($this->assertSession()->elementExists('css', $tile)->getText()));
+    }
+
+    // A period in the future ends today.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2090]]);
+    $this->assertSession()->elementTextContains('css', '.stats-totals-hint', 'As of ' . $today);
+    foreach (['open', 'ongoing', 'completed', 'mediated'] as $key) {
+      $tile = '.stats-totals .stats-tile[data-tile="' . $key . '"] .stats-tile-value';
+      $this->assertSame((string) $calculator->{$methods[$key]}(), trim($this->assertSession()->elementExists('css', $tile)->getText()));
+    }
+    foreach (['Published', 'Mediation rate (cohort)', 'Median publish → mediate'] as $label) {
+      $this->assertSession()->elementTextNotContains('css', '.stats-totals', $label);
     }
 
     // The mediation rate of the cohort moved to the footnote of its card.
@@ -202,7 +230,7 @@ class StatsPageTest extends StatsTestBase {
       $this->assertContains($context, $bubbled->getCacheContexts());
     }
     $this->assertSame(3600, $bubbled->getCacheMaxAge());
-    foreach (['project_list', 'log_list', 'feedback_list', 'user_list', 'course_progress_list'] as $tag) {
+    foreach (['project_list', 'log_list', 'feedback_list', 'user_list'] as $tag) {
       $this->assertContains($tag, $bubbled->getCacheTags());
     }
   }
@@ -221,14 +249,12 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * Bad or removed query arguments fall back to the default period.
+   * Bad or removed query arguments fall back to all time.
    */
   public function testBadQueryArgumentsRender200(): void {
 
     $this->drupalLogin($this->createCreative('creative', 'manager'));
     $organization = $this->createOrganizationUser('organization');
-    $year = (new \DateTimeImmutable('now', $this->timezone()))->format('Y');
-
     $queries = [
       ['from' => 'foo'],
       ['from' => '2026-05-01', 'to' => '2026-04-01'],
@@ -240,7 +266,7 @@ class StatsPageTest extends StatsTestBase {
     foreach ($queries as $query) {
       $this->drupalGet('stats', ['query' => $query]);
       $this->assertSession()->statusCodeEquals(200);
-      $this->assertSession()->elementTextContains('css', '.stats-period-heading', $year);
+      $this->assertSession()->elementTextEquals('css', '.stats-period-heading', 'All time');
     }
   }
 
@@ -280,7 +306,7 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The feedback and academy section renders its charts and tiles.
+   * The feedback section renders its charts.
    */
   public function testFeedbackSectionRenders(): void {
 
@@ -289,7 +315,7 @@ class StatsPageTest extends StatsTestBase {
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('Feedback and academy');
+    $this->assertSession()->elementExists('xpath', '//h2[contains(@class, "stats-section-title")][normalize-space()="Feedback"]');
     foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
@@ -301,8 +327,6 @@ class StatsPageTest extends StatsTestBase {
     // repeat organizations.
     $this->assertSession()->pageTextNotContains('old:');
     $this->assertSession()->pageTextNotContains('Repeat organizations');
-    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-enrolled"] .stats-tile-value');
-    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-completed"] .stats-tile-value');
   }
 
 }

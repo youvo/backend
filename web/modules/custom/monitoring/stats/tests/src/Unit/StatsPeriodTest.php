@@ -47,7 +47,12 @@ class StatsPeriodTest extends UnitTestCase {
    * Tests the default period and the presets with their neighbors.
    */
   public function testDefaultsAndPresets(): void {
-    $year = $this->period([]);
+    $default = $this->period([]);
+    $this->assertSame('2014-01-01 00:00', $this->local($default->from()));
+    $this->assertSame('2027-01-01 00:00', $this->local($default->to()));
+    $this->assertSame(['period' => 'all'], $default->query());
+
+    $year = $this->period(['period' => 'year']);
     $this->assertSame('2026-01-01 00:00', $this->local($year->from()));
     $this->assertSame('2027-01-01 00:00', $this->local($year->to()));
     $this->assertSame(StatsGranularity::Month, $year->granularity());
@@ -229,10 +234,10 @@ class StatsPeriodTest extends UnitTestCase {
   }
 
   /**
-   * Tests that invalid arguments fall back to the default year period.
+   * Tests that invalid arguments fall back to the all time period.
    */
   public function testInvalidInputFallsBack(): void {
-    $default = $this->period([]);
+    $default = $this->period(['period' => 'all']);
     $invalid = [
       ['from' => 'foo'],
       ['period' => 'custom', 'from' => 'foo', 'to' => '2026-01-01'],

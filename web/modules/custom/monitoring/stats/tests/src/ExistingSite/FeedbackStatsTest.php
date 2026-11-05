@@ -3,14 +3,13 @@
 namespace Drupal\Tests\stats\ExistingSite;
 
 use Drupal\feedback\Entity\Feedback;
-use Drupal\progress\Entity\CourseProgress;
 use Drupal\projects\Entity\Project;
 use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\StatsPeriod;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the stats of feedback and academy.
+ * Tests the stats of feedback.
  */
 #[Group('stats')]
 class FeedbackStatsTest extends StatsTestBase {
@@ -82,35 +81,6 @@ class FeedbackStatsTest extends StatsTestBase {
     $this->assertSame(1, $feedback['organization']['count']);
     $this->assertSame(5.0, $feedback['organization']['scales']['field_satisfied_scale']);
     $this->assertNull($feedback['organization']['recommend']);
-  }
-
-  /**
-   * Counts enrollments and completions in the period.
-   */
-  public function testAcademy(): void {
-
-    $courses = $this->container->get('entity_type.manager')->getStorage('course')->loadMultiple();
-    if (!$courses) {
-      $this->markTestSkipped('The site has no course to enroll in.');
-    }
-    $course = reset($courses);
-
-    $before = $this->feedbackStats->academy($this->period);
-    foreach ([['2001-02-01', 0], ['2001-03-01', $this->noon('2001-04-01')]] as [$enrolled, $completed]) {
-      $progress = CourseProgress::create([
-        'uid' => $this->createCreative()->id(),
-        'course' => $course->id(),
-        'enrolled' => $this->noon($enrolled),
-        'accessed' => $this->noon($enrolled),
-        'completed' => $completed,
-      ]);
-      $progress->save();
-      $this->markEntityForCleanup($progress);
-    }
-
-    $academy = $this->feedbackStats->academy($this->period);
-    $this->assertSame($before['enrolled'] + 2, $academy['enrolled']);
-    $this->assertSame($before['completed'] + 1, $academy['completed']);
   }
 
 }

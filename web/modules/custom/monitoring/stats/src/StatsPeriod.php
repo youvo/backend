@@ -55,25 +55,26 @@ class StatsPeriod {
    * Reads period (all, year, quarter, month, custom), year, quarter, month and
    * from/to (Y-m-d, to inclusive). Without a period, a valid from and to
    * select a custom period; one that covers exactly a calendar year, quarter
-   * or month yields that preset. Anything invalid yields the current year.
+   * or month yields that preset. Anything invalid, or no period at all, yields
+   * the all time period.
    */
   public static function fromQuery(array $query, \DateTimeZone $timezone, \DateTimeImmutable $now): static {
     $now = $now->setTimezone($timezone);
     $current_year = (int) $now->format('Y');
-    $default = static::forYear($current_year, $timezone);
+    $all_from = static::midnight(static::ALL_START, $timezone);
+    $all_to = static::midnight($current_year + 1 . '-01-01', $timezone);
+    $default = new static(static::ALL, $all_from, $all_to, StatsGranularity::Year);
 
     $period = $query['period'] ?? NULL;
     if ($period === NULL) {
-      $period = isset($query['from']) || isset($query['to']) ? static::CUSTOM : static::YEAR;
+      $period = isset($query['from']) || isset($query['to']) ? static::CUSTOM : static::ALL;
     }
     if (!is_string($period)) {
       return $default;
     }
 
     if ($period === static::ALL) {
-      $from = static::midnight(static::ALL_START, $timezone);
-      $to = static::midnight($current_year + 1 . '-01-01', $timezone);
-      return new static(static::ALL, $from, $to, StatsGranularity::Year);
+      return $default;
     }
 
     if ($period === static::CUSTOM) {

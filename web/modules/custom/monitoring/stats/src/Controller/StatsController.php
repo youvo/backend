@@ -75,14 +75,16 @@ class StatsController implements ContainerInjectionInterface {
       'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
     ];
 
-    // The totals are current and ignore the period.
+    // The totals show the state at the end of the period, or now.
+    $until = min($period->to()->getTimestamp(), $now->getTimestamp());
+    $last_day = $until === $now->getTimestamp() ? $now : $period->to()->modify('-1 day');
     $kpis = [
-      $this->tile('creatives', $this->t('Registered creatives'), $this->calculator->countCreatives(), 'count'),
-      $this->tile('organizations', $this->t('Registered organizations'), $this->calculator->countOrganizations(), 'count'),
-      $this->tile('open', $this->t('Open projects'), $this->calculator->countOpenProjects(), 'count'),
-      $this->tile('ongoing', $this->t('Ongoing projects'), $this->calculator->countOngoingProjects(), 'count'),
-      $this->tile('completed', $this->t('Completed projects'), $this->calculator->countCompletedProjects(), 'count'),
-      $this->tile('mediated', $this->t('Mediated projects'), $this->calculator->countMediatedProjects(), 'count'),
+      $this->tile('creatives', $this->t('Registered creatives'), $this->calculator->countCreatives($until), 'count'),
+      $this->tile('organizations', $this->t('Registered organizations'), $this->calculator->countOrganizations($until), 'count'),
+      $this->tile('open', $this->t('Open projects'), $this->calculator->countOpenProjects($until), 'count'),
+      $this->tile('ongoing', $this->t('Ongoing projects'), $this->calculator->countOngoingProjects($until), 'count'),
+      $this->tile('completed', $this->t('Completed projects'), $this->calculator->countCompletedProjects($until), 'count'),
+      $this->tile('mediated', $this->t('Mediated projects'), $this->calculator->countMediatedProjects($until), 'count'),
     ];
 
     return [
@@ -91,6 +93,7 @@ class StatsController implements ContainerInjectionInterface {
       '#period_bar' => $this->periodBar($period, $timezone, $now),
       '#range_form' => $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')),
       '#kpis' => $kpis,
+      '#totals_date' => $last_day->format('d.m.Y'),
       '#sections' => [
         'growth' => $this->growthSection($period),
         'projects' => $this->projectsSection($period, $current),
@@ -100,7 +103,7 @@ class StatsController implements ContainerInjectionInterface {
         'feedback' => $this->feedbackSection($period),
       ],
       '#cache' => [
-        'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list', 'course_progress_list'],
+        'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list'],
         'contexts' => [
           'url.query_args:period',
           'url.query_args:year',
@@ -331,7 +334,7 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the feedback and academy section.
+   * Builds the feedback section.
    *
    * @return array<string, mixed>
    *   The section render array.
@@ -339,7 +342,6 @@ class StatsController implements ContainerInjectionInterface {
   protected function feedbackSection(StatsPeriod $period): array {
 
     $feedback = $this->feedbackStats->feedback($period);
-    $academy = $this->feedbackStats->academy($period);
     $bundle_titles = [
       'creative' => $this->t('Feedback from creatives'),
       'organization' => $this->t('Feedback from organizations'),
@@ -362,13 +364,7 @@ class StatsController implements ContainerInjectionInterface {
       $cards['feedback_' . $bundle] = StatsCharts::card($chart, wide: TRUE);
     }
 
-    $tiles = [
-      $this->tile('academy-enrolled', $this->t('Enrolled in courses'), $academy['enrolled'], 'count'),
-      $this->tile('academy-completed', $this->t('Completed courses'), $academy['completed'], 'count'),
-    ];
-    $cards['tiles'] = $this->tiles($tiles);
-
-    $heading = $this->heading($this->t('Feedback and academy'));
+    $heading = $this->heading($this->t('Feedback'));
     return $this->section($heading, $cards);
   }
 

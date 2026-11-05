@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\stats\StatsPeriod;
 
 /**
- * Computes the stats of feedback and the academy.
+ * Computes the stats of feedback.
  */
 class FeedbackStats {
 
@@ -68,26 +68,6 @@ class FeedbackStats {
         'scales' => $scales,
         'recommend' => $recommend,
       ];
-    }
-    return $result;
-  }
-
-  /**
-   * Counts the enrollments and completions in the period.
-   *
-   * @return array{enrolled: int, completed: int}
-   *   The course progress entries enrolled and completed in the period.
-   */
-  public function academy(StatsPeriod $period): array {
-
-    $result = [];
-    foreach (['enrolled', 'completed'] as $column) {
-      $result[$column] = (int) $this->database->select('course_progress', 'c')
-        ->condition('c.' . $column, $period->from()->getTimestamp(), '>=')
-        ->condition('c.' . $column, $period->to()->getTimestamp(), '<')
-        ->countQuery()
-        ->execute()
-        ->fetchField();
     }
     return $result;
   }
