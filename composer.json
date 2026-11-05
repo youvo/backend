@@ -37,6 +37,7 @@
         "drupal/mail_login": "^4.0",
         "drupal/multivalue_form_element": "^1.0@beta",
         "drupal/nomarkup": "^1.0",
+        "drupal/password_policy": "^4.0",
         "drupal/responsive_favicons": "^4.0",
         "drupal/simple_oauth": "^6.1",
         "drupal/subrequests": "^3.0",

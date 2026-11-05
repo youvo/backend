@@ -64,6 +64,8 @@ module:
   organizations: 0
   page_cache: 0
   paragraphs: 0
+  password_policy_length: 0
+  password_policy_username: 0
   path: 0
   path_alias: 0
   phpass: 0
@@ -95,6 +97,7 @@ module:
   youvo: 0
   content_translation: 10
   image_style_warmer: 10
+  password_policy: 10
   views: 10
   youvo_platform: 1000
 theme:

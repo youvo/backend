@@ -9,8 +9,11 @@ dependencies:
     - field.field.user.user.field_city
     - field.field.user.user.field_education
     - field.field.user.user.field_jobs
+    - field.field.user.user.field_last_password_reset
     - field.field.user.user.field_name
     - field.field.user.user.field_newsletter
+    - field.field.user.user.field_password_expiration
+    - field.field.user.user.field_pending_expire_sent
     - field.field.user.user.field_phone
     - field.field.user.user.field_portfolio
     - field.field.user.user.field_position
@@ -116,7 +119,10 @@ content:
     region: content
 hidden:
   field_jobs: true
+  field_last_password_reset: true
   field_newsletter: true
+  field_password_expiration: true
+  field_pending_expire_sent: true
   field_phone: true
   field_public_profile: true
   langcode: true

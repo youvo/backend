@@ -209,3 +209,21 @@ resourceFields:
     publicName: url
     enhancer:
       id: ''
+  field_last_password_reset:
+    disabled: true
+    fieldName: field_last_password_reset
+    publicName: field_last_password_reset
+    enhancer:
+      id: ''
+  field_password_expiration:
+    disabled: true
+    fieldName: field_password_expiration
+    publicName: field_password_expiration
+    enhancer:
+      id: ''
+  field_pending_expire_sent:
+    disabled: true
+    fieldName: field_pending_expire_sent
+    publicName: field_pending_expire_sent
+    enhancer:
+      id: ''
