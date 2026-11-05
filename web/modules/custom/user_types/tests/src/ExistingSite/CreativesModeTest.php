@@ -53,7 +53,7 @@ class CreativesModeTest extends CreativesTestBase {
   }
 
   /**
-   * The table sorts by all headers but the skills, the profiles keep theirs.
+   * The table sorts by its headers but the skills, the profiles by last access.
    */
   public function testTableHeadersSort(): void {
 

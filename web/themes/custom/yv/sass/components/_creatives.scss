@@ -155,7 +155,8 @@ $field-height: 2.5rem;
     margin-inline: 0;
   }
 
-  // Sets the buttons apart; on the right, it never indents a wrapped row.
+  // Sets the buttons apart from the skills; on the right, it never indents a
+  // wrapped row.
   > .creatives-skills {
     margin-inline-end: var(--gin-spacing-m);
   }
@@ -394,7 +395,7 @@ fieldset.creatives-segmented .form-radios {
   padding-inline-start: var(--gin-spacing-xxs) !important;
 
   // Tagify makes the typing line higher, with the text at the top. As high as
-  // a tag, tags, placeholder and text share a line, as in the logbook search.
+  // a tag, it shares a line with the tags, as in the logbook search.
   > .tagify__input {
     min-width: 4rem;
     height: auto;
