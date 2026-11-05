@@ -415,6 +415,23 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that a configurator counts as staff, too.
+   */
+  public function testConfiguratorRecipient(): void {
+
+    $project = $this->createProject();
+    $organization = $project->getOwner();
+    $organization->addRole('configurator');
+    $organization->save();
+    $path = $this->door($organization, $project, DoorTarget::Applicants);
+
+    $this->pressDoor($path);
+
+    $this->assertCount(0, $this->follows($project));
+    $this->assertSame(0, $this->lastLogin($organization));
+  }
+
+  /**
    * Tests that a door does not switch a signed-in account.
    */
   public function testOtherUserSignedIn(): void {
