@@ -12,7 +12,9 @@ use Symfony\Component\Routing\Route;
  * Organizations, managers and supervisors manage projects through the frontend
  * and the manager pane. The entity forms save the action fields (status,
  * promote, lifecycle) without events, so only administrators may use them.
- * The canonical route keeps the entity view access.
+ * The canonical route is for staff only and keeps the entity view access. The
+ * frontend reads projects through JSON:API, which checks the entity access
+ * but not this route.
  */
 class ProjectHtmlRouteProvider extends AdminHtmlRouteProvider {
 
@@ -20,6 +22,13 @@ class ProjectHtmlRouteProvider extends AdminHtmlRouteProvider {
    * The permission required for the project admin forms.
    */
   public const string PERMISSION = 'access project admin forms';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCanonicalRoute(EntityTypeInterface $entity_type): ?Route {
+    return parent::getCanonicalRoute($entity_type)?->setRequirement('_permission', 'access site');
+  }
 
   /**
    * {@inheritdoc}
