@@ -2,8 +2,11 @@
 
 namespace Drupal\manager\Hook;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\views\ViewExecutable;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Views hook implementations for the creatives finder.
@@ -11,6 +14,10 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 class CreativesViewsHooks {
 
   use StringTranslationTrait;
+
+  public function __construct(
+    protected RequestStack $requestStack,
+  ) {}
 
   /**
    * Implements hook_views_data_alter().
@@ -60,6 +67,69 @@ class CreativesViewsHooks {
         'filter' => ['id' => 'creatives_city', 'real field' => 'field_city_value'],
       ];
     }
+    $data['views']['creatives_mode_toggle'] = [
+      'title' => $this->t('Creatives: Mode toggle'),
+      'help' => $this->t('Links the table and the profiles mode of the creatives finder.'),
+      'area' => ['id' => 'creatives_mode_toggle'],
+    ];
+  }
+
+  /**
+   * Implements hook_views_pre_view().
+   *
+   * With ?mode=profiles, the page of the creatives finder shows the cards of
+   * the profiles display: it takes over its style, row and pager. The filters,
+   * the sorts and the exposed form stay those of the page. The hook runs
+   * before the view builds, so the style and pager plugins are not created
+   * yet and take the overridden options.
+   */
+  #[Hook('views_pre_view')]
+  public function viewsPreView(ViewExecutable $view, string $display_id, array &$args): void {
+    if ($view->id() !== 'creatives' || $display_id !== 'page' || !$this->isProfilesMode()) {
+      return;
+    }
+    $profiles = $view->displayHandlers->get('profiles');
+    if ($profiles === NULL) {
+      return;
+    }
+    foreach (['style', 'row', 'pager'] as $option) {
+      $view->display_handler->overrideOption($option, $profiles->getOption($option));
+    }
+  }
+
+  /**
+   * Implements hook_views_pre_render().
+   */
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view): void {
+    if ($view->id() === 'creatives') {
+      $view->element['#cache']['contexts'][] = 'url.query_args:mode';
+    }
+  }
+
+  /**
+   * Implements hook_form_FORM_ID_alter() for views_exposed_form.
+   *
+   * Filtering in the profiles mode of the creatives finder stays in it.
+   */
+  #[Hook('form_views_exposed_form_alter')]
+  public function formViewsExposedFormAlter(array &$form, FormStateInterface $form_state): void {
+    $view = $form_state->get('view');
+    if (!$view instanceof ViewExecutable || $view->id() !== 'creatives' || $view->current_display !== 'page') {
+      return;
+    }
+    if ($this->isProfilesMode()) {
+      $form['mode'] = ['#type' => 'hidden', '#value' => 'profiles'];
+    }
+  }
+
+  /**
+   * Whether the current request asks for the profiles mode.
+   *
+   * Only "profiles" is a mode; any other value means the table.
+   */
+  protected function isProfilesMode(): bool {
+    return $this->requestStack->getCurrentRequest()?->query->get('mode') === 'profiles';
   }
 
 }

@@ -1034,7 +1034,16 @@ display:
       relationships: {  }
       use_ajax: false
       show_admin_links: false
-      header: {  }
+      header:
+        creatives_mode_toggle:
+          id: creatives_mode_toggle
+          table: views
+          field: creatives_mode_toggle
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: creatives_mode_toggle
+          empty: true
       footer: {  }
       display_extenders: {  }
   page:
@@ -1047,4 +1056,49 @@ display:
       display_extenders: {  }
       path: creatives
       use_admin_theme: true
-
+  profiles:
+    id: profiles
+    display_title: Profiles
+    display_plugin: embed
+    position: 2
+    display_options:
+      pager:
+        type: full
+        options:
+          offset: 0
+          pagination_heading_level: h4
+          items_per_page: 20
+          total_pages: null
+          id: 0
+          tags:
+            next: ››
+            previous: ‹‹
+            first: '« First'
+            last: 'Last »'
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+          quantity: 9
+      style:
+        type: default
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          uses_fields: false
+      row:
+        type: 'entity:user'
+        options:
+          relationship: none
+          view_mode: default
+      defaults:
+        pager: false
+        style: false
+        row: false
+      display_description: ''
+      display_extenders: {  }
