@@ -47,13 +47,14 @@ class StatsRangeForm extends FormBase {
       '#type' => 'date',
       '#title' => $this->t('From'),
       '#default_value' => $from,
-      '#required' => TRUE,
+      // validateForm() asks for missing days, without the required markers.
+      '#required' => FALSE,
     ];
     $form['to'] = [
       '#type' => 'date',
       '#title' => $this->t('To'),
       '#default_value' => $to,
-      '#required' => TRUE,
+      '#required' => FALSE,
     ];
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
@@ -74,15 +75,22 @@ class StatsRangeForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
 
-    // The required fields already report missing days.
+    $from_value = $form_state->getValue('from');
+    $to_value = $form_state->getValue('to');
+    if ($from_value === '' || $from_value === NULL) {
+      $form_state->setErrorByName('from', $this->t('Enter a start date.'));
+    }
+    if ($to_value === '' || $to_value === NULL) {
+      $form_state->setErrorByName('to', $this->t('Enter an end date.'));
+    }
     if ($form_state->getErrors()) {
       return;
     }
 
     // The same parser as the query, so the form accepts what the page shows.
     $timezone = new \DateTimeZone('UTC');
-    $from = StatsPeriod::parseDate($form_state->getValue('from'), $timezone);
-    $to = StatsPeriod::parseDate($form_state->getValue('to'), $timezone);
+    $from = StatsPeriod::parseDate($from_value, $timezone);
+    $to = StatsPeriod::parseDate($to_value, $timezone);
     if ($from === NULL) {
       $form_state->setErrorByName('from', $this->t('Enter a valid start date.'));
     }

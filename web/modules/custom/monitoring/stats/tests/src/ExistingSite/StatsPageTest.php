@@ -36,7 +36,7 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The period bar links between periods.
+   * The period bar switches the type and steps between periods.
    */
   public function testPeriodBar(): void {
 
@@ -45,18 +45,59 @@ class StatsPageTest extends StatsTestBase {
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2001');
+    $this->assertSession()->elementTextEquals('css', '.stats-stepper .stats-period-heading', '2001');
     $this->assertSession()->pageTextNotContains('vs ');
-
-    // The period bar holds the presets, the neighbor years and the range form,
-    // without the removed comparison and manager filter.
     $this->assertSession()->fieldNotExists('compare');
     $this->assertSession()->fieldNotExists('manager');
-    $this->assertSession()->linkExists('All time');
-    $this->assertSession()->linkExists('‹ 2000');
-    $this->assertSession()->linkExists('2002 ›');
-    $this->clickLink('2002 ›');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2002');
+
+    // The segments switch the type around the period being viewed.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2024]]);
+    $expected = [
+      'all' => ['period' => 'all'],
+      'year' => ['period' => 'year', 'year' => '2024'],
+      'quarter' => ['period' => 'quarter', 'year' => '2024', 'quarter' => '4'],
+      'month' => ['period' => 'month', 'year' => '2024', 'month' => '12'],
+      'custom' => ['period' => 'custom', 'from' => '2024-01-01', 'to' => '2024-12-31'],
+    ];
+    foreach ($expected as $type => $query) {
+      $segment = $this->assertSession()->elementExists('css', '.stats-segments a.stats-segment[data-segment="' . $type . '"]');
+      $this->assertSame($query, $this->linkQuery($segment->getAttribute('href')), $type);
+      $this->assertSame($type === 'year' ? 'page' : NULL, $segment->getAttribute('aria-current'), $type);
+    }
+
+    // The stepper links the neighbors by their labels.
+    $previous = $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"][rel="prev"]');
+    $this->assertSame('Previous period: 2023', $previous->getAttribute('aria-label'));
+    $next = $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="next"][rel="next"]');
+    $this->assertSame('Next period: 2025', $next->getAttribute('aria-label'));
+    $next->click();
+    $this->assertSession()->elementTextEquals('css', '.stats-period-heading', '2025');
+
+    // The current period has a disabled next step without a target.
+    $this->drupalGet('stats', ['query' => ['period' => 'quarter']]);
+    $now = new \DateTimeImmutable('now', $this->timezone());
+    $label = 'Q' . (intdiv((int) $now->format('n') - 1, 3) + 1) . ' ' . $now->format('Y');
+    $this->assertSession()->elementTextEquals('css', '.stats-stepper .stats-period-heading', $label);
+    $disabled = $this->assertSession()->elementExists('css', '.stats-stepper [data-step="next"][aria-disabled="true"]');
+    $this->assertFalse($disabled->hasAttribute('href'));
+    $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"][href]');
+
+    // All time has no steps.
+    $this->drupalGet('stats');
+    $this->assertSession()->elementNotExists('css', '.stats-step');
+    $this->assertSession()->elementExists('css', 'a.stats-segment[data-segment="all"][aria-current="page"]');
+  }
+
+  /**
+   * Gets the query arguments of a link.
+   *
+   * @return array<string, string>
+   *   The arguments.
+   */
+  protected function linkQuery(string $href): array {
+    $query = [];
+    parse_str((string) parse_url($href, PHP_URL_QUERY), $query);
+    return $query;
   }
 
   /**
@@ -130,37 +171,49 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The range form selects a custom period, or the preset it covers.
+   * The range form of custom periods selects a custom period.
    */
   public function testRangeForm(): void {
 
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
-    // Gin styles the date fields and the primary button of the native form.
+    // Presets have no range form.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->elementNotExists('css', '.stats-range-form');
+    $this->drupalGet('stats');
+    $this->assertSession()->elementNotExists('css', '.stats-range-form');
+
+    // Gin styles the date fields and the primary button of the native form,
+    // without required markers.
+    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => '2001-01-01', 'to' => '2001-12-31']]);
+    $this->assertSession()->elementTextEquals('css', '.stats-period-heading', '01.01.2001 – 31.12.2001');
+    $this->assertSession()->elementExists('css', 'a.stats-segment[data-segment="custom"][aria-current="page"]');
     $from = $this->assertSession()->elementExists('css', '.stats-range-form input[name="from"].form-element--type-date');
     $this->assertSame('2001-01-01', $from->getValue());
     $to = $this->assertSession()->elementExists('css', '.stats-range-form input[name="to"].form-element--type-date');
     $this->assertSame('2001-12-31', $to->getValue());
     $this->assertSession()->elementExists('css', '.stats-range-form input.button--primary[value="Apply"]');
+    $this->assertSession()->elementNotExists('css', '.stats-range-form [required], .stats-range-form .form-required');
 
     $this->submitForm(['from' => '2001-03-05', 'to' => '2001-04-20'], 'Apply');
-    $query = [];
-    parse_str((string) parse_url($this->getUrl(), PHP_URL_QUERY), $query);
-    $this->assertSame(['period' => 'custom', 'from' => '2001-03-05', 'to' => '2001-04-20'], $query);
+    $this->assertSame(['period' => 'custom', 'from' => '2001-03-05', 'to' => '2001-04-20'], $this->linkQuery($this->getUrl()));
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '05.03.2001 – 20.04.2001');
-    $this->assertSession()->linkExists('‹ 17.01.2001 – 04.03.2001');
+    $previous = $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"]');
+    $this->assertSame('Previous period: 17.01.2001 – 04.03.2001', $previous->getAttribute('aria-label'));
     $this->assertSame('2001-03-05', $this->assertSession()->fieldExists('from')->getValue());
 
-    // A range covering a calendar quarter is that quarter.
+    // A range covering a calendar quarter stays custom, so the form stays.
     $this->submitForm(['from' => '2001-04-01', 'to' => '2001-06-30'], 'Apply');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', 'Q2 2001');
-    $this->assertSession()->linkExists('‹ Q1 2001');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2001 – 30.06.2001');
+    $this->assertSession()->elementExists('css', '.stats-range-form');
 
-    // A range ending before it starts stays on the form with an error.
+    // Missing days and a range ending before it starts stay on the form.
+    $this->submitForm(['from' => '', 'to' => ''], 'Apply');
+    $this->assertSession()->pageTextContains('Enter a start date.');
+    $this->assertSession()->pageTextContains('Enter an end date.');
     $this->submitForm(['from' => '2001-05-01', 'to' => '2001-04-01'], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be before the start date.');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', 'Q2 2001');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2001 – 30.06.2001');
   }
 
   /**

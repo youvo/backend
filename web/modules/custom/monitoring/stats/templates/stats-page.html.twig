@@ -4,39 +4,37 @@
  * The stats page: period card, KPI tiles and the sections of the charts.
  *
  * Available variables:
- * - period_bar: The heading, the preset links and the navigation links.
- * - range_form: The form of a custom date range.
+ * - period_bar: The heading, the type segments and the steps to the previous
+ *   and next period, a step without url disabled.
+ * - range_form: The form of a custom date range, for custom periods only.
  * - kpis: The tiles of the totals with value and label.
  * - totals_date: The formatted date the totals are as of.
  * - sections: The render array of the chart sections.
  */
 #}
 <div class="stats-page">
-  <div class="stats-period">
-    <p class="stats-period-label">{{ 'Period'|t }}</p>
-    <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
+  <nav class="stats-period" aria-label="{{ 'Period'|t }}">
+    <div class="stats-period-bar">
+      <ul class="stats-segments" aria-label="{{ 'Period type'|t }}">
+        {% for segment in period_bar.segments %}
+          <li><a href="{{ segment.url }}" class="stats-segment" data-segment="{{ segment.type }}"{% if segment.active %} aria-current="page"{% endif %}>{{ segment.label }}</a></li>
+        {% endfor %}
+      </ul>
 
-    <div class="stats-period-controls">
-      <div class="stats-period-links">
-        <ul class="stats-pills" aria-label="{{ 'Periods'|t }}">
-          {% for preset in period_bar.presets %}
-            <li><a href="{{ preset.url }}" class="stats-pill"{% if preset.active %} aria-current="page"{% endif %}>{{ preset.label }}</a></li>
-          {% endfor %}
-        </ul>
-
-        {% if period_bar.navigation %}
-          <ul class="stats-pills" aria-label="{{ 'Neighbor periods'|t }}">
-            <li><a href="{{ period_bar.navigation.previous.url }}" class="stats-pill" rel="prev">{{ period_bar.navigation.previous.label }}</a></li>
-            {% if period_bar.navigation.next %}
-              <li><a href="{{ period_bar.navigation.next.url }}" class="stats-pill" rel="next">{{ period_bar.navigation.next.label }}</a></li>
-            {% endif %}
-          </ul>
+      {% import _self as stats %}
+      <div class="stats-stepper">
+        {% if period_bar.steps.previous %}
+          {{ stats.step('previous', period_bar.steps.previous) }}
+        {% endif %}
+        <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
+        {% if period_bar.steps.next %}
+          {{ stats.step('next', period_bar.steps.next) }}
         {% endif %}
       </div>
-
-      {{ range_form }}
     </div>
-  </div>
+
+    {{ range_form }}
+  </nav>
 
   <section class="stats-totals" aria-labelledby="stats-totals-title">
     <h2 class="stats-totals-title" id="stats-totals-title">{{ 'Totals'|t }}</h2>
@@ -46,3 +44,15 @@
 
   {{ sections }}
 </div>
+
+{% macro step(direction, step) %}
+  {% set rel = direction == 'previous' ? 'prev' : 'next' %}
+  {% set icon %}
+    <svg class="stats-step-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="{{ direction == 'previous' ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5' }}" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  {% endset %}
+  {% if step.url %}
+    <a href="{{ step.url }}" class="stats-step" data-step="{{ direction }}" rel="{{ rel }}" aria-label="{{ step.label }}" title="{{ step.label }}">{{ icon }}</a>
+  {% else %}
+    <a class="stats-step" data-step="{{ direction }}" role="link" aria-disabled="true" aria-label="{{ step.label }}">{{ icon }}</a>
+  {% endif %}
+{% endmacro %}

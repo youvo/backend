@@ -167,7 +167,7 @@ class StatsPeriodTest extends UnitTestCase {
         'January 2026',
       ],
       'leap month' => [
-        ['period' => 'custom', 'from' => '2024-02-01', 'to' => '2024-02-29'],
+        ['from' => '2024-02-01', 'to' => '2024-02-29'],
         ['period' => 'month', 'year' => '2024', 'month' => '2'],
         StatsGranularity::Day,
         'January 2024',
@@ -201,6 +201,44 @@ class StatsPeriodTest extends UnitTestCase {
     foreach ($unaligned as $range) {
       $this->assertSame(['period' => 'custom'] + $range, $this->period($range)->query(), json_encode($range));
     }
+
+    // An explicit custom period stays custom, so the range form stays open.
+    $explicit = ['period' => 'custom', 'from' => '2024-02-01', 'to' => '2024-02-29'];
+    $this->assertSame($explicit, $this->period($explicit)->query());
+    $this->assertSame(StatsPeriod::CUSTOM, $this->period($explicit)->type());
+  }
+
+  /**
+   * Tests switching the type around the period being viewed.
+   */
+  public function testWithGranularity(): void {
+    $switch = fn(array $query, string $type): array => $this->period($query)->withGranularity($type, $this->now())->query();
+
+    // A past period switches around its last day.
+    $year = ['period' => 'year', 'year' => '2024'];
+    $this->assertSame(['period' => 'quarter', 'year' => '2024', 'quarter' => '4'], $switch($year, 'quarter'));
+    $this->assertSame(['period' => 'month', 'year' => '2024', 'month' => '12'], $switch($year, 'month'));
+    $quarter = ['period' => 'quarter', 'year' => '2024', 'quarter' => '2'];
+    $this->assertSame(['period' => 'year', 'year' => '2024'], $switch($quarter, 'year'));
+    $this->assertSame(['period' => 'month', 'year' => '2024', 'month' => '6'], $switch($quarter, 'month'));
+
+    // A running period switches around today.
+    $current = ['period' => 'year', 'year' => '2026'];
+    $this->assertSame(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'], $switch($current, 'quarter'));
+    $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch($current, 'month'));
+    $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch(['period' => 'all'], 'month'));
+    $future = ['period' => 'year', 'year' => '2030'];
+    $this->assertSame(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'], $switch($future, 'quarter'));
+    $this->assertSame(['period' => 'all'], $switch($quarter, 'all'));
+
+    // Custom keeps the days, all time runs until today.
+    $this->assertSame(['period' => 'custom', 'from' => '2024-04-01', 'to' => '2024-06-30'], $switch($quarter, 'custom'));
+    $range = ['period' => 'custom', 'from' => '2025-03-05', 'to' => '2025-04-20'];
+    $this->assertSame($range, $switch($range, 'custom'));
+    $this->assertSame(['period' => 'quarter', 'year' => '2025', 'quarter' => '2'], $switch($range, 'quarter'));
+    $this->assertSame(['period' => 'custom', 'from' => '2014-01-01', 'to' => '2026-11-05'], $switch(['period' => 'all'], 'custom'));
+    $custom = $this->period(['period' => 'quarter', 'year' => '2024', 'quarter' => '2'])->withGranularity('custom', $this->now());
+    $this->assertSame(StatsGranularity::Month, $custom->granularity());
   }
 
   /**

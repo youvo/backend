@@ -92,8 +92,9 @@ class StatsController implements ContainerInjectionInterface {
     return [
       '#theme' => 'stats_page',
       '#attached' => ['library' => ['stats/charts']],
-      '#period_bar' => $this->periodBar($period, $timezone, $now),
-      '#range_form' => $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')),
+      '#period_bar' => $this->periodBar($period, $now),
+      // The range form belongs to custom periods only.
+      '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')) : [],
       '#kpis' => $kpis,
       '#totals_date' => $last_day->format('d.m.Y'),
       '#sections' => [
@@ -485,44 +486,52 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the period bar: presets and navigation links.
+   * Builds the period bar: the type segments and the stepper.
    *
    * @return array<string, mixed>
    *   The variables of the bar.
    */
-  protected function periodBar(StatsPeriod $period, \DateTimeZone $timezone, \DateTimeImmutable $now): array {
+  protected function periodBar(StatsPeriod $period, \DateTimeImmutable $now): array {
 
-    $link = fn(array $query): string => Url::fromRoute('stats.overview', [], ['query' => $query])->toString();
+    $link = fn(StatsPeriod $target): string => Url::fromRoute('stats.overview', [], ['query' => $target->query()])->toString();
 
-    $presets = [];
+    $segments = [];
     $labels = [
-      'all' => $this->t('All time'),
-      'year' => NULL,
-      'quarter' => NULL,
-      'month' => NULL,
+      StatsPeriod::ALL => $this->t('All time'),
+      StatsPeriod::YEAR => $this->t('Year'),
+      StatsPeriod::QUARTER => $this->t('Quarter'),
+      StatsPeriod::MONTH => $this->t('Month'),
+      StatsPeriod::CUSTOM => $this->t('Custom'),
     ];
     foreach ($labels as $type => $label) {
-      $preset = StatsPeriod::fromQuery(['period' => $type], $timezone, $now);
-      $presets[] = [
-        'label' => $label ?? $preset->label(),
-        'url' => $link($preset->query()),
-        'active' => $preset->query() === $period->query(),
+      $segments[] = [
+        'type' => $type,
+        'label' => $label,
+        'url' => $link($period->withGranularity($type, $now)),
+        'active' => $period->type() === $type,
       ];
     }
 
-    $navigation = [];
-    if ($period->query() !== ['period' => 'all']) {
+    // All time has no neighbors. A neighbor beyond the current time is shown
+    // disabled.
+    $steps = [];
+    if ($period->type() !== StatsPeriod::ALL) {
       $previous = $period->previous();
       $next = $period->next();
-      $navigation['previous'] = ['label' => '‹ ' . $previous->label(), 'url' => $link($previous->query())];
-      // No period beyond the current time.
-      $navigation['next'] = $next->from() <= $now ? ['label' => $next->label() . ' ›', 'url' => $link($next->query())] : NULL;
+      $steps['previous'] = [
+        'label' => $this->t('Previous period: @period', ['@period' => $previous->label()]),
+        'url' => $link($previous),
+      ];
+      $steps['next'] = [
+        'label' => $next->from() <= $now ? $this->t('Next period: @period', ['@period' => $next->label()]) : $this->t('No next period'),
+        'url' => $next->from() <= $now ? $link($next) : NULL,
+      ];
     }
 
     return [
       'heading' => $period->label(),
-      'presets' => $presets,
-      'navigation' => $navigation,
+      'segments' => $segments,
+      'steps' => $steps,
     ];
   }
 

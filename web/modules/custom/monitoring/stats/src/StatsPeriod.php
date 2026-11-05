@@ -55,18 +55,18 @@ class StatsPeriod {
    * Reads period (all, year, quarter, month, custom), year, quarter, month and
    * from/to (Y-m-d, to inclusive). Without a period, a valid from and to
    * select a custom period; one that covers exactly a calendar year, quarter
-   * or month yields that preset. Anything invalid, or no period at all, yields
+   * or month yields that preset. An explicit custom period stays custom, so
+   * the range form stays open. Anything invalid, or no period at all, yields
    * the all time period.
    */
   public static function fromQuery(array $query, \DateTimeZone $timezone, \DateTimeImmutable $now): static {
     $now = $now->setTimezone($timezone);
     $current_year = (int) $now->format('Y');
-    $all_from = static::midnight(static::ALL_START, $timezone);
-    $all_to = static::midnight($current_year + 1 . '-01-01', $timezone);
-    $default = new static(static::ALL, $all_from, $all_to, StatsGranularity::Year);
+    $default = static::forAll($timezone, $now);
 
     $period = $query['period'] ?? NULL;
-    if ($period === NULL) {
+    $explicit = $period !== NULL;
+    if (!$explicit) {
       $period = isset($query['from']) || isset($query['to']) ? static::CUSTOM : static::ALL;
     }
     if (!is_string($period)) {
@@ -84,9 +84,9 @@ class StatsPeriod {
         return $default;
       }
       $to = $last->modify('+1 day');
-      // A range covering a calendar year, quarter or month is that preset, so
-      // the form keeps presets when it submits their dates.
-      if ((int) $from->format('j') === 1) {
+      // A bare range covering a calendar year, quarter or month is that
+      // preset.
+      if (!$explicit && (int) $from->format('j') === 1) {
         $month = (int) $from->format('n');
         if ($month === 1 && $to == $from->modify('+1 year')) {
           return static::forYear((int) $from->format('Y'), $timezone);
@@ -98,13 +98,7 @@ class StatsPeriod {
           return static::forMonth($from);
         }
       }
-      $days = (int) $from->diff($to)->days;
-      $granularity = match (TRUE) {
-        $days <= 62 => StatsGranularity::Day,
-        $days <= 366 => StatsGranularity::Month,
-        default => StatsGranularity::Year,
-      };
-      return new static(static::CUSTOM, $from, $to, $granularity);
+      return static::forRange($from, $to);
     }
 
     $year = static::parseInt($query['year'] ?? $current_year, static::MIN_YEAR, static::MAX_YEAR);
@@ -129,6 +123,59 @@ class StatsPeriod {
       return static::forMonth(static::midnight(sprintf('%04d-%02d-01', $year, $month), $timezone));
     }
     return $default;
+  }
+
+  /**
+   * Gets the period of the same kind around the period being viewed.
+   *
+   * The new period contains the anchor: the last day of this period, or today
+   * if this period has not ended. A custom period keeps the days of this one,
+   * all time running until today.
+   *
+   * @param string $type
+   *   One of all, year, quarter, month and custom.
+   * @param \DateTimeImmutable $now
+   *   The current time.
+   */
+  public function withGranularity(string $type, \DateTimeImmutable $now): static {
+
+    $timezone = $this->from->getTimezone();
+    $today = $now->setTimezone($timezone)->setTime(0, 0);
+    $anchor = min($this->to->modify('-1 day'), $today);
+
+    $year = (int) $anchor->format('Y');
+    $month = (int) $anchor->format('n');
+    return match ($type) {
+      static::YEAR => static::forYear($year, $timezone),
+      static::QUARTER => static::forQuarter($anchor->setDate($year, $month - ($month - 1) % 3, 1)),
+      static::MONTH => static::forMonth($anchor->setDate($year, $month, 1)),
+      static::CUSTOM => $this->type === static::ALL
+        ? static::forRange($this->from, $today->modify('+1 day'))
+        : static::forRange($this->from, $this->to),
+      default => static::forAll($timezone, $now),
+    };
+  }
+
+  /**
+   * Creates the all time period, until the end of the current year.
+   */
+  protected static function forAll(\DateTimeZone $timezone, \DateTimeImmutable $now): static {
+    $next_year = (int) $now->setTimezone($timezone)->format('Y') + 1;
+    $from = static::midnight(static::ALL_START, $timezone);
+    return new static(static::ALL, $from, static::midnight($next_year . '-01-01', $timezone), StatsGranularity::Year);
+  }
+
+  /**
+   * Creates a custom period, with buckets fitting its length.
+   */
+  protected static function forRange(\DateTimeImmutable $from, \DateTimeImmutable $to): static {
+    $days = (int) $from->diff($to)->days;
+    $granularity = match (TRUE) {
+      $days <= 62 => StatsGranularity::Day,
+      $days <= 366 => StatsGranularity::Month,
+      default => StatsGranularity::Year,
+    };
+    return new static(static::CUSTOM, $from, $to, $granularity);
   }
 
   /**
@@ -195,6 +242,13 @@ class StatsPeriod {
       return NULL;
     }
     return $number >= $min && $number <= $max ? $number : NULL;
+  }
+
+  /**
+   * Gets the type: all, year, quarter, month or custom.
+   */
+  public function type(): string {
+    return $this->type;
   }
 
   /**
