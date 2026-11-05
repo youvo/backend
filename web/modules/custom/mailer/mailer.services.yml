@@ -60,6 +60,10 @@ services:
   mailer.hub_urls:
     class: Drupal\mailer\HubUrls
     arguments: ['@config.factory']
+  Drupal\mailer\Door\DoorLinks:
+    autowire: true
+    arguments:
+      $hubUrls: '@mailer.hub_urls'
   mailer.variables:
     class: Drupal\mailer\MailVariables
     arguments: ['@config.factory']
