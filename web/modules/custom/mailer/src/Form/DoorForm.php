@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\correspondence\CorrespondenceInterface;
@@ -43,7 +43,7 @@ class DoorForm extends FormBase {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
     protected AccountProxyInterface $currentUser,
-    protected KeyValueFactoryInterface $keyValue,
+    protected KeyValueExpirableFactoryInterface $keyValue,
     protected EventDispatcherInterface $eventDispatcher,
     protected TimeInterface $time,
   ) {}
@@ -57,7 +57,7 @@ class DoorForm extends FormBase {
       $container->get('entity_type.manager'),
       $container->get('entity.repository'),
       $container->get('current_user'),
-      $container->get('keyvalue'),
+      $container->get('keyvalue.expirable'),
       $container->get('event_dispatcher'),
       $container->get('datetime.time'),
     );
@@ -144,7 +144,7 @@ class DoorForm extends FormBase {
 
     $note = '';
     if ($login) {
-      $note = 'Ihr werdet dabei angemeldet.';
+      $note = $this->t('Ihr werdet dabei angemeldet.');
     }
     elseif ($other_signed_in) {
       $note = $this->t('Ihr seid als %name angemeldet. Der Link wurde für ein anderes Konto verschickt.', [
@@ -162,7 +162,7 @@ class DoorForm extends FormBase {
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => 'Weiter zu youvo',
+        '#value' => $this->t('Weiter zu youvo'),
       ],
     ];
 
@@ -185,18 +185,43 @@ class DoorForm extends FormBase {
     $target = $door['target'];
 
     // The key is set only once, also when the button is pressed twice at once.
+    // It is needed only as long as the door is valid.
     $key = $entry->uuid() . ':' . $target->value;
-    if ($door['follow'] && $this->keyValue->get(static::FOLLOW_COLLECTION)->setIfNotExists($key, $this->time->getRequestTime())) {
+    if ($door['follow'] && $this->keyValue->get(static::FOLLOW_COLLECTION)->setWithExpireIfNotExists($key, $this->time->getRequestTime(), DoorLinks::LIFETIME)) {
       $this->eventDispatcher->dispatch(new ProjectFollowEvent($project, $recipient, $entry->getSubtype(), $entry->uuid(), $target->value));
     }
 
-    if ($door['login']) {
+    if ($door['login'] && $this->isSameSiteRequest()) {
       user_login_finalize($recipient);
       $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl()));
       return;
     }
 
     $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->targetUrl($target, $project, $recipient, $door['subject'])));
+  }
+
+  /**
+   * Checks that the button was pressed on this site.
+   *
+   * Anonymous forms carry no form token, so a foreign page could post a door
+   * and log its visitor in to the recipient account (login CSRF). Browsers
+   * without these headers are allowed.
+   */
+  protected function isSameSiteRequest(): bool {
+
+    $request = $this->getRequest();
+
+    $fetch_site = $request->headers->get('Sec-Fetch-Site');
+    if ($fetch_site !== NULL && $fetch_site !== 'same-origin' && $fetch_site !== 'none') {
+      return FALSE;
+    }
+
+    $origin = $request->headers->get('Origin');
+    if ($origin !== NULL && $origin !== $request->getSchemeAndHttpHost()) {
+      return FALSE;
+    }
+
+    return TRUE;
   }
 
 }

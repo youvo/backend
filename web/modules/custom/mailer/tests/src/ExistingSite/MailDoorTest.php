@@ -65,7 +65,7 @@ class MailDoorTest extends ExistingSiteBase {
         $keys[] = $uuid . ':' . $target->value;
       }
     }
-    $this->container->get('keyvalue')->get('mailer.door_follow')->deleteMultiple($keys);
+    $this->container->get('keyvalue.expirable')->get('mailer.door_follow')->deleteMultiple($keys);
 
     // The logbook listeners stay, so every log of the projects is removed.
     if ($this->projects) {
@@ -181,6 +181,15 @@ class MailDoorTest extends ExistingSiteBase {
     $client = $driver->getClient();
     $client->followRedirects(FALSE);
     $client->followMetaRefresh(FALSE);
+  }
+
+  /**
+   * Sends a header with the following requests of the browser.
+   */
+  protected function setRequestHeader(string $name, string $value): void {
+    $driver = $this->getSession()->getDriver();
+    $this->assertInstanceOf(BrowserKitDriver::class, $driver);
+    $driver->getClient()->setServerParameter($name, $value);
   }
 
   /**
@@ -443,6 +452,44 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(2, $this->follows($project));
     $this->assertSame($login, $this->lastLogin($organization));
+    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+  }
+
+  /**
+   * Tests that a press from another site follows without login.
+   */
+  public function testForeignOriginDoesNotLogIn(): void {
+
+    $project = $this->createProject();
+    $organization = $project->getOwner();
+    $path = $this->door($organization, $project, DoorTarget::Applicants);
+
+    $this->visitDoor($path);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->setRequestHeader('HTTP_ORIGIN', 'https://evil.example');
+    $this->press();
+
+    $this->assertCount(1, $this->follows($project));
+    $this->assertSame(0, $this->lastLogin($organization));
+    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+  }
+
+  /**
+   * Tests that a cross-site press follows without login.
+   */
+  public function testCrossSiteFetchDoesNotLogIn(): void {
+
+    $project = $this->createProject();
+    $organization = $project->getOwner();
+    $path = $this->door($organization, $project, DoorTarget::Applicants);
+
+    $this->visitDoor($path);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->setRequestHeader('HTTP_SEC_FETCH_SITE', 'cross-site');
+    $this->press();
+
+    $this->assertCount(1, $this->follows($project));
+    $this->assertSame(0, $this->lastLogin($organization));
     $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
