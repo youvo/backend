@@ -2,3 +2,8 @@ services:
   stats.calculator:
     class: Drupal\stats\StatsCalculator
     arguments: [ '@database' ]
+
+  stats.activity_snapshots:
+    class: Drupal\stats\Activity\ActivitySnapshots
+    arguments: [ '@database', '@datetime.time', '@config.factory', '@state' ]
+  Drupal\stats\Activity\ActivitySnapshots: '@stats.activity_snapshots'

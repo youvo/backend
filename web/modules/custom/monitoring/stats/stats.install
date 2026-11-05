@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Stats module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function stats_schema(): array {
+  $schema['stats_activity'] = [
+    'description' => 'Daily snapshots of active users per role.',
+    'fields' => [
+      'day' => [
+        'description' => 'The local day as Y-m-d.',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ],
+      'role' => [
+        'description' => 'The activity role: creative, organization or prospect.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ],
+      'active_1d' => [
+        'description' => 'The users of the role active on the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_30d' => [
+        'description' => 'The users of the role active in the 30 days up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['day', 'role'],
+  ];
+  return $schema;
+}
+
+/**
+ * Create the stats_activity table for daily active users.
+ */
+function stats_update_11001(): void {
+  $schema = \Drupal::database()->schema();
+  if (!$schema->tableExists('stats_activity')) {
+    $schema->createTable('stats_activity', stats_schema()['stats_activity']);
+  }
+}
