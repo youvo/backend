@@ -1,60 +1,74 @@
 // =============================================================================
 // CREATIVES FINDER (views.view.creatives)
 // =============================================================================
-// The cards themselves are profile cards, styled in _profile.scss.
+// The cards themselves are profile cards, styled in _profile.scss. Gin's
+// classes appear throughout, outside our naming pattern.
+// stylelint-disable selector-class-pattern
 
-// The switch between the table and the profiles: two flat buttons in one
-// outlined pill, as the buttons of the manager panes. The current mode has the
-// tone of a chip.
-// In the filter form it ends the row of the main filters, on the right and
-// level with the fields.
-.creatives-mode-toggle {
+@use "../abstracts/variables.scss" as *;
+
+// The height of Gin's text fields, which the switches and pickers share.
+$field-height: 2.5rem;
+
+// A row of segments in one box, outlined and as high as a field.
+@mixin segmented {
   display: inline-flex;
-  align-self: flex-end;
   align-items: stretch;
   box-sizing: border-box;
-  height: 2.5rem;
+  height: $field-height;
   gap: var(--gin-spacing-xxs);
-  margin: 0 0 0 var(--gin-spacing-l);
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
-  background: var(--yv-surface);
+  background: var(--gin-bg-input);
   box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
-  list-style: none;
+}
 
-  li {
-    display: flex;
-    margin: 0;
-    padding: 0;
-  }
+// One segment; the current one takes the tone of a chip.
+@mixin segment {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--gin-spacing-s);
+  border-radius: var(--gin-border-s);
+  color: var(--gin-color-text);
+  font-size: var(--gin-font-size-s);
+  font-weight: var(--gin-font-weight-bold);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: background-color var(--gin-transition-fast);
+}
 
-  a {
-    display: flex;
-    align-items: center;
-    padding: 0 1em;
-    border-radius: var(--gin-border-s);
-    color: var(--yv-ink);
-    font-size: var(--gin-font-size-s);
-    font-weight: 600;
-    line-height: 1.5;
-    text-decoration: none;
-    transition: background-color var(--gin-transition-fast);
+// Gin's translucent accent tints the box below in both modes; the darkened
+// accent of the chips keeps the text readable on it.
+@mixin segment-current {
+  background: var(--gin-color-primary-light);
+  color: var(--yv-chip-text);
+}
 
-    &:hover {
-      background: var(--gin-bg-item-hover);
-      color: var(--yv-ink);
-      text-decoration: none;
-    }
+// A native checkbox or radio that stays focusable and clickable on top of its
+// label, but invisible: the label shows the state.
+@mixin covering-input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
 
-    &[aria-current="page"] {
-      background: var(--yv-chip);
-      color: var(--yv-chip-text);
-    }
+// A label drawn by us, without Gin's checkbox or radio.
+@mixin plain-option-label {
+  margin: 0;
+
+  &::before,
+  &::after {
+    display: none;
   }
 }
 
-// Gin shows the rows in a layer card; the profiles are cards themselves, full
-// width and stacked as the cards of a profile page.
+// The profiles mode: Gin shows the rows in a layer card; the profiles are
+// cards themselves, full width and stacked as on a profile page.
 .view-creatives .view-content:has(.user-profile-card) {
   display: grid;
   gap: var(--gin-spacing-l);
@@ -64,13 +78,13 @@
   box-shadow: none;
 }
 
-// Gin lines up the fields of the form and wraps them, but keeps an operator
-// and its value on one line, which cuts the operator off on small screens.
-// Gin's classes, outside our naming pattern.
-// stylelint-disable selector-class-pattern
+// -----------------------------------------------------------------------------
+// The filter form
+// -----------------------------------------------------------------------------
+
 .view-creatives .views-exposed-form {
-  // An operator and its value read as one field: no frame around them, the
-  // legend in the place and style of a label.
+  // A filter of several elements reads as one field: no frame around them,
+  // the legend in the place and style of a label.
   .fieldset {
     margin-block: var(--gin-spacing-s) 0;
     padding: 0;
@@ -93,17 +107,17 @@
     line-height: 1.125rem;
   }
 
-  // The switch of a date filter sits in the fieldset of the date: it needs
-  // no space of its own above it.
-  .fieldset .fieldset .fieldset__wrapper {
-    padding-block-start: 0;
-  }
-
   .fieldset__wrapper.fieldset__wrapper {
     flex-wrap: wrap;
     gap: var(--gin-spacing-xs);
     margin: 0;
     padding: var(--gin-spacing-xxs) 0 0;
+  }
+
+  // The switch of a date filter sits in the fieldset of the date: it needs no
+  // space of its own above it.
+  .fieldset .fieldset .fieldset__wrapper {
+    padding-block-start: 0;
   }
 
   .fieldset .form-item {
@@ -123,6 +137,13 @@
     width: 100%;
   }
 
+  // Wide enough for the whole date next to the picker icon.
+  input.form-date {
+    box-sizing: border-box;
+    width: 11rem;
+    height: $field-height;
+  }
+
   // A filled-in field takes the accent color, so the filters in use stand
   // out.
   .creatives-filter-active {
@@ -135,16 +156,167 @@
     margin-inline-start: var(--gin-spacing-l);
   }
 }
-// stylelint-enable selector-class-pattern
 
-// The filter groups: one block below the main filters, the groups stacked as
-// the rows of a list with hairlines between them. Inside a group the filters
-// line up in a row and wrap.
+// The skills: the skill icons themselves are the checkboxes. A skill that is
+// not chosen is muted; a chosen one shows its color with a ring.
+.creatives-skills.creatives-skills {
+  display: block;
+  margin-inline: var(--gin-spacing-s);
+
+  // As high as the fields next to them, the icons centered in the row.
+  .form-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gin-spacing-s);
+    min-height: $field-height;
+  }
+
+  // Gin spaces checkboxes with an ID-level specificity hack.
+  .form-item {
+    position: relative;
+    margin: 0 !important;
+    padding: 0;
+  }
+
+  .form-checkbox {
+    @include covering-input;
+  }
+
+  .form-item__label.option {
+    @include plain-option-label;
+
+    display: block;
+    padding: 0;
+  }
+
+  .skill {
+    filter: grayscale(1);
+    opacity: 0.4;
+    transition:
+      filter var(--gin-transition-fast),
+      opacity var(--gin-transition-fast),
+      box-shadow var(--gin-transition-fast);
+  }
+
+  .form-checkbox:hover + .form-item__label .skill {
+    opacity: 0.75;
+  }
+
+  .form-checkbox:checked + .form-item__label .skill {
+    filter: none;
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--gin-bg-layer),
+      0 0 0 4px var(--skill-color);
+  }
+
+  .form-checkbox:focus-visible + .form-item__label .skill {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 4px;
+  }
+}
+
+// The switch between the table and the profiles ends the row of the main
+// filters, level with the fields.
+.creatives-mode-toggle {
+  @include segmented;
+
+  align-self: flex-end;
+  margin: 0 0 0 var(--gin-spacing-l);
+  list-style: none;
+
+  li {
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    @include segment;
+
+    &:hover {
+      background: var(--gin-bg-item-hover);
+      color: var(--gin-color-text);
+      text-decoration: none;
+    }
+
+    &[aria-current="page"] {
+      @include segment-current;
+    }
+  }
+}
+
+// The yes/no filters and the "after"/"before" of the dates: one segmented
+// control each, in the style of the switch between the table and the
+// profiles.
+fieldset.creatives-segmented .form-radios {
+  @include segmented;
+
+  .form-item {
+    display: flex;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-radio {
+    @include covering-input;
+  }
+
+  .form-item__label.option {
+    @include segment;
+    @include plain-option-label;
+  }
+
+  .form-radio:hover + .form-item__label {
+    background: var(--gin-bg-item-hover);
+  }
+
+  .form-radio:checked + .form-item__label {
+    @include segment-current;
+  }
+
+  // "Any" filters nothing, nor does "after" or "before" without a date:
+  // chosen, they stay quiet, so the filters in use stand out.
+  .form-radio[value="All"]:checked + .form-item__label,
+  &:is(.creatives-segmented-quiet *) .form-radio:checked + .form-item__label {
+    background: var(--gin-bg-item-hover);
+    color: var(--gin-color-text);
+  }
+
+  .form-radio:focus-visible + .form-item__label {
+    outline: 2px solid var(--gin-color-focus);
+    outline-offset: 2px;
+  }
+}
+
+// On a phone the filters stack; a gap that sets elements apart side by side
+// would only indent them.
+@media (width < $breakpoint-medium) {
+  .creatives-skills.creatives-skills,
+  .view-creatives .views-exposed-form .form-actions,
+  .creatives-mode-toggle {
+    margin-inline: 0;
+  }
+
+  // The switch wraps below the buttons.
+  .creatives-mode-toggle {
+    margin-block-start: var(--gin-spacing-s);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// The filter groups
+// -----------------------------------------------------------------------------
+
+// One block below the main filters, the groups stacked as the rows of a list
+// with hairlines between them.
 .creatives-filter-groups {
   flex-basis: 100%;
   margin-block-start: var(--gin-spacing-m);
   border-radius: var(--gin-border-m);
-  box-shadow: inset 0 0 0 1px var(--yv-outline);
+  box-shadow: inset 0 0 0 1px var(--gin-border-color);
 }
 
 .creatives-filter-group.creatives-filter-group {
@@ -155,20 +327,11 @@
   box-shadow: none;
 
   & + & {
-    border-block-start: 1px solid var(--yv-outline);
+    border-block-start: 1px solid var(--gin-border-color);
   }
 
-  // Gin's classes, outside our naming pattern.
-  // stylelint-disable selector-class-pattern
   .claro-details__summary {
     font-size: var(--gin-font-size-s);
-  }
-
-  // Wide enough for the whole date next to the picker icon.
-  input.form-date {
-    box-sizing: border-box;
-    width: 11rem;
-    height: 2.5rem;
   }
 
   // The rows of a group stack; the filters of a row line up and wrap.
@@ -194,233 +357,66 @@
     margin: 0;
   }
 
-  .form-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 var(--gin-spacing-m);
-    align-self: center;
+  .form-item:has(.tagify) {
+    flex: 1 1 28rem;
   }
-  // stylelint-enable selector-class-pattern
-
 }
 
-// The tags: a wide Tagify input, so several chosen tags fit on one line.
-// Tagify takes over the classes of the input it replaces.
-// Tagify's classes, outside our naming pattern.
-// stylelint-disable selector-class-pattern
-.creatives-filter-group .form-item:has(.tagify.creatives-tags) {
-  flex: 1 1 28rem;
+// A group with active filters takes the accent color in its summary and
+// counts them in a small pill after its title.
+.creatives-filter-group--active > .claro-details__summary {
+  color: var(--gin-color-primary);
 }
+
+.creatives-filter-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-inline-start: var(--gin-spacing-xs);
+  padding: 0 0.45em;
+  border-radius: var(--gin-border-xl);
+  background: var(--gin-color-primary);
+  color: var(--gin-color-button-text);
+  font-size: var(--gin-font-size-xs);
+  font-weight: var(--gin-font-weight-heavy);
+  line-height: 1.5;
+  text-align: center;
+}
+
+// -----------------------------------------------------------------------------
+// The tags (Tagify, which takes over the classes of the input it replaces)
+// -----------------------------------------------------------------------------
 
 .tagify.creatives-tags {
   // Tagify's light grey placeholder is too faint to read.
   --placeholder-color: var(--gin-color-text-light);
 
   width: 100%;
-  min-height: 2.5rem;
-  padding-inline-start: 4px !important;
+  min-height: $field-height;
+  padding-inline-start: var(--gin-spacing-xxs) !important;
 
-  // The typing line is as high as a tag, its text centered as in the tags,
-  // so tags, placeholder and text share one line, as in the logbook search.
+  // The typing line is as high as a tag, its text centered as in the tags, so
+  // tags, placeholder and text share one line, as in the logbook search.
   // Tagify makes it higher, with the text at the top.
   > .tagify__input {
     min-width: 4rem;
     height: auto;
-    min-height: 32px;
-    margin-block: 2px;
-    margin-inline: 3px 5px;
+    min-height: 2rem;
+    margin: var(--gin-spacing-xxxs) var(--gin-spacing-xxs);
     padding-block: 0;
-    line-height: 32px;
+    line-height: 2rem;
   }
 
   // Wrapped tags keep a gap between their rows.
   .tagify__tag {
-    margin-block: 2px !important;
+    margin-block: var(--gin-spacing-xxxs) !important;
   }
 }
 
 // The suggestions lie over the filters below: give them an edge, as in the
-// logbook search. Tagify attaches them to the page, outside the field.
+// logbook search. Tagify attaches them to the page, outside the field. They
+// open below or above the field, so all their corners are round.
 .tagify__dropdown .tagify__dropdown__wrapper {
   border: 1px solid var(--gin-border-color);
-
-  // It opens below or above the field, so all its corners are round.
   border-radius: var(--gin-border-m);
   box-shadow: var(--gin-shadow-l2);
 }
-// stylelint-enable selector-class-pattern
-
-// The skills: the skill icons themselves are the checkboxes. The native box
-// stays focusable and clickable on top of the icon but invisible. A skill that
-// is not chosen is muted; a chosen one shows its color with a ring.
-// Gin's classes, outside our naming pattern.
-// stylelint-disable selector-class-pattern
-.creatives-skills.creatives-skills {
-  display: block;
-  margin-inline: var(--gin-spacing-s);
-
-  // As high as the fields next to them, the icons centered in the row.
-  .form-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--gin-spacing-s);
-    min-height: 2.5rem;
-  }
-
-  // Gin spaces checkboxes with an ID-level specificity hack.
-  .form-item {
-    position: relative;
-    margin: 0 !important;
-    padding: 0;
-  }
-
-  .form-checkbox {
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    cursor: pointer;
-    opacity: 0;
-  }
-
-  .form-item__label.option {
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-
-  .form-item__label.option::before,
-  .form-item__label.option::after {
-    display: none;
-  }
-
-  .skill {
-    filter: grayscale(1);
-    opacity: 0.4;
-    transition:
-      filter var(--gin-transition-fast),
-      opacity var(--gin-transition-fast),
-      box-shadow var(--gin-transition-fast);
-  }
-
-  .form-checkbox:hover + .form-item__label .skill {
-    opacity: 0.75;
-  }
-
-  .form-checkbox:checked + .form-item__label .skill {
-    filter: none;
-    opacity: 1;
-    box-shadow:
-      0 0 0 2px var(--yv-surface),
-      0 0 0 4px var(--skill-color);
-  }
-
-  .form-checkbox:focus-visible + .form-item__label .skill {
-    outline: 2px solid var(--gin-color-focus);
-    outline-offset: 4px;
-  }
-}
-// stylelint-enable selector-class-pattern
-
-// The yes/no filters: Any, Yes and No as one segmented control, in the style
-// of the switch between the table and the profiles. The native radios stay
-// focusable and clickable on top of their segment but invisible.
-// Gin's classes, outside our naming pattern.
-// stylelint-disable selector-class-pattern
-fieldset.creatives-segmented .form-radios {
-  display: inline-flex;
-  align-items: stretch;
-  box-sizing: border-box;
-  height: 2.5rem;
-  gap: var(--gin-spacing-xxs);
-  padding: var(--gin-spacing-xxs);
-  border-radius: var(--gin-border-m);
-  background: var(--yv-surface);
-  box-shadow: inset 0 0 0 1px var(--gin-border-color-form-element);
-
-  .form-item {
-    display: flex;
-    position: relative;
-    margin: 0;
-    padding: 0;
-  }
-
-  .form-radio {
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    cursor: pointer;
-    opacity: 0;
-  }
-
-  .form-item__label.option {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0 0.8em;
-    border-radius: var(--gin-border-s);
-    color: var(--yv-ink);
-    font-size: var(--gin-font-size-s);
-    font-weight: 600;
-    line-height: 1.5;
-    transition: background-color var(--gin-transition-fast);
-  }
-
-  .form-item__label.option::before,
-  .form-item__label.option::after {
-    display: none;
-  }
-
-  .form-radio:hover + .form-item__label {
-    background: var(--gin-bg-item-hover);
-  }
-
-  .form-radio:checked + .form-item__label {
-    background: var(--yv-chip);
-    color: var(--yv-chip-text);
-  }
-
-  // "Any" filters nothing, nor does "after" or "before" without a date:
-  // chosen, they stay quiet, so the filters in use stand out.
-  .form-radio[value="All"]:checked + .form-item__label,
-  &:is(.creatives-segmented-quiet *) .form-radio:checked + .form-item__label {
-    background: var(--gin-bg-item-hover);
-    color: var(--yv-ink);
-  }
-
-  .form-radio:focus-visible + .form-item__label {
-    outline: 2px solid var(--gin-color-focus);
-    outline-offset: 2px;
-  }
-}
-
-// stylelint-enable selector-class-pattern
-
-// The number of active filters in a group, as a small pill after its title.
-// A group with active filters also takes the accent color in its summary.
-.creatives-filter-count {
-  display: inline-block;
-  min-width: 1.5em;
-  margin-inline-start: var(--gin-spacing-xs);
-  padding: 0 0.45em;
-  border-radius: 999px;
-  background: var(--gin-color-primary);
-  color: var(--gin-color-button-text, #fff);
-  font-size: var(--gin-font-size-xs);
-  font-weight: 700;
-  line-height: 1.5;
-  text-align: center;
-}
-
-// Gin's classes, outside our naming pattern.
-// stylelint-disable selector-class-pattern
-.creatives-filter-group--active > .claro-details__summary {
-  color: var(--gin-color-primary);
-}
-// stylelint-enable selector-class-pattern
