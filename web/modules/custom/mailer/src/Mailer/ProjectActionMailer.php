@@ -103,30 +103,29 @@ class ProjectActionMailer extends YouvoMailerBase implements ProjectActionMailer
   /**
    * {@inheritdoc}
    */
-  public function notify(ProjectInterface $project, string $link): bool {
-    // The draft door replaces the given link, which is ignored.
-    $to = $this->ownerEmail($project);
-    $uuid = $this->uuid->generate();
-    $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Draft);
-    $email = $this->projectEmail('notify_organization', $project, $this->mailVariables->project($project) + ['link' => $door]);
-    // The door can log the organization in: it is never stored.
-    return $this->deliver($email, $project, 'notify_organization', $to, [$door], 'automatic', NULL, $uuid);
+  public function notify(ProjectInterface $project): bool {
+    return $this->sendWithDraftDoor($project, 'notify_organization');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invite(ProjectInterface $project, string $link): bool {
-    return $this->sendWithLink($project, 'invite_organization', $link);
+  public function invite(ProjectInterface $project): bool {
+    return $this->sendWithDraftDoor($project, 'invite_organization');
   }
 
   /**
-   * Sends a mail to the organization that carries a link.
+   * Sends a mail to the organization that carries a door to the draft.
+   *
+   * A prospect sets its password on the door.
    */
-  protected function sendWithLink(ProjectInterface $project, string $subtype, string $link): bool {
-    $email = $this->projectEmail($subtype, $project, $this->mailVariables->project($project) + ['link' => $link]);
-    // The link can be a one-time login link: it is never stored.
-    return $this->deliver($email, $project, $subtype, $this->ownerEmail($project), [$link]);
+  protected function sendWithDraftDoor(ProjectInterface $project, string $subtype): bool {
+    $to = $this->ownerEmail($project);
+    $uuid = $this->uuid->generate();
+    $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Draft);
+    $email = $this->projectEmail($subtype, $project, $this->mailVariables->project($project) + ['link' => $door]);
+    // The door can log the organization in: it is never stored.
+    return $this->deliver($email, $project, $subtype, $to, [$door], 'automatic', NULL, $uuid);
   }
 
 }

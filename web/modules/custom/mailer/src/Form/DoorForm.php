@@ -14,6 +14,7 @@ use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Door\DoorLinks;
 use Drupal\mailer\Door\DoorTarget;
+use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
@@ -27,6 +28,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Mail security scanners open links, so opening the door does nothing. Only
  * pressing the button may log the recipient in and logs the followed link,
  * like the one-time login page of core.
+ *
+ * A prospect sets its password on a draft door. Pressing the button promotes
+ * it to an organization and logs it in.
  */
 class DoorForm extends FormBase {
 
@@ -127,6 +131,19 @@ class DoorForm extends FormBase {
       && $door_target->logsIn()
       && $this->doorLinks->allowsLogin($recipient, $timestamp);
 
+    // A prospect has no password. It is logged in only after it set one on a
+    // door to its draft, never by the plain button.
+    $prospect = $recipient instanceof Organization && $recipient->hasRoleProspect();
+    $password = $login
+      && $prospect
+      && $door_target === DoorTarget::Draft
+      && $project->lifecycle()->isDraft();
+    $login = $login && !$prospect;
+
+    // Without the password form the draft door of a prospect is spent, so it
+    // leads to the hub login.
+    $spent = $prospect && $door_target === DoorTarget::Draft && !$password;
+
     $follow = !$expired
       && $belongs
       && !$recipient->hasPermission('access site')
@@ -139,30 +156,54 @@ class DoorForm extends FormBase {
       'target' => $door_target,
       'subject' => $subject,
       'login' => $login,
+      'password' => $password,
+      'spent' => $spent,
       'follow' => $follow,
     ]);
+
+    $heading = $door_target->heading();
+    if ($password) {
+      $heading = $this->t('Willkommen bei youvo');
+    }
+    elseif ($spent && !$other_signed_in) {
+      $heading = $this->t('Der Link ist abgelaufen');
+    }
 
     $note = '';
     if ($login) {
       $note = $this->t('Ihr werdet dabei angemeldet.');
+    }
+    elseif ($password) {
+      $note = $this->t('Legt ein Passwort für euer Konto fest. Ihr werdet dabei angemeldet.');
     }
     elseif ($other_signed_in) {
       $note = $this->t('Ihr seid als %name angemeldet. Der Link wurde für ein anderes Konto verschickt.', [
         '%name' => $this->currentUser->getDisplayName(),
       ]);
     }
+    elseif ($spent) {
+      $note = $this->t('Meldet euch bei youvo an. Für einen neuen Link schreibt eurem Ansprechpartner bei youvo.');
+    }
 
     $form['#theme'] = 'mail_door';
-    $form['#heading'] = $door_target->heading();
+    $form['#heading'] = $heading;
     $form['#context'] = $project->getTitle();
     $form['#note'] = $note;
     $form['#cache']['max-age'] = 0;
+
+    if ($password) {
+      $form['password'] = [
+        '#type' => 'password_confirm',
+        '#required' => TRUE,
+        '#size' => 25,
+      ];
+    }
 
     $form['actions'] = [
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Weiter zu youvo'),
+        '#value' => $password ? $this->t('Passwort speichern und weiter') : $this->t('Weiter zu youvo'),
       ],
     ];
 
@@ -170,7 +211,22 @@ class DoorForm extends FormBase {
   }
 
   /**
+   * Rejects a password form posted from another site.
+   *
+   * Otherwise a foreign page could set the password of its own prospect door
+   * and log its visitor in to that account (login CSRF). The error keeps the
+   * account, the login and the follow log unchanged.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
+    if ($form_state->get('door')['password'] && !$this->isSameSiteRequest()) {
+      $form_state->setErrorByName('', $this->t('Das Passwort konnte nicht gespeichert werden. Öffnet den Link aus der Mail bitte erneut.'));
+    }
+  }
+
+  /**
    * Logs the recipient in, logs the follow and leaves for the target.
+   *
+   * A prospect is promoted and gets its password first.
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
@@ -184,6 +240,14 @@ class DoorForm extends FormBase {
     /** @var \Drupal\mailer\Door\DoorTarget $target */
     $target = $door['target'];
 
+    // The new password also spends the door, whose signature includes it.
+    if ($door['password']) {
+      /** @var \Drupal\organizations\Entity\Organization $recipient */
+      $recipient->promoteProspect();
+      $recipient->setPassword($form_state->getValue('password'));
+      $recipient->save();
+    }
+
     // The key is set only once, also when the button is pressed twice at once.
     // It is needed only as long as the door is valid.
     $key = $entry->uuid() . ':' . $target->value;
@@ -191,8 +255,14 @@ class DoorForm extends FormBase {
       $this->eventDispatcher->dispatch(new ProjectFollowEvent($project, $recipient, $entry->getSubtype(), $entry->uuid(), $target->value));
     }
 
-    if ($door['login'] && $this->isSameSiteRequest()) {
+    // The password form was checked to be posted from this site.
+    if ($door['password'] || ($door['login'] && $this->isSameSiteRequest())) {
       user_login_finalize($recipient);
+      $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl()));
+      return;
+    }
+
+    if ($door['spent']) {
       $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl()));
       return;
     }
