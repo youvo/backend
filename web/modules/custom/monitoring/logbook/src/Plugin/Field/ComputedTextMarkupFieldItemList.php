@@ -2,6 +2,7 @@
 
 namespace Drupal\logbook\Plugin\Field;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -63,6 +64,19 @@ class ComputedTextMarkupFieldItemList extends ComputedTextFieldItemListBase {
       // The changes card on the project page opens at this revision.
       $url = $project->toUrl('canonical', ['fragment' => 'revision-' . $misc['revision_id']]);
       $replacements['%Diff'] = Link::fromTextAndUrl(new TranslatableMarkup('Änderungen ansehen'), $url)->toString();
+    }
+
+    // Mail door logs name the mail by its subject. A deleted mail (it goes
+    // with its project) falls back to the subtype.
+    if (!empty($misc['subtype'])) {
+      $replacements['%Mail'] = Html::escape($misc['subtype']);
+      if (!empty($misc['correspondence'])) {
+        $entries = \Drupal::entityTypeManager()->getStorage('correspondence')
+          ->loadByProperties(['uuid' => $misc['correspondence']]);
+        if ($entry = reset($entries)) {
+          $replacements['%Mail'] = Html::escape((string) $entry->label());
+        }
+      }
     }
 
     if ($creatives = $log->getCreatives()) {

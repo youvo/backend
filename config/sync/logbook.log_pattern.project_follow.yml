@@ -1,0 +1,26 @@
+uuid: d50b7ea2-5ef9-4593-93e8-43f23607106a
+langcode: de
+status: true
+dependencies: {  }
+id: project_follow
+label: 'Project Follow'
+tokens:
+  -
+    token: '%AuthorWithRole'
+    required: false
+  -
+    token: '%Author'
+    required: false
+  -
+    token: '%Project'
+    required: true
+  -
+    token: '%Mail'
+    required: false
+detectable: false
+observable: true
+public: false
+promote: false
+hidden: false
+color: ''
+tone: ''

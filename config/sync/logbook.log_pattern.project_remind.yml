@@ -1,0 +1,29 @@
+uuid: 0c8a1a32-1b1d-47c6-acc9-1762a855576f
+langcode: de
+status: true
+dependencies: {  }
+id: project_remind
+label: 'Project Remind'
+tokens:
+  -
+    token: '%Organization'
+    required: true
+  -
+    token: '%AuthorWithRole'
+    required: false
+  -
+    token: '%Author'
+    required: false
+  -
+    token: '%Project'
+    required: true
+  -
+    token: '%Mail'
+    required: false
+detectable: true
+observable: false
+public: false
+promote: false
+hidden: false
+color: ''
+tone: ''

@@ -44,3 +44,11 @@ function logbook_deploy_change_log_text(): void {
   \Drupal::moduleHandler()->loadInclude('logbook', 'install');
   logbook_import_log_texts();
 }
+
+/**
+ * Imports the log texts of the project remind and follow patterns.
+ */
+function logbook_deploy_mail_door_log_texts(): void {
+  \Drupal::moduleHandler()->loadInclude('logbook', 'install');
+  logbook_import_log_texts();
+}

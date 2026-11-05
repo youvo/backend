@@ -1,0 +1,4 @@
+id: project_remind
+langcode: 'de'
+text: 'Die Organisation %Organization wurde von der %AuthorWithRole an das Projekt %Project erinnert: „%Mail“.'
+public_text: 'Die Organisation %Organization wurde von %Author an das Projekt %Project erinnert.'
