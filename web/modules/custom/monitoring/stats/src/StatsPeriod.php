@@ -160,9 +160,12 @@ class StatsPeriod {
   }
 
   /**
-   * Parses a strict Y-m-d string, or returns NULL.
+   * Parses a strict Y-m-d string in the accepted years, or returns NULL.
+   *
+   * The range form validates its days with it, so it accepts what the query
+   * accepts.
    */
-  protected static function parseDate(mixed $value, \DateTimeZone $timezone): ?\DateTimeImmutable {
+  public static function parseDate(mixed $value, \DateTimeZone $timezone): ?\DateTimeImmutable {
     if (!is_string($value)) {
       return NULL;
     }

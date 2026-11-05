@@ -79,8 +79,10 @@ class StatsRangeForm extends FormBase {
       return;
     }
 
-    $from = $this->parseDay($form_state->getValue('from'));
-    $to = $this->parseDay($form_state->getValue('to'));
+    // The same parser as the query, so the form accepts what the page shows.
+    $timezone = new \DateTimeZone('UTC');
+    $from = StatsPeriod::parseDate($form_state->getValue('from'), $timezone);
+    $to = StatsPeriod::parseDate($form_state->getValue('to'), $timezone);
     if ($from === NULL) {
       $form_state->setErrorByName('from', $this->t('Enter a valid start date.'));
     }
@@ -109,23 +111,6 @@ class StatsRangeForm extends FormBase {
         'to' => $form_state->getValue('to'),
       ],
     ]);
-  }
-
-  /**
-   * Parses a strict Y-m-d day in the years the stats page accepts.
-   *
-   * Comparing the days as strings orders them, as the format is fixed.
-   */
-  protected function parseDay(mixed $value): ?string {
-    if (!is_string($value)) {
-      return NULL;
-    }
-    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-    if (!$date || $date->format('Y-m-d') !== $value) {
-      return NULL;
-    }
-    $year = (int) $date->format('Y');
-    return $year >= StatsPeriod::MIN_YEAR && $year <= StatsPeriod::MAX_YEAR ? $value : NULL;
   }
 
 }
