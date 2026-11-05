@@ -280,6 +280,9 @@ class StatsPeriod {
 
   /**
    * Gets a label for headings.
+   *
+   * The label is not translated: the controller translates "All time", the
+   * other labels are dates.
    */
   public function label(): string {
     $year = $this->from->format('Y');

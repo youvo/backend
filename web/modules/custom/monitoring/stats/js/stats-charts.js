@@ -314,11 +314,10 @@
   };
 
   /**
-   * Thins the ticks of the small overview charts in narrow cards.
+   * Sets few ticks on the small overview charts, fewer in narrow cards.
    *
-   * On phones the overview shows two cards a row, too narrow for the ticks
-   * the server sets. The first resize keeps those ticks to restore them on
-   * wider cards. The card width decides, as for the doughnut legend.
+   * On phones the overview shows two cards a row, too narrow for more than
+   * two ticks an axis. The card width decides, as for the doughnut legend.
    */
   const COMPACT_NARROW = 240;
   const thinTicks = (chart) => {
@@ -327,13 +326,13 @@
     if (!card || !scales?.x || !scales?.y) {
       return;
     }
-    chart.$statsTicks ??= {
-      x: scales.x.ticks.maxTicksLimit,
-      y: scales.y.ticks.maxTicksLimit,
-    };
     const narrow = card.offsetWidth < COMPACT_NARROW;
-    scales.x.ticks.maxTicksLimit = narrow ? 2 : chart.$statsTicks.x;
-    scales.y.ticks.maxTicksLimit = narrow ? 2 : chart.$statsTicks.y;
+    Object.assign(scales.x.ticks, {
+      maxTicksLimit: narrow ? 2 : 4,
+      maxRotation: 0,
+      autoSkipPadding: 12,
+    });
+    scales.y.ticks.maxTicksLimit = narrow ? 2 : 3;
   };
   const compactTicks = {
     id: 'statsCompactTicks',

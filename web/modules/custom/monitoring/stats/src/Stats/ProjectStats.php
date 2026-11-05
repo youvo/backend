@@ -23,6 +23,11 @@ class ProjectStats {
   const string REASON_EXTERNAL = 'external';
 
   /**
+   * The log pattern of an application.
+   */
+  const string LOG_APPLY = 'project_apply';
+
+  /**
    * The stage pairs of the medians, keyed by name.
    */
   const array STAGES = [
@@ -56,10 +61,9 @@ class ProjectStats {
    */
   public function flow(StatsPeriod $period): array {
 
-    $empty = array_fill_keys(array_keys($period->buckets()), 0);
     $flow = [];
     foreach (ProjectTransition::cases() as $transition) {
-      $flow[$transition->value] = $empty;
+      $flow[$transition->value] = $period->emptyBuckets();
     }
 
     foreach ($this->history() as $project) {
@@ -76,8 +80,8 @@ class ProjectStats {
   /**
    * Computes the cohort of projects first published in the period.
    *
-   * @return array{published: int, mediated: int, completed: int, excluded: int, mediation_rate: ?float, completion_rate: ?float, project_ids: int[]}
-   *   The cohort counts and rates between 0 and 1.
+   * @return array{published: int, mediated: int, completed: int, mediation_rate: ?float}
+   *   The cohort counts and the mediation rate between 0 and 1.
    */
   public function cohort(StatsPeriod $period): array {
 
@@ -133,10 +137,7 @@ class ProjectStats {
       'published' => $published,
       'mediated' => $mediated,
       'completed' => $completed,
-      'excluded' => $excluded,
       'mediation_rate' => $denominator > 0 ? (float) $mediated / $denominator : NULL,
-      'completion_rate' => $mediated > 0 ? (float) $completed / $mediated : NULL,
-      'project_ids' => array_keys($cohort),
     ];
   }
 
@@ -144,15 +145,18 @@ class ProjectStats {
    * Computes the median days between two stages.
    *
    * For each row of the later stage in the period, the time since the most
-   * recent preceding row of the earlier stage of the same project counts.
+   * recent preceding row of the earlier stage of the same project counts. For
+   * each publish row in the period, the time to the first application after
+   * it counts.
    *
-   * @return array{submit_publish: ?float, publish_mediate: ?float, mediate_complete: ?float}
+   * @return array{submit_publish: ?float, publish_application: ?float, publish_mediate: ?float, mediate_complete: ?float}
    *   The medians in days with one decimal, NULL without pairs.
    */
   public function stageMedians(StatsPeriod $period): array {
 
-    $durations = array_fill_keys(array_keys(static::STAGES), []);
-    foreach ($this->history() as $project) {
+    $durations = array_fill_keys(['submit_publish', 'publish_application', 'publish_mediate', 'mediate_complete'], []);
+    $publishes = [];
+    foreach ($this->history() as $id => $project) {
       $last = [];
       foreach ($project['rows'] as [$transition, $timestamp]) {
         foreach (static::STAGES as $stage => [$from, $to]) {
@@ -160,9 +164,13 @@ class ProjectStats {
             $durations[$stage][] = $timestamp - $last[$from];
           }
         }
+        if ($transition === ProjectTransition::Publish->value && $period->contains($timestamp)) {
+          $publishes[] = [$id, $timestamp];
+        }
         $last[$transition] = $timestamp;
       }
     }
+    $durations['publish_application'] = $this->firstApplicationDurations($period, $publishes);
 
     $medians = [];
     foreach ($durations as $stage => $values) {
@@ -173,24 +181,44 @@ class ProjectStats {
   }
 
   /**
-   * Gets the publish rows in the period.
+   * Gets the seconds from each publish to the first application after it.
    *
-   * @return array<int, array{project: int, ts: int}>
-   *   The publish rows ordered by time.
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period of the publish rows.
+   * @param array<int, array{0: int, 1: int}> $publishes
+   *   The publish rows as project and timestamp.
+   *
+   * @return int[]
+   *   The durations of the publish rows with an application.
    */
-  public function publishRows(StatsPeriod $period): array {
+  protected function firstApplicationDurations(StatsPeriod $period, array $publishes): array {
 
-    $rows = [];
-    foreach ($this->history() as $id => $project) {
-      foreach ($project['rows'] as [$transition, $timestamp]) {
-        if ($transition === ProjectTransition::Publish->value && $period->contains($timestamp)) {
-          $rows[] = ['project' => $id, 'ts' => $timestamp];
+    if (!$publishes) {
+      return [];
+    }
+
+    $query = $this->database->select('log', 'l')
+      ->fields('l', ['project', 'created'])
+      ->condition('l.type', static::LOG_APPLY)
+      ->condition('l.project', array_unique(array_column($publishes, 0)), 'IN')
+      ->condition('l.created', $period->from()->getTimestamp(), '>')
+      ->orderBy('l.created')
+      ->orderBy('l.id');
+    $applications = [];
+    foreach ($query->execute() as $row) {
+      $applications[(int) $row->project][] = (int) $row->created;
+    }
+
+    $durations = [];
+    foreach ($publishes as [$project, $published]) {
+      foreach ($applications[$project] ?? [] as $created) {
+        if ($created > $published) {
+          $durations[] = $created - $published;
+          break;
         }
       }
     }
-    usort($rows, fn($a, $b) => [$a['ts'], $a['project']] <=> [$b['ts'], $b['project']]);
-
-    return $rows;
+    return $durations;
   }
 
   /**

@@ -28,11 +28,14 @@ class StatsCharts {
    *   Whether the card holds a small chart of a fixed low height.
    * @param string|\Stringable|null $description
    *   A short line under the title that explains the chart.
+   * @param string|\Stringable|null $value
+   *   A large value over the chart. The card then shows a chart without data
+   *   not at all.
    *
    * @return array<string, mixed>
    *   The card render array.
    */
-  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $compact = FALSE, string|\Stringable|null $description = NULL): array {
+  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $compact = FALSE, string|\Stringable|null $description = NULL, string|\Stringable|null $value = NULL): array {
     $title_id = $chart['#id'] . '-title';
     $description_id = $chart['#id'] . '-description';
     $attributes = [
@@ -82,8 +85,123 @@ class StatsCharts {
         '#attributes' => ['id' => $description_id, 'class' => ['stats-card-description']],
       ];
     }
+    if ($value !== NULL) {
+      $card['value'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $value,
+        '#attributes' => ['class' => ['stats-card-value']],
+      ];
+    }
     $card['chart'] = $chart;
+    if ($value !== NULL && static::isEmpty($chart)) {
+      unset($card['chart']);
+    }
     return $card;
+  }
+
+  /**
+   * Builds a section of the stats grid.
+   *
+   * @param string|\Stringable $title
+   *   The title.
+   * @param array<string, mixed> $cards
+   *   The cards keyed by name.
+   * @param array<string, string> $attributes
+   *   More attributes of the section.
+   *
+   * @return array<string, mixed>
+   *   The section render array.
+   */
+  public static function section(string|\Stringable $title, array $cards, array $attributes = []): array {
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['stats-section']] + $attributes,
+      'heading' => static::heading($title),
+    ] + $cards;
+  }
+
+  /**
+   * Builds a section heading.
+   *
+   * @return array<string, mixed>
+   *   The heading render array.
+   */
+  public static function heading(string|\Stringable $title): array {
+    return [
+      '#type' => 'html_tag',
+      '#tag' => 'h2',
+      '#value' => $title,
+      '#attributes' => ['class' => ['stats-section-title']],
+    ];
+  }
+
+  /**
+   * Builds a grid cell of KPI tiles.
+   *
+   * @param array<int, array<string, mixed>> $tiles
+   *   The tiles from tile().
+   *
+   * @return array<string, mixed>
+   *   The tiles render array.
+   */
+  public static function tiles(array $tiles): array {
+    return [
+      '#theme' => 'stats_tiles',
+      '#tiles' => $tiles,
+    ];
+  }
+
+  /**
+   * Builds the line under a chart with tile values.
+   *
+   * The descriptions of the tiles follow in a muted line below.
+   *
+   * @param array<string, mixed> ...$tiles
+   *   The tiles from tile().
+   *
+   * @return array<string, mixed>
+   *   The render array.
+   */
+  public static function foot(array ...$tiles): array {
+    return [
+      '#type' => 'inline_template',
+      '#template' => '<div class="stats-card-foot">'
+      . '<p class="stats-card-foot-values">{% for tile in tiles %}<span data-foot="{{ tile.key }}">{{ tile.label }}: <b class="stats-card-foot-value">{{ tile.value }}</b></span>{% if not loop.last %}<span aria-hidden="true"> · </span>{% endif %}{% endfor %}</p>'
+      . '{% for tile in tiles|filter(tile => tile.description) %}<p class="stats-card-foot-description">{{ tile.description }}</p>{% endfor %}'
+      . '</div>',
+      '#context' => ['tiles' => $tiles],
+    ];
+  }
+
+  /**
+   * Builds a KPI tile.
+   *
+   * @param string $key
+   *   The tile key.
+   * @param string|\Stringable $label
+   *   The label.
+   * @param int|float|null $value
+   *   The count, or the rate as a fraction, NULL if undefined.
+   * @param string|\Stringable|null $description
+   *   A short line that explains the value, if any.
+   * @param bool $rate
+   *   Whether the value is a rate, shown in percent.
+   *
+   * @return array<string, mixed>
+   *   The tile.
+   */
+  public static function tile(string $key, string|\Stringable $label, int|float|null $value, string|\Stringable|null $description = NULL, bool $rate = FALSE): array {
+    $text = '–';
+    if ($value !== NULL) {
+      $text = $rate ? round($value * 100) . ' %' : (string) $value;
+    }
+    return [
+      'key' => $key,
+      'label' => $label,
+      'value' => $text,
+      'description' => $description,
+    ];
   }
 
   /**
@@ -112,14 +230,12 @@ class StatsCharts {
    *
    * @param string $id
    *   The HTML id of the chart.
-   * @param string $title
+   * @param string|\Stringable $title
    *   The title.
-   * @param string[] $labels
+   * @param array<int, string|\Stringable> $labels
    *   The category labels.
-   * @param array<string, array<int, int|float|null>> $series
+   * @param array<string, array<int|string, int|float|null>> $series
    *   The values per series name, in the order of the labels.
-   * @param bool $stacked
-   *   Whether to stack the series.
    * @param bool $horizontal
    *   Whether to draw horizontal bars.
    * @param int|null $max
@@ -128,9 +244,8 @@ class StatsCharts {
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function bar(string $id, string $title, array $labels, array $series, bool $stacked = FALSE, bool $horizontal = FALSE, ?int $max = NULL): array {
+  public static function bar(string $id, string|\Stringable $title, array $labels, array $series, bool $horizontal = FALSE, ?int $max = NULL): array {
     $chart = static::chart($id, $title, $horizontal ? 'bar' : 'column', $labels, $series);
-    $chart['#stacking'] = $stacked;
     if ($max !== NULL) {
       $chart['#raw_options']['options']['scales'][$horizontal ? 'x' : 'y'] += [
         'min' => 0,
@@ -149,18 +264,18 @@ class StatsCharts {
    *
    * @param string $id
    *   The HTML id of the chart.
-   * @param string $title
+   * @param string|\Stringable $title
    *   The title.
-   * @param string[] $labels
+   * @param array<int, string|\Stringable> $labels
    *   The slice labels.
-   * @param array<int, int|float|null> $values
+   * @param array<int|string, int|float|null> $values
    *   The values in the order of the labels.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function doughnut(string $id, string $title, array $labels, array $values): array {
-    $chart = static::chart($id, $title, 'donut', $labels, [$title => $values]);
+  public static function doughnut(string $id, string|\Stringable $title, array $labels, array $values): array {
+    $chart = static::chart($id, $title, 'donut', $labels, [(string) $title => $values]);
     $chart['#legend'] = TRUE;
     $chart['series_0']['#labels'] = array_map('strval', array_values($labels));
     return $chart;
@@ -171,17 +286,17 @@ class StatsCharts {
    *
    * @param string $id
    *   The HTML id of the chart.
-   * @param string $title
+   * @param string|\Stringable $title
    *   The title.
-   * @param string[] $labels
+   * @param array<int, string|\Stringable> $labels
    *   The category labels.
-   * @param array<string, array<int, int|float|null>> $series
+   * @param array<string, array<int|string, int|float|null>> $series
    *   The values per series name, in the order of the labels.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function line(string $id, string $title, array $labels, array $series): array {
+  public static function line(string $id, string|\Stringable $title, array $labels, array $series): array {
     return static::chart($id, $title, 'line', $labels, $series);
   }
 
@@ -190,19 +305,19 @@ class StatsCharts {
    *
    * @param string $id
    *   The HTML id of the chart.
-   * @param string $title
+   * @param string|\Stringable $title
    *   The title.
    * @param string $type
    *   The chart type id of the charts module.
-   * @param string[] $labels
+   * @param array<int, string|\Stringable> $labels
    *   The category labels.
-   * @param array<string, array<int, int|float|null>> $series
+   * @param array<string, array<int|string, int|float|null>> $series
    *   The values per series name, in the order of the labels.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  protected static function chart(string $id, string $title, string $type, array $labels, array $series): array {
+  protected static function chart(string $id, string|\Stringable $title, string $type, array $labels, array $series): array {
 
     $chart = [
       '#type' => 'chart',
@@ -212,7 +327,7 @@ class StatsCharts {
       '#chart_type' => $type,
       // The title labels the figure and captions the table; the card shows
       // it, so the canvas draws none.
-      '#title' => $title,
+      '#title' => (string) $title,
       '#title_color' => '',
       '#accessible_table' => 'invisible',
       '#legend' => count($series) > 1,

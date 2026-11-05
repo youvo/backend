@@ -59,16 +59,12 @@ class ProjectStatsTest extends StatsTestBase {
     $expected['2001-05'] = 1;
     $expected['2001-07'] = 1;
     $this->assertSame($expected, $flow['publish']);
-    $this->assertCount(7, $this->projectStats->publishRows($period));
 
     $cohort = $this->projectStats->cohort($period);
     $this->assertSame(6, $cohort['published']);
-    $this->assertCount(6, $cohort['project_ids']);
     $this->assertSame(3, $cohort['mediated']);
     $this->assertSame(1, $cohort['completed']);
-    $this->assertSame(2, $cohort['excluded']);
     $this->assertSame(0.75, $cohort['mediation_rate']);
-    $this->assertEqualsWithDelta(0.333, $cohort['completion_rate'], 0.001);
   }
 
   /**
@@ -79,6 +75,7 @@ class ProjectStatsTest extends StatsTestBase {
     $period = $this->year('2001');
     $this->assertSame([
       'submit_publish' => 4.0,
+      'publish_application' => NULL,
       'publish_mediate' => 9.0,
       'mediate_complete' => 28.0,
     ], $this->projectStats->stageMedians($period));
@@ -167,7 +164,6 @@ class ProjectStatsTest extends StatsTestBase {
     $cohort = $this->projectStats->cohort($this->year('2001'));
     $this->assertSame(2, $cohort['published']);
     $this->assertSame(2, $cohort['mediated']);
-    $this->assertSame(0, $cohort['excluded']);
     $this->assertSame(1.0, $cohort['mediation_rate']);
   }
 
@@ -188,10 +184,10 @@ class ProjectStatsTest extends StatsTestBase {
     $cohort = $this->projectStats->cohort($period);
     $this->assertSame(0, $cohort['published']);
     $this->assertNull($cohort['mediation_rate']);
-    $this->assertNull($cohort['completion_rate']);
 
     $this->assertSame([
       'submit_publish' => NULL,
+      'publish_application' => NULL,
       'publish_mediate' => NULL,
       'mediate_complete' => NULL,
     ], $this->projectStats->stageMedians($period));

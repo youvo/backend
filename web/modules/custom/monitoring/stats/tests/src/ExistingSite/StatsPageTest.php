@@ -133,7 +133,7 @@ class StatsPageTest extends StatsTestBase {
       $card = '.stats-overview .stats-card[aria-labelledby="' . $id . '-title"]';
       $this->assertSession()->elementExists('css', $card . ' #' . $id);
       $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-title', $title);
-      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$method}());
+      $this->assertSession()->elementTextEquals('css', $card . ' .stats-card-value', (string) $calculator->{$method}());
     }
     $this->assertSession()->elementExists('xpath', '//a[normalize-space()="All time"][@aria-current="page"]');
 
@@ -148,26 +148,26 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of 31.12.2001');
     $expected = ['open' => 4, 'ongoing' => 2, 'completed' => 1, 'mediated' => 3, 'organizations' => 3];
     foreach ($expected as $key => $value) {
-      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $value);
+      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', (string) $value);
     }
 
     // A period in the future ends today.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2090]]);
     $this->assertSession()->elementTextContains('css', '.stats-overview .stats-section-hint', 'As of ' . $today);
     foreach (array_keys($cards) as $key) {
-      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', (string) $calculator->{$cards[$key][1]}());
+      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', (string) $calculator->{$cards[$key][1]}());
     }
 
     // A period without data hides the overview charts, not the values.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
-    $this->assertSession()->elementExists('css', '.stats-overview .stats-card-value[data-value="creatives"]');
+    $this->assertSession()->elementExists('css', '.stats-card[aria-labelledby="stats-overview-creatives-title"] .stats-card-value');
     $this->assertSession()->elementNotExists('css', '#stats-overview-creatives');
 
     // The mediation rate of the cohort moved to the footnote of its card.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
-    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-cohort"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: 75 %');
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2002]]);
-    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-funnel"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: –');
+    $this->assertSession()->elementTextEquals('xpath', '//*[@id="stats-cohort"]/ancestor::*[contains(@class, "stats-card")][1]//*[@data-foot="mediation-rate"]', 'Mediation rate: –');
   }
 
   /**
@@ -226,7 +226,7 @@ class StatsPageTest extends StatsTestBase {
 
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
     $this->assertSession()->statusCodeEquals(200);
-    foreach (['stats-flow', 'stats-funnel', 'stats-stages'] as $id) {
+    foreach (['stats-flow', 'stats-cohort', 'stats-stages'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
     // The card labels the chart, which draws no title of its own but keeps it
@@ -260,7 +260,7 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSame(['1', '1', '2', '1', '1', '0', '1', '0', '0', '0', '0', '0'], $values);
 
     // The cohort card explains itself in a line under its title.
-    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-describedby="stats-funnel-description"] p#stats-funnel-description', 'Projects first published in the period and how far they got');
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-describedby="stats-cohort-description"] p#stats-cohort-description', 'Projects first published in the period and how far they got');
 
     // A month counts by week.
     $this->drupalGet('stats', ['query' => ['period' => 'month', 'year' => 2001, 'month' => 11]]);
@@ -291,7 +291,7 @@ class StatsPageTest extends StatsTestBase {
     ];
     foreach ($expected as $key => $value) {
       $id = 'stats-overview-' . $key;
-      $this->assertSession()->elementTextEquals('css', '.stats-overview .stats-card-value[data-value="' . $key . '"]', $value);
+      $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-overview-' . $key . '-title"] .stats-card-value', $value);
       // The creatives have no data in this year and show no chart.
       if ($key === 'creatives') {
         $this->assertSession()->elementNotExists('css', '#' . $id);

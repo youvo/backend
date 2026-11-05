@@ -3,7 +3,6 @@
 namespace Drupal\stats\Controller;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -38,7 +37,6 @@ class StatsController implements ContainerInjectionInterface {
     protected FeedbackStats $feedbackStats,
     protected ActivitySnapshots $activitySnapshots,
     protected StatsCalculator $calculator,
-    protected ConfigFactoryInterface $configFactory,
     protected TimeInterface $time,
     protected FormBuilderInterface $formBuilder,
   ) {}
@@ -53,7 +51,6 @@ class StatsController implements ContainerInjectionInterface {
       $container->get('stats.feedback_stats'),
       $container->get('stats.activity_snapshots'),
       $container->get('stats.calculator'),
-      $container->get('config.factory'),
       $container->get('datetime.time'),
       $container->get('form_builder'),
     );
@@ -64,16 +61,9 @@ class StatsController implements ContainerInjectionInterface {
    */
   public function page(Request $request): array {
 
-    $timezone = new \DateTimeZone($this->configFactory->get('system.date')->get('timezone.default'));
+    $timezone = $this->activitySnapshots->timezone();
     $now = (new \DateTimeImmutable('@' . $this->time->getRequestTime()))->setTimezone($timezone);
     $period = StatsPeriod::fromQuery($request->query->all(), $timezone, $now);
-
-    $current = [
-      'flow' => $this->projectStats->flow($period),
-      'cohort' => $this->projectStats->cohort($period),
-      'medians' => $this->projectStats->stageMedians($period),
-      'first_application' => $this->activityStats->firstApplicationMedian($period, $this->projectStats->publishRows($period)),
-    ];
 
     return [
       '#theme' => 'stats_page',
@@ -83,7 +73,7 @@ class StatsController implements ContainerInjectionInterface {
       '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')) : [],
       '#sections' => [
         'overview' => $this->overviewSection($period, $now),
-        'projects' => $this->projectsSection($period, $current),
+        'projects' => $this->projectsSection($period),
         'applications' => $this->applicationsSection($period),
         'creatives' => $this->creativesSection($period),
         'organizations' => $this->organizationsSection($period),
@@ -103,77 +93,6 @@ class StatsController implements ContainerInjectionInterface {
         'max-age' => 3600,
       ],
     ];
-  }
-
-  /**
-   * Builds the projects section: flow, cohort funnel and stage medians.
-   *
-   * @param \Drupal\stats\StatsPeriod $period
-   *   The period.
-   * @param array<string, mixed> $current
-   *   The project stats of the period.
-   *
-   * @return array<string, mixed>
-   *   The section render array.
-   */
-  protected function projectsSection(StatsPeriod $period, array $current): array {
-
-    $labels = $period->bucketLabels();
-    $transitions = [
-      ProjectTransition::Submit->value => $this->t('Submitted'),
-      ProjectTransition::Publish->value => $this->t('Published'),
-      ProjectTransition::Mediate->value => $this->t('Mediated'),
-      ProjectTransition::Complete->value => $this->t('Completed'),
-      ProjectTransition::Decline->value => $this->t('Declined'),
-    ];
-
-    $series = [];
-    foreach ($transitions as $transition => $name) {
-      $series[(string) $name] = array_values($current['flow'][$transition]);
-    }
-
-    $cohort = $current['cohort'];
-    $funnel_labels = [
-      (string) $this->t('Published'),
-      (string) $this->t('Mediated'),
-      (string) $this->t('Completed'),
-    ];
-    $funnel = [
-      (string) $this->t('Projects') => [$cohort['published'], $cohort['mediated'], $cohort['completed']],
-    ];
-
-    $medians = $current['medians'];
-    $stage_labels = [
-      (string) $this->t('Submit → publish'),
-      (string) $this->t('Publish → 1st application'),
-      (string) $this->t('Publish → mediate'),
-      (string) $this->t('Mediate → complete'),
-    ];
-    $stages = [
-      (string) $this->t('Days') => [
-        $medians['submit_publish'],
-        $current['first_application'],
-        $medians['publish_mediate'],
-        $medians['mediate_complete'],
-      ],
-    ];
-
-    $flow_chart = StatsCharts::bar('stats-flow', (string) $this->t('Project flow'), $labels, $series);
-    $funnel_title = (string) $this->t('Cohort: published in @period', ['@period' => $period->label()]);
-    $funnel_chart = StatsCharts::bar('stats-funnel', $funnel_title, $funnel_labels, $funnel, horizontal: TRUE);
-    $funnel_card = StatsCharts::card($funnel_chart, description: $this->t('Projects first published in the period and how far they got'));
-    $rate = $this->tile('mediation-rate', $this->t('Mediation rate'), $cohort['mediation_rate'], 'rate', $this->t('Mediated ÷ published, without open or externally archived ones'));
-    $funnel_card['foot'] = $this->foot($rate);
-    $stages_title = (string) $this->t('Median days per stage');
-    $stages_chart = StatsCharts::bar('stats-stages', $stages_title, $stage_labels, $stages, horizontal: TRUE);
-    $stages_card = StatsCharts::card($stages_chart, description: $this->t('Median days to each step reached in the period'));
-
-    $heading = $this->heading($this->t('Projects'));
-    return $this->section($heading, [
-      'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
-      'funnel' => $funnel_card,
-      'stages' => $stages_card,
-    ]);
   }
 
   /**
@@ -207,7 +126,7 @@ class StatsController implements ContainerInjectionInterface {
       'header' => [
         '#type' => 'container',
         '#attributes' => ['class' => ['stats-section-header']],
-        'heading' => $this->heading($this->t('Overview')),
+        'heading' => StatsCharts::heading($this->t('Overview')),
         'hint' => [
           '#type' => 'html_tag',
           '#tag' => 'p',
@@ -219,28 +138,8 @@ class StatsController implements ContainerInjectionInterface {
     foreach ($cards as $key => [$title, $values, $count]) {
       $values = $this->beforeNow($period, $now, $values);
       $total = $this->last($values) ?? $this->calculator->{$count}();
-      $chart = StatsCharts::line('stats-overview-' . $key, (string) $title, $labels, [(string) $title => array_values($values)]);
-      // Few ticks keep the small chart readable.
-      $chart['#raw_options']['options']['scales']['y']['ticks']['maxTicksLimit'] = 3;
-      $chart['#raw_options']['options']['scales']['x']['ticks'] = [
-        'maxTicksLimit' => 4,
-        'maxRotation' => 0,
-        'autoSkipPadding' => 12,
-      ];
-      $card = StatsCharts::card($chart, compact: TRUE);
-      $chart = $card['chart'];
-      unset($card['chart']);
-      $card['value'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => (string) $total,
-        '#attributes' => ['class' => ['stats-card-value'], 'data-value' => $key],
-      ];
-      // A card without data shows its value only.
-      if (!StatsCharts::isEmpty($chart)) {
-        $card['chart'] = $chart;
-      }
-      $section[$key] = $card;
+      $chart = StatsCharts::line('stats-overview-' . $key, $title, $labels, [(string) $title => $values]);
+      $section[$key] = StatsCharts::card($chart, compact: TRUE, value: (string) $total);
     }
 
     return [
@@ -250,25 +149,56 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Empties the values of the buckets that start after the current time.
+   * Builds the projects section: flow, cohort funnel and stage medians.
    *
-   * @param \Drupal\stats\StatsPeriod $period
-   *   The period.
-   * @param \DateTimeImmutable $now
-   *   The current time.
-   * @param array<string, ?int> $values
-   *   The values keyed by bucket.
-   *
-   * @return array<string, ?int>
-   *   The values, NULL after the current time.
+   * @return array<string, mixed>
+   *   The section render array.
    */
-  protected function beforeNow(StatsPeriod $period, \DateTimeImmutable $now, array $values): array {
-    foreach ($period->buckets() as $bucket => [$start]) {
-      if ($start > $now->getTimestamp()) {
-        $values[$bucket] = NULL;
-      }
+  protected function projectsSection(StatsPeriod $period): array {
+
+    $flow = $this->projectStats->flow($period);
+    $transitions = [
+      ProjectTransition::Submit->value => $this->t('Submitted'),
+      ProjectTransition::Publish->value => $this->t('Published'),
+      ProjectTransition::Mediate->value => $this->t('Mediated'),
+      ProjectTransition::Complete->value => $this->t('Completed'),
+      ProjectTransition::Decline->value => $this->t('Declined'),
+    ];
+    $series = [];
+    foreach ($transitions as $transition => $name) {
+      $series[(string) $name] = $flow[$transition];
     }
-    return $values;
+    $flow_chart = StatsCharts::bar('stats-flow', $this->t('Project flow'), $period->bucketLabels(), $series);
+
+    $cohort = $this->projectStats->cohort($period);
+    $cohort_title = $this->t('Cohort: published in @period', ['@period' => $this->label($period)]);
+    $cohort_chart = StatsCharts::bar('stats-cohort', $cohort_title, [
+      $this->t('Published'),
+      $this->t('Mediated'),
+      $this->t('Completed'),
+    ], [
+      (string) $this->t('Projects') => [$cohort['published'], $cohort['mediated'], $cohort['completed']],
+    ], horizontal: TRUE);
+    $cohort_card = StatsCharts::card($cohort_chart, description: $this->t('Projects first published in the period and how far they got'));
+    $cohort_card['foot'] = StatsCharts::foot(
+      StatsCharts::tile('mediation-rate', $this->t('Mediation rate'), $cohort['mediation_rate'], $this->t('Mediated ÷ published, without open or externally archived ones'), TRUE),
+    );
+
+    $medians = $this->projectStats->stageMedians($period);
+    $stages_chart = StatsCharts::bar('stats-stages', $this->t('Median days per stage'), [
+      $this->t('Submit → publish'),
+      $this->t('Publish → 1st application'),
+      $this->t('Publish → mediate'),
+      $this->t('Mediate → complete'),
+    ], [
+      (string) $this->t('Days') => $medians,
+    ], horizontal: TRUE);
+
+    return StatsCharts::section($this->t('Projects'), [
+      'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
+      'cohort' => $cohort_card,
+      'stages' => StatsCharts::card($stages_chart, description: $this->t('Median days to each step reached in the period')),
+    ]);
   }
 
   /**
@@ -279,27 +209,24 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function applicationsSection(StatsPeriod $period): array {
 
-    $labels = $period->bucketLabels();
     $applications = $this->activityStats->applications($period);
     $engaged = $this->activityStats->engagedCreatives($period);
     $returned = $this->activityStats->returnAfterRejection($period);
 
-    $series = [
-      (string) $this->t('Applications') => array_values($applications['per_bucket']),
-      (string) $this->t('Distinct applicants') => array_values($applications['active_per_bucket']),
-    ];
-    $chart = StatsCharts::bar('stats-applications', (string) $this->t('Applications and applicants'), $labels, $series);
+    $chart = StatsCharts::bar('stats-applications', $this->t('Applications and applicants'), $period->bucketLabels(), [
+      (string) $this->t('Applications') => $applications['per_bucket'],
+      (string) $this->t('Distinct applicants') => $applications['active_per_bucket'],
+    ]);
     $tiles = [
-      $this->tile('active-applicants', $this->t('Active applicants'), $applications['active'], 'count', $this->t('Creatives who applied at least once in the period')),
-      $this->tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], 'count', $this->t('Creatives whose first application falls in the period')),
-      $this->tile('engaged-creatives', $this->t('Engaged'), $engaged, 'count', $this->t('Creatives mediated to a project in the period')),
-      $this->tile('came-back', $this->t('Came back'), $returned, 'rate', $this->t('Applicants not chosen in the period who applied again later')),
+      StatsCharts::tile('active-applicants', $this->t('Active applicants'), $applications['active'], $this->t('Creatives who applied at least once in the period')),
+      StatsCharts::tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], $this->t('Creatives whose first application falls in the period')),
+      StatsCharts::tile('engaged-creatives', $this->t('Engaged'), $engaged, $this->t('Creatives mediated to a project in the period')),
+      StatsCharts::tile('came-back', $this->t('Came back'), $returned, $this->t('Applicants not chosen in the period who applied again later'), TRUE),
     ];
 
-    $heading = $this->heading($this->t('Applications'));
-    return $this->section($heading, [
+    return StatsCharts::section($this->t('Applications'), [
       'applications' => StatsCharts::card($chart, wide: TRUE),
-      'tiles' => $this->tiles($tiles),
+      'tiles' => StatsCharts::tiles($tiles),
     ]);
   }
 
@@ -313,28 +240,26 @@ class StatsController implements ContainerInjectionInterface {
 
     $labels = $period->bucketLabels();
     $activation = $this->activityStats->activation($period);
-    $series = [
-      (string) $this->t('Registered') => array_values($activation['registered']),
-      (string) $this->t('Applied within 30 days') => array_values($activation['activated']),
-    ];
-    $activation_chart = StatsCharts::bar('stats-activation', (string) $this->t('Registrations and activation'), $labels, $series);
+    $activation_chart = StatsCharts::bar('stats-activation', $this->t('Registrations and activation'), $labels, [
+      (string) $this->t('Registered') => $activation['registered'],
+      (string) $this->t('Applied within 30 days') => $activation['activated'],
+    ]);
     $activation_card = StatsCharts::card($activation_chart, wide: TRUE);
-    $rate = $this->tile('activation-rate', $this->t('Activation rate'), $activation['rate'], 'rate', $this->t('Registered creatives who applied within 30 days'));
-    $activation_card['foot'] = $this->foot($rate);
+    $activation_card['foot'] = StatsCharts::foot(
+      StatsCharts::tile('activation-rate', $this->t('Activation rate'), $activation['rate'], $this->t('Registered creatives who applied within 30 days'), TRUE),
+    );
 
     $histogram = $this->activityStats->firstApplicationHistogram($period);
-    $histogram_labels = [
-      (string) $this->t('≤ 1 d'),
-      (string) $this->t('≤ 7 d'),
-      (string) $this->t('≤ 30 d'),
-      (string) $this->t('≤ 90 d'),
-      (string) $this->t('≤ 1 year'),
-      (string) $this->t('Later'),
-      (string) $this->t('Never'),
-    ];
-    $histogram_title = (string) $this->t('First application after registration');
-    $histogram_chart = StatsCharts::bar('stats-first-application', $histogram_title, $histogram_labels, [
-      (string) $this->t('Creatives') => array_values($histogram),
+    $histogram_chart = StatsCharts::bar('stats-first-application', $this->t('First application after registration'), [
+      $this->t('≤ 1 d'),
+      $this->t('≤ 7 d'),
+      $this->t('≤ 30 d'),
+      $this->t('≤ 90 d'),
+      $this->t('≤ 1 year'),
+      $this->t('Later'),
+      $this->t('Never'),
+    ], [
+      (string) $this->t('Creatives') => $histogram,
     ]);
 
     $cards = [
@@ -346,23 +271,21 @@ class StatsController implements ContainerInjectionInterface {
     // snapshot hold NULL and leave a gap in the line; a snapshot of 0 users
     // is data.
     $activity = $this->activitySnapshots->series($period);
-    $creatives = array_column($activity['creative'], 'active_30d');
-    $organizations = array_column($activity['organization'], 'active_30d');
-    if (array_filter([...$creatives, ...$organizations], fn($value) => $value !== NULL)) {
-      $activity_series = [
-        (string) $this->t('Creatives') => array_values($creatives),
-        (string) $this->t('Organizations') => array_values($organizations),
-      ];
-      $activity_chart = StatsCharts::line('stats-activity', (string) $this->t('Active users, last 30 days'), $labels, $activity_series);
+    $creatives = $this->last($activity['creative']);
+    $organizations = $this->last($activity['organization']);
+    if ($creatives !== NULL || $organizations !== NULL) {
+      $activity_chart = StatsCharts::line('stats-activity', $this->t('Active users, last 30 days'), $labels, [
+        (string) $this->t('Creatives') => $activity['creative'],
+        (string) $this->t('Organizations') => $activity['organization'],
+      ]);
       $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $this->t('Users who visited in the 30 days up to each point'));
-      $cards['tiles'] = $this->tiles([
-        $this->tile('active-creatives', $this->t('Active creatives'), $this->last(array_column($activity['creative'], 'active_30d')), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
-        $this->tile('active-organizations', $this->t('Active organizations'), $this->last(array_column($activity['organization'], 'active_30d')), 'count', $this->t('Visited in the 30 days up to the last snapshot')),
+      $cards['tiles'] = StatsCharts::tiles([
+        StatsCharts::tile('active-creatives', $this->t('Active creatives'), $creatives, $this->t('Visited in the 30 days up to the last snapshot')),
+        StatsCharts::tile('active-organizations', $this->t('Active organizations'), $organizations, $this->t('Visited in the 30 days up to the last snapshot')),
       ]);
     }
 
-    $heading = $this->heading($this->t('Creatives'));
-    return $this->section($heading, $cards);
+    return StatsCharts::section($this->t('Creatives'), $cards);
   }
 
   /**
@@ -374,26 +297,22 @@ class StatsController implements ContainerInjectionInterface {
   protected function organizationsSection(StatsPeriod $period): array {
 
     $funnel = $this->activityStats->prospectFunnel($period);
-    $funnel_labels = [
-      (string) $this->t('Created'),
-      (string) $this->t('Managed'),
-      (string) $this->t('First project published'),
-    ];
-    $funnel_chart = StatsCharts::bar('stats-prospects', (string) $this->t('Prospect funnel'), $funnel_labels, [
-      (string) $this->t('Organizations') => array_values($funnel),
+    $funnel_chart = StatsCharts::bar('stats-prospects', $this->t('Prospect funnel'), [
+      $this->t('Created'),
+      $this->t('Managed'),
+      $this->t('First project published'),
+    ], [
+      (string) $this->t('Organizations') => $funnel,
     ], horizontal: TRUE);
 
     $declines = $this->activityStats->reasons($period, 'project_decline');
-    $decline_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectDeclineReason::tryFrom($reason)?->label() ?? $reason), array_keys($declines));
-    $decline_chart = StatsCharts::doughnut('stats-decline-reasons', (string) $this->t('Decline reasons'), $decline_labels, array_values($declines));
+    $decline_chart = StatsCharts::doughnut('stats-decline-reasons', $this->t('Decline reasons'), $this->reasonLabels($declines, ProjectDeclineReason::class), $declines);
     $archives = $this->activityStats->reasons($period, 'project_archive');
-    $archive_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
-    $archive_chart = StatsCharts::doughnut('stats-archive-reasons', (string) $this->t('Archive reasons'), $archive_labels, array_values($archives));
+    $archive_chart = StatsCharts::doughnut('stats-archive-reasons', $this->t('Archive reasons'), $this->reasonLabels($archives, ProjectArchiveReason::class), $archives);
 
     // The decline reasons span two columns and rows, the prospect funnel and
     // the archive reasons stack beside them.
-    $heading = $this->heading($this->t('Organizations and reasons'));
-    return $this->section($heading, [
+    return StatsCharts::section($this->t('Organizations and reasons'), [
       'decline_reasons' => StatsCharts::card($decline_chart, wide: TRUE, tall: TRUE),
       'prospects' => StatsCharts::card($funnel_chart),
       'archive_reasons' => StatsCharts::card($archive_chart),
@@ -408,32 +327,49 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function feedbackSection(StatsPeriod $period): array {
 
-    $feedback = $this->feedbackStats->feedback($period);
     $bundle_titles = [
       'creative' => $this->t('Feedback from creatives'),
       'organization' => $this->t('Feedback from organizations'),
     ];
 
     $cards = [];
-    foreach ($feedback as $bundle => $data) {
-      $fields = $this->feedbackStats->scaleFields($bundle);
-      $series = [
-        (string) $this->t('Average (max 5)') => array_values($data['scales']),
-      ];
-      $title = (string) ($bundle_titles[$bundle] ?? $bundle);
-      $labels = array_map(fn($label) => preg_replace('/ Scale$/', '', $label), array_values($fields));
-      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, $labels, $series, horizontal: TRUE, max: 5);
+    foreach ($this->feedbackStats->feedback($period) as $bundle => $data) {
+      $labels = array_map(fn($label) => preg_replace('/ Scale$/', '', $label), array_values($this->feedbackStats->scaleFields($bundle)));
+      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $bundle_titles[$bundle] ?? $bundle, $labels, [
+        (string) $this->t('Average (max 5)') => $data['scales'],
+      ], horizontal: TRUE, max: 5);
       $card = StatsCharts::card($chart);
-      $card['foot'] = $this->foot(
-        $this->tile('answers-' . $bundle, $this->t('Answers'), $data['count'], 'count'),
-        $this->tile('recommend-' . $bundle, $this->t('Recommend'), $data['recommend'], 'rate'),
+      $card['foot'] = StatsCharts::foot(
+        StatsCharts::tile('answers-' . $bundle, $this->t('Answers'), $data['count']),
+        StatsCharts::tile('recommend-' . $bundle, $this->t('Recommend'), $data['recommend'], rate: TRUE),
       );
       $cards['feedback_' . $bundle] = $card;
     }
 
     // The two bundles side by side.
-    $heading = $this->heading($this->t('Feedback'));
-    return $this->section($heading, $cards, ['data-columns' => '2']);
+    return StatsCharts::section($this->t('Feedback'), $cards, ['data-columns' => '2']);
+  }
+
+  /**
+   * Empties the values of the buckets that start after the current time.
+   *
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param \DateTimeImmutable $now
+   *   The current time.
+   * @param array<string, int> $values
+   *   The values keyed by bucket.
+   *
+   * @return array<string, ?int>
+   *   The values, NULL after the current time.
+   */
+  protected function beforeNow(StatsPeriod $period, \DateTimeImmutable $now, array $values): array {
+    foreach ($period->buckets() as $bucket => [$start]) {
+      if ($start > $now->getTimestamp()) {
+        $values[$bucket] = NULL;
+      }
+    }
+    return $values;
   }
 
   /**
@@ -452,112 +388,29 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds a section of the stats grid.
+   * Gets the labels of reasons counted by ActivityStats::reasons().
    *
-   * @param array<string, mixed> $heading
-   *   The heading render array.
-   * @param array<string, mixed> $cards
-   *   The cards keyed by name.
-   * @param array<string, string> $attributes
-   *   More attributes of the section.
+   * @param array<string, int> $counts
+   *   The counts keyed by reason.
+   * @param class-string<\Drupal\projects\ProjectDeclineReason|\Drupal\projects\ProjectArchiveReason> $enum
+   *   The enum of the reasons.
    *
-   * @return array<string, mixed>
-   *   The section render array.
+   * @return array<int, string|\Stringable>
+   *   The labels in the order of the counts.
    */
-  protected function section(array $heading, array $cards, array $attributes = []): array {
-    return [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section']] + $attributes,
-      'heading' => $heading,
-    ] + $cards;
-  }
-
-  /**
-   * Builds a section heading.
-   *
-   * @return array<string, mixed>
-   *   The heading render array.
-   */
-  protected function heading(mixed $title): array {
-    return [
-      '#type' => 'html_tag',
-      '#tag' => 'h2',
-      '#value' => $title,
-      '#attributes' => ['class' => ['stats-section-title']],
-    ];
-  }
-
-  /**
-   * Builds a grid cell of KPI tiles.
-   *
-   * @param array<int, array<string, mixed>> $tiles
-   *   The tiles from tile().
-   *
-   * @return array<string, mixed>
-   *   The tiles render array.
-   */
-  protected function tiles(array $tiles): array {
-    return [
-      '#theme' => 'stats_tiles',
-      '#tiles' => $tiles,
-      '#attributes' => ['class' => ['stats-tiles']],
-    ];
-  }
-
-  /**
-   * Builds the line under a chart with tile values.
-   *
-   * The descriptions of the tiles follow in a muted line below.
-   *
-   * @param array<string, mixed> ...$tiles
-   *   The tiles from tile().
-   *
-   * @return array<string, mixed>
-   *   The render array.
-   */
-  protected function foot(array ...$tiles): array {
-    return [
-      '#type' => 'inline_template',
-      '#template' => '<div class="stats-card-foot">'
-      . '<p class="stats-card-foot-values">{% for tile in tiles %}<span data-foot="{{ tile.key }}">{{ tile.label }}: <b class="stats-card-foot-value">{{ tile.value }}</b></span>{% if not loop.last %}<span aria-hidden="true"> · </span>{% endif %}{% endfor %}</p>'
-      . '{% for tile in tiles|filter(tile => tile.description) %}<p class="stats-card-foot-description">{{ tile.description }}</p>{% endfor %}'
-      . '</div>',
-      '#context' => ['tiles' => $tiles],
-    ];
-  }
-
-  /**
-   * Builds a KPI tile.
-   *
-   * @param string $key
-   *   The tile key.
-   * @param mixed $label
-   *   The label.
-   * @param int|float|null $value
-   *   The value, NULL if undefined.
-   * @param string $type
-   *   One of count, rate (a fraction) and days.
-   * @param mixed $description
-   *   A short line that explains the value, if any.
-   *
-   * @return array<string, mixed>
-   *   The tile.
-   */
-  protected function tile(string $key, mixed $label, int|float|null $value, string $type, mixed $description = NULL): array {
-    $text = '–';
-    if ($value !== NULL) {
-      $text = match ($type) {
-        'count' => (string) $value,
-        'rate' => round($value * 100) . ' %',
-        default => number_format($value, 1, '.', '') . ' d',
-      };
+  protected function reasonLabels(array $counts, string $enum): array {
+    $labels = [];
+    foreach (array_keys($counts) as $reason) {
+      $labels[] = $reason === 'unknown' ? $this->t('Unknown') : $enum::tryFrom($reason)?->label() ?? $reason;
     }
-    return [
-      'key' => $key,
-      'label' => $label,
-      'value' => $text,
-      'description' => $description,
-    ];
+    return $labels;
+  }
+
+  /**
+   * Gets the translated label of a period.
+   */
+  protected function label(StatsPeriod $period): string|\Stringable {
+    return $period->type() === StatsPeriod::ALL ? $this->t('All time') : $period->label();
   }
 
   /**
@@ -604,7 +457,7 @@ class StatsController implements ContainerInjectionInterface {
     }
 
     return [
-      'heading' => $period->label(),
+      'heading' => $this->label($period),
       'segments' => $segments,
       'steps' => $steps,
     ];

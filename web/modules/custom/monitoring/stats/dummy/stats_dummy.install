@@ -25,7 +25,9 @@ function stats_dummy_generate(): void {
     return;
   }
 
-  $timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
+  /** @var \Drupal\stats\Activity\ActivitySnapshots $snapshots */
+  $snapshots = \Drupal::service('stats.activity_snapshots');
+  $timezone = $snapshots->timezone();
   $visits = [];
   foreach (stats_dummy_get_accounts() as $account) {
     array_push($visits, ...stats_dummy_simulate_visits((int) $account->uid, $account->role, (int) $account->created, (int) $account->access, $timezone));
@@ -33,8 +35,6 @@ function stats_dummy_generate(): void {
 
   $now = (new \DateTimeImmutable('@' . \Drupal::time()->getRequestTime()))->setTimezone($timezone);
   $today = $now->format('Y-m-d');
-  /** @var \Drupal\stats\Activity\ActivitySnapshots $snapshots */
-  $snapshots = \Drupal::service('stats.activity_snapshots');
   foreach (ActivityAggregator::aggregate($visits, $timezone) as $day => $roles) {
     if ($day >= $today) {
       continue;

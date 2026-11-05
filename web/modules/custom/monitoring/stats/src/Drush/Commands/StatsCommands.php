@@ -2,7 +2,6 @@
 
 namespace Drupal\stats\Drush\Commands;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\stats\Activity\ActivityAggregator;
@@ -28,7 +27,6 @@ class StatsCommands extends DrushCommands {
   public function __construct(
     protected ActivitySnapshots $activitySnapshots,
     protected Connection $database,
-    protected ConfigFactoryInterface $configFactory,
   ) {
     parent::__construct();
   }
@@ -40,7 +38,6 @@ class StatsCommands extends DrushCommands {
     return new static(
       $container->get('stats.activity_snapshots'),
       $container->get('database'),
-      $container->get('config.factory'),
     );
   }
 
@@ -64,8 +61,7 @@ class StatsCommands extends DrushCommands {
       }
     })();
 
-    $timezone = new \DateTimeZone($this->configFactory->get('system.date')->get('timezone.default'));
-    $rows = ActivityAggregator::aggregate($visits, $timezone);
+    $rows = ActivityAggregator::aggregate($visits, $this->activitySnapshots->timezone());
 
     // Live snapshots are never overwritten.
     $stored = $this->database->select('stats_activity', 'a')

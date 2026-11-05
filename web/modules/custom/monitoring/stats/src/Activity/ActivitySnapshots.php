@@ -118,21 +118,18 @@ class ActivitySnapshots {
   }
 
   /**
-   * Gets the active users per role and bucket of a period.
+   * Gets the users active in the last 30 days per role and bucket.
    *
-   * A bucket holds the average active_1d over its stored days and the
-   * active_30d of its last stored day. Buckets without rows hold NULL.
+   * A bucket holds the active_30d of its last stored day, NULL without one.
    *
-   * @return array<string, array<string, array{active_1d: ?float, active_30d: ?int}>>
+   * @return array<string, array<string, ?int>>
    *   The values keyed by role, then bucket.
    */
   public function series(StatsPeriod $period): array {
 
-    $empty = array_fill_keys(array_keys($period->buckets()), ['active_1d' => NULL, 'active_30d' => NULL]);
-    $series = array_fill_keys(static::ROLES, $empty);
-
+    $series = array_fill_keys(static::ROLES, $period->emptyBuckets(NULL));
     $rows = $this->database->select('stats_activity', 'a')
-      ->fields('a', ['day', 'role', 'active_1d', 'active_30d'])
+      ->fields('a', ['day', 'role', 'active_30d'])
       ->condition('a.day', $period->from()->format('Y-m-d'), '>=')
       ->condition('a.day', $period->to()->format('Y-m-d'), '<')
       ->condition('a.role', static::ROLES, 'IN')
@@ -140,19 +137,10 @@ class ActivitySnapshots {
       ->execute();
 
     $timezone = $period->from()->getTimezone();
-    $sums = [];
     foreach ($rows as $row) {
       $bucket = $period->bucketOf((new \DateTimeImmutable($row->day, $timezone))->getTimestamp());
-      if ($bucket === NULL) {
-        continue;
-      }
-      $sums[$row->role][$bucket]['sum'] = ($sums[$row->role][$bucket]['sum'] ?? 0) + (int) $row->active_1d;
-      $sums[$row->role][$bucket]['days'] = ($sums[$row->role][$bucket]['days'] ?? 0) + 1;
-      $series[$row->role][$bucket]['active_30d'] = (int) $row->active_30d;
-    }
-    foreach ($sums as $role => $buckets) {
-      foreach ($buckets as $bucket => $sum) {
-        $series[$role][$bucket]['active_1d'] = (float) $sum['sum'] / $sum['days'];
+      if ($bucket !== NULL) {
+        $series[$row->role][$bucket] = (int) $row->active_30d;
       }
     }
     return $series;
@@ -161,7 +149,7 @@ class ActivitySnapshots {
   /**
    * Gets the site timezone.
    */
-  protected function timezone(): \DateTimeZone {
+  public function timezone(): \DateTimeZone {
     return new \DateTimeZone($this->configFactory->get('system.date')->get('timezone.default'));
   }
 

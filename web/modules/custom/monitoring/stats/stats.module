@@ -22,7 +22,6 @@ function stats_theme(array $existing, string $type, string $theme, string $path)
       'template' => 'stats-tiles',
       'variables' => [
         'tiles' => [],
-        'attributes' => [],
       ],
     ],
   ];

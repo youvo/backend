@@ -76,13 +76,13 @@ class ActivityStats {
   /**
    * Counts the applications and the applicants in the period.
    *
-   * @return array{per_bucket: array<string, int>, active_per_bucket: array<string, int>, total: int, active: int, first_time: int}
-   *   The applications and distinct applicants per bucket, their totals and
-   *   the applicants whose first application ever lies in the period.
+   * @return array{per_bucket: array<string, int>, active_per_bucket: array<string, int>, active: int, first_time: int}
+   *   The applications and distinct applicants per bucket, the distinct
+   *   applicants of the period and those whose first application ever lies
+   *   in it.
    */
   public function applications(StatsPeriod $period): array {
 
-    $empty = array_fill_keys(array_keys($period->buckets()), 0);
     $logs = [];
     $applicants = [];
     $bucket_applicants = [];
@@ -112,11 +112,11 @@ class ActivityStats {
       }
     }
 
-    $per_bucket = $empty;
+    $per_bucket = $period->emptyBuckets();
     foreach ($logs as $bucket => $ids) {
       $per_bucket[$bucket] = count($ids);
     }
-    $active_per_bucket = $empty;
+    $active_per_bucket = $period->emptyBuckets();
     foreach ($bucket_applicants as $bucket => $creatives) {
       $active_per_bucket[$bucket] = count($creatives);
     }
@@ -128,7 +128,6 @@ class ActivityStats {
     return [
       'per_bucket' => $per_bucket,
       'active_per_bucket' => $active_per_bucket,
-      'total' => array_sum($per_bucket),
       'active' => count($applicants),
       'first_time' => $first_time,
     ];
@@ -193,49 +192,6 @@ class ActivityStats {
       }
     }
     return $rejected > 0 ? (float) $returned / $rejected : NULL;
-  }
-
-  /**
-   * Gets the median days from a publish to the first application after it.
-   *
-   * @param \Drupal\stats\StatsPeriod $period
-   *   The period.
-   * @param array<int, array{project: int, ts: int}> $publishRows
-   *   The publish rows in the period, from ProjectStats::publishRows().
-   *
-   * @return float|null
-   *   The median in days with one decimal, NULL without applications.
-   */
-  public function firstApplicationMedian(StatsPeriod $period, array $publishRows): ?float {
-
-    $projects = array_unique(array_column($publishRows, 'project'));
-    if (!$projects) {
-      return NULL;
-    }
-
-    $query = $this->database->select('log', 'l')
-      ->fields('l', ['project', 'created'])
-      ->condition('l.type', static::LOG_APPLY)
-      ->condition('l.project', $projects, 'IN')
-      ->condition('l.created', $period->from()->getTimestamp(), '>')
-      ->orderBy('l.created')
-      ->orderBy('l.id');
-    $applications = [];
-    foreach ($query->execute() as $row) {
-      $applications[(int) $row->project][] = (int) $row->created;
-    }
-
-    $durations = [];
-    foreach ($publishRows as $publish) {
-      foreach ($applications[$publish['project']] ?? [] as $created) {
-        if ($created > $publish['ts']) {
-          $durations[] = $created - $publish['ts'];
-          break;
-        }
-      }
-    }
-    $median = ProjectStats::median($durations);
-    return $median === NULL ? NULL : round($median / 86400, 1);
   }
 
   /**
@@ -377,7 +333,7 @@ class ActivityStats {
    */
   public function activation(StatsPeriod $period): array {
 
-    $registered = array_fill_keys(array_keys($period->buckets()), 0);
+    $registered = $period->emptyBuckets();
     $activated = $registered;
     foreach ($this->firstApplications($period) as [$created, $first]) {
       $bucket = $period->bucketOf($created);

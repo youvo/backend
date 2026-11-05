@@ -122,7 +122,6 @@ class ActivityStatsTest extends StatsTestBase {
     $this->assertEquals(11, $logs);
 
     $applications = $this->activityStats->applications($this->period);
-    $this->assertSame(6, $applications['total']);
     $this->assertSame($this->months([2, 2, 2]), $applications['per_bucket']);
     $this->assertSame(4, $applications['active']);
     $this->assertSame($this->months([2, 2, 2]), $applications['active_per_bucket']);
@@ -132,8 +131,8 @@ class ActivityStatsTest extends StatsTestBase {
     // Y, rejected on A, applied to C later; W, rejected on B, did not.
     $this->assertSame(0.5, $this->activityStats->returnAfterRejection($this->period));
 
-    $publish_rows = $this->container->get('stats.project_stats')->publishRows($this->period);
-    $this->assertSame(1.0, $this->activityStats->firstApplicationMedian($this->period, $publish_rows));
+    // The median days from a publish to its first application.
+    $this->assertSame(1.0, $this->container->get('stats.project_stats')->stageMedians($this->period)['publish_application']);
   }
 
   /**

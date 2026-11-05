@@ -145,9 +145,9 @@ class ActivitySnapshotsTest extends StatsTestBase {
     $series = $this->snapshots->series($period)['creative'];
 
     $this->assertCount(12, $series);
-    $this->assertSame(['active_1d' => 4.0, 'active_30d' => 12], $series['2001-01']);
-    $this->assertSame(['active_1d' => 2.0, 'active_30d' => 9], $series['2001-02']);
-    $this->assertSame(['active_1d' => NULL, 'active_30d' => NULL], $series['2001-03']);
+    $this->assertSame(12, $series['2001-01']);
+    $this->assertSame(9, $series['2001-02']);
+    $this->assertNull($series['2001-03']);
   }
 
 }
