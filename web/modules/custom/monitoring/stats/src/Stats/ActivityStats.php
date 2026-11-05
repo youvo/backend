@@ -4,6 +4,7 @@ namespace Drupal\stats\Stats;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\StatsPeriod;
 
@@ -12,8 +13,8 @@ use Drupal\stats\StatsPeriod;
  *
  * The applicant of a project_apply log and the creatives of a
  * project_mediate log are its log__creatives. Log methods read the logs they
- * need beyond the period, and apply the windows in PHP. The log
- * status is never filtered, because archived logs count too.
+ * need before the period, and apply the windows in PHP. Archived logs count
+ * too, except for the return after a rejection.
  */
 class ActivityStats {
 
@@ -51,12 +52,13 @@ class ActivityStats {
   /**
    * The application and mediation log rows, once read in this request.
    *
-   * Several metrics of the page need them. They are read for all time, and
-   * the methods apply the windows.
+   * Several metrics of the page need them. They are read from the start up to
+   * the end of the period, and the methods apply the windows.
    *
-   * @var array<int, object{id: int, type: string, created: int, project: ?int, creative: ?int}>|null
+   * @var array<int, array<int, array{id: int, type: string, created: int, status: int, project: ?int, creative: ?int}>>
+   *   The rows keyed by the end of the period.
    */
-  protected ?array $logRows = NULL;
+  protected array $logRows = [];
 
   /**
    * The creatives registered in a period with their first application.
@@ -89,23 +91,19 @@ class ActivityStats {
     $first = [];
 
     // Applications before the period give the first application ever.
-    $to = $period->to()->getTimestamp();
-    foreach ($this->logRows() as $row) {
-      if ($row->created >= $to) {
-        break;
-      }
-      if ($row->type !== static::LOG_APPLY) {
+    foreach ($this->logRows($period) as $row) {
+      if ($row['type'] !== static::LOG_APPLY) {
         continue;
       }
-      $creative = $row->creative;
+      $creative = $row['creative'];
       if ($creative !== NULL) {
-        $first[$creative] ??= $row->created;
+        $first[$creative] ??= $row['created'];
       }
-      if (!$period->contains($row->created)) {
+      if (!$period->contains($row['created'])) {
         continue;
       }
-      $bucket = $period->bucketOf($row->created);
-      $logs[$bucket][$row->id] = TRUE;
+      $bucket = $period->bucketOf($row['created']);
+      $logs[$bucket][$row['id']] = TRUE;
       if ($creative !== NULL) {
         $applicants[$creative] = TRUE;
         $bucket_applicants[$bucket][$creative] = TRUE;
@@ -138,9 +136,9 @@ class ActivityStats {
    */
   public function engagedCreatives(StatsPeriod $period): int {
     $creatives = [];
-    foreach ($this->logRows() as $row) {
-      if ($row->type === static::LOG_MEDIATE && $row->creative !== NULL && $period->contains($row->created)) {
-        $creatives[$row->creative] = TRUE;
+    foreach ($this->logRows($period) as $row) {
+      if ($row['type'] === static::LOG_MEDIATE && $row['creative'] !== NULL && $period->contains($row['created'])) {
+        $creatives[$row['creative']] = TRUE;
       }
     }
     return count($creatives);
@@ -151,7 +149,11 @@ class ActivityStats {
    *
    * The rejected applicants of a mediation in the period are the applicants
    * of its project that it did not mediate. They came back if they applied
-   * to any project after the mediation.
+   * to any project after the mediation, also after the period.
+   *
+   * Only logs that are not archived count: a reset archives the logs of the
+   * project, so the applicants of an earlier round are not rejected by the
+   * mediation of a later one. Resets are rare.
    *
    * @return float|null
    *   The share between 0 and 1, NULL if nobody was rejected.
@@ -159,26 +161,39 @@ class ActivityStats {
   public function returnAfterRejection(StatsPeriod $period): ?float {
 
     $applicants = [];
-    $last_application = [];
     $mediations = [];
-    foreach ($this->logRows() as $row) {
-      $created = $row->created;
-      $creative = $row->creative;
-      if ($row->type === static::LOG_APPLY) {
+    foreach ($this->logRows($period) as $row) {
+      if ($row['status'] !== 1) {
+        continue;
+      }
+      $creative = $row['creative'];
+      if ($row['type'] === static::LOG_APPLY) {
         if ($creative !== NULL) {
-          $applicants[(int) $row->project][$creative] = TRUE;
-          $last_application[$creative] = max($last_application[$creative] ?? 0, $created);
+          $applicants[(int) $row['project']][$creative] = TRUE;
         }
       }
-      elseif ($period->contains($created)) {
-        $mediations[$row->id]['project'] = (int) $row->project;
-        $mediations[$row->id]['created'] = $created;
-        $mediations[$row->id]['creatives'] ??= [];
+      elseif ($period->contains($row['created'])) {
+        $mediations[$row['id']]['project'] = (int) $row['project'];
+        $mediations[$row['id']]['created'] = $row['created'];
+        $mediations[$row['id']]['creatives'] ??= [];
         if ($creative !== NULL) {
-          $mediations[$row->id]['creatives'][$creative] = TRUE;
+          $mediations[$row['id']]['creatives'][$creative] = TRUE;
         }
       }
     }
+    if (!$mediations) {
+      return NULL;
+    }
+
+    // The last application of each creative, up to now.
+    $query = $this->database->select('log', 'l');
+    $query->innerJoin('log__creatives', 'c', 'c.entity_id = l.id AND c.deleted = 0');
+    $query->addField('c', 'creatives_target_id', 'creative');
+    $query->addExpression('MAX(l.created)', 'last');
+    $query->condition('l.type', static::LOG_APPLY)
+      ->condition('l.status', 1)
+      ->groupBy('c.creatives_target_id');
+    $last_application = array_map('intval', $query->execute()->fetchAllKeyed());
 
     $rejected = 0;
     $returned = 0;
@@ -424,37 +439,42 @@ class ActivityStats {
   /**
    * Gets the application and mediation logs, one row per creative, by time.
    *
-   * Logs without creatives give one row with a NULL creative. The rows are
-   * read once per request.
+   * The rows run from the first log up to the end of the period. Logs without
+   * creatives give one row with a NULL creative. The rows are read once per
+   * request and period end.
    *
-   * @return array<int, object{id: int, type: string, created: int, project: ?int, creative: ?int}>
+   * @return array<int, array{id: int, type: string, created: int, status: int, project: ?int, creative: ?int}>
    *   The rows ordered by creation time and log id.
    */
-  protected function logRows(): array {
+  protected function logRows(StatsPeriod $period): array {
 
-    if ($this->logRows !== NULL) {
-      return $this->logRows;
+    $to = $period->to()->getTimestamp();
+    if (isset($this->logRows[$to])) {
+      return $this->logRows[$to];
     }
 
     $query = $this->database->select('log', 'l');
     $query->leftJoin('log__creatives', 'c', 'c.entity_id = l.id AND c.deleted = 0');
-    $query->fields('l', ['id', 'type', 'created', 'project']);
+    $query->fields('l', ['id', 'type', 'created', 'status', 'project']);
     $query->addField('c', 'creatives_target_id', 'creative');
     $query->condition('l.type', [static::LOG_APPLY, static::LOG_MEDIATE], 'IN')
+      ->condition('l.created', $to, '<')
       ->orderBy('l.created')
       ->orderBy('l.id');
 
-    $this->logRows = [];
-    foreach ($query->execute() as $row) {
-      $this->logRows[] = (object) [
-        'id' => (int) $row->id,
-        'type' => (string) $row->type,
-        'created' => (int) $row->created,
-        'project' => $row->project === NULL ? NULL : (int) $row->project,
-        'creative' => $row->creative === NULL ? NULL : (int) $row->creative,
+    $rows = [];
+    foreach ($query->execute()->fetchAll(FetchAs::Associative) as $row) {
+      $rows[] = [
+        'id' => (int) $row['id'],
+        'type' => (string) $row['type'],
+        'created' => (int) $row['created'],
+        'status' => (int) $row['status'],
+        'project' => $row['project'] === NULL ? NULL : (int) $row['project'],
+        'creative' => $row['creative'] === NULL ? NULL : (int) $row['creative'],
       ];
     }
-    return $this->logRows;
+    $this->logRows[$to] = $rows;
+    return $rows;
   }
 
 }

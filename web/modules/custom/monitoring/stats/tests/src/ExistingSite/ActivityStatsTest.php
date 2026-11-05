@@ -136,6 +136,33 @@ class ActivityStatsTest extends StatsTestBase {
   }
 
   /**
+   * Tests that the archived round of a reset project rejects nobody.
+   */
+  public function testReturnAfterRejectionIgnoresArchivedLogs(): void {
+
+    // E was mediated to V in April 2018 and reset in May, which archived the
+    // logs of that round. U applied in both rounds.
+    $e = Project::load($this->projectIds[4]);
+    $u = $this->createCreativeOn('2018-03-01', TRUE);
+    $v = $this->createCreativeOn('2018-03-01', TRUE);
+    $archived = [
+      $this->createLog('project_apply', '2018-04-04', ['project' => $e, 'creatives' => [$v]]),
+      $this->createLog('project_apply', '2018-04-05', ['project' => $e, 'creatives' => [$u]]),
+      $this->createLog('project_mediate', '2018-04-10', ['project' => $e, 'creatives' => [$v]]),
+    ];
+    foreach ($archived as $log) {
+      $log->set('status', 0)->save();
+    }
+    $this->apply($u, $e, '2018-05-15');
+
+    // Counting the archived mediation, U would be rejected and back: 2 of 3.
+    // Y and W of the scenario remain.
+    $this->assertSame(0.5, $this->activityStats->returnAfterRejection($this->period));
+    // The other stats count the archived logs.
+    $this->assertSame(3, $this->activityStats->engagedCreatives($this->period));
+  }
+
+  /**
    * Tests registrations, the prospect funnel and the reasons.
    */
   public function testOrganizationsAndReasons(): void {
