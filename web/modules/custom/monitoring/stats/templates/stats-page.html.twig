@@ -49,17 +49,7 @@
     </form>
   </div>
 
-  <div class="stats-kpis">
-    {% for kpi in kpis %}
-      <div class="stats-kpi stats-kpi--{{ kpi.key }}">
-        <b class="stats-kpi__value">{{ kpi.value }}</b>
-        <span class="stats-kpi__label">{{ kpi.label }}</span>
-        {% if kpi.delta %}
-          <span class="stats-kpi__change"><i class="stats-kpi__delta stats-kpi__delta--{{ kpi.direction }}">{{ kpi.delta }}</i> {{ kpi.versus }}</span>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
+  {% include '@stats/stats-tiles.html.twig' with {tiles: kpis, attributes: create_attribute()} only %}
 
   {{ sections }}
 </div>

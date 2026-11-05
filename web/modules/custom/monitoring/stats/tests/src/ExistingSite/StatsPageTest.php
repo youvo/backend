@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
+use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\stats\Controller\StatsController;
 use PHPUnit\Framework\Attributes\Group;
@@ -12,6 +13,27 @@ use Symfony\Component\HttpFoundation\Request;
  */
 #[Group('stats')]
 class StatsPageTest extends StatsTestBase {
+
+  /**
+   * The activity rows the test replaced, keyed by day, to restore them.
+   *
+   * @var array<string, array<int, array<string, mixed>>>
+   */
+  protected array $touchedDays = [];
+
+  /**
+   * Restores the activity rows the test replaced.
+   */
+  protected function tearDown(): void {
+    $database = $this->container->get('database');
+    foreach ($this->touchedDays as $day => $rows) {
+      $database->delete('stats_activity')->condition('day', $day)->execute();
+      foreach ($rows as $row) {
+        $database->insert('stats_activity')->fields($row)->execute();
+      }
+    }
+    parent::tearDown();
+  }
 
   /**
    * Gets the text of a KPI tile value.
@@ -160,6 +182,41 @@ class StatsPageTest extends StatsTestBase {
       $this->assertSession()->statusCodeEquals(200);
       $this->assertSession()->elementTextContains('css', '.stats-period-heading', $year);
     }
+  }
+
+  /**
+   * The activity chart shows the active creatives of the last day per month.
+   */
+  public function testActivityChart(): void {
+
+    $database = $this->container->get('database');
+    $rows = [
+      '2001-01-15' => [3, 10],
+      '2001-01-31' => [5, 12],
+      '2001-02-10' => [2, 9],
+    ];
+    foreach ($rows as $day => [$active_1d, $active_30d]) {
+      $this->touchedDays[$day] = $database->select('stats_activity', 'a')
+        ->fields('a')
+        ->condition('day', $day)
+        ->execute()
+        ->fetchAll(FetchAs::Associative);
+      $this->container->get('stats.activity_snapshots')->write($day, 'creative', $active_1d, $active_30d);
+    }
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $this->assertSession()->statusCodeEquals(200);
+    $table = $this->assertSession()->elementExists('xpath', '//div[@id="stats-activity"]/following-sibling::div//table');
+    $headers = array_map(fn($cell) => trim($cell->getText()), $table->findAll('css', 'thead th'));
+    $column = array_search('Creatives', $headers, TRUE);
+    $this->assertIsInt($column);
+    $values = [];
+    foreach ($table->findAll('css', 'tbody tr') as $row) {
+      $cells = $row->findAll('xpath', 'th|td');
+      $values[] = trim($cells[$column]->getText());
+    }
+    $this->assertSame(['12', '9'], array_slice($values, 0, 2));
   }
 
 }

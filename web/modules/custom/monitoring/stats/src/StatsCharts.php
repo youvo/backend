@@ -28,14 +28,19 @@ class StatsCharts {
    *   Whether the card spans two columns.
    * @param bool $tall
    *   Whether the card spans two rows, with a taller chart.
+   * @param bool $full
+   *   Whether the card spans the whole row.
    *
    * @return array<string, mixed>
    *   The card render array.
    */
-  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE): array {
+  public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $full = FALSE): array {
     $classes = ['stats-card'];
     if ($wide) {
       $classes[] = 'stats-card--wide';
+    }
+    if ($full) {
+      $classes[] = 'stats-card--full';
     }
     if ($tall) {
       $classes[] = 'stats-card--tall';

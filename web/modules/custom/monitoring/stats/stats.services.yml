@@ -12,3 +12,8 @@ services:
     class: Drupal\stats\Stats\ProjectStats
     arguments: [ '@database' ]
   Drupal\stats\Stats\ProjectStats: '@stats.project_stats'
+
+  stats.activity_stats:
+    class: Drupal\stats\Stats\ActivityStats
+    arguments: [ '@database' ]
+  Drupal\stats\Stats\ActivityStats: '@stats.activity_stats'

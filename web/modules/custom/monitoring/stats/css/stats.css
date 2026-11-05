@@ -127,6 +127,12 @@
   }
 }
 
+/* Tiles inside a section fill one grid cell, two by two. */
+.stats-tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+}
+
 /*
  * The chart sections: a heading over a grid of cards. Wide cards span two
  * columns and tall cards two rows.
@@ -140,6 +146,12 @@
 .stats-section__heading {
   grid-column: 1 / -1;
   margin: 0.5rem 0 0;
+}
+
+.stats-section__note {
+  color: var(--stats-muted);
+  font-size: var(--stats-text-xs);
+  font-weight: normal;
 }
 
 .stats-card {
@@ -156,6 +168,20 @@
 
 .stats-card--tall {
   grid-row: span 2;
+}
+
+.stats-card--full {
+  grid-column: 1 / -1;
+}
+
+.stats-card__foot {
+  margin: 0.5rem 0 0;
+  color: var(--stats-muted);
+  font-size: var(--stats-text-xs);
+}
+
+.stats-card__foot b {
+  color: var(--stats-ink);
 }
 
 /* Chart.js honors a max-height on the canvas when it sizes the chart. */

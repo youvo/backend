@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * KPI tiles with value, label and the change against the comparison period.
+ *
+ * Available variables:
+ * - attributes: The attributes of the wrapper.
+ * - tiles: The tiles, each with key, label, value, delta, direction and
+ *   versus.
+ */
+#}
+<div{{ attributes.addClass('stats-kpis') }}>
+  {% for tile in tiles %}
+    <div class="stats-kpi stats-kpi--{{ tile.key }}">
+      <b class="stats-kpi__value">{{ tile.value }}</b>
+      <span class="stats-kpi__label">{{ tile.label }}</span>
+      {% if tile.delta %}
+        <span class="stats-kpi__change"><i class="stats-kpi__delta stats-kpi__delta--{{ tile.direction }}">{{ tile.delta }}</i> {{ tile.versus }}</span>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>

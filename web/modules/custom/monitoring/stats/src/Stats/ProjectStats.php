@@ -324,7 +324,7 @@ class ProjectStats {
    * @param array<int, int|float> $values
    *   The numbers.
    */
-  protected static function median(array $values): ?float {
+  public static function median(array $values): ?float {
     $count = count($values);
     if ($count === 0) {
       return NULL;
