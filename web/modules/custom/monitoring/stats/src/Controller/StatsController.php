@@ -354,10 +354,10 @@ class StatsController implements ContainerInjectionInterface {
     $funnel_card['foot'] = $this->foot($this->tile('repeat-organizations', $this->t('Repeat organizations'), $repeat, NULL, 'rate', NULL));
 
     $declines = $this->activityStats->reasons($period, $scope, 'project_decline');
-    $decline_labels = array_map(fn($reason) => (string) (ProjectDeclineReason::tryFrom($reason)?->label() ?? $reason), array_keys($declines));
+    $decline_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectDeclineReason::tryFrom($reason)?->label() ?? $reason), array_keys($declines));
     $decline_chart = StatsCharts::doughnut('stats-decline-reasons', (string) $this->t('Decline reasons'), $decline_labels, array_values($declines));
     $archives = $this->activityStats->reasons($period, $scope, 'project_archive');
-    $archive_labels = array_map(fn($reason) => (string) (ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
+    $archive_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
     $archive_chart = StatsCharts::doughnut('stats-archive-reasons', (string) $this->t('Archive reasons'), $archive_labels, array_values($archives));
 
     $heading = $this->heading($this->t('Organizations and reasons'), $this->t('old: proposal process funnel, organizations with several projects'));
@@ -396,7 +396,8 @@ class StatsController implements ContainerInjectionInterface {
         '@count' => $data['count'],
         '@share' => $recommend,
       ]);
-      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, array_values($fields), $series, horizontal: TRUE);
+      $labels = array_map(fn($label) => preg_replace('/ Scale$/', '', $label), array_values($fields));
+      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, $labels, $series, horizontal: TRUE);
       $cards['feedback_' . $bundle] = StatsCharts::card($chart, wide: TRUE);
     }
 

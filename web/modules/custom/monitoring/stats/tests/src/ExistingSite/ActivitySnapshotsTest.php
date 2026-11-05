@@ -36,7 +36,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
   protected array $touchedDays = [];
 
   /**
-   * {@inheritdoc}
+   * Gets the snapshots service and remembers the last recorded day.
    */
   protected function setUp(): void {
     parent::setUp();
@@ -45,7 +45,7 @@ class ActivitySnapshotsTest extends StatsTestBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Restores the last recorded day and the touched snapshot rows.
    */
   protected function tearDown(): void {
 

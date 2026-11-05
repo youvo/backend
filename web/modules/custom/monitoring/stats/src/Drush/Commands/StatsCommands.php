@@ -75,18 +75,27 @@ class StatsCommands extends DrushCommands {
       ->fetchCol();
     $stored = array_flip($stored);
 
+    // One transaction, so an interrupted run leaves no partial day.
     $days = 0;
     $written = 0;
-    foreach ($rows as $day => $roles) {
-      if (isset($stored[$day])) {
-        continue;
+    $transaction = $this->database->startTransaction();
+    try {
+      foreach ($rows as $day => $roles) {
+        if (isset($stored[$day])) {
+          continue;
+        }
+        foreach ($roles as $role => $row) {
+          $this->activitySnapshots->write($day, $role, $row['active_1d'], $row['active_30d']);
+          $written++;
+        }
+        $days++;
       }
-      foreach ($roles as $role => $row) {
-        $this->activitySnapshots->write($day, $role, $row['active_1d'], $row['active_30d']);
-        $written++;
-      }
-      $days++;
     }
+    catch (\Throwable $e) {
+      $transaction->rollBack();
+      throw $e;
+    }
+    $transaction->commitOrRelease();
     $this->logger()->success(dt('Wrote @rows rows for @days days.', ['@rows' => $written, '@days' => $days]));
   }
 

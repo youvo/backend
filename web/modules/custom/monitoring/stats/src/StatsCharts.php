@@ -20,6 +20,25 @@ class StatsCharts {
   const array COLORS_LIGHT = ['#7e98b5', '#ffb793', '#96d1cf', '#e08b8b', '#52607966'];
 
   /**
+   * The slice colors of doughnuts, distinct for up to eleven slices.
+   *
+   * The series colors first, then their light variants and dark blue.
+   */
+  const array COLORS_DOUGHNUT = [
+    '#3f78b5',
+    '#f79b6a',
+    '#3ec4c2',
+    '#e15554',
+    '#526079',
+    '#7e98b5',
+    '#ffb793',
+    '#96d1cf',
+    '#e08b8b',
+    '#b8c6d6',
+    '#15508e',
+  ];
+
+  /**
    * Wraps a chart in a card of the stats grid.
    *
    * @param array<string, mixed> $chart
@@ -99,7 +118,7 @@ class StatsCharts {
    */
   public static function doughnut(string $id, string $title, array $labels, array $values): array {
     $chart = static::chart($id, $title, 'donut', $labels, [$title => $values]);
-    $chart['#colors'] = array_slice(static::COLORS, 0, max(1, count($labels)));
+    $chart['#colors'] = array_slice(static::COLORS_DOUGHNUT, 0, max(1, count($labels)));
     $chart['#legend'] = TRUE;
     $chart['series_0']['#labels'] = array_map('strval', array_values($labels));
     unset($chart['series_0']['#color']);

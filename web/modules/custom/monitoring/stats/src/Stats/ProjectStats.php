@@ -33,6 +33,16 @@ class ProjectStats {
   ];
 
   /**
+   * The lifecycle histories read in this request, keyed by scope.
+   *
+   * A page with a comparison period asks for the same history several
+   * times. The history has no time bound, so the scope is the whole key.
+   *
+   * @var array<string, array<int, array{status: int, rows: array<int, array{0: string, 1: int}>}>>
+   */
+  protected array $histories = [];
+
+  /**
    * Constructs a ProjectStats object.
    */
   public function __construct(
@@ -55,9 +65,8 @@ class ProjectStats {
 
     foreach ($this->history($scope) as $project) {
       foreach ($project['rows'] as [$transition, $timestamp]) {
-        $bucket = $period->bucketOf($timestamp);
-        if ($bucket !== NULL && isset($flow[$transition])) {
-          $flow[$transition][$bucket]++;
+        if (isset($flow[$transition]) && $period->contains($timestamp)) {
+          $flow[$transition][$period->bucketOf($timestamp)]++;
         }
       }
     }
@@ -229,9 +238,13 @@ class ProjectStats {
     if ($organization_ids === []) {
       return [];
     }
+    $key = $organization_ids === NULL ? 'all' : implode(',', $organization_ids);
+    if (isset($this->histories[$key])) {
+      return $this->histories[$key];
+    }
 
     $query = $this->database->select('project__field_lifecycle_history', 'h');
-    $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode');
+    $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode AND p.default_langcode = 1');
     $query->addField('h', 'entity_id');
     $query->addField('h', 'field_lifecycle_history_transition', 'transition');
     $query->addField('h', 'field_lifecycle_history_timestamp', 'timestamp');
@@ -250,6 +263,7 @@ class ProjectStats {
       $history[$id]['status'] = (int) $row->status;
       $history[$id]['rows'][] = [$row->transition, (int) $row->timestamp];
     }
+    $this->histories[$key] = $history;
     return $history;
   }
 

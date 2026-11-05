@@ -4,7 +4,6 @@ namespace Drupal\stats\Stats;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\StatsPeriod;
 use Drupal\stats\StatsScope;
@@ -51,6 +50,25 @@ class ActivityStats {
   ];
 
   /**
+   * The application and mediation log rows, once read in this request.
+   *
+   * A page with a comparison period needs them for both periods. They are
+   * read for all organizations and all time, and the methods apply the scope
+   * and the windows.
+   *
+   * @var array<int, object{id: int, type: string, created: int, organization: ?int, project: ?int, creative: ?int}>|null
+   */
+  protected ?array $logRows = NULL;
+
+  /**
+   * The creatives registered in a period with their first application.
+   *
+   * @var array<string, array<int, array{0: int, 1: ?int}>>
+   *   The results of firstApplications(), keyed by the period timestamps.
+   */
+  protected array $firstApplications = [];
+
+  /**
    * Constructs an ActivityStats object.
    */
   public function __construct(
@@ -74,18 +92,23 @@ class ActivityStats {
     $organizations = $this->organizations($scope);
 
     // Applications before the period give the first application ever.
-    $query = $this->logs([static::LOG_APPLY]);
-    $query->condition('l.created', $period->to()->getTimestamp(), '<');
-    foreach ($query->execute() as $row) {
-      $creative = $row->creative === NULL ? NULL : (int) $row->creative;
-      if ($creative !== NULL) {
-        $first[$creative] ??= (int) $row->created;
+    $to = $period->to()->getTimestamp();
+    foreach ($this->logRows() as $row) {
+      if ($row->created >= $to) {
+        break;
       }
-      $bucket = $period->bucketOf((int) $row->created);
-      if ($bucket === NULL || !$this->inScope($row->organization, $organizations)) {
+      if ($row->type !== static::LOG_APPLY) {
         continue;
       }
-      $logs[$bucket][(int) $row->id] = TRUE;
+      $creative = $row->creative;
+      if ($creative !== NULL) {
+        $first[$creative] ??= $row->created;
+      }
+      if (!$period->contains($row->created) || !$this->inScope($row->organization, $organizations)) {
+        continue;
+      }
+      $bucket = $period->bucketOf($row->created);
+      $logs[$bucket][$row->id] = TRUE;
       if ($creative !== NULL) {
         $applicants[$creative] = TRUE;
         $bucket_applicants[$bucket][$creative] = TRUE;
@@ -118,16 +141,11 @@ class ActivityStats {
    * Counts the distinct creatives of the mediations in the period.
    */
   public function engagedCreatives(StatsPeriod $period, StatsScope $scope): int {
-
     $organizations = $this->organizations($scope);
-    $query = $this->logs([static::LOG_MEDIATE]);
-    $query->condition('l.created', $period->from()->getTimestamp(), '>=')
-      ->condition('l.created', $period->to()->getTimestamp(), '<');
-
     $creatives = [];
-    foreach ($query->execute() as $row) {
-      if ($row->creative !== NULL && $this->inScope($row->organization, $organizations)) {
-        $creatives[(int) $row->creative] = TRUE;
+    foreach ($this->logRows() as $row) {
+      if ($row->type === static::LOG_MEDIATE && $row->creative !== NULL && $period->contains($row->created) && $this->inScope($row->organization, $organizations)) {
+        $creatives[$row->creative] = TRUE;
       }
     }
     return count($creatives);
@@ -149,9 +167,9 @@ class ActivityStats {
     $applicants = [];
     $last_application = [];
     $mediations = [];
-    foreach ($this->logs([static::LOG_APPLY, static::LOG_MEDIATE])->execute() as $row) {
-      $created = (int) $row->created;
-      $creative = $row->creative === NULL ? NULL : (int) $row->creative;
+    foreach ($this->logRows() as $row) {
+      $created = $row->created;
+      $creative = $row->creative;
       if ($row->type === static::LOG_APPLY) {
         if ($creative !== NULL) {
           $applicants[(int) $row->project][$creative] = TRUE;
@@ -159,11 +177,11 @@ class ActivityStats {
         }
       }
       elseif ($period->contains($created) && $this->inScope($row->organization, $organizations)) {
-        $mediations[(int) $row->id]['project'] = (int) $row->project;
-        $mediations[(int) $row->id]['created'] = $created;
-        $mediations[(int) $row->id]['creatives'] ??= [];
+        $mediations[$row->id]['project'] = (int) $row->project;
+        $mediations[$row->id]['created'] = $created;
+        $mediations[$row->id]['creatives'] ??= [];
         if ($creative !== NULL) {
-          $mediations[(int) $row->id]['creatives'][$creative] = TRUE;
+          $mediations[$row->id]['creatives'][$creative] = TRUE;
         }
       }
     }
@@ -258,12 +276,11 @@ class ActivityStats {
     $before = ['creatives' => 0, 'organizations' => 0];
     foreach ($query->execute() as $row) {
       $key = $keys[$row->type];
-      $bucket = $period->bucketOf((int) $row->created);
-      if ($bucket === NULL) {
-        $before[$key]++;
+      if ($period->contains((int) $row->created)) {
+        $result[$key][$period->bucketOf((int) $row->created)]++;
       }
       else {
-        $result[$key][$bucket]++;
+        $before[$key]++;
       }
     }
 
@@ -286,7 +303,7 @@ class ActivityStats {
   public function prospectFunnel(StatsPeriod $period): array {
 
     $published = $this->database->select('project__field_lifecycle_history', 'h');
-    $published->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode');
+    $published->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode AND p.default_langcode = 1');
     $published->addField('p', 'uid');
     $published->condition('h.deleted', 0)
       ->condition('h.field_lifecycle_history_transition', ProjectTransition::Publish->value)
@@ -328,7 +345,7 @@ class ActivityStats {
     }
 
     $query = $this->database->select('project__field_lifecycle_history', 'h');
-    $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode');
+    $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode AND p.default_langcode = 1');
     $query->addField('p', 'uid');
     $query->addField('h', 'field_lifecycle_history_timestamp', 'timestamp');
     $query->condition('h.deleted', 0)
@@ -467,6 +484,11 @@ class ActivityStats {
    */
   protected function firstApplications(StatsPeriod $period): array {
 
+    $key = $period->from()->getTimestamp() . ':' . $period->to()->getTimestamp();
+    if (isset($this->firstApplications[$key])) {
+      return $this->firstApplications[$key];
+    }
+
     $first = $this->database->select('log', 'l');
     $first->innerJoin('log__creatives', 'c', 'c.entity_id = l.id AND c.deleted = 0');
     $first->addField('c', 'creatives_target_id', 'creative');
@@ -489,25 +511,45 @@ class ActivityStats {
     foreach ($query->execute() as $row) {
       $creatives[(int) $row->uid] = [(int) $row->created, $row->first === NULL ? NULL : (int) $row->first];
     }
+    $this->firstApplications[$key] = $creatives;
     return $creatives;
   }
 
   /**
-   * Builds the query of logs with one row per creative, ordered by time.
+   * Gets the application and mediation logs, one row per creative, by time.
    *
-   * Logs without creatives give one row with a NULL creative.
+   * Logs without creatives give one row with a NULL creative. The rows are
+   * read once per request.
    *
-   * @param string[] $types
-   *   The log patterns.
+   * @return array<int, object{id: int, type: string, created: int, organization: ?int, project: ?int, creative: ?int}>
+   *   The rows ordered by creation time and log id.
    */
-  protected function logs(array $types): SelectInterface {
+  protected function logRows(): array {
+
+    if ($this->logRows !== NULL) {
+      return $this->logRows;
+    }
+
     $query = $this->database->select('log', 'l');
     $query->leftJoin('log__creatives', 'c', 'c.entity_id = l.id AND c.deleted = 0');
     $query->fields('l', ['id', 'type', 'created', 'organization', 'project']);
     $query->addField('c', 'creatives_target_id', 'creative');
-    return $query->condition('l.type', $types, 'IN')
+    $query->condition('l.type', [static::LOG_APPLY, static::LOG_MEDIATE], 'IN')
       ->orderBy('l.created')
       ->orderBy('l.id');
+
+    $this->logRows = [];
+    foreach ($query->execute() as $row) {
+      $this->logRows[] = (object) [
+        'id' => (int) $row->id,
+        'type' => (string) $row->type,
+        'created' => (int) $row->created,
+        'organization' => $row->organization === NULL ? NULL : (int) $row->organization,
+        'project' => $row->project === NULL ? NULL : (int) $row->project,
+        'creative' => $row->creative === NULL ? NULL : (int) $row->creative,
+      ];
+    }
+    return $this->logRows;
   }
 
   /**
