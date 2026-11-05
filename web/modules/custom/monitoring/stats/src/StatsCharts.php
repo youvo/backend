@@ -23,7 +23,7 @@ class StatsCharts {
    * @param bool $wide
    *   Whether the card spans two columns.
    * @param bool $tall
-   *   Whether the card spans two rows, with a taller chart.
+   *   Whether the card spans two rows, with a chart that fills it.
    * @param bool $compact
    *   Whether the card holds a small chart of a fixed low height.
    *
@@ -45,10 +45,17 @@ class StatsCharts {
     if ($compact) {
       $attributes['data-compact'] = '';
     }
-    // The stylesheet sizes the figure of the chart: square for tall cards and
-    // doughnuts, which keeps room for the plot under a long legend.
-    if ($tall || $chart['#chart_type'] === 'donut') {
-      $attributes['data-square'] = '';
+    // The stylesheet sizes the figure of the chart. Horizontal bars take a
+    // height by their number of rows, a chart without data a low height.
+    if ($chart['#chart_type'] === 'bar') {
+      $attributes['data-rows'] = '';
+      $attributes['style'] = '--stats-rows: ' . count($chart['xaxis']['#labels']);
+    }
+    if ($chart['#chart_type'] === 'donut') {
+      $attributes['data-doughnut'] = '';
+    }
+    if (static::isEmpty($chart)) {
+      $attributes['data-empty'] = '';
     }
     $title = $chart['#title'];
     return [
@@ -63,6 +70,27 @@ class StatsCharts {
       ],
       'chart' => $chart,
     ];
+  }
+
+  /**
+   * Checks whether a chart holds no value other than 0.
+   *
+   * The script then draws a note instead of the chart, as in its isEmpty().
+   *
+   * @param array<string, mixed> $chart
+   *   The chart render element.
+   */
+  public static function isEmpty(array $chart): bool {
+    foreach ($chart as $key => $child) {
+      if (str_starts_with((string) $key, 'series_')) {
+        foreach ($child['#data'] as $value) {
+          if ($value !== NULL && (float) $value !== 0.0) {
+            return FALSE;
+          }
+        }
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -174,7 +202,7 @@ class StatsCharts {
       '#title_color' => '',
       '#accessible_table' => 'invisible',
       '#legend' => count($series) > 1,
-      '#legend_position' => 'top',
+      '#legend_position' => 'bottom',
       '#raw_options' => [
         'options' => [
           'plugins' => ['title' => ['display' => FALSE]],

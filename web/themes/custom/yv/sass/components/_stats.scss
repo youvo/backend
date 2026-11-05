@@ -263,7 +263,11 @@
   @include card;
   @include card-padding;
 
+  display: flex;
+  flex-direction: column;
+  gap: var(--gin-spacing-s);
   min-width: 0;
+  container-type: inline-size;
 
   @media (min-width: $breakpoint-medium) {
     &[data-wide] {
@@ -276,30 +280,94 @@
   }
 
   // Chart.js fills the figure (the script turns off its aspect ratio), so the
-  // figure sets the size: twice as wide as high, square in tall cards and for
-  // doughnuts, at most 20rem high and on narrow screens at least 220px.
-  // The explicit width keeps the max-height from narrowing the figure.
+  // figure sets the size: twice as wide as high, on narrow screens at least
+  // 220px and in wide cards at most 20rem. It grows into a card stretched by
+  // its row. Its size ignores the canvas inside, which Chart.js sizes to it,
+  // so the two never push each other.
   .charts-figure {
     position: relative;
+    flex: 1 0 auto;
     width: 100%;
     min-height: 220px;
-    max-height: 20rem;
     aspect-ratio: 2;
+    contain: size;
 
     @media (min-width: $breakpoint-medium) {
       min-height: 0;
     }
   }
 
-  &[data-square] .charts-figure {
-    aspect-ratio: 1;
+  &[data-wide] .charts-figure {
+    max-height: 20rem;
   }
 
-  // A small chart of a fixed low height under its value.
-  &[data-compact] .charts-figure {
+  // A tall card spans two rows and its chart fills it: the cards beside it
+  // set the height. On phones it keeps room for the plot over its legend.
+  &[data-tall] .charts-figure {
+    min-height: 18rem;
+
+    @media (min-width: $breakpoint-medium) {
+      flex: 1 1 0;
+      min-height: 16rem;
+      max-height: none;
+      aspect-ratio: auto;
+    }
+  }
+
+  // Horizontal bars: 2rem a row and room for the axis labels. The card keeps
+  // its height instead of stretching to its row, which would only move the
+  // bars apart.
+  &[data-rows] {
+    align-self: start;
+
+    .charts-figure {
+      flex: none;
+      height: calc(var(--stats-rows, 4) * 2rem + 2rem);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
+  // A doughnut with its legend under the ring, or beside it in a wide card.
+  &[data-doughnut] .charts-figure {
+    height: 20rem;
     min-height: 0;
-    height: 8.5rem;
     aspect-ratio: auto;
+  }
+
+  // A chart without data shows a note only and needs no more room for it.
+  &[data-empty] {
+    align-self: start;
+
+    .charts-figure {
+      flex: none;
+      height: 8rem;
+      min-height: 0;
+      max-height: none;
+      aspect-ratio: auto;
+    }
+  }
+
+  // A tall card without data still fills its two rows, the note centered.
+  &[data-tall][data-empty] {
+    align-self: stretch;
+
+    .charts-figure {
+      flex: 1 0 auto;
+    }
+  }
+
+  // A small chart of a fixed low height under its value, also without data,
+  // so the growth cards stay alike.
+  &[data-compact] {
+    align-self: stretch;
+
+    .charts-figure {
+      flex: none;
+      height: 8.5rem;
+      min-height: 0;
+      aspect-ratio: auto;
+    }
   }
 }
 
@@ -322,7 +390,7 @@
 
 // The total at the end of the period, as large as a tile value.
 .stats-card-value {
-  margin: 0 0 var(--gin-spacing-s);
+  margin: 0;
   color: var(--yv-ink);
   font-size: var(--gin-font-size-h3);
   font-weight: 600;
@@ -332,10 +400,12 @@
 
 .stats-card-title {
   @include section-label;
+
+  margin: 0;
 }
 
 .stats-card-foot {
-  margin: var(--gin-spacing-s) 0 0;
+  margin: 0;
   color: var(--yv-muted);
   font-size: var(--gin-font-size-xs);
 }

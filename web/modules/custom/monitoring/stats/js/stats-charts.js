@@ -65,6 +65,9 @@
     defaults.borderColor = tokens.line;
     // The stylesheet sizes the figure around the canvas.
     defaults.maintainAspectRatio = false;
+    // A little room at the top and the sides keeps the topmost grid label
+    // and the last category label inside the canvas.
+    defaults.layout.padding = { top: 4, right: 8, bottom: 0, left: 0 };
     defaults.interaction.mode = 'index';
     defaults.interaction.intersect = false;
     defaults.plugins.colors.enabled = false;
@@ -72,8 +75,8 @@
     // bar in a mixed color, and a theme switch needs none.
     defaults.animations.colors = false;
 
-    // Legend: small dots with muted text, top left.
-    Object.assign(defaults.plugins.legend, { position: 'top', align: 'start' });
+    // Legend: small dots with muted text, centered under the plot.
+    Object.assign(defaults.plugins.legend, { position: 'bottom', align: 'center' });
     Object.assign(defaults.plugins.legend.labels, {
       usePointStyle: true,
       pointStyle: 'circle',
@@ -149,6 +152,15 @@
       borderRadius: 4,
     });
     overrides.doughnut.interaction = { mode: 'nearest', intersect: true };
+    // The many reasons of a doughnut need a denser legend to leave the ring
+    // its room.
+    overrides.doughnut.plugins = {
+      ...overrides.doughnut.plugins,
+      legend: {
+        ...overrides.doughnut.plugins?.legend,
+        labels: { ...overrides.doughnut.plugins?.legend?.labels, padding: 10 },
+      },
+    };
   };
 
   /**
@@ -280,6 +292,28 @@
   };
 
   /**
+   * Puts the legend of a doughnut beside the ring in wide cards.
+   *
+   * Narrower cards keep it under the ring, as the longest reasons would not
+   * fit beside it. The card width decides, so the legend does not flip back
+   * and forth with the canvas it resizes.
+   */
+  const DOUGHNUT_SIDE_LEGEND = 520;
+  const placeLegend = (chart) => {
+    if (chart.config.type !== 'doughnut') {
+      return;
+    }
+    const card = chart.canvas.closest('.stats-card') || chart.canvas.parentNode;
+    chart.options.plugins.legend.position =
+      card.offsetWidth >= DOUGHNUT_SIDE_LEGEND ? 'right' : 'bottom';
+  };
+  const doughnutLegend = {
+    id: 'statsDoughnutLegend',
+    afterInit: placeLegend,
+    resize: placeLegend,
+  };
+
+  /**
    * Draws a muted note in the middle of a chart without data.
    */
   const emptyState = {
@@ -305,7 +339,7 @@
 
   readTokens();
   applyDefaults();
-  Chart.register(paint, hoverLine, doughnutTotal, emptyState);
+  Chart.register(paint, hoverLine, doughnutTotal, doughnutLegend, emptyState);
 
   /**
    * Sets the options that depend on the single chart.
@@ -325,8 +359,11 @@
     if (options.indexAxis === 'y') {
       options.interaction = { ...options.interaction, axis: 'y' };
     }
-    // Without data, show a note instead of an empty grid or ring.
+    // Without data, show a note instead of an empty grid, line or ring.
     if (config.data && isEmpty(config.data)) {
+      config.data.datasets.forEach((dataset) => {
+        dataset.hidden = true;
+      });
       options.plugins.statsEmpty = { text: Drupal.t('No data for this period') };
       options.plugins.legend = { ...options.plugins.legend, display: false };
       options.plugins.tooltip = { ...options.plugins.tooltip, enabled: false };
