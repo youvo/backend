@@ -1095,7 +1095,7 @@ display:
         type: 'entity:user'
         options:
           relationship: none
-          view_mode: default
+          view_mode: card
       defaults:
         pager: false
         style: false

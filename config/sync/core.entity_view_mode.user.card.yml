@@ -1,0 +1,11 @@
+uuid: 67fd5bcb-ccd8-4461-8622-6830e9364bff
+langcode: de
+status: true
+dependencies:
+  module:
+    - user
+id: user.card
+label: Card
+description: 'A creative as a card in the creatives finder: the main section of the profile.'
+targetEntityType: user
+cache: true

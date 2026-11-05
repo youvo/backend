@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * A creative as a card in the creatives finder.
+ *
+ * The card is the main section of the profile page, with the name linked to
+ * the profile. The plain fields come from the card display in "content". The
+ * values in "profile" come from yv_preprocess_user().
+ */
+#}
+
+{{ profile_cache }}
+<article class="user-profile-card">
+  {% include '@yv/user/includes/user-profile-header.html.twig' with {content: content, profile: profile, name_url: path('entity.user.canonical', {user: user.id})} only %}
+  {% include '@yv/user/includes/user-profile-main.html.twig' with {content: content} only %}
+</article>
