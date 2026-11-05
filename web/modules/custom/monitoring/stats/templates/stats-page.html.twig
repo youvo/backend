@@ -5,6 +5,7 @@
  *
  * Available variables:
  * - period_bar: The heading, the preset links and the navigation links.
+ * - range_form: The form of a custom date range.
  * - kpis: The KPI tiles with value and label.
  * - sections: The render array of the chart sections.
  */
@@ -27,6 +28,8 @@
         {% endif %}
       </ul>
     {% endif %}
+
+    {{ range_form }}
   </div>
 
   {% include '@stats/stats-tiles.html.twig' with {tiles: kpis, attributes: create_attribute()} only %}

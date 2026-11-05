@@ -5,12 +5,14 @@ namespace Drupal\stats\Controller;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\projects\ProjectArchiveReason;
 use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectTransition;
 use Drupal\stats\Activity\ActivitySnapshots;
+use Drupal\stats\Form\StatsRangeForm;
 use Drupal\stats\Stats\ActivityStats;
 use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\Stats\ProjectStats;
@@ -36,6 +38,7 @@ class StatsController implements ContainerInjectionInterface {
     protected ActivitySnapshots $activitySnapshots,
     protected ConfigFactoryInterface $configFactory,
     protected TimeInterface $time,
+    protected FormBuilderInterface $formBuilder,
   ) {}
 
   /**
@@ -49,6 +52,7 @@ class StatsController implements ContainerInjectionInterface {
       $container->get('stats.activity_snapshots'),
       $container->get('config.factory'),
       $container->get('datetime.time'),
+      $container->get('form_builder'),
     );
   }
 
@@ -78,6 +82,7 @@ class StatsController implements ContainerInjectionInterface {
     return [
       '#theme' => 'stats_page',
       '#period_bar' => $this->periodBar($period, $timezone, $now),
+      '#range_form' => $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')),
       '#kpis' => $kpis,
       '#sections' => [
         'growth' => $this->growthSection($period),
@@ -95,6 +100,8 @@ class StatsController implements ContainerInjectionInterface {
           'url.query_args:year',
           'url.query_args:quarter',
           'url.query_args:month',
+          'url.query_args:from',
+          'url.query_args:to',
           'user.permissions',
         ],
         'max-age' => 3600,

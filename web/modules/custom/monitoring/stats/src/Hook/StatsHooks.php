@@ -22,4 +22,18 @@ class StatsHooks {
     $this->activitySnapshots->recordDaily();
   }
 
+  /**
+   * Implements hook_gin_ignore_sticky_form_actions().
+   *
+   * The range form keeps its button next to the dates: Gin must not move it
+   * into a sticky bar (and add a hidden link to the tab order).
+   *
+   * @return string[]
+   *   The ids of the forms.
+   */
+  #[Hook('gin_ignore_sticky_form_actions')]
+  public function ginIgnoreStickyFormActions(): array {
+    return ['stats_range_form'];
+  }
+
 }

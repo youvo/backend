@@ -1,0 +1,131 @@
+<?php
+
+namespace Drupal\stats\Form;
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\stats\StatsPeriod;
+
+/**
+ * Provides the date range form of the stats page.
+ *
+ * Submitting it shows the stats of a custom range from one day to another,
+ * both inclusive.
+ */
+class StatsRangeForm extends FormBase {
+
+  /**
+   * Gets the form ID.
+   */
+  public function getFormId(): string {
+    return 'stats_range_form';
+  }
+
+  /**
+   * Builds the form with the inclusive days of the current period.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param string $from
+   *   The first day of the current period, Y-m-d.
+   * @param string $to
+   *   The last day of the current period, Y-m-d.
+   *
+   * @return array
+   *   The form.
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, string $from = '', string $to = ''): array {
+    $form['#attributes']['class'][] = 'stats-range-form';
+    // The days come from the period, whose query arguments the stats page
+    // varies by. Opting in to caching keeps the page cacheable; the form token
+    // is a placeholder anyway.
+    $form['#cache']['max-age'] = Cache::PERMANENT;
+    $form['from'] = [
+      '#type' => 'date',
+      '#title' => $this->t('From'),
+      '#default_value' => $from,
+      '#required' => TRUE,
+    ];
+    $form['to'] = [
+      '#type' => 'date',
+      '#title' => $this->t('To'),
+      '#default_value' => $to,
+      '#required' => TRUE,
+    ];
+    $form['actions'] = ['#type' => 'actions'];
+    $form['actions']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Apply'),
+      '#button_type' => 'primary',
+    ];
+    return $form;
+  }
+
+  /**
+   * Validates that both days exist and the range does not end before it starts.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
+
+    // The required fields already report missing days.
+    if ($form_state->getErrors()) {
+      return;
+    }
+
+    $from = $this->parseDay($form_state->getValue('from'));
+    $to = $this->parseDay($form_state->getValue('to'));
+    if ($from === NULL) {
+      $form_state->setErrorByName('from', $this->t('Enter a valid start date.'));
+    }
+    if ($to === NULL) {
+      $form_state->setErrorByName('to', $this->t('Enter a valid end date.'));
+    }
+
+    if ($from !== NULL && $to !== NULL && $to < $from) {
+      $form_state->setErrorByName('to', $this->t('The end date must not be before the start date.'));
+    }
+  }
+
+  /**
+   * Redirects to the stats page with the custom range.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $form_state->setRedirect('stats.overview', [], [
+      'query' => [
+        'period' => StatsPeriod::CUSTOM,
+        'from' => $form_state->getValue('from'),
+        'to' => $form_state->getValue('to'),
+      ],
+    ]);
+  }
+
+  /**
+   * Parses a strict Y-m-d day in the years the stats page accepts.
+   *
+   * Comparing the days as strings orders them, as the format is fixed.
+   */
+  protected function parseDay(mixed $value): ?string {
+    if (!is_string($value)) {
+      return NULL;
+    }
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+    if (!$date || $date->format('Y-m-d') !== $value) {
+      return NULL;
+    }
+    $year = (int) $date->format('Y');
+    return $year >= StatsPeriod::MIN_YEAR && $year <= StatsPeriod::MAX_YEAR ? $value : NULL;
+  }
+
+}

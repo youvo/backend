@@ -18,6 +18,8 @@ class StatsPeriod {
 
   const string MONTH = 'month';
 
+  const string CUSTOM = 'custom';
+
   /**
    * The first day of the "all" period, the start of the old Logbuch.
    */
@@ -50,16 +52,20 @@ class StatsPeriod {
   /**
    * Creates a period from request query arguments.
    *
-   * Reads period (all, year, quarter, month), year, quarter and month.
-   * Without a period, the year applies. Anything invalid yields the current
-   * year.
+   * Reads period (all, year, quarter, month, custom), year, quarter, month and
+   * from/to (Y-m-d, to inclusive). Without a period, a valid from and to
+   * select a custom period; one that covers exactly a calendar year, quarter
+   * or month yields that preset. Anything invalid yields the current year.
    */
   public static function fromQuery(array $query, \DateTimeZone $timezone, \DateTimeImmutable $now): static {
     $now = $now->setTimezone($timezone);
     $current_year = (int) $now->format('Y');
     $default = static::forYear($current_year, $timezone);
 
-    $period = $query['period'] ?? static::YEAR;
+    $period = $query['period'] ?? NULL;
+    if ($period === NULL) {
+      $period = isset($query['from']) || isset($query['to']) ? static::CUSTOM : static::YEAR;
+    }
     if (!is_string($period)) {
       return $default;
     }
@@ -68,6 +74,36 @@ class StatsPeriod {
       $from = static::midnight(static::ALL_START, $timezone);
       $to = static::midnight($current_year + 1 . '-01-01', $timezone);
       return new static(static::ALL, $from, $to, StatsGranularity::Year);
+    }
+
+    if ($period === static::CUSTOM) {
+      $from = static::parseDate($query['from'] ?? NULL, $timezone);
+      $last = static::parseDate($query['to'] ?? NULL, $timezone);
+      if (!$from || !$last || $last < $from) {
+        return $default;
+      }
+      $to = $last->modify('+1 day');
+      // A range covering a calendar year, quarter or month is that preset, so
+      // the form keeps presets when it submits their dates.
+      if ((int) $from->format('j') === 1) {
+        $month = (int) $from->format('n');
+        if ($month === 1 && $to == $from->modify('+1 year')) {
+          return static::forYear((int) $from->format('Y'), $timezone);
+        }
+        if ($month % 3 === 1 && $to == $from->modify('+3 months')) {
+          return static::forQuarter($from);
+        }
+        if ($to == $from->modify('+1 month')) {
+          return static::forMonth($from);
+        }
+      }
+      $days = (int) $from->diff($to)->days;
+      $granularity = match (TRUE) {
+        $days <= 62 => StatsGranularity::Day,
+        $days <= 366 => StatsGranularity::Month,
+        default => StatsGranularity::Year,
+      };
+      return new static(static::CUSTOM, $from, $to, $granularity);
     }
 
     $year = static::parseInt($query['year'] ?? $current_year, static::MIN_YEAR, static::MAX_YEAR);
@@ -124,6 +160,24 @@ class StatsPeriod {
   }
 
   /**
+   * Parses a strict Y-m-d string, or returns NULL.
+   */
+  protected static function parseDate(mixed $value, \DateTimeZone $timezone): ?\DateTimeImmutable {
+    if (!is_string($value)) {
+      return NULL;
+    }
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value, $timezone);
+    if (!$date || $date->format('Y-m-d') !== $value) {
+      return NULL;
+    }
+    $year = (int) $date->format('Y');
+    if ($year < static::MIN_YEAR || $year > static::MAX_YEAR) {
+      return NULL;
+    }
+    return $date;
+  }
+
+  /**
    * Parses an integer within bounds, or returns NULL.
    */
   protected static function parseInt(mixed $value, int $min, int $max): ?int {
@@ -170,23 +224,25 @@ class StatsPeriod {
       static::YEAR => $year,
       static::QUARTER => 'Q' . (intdiv((int) $this->from->format('n') - 1, 3) + 1) . ' ' . $year,
       static::MONTH => $this->from->format('F Y'),
-      default => throw new \LogicException('Unknown period type ' . $this->type),
+      default => $this->from->format('d.m.Y') . ' – ' . $this->to->modify('-1 day')->format('d.m.Y'),
     };
   }
 
   /**
    * Gets the period right before this one.
    *
-   * A period moves by its own unit, keeping the granularity. The "all"
-   * period has nothing before it and returns the same "all" period.
+   * Presets move by their own unit and a custom range by its length, keeping
+   * the granularity. The "all" period has nothing before it and returns the
+   * same "all" period.
    */
   public function previous(): static {
+    $days = $this->from->diff($this->to)->days;
     return match ($this->type) {
       static::ALL => $this,
       static::YEAR => $this->shift('-1 year'),
       static::QUARTER => $this->shift('-3 months'),
       static::MONTH => $this->shift('-1 month'),
-      default => throw new \LogicException('Unknown period type ' . $this->type),
+      default => $this->shift('-' . $days . ' days'),
     };
   }
 
@@ -194,12 +250,13 @@ class StatsPeriod {
    * Gets the period right after this one, moving like previous().
    */
   public function next(): static {
+    $days = $this->from->diff($this->to)->days;
     return match ($this->type) {
       static::ALL => $this,
       static::YEAR => $this->shift('+1 year'),
       static::QUARTER => $this->shift('+3 months'),
       static::MONTH => $this->shift('+1 month'),
-      default => throw new \LogicException('Unknown period type ' . $this->type),
+      default => $this->shift('+' . $days . ' days'),
     };
   }
 
@@ -285,7 +342,11 @@ class StatsPeriod {
         'quarter' => (string) (intdiv((int) $this->from->format('n') - 1, 3) + 1),
       ],
       static::MONTH => ['period' => 'month', 'year' => $year, 'month' => $this->from->format('n')],
-      default => throw new \LogicException('Unknown period type ' . $this->type),
+      default => [
+        'period' => 'custom',
+        'from' => $this->from->format('Y-m-d'),
+        'to' => $this->to->modify('-1 day')->format('Y-m-d'),
+      ],
     };
   }
 

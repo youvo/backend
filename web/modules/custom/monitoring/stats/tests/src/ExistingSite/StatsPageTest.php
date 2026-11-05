@@ -60,14 +60,50 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSame('9.0 d', $this->kpi('median'));
     $this->assertSession()->pageTextNotContains('vs ');
 
-    // The period bar holds links only: presets and the neighbor years.
-    $this->assertSession()->elementNotExists('css', '.stats-period-bar form');
+    // The period bar holds the presets, the neighbor years and the range form,
+    // without the removed comparison and manager filter.
+    $this->assertSession()->fieldNotExists('compare');
+    $this->assertSession()->fieldNotExists('manager');
     $this->assertSession()->linkExists('All time');
     $this->assertSession()->linkExists('‹ 2000');
     $this->assertSession()->linkExists('2002 ›');
     $this->clickLink('2002 ›');
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '2002');
     $this->assertSame('0', $this->kpi('published'));
+  }
+
+  /**
+   * The range form selects a custom period, or the preset it covers.
+   */
+  public function testRangeForm(): void {
+
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    // Gin styles the date fields and the primary button of the native form.
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2001]]);
+    $from = $this->assertSession()->elementExists('css', '.stats-range-form input[name="from"].form-element--type-date');
+    $this->assertSame('2001-01-01', $from->getValue());
+    $to = $this->assertSession()->elementExists('css', '.stats-range-form input[name="to"].form-element--type-date');
+    $this->assertSame('2001-12-31', $to->getValue());
+    $this->assertSession()->elementExists('css', '.stats-range-form input.button--primary[value="Apply"]');
+
+    $this->submitForm(['from' => '2001-03-05', 'to' => '2001-04-20'], 'Apply');
+    $query = [];
+    parse_str((string) parse_url($this->getUrl(), PHP_URL_QUERY), $query);
+    $this->assertSame(['period' => 'custom', 'from' => '2001-03-05', 'to' => '2001-04-20'], $query);
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '05.03.2001 – 20.04.2001');
+    $this->assertSession()->linkExists('‹ 17.01.2001 – 04.03.2001');
+    $this->assertSame('2001-03-05', $this->assertSession()->fieldExists('from')->getValue());
+
+    // A range covering a calendar quarter is that quarter.
+    $this->submitForm(['from' => '2001-04-01', 'to' => '2001-06-30'], 'Apply');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', 'Q2 2001');
+    $this->assertSession()->linkExists('‹ Q1 2001');
+
+    // A range ending before it starts stays on the form with an error.
+    $this->submitForm(['from' => '2001-05-01', 'to' => '2001-04-01'], 'Apply');
+    $this->assertSession()->pageTextContains('The end date must not be before the start date.');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', 'Q2 2001');
   }
 
   /**
@@ -117,6 +153,8 @@ class StatsPageTest extends StatsTestBase {
       'url.query_args:year',
       'url.query_args:quarter',
       'url.query_args:month',
+      'url.query_args:from',
+      'url.query_args:to',
       'user.permissions',
     ];
     foreach ($contexts as $context) {
@@ -156,7 +194,6 @@ class StatsPageTest extends StatsTestBase {
       ['from' => 'foo'],
       ['from' => '2026-05-01', 'to' => '2026-04-01'],
       ['period' => 'decade'],
-      ['period' => 'custom', 'from' => '2001-01-01', 'to' => '2001-12-31'],
       ['compare' => 'x'],
       ['manager' => $organization->id()],
       ['manager' => 'abc'],
