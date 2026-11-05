@@ -4,16 +4,18 @@
  * The header of a profile: avatar or initials, name and subtitles.
  *
  * Variables: content (the rendered display), profile (the values of
- * yv_preprocess_user()), name_url (links the name there, if set).
+ * yv_preprocess_user()), name_url (links the name there, if set),
+ * heading_level (the element of the name, h1 if not set).
  */
 #}
+{% set heading = heading_level|default('h1') %}
 <header class="user-profile-header">
   {% include '@yv/user/includes/user-profile-avatar.html.twig' with {avatar: profile.avatar, initials: profile.initials, shape: 'round'} only %}
   <div class="user-profile-heading">
     {% if name_url %}
-      <h1 class="user-profile-name"><a href="{{ name_url }}">{{ content.field_name|field_value }}</a></h1>
+      <{{ heading }} class="user-profile-name"><a href="{{ name_url }}">{{ content.field_name|field_value }}</a></{{ heading }}>
     {% else %}
-      <h1 class="user-profile-name">{{ content.field_name|field_value }}</h1>
+      <{{ heading }} class="user-profile-name">{{ content.field_name|field_value }}</{{ heading }}>
     {% endif %}
     {% if content.field_position|field_value %}
       <p class="user-profile-subtitle">{{ content.field_position|field_value }}</p>

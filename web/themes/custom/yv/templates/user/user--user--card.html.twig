@@ -10,7 +10,7 @@
 #}
 
 {{ profile_cache }}
-<article class="user-profile-card">
-  {% include '@yv/user/includes/user-profile-header.html.twig' with {content: content, profile: profile, name_url: path('entity.user.canonical', {user: user.id})} only %}
+<article{{ attributes.addClass('user-profile-card') }}>
+  {% include '@yv/user/includes/user-profile-header.html.twig' with {content: content, profile: profile, name_url: path('entity.user.canonical', {user: user.id}), heading_level: 'h2'} only %}
   {% include '@yv/user/includes/user-profile-main.html.twig' with {content: content} only %}
 </article>
