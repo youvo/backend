@@ -885,7 +885,7 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: Applied
+            label: Applicant
             description: ''
             use_operator: false
             operator: creative_applied_op
@@ -913,7 +913,7 @@ display:
           exposed: true
           expose:
             operator_id: ''
-            label: 'Took part'
+            label: Participant
             description: ''
             use_operator: false
             operator: creative_participated_op
