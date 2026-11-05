@@ -179,9 +179,6 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
     ]));
 
     // Group 1 is "Yes", group 2 is "No".
-    $this->assertSame([(int) $never->id()], $this->uids(['name' => $prefix, 'never_logged_in' => 1]));
-    $this->assertNotContains((int) $never->id(), $this->uids(['name' => $prefix, 'never_logged_in' => 2]));
-
     $this->assertSame([(int) $never->id()], $this->uids(['name' => $prefix, 'has_avatar' => 1]));
     $this->assertNotContains((int) $never->id(), $this->uids(['name' => $prefix, 'has_avatar' => 2]));
     $this->assertCount(3, $this->uids(['name' => $prefix, 'has_avatar' => 2]));
@@ -193,6 +190,43 @@ class CreativesViewTest extends ManagerExistingSiteTestBase {
       [(int) $old->id(), (int) $new->id(), (int) $no_newsletter->id()],
       $this->uids(['name' => $prefix, 'newsletter' => '0']),
     );
+  }
+
+  /**
+   * A return is an access a day after registering, an access is any access.
+   */
+  public function testReturnAndAccessFilters(): void {
+
+    $prefix = $this->randomMachineName();
+    $registered = strtotime('2024-03-01 10:00');
+    $returned = $this->creative([
+      'field_name' => $prefix . ' Returned',
+      'created' => $registered,
+      'access' => $registered + 2 * 86400,
+    ]);
+    $same_day = $this->creative([
+      'field_name' => $prefix . ' SameDay',
+      'created' => $registered,
+      'access' => $registered + 3600,
+    ]);
+    $never = $this->creative([
+      'field_name' => $prefix . ' Never',
+      'created' => $registered,
+      'access' => 0,
+    ]);
+
+    $this->assertSame([(int) $returned->id()], $this->uids(['name' => $prefix, 'returned' => '1']));
+    $this->assertEqualsCanonicalizing(
+      [(int) $same_day->id(), (int) $never->id()],
+      $this->uids(['name' => $prefix, 'returned' => '0']),
+    );
+
+    // Group 1 is "Yes", group 2 is "No".
+    $this->assertEqualsCanonicalizing(
+      [(int) $returned->id(), (int) $same_day->id()],
+      $this->uids(['name' => $prefix, 'accessed' => 1]),
+    );
+    $this->assertSame([(int) $never->id()], $this->uids(['name' => $prefix, 'accessed' => 2]));
   }
 
   /**

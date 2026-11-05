@@ -27,15 +27,17 @@ class CreativesViewsHooks {
   /**
    * Implements hook_views_data_alter().
    *
-   * Adds the filters and the mode toggle of the creatives finder. The
-   * preferences of a creative who never set them count as "No": their boolean
-   * filters accept a missing value as false.
+   * Adds the filters and the mode toggle of the creatives finder. Their
+   * boolean filters offer "Yes" and "No". The preferences of a creative who
+   * never set them count as "No": their filters accept a missing value as
+   * false.
    */
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data): void {
     foreach (['field_jobs', 'field_newsletter', 'field_public_profile'] as $field) {
       if (isset($data['user__' . $field][$field . '_value']['filter'])) {
         $data['user__' . $field][$field . '_value']['filter']['accept null'] = TRUE;
+        $data['user__' . $field][$field . '_value']['filter']['type'] = 'yes-no';
       }
     }
     foreach ([
@@ -56,6 +58,7 @@ class CreativesViewsHooks {
           'id' => 'creative_project_activity',
           'real field' => 'uid',
           'project_field' => $info['field'],
+          'type' => 'yes-no',
         ],
       ];
     }
@@ -63,7 +66,13 @@ class CreativesViewsHooks {
       'title' => $this->t('Creatives: Has a portfolio or website'),
       'help' => $this->t('Whether the creative entered a website or a portfolio link.'),
       'real field' => 'uid',
-      'filter' => ['id' => 'creative_has_link', 'real field' => 'uid'],
+      'filter' => ['id' => 'creative_has_link', 'real field' => 'uid', 'type' => 'yes-no'],
+    ];
+    $data['users_field_data']['creative_returned'] = [
+      'title' => $this->t('Creatives: Returned'),
+      'help' => $this->t('Whether the creative accessed the site at least a day after registering.'),
+      'real field' => 'uid',
+      'filter' => ['id' => 'creative_returned', 'real field' => 'uid', 'type' => 'yes-no'],
     ];
     $data['views']['creatives_mode_toggle'] = [
       'title' => $this->t('Creatives: Mode toggle'),
@@ -203,9 +212,10 @@ class CreativesViewsHooks {
         'filters' => [
           'registered' => 'registered_wrapper',
           'last_access' => 'last_access_wrapper',
-          'never_logged_in' => 'never_logged_in',
-          'applied' => 'applied',
           'participated' => 'participated',
+          'applied' => 'applied',
+          'returned' => 'returned',
+          'accessed' => 'accessed',
         ],
       ],
       'profile' => [

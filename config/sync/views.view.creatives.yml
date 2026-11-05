@@ -627,11 +627,11 @@ display:
           field: access
           relationship: none
           group_type: group
-          admin_label: 'Never logged in'
+          admin_label: Access
           entity_type: user
           entity_field: access
           plugin_id: date
-          operator: '='
+          operator: '>'
           value:
             min: ''
             max: ''
@@ -641,13 +641,13 @@ display:
           exposed: true
           expose:
             operator_id: access_1_op
-            label: 'Never logged in'
+            label: Access
             description: ''
             use_operator: false
             operator: access_1_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: never_logged_in
+            identifier: accessed
             required: false
             remember: false
             multiple: false
@@ -658,9 +658,9 @@ display:
             placeholder: ''
           is_grouped: true
           group_info:
-            label: 'Never logged in'
+            label: Access
             description: ''
-            identifier: never_logged_in
+            identifier: accessed
             optional: true
             widget: select
             multiple: false
@@ -670,7 +670,7 @@ display:
             group_items:
               1:
                 title: 'Yes'
-                operator: '='
+                operator: '>'
                 value:
                   min: ''
                   max: ''
@@ -678,7 +678,7 @@ display:
                   type: date
               2:
                 title: 'No'
-                operator: '>'
+                operator: '='
                 value:
                   min: ''
                   max: ''
@@ -948,6 +948,34 @@ display:
             operator_limit_selection: false
             operator_list: {  }
             identifier: has_link
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+        creative_returned:
+          id: creative_returned
+          table: users_field_data
+          field: creative_returned
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: user
+          plugin_id: creative_returned
+          operator: '='
+          value: All
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Return
+            description: ''
+            use_operator: false
+            operator: creative_returned_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: returned
             required: false
             remember: false
             multiple: false
