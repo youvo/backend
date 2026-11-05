@@ -1,4 +1,4 @@
 id: project_follow
 langcode: 'de'
 text: 'Die %AuthorWithRole ist dem Link aus der Mail „%Mail“ zum Projekt %Project gefolgt.'
-public_text: 'Die %AuthorWithRole ist dem Link zum Projekt %Project gefolgt.'
+public_text: '%Author ist dem Link zum Projekt %Project gefolgt.'
