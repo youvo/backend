@@ -322,39 +322,6 @@ class ActivityStats {
   }
 
   /**
-   * Gets the share of organizations publishing in the period that did before.
-   *
-   * @return float|null
-   *   The share between 0 and 1, NULL if no organization published.
-   */
-  public function repeatOrganizations(StatsPeriod $period): ?float {
-
-    $query = $this->database->select('project__field_lifecycle_history', 'h');
-    $query->innerJoin('project_field_data', 'p', 'p.id = h.entity_id AND p.langcode = h.langcode AND p.default_langcode = 1');
-    $query->addField('p', 'uid');
-    $query->addField('h', 'field_lifecycle_history_timestamp', 'timestamp');
-    $query->condition('h.deleted', 0)
-      ->condition('h.field_lifecycle_history_transition', ProjectTransition::Publish->value)
-      ->condition('h.field_lifecycle_history_timestamp', $period->to()->getTimestamp(), '<');
-
-    $in_period = [];
-    $before = [];
-    $from = $period->from()->getTimestamp();
-    foreach ($query->execute() as $row) {
-      if ((int) $row->timestamp >= $from) {
-        $in_period[(int) $row->uid] = TRUE;
-      }
-      else {
-        $before[(int) $row->uid] = TRUE;
-      }
-    }
-    if (!$in_period) {
-      return NULL;
-    }
-    return (float) count(array_intersect_key($in_period, $before)) / count($in_period);
-  }
-
-  /**
    * Counts the decline or archive logs in the period by reason.
    *
    * @param \Drupal\stats\StatsPeriod $period

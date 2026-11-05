@@ -310,6 +310,30 @@ class StatsPeriod {
   }
 
   /**
+   * Gets short chart labels of the buckets, in their order.
+   *
+   * Days read "05.11.", ISO weeks "W45", months "Jan" and years "2026". Months
+   * get a two-digit year, "Jan 26", when the period spans more than one year.
+   *
+   * @return string[]
+   *   The labels.
+   */
+  public function bucketLabels(): array {
+    $last_day = $this->to->modify('-1 day');
+    $format = match ($this->granularity) {
+      StatsGranularity::Day => 'd.m.',
+      StatsGranularity::Week => '\WW',
+      StatsGranularity::Month => $this->from->format('Y') === $last_day->format('Y') ? 'M' : 'M y',
+      StatsGranularity::Year => 'Y',
+    };
+    $labels = [];
+    foreach ($this->buckets() as [$start]) {
+      $labels[] = (new \DateTimeImmutable('@' . $start))->setTimezone($this->from->getTimezone())->format($format);
+    }
+    return $labels;
+  }
+
+  /**
    * Gets the label of the bucket containing a timestamp.
    */
   public function bucketOf(int $timestamp): ?string {

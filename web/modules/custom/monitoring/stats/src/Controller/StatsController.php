@@ -81,6 +81,7 @@ class StatsController implements ContainerInjectionInterface {
 
     return [
       '#theme' => 'stats_page',
+      '#attached' => ['library' => ['stats/charts']],
       '#period_bar' => $this->periodBar($period, $timezone, $now),
       '#range_form' => $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d')),
       '#kpis' => $kpis,
@@ -121,7 +122,7 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function projectsSection(StatsPeriod $period, array $current): array {
 
-    $labels = array_map('strval', array_keys($period->buckets()));
+    $labels = $period->bucketLabels();
     $transitions = [
       ProjectTransition::Submit->value => $this->t('Submitted'),
       ProjectTransition::Publish->value => $this->t('Published'),
@@ -167,7 +168,7 @@ class StatsController implements ContainerInjectionInterface {
     $stages_title = (string) $this->t('Median days per stage');
     $stages_chart = StatsCharts::bar('stats-stages', $stages_title, $stage_labels, $stages, horizontal: TRUE);
 
-    $heading = $this->heading($this->t('Projects'), $this->t('old: brokered and finished per month, broker rate, days to brokering'));
+    $heading = $this->heading($this->t('Projects'));
     return $this->section($heading, [
       'flow' => StatsCharts::card($flow_chart, wide: TRUE, tall: TRUE),
       'funnel' => StatsCharts::card($funnel_chart),
@@ -183,7 +184,7 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function growthSection(StatsPeriod $period): array {
 
-    $labels = array_map('strval', array_keys($period->buckets()));
+    $labels = $period->bucketLabels();
     $registrations = $this->activityStats->registrations($period);
     $projects = $this->projectStats->cumulative($period);
     $series = [
@@ -194,7 +195,7 @@ class StatsController implements ContainerInjectionInterface {
     ];
     $chart = StatsCharts::line('stats-growth', (string) $this->t('Running totals'), $labels, $series);
 
-    $heading = $this->heading($this->t('Growth'), $this->t('old: registered creatives, finished and brokered projects (cumulative)'));
+    $heading = $this->heading($this->t('Growth'));
     return $this->section($heading, [
       'growth' => StatsCharts::card($chart, full: TRUE),
     ]);
@@ -208,7 +209,7 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function applicationsSection(StatsPeriod $period): array {
 
-    $labels = array_map('strval', array_keys($period->buckets()));
+    $labels = $period->bucketLabels();
     $applications = $this->activityStats->applications($period);
     $engaged = $this->activityStats->engagedCreatives($period);
     $returned = $this->activityStats->returnAfterRejection($period);
@@ -225,7 +226,7 @@ class StatsController implements ContainerInjectionInterface {
       $this->tile('came-back', $this->t('Came back after rejection'), $returned, 'rate'),
     ];
 
-    $heading = $this->heading($this->t('Applications'), $this->t('old: interests per month, distinct interested creatives'));
+    $heading = $this->heading($this->t('Applications'));
     return $this->section($heading, [
       'applications' => StatsCharts::card($chart, wide: TRUE),
       'tiles' => $this->tiles($tiles),
@@ -240,7 +241,7 @@ class StatsController implements ContainerInjectionInterface {
    */
   protected function creativesSection(StatsPeriod $period): array {
 
-    $labels = array_map('strval', array_keys($period->buckets()));
+    $labels = $period->bucketLabels();
     $activation = $this->activityStats->activation($period);
     $series = [
       (string) $this->t('Registered') => array_values($activation['registered']),
@@ -278,7 +279,7 @@ class StatsController implements ContainerInjectionInterface {
       $this->tile('active-organizations', $this->t('Active organizations (30 d)'), $this->lastActive($activity['organization']), 'count'),
     ];
 
-    $heading = $this->heading($this->t('Creatives'), $this->t('old: registrations and returns, relative returns, first interest after registration, daily visits'));
+    $heading = $this->heading($this->t('Creatives'));
     return $this->section($heading, [
       'activation' => $activation_card,
       'first_application' => StatsCharts::card($histogram_chart),
@@ -304,9 +305,6 @@ class StatsController implements ContainerInjectionInterface {
     $funnel_chart = StatsCharts::bar('stats-prospects', (string) $this->t('Prospect funnel'), $funnel_labels, [
       (string) $this->t('Organizations') => array_values($funnel),
     ], horizontal: TRUE);
-    $funnel_card = StatsCharts::card($funnel_chart);
-    $repeat = $this->activityStats->repeatOrganizations($period);
-    $funnel_card['foot'] = $this->foot($this->tile('repeat-organizations', $this->t('Repeat organizations'), $repeat, 'rate'));
 
     $declines = $this->activityStats->reasons($period, 'project_decline');
     $decline_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectDeclineReason::tryFrom($reason)?->label() ?? $reason), array_keys($declines));
@@ -315,9 +313,9 @@ class StatsController implements ContainerInjectionInterface {
     $archive_labels = array_map(fn($reason) => (string) ($reason === 'unknown' ? $this->t('Unknown') : ProjectArchiveReason::tryFrom($reason)?->label() ?? $reason), array_keys($archives));
     $archive_chart = StatsCharts::doughnut('stats-archive-reasons', (string) $this->t('Archive reasons'), $archive_labels, array_values($archives));
 
-    $heading = $this->heading($this->t('Organizations and reasons'), $this->t('old: proposal process funnel, organizations with several projects'));
+    $heading = $this->heading($this->t('Organizations and reasons'));
     return $this->section($heading, [
-      'prospects' => $funnel_card,
+      'prospects' => StatsCharts::card($funnel_chart),
       'decline_reasons' => StatsCharts::card($decline_chart),
       'archive_reasons' => StatsCharts::card($archive_chart),
     ]);
@@ -351,7 +349,7 @@ class StatsController implements ContainerInjectionInterface {
         '@share' => $recommend,
       ]);
       $labels = array_map(fn($label) => preg_replace('/ Scale$/', '', $label), array_values($fields));
-      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, $labels, $series, horizontal: TRUE);
+      $chart = StatsCharts::bar('stats-feedback-' . $bundle, $title, $labels, $series, horizontal: TRUE, max: 5);
       $cards['feedback_' . $bundle] = StatsCharts::card($chart, wide: TRUE);
     }
 
@@ -361,7 +359,7 @@ class StatsController implements ContainerInjectionInterface {
     ];
     $cards['tiles'] = $this->tiles($tiles);
 
-    $heading = $this->heading($this->t('Feedback and academy'), $this->t('old: feedback stats per year'));
+    $heading = $this->heading($this->t('Feedback and academy'));
     return $this->section($heading, $cards);
   }
 
@@ -400,16 +398,17 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds a section heading with a note on the old graphs it replaces.
+   * Builds a section heading.
    *
    * @return array<string, mixed>
    *   The heading render array.
    */
-  protected function heading(mixed $title, mixed $note): array {
+  protected function heading(mixed $title): array {
     return [
-      '#type' => 'inline_template',
-      '#template' => '<h2 class="stats-section-title">{{ title }} <span class="stats-section-note">{{ note }}</span></h2>',
-      '#context' => ['title' => $title, 'note' => $note],
+      '#type' => 'html_tag',
+      '#tag' => 'h2',
+      '#value' => $title,
+      '#attributes' => ['class' => ['stats-section-title']],
     ];
   }
 

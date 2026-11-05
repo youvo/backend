@@ -127,7 +127,7 @@ class ActivityStatsTest extends StatsTestBase {
   }
 
   /**
-   * Tests registrations, the prospect funnel, repeat organizations, reasons.
+   * Tests registrations, the prospect funnel and the reasons.
    */
   public function testOrganizationsAndReasons(): void {
 
@@ -138,7 +138,6 @@ class ActivityStatsTest extends StatsTestBase {
     $this->assertSame($this->months([2, 2, 3, 3], 4), $registrations['organizations_total']);
 
     $this->assertSame(['created' => 3, 'managed' => 2, 'published' => 2], $this->activityStats->prospectFunnel($this->period));
-    $this->assertEqualsWithDelta(1 / 3, $this->activityStats->repeatOrganizations($this->period), 0.001);
 
     $this->assertSame(['imprecise' => 1], $this->activityStats->reasons($this->period, 'project_decline'));
     $this->assertSame(['external' => 1, 'unattractive' => 1], $this->activityStats->reasons($this->period, 'project_archive'));

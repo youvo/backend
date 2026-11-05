@@ -199,6 +199,36 @@ class StatsPeriodTest extends UnitTestCase {
   }
 
   /**
+   * Tests the short chart labels of the buckets.
+   */
+  public function testBucketLabels(): void {
+    $year = $this->period(['period' => 'year', 'year' => '2026']);
+    $this->assertSame(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], $year->bucketLabels());
+
+    // A quarter starting mid-week labels its first, clipped week too.
+    $quarter = $this->period(['period' => 'quarter', 'year' => '2026', 'quarter' => '4']);
+    $labels = $quarter->bucketLabels();
+    $this->assertCount(count($quarter->buckets()), $labels);
+    $this->assertSame(['W40', 'W41'], array_slice($labels, 0, 2));
+    $this->assertSame('W53', end($labels));
+
+    $month = $this->period(['period' => 'month', 'year' => '2026', 'month' => '11']);
+    $this->assertSame(['01.11.', '02.11.'], array_slice($month->bucketLabels(), 0, 2));
+    $this->assertSame('30.11.', $month->bucketLabels()[29]);
+
+    // Months get the year when the period spans more than one.
+    $across = $this->period(['period' => 'custom', 'from' => '2025-11-15', 'to' => '2026-02-10']);
+    $this->assertSame(StatsGranularity::Month, $across->granularity());
+    $this->assertSame(['Nov 25', 'Dec 25', 'Jan 26', 'Feb 26'], $across->bucketLabels());
+
+    // Year buckets are integer keys, their labels strings.
+    $all = $this->period(['period' => 'all']);
+    $labels = $all->bucketLabels();
+    $this->assertSame('2014', $labels[0]);
+    $this->assertSame('2026', end($labels));
+  }
+
+  /**
    * Tests that invalid arguments fall back to the default year period.
    */
   public function testInvalidInputFallsBack(): void {

@@ -156,20 +156,13 @@
   }
 }
 
-// The title in ink, the note on the old graphs it replaces muted.
+// The title of a section in ink.
 .stats-section-title {
   @include section-label;
 
   grid-column: 1 / -1;
   margin: var(--gin-spacing-s) 0 0;
   color: var(--yv-ink);
-}
-
-.stats-section-note {
-  color: var(--yv-muted);
-  font-weight: 400;
-  letter-spacing: normal;
-  text-transform: none;
 }
 
 .stats-card {
@@ -192,9 +185,24 @@
     grid-column: 1 / -1;
   }
 
-  // Chart.js honors a max-height on the canvas when it sizes the chart.
-  canvas {
+  // Chart.js fills the figure (the script turns off its aspect ratio), so the
+  // figure sets the size: twice as wide as high, square in tall cards and for
+  // doughnuts, at most 20rem high and on narrow screens at least 220px.
+  // The explicit width keeps the max-height from narrowing the figure.
+  .charts-figure {
+    position: relative;
+    width: 100%;
+    min-height: 220px;
     max-height: 20rem;
+    aspect-ratio: 2;
+
+    @media (min-width: $breakpoint-medium) {
+      min-height: 0;
+    }
+  }
+
+  &[data-square] .charts-figure {
+    aspect-ratio: 1;
   }
 }
 

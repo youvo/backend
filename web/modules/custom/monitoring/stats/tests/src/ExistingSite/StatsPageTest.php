@@ -119,10 +119,17 @@ class StatsPageTest extends StatsTestBase {
     foreach (['stats-flow', 'stats-funnel', 'stats-stages'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
-    // The card labels the chart, which draws no title of its own.
+    // The card labels the chart, which draws no title of its own but keeps it
+    // for the figure label and the caption of its table.
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-flow-title"] > h3#stats-flow-title', 'Project flow');
     $chart = $this->assertSession()->elementExists('css', '#stats-flow');
-    $this->assertSame([], json_decode($chart->getAttribute('data-chart'), TRUE)['options']['plugins']['title']);
+    $definition = json_decode($chart->getAttribute('data-chart'), TRUE);
+    $this->assertFalse($definition['options']['plugins']['title']['display']);
+    $this->assertSession()->elementExists('css', '.charts-figure[aria-label="Project flow"] #stats-flow');
+    $this->assertSession()->elementTextEquals('css', '.charts-figure[aria-label="Project flow"] table caption', 'Data table for Project flow');
+    // The colors come from the theme, the month labels are short.
+    $this->assertArrayNotHasKey('backgroundColor', $definition['data']['datasets'][0]);
+    $this->assertSame(['Jan', 'Feb', 'Mar'], array_slice($definition['data']['labels'], 0, 3));
 
     // The tables are hidden for screen readers, without a button to show them.
     $this->assertSession()->elementNotExists('css', '.charts-accordion-trigger');
@@ -259,6 +266,14 @@ class StatsPageTest extends StatsTestBase {
     foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
+    // The averages run on a fixed axis from 0 to 5.
+    $chart = $this->assertSession()->elementExists('css', '#stats-feedback-creative');
+    $scale = json_decode($chart->getAttribute('data-chart'), TRUE)['options']['scales']['x'];
+    $this->assertSame([0, 5], [$scale['min'], $scale['max']]);
+    // The headings carry no notes on the old graphs, the prospect funnel no
+    // repeat organizations.
+    $this->assertSession()->pageTextNotContains('old:');
+    $this->assertSession()->pageTextNotContains('Repeat organizations');
     $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-enrolled"] .stats-tile-value');
     $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-completed"] .stats-tile-value');
   }

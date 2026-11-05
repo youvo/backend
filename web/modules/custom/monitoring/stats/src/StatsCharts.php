@@ -6,38 +6,17 @@ namespace Drupal\stats;
  * Builds Chart.js chart render elements for the stats page.
  *
  * Each chart also renders its numbers as a visually hidden table for screen
- * readers, without a button to show it.
+ * readers, without a button to show it. The look and the colors come from
+ * js/stats-charts.js and the theme tokens; the charts here hold only the data
+ * and the options of the single chart.
  */
 class StatsCharts {
-
-  /**
-   * The series colors, from the yv palette: blue, orange, turquoise, red, grey.
-   */
-  const array COLORS = ['#3f78b5', '#f79b6a', '#3ec4c2', '#e15554', '#526079'];
-
-  /**
-   * The slice colors of doughnuts, distinct for up to eleven slices.
-   *
-   * The series colors first, then their light variants and dark blue.
-   */
-  const array COLORS_DOUGHNUT = [
-    '#3f78b5',
-    '#f79b6a',
-    '#3ec4c2',
-    '#e15554',
-    '#526079',
-    '#7e98b5',
-    '#ffb793',
-    '#96d1cf',
-    '#e08b8b',
-    '#b8c6d6',
-    '#15508e',
-  ];
 
   /**
    * Wraps a chart in a card of the stats grid.
    *
    * The card shows the chart's title as its label, so the chart draws none.
+   * The chart keeps it for its figure label and the caption of its table.
    *
    * @param array<string, mixed> $chart
    *   The chart render element.
@@ -65,12 +44,13 @@ class StatsCharts {
     }
     if ($tall) {
       $attributes['data-tall'] = '';
-      // A square chart keeps room for the plot under a long legend on narrow
-      // screens; the CSS max-height caps it on wide ones.
-      $chart['#raw_options']['options']['aspectRatio'] = 1;
+    }
+    // The stylesheet sizes the figure of the chart: square for tall cards and
+    // doughnuts, which keeps room for the plot under a long legend.
+    if ($tall || $chart['#chart_type'] === 'donut') {
+      $attributes['data-square'] = '';
     }
     $title = $chart['#title'];
-    $chart['#title'] = '';
     return [
       '#type' => 'html_tag',
       '#tag' => 'section',
@@ -100,13 +80,25 @@ class StatsCharts {
    *   Whether to stack the series.
    * @param bool $horizontal
    *   Whether to draw horizontal bars.
+   * @param int|null $max
+   *   The fixed maximum of the value axis, which then starts at 0.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function bar(string $id, string $title, array $labels, array $series, bool $stacked = FALSE, bool $horizontal = FALSE): array {
+  public static function bar(string $id, string $title, array $labels, array $series, bool $stacked = FALSE, bool $horizontal = FALSE, ?int $max = NULL): array {
     $chart = static::chart($id, $title, $horizontal ? 'bar' : 'column', $labels, $series);
     $chart['#stacking'] = $stacked;
+    if ($max !== NULL) {
+      $chart['#raw_options']['options']['scales'][$horizontal ? 'x' : 'y'] += [
+        'min' => 0,
+        'max' => $max,
+      ];
+      $chart['#raw_options']['options']['scales'][$horizontal ? 'x' : 'y']['ticks'] += [
+        'stepSize' => 1,
+        'maxTicksLimit' => $max + 1,
+      ];
+    }
     return $chart;
   }
 
@@ -127,10 +119,8 @@ class StatsCharts {
    */
   public static function doughnut(string $id, string $title, array $labels, array $values): array {
     $chart = static::chart($id, $title, 'donut', $labels, [$title => $values]);
-    $chart['#colors'] = array_slice(static::COLORS_DOUGHNUT, 0, max(1, count($labels)));
     $chart['#legend'] = TRUE;
     $chart['series_0']['#labels'] = array_map('strval', array_values($labels));
-    unset($chart['series_0']['#color']);
     return $chart;
   }
 
@@ -178,12 +168,22 @@ class StatsCharts {
       '#chart_id' => $id,
       '#chart_library' => 'chartjs',
       '#chart_type' => $type,
+      // The title labels the figure and captions the table; the card shows
+      // it, so the canvas draws none.
       '#title' => $title,
-      // Chart.js's default text color stays readable in Gin's dark mode.
       '#title_color' => '',
       '#accessible_table' => 'invisible',
       '#legend' => count($series) > 1,
-      '#legend_position' => 'bottom',
+      '#legend_position' => 'top',
+      '#raw_options' => [
+        'options' => [
+          'plugins' => ['title' => ['display' => FALSE]],
+          // The value axis counts in whole steps; the script styles it.
+          'scales' => $type === 'donut' ? [] : [
+            $type === 'bar' ? 'x' : 'y' => ['ticks' => ['precision' => 0]],
+          ],
+        ],
+      ],
     ];
 
     $index = 0;
@@ -192,7 +192,6 @@ class StatsCharts {
         '#type' => 'chart_data',
         '#title' => (string) $name,
         '#data' => array_values($values),
-        '#color' => static::COLORS[$index % count(static::COLORS)],
       ];
       $index++;
     }
