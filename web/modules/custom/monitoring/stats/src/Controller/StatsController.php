@@ -92,7 +92,6 @@ class StatsController implements ContainerInjectionInterface {
         'organizations' => $this->organizationsSection($period),
         'feedback' => $this->feedbackSection($period),
       ],
-      '#attached' => ['library' => ['stats/page']],
       '#cache' => [
         'tags' => ['project_list', 'log_list', 'feedback_list', 'user_list', 'course_progress_list'],
         'contexts' => [
@@ -395,7 +394,7 @@ class StatsController implements ContainerInjectionInterface {
   protected function section(array $heading, array $cards): array {
     return [
       '#type' => 'container',
-      '#attributes' => ['class' => ['stats-section', 'stats-grid']],
+      '#attributes' => ['class' => ['stats-section']],
       'heading' => $heading,
     ] + $cards;
   }
@@ -409,7 +408,7 @@ class StatsController implements ContainerInjectionInterface {
   protected function heading(mixed $title, mixed $note): array {
     return [
       '#type' => 'inline_template',
-      '#template' => '<h3 class="stats-section__heading">{{ title }} <small class="stats-section__note">{{ note }}</small></h3>',
+      '#template' => '<h2 class="stats-section-title">{{ title }} <span class="stats-section-note">{{ note }}</span></h2>',
       '#context' => ['title' => $title, 'note' => $note],
     ];
   }
@@ -443,7 +442,7 @@ class StatsController implements ContainerInjectionInterface {
   protected function foot(array $tile): array {
     return [
       '#type' => 'inline_template',
-      '#template' => '<p class="stats-card__foot stats-foot--{{ tile.key }}">{{ tile.label }}: <b class="stats-foot__value">{{ tile.value }}</b></p>',
+      '#template' => '<p class="stats-card-foot" data-foot="{{ tile.key }}">{{ tile.label }}: <b class="stats-card-foot-value">{{ tile.value }}</b></p>',
       '#context' => ['tile' => $tile],
     ];
   }

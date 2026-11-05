@@ -1,0 +1,213 @@
+// =============================================================================
+// STATS (StatsController)
+// =============================================================================
+// The stats page: a card with the period and its filters, the KPI tiles and
+// sections of chart cards. All cards are Gin layer cards with a small label,
+// as on the feedback page.
+
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+.stats-page {
+  display: grid;
+  gap: var(--gin-spacing-l);
+  color: var(--yv-text);
+  hyphens: manual;
+}
+
+// The period: its label and heading, the links and the range form.
+.stats-period {
+  @include card;
+  @include card-padding;
+
+  display: grid;
+  gap: var(--gin-spacing-s);
+}
+
+.stats-period-label {
+  @include section-label;
+}
+
+.stats-period-heading {
+  @include page-title;
+}
+
+.stats-period-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--gin-spacing-m) var(--gin-spacing-l);
+}
+
+.stats-period-links {
+  display: grid;
+  gap: var(--gin-spacing-xs);
+}
+
+.stats-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Flat pills in the single accent, the current one as a chip.
+.stats-pill {
+  display: block;
+  padding: var(--gin-spacing-xxs) var(--gin-spacing-s);
+  border-radius: var(--gin-border-m);
+  color: var(--yv-text);
+  font-size: var(--gin-font-size-s);
+  text-decoration: none;
+  transition:
+    background-color var(--gin-transition-fast),
+    color var(--gin-transition-fast);
+
+  &:hover {
+    background: var(--yv-chip);
+    color: var(--yv-chip-text);
+  }
+
+  &[aria-current] {
+    background: var(--yv-chip);
+    color: var(--yv-chip-text);
+    font-weight: 600;
+  }
+}
+
+// The dates and the button in one row, aligned at the bottom of the fields.
+// Drupal's form classes are outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.stats-range-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--gin-spacing-s) var(--gin-spacing-m);
+
+  .form-item,
+  .form-actions {
+    margin: 0;
+  }
+
+  .form-actions .button {
+    margin: 0;
+  }
+}
+
+// stylelint-enable selector-class-pattern
+
+// KPI tiles: the label above a large value, calm as Gin's cards.
+.stats-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+// In a section, the tiles fill one grid cell, two by two.
+.stats-section .stats-tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+}
+
+.stats-tile {
+  @include card;
+
+  display: grid;
+  align-content: start;
+  gap: var(--gin-spacing-xxs);
+  padding: var(--gin-spacing-m);
+}
+
+.stats-tile-label {
+  @include section-label;
+
+  margin: 0;
+}
+
+.stats-tile-value {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-h2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+// A section: its title over a grid of cards. Wide cards span two columns,
+// tall cards two rows.
+.stats-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+// The title in ink, the note on the old graphs it replaces muted.
+.stats-section-title {
+  @include section-label;
+
+  grid-column: 1 / -1;
+  margin: var(--gin-spacing-s) 0 0;
+  color: var(--yv-ink);
+}
+
+.stats-section-note {
+  color: var(--yv-muted);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.stats-card {
+  @include card;
+  @include card-padding;
+
+  min-width: 0;
+
+  @media (min-width: $breakpoint-medium) {
+    &[data-wide] {
+      grid-column: span 2;
+    }
+
+    &[data-tall] {
+      grid-row: span 2;
+    }
+  }
+
+  &[data-full] {
+    grid-column: 1 / -1;
+  }
+
+  // Chart.js honors a max-height on the canvas when it sizes the chart.
+  canvas {
+    max-height: 20rem;
+  }
+}
+
+.stats-card-title {
+  @include section-label;
+}
+
+.stats-card-foot {
+  margin: var(--gin-spacing-s) 0 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+}
+
+.stats-card-foot-value {
+  color: var(--yv-ink);
+}

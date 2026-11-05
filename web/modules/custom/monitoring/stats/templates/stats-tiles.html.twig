@@ -1,18 +1,18 @@
 {#
 /**
  * @file
- * KPI tiles with value and label.
+ * KPI tiles, each a card with its label above the value.
  *
  * Available variables:
  * - attributes: The attributes of the wrapper.
  * - tiles: The tiles, each with key, label and value.
  */
 #}
-<div{{ attributes.addClass('stats-kpis') }}>
+<div{{ attributes.addClass('stats-tiles') }}>
   {% for tile in tiles %}
-    <div class="stats-kpi stats-kpi--{{ tile.key }}">
-      <b class="stats-kpi__value">{{ tile.value }}</b>
-      <span class="stats-kpi__label">{{ tile.label }}</span>
+    <div class="stats-tile" data-tile="{{ tile.key }}">
+      <p class="stats-tile-label">{{ tile.label }}</p>
+      <p class="stats-tile-value">{{ tile.value }}</p>
     </div>
   {% endfor %}
 </div>

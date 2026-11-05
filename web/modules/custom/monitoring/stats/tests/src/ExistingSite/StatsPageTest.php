@@ -39,7 +39,7 @@ class StatsPageTest extends StatsTestBase {
    * Gets the text of a KPI tile value.
    */
   protected function kpi(string $key): string {
-    $element = $this->assertSession()->elementExists('css', '.stats-kpi--' . $key . ' .stats-kpi__value');
+    $element = $this->assertSession()->elementExists('css', '.stats-tile[data-tile="' . $key . '"] .stats-tile-value');
     return trim($element->getText());
   }
 
@@ -119,6 +119,11 @@ class StatsPageTest extends StatsTestBase {
     foreach (['stats-flow', 'stats-funnel', 'stats-stages'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
+    // The card labels the chart, which draws no title of its own.
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-flow-title"] > h3#stats-flow-title', 'Project flow');
+    $chart = $this->assertSession()->elementExists('css', '#stats-flow');
+    $this->assertSame([], json_decode($chart->getAttribute('data-chart'), TRUE)['options']['plugins']['title']);
+
     // The tables are hidden for screen readers, without a button to show them.
     $this->assertSession()->elementNotExists('css', '.charts-accordion-trigger');
     $html = $this->getSession()->getPage()->getContent();
@@ -254,8 +259,8 @@ class StatsPageTest extends StatsTestBase {
     foreach (['stats-feedback-creative', 'stats-feedback-organization'] as $id) {
       $this->assertSession()->elementExists('css', '#' . $id);
     }
-    $this->assertSession()->elementExists('css', '.stats-kpi--academy-enrolled .stats-kpi__value');
-    $this->assertSession()->elementExists('css', '.stats-kpi--academy-completed .stats-kpi__value');
+    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-enrolled"] .stats-tile-value');
+    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="academy-completed"] .stats-tile-value');
   }
 
 }

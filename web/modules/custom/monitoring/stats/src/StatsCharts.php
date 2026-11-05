@@ -37,6 +37,8 @@ class StatsCharts {
   /**
    * Wraps a chart in a card of the stats grid.
    *
+   * The card shows the chart's title as its label, so the chart draws none.
+   *
    * @param array<string, mixed> $chart
    *   The chart render element.
    * @param bool $wide
@@ -50,22 +52,35 @@ class StatsCharts {
    *   The card render array.
    */
   public static function card(array $chart, bool $wide = FALSE, bool $tall = FALSE, bool $full = FALSE): array {
-    $classes = ['stats-card'];
+    $title_id = $chart['#id'] . '-title';
+    $attributes = [
+      'class' => ['stats-card'],
+      'aria-labelledby' => $title_id,
+    ];
     if ($wide) {
-      $classes[] = 'stats-card--wide';
+      $attributes['data-wide'] = '';
     }
     if ($full) {
-      $classes[] = 'stats-card--full';
+      $attributes['data-full'] = '';
     }
     if ($tall) {
-      $classes[] = 'stats-card--tall';
+      $attributes['data-tall'] = '';
       // A square chart keeps room for the plot under a long legend on narrow
       // screens; the CSS max-height caps it on wide ones.
       $chart['#raw_options']['options']['aspectRatio'] = 1;
     }
+    $title = $chart['#title'];
+    $chart['#title'] = '';
     return [
-      '#type' => 'container',
-      '#attributes' => ['class' => $classes],
+      '#type' => 'html_tag',
+      '#tag' => 'section',
+      '#attributes' => $attributes,
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#value' => $title,
+        '#attributes' => ['id' => $title_id, 'class' => ['stats-card-title']],
+      ],
       'chart' => $chart,
     ];
   }
