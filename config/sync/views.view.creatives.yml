@@ -1071,16 +1071,7 @@ display:
       relationships: {  }
       use_ajax: false
       show_admin_links: false
-      header:
-        creatives_mode_toggle:
-          id: creatives_mode_toggle
-          table: views
-          field: creatives_mode_toggle
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: creatives_mode_toggle
-          empty: true
+      header: {  }
       footer: {  }
       display_extenders: {  }
   page:

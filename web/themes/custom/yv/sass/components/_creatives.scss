@@ -6,10 +6,13 @@
 // The switch between the table and the profiles: two flat buttons in one
 // outlined pill, as the buttons of the manager panes. The current mode has the
 // tone of a chip.
+// In the filter form it ends the row of the main filters, on the right and
+// level with the fields.
 .creatives-mode-toggle {
   display: inline-flex;
+  align-self: flex-end;
   gap: var(--gin-spacing-xxs);
-  margin: 0 0 var(--gin-spacing-m);
+  margin: 0 0 0 auto;
   padding: var(--gin-spacing-xxs);
   border-radius: var(--gin-border-m);
   background: var(--yv-surface);

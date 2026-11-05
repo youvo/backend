@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -27,8 +28,8 @@ class CreativesViewsHooks {
   /**
    * Implements hook_views_data_alter().
    *
-   * Adds the filters and the mode toggle of the creatives finder. Their
-   * boolean filters offer "Yes" and "No". The preferences of a creative who
+   * Adds the filters of the creatives finder. Their boolean filters offer
+   * "Yes" and "No". The preferences of a creative who
    * never set them count as "No": their filters accept a missing value as
    * false.
    */
@@ -71,11 +72,6 @@ class CreativesViewsHooks {
       'real field' => 'uid',
       'filter' => ['id' => 'creative_has_link', 'real field' => 'uid', 'type' => 'yes-no'],
     ];
-    $data['views']['creatives_mode_toggle'] = [
-      'title' => $this->t('Creatives: Mode toggle'),
-      'help' => $this->t('Links the table and the profiles mode of the creatives finder.'),
-      'area' => ['id' => 'creatives_mode_toggle'],
-    ];
   }
 
   /**
@@ -114,10 +110,10 @@ class CreativesViewsHooks {
   /**
    * Implements hook_form_FORM_ID_alter() for views_exposed_form.
    *
-   * Keeps the main filters and the buttons in one row and moves the
-   * other filters into two groups, which open when one of their filters is
-   * set. The operators get short labels, the skills become checkboxes with
-   * the skill icons.
+   * Keeps the main filters, the buttons and the switch between the table and
+   * the profiles in one row and moves the other filters into two groups,
+   * which open when one of their filters is set. The operators get short
+   * labels, the skills become checkboxes with the skill icons.
    * Filtering and resetting in the profiles mode stays in it.
    */
   #[Hook('form_views_exposed_form_alter')]
@@ -258,6 +254,31 @@ class CreativesViewsHooks {
       $form['mode'] = ['#type' => 'hidden', '#value' => 'profiles'];
       $form['#submit'][] = [static::class, 'resetToProfiles'];
     }
+
+    // The switch between the table and the profiles ends the row of the main
+    // filters. Its links keep the filters and the sort, and drop the page,
+    // because the modes show a different number of creatives per page.
+    $query = $this->requestStack->getCurrentRequest()?->query->all() ?? [];
+    unset($query['page'], $query['mode']);
+    $profiles = $this->isProfilesMode();
+    $links = [];
+    foreach ([
+      'table' => [$this->t('Table'), $query, !$profiles],
+      'profiles' => [$this->t('Profiles'), ['mode' => 'profiles'] + $query, $profiles],
+    ] as $key => [$title, $link_query, $active]) {
+      $links[$key] = [
+        'title' => $title,
+        'url' => Url::fromRoute('<current>', [], ['query' => $link_query]),
+        'attributes' => $active ? ['aria-current' => 'page', 'class' => ['is-active']] : [],
+      ];
+    }
+    $form['mode_toggle'] = [
+      '#theme' => 'links',
+      '#links' => $links,
+      '#attributes' => ['class' => ['creatives-mode-toggle']],
+      '#weight' => 55,
+      '#cache' => ['contexts' => ['url.query_args']],
+    ];
   }
 
   /**
