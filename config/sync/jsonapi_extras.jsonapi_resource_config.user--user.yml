@@ -54,7 +54,7 @@ resourceFields:
     enhancer:
       id: ''
   pass:
-    disabled: false
+    disabled: true
     fieldName: pass
     publicName: pass
     enhancer:

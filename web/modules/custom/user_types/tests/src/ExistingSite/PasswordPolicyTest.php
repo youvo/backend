@@ -47,6 +47,32 @@ class PasswordPolicyTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that JSON:API cannot change a password past the policies.
+   *
+   * The password policies check forms and the password endpoint only, so
+   * JSON:API may not edit the password field.
+   */
+  public function testJsonapiCannotChangePassword(): void {
+
+    $creative = $this->createCreative();
+
+    $request = Request::create('/api/users/' . $creative->uuid(), 'PATCH', [], [], [], [], Json::encode([
+      'data' => [
+        'type' => 'user--user',
+        'id' => $creative->uuid(),
+        'attributes' => ['pass' => ['value' => static::SHORT, 'existing' => 'password']],
+      ],
+    ]));
+    $request->headers->set('Content-Type', 'application/vnd.api+json');
+    $request->headers->set('Accept', 'application/vnd.api+json');
+    $this->authenticateRequest($request, $creative);
+    $response = $this->doRequest($request);
+
+    $this->assertSame(403, $response->getStatusCode());
+    $this->assertTrue($this->checkPassword($creative, 'password'));
+  }
+
+  /**
    * Tests that the registration form refuses a short password.
    */
   public function testRegisterRefusesShortPassword(): void {
