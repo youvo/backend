@@ -5,8 +5,10 @@ namespace Drupal\mailer\Door;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
+use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\HubUrls;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
@@ -75,6 +77,64 @@ class DoorLinks {
   public function allowsLogin(UserInterface $recipient, int $timestamp): bool {
     return $timestamp >= (int) $recipient->getLastLoginTime()
       && !$recipient->hasPermission('access site');
+  }
+
+  /**
+   * Decides what a door does for its recipient and the visitor.
+   *
+   * The caller checks the signature first. The visitor is NULL when nobody is
+   * signed in.
+   */
+  public function verdict(UserInterface $recipient, ProjectInterface $project, DoorTarget $target, int $timestamp, ?AccountInterface $visitor): DoorVerdict {
+
+    // The anonymous user is blocked too, so it is checked first.
+    $rejected = match (TRUE) {
+      $recipient->isAnonymous() => 'Kein Konto',
+      $recipient->isBlocked() => 'Konto gesperrt',
+      default => NULL,
+    };
+    if ($rejected !== NULL) {
+      return new DoorVerdict($rejected, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE);
+    }
+
+    $now = $this->time->getRequestTime();
+    $expired = $timestamp > $now || $now - $timestamp > static::LIFETIME;
+
+    // The owner of the project, or a creative of a project for feedback.
+    $belongs = (int) $project->getOwnerId() === (int) $recipient->id()
+      || ($target === DoorTarget::Feedback
+        && $recipient instanceof Creative
+        && array_key_exists((int) $recipient->id(), $project->getParticipants('Creative')));
+
+    $staff = $recipient->hasPermission('access site');
+    $signed_in = $visitor !== NULL && $visitor->isAuthenticated();
+    $other_signed_in = $signed_in && (int) $visitor->id() !== (int) $recipient->id();
+
+    $login = !$expired
+      && $belongs
+      && !$signed_in
+      && $target->logsIn()
+      && $this->allowsLogin($recipient, $timestamp);
+
+    // A prospect has no password. It is logged in only after it set one on a
+    // door to its draft, never by the plain button.
+    $prospect = $recipient instanceof Organization && $recipient->hasRoleProspect();
+    $password = $login
+      && $prospect
+      && $target === DoorTarget::Draft
+      && $project->lifecycle()->isDraft();
+    $login = $login && !$prospect;
+
+    // Without the password form the draft door of a prospect is spent, so it
+    // leads to the hub login.
+    $spent = $prospect && $target === DoorTarget::Draft && !$password;
+
+    $follow = !$expired
+      && $belongs
+      && !$staff
+      && !$other_signed_in;
+
+    return new DoorVerdict(NULL, $expired, $belongs, $staff, $prospect, $login, $password, $spent, $follow, $other_signed_in);
   }
 
   /**

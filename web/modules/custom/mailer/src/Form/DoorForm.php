@@ -12,10 +12,8 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\correspondence\CorrespondenceInterface;
-use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\Door\DoorLinks;
 use Drupal\mailer\Door\DoorTarget;
-use Drupal\organizations\Entity\Organization;
 use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
@@ -100,7 +98,7 @@ class DoorForm extends FormBase {
 
     // An unknown door or a door with an invalid signature reveals nothing.
     $recipient = $this->entityTypeManager->getStorage('user')->load($uid);
-    if (!$recipient instanceof UserInterface || $recipient->isAnonymous() || $recipient->isBlocked()) {
+    if (!$recipient instanceof UserInterface) {
       throw new AccessDeniedHttpException();
     }
     $door_target = DoorTarget::tryFrom($target);
@@ -120,41 +118,11 @@ class DoorForm extends FormBase {
       throw new AccessDeniedHttpException();
     }
 
-    // The signature holds, so a failing check is the age of the door.
-    $expired = !$this->doorLinks->isValid($recipient, $correspondence, $door_target, $subject, $timestamp, $hash);
-
-    // The owner of the project, or a creative of a project for feedback.
-    $belongs = (int) $project->getOwnerId() === (int) $recipient->id()
-      || ($door_target === DoorTarget::Feedback
-        && $recipient instanceof Creative
-        && array_key_exists((int) $recipient->id(), $project->getParticipants('Creative')));
-
-    $signed_in = $this->currentUser->isAuthenticated();
-    $other_signed_in = $signed_in && (int) $this->currentUser->id() !== (int) $recipient->id();
-
-    $login = !$expired
-      && $belongs
-      && !$signed_in
-      && $door_target->logsIn()
-      && $this->doorLinks->allowsLogin($recipient, $timestamp);
-
-    // A prospect has no password. It is logged in only after it set one on a
-    // door to its draft, never by the plain button.
-    $prospect = $recipient instanceof Organization && $recipient->hasRoleProspect();
-    $password = $login
-      && $prospect
-      && $door_target === DoorTarget::Draft
-      && $project->lifecycle()->isDraft();
-    $login = $login && !$prospect;
-
-    // Without the password form the draft door of a prospect is spent, so it
-    // leads to the hub login.
-    $spent = $prospect && $door_target === DoorTarget::Draft && !$password;
-
-    $follow = !$expired
-      && $belongs
-      && !$recipient->hasPermission('access site')
-      && !$other_signed_in;
+    // The signature holds, so the verdict decides from the age of the door.
+    $verdict = $this->doorLinks->verdict($recipient, $project, $door_target, $timestamp, $this->currentUser->isAuthenticated() ? $this->currentUser : NULL);
+    if ($verdict->rejected !== NULL) {
+      throw new AccessDeniedHttpException();
+    }
 
     $form_state->set('door', [
       'recipient' => $recipient,
@@ -162,33 +130,33 @@ class DoorForm extends FormBase {
       'entry' => $entry,
       'target' => $door_target,
       'subject' => $subject,
-      'login' => $login,
-      'password' => $password,
-      'spent' => $spent,
-      'follow' => $follow,
+      'login' => $verdict->login,
+      'password' => $verdict->password,
+      'spent' => $verdict->spent,
+      'follow' => $verdict->follow,
     ]);
 
     $heading = $door_target->heading();
-    if ($password) {
+    if ($verdict->password) {
       $heading = $this->t('Willkommen bei youvo');
     }
-    elseif ($spent && !$other_signed_in) {
+    elseif ($verdict->spent && !$verdict->otherSignedIn) {
       $heading = $this->t('Der Link ist abgelaufen');
     }
 
     $note = '';
-    if ($login) {
+    if ($verdict->login) {
       $note = $this->t('Ihr werdet dabei angemeldet.');
     }
-    elseif ($password) {
+    elseif ($verdict->password) {
       $note = $this->t('Legt ein Passwort für euer Konto fest. Ihr werdet dabei angemeldet.');
     }
-    elseif ($other_signed_in) {
+    elseif ($verdict->otherSignedIn) {
       $note = $this->t('Ihr seid als %name angemeldet. Der Link wurde für ein anderes Konto verschickt.', [
         '%name' => $this->currentUser->getDisplayName(),
       ]);
     }
-    elseif ($spent) {
+    elseif ($verdict->spent) {
       $note = $this->t('Meldet euch bei youvo an. Für einen neuen Link schreibt eurem Ansprechpartner bei youvo.');
     }
 
@@ -198,7 +166,7 @@ class DoorForm extends FormBase {
     $form['#note'] = $note;
     $form['#cache']['max-age'] = 0;
 
-    if ($password) {
+    if ($verdict->password) {
       $form['password'] = [
         '#type' => 'password_confirm',
         '#required' => TRUE,
@@ -210,7 +178,7 @@ class DoorForm extends FormBase {
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $password ? $this->t('Passwort speichern und weiter') : $this->t('Weiter zu youvo'),
+        '#value' => $verdict->password ? $this->t('Passwort speichern und weiter') : $this->t('Weiter zu youvo'),
       ],
     ];
 
