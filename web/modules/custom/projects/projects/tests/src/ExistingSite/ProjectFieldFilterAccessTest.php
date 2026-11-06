@@ -42,6 +42,78 @@ class ProjectFieldFilterAccessTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Creatives filter by their own applications and participations only.
+   *
+   * The paths are those of the dashboard of the creatives app.
+   */
+  public function testOwnApplicationsAndParticipations(): void {
+
+    $creative = $this->createCreative();
+    $other = $this->createCreative();
+    $applied = $this->createProject(ProjectState::Open);
+    $applied->appendApplicant($creative)->appendApplicant($other)->save();
+    $other_applied = $this->createProject(ProjectState::Open);
+    $other_applied->appendApplicant($other)->save();
+    $participating = $this->createProject(ProjectState::Ongoing);
+    $participating->appendParticipant($creative)->save();
+    $other_participating = $this->createProject(ProjectState::Ongoing);
+    $other_participating->appendParticipant($other)->save();
+    $created = [
+      $applied->uuid(),
+      $other_applied->uuid(),
+      $participating->uuid(),
+      $other_participating->uuid(),
+    ];
+
+    $dashboard = fn (string $name, string $path, string $uuid, string $lifecycle) => '/api/projects?' . http_build_query([
+      'include' => 'image,organization',
+      'filter' => [
+        $name => ['condition' => ['path' => $path, 'value' => $uuid]],
+        'lifecycle' => ['condition' => ['path' => 'lifecycle', 'value' => $lifecycle]],
+      ],
+      'sort' => ['creation' => ['path' => 'created', 'direction' => 'ASC']],
+    ]);
+    $applications = $dashboard('applicant', 'applicants.id', $creative->uuid(), 'open');
+    $participations = $dashboard('participant', 'participants.id', $creative->uuid(), 'ongoing');
+
+    // The creative gets their own projects and none of the other creative.
+    $applied_ids = array_intersect($this->ids($this->get($applications, $creative)), $created);
+    $this->assertSame([$applied->uuid()], array_values($applied_ids));
+    $participating_ids = array_intersect($this->ids($this->get($participations, $creative)), $created);
+    $this->assertSame([$participating->uuid()], array_values($participating_ids));
+
+    // The same request of another creative is refused, also when the
+    // response of the first one is cached.
+    $this->assertSame(403, $this->get($applications, $other)->getStatusCode());
+    $this->assertSame(403, $this->get($participations, $other)->getStatusCode());
+
+    // Other operators, paths, sorts and resources are refused.
+    $refused = [
+      '/api/projects?filter[applicants.id]=' . $other->uuid(),
+      '/api/projects?filter[a][condition][path]=applicants.id&filter[a][condition][operator]=<>&filter[a][condition][value]=' . $creative->uuid(),
+      '/api/projects?filter[a][condition][path]=applicants.id&filter[a][condition][operator]=IN&filter[a][condition][value][]=' . $creative->uuid() . '&filter[a][condition][value][]=' . $other->uuid(),
+      '/api/projects?filter[a][condition][path]=participants.id&filter[a][condition][operator]=IS%20NULL',
+      '/api/projects?filter[participants.meta.drupal_internal__target_id]=' . $other->id(),
+      '/api/projects?filter[participants.name]=' . rawurlencode($other->getAccountName()),
+      '/api/projects?filter[participants.id]=' . $creative->uuid() . '&sort=applicants.id',
+      '/api/results?filter[project.participants.id]=' . $creative->uuid(),
+    ];
+    foreach ($refused as $path) {
+      $this->assertSame(403, $this->get($path, $creative)->getStatusCode(), $path);
+    }
+  }
+
+  /**
+   * Organizations do not filter by applicants or participants, not even own.
+   */
+  public function testOrganizations(): void {
+
+    $organization = $this->createOrganization();
+    $this->assertSame(403, $this->get('/api/projects?filter[applicants.id]=' . $organization->uuid(), $organization)->getStatusCode());
+    $this->assertSame(403, $this->get('/api/projects?filter[participants.id]=' . $organization->uuid(), $organization)->getStatusCode());
+  }
+
+  /**
    * Public fields stay filterable, fields for logged-in users only for them.
    */
   public function testPublicAndAuthenticatedFields(): void {
