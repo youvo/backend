@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\stats\ExistingSite;
 
+use Drupal\projects\Entity\Project;
+use Drupal\projects\ProjectState;
 use Drupal\stats\Stats\ProjectStats;
 use Drupal\stats\StatsPeriod;
 use PHPUnit\Framework\Attributes\Group;
@@ -134,6 +136,21 @@ class ProjectStatsTest extends StatsTestBase {
         }
       }
     }
+
+    // A project without history items counts in no bucket, as in the ended
+    // ones.
+    $project = Project::create([
+      'type' => 'project',
+      'uid' => $this->createOrganization($this->createManager(), '2018-01-01')->id(),
+      'title' => $this->randomMachineName(),
+      'field_lifecycle' => ProjectState::Open->value,
+    ]);
+    $project->set('field_lifecycle_history', []);
+    $project->save();
+    $this->markEntityForCleanup($project);
+    $this->markEntityForCleanup($project->getResult());
+    $this->assertSame($current['open'] + 1, $calculator->countOpenProjects());
+    $this->assertSame($states, $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp()));
   }
 
   /**

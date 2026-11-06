@@ -297,7 +297,8 @@ class ProjectStats {
   /**
    * Counts the projects per current lifecycle state.
    *
-   * It counts as StatsCalculator does.
+   * Only projects with lifecycle history items count, as in the ended
+   * buckets, so the running bucket does not jump on incomplete history.
    *
    * @return array<string, int>
    *   The counts keyed by state.
@@ -305,6 +306,11 @@ class ProjectStats {
   protected function currentStateCounts(): array {
     $query = $this->database->select('project', 'p');
     $query->join('project__field_lifecycle', 'l', 'p.id = l.entity_id');
+    $history = $this->database->select('project__field_lifecycle_history', 'h');
+    $history->innerJoin('project_field_data', 'd', 'd.id = h.entity_id AND d.langcode = h.langcode AND d.default_langcode = 1');
+    $history->addExpression('1');
+    $history->where('h.entity_id = p.id');
+    $query->exists($history);
     $query->addField('l', 'field_lifecycle_value', 'state');
     $query->addExpression('COUNT(*)', 'count');
     $query->groupBy('l.field_lifecycle_value');
