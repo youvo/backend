@@ -15,6 +15,7 @@ function stats_theme(array $existing, string $type, string $theme, string $path)
       'variables' => [
         'period_bar' => [],
         'range_form' => [],
+        'warning' => [],
         'sections' => [],
       ],
     ],

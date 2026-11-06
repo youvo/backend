@@ -72,6 +72,7 @@ class StatsController implements ContainerInjectionInterface {
       '#period_bar' => $this->periodBar($period, $now),
       // The range form belongs to custom periods only.
       '#range_form' => $period->type() === StatsPeriod::CUSTOM ? $this->formBuilder->getForm(StatsRangeForm::class, $period->from()->format('Y-m-d'), $period->to()->modify('-1 day')->format('Y-m-d'), $now->format('Y-m-d')) : [],
+      '#warning' => $this->warning($period),
       '#sections' => [
         'overview' => $this->overviewSection($period, $now),
         'projects' => $this->projectsSection($period),
@@ -95,6 +96,27 @@ class StatsController implements ContainerInjectionInterface {
         ],
         'max-age' => 3600,
       ],
+    ];
+  }
+
+  /**
+   * Builds the warning about the imprecise data of 2014 and 2015.
+   *
+   * All time covers these years too but shows no warning, as its years
+   * since 2016 dominate.
+   *
+   * @return array<string, mixed>
+   *   The status messages render array, empty for other periods.
+   */
+  protected function warning(StatsPeriod $period): array {
+    $timezone = $period->from()->getTimezone();
+    if ($period->type() === StatsPeriod::ALL || $period->from() >= new \DateTimeImmutable('2016-01-01', $timezone)) {
+      return [];
+    }
+    return [
+      '#theme' => 'status_messages',
+      '#message_list' => ['warning' => [$this->t('The data for 2014 and 2015 may be imprecise.')]],
+      '#status_headings' => ['warning' => $this->t('Warning message')],
     ];
   }
 

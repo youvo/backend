@@ -7,6 +7,8 @@
  * - period_bar: The heading, the type segments and the steps to the previous
  *   and next period, a step without url disabled.
  * - range_form: The form of a custom date range, for custom periods only.
+ * - warning: The status messages warning about the data of the period, if
+ *   any.
  * - sections: The render array of the chart sections.
  */
 #}
@@ -33,6 +35,8 @@
 
     {{ range_form }}
   </nav>
+
+  {{ warning }}
 
   {{ sections }}
 </div>

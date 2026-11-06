@@ -88,6 +88,33 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
+   * Periods overlapping 2014 or 2015 warn about their data, all time not.
+   */
+  public function testImpreciseDataWarning(): void {
+
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+    $warning = '.stats-page .messages--warning';
+    $text = 'The data for 2014 and 2015 may be imprecise.';
+    $shown = [
+      ['period' => 'year', 'year' => 2015],
+      ['period' => 'custom', 'from' => '2015-12-20', 'to' => '2016-01-10'],
+    ];
+    foreach ($shown as $query) {
+      $this->drupalGet('stats', ['query' => $query]);
+      $this->assertSession()->elementTextContains('css', $warning, $text);
+    }
+    $hidden = [
+      ['period' => 'year', 'year' => 2016],
+      ['period' => 'all'],
+    ];
+    foreach ($hidden as $query) {
+      $this->drupalGet('stats', ['query' => $query]);
+      $this->assertSession()->elementNotExists('css', $warning);
+      $this->assertSession()->pageTextNotContains($text);
+    }
+  }
+
+  /**
    * Gets the query arguments of a link.
    *
    * @return array<string, string>
