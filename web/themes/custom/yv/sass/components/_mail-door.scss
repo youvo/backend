@@ -74,6 +74,10 @@
   @include card-padding;
 
   display: grid;
+
+  // The password fields have a size, which would widen an auto column past
+  // the card on narrow screens.
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gin-spacing-s);
   color: var(--yv-text);
 
@@ -94,16 +98,10 @@
     margin-block-end: var(--gin-spacing-s);
   }
 
-  // Core hides the match message while the confirmation is empty, but keeps
-  // its space.
-  // stylelint-disable-next-line selector-class-pattern
-  .is-confirm-empty .password-match-message {
-    display: none;
-  }
-
+  // The checklist below the fields says whether the passwords match.
   // stylelint-disable-next-line selector-class-pattern
   .password-match-message {
-    margin-block-end: 0;
+    display: none;
   }
 
   // Gin styles the submit button through its ID with an ID-level
@@ -126,10 +124,20 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
 
+    // A long label wraps instead of being cut off on narrow screens.
+    white-space: normal;
+
     &:hover,
     &:focus {
       background: $color-orange-dark;
       color: $color-white;
+    }
+
+    // Held back by the checklist script until every rule is met.
+    &[aria-disabled="true"] {
+      background: $color-orange;
+      cursor: not-allowed;
+      opacity: 0.55;
     }
 
     &:focus-visible {
@@ -139,8 +147,57 @@
   }
 }
 
+// The password rules, ticked off by the script while typing. Within the door,
+// to win over Claro's `.item-list ul` indent.
+.mail-door .mail-door-rules {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: var(--gin-spacing-xs);
+    align-items: center;
+    margin: 0;
+
+    &::before {
+      content: "";
+      display: grid;
+      flex: none;
+      place-items: center;
+      box-sizing: border-box;
+      width: to-rem(16);
+      height: to-rem(16);
+      border: to-rem(2) solid currentcolor;
+      border-radius: 50%;
+      font-size: to-rem(10);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    &.is-met {
+      // Darkened to pass 4.5:1 on white.
+      color: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+
+      &::before {
+        content: "✓";
+        border-color: transparent;
+        background: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+        color: $color-white;
+      }
+    }
+  }
+}
+
 .mail-door-context {
   margin: 0;
+
+  // A project title is a name: no hyphens in it.
+  hyphens: manual;
 
   // Darkened to pass 4.5:1 on white.
   color: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);

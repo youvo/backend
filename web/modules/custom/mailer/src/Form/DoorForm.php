@@ -3,6 +3,7 @@
 namespace Drupal\mailer\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
@@ -171,8 +172,23 @@ class DoorForm extends FormBase {
         '#type' => 'password_confirm',
         '#required' => TRUE,
         '#size' => 25,
-        '#password_hint' => $this->passwordHint(),
-        '#after_build' => [[static::class, 'passwordFieldTexts']],
+        '#after_build' => [[static::class, 'germanPasswordTitles']],
+      ];
+
+      // The rules as a checklist. Without JavaScript it is a plain list; the
+      // script ticks the rules off while typing and holds the button back.
+      $rules = $this->passwordRules($recipient);
+      $form['password_rules'] = [
+        '#theme' => 'item_list',
+        '#items' => array_map(static fn (array $rule) => [
+          '#markup' => $rule['label'],
+          '#wrapper_attributes' => ['data-rule' => $rule['id']],
+        ], $rules),
+        '#attributes' => ['class' => ['mail-door-rules'], 'id' => 'mail-door-rules'],
+        '#attached' => [
+          'library' => ['mailer/door_password'],
+          'drupalSettings' => ['mailerDoorPassword' => ['rules' => $rules]],
+        ],
       ];
     }
 
@@ -266,26 +282,32 @@ class DoorForm extends FormBase {
   }
 
   /**
-   * Names the two password fields in German and adds the password rules.
+   * Names the two password fields in German, as the rest of the door.
    *
    * The site has no translations, so core's titles would stay English.
    */
-  public static function passwordFieldTexts(array $element): array {
+  public static function germanPasswordTitles(array $element): array {
     $element['pass1']['#title'] = 'Passwort';
-    $element['pass1']['#description'] = $element['#password_hint'];
     $element['pass2']['#title'] = 'Passwort wiederholen';
     return $element;
   }
 
   /**
-   * Describes the password policies of organizations.
+   * Lists the password rules of organizations for the door's checklist.
    *
-   * For example „Mindestens 10 Zeichen, ohne eure E-Mail-Adresse.“ The
-   * prospect becomes an organization with this password, see validateForm().
-   * The account name of an organization is its mail address. Rules without a
-   * German text here are left out of the hint, but are still checked.
+   * The prospect becomes an organization with this password, see
+   * validateForm(). The server still checks every rule; rules without a
+   * German text here are only left out of the list.
+   *
+   * The account name of an organization is its mail address. The page must
+   * not show it, so the script gets a salted hash and compares it with every
+   * slice of the password, case-insensitive like the policy.
+   *
+   * @return array<int, array<string, int|string>>
+   *   The rules, each with an id and a label, and the values the script
+   *   checks.
    */
-  protected function passwordHint(): string {
+  protected function passwordRules(UserInterface $recipient): array {
 
     $rules = [];
     $policies = $this->entityTypeManager->getStorage('password_policy')->loadMultiple();
@@ -295,18 +317,39 @@ class DoorForm extends FormBase {
         continue;
       }
       foreach ($policy->getConstraints() as $constraint) {
-        $rule = match ($constraint['id']) {
-          'password_length' => sprintf('%s %d Zeichen', $constraint['character_operation'] === 'minimum' ? 'mindestens' : 'höchstens', $constraint['character_length']),
-          'password_username' => 'ohne eure E-Mail-Adresse',
-          default => NULL,
-        };
-        if ($rule !== NULL) {
-          $rules[$rule] = $rule;
+        $length = (int) ($constraint['character_length'] ?? 0);
+        if ($constraint['id'] === 'password_length' && $constraint['character_operation'] === 'minimum') {
+          $min = max($length, $rules['length_min']['min'] ?? 0);
+          $rules['length_min'] = [
+            'id' => 'length_min',
+            'label' => sprintf('Mindestens %d Zeichen', $min),
+            'min' => $min,
+          ];
+        }
+        elseif ($constraint['id'] === 'password_length' && $constraint['character_operation'] === 'maximum') {
+          $max = min($length, $rules['length_max']['max'] ?? PHP_INT_MAX);
+          $rules['length_max'] = [
+            'id' => 'length_max',
+            'label' => sprintf('Höchstens %d Zeichen', $max),
+            'max' => $max,
+          ];
+        }
+        elseif ($constraint['id'] === 'password_username' && !empty($constraint['disallow_username'])) {
+          $name = mb_strtolower($recipient->getAccountName());
+          $salt = Crypt::randomBytesBase64(16);
+          $rules['username'] = [
+            'id' => 'username',
+            'label' => 'Ohne eure E-Mail-Adresse',
+            'salt' => $salt,
+            'hash' => hash('sha256', $salt . $name),
+            'length' => mb_strlen($name),
+          ];
         }
       }
     }
+    $rules['match'] = ['id' => 'match', 'label' => 'Beide Passwörter stimmen überein'];
 
-    return $rules ? ucfirst(implode(', ', $rules)) . '.' : '';
+    return array_values($rules);
   }
 
   /**

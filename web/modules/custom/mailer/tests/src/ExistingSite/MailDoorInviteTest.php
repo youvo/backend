@@ -323,7 +323,10 @@ class MailDoorInviteTest extends ExistingSiteBase {
 
     $project = $this->createProject();
     $this->visitDoor($this->door($project));
-    $this->assertSession()->pageTextContains('Mindestens 10 Zeichen, ohne eure E-Mail-Adresse.');
+    $this->assertSession()->elementTextContains('css', '.mail-door-rules', 'Mindestens 10 Zeichen');
+    $this->assertSession()->elementTextContains('css', '.mail-door-rules', 'Ohne eure E-Mail-Adresse');
+    // The script gets the account name only as a salted hash.
+    $this->assertSession()->responseNotContains($project->getOwner()->getAccountName());
     $this->submitPassword('Kurz-1');
 
     $this->assertSession()->statusCodeEquals(200);
