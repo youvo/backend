@@ -259,6 +259,23 @@ class DoorLinkFormTest extends ExistingSiteBase {
   }
 
   /**
+   * Asserts that the last response leads to the hub login with a target path.
+   *
+   * After a login core appends check_logged_in to the redirect.
+   */
+  protected function assertHubLogin(string $path, bool $logged_in): void {
+    $location = (string) $this->location();
+    $this->assertSame($this->container->get(DoorLinks::class)->loginUrl(), strtok($location, '?'));
+    $this->assertSame(1, substr_count($location, 'redirect='));
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+    $expected = ['redirect' => $path];
+    if ($logged_in) {
+      $expected['check_logged_in'] = '1';
+    }
+    $this->assertSame($expected, $query);
+  }
+
+  /**
    * Tests that only administrators reach the form.
    */
   public function testAccess(): void {
@@ -312,8 +329,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
 
     $this->pressLoggedOut($url);
 
-    // Core marks the first redirect after a login.
-    $this->assertSame($this->container->get(DoorLinks::class)->loginUrl() . '?check_logged_in=1', $this->location());
+    $this->assertHubLogin('/projects/' . $project->uuid(), TRUE);
     $this->assertGreaterThan(0, $this->lastLogin($owner));
     $this->assertCount(1, $this->follows($project));
   }

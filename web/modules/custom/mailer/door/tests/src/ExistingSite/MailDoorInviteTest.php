@@ -268,6 +268,23 @@ class MailDoorInviteTest extends ExistingSiteBase {
   }
 
   /**
+   * Asserts that the last response leads to the hub login with a target path.
+   *
+   * After a login core appends check_logged_in to the redirect.
+   */
+  protected function assertHubLogin(string $path, bool $logged_in): void {
+    $location = (string) $this->getSession()->getResponseHeader('Location');
+    $this->assertSame($this->doorLinks()->loginUrl(), strtok($location, '?'));
+    $this->assertSame(1, substr_count($location, 'redirect='));
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+    $expected = ['redirect' => $path];
+    if ($logged_in) {
+      $expected['check_logged_in'] = '1';
+    }
+    $this->assertSame($expected, $query);
+  }
+
+  /**
    * Tests that the prospect sets a password, is promoted and follows.
    */
   public function testProspectSetsPasswordAndFollows(): void {
@@ -293,8 +310,7 @@ class MailDoorInviteTest extends ExistingSiteBase {
     $this->assertCount(1, $follows);
     $this->assertSame('draft', $follows[0]->getMisc()['target']);
     $this->assertSame((int) $organization->id(), (int) $follows[0]->getOwnerId());
-    // Core marks the first redirect after a login.
-    $this->assertSame($this->doorLinks()->loginUrl() . '?check_logged_in=1', $this->getSession()->getResponseHeader('Location'));
+    $this->assertHubLogin('/draft/' . $project->uuid(), TRUE);
 
     // The new password spends the door.
     $this->getSession()->reset();
@@ -374,7 +390,7 @@ class MailDoorInviteTest extends ExistingSiteBase {
     $this->assertSession()->pageTextContains('Der Link ist abgelaufen');
     $this->getSession()->getPage()->pressButton('Weiter zu youvo');
 
-    $this->assertSame($this->doorLinks()->loginUrl(), $this->getSession()->getResponseHeader('Location'));
+    $this->assertHubLogin('/draft/' . $project->uuid(), FALSE);
     $this->assertUntouched($project);
   }
 
@@ -407,7 +423,7 @@ class MailDoorInviteTest extends ExistingSiteBase {
     $project->set('field_lifecycle', ProjectState::Declined->value)->save();
     $this->submitPassword(static::PASSWORD);
 
-    $this->assertSame($this->doorLinks()->loginUrl(), $this->getSession()->getResponseHeader('Location'));
+    $this->assertHubLogin('/projects/' . $project->uuid(), FALSE);
     $this->assertUntouched($project, 1);
   }
 

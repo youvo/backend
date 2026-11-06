@@ -298,6 +298,60 @@ class DoorLinksTest extends UnitTestCase {
   }
 
   /**
+   * A hub target goes to the login as its path, any other target is dropped.
+   */
+  public function testLoginUrlCarriesHubPath(): void {
+
+    $links = $this->links();
+    $url = $links->loginUrl('https://hub.example.org/projects/abc');
+    $this->assertSame('/projects/abc', $this->redirectOf($url, 'https://hub.example.org/auth/login'));
+    $this->assertSame('/draft/abc?tab=1', $this->redirectOf($links->loginUrl('https://hub.example.org/draft/abc?tab=1#top'), 'https://hub.example.org/auth/login'));
+    $this->assertSame('/', $this->redirectOf($links->loginUrl('https://hub.example.org'), 'https://hub.example.org/auth/login'));
+
+    // Website targets, look-alike hosts, other schemes and no target.
+    foreach ([
+      NULL,
+      'https://youvo.example.org/feedback/organization/abc',
+      'https://hub.example.org.evil.example/projects/abc',
+      'https://hub.example.orgx/projects/abc',
+      'http://hub.example.org/projects/abc',
+      'https://hub.example.org@evil.example/projects/abc',
+      'https://hub.example.org//evil.example/projects',
+    ] as $target) {
+      $this->assertSame('https://hub.example.org/auth/login', $links->loginUrl($target), (string) $target);
+    }
+
+    // The local hub, and a look-alike port.
+    $local = $this->links(TRUE);
+    $this->assertSame('/users/abc', $this->redirectOf($local->loginUrl('http://localhost:3000/users/abc'), 'http://localhost:3000/auth/login'));
+    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl('http://localhost:30000/users/abc'));
+
+    // A hub base with a path keeps it in the redirect path.
+    $nested = $this->links(hub_url: 'https://example.org/hub/');
+    $this->assertSame('/hub/projects/abc', $this->redirectOf($nested->loginUrl('https://example.org/hub/projects/abc'), 'https://example.org/hub/auth/login'));
+    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl('https://example.org/hubx/projects/abc'));
+    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl('https://example.org/projects/abc'));
+
+    // A query of the login is kept.
+    $query = $this->links(login: '/auth/login?source=door');
+    $url = $query->loginUrl('https://hub.example.org/projects/abc');
+    $this->assertSame('/projects/abc', $this->redirectOf($url, 'https://hub.example.org/auth/login'));
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $parameters);
+    $this->assertSame('door', $parameters['source']);
+  }
+
+  /**
+   * Gets the redirect path of a login URL and checks the rest of it.
+   */
+  protected function redirectOf(string $url, string $login): string {
+    $this->assertSame($login, strtok($url, '?'));
+    $this->assertSame(1, substr_count($url, 'redirect='));
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $parameters);
+    $this->assertIsString($parameters['redirect']);
+    return $parameters['redirect'];
+  }
+
+  /**
    * Gets the token of a door URL.
    */
   protected function token(string $url): string {
@@ -332,15 +386,15 @@ class DoorLinksTest extends UnitTestCase {
   /**
    * Creates the door links service with stubbed config and clock.
    */
-  protected function links(bool $local = FALSE): DoorLinks {
+  protected function links(bool $local = FALSE, string $hub_url = 'https://hub.example.org/', string $login = '/auth/login'): DoorLinks {
     $config_factory = $this->getConfigFactoryStub([
       'youvo.settings' => [
-        'hub_url' => 'https://hub.example.org/',
+        'hub_url' => $hub_url,
         'website_url' => 'https://youvo.example.org/',
       ],
       'oauth_grant.settings' => [
         'local' => $local,
-        'auth_success_redirect' => '/auth/login',
+        'auth_success_redirect' => $login,
       ],
     ]);
     $time = $this->createMock(TimeInterface::class);

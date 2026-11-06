@@ -251,6 +251,23 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Asserts that the last response leads to the hub login with a target path.
+   *
+   * After a login core appends check_logged_in to the redirect.
+   */
+  protected function assertHubLogin(string $path, bool $logged_in): void {
+    $location = (string) $this->location();
+    $this->assertSame($this->doorLinks()->loginUrl(), strtok($location, '?'));
+    $this->assertSame(1, substr_count($location, 'redirect='));
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+    $expected = ['redirect' => $path];
+    if ($logged_in) {
+      $expected['check_logged_in'] = '1';
+    }
+    $this->assertSame($expected, $query);
+  }
+
+  /**
    * Tests that opening a door does nothing.
    */
   public function testGetDoesNothing(): void {
@@ -285,9 +302,26 @@ class MailDoorTest extends ExistingSiteBase {
     $this->assertCount(1, $follows);
     $this->assertSame('applicants', $follows[0]->getMisc()['target']);
     $this->assertSame((int) $organization->id(), (int) $follows[0]->getOwnerId());
-    // Core marks the first redirect after a login.
-    $this->assertSame($this->doorLinks()->loginUrl() . '?check_logged_in=1', $this->location());
+    $this->assertHubLogin('/projects/' . $project->uuid(), TRUE);
     $this->assertGreaterThan(0, $this->lastLogin($organization));
+  }
+
+  /**
+   * Tests that a spent draft door of a prospect leads to the hub login.
+   */
+  public function testSpentProspectDraftDoor(): void {
+
+    $project = $this->createProject(ProjectState::Pending);
+    $organization = $project->getOwner();
+    $organization->removeRole('organization');
+    $organization->addRole(Organization::ROLE_PROSPECT);
+    $organization->save();
+    $path = $this->door($organization, $project, DoorTarget::Draft);
+
+    $this->pressDoor($path);
+
+    $this->assertHubLogin('/projects/' . $project->uuid(), FALSE);
+    $this->assertSame(0, $this->lastLogin($organization));
   }
 
   /**
@@ -528,7 +562,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->follows($project));
     $this->assertGreaterThan(0, $this->lastLogin($organization));
-    $this->assertSame($this->doorLinks()->loginUrl() . '?check_logged_in=1', $this->location());
+    $this->assertHubLogin('/projects/' . $project->uuid(), TRUE);
   }
 
   /**

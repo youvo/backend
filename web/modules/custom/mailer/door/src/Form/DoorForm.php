@@ -257,19 +257,22 @@ class DoorForm extends FormBase {
       }
     }
 
+    // The hub login opens the target after signing in.
+    $target_url = $this->doorLinks->targetUrl($target, $project, $recipient, $door['subject']);
+
     // The password form was checked to be posted from this site.
     if ($door['password'] || ($door['login'] && $this->isSameSiteRequest())) {
       user_login_finalize($recipient);
-      $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl()));
+      $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl($target_url)));
       return;
     }
 
     if ($door['spent']) {
-      $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl()));
+      $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->loginUrl($target_url)));
       return;
     }
 
-    $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->targetUrl($target, $project, $recipient, $door['subject'])));
+    $form_state->setResponse(new TrustedRedirectResponse($target_url));
   }
 
   /**

@@ -308,10 +308,61 @@ class DoorLinks {
   }
 
   /**
-   * Gets the hub page to open after a door logged the recipient in.
+   * Gets the hub login to open after a door logged the recipient in.
+   *
+   * A target on the hub is passed as the redirect path of the login, so the
+   * hub opens it after signing in. Only the path goes along: the hub resolves
+   * it against its own host, so the login redirects nowhere else. Any other
+   * target is left out, and the hub opens its start page.
    */
-  public function loginUrl(): string {
-    return $this->hubUrls->base() . $this->configFactory->get('oauth_grant.settings')->get('auth_success_redirect');
+  public function loginUrl(?string $target = NULL): string {
+
+    $url = $this->hubUrls->base() . $this->configFactory->get('oauth_grant.settings')->get('auth_success_redirect');
+    $path = $target !== NULL ? $this->hubPath($target) : NULL;
+    if ($path === NULL) {
+      return $url;
+    }
+
+    $fragment = '';
+    if (str_contains($url, '#')) {
+      [$url, $fragment] = explode('#', $url, 2);
+      $fragment = '#' . $fragment;
+    }
+    $query = http_build_query(['redirect' => $path], '', '&', PHP_QUERY_RFC3986);
+    return $url . (str_contains($url, '?') ? '&' : '?') . $query . $fragment;
+  }
+
+  /**
+   * Gets the path and query of a target on the hub.
+   *
+   * @return string|null
+   *   The path with its query, or NULL when the target is not on the hub.
+   */
+  protected function hubPath(string $target): ?string {
+
+    // The base must end where the target's path begins, so that a look-alike
+    // host such as hub.example.org.evil or localhost:30000 does not pass.
+    $base = $this->hubUrls->base();
+    $rest = str_starts_with($target, $base) ? substr($target, strlen($base)) : NULL;
+    if ($rest === NULL || ($rest !== '' && $rest[0] !== '/')) {
+      return NULL;
+    }
+
+    // The full path, also when the hub base has a path of its own.
+    $parts = parse_url($target);
+    if ($parts === FALSE) {
+      return NULL;
+    }
+    $path = ($parts['path'] ?? '') === '' ? '/' : $parts['path'];
+    if (isset($parts['query']) && $parts['query'] !== '') {
+      $path .= '?' . $parts['query'];
+    }
+
+    // A path starting with two slashes would name another host.
+    if (str_starts_with($path, '//') || str_starts_with($path, '/\\')) {
+      return NULL;
+    }
+    return $path;
   }
 
   /**

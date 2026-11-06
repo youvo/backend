@@ -25,10 +25,10 @@ flowchart TD
     press --> password{Password form?}
     password -- yes --> form[Prospect sets a password]
     form --> promote[Promote, set password, log in, follow]
-    promote --> hub[Hub page after login]
+    promote --> hub[Hub login, then the target]
     password -- no --> spent{"Other Draft door of a prospect?"}
     spent -- yes --> spentFollow[Follow if valid, belongs and nobody else signed in]
-    spentFollow --> hubLogin[Hub login page]
+    spentFollow --> hubLogin[Hub login, then the target]
     spent -- no --> expired{Expired?}
     expired -- yes --> target[Target]
     expired -- no --> belongs{Belongs to the project?}
@@ -51,8 +51,9 @@ flowchart TD
   belongs to it, nobody is signed in, the door is newer than its last login.
   A cross-site post gets an error and changes nothing.
 - **Other Draft door of a prospect**: every other `Draft` door of a prospect
-  is spent and leads to the hub login page, also when it is expired, foreign
-  or someone else is signed in. It writes the follow log only when the door
+  is spent and leads to the hub login, which opens the target after signing
+  in. This also holds when it is expired, foreign or someone else is signed
+  in. It writes the follow log only when the door
   is not expired, belongs, and nobody else is signed in.
 - **Expired**, **not on the project**, **someone else signed in**: no login
   and no follow log, the target opens.
@@ -108,15 +109,21 @@ submit.
   (owner, or a participating creative for `Feedback`), nobody is signed in,
   the target logs in, the recipient is no staff (`access site`), and the door
   is not older than the recipient's last login. So a login spends all older
-  doors of that account. Then it redirects to the hub page after login
-  (`loginUrl()`); without a login it redirects to the target.
+  doors of that account. Then it redirects to the hub login (`loginUrl()`),
+  which opens the target; without a login it redirects to the target.
 - **Prospects** never log in by the plain button. Where a door would log a
   prospect in, and it is a `Draft` door to a project still in draft, it shows
   a password form instead. The password
   is checked against the organization password policy. Pressing promotes the
   prospect to an organization, sets the password and logs it in.
 - **Spent draft doors**: any other `Draft` door of a prospect leads to the hub
-  page after login (`loginUrl()`), where the prospect signs in.
+  login (`loginUrl()`), where the prospect signs in and lands on the target.
+- **Hub login**: `loginUrl()` is the hub base plus
+  `oauth_grant.settings:auth_success_redirect`. For a target on the hub it adds
+  `redirect=<path>`, the target's path and query without scheme and host. The
+  hub keeps it in its session and opens it after the OAuth callback, resolved
+  against its own host, so it cannot redirect elsewhere. After a login core
+  appends `check_logged_in=1`.
 - **Follow log**: when the door is not expired, the project belongs to the
   recipient, and nobody else is signed in. Staff get it too, for example a
   manager who takes part in a project; they are only never logged in. It is
@@ -166,7 +173,7 @@ The yv theme styles the page: `templates/page--mailer-door.html.twig` and
 
 | File                                         | Covers                                          |
 |----------------------------------------------|-------------------------------------------------|
-| `tests/src/Unit/DoorLinksTest.php`           | token format, tampering, MAC over the uid, expiry, login rule, target URLs |
+| `tests/src/Unit/DoorLinksTest.php`           | token format, tampering, MAC over the uid, expiry, login rule, target and login URLs |
 | `tests/src/Unit/HubUrlsTest.php`             | hub links                                       |
 | `tests/src/ExistingSite/MailDoorTest.php`    | the door page: login, follow, rejections, same-site checks, feedback |
 | `tests/src/ExistingSite/MailDoorInviteTest.php` | prospect invitation and password form        |
