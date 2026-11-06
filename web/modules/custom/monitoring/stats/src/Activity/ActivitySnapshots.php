@@ -142,6 +142,34 @@ class ActivitySnapshots {
   }
 
   /**
+   * Gets the last recorded day, Y-m-d, or NULL if none is recorded.
+   */
+  public function lastDay(): ?string {
+    return $this->state->get(static::STATE_LAST_DAY);
+  }
+
+  /**
+   * Checks whether the daily snapshots have fallen behind.
+   *
+   * Cron records yesterday once per day, so the last recorded day is at most
+   * two days ago before that day's run. A site that has snapshots, as from
+   * the legacy import, but records none is behind as well.
+   */
+  public function isBehind(): bool {
+
+    $last_day = $this->lastDay();
+    if ($last_day === NULL) {
+      return (bool) $this->database->select('stats_activity', 'a')
+        ->countQuery()
+        ->execute()
+        ->fetchField();
+    }
+
+    $now = (new \DateTimeImmutable('@' . $this->time->getRequestTime()))->setTimezone($this->timezone());
+    return $last_day < $now->modify('-2 days')->format('Y-m-d');
+  }
+
+  /**
    * Writes the row of a day and role, replacing an existing one.
    *
    * @param string $day

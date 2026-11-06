@@ -97,6 +97,25 @@ class ActivitySnapshotsTest extends StatsTestBase {
   }
 
   /**
+   * Tests that snapshots older than two days are behind.
+   */
+  public function testIsBehind(): void {
+
+    $state = $this->container->get('state');
+    $now = (new \DateTimeImmutable('@' . $this->container->get('datetime.time')->getRequestTime()))->setTimezone($this->timezone());
+    $state->set(static::STATE_KEY, $now->modify('-2 days')->format('Y-m-d'));
+    $this->assertFalse($this->snapshots->isBehind());
+    $state->set(static::STATE_KEY, $now->modify('-3 days')->format('Y-m-d'));
+    $this->assertTrue($this->snapshots->isBehind());
+
+    // Without a recorded day, rows mean that cron has never recorded one.
+    $this->touchDay('2018-01-15');
+    $this->snapshots->write('2018-01-15', 'creative', array_combine(ActivitySnapshots::COLUMNS, [1, 1, 1, 1, 1]));
+    $state->delete(static::STATE_KEY);
+    $this->assertTrue($this->snapshots->isBehind());
+  }
+
+  /**
    * Tests the active users per bucket of each granularity.
    */
   public function testSeries(): void {
