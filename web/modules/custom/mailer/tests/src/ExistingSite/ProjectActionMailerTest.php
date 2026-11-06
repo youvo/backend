@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\mailer\ExistingSite;
 
+use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\Mailer\ProjectActionMailerInterface;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectInviteEvent;
@@ -107,10 +108,10 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
 
     $entry = $this->loadEntriesBySubtype($project)['mailer.project_action.notify_organization'][0];
     $html = $this->interceptedMails[0]['html'];
-    $this->assertStringContainsString('/door/' . $project->getOwner()->id() . '/' . $entry->uuid() . '/draft/', $html);
+    $this->assertDoor($html, $project->getOwner()->id(), $entry->uuid(), DoorTarget::Draft);
     $body = $entry->get('body')->value;
     $this->assertStringContainsString('[Link entfernt]', $body);
-    $this->assertStringNotContainsString('/door/', $body);
+    $this->assertStringNotContainsString('/go/', $body);
   }
 
   /**
@@ -124,15 +125,14 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
 
     $entries = $this->loadEntriesBySubtype($project);
     $to_organization = $entries['mailer.project_action.apply_organization'][0];
-    $door = '#/door/' . $project->getOwner()->id() . '/' . $to_organization->uuid() . '/applicant/\\d+/[^/"]+/' . $creative->uuid() . '"#';
     $this->assertSame([$project->getOwner()->getEmail()], $this->interceptedMails[0]['to']);
-    $this->assertMatchesRegularExpression($door, $this->interceptedMails[0]['html']);
+    $this->assertDoor($this->interceptedMails[0]['html'], $project->getOwner()->id(), $to_organization->uuid(), DoorTarget::Applicant, $creative->uuid());
     $body = $to_organization->get('body')->value;
     $this->assertStringContainsString('[Link entfernt]', $body);
-    $this->assertStringNotContainsString('/door/', $body);
+    $this->assertStringNotContainsString('/go/', $body);
 
     $this->assertSame([$creative->getEmail()], $this->interceptedMails[1]['to']);
-    $this->assertStringNotContainsString('/door/', $this->interceptedMails[1]['html']);
+    $this->assertStringNotContainsString('/go/', $this->interceptedMails[1]['html']);
   }
 
   /**
@@ -146,10 +146,10 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
     $entries = $this->loadEntriesBySubtype($project);
     $this->assertCount(1, $entries['mailer.project_action.invite_organization']);
     $entry = $entries['mailer.project_action.invite_organization'][0];
-    $this->assertStringContainsString('/door/' . $organization->id() . '/' . $entry->uuid() . '/draft/', $this->interceptedMails[0]['html']);
+    $this->assertDoor($this->interceptedMails[0]['html'], $organization->id(), $entry->uuid(), DoorTarget::Draft);
     $this->assertStringContainsString('30 Tage', $this->interceptedMails[0]['html']);
     $body = $entry->get('body')->value;
-    $this->assertStringNotContainsString('/door/', $body);
+    $this->assertStringNotContainsString('/go/', $body);
     $this->assertStringContainsString('[Link entfernt]', $body);
   }
 
@@ -161,16 +161,16 @@ class ProjectActionMailerTest extends MailerExistingSiteTestBase {
     $project = $this->createMailableProject(ProjectState::Draft, TRUE);
     $this->assertTrue($this->mailer()->invite($project));
     // The sent mail keeps the real door.
-    $this->assertSame(1, preg_match('#href="([^"]+/door/[^"]+)"#', $this->interceptedMails[0]['html'], $matches));
+    $this->assertSame(1, preg_match('#href="([^"]+/go/[^"]+)"#', $this->interceptedMails[0]['html'], $matches));
     $door = htmlspecialchars_decode($matches[1]);
-    $hash = explode('/', (string) parse_url($door, PHP_URL_PATH))[6];
+    $token = $this->doorTokens($door)[0];
 
     $entry = $this->loadEntriesBySubtype($project)['mailer.project_action.invite_organization'][0];
     foreach (['body' => $entry->get('body')->value, 'subject' => $entry->get('subject')->value] as $field => $stored) {
       foreach ([$door, htmlspecialchars($door), htmlspecialchars($door, ENT_QUOTES), rawurlencode($door)] as $form) {
         $this->assertStringNotContainsString($form, $stored, "The $field has the door as $form.");
       }
-      $this->assertStringNotContainsString($hash, $stored);
+      $this->assertStringNotContainsString($token, $stored);
     }
     $this->assertStringContainsString('[Link entfernt]', $entry->get('body')->value);
   }

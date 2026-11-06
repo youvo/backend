@@ -12,6 +12,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\Tests\mailer\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
 #[Group('mailer')]
 class DoorLinkFormTest extends ExistingSiteBase {
 
+  use DoorTokenTrait;
   use MailInterceptTrait;
 
   /**
@@ -209,7 +211,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $field = $this->assertSession()->fieldExists('Link');
     $this->assertSame('readonly', $field->getAttribute('readonly'));
     $url = (string) $field->getValue();
-    $this->assertStringContainsString('/door/', $url);
+    $this->assertStringContainsString('/go/', $url);
     return $url;
   }
 
@@ -307,18 +309,18 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertSame('manager', $entry->get('origin')->value);
     $this->assertSame((int) $this->admin->id(), (int) $entry->get('sender')->target_id);
     $this->assertGreaterThan(0, $entry->getOccurredTime());
-    $this->assertStringContainsString('/' . $entry->uuid() . '/applicants/', $url);
+    $token = $this->doorTokens($url)[0];
+    $this->assertDoor($url, $owner->id(), $entry->uuid(), DoorTarget::Applicants);
 
     // The URL is neither recorded nor kept in the form cache.
-    $hash = explode('/', (string) parse_url($url, PHP_URL_PATH))[6];
-    $this->assertStringNotContainsString($hash, (string) $entry->get('body')->value);
+    $this->assertStringNotContainsString($token, (string) $entry->get('body')->value);
     $cached = $this->container->get('database')->select('key_value_expire', 'k')
       ->fields('k', ['value'])
       ->condition('collection', ['form', 'form_state'], 'IN')
       ->execute()
       ->fetchCol();
     foreach ($cached as $value) {
-      $this->assertStringNotContainsString($hash, $value);
+      $this->assertStringNotContainsString($token, $value);
     }
 
     $this->pressLoggedOut($url);
@@ -446,7 +448,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $url = $this->generate($project, $owner, DoorTarget::Applicant, $creative);
 
     $this->assertSession()->pageTextContains($creative->getDisplayName() . ' hat sich nicht beworben.');
-    $this->assertStringEndsWith('/' . $creative->uuid(), $url);
+    $this->assertDoor($url, $owner->id(), NULL, DoorTarget::Applicant, $creative->uuid());
   }
 
   /**
@@ -477,8 +479,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->getSession()->getPage()->pressButton('suggestion_1');
 
     $url = $this->linkValue();
-    $this->assertStringContainsString('/applicant/', $url);
-    $this->assertStringEndsWith('/' . $first->uuid(), $url);
+    $this->assertDoor($url, $project->getOwner()->id(), NULL, DoorTarget::Applicant, $first->uuid());
   }
 
   /**

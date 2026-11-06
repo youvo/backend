@@ -13,7 +13,6 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\correspondence\CorrespondenceInterface;
 use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
 use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
@@ -80,32 +79,24 @@ class DoorForm extends FormBase {
   }
 
   /**
-   * Builds the door page from the route parameters.
+   * Builds the door page from its token.
    *
    * Runs again on submit, so the checks use the state at the time of the
    * press.
    */
-  public function buildForm(
-    array $form,
-    FormStateInterface $form_state,
-    string $uid = '',
-    string $correspondence = '',
-    string $target = '',
-    string $timestamp = '',
-    string $hash = '',
-    string $subject = '',
-  ): array {
+  public function buildForm(array $form, FormStateInterface $form_state, string $token = ''): array {
 
     // An unknown door or a door with an invalid signature reveals nothing.
-    $recipient = $this->entityTypeManager->getStorage('user')->load($uid);
+    $facts = $this->doorLinks->parse($token);
+    if ($facts === NULL) {
+      throw new AccessDeniedHttpException();
+    }
+    $recipient = $this->entityTypeManager->getStorage('user')->load($facts->uid);
     if (!$recipient instanceof UserInterface) {
       throw new AccessDeniedHttpException();
     }
-    $door_target = DoorTarget::tryFrom($target);
-    if ($door_target === NULL) {
-      throw new AccessDeniedHttpException();
-    }
-    $entry = $this->entityRepository->loadEntityByUuid('correspondence', $correspondence);
+    $door_target = $facts->target;
+    $entry = $this->entityRepository->loadEntityByUuid('correspondence', $facts->correspondence);
     if (!$entry instanceof CorrespondenceInterface || $entry->bundle() !== 'mail') {
       throw new AccessDeniedHttpException();
     }
@@ -113,10 +104,11 @@ class DoorForm extends FormBase {
     if (!$project instanceof ProjectInterface) {
       throw new AccessDeniedHttpException();
     }
-    $timestamp = (int) $timestamp;
-    if (!hash_equals($this->doorLinks->hash($recipient, $correspondence, $door_target, $subject, $timestamp), $hash)) {
+    if (!$this->doorLinks->verify($recipient, $facts)) {
       throw new AccessDeniedHttpException();
     }
+    $timestamp = $facts->timestamp;
+    $subject = $facts->subject;
 
     // The signature holds, so the verdict decides from the age of the door.
     $verdict = $this->doorLinks->verdict($recipient, $project, $door_target, $timestamp, $this->currentUser->isAuthenticated() ? $this->currentUser : NULL);

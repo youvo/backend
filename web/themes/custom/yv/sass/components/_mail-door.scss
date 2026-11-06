@@ -1,5 +1,5 @@
 // =============================================================================
-// MAIL DOOR (DoorForm, page--door.html.twig)
+// MAIL DOOR (DoorForm, page--mailer-door.html.twig)
 // =============================================================================
 // The page behind a link in a mail looks like the mail: the turquoise band
 // with the logo, one card that overlaps it, and the orange button of the
@@ -15,7 +15,7 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
 // Gin starts the page 1px down, which leaves a light line above the band.
 // Gin's rule carries an ID-level specificity hack.
 // stylelint-disable-next-line selector-max-id, selector-class-pattern
-:is(#extra-specificity-hack, .path-door) .page-wrapper.dialog-off-canvas-main-canvas {
+:is(#extra-specificity-hack, .mail-door-body) .page-wrapper.dialog-off-canvas-main-canvas {
   margin-block-start: 0;
 }
 

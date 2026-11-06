@@ -31,6 +31,16 @@ class DoorLinksTest extends UnitTestCase {
   protected const int NOW = 1800000000;
 
   /**
+   * The correspondence UUID of the doors.
+   */
+  protected const string CORRESPONDENCE = '0f5e3d9a-7c1b-4e2f-9a8d-6b5c4d3e2f1a';
+
+  /**
+   * The creative UUID of the applicant doors.
+   */
+  protected const string SUBJECT = 'c0ffee00-1234-4abc-8def-0123456789ab';
+
+  /**
    * Sets the hash salt and a container with a URL generator stub.
    */
   protected function setUp(): void {
@@ -45,59 +55,162 @@ class DoorLinksTest extends UnitTestCase {
   }
 
   /**
-   * The values that were hashed are valid, and build() carries them.
+   * A door round-trips its facts, with and without a subject.
    */
-  public function testValidHash(): void {
+  public function testRoundTrip(): void {
+
     $links = $this->links();
     $recipient = $this->recipient();
-    $hash = $links->hash($recipient, 'corr', DoorTarget::Applicant, 'creative', static::NOW - 100);
-    $this->assertTrue($links->isValid($recipient, 'corr', DoorTarget::Applicant, 'creative', static::NOW - 100, $hash));
-    $url = $links->build($recipient, 'corr', DoorTarget::Applicant, 'creative', static::NOW - 100);
-    $this->assertStringContainsString('/7/corr/applicant/' . (static::NOW - 100) . '/' . $hash . '/creative', $url);
-    $default = $links->build($recipient, 'corr', DoorTarget::Draft);
-    $this->assertStringContainsString('/draft/' . static::NOW . '/' . $links->hash($recipient, 'corr', DoorTarget::Draft, '', static::NOW), $default);
+
+    $token = $this->token($links->build($recipient, static::CORRESPONDENCE, DoorTarget::Applicant, static::SUBJECT, static::NOW - 100));
+    $this->assertSame(78, strlen($token));
+    $door = $links->parse($token);
+    $this->assertNotNull($door);
+    $this->assertSame(7, $door->uid);
+    $this->assertSame(static::CORRESPONDENCE, $door->correspondence);
+    $this->assertSame(DoorTarget::Applicant, $door->target);
+    $this->assertSame(static::NOW - 100, $door->timestamp);
+    $this->assertSame(static::SUBJECT, $door->subject);
+    $this->assertSame(42, strlen($door->payload));
+    $this->assertSame(16, strlen($door->mac));
+    $this->assertTrue($links->verify($recipient, $door));
+
+    // The timestamp defaults to the request time.
+    $url = $links->build($recipient, static::CORRESPONDENCE, DoorTarget::Draft);
+    $this->assertStringStartsWith('https://backend.example.org/mailer.door/', $url);
+    $token = $this->token($url);
+    $this->assertSame(56, strlen($token));
+    $door = $links->parse($token);
+    $this->assertNotNull($door);
+    $this->assertSame(DoorTarget::Draft, $door->target);
+    $this->assertSame(static::NOW, $door->timestamp);
+    $this->assertSame('', $door->subject);
+    $this->assertTrue($links->verify($recipient, $door));
+
+    // Each target keeps its code.
+    foreach (DoorTarget::cases() as $target) {
+      $this->assertSame($target, $links->parse($this->token($links->build($recipient, static::CORRESPONDENCE, $target)))?->target);
+    }
   }
 
   /**
-   * Changing any signed part invalidates the hash.
+   * Every changed byte or character fails to parse or to verify.
    */
-  public function testTamperedPartsAreInvalid(): void {
+  public function testEveryFlipFails(): void {
+
     $links = $this->links();
     $recipient = $this->recipient();
-    $timestamp = static::NOW - 100;
-    $hash = $links->hash($recipient, 'corr', DoorTarget::Draft, 'subject', $timestamp);
-    $this->assertFalse($links->isValid($this->recipient(8), 'corr', DoorTarget::Draft, 'subject', $timestamp, $hash));
-    $this->assertFalse($links->isValid($recipient, 'other', DoorTarget::Draft, 'subject', $timestamp, $hash));
-    $this->assertFalse($links->isValid($recipient, 'corr', DoorTarget::Edit, 'subject', $timestamp, $hash));
-    $this->assertFalse($links->isValid($recipient, 'corr', DoorTarget::Draft, 'other', $timestamp, $hash));
-    $this->assertFalse($links->isValid($recipient, 'corr', DoorTarget::Draft, 'subject', $timestamp + 1, $hash));
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+    foreach (['', static::SUBJECT] as $subject) {
+      $token = $this->token($links->build($recipient, static::CORRESPONDENCE, DoorTarget::Applicant, $subject, static::NOW - 100));
+      $bytes = $this->decode($token);
+      for ($i = 0; $i < strlen($bytes); $i++) {
+        foreach ([0x01, 0x80, 0xff] as $mask) {
+          $flipped = $bytes;
+          $flipped[$i] = chr(ord($flipped[$i]) ^ $mask);
+          $this->assertFalse($this->accepts($links, $recipient, $this->encode($flipped)), "Byte $i with mask $mask.");
+        }
+      }
+      // Characters too: the last character of 78 carries unused bits.
+      for ($i = 0; $i < strlen($token); $i++) {
+        foreach (str_split($alphabet) as $character) {
+          if ($character === $token[$i]) {
+            continue;
+          }
+          $changed = substr_replace($token, $character, $i, 1);
+          $this->assertFalse($this->accepts($links, $recipient, $changed), "Character $i as $character.");
+        }
+      }
+    }
   }
 
   /**
-   * Expired links and links from the future are invalid.
+   * Malformed tokens give NULL.
    */
-  public function testExpiryAndFuture(): void {
+  public function testMalformedTokens(): void {
+
     $links = $this->links();
     $recipient = $this->recipient();
-    $expired = static::NOW - DoorLinks::LIFETIME - 1;
-    $hash = $links->hash($recipient, 'corr', DoorTarget::Draft, '', $expired);
-    $this->assertFalse($links->isValid($recipient, 'corr', DoorTarget::Draft, '', $expired, $hash));
-    $edge = static::NOW - DoorLinks::LIFETIME;
-    $hash = $links->hash($recipient, 'corr', DoorTarget::Draft, '', $edge);
-    $this->assertTrue($links->isValid($recipient, 'corr', DoorTarget::Draft, '', $edge, $hash));
-    $future = static::NOW + 10;
-    $hash = $links->hash($recipient, 'corr', DoorTarget::Draft, '', $future);
-    $this->assertFalse($links->isValid($recipient, 'corr', DoorTarget::Draft, '', $future, $hash));
+    $short = $this->token($links->build($recipient, static::CORRESPONDENCE, DoorTarget::Draft));
+    $long = $this->token($links->build($recipient, static::CORRESPONDENCE, DoorTarget::Applicant, static::SUBJECT));
+    $bytes = $this->decode($short);
+
+    // Wrong lengths, of the token and of the bytes.
+    $this->assertNull($links->parse(''));
+    $this->assertNull($links->parse(substr($short, 0, -1)));
+    $this->assertNull($links->parse($short . 'A'));
+    $this->assertNull($links->parse(substr($long, 0, -1)));
+    $this->assertNull($links->parse($long . 'A'));
+    $this->assertNull($links->parse($this->encode($bytes . 'x')));
+    $this->assertNull($links->parse($this->encode(substr($bytes, 0, -1))));
+    $this->assertNull($links->parse($this->encode($bytes . str_repeat('x', 15))));
+
+    // A wrong version or an unknown target code.
+    foreach ([0, 2, 255] as $version) {
+      $this->assertNull($links->parse($this->encode(chr($version) . substr($bytes, 1))), "Version $version.");
+    }
+    foreach ([0, 7, 255] as $code) {
+      $this->assertNull($links->parse($this->encode(substr_replace($bytes, chr($code), 21, 1))), "Code $code.");
+    }
+
+    // Padding and characters outside base64url.
+    $this->assertNull($links->parse(substr($long, 0, -2) . '=='));
+    $this->assertNull($links->parse($long . '=='));
+    foreach (['+', '/', '=', '.', ' ', '%'] as $character) {
+      $this->assertNull($links->parse(substr_replace($short, $character, 10, 1)), "Character $character.");
+    }
+    $this->assertNull($links->parse(substr($short, 0, -1) . "\n"));
+    $this->assertNull($links->parse($short . "\n"));
   }
 
   /**
-   * A password change invalidates the link.
+   * A door needs lowercase canonical UUIDs.
    */
-  public function testPasswordChangeInvalidates(): void {
+  public function testBuildRejectsNonUuids(): void {
     $links = $this->links();
-    $hash = $links->hash($this->recipient(), 'corr', DoorTarget::Draft, '', static::NOW);
-    $changed = $this->recipient(password: 'new-hash');
-    $this->assertFalse($links->isValid($changed, 'corr', DoorTarget::Draft, '', static::NOW, $hash));
+    $recipient = $this->recipient();
+    $rejected = 0;
+    $cases = [
+      ['corr', ''],
+      [strtoupper(static::CORRESPONDENCE), ''],
+      [static::CORRESPONDENCE, 'creative'],
+    ];
+    foreach ($cases as [$correspondence, $subject]) {
+      try {
+        $links->build($recipient, $correspondence, DoorTarget::Applicant, $subject);
+        $this->fail('A door was built for ' . $correspondence . ' / ' . $subject);
+      }
+      catch (\InvalidArgumentException) {
+        $rejected++;
+      }
+    }
+    $this->assertSame(3, $rejected);
+  }
+
+  /**
+   * A password change or another recipient fails to verify.
+   */
+  public function testPasswordChangeFailsVerify(): void {
+    $links = $this->links();
+    $door = $links->parse($this->token($links->build($this->recipient(), static::CORRESPONDENCE, DoorTarget::Draft)));
+    $this->assertNotNull($door);
+    $this->assertTrue($links->verify($this->recipient(), $door));
+    $this->assertFalse($links->verify($this->recipient(password: 'new-hash'), $door));
+    $this->assertFalse($links->verify($this->recipient(8), $door));
+  }
+
+  /**
+   * Doors expire after their lifetime, and doors from the future are expired.
+   */
+  public function testExpiry(): void {
+    $links = $this->links();
+    $recipient = $this->recipient();
+    $project = $this->project(FALSE);
+    $this->assertFalse($links->verdict($recipient, $project, DoorTarget::Draft, static::NOW, NULL)->expired);
+    $this->assertFalse($links->verdict($recipient, $project, DoorTarget::Draft, static::NOW - DoorLinks::LIFETIME, NULL)->expired);
+    $this->assertTrue($links->verdict($recipient, $project, DoorTarget::Draft, static::NOW - DoorLinks::LIFETIME - 1, NULL)->expired);
+    $this->assertTrue($links->verdict($recipient, $project, DoorTarget::Draft, static::NOW + 10, NULL)->expired);
   }
 
   /**
@@ -137,6 +250,38 @@ class DoorLinksTest extends UnitTestCase {
     $this->assertSame('http://localhost:3000/draft/abc', $local->targetUrl(DoorTarget::Draft, $draft, $recipient, ''));
     $this->assertSame('http://localhost:3000/users/creative-uuid', $local->targetUrl(DoorTarget::Applicant, $submitted, $recipient, 'creative-uuid'));
     $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl());
+  }
+
+  /**
+   * Gets the token of a door URL.
+   */
+  protected function token(string $url): string {
+    $parts = explode('/', $url);
+    return (string) end($parts);
+  }
+
+  /**
+   * Checks whether a token parses and verifies for the recipient.
+   */
+  protected function accepts(DoorLinks $links, UserInterface $recipient, string $token): bool {
+    $door = $links->parse($token);
+    return $door !== NULL && $links->verify($recipient, $door);
+  }
+
+  /**
+   * Encodes bytes as base64url without padding.
+   */
+  protected function encode(string $bytes): string {
+    return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+  }
+
+  /**
+   * Decodes base64url without padding.
+   */
+  protected function decode(string $token): string {
+    $bytes = base64_decode(strtr($token, '-_', '+/'), TRUE);
+    $this->assertIsString($bytes);
+    return $bytes;
   }
 
   /**

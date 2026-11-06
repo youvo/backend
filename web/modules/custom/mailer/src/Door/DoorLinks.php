@@ -3,7 +3,6 @@
 namespace Drupal\mailer\Door;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
@@ -17,6 +16,9 @@ use Drupal\user\UserInterface;
 /**
  * Builds and verifies signed mail door links.
  *
+ * A door is /go/{token}: the signed facts packed into bytes, followed by a
+ * truncated HMAC, all base64url-encoded.
+ *
  * Like core one-time login links, the signature includes the password hash,
  * so a password change invalidates every door of that recipient.
  */
@@ -26,6 +28,21 @@ class DoorLinks {
    * How long a door stays valid, in seconds (30 days).
    */
   const int LIFETIME = 2592000;
+
+  /**
+   * The version of the token format.
+   */
+  const int VERSION = 1;
+
+  /**
+   * The length of the payload without a subject, in bytes.
+   */
+  const int PAYLOAD_LENGTH = 26;
+
+  /**
+   * The length of the MAC, in bytes (128 bits).
+   */
+  const int MAC_LENGTH = 16;
 
   /**
    * Constructs a DoorLinks object.
@@ -38,35 +55,133 @@ class DoorLinks {
 
   /**
    * Builds the absolute URL of a door.
+   *
+   * @throws \InvalidArgumentException
+   *   When the correspondence or a given subject is no lowercase UUID.
    */
   public function build(UserInterface $recipient, string $correspondence, DoorTarget $target, string $subject = '', ?int $timestamp = NULL): string {
     $timestamp ??= $this->time->getRequestTime();
+    $payload = $this->payload((int) $recipient->id(), $correspondence, $target, $timestamp, $subject);
     return Url::fromRoute('mailer.door', [
-      'uid' => $recipient->id(),
-      'correspondence' => $correspondence,
-      'target' => $target->value,
-      'timestamp' => $timestamp,
-      'hash' => $this->hash($recipient, $correspondence, $target, $subject, $timestamp),
-      'subject' => $subject,
+      'token' => $this->encode($payload . $this->mac($recipient, $payload)),
     ], ['absolute' => TRUE])->toString();
   }
 
   /**
-   * Computes the signature of a door.
+   * Reads the facts of a door from its token.
+   *
+   * The token is not verified yet, see verify().
+   *
+   * @return \Drupal\mailer\Door\DoorToken|null
+   *   The facts, or NULL if the token is malformed.
    */
-  public function hash(UserInterface $recipient, string $correspondence, DoorTarget $target, string $subject, int $timestamp): string {
-    $data = implode(':', [$recipient->id(), $correspondence, $target->value, $subject, $timestamp]);
-    return Crypt::hmacBase64($data, Settings::getHashSalt() . $recipient->getPassword());
+  public function parse(string $token): ?DoorToken {
+
+    $length = strlen($token);
+    if ($length !== 56 && $length !== 78) {
+      return NULL;
+    }
+    $bytes = $this->decode($token);
+    if ($bytes === NULL || (strlen($bytes) !== static::PAYLOAD_LENGTH + static::MAC_LENGTH && strlen($bytes) !== static::PAYLOAD_LENGTH + 16 + static::MAC_LENGTH)) {
+      return NULL;
+    }
+
+    $payload = substr($bytes, 0, -static::MAC_LENGTH);
+    $mac = substr($bytes, -static::MAC_LENGTH);
+    $head = unpack('Cversion/Nuid', $payload);
+    $tail = unpack('Ccode/Ntimestamp', $payload, 21);
+    if ($head === FALSE || $tail === FALSE || $head['version'] !== static::VERSION) {
+      return NULL;
+    }
+    $target = DoorTarget::fromCode($tail['code']);
+    if ($target === NULL) {
+      return NULL;
+    }
+
+    $subject = strlen($payload) > static::PAYLOAD_LENGTH ? $this->bytesToUuid(substr($payload, static::PAYLOAD_LENGTH, 16)) : '';
+    return new DoorToken($head['uid'], $this->bytesToUuid(substr($payload, 5, 16)), $target, $tail['timestamp'], $subject, $payload, $mac);
   }
 
   /**
-   * Checks the signature and the age of a door.
+   * Checks that the recipient signed the token.
+   *
+   * Only the signature: the verdict decides from the age of the door.
    */
-  public function isValid(UserInterface $recipient, string $correspondence, DoorTarget $target, string $subject, int $timestamp, string $hash): bool {
-    $now = $this->time->getRequestTime();
-    return hash_equals($this->hash($recipient, $correspondence, $target, $subject, $timestamp), $hash)
-      && $timestamp <= $now
-      && $now - $timestamp <= static::LIFETIME;
+  public function verify(UserInterface $recipient, DoorToken $token): bool {
+    return (int) $recipient->id() === $token->uid
+      && hash_equals($this->mac($recipient, $token->payload), $token->mac);
+  }
+
+  /**
+   * Packs the signed facts of a door.
+   *
+   * @throws \InvalidArgumentException
+   *   When the correspondence or a given subject is no lowercase UUID.
+   */
+  protected function payload(int $uid, string $correspondence, DoorTarget $target, int $timestamp, string $subject): string {
+    $payload = pack('CNa16CN', static::VERSION, $uid, $this->uuidToBytes($correspondence), $target->code(), $timestamp);
+    if ($subject !== '') {
+      $payload .= $this->uuidToBytes($subject);
+    }
+    return $payload;
+  }
+
+  /**
+   * Computes the MAC of a payload, truncated to 128 bits.
+   */
+  protected function mac(UserInterface $recipient, string $payload): string {
+    return substr(hash_hmac('sha256', $payload, Settings::getHashSalt() . $recipient->getPassword(), TRUE), 0, static::MAC_LENGTH);
+  }
+
+  /**
+   * Encodes bytes as base64url without padding.
+   */
+  protected function encode(string $bytes): string {
+    return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+  }
+
+  /**
+   * Decodes base64url without padding, strictly.
+   *
+   * Only the canonical encoding of the bytes is accepted, so that no two
+   * tokens carry the same bytes.
+   */
+  protected function decode(string $encoded): ?string {
+    if (preg_match('/^[A-Za-z0-9_-]*$/D', $encoded) !== 1) {
+      return NULL;
+    }
+    $bytes = base64_decode(strtr($encoded, '-_', '+/'), TRUE);
+    if ($bytes === FALSE || $this->encode($bytes) !== $encoded) {
+      return NULL;
+    }
+    return $bytes;
+  }
+
+  /**
+   * Converts a lowercase canonical UUID to its 16 bytes.
+   *
+   * @throws \InvalidArgumentException
+   *   When the string is no lowercase canonical UUID.
+   */
+  protected function uuidToBytes(string $uuid): string {
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/D', $uuid) !== 1) {
+      throw new \InvalidArgumentException('A door needs lowercase canonical UUIDs.');
+    }
+    return (string) hex2bin(str_replace('-', '', $uuid));
+  }
+
+  /**
+   * Formats 16 bytes as a lowercase canonical UUID.
+   */
+  protected function bytesToUuid(string $bytes): string {
+    $hex = bin2hex($bytes);
+    return implode('-', [
+      substr($hex, 0, 8),
+      substr($hex, 8, 4),
+      substr($hex, 12, 4),
+      substr($hex, 16, 4),
+      substr($hex, 20, 12),
+    ]);
   }
 
   /**

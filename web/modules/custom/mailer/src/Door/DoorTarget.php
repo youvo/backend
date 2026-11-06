@@ -15,6 +15,34 @@ enum DoorTarget: string {
   case Feedback = 'feedback';
 
   /**
+   * Gets the code of the target in a door token.
+   *
+   * Fixed per target, so that reordering the cases keeps issued doors.
+   */
+  public function code(): int {
+    return match ($this) {
+      DoorTarget::Draft => 1,
+      DoorTarget::Applicants => 2,
+      DoorTarget::Edit => 3,
+      DoorTarget::Complete => 4,
+      DoorTarget::Applicant => 5,
+      DoorTarget::Feedback => 6,
+    };
+  }
+
+  /**
+   * Gets the target of a code in a door token, or NULL for an unknown code.
+   */
+  public static function fromCode(int $code): ?self {
+    foreach (static::cases() as $target) {
+      if ($target->code() === $code) {
+        return $target;
+      }
+    }
+    return NULL;
+  }
+
+  /**
    * Gets the heading of the door page.
    */
   public function heading(): string {

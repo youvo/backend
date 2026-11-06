@@ -12,6 +12,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\Tests\mailer\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
 #[Group('mailer')]
 class MailDoorTest extends ExistingSiteBase {
 
+  use DoorTokenTrait;
   use MailInterceptTrait;
 
   /**
@@ -364,18 +366,31 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
-   * Tests that a changed door is denied.
+   * Tests that a door with a changed signed fact or MAC is denied.
    */
   public function testTamperedDoor(): void {
 
     $project = $this->createProject();
     $organization = $project->getOwner();
+    $other = $this->createOrganization();
     $path = $this->door($organization, $project, DoorTarget::Applicants);
+    $token = $this->doorTokens($path)[0];
+    $mac = $this->parseDoor($token)->mac;
 
-    $this->visitDoor(str_replace('/applicants/', '/complete/', $path));
-
-    $this->assertSession()->statusCodeEquals(403);
-    $this->assertSession()->pageTextNotContains($project->getTitle());
+    // Each keeps the original MAC: another uid, target or timestamp.
+    $tampered = [
+      'uid' => $this->tamperDoor($token, 1, pack('N', (int) $other->id())),
+      'target' => $this->tamperDoor($token, 21, chr(DoorTarget::Complete->code())),
+      'timestamp' => $this->tamperDoor($token, 22, pack('N', time() - 60)),
+      'mac' => $this->tamperDoor($token, 26, $mac[0] ^ "\x01"),
+    ];
+    foreach ($tampered as $fact => $changed) {
+      $this->assertNotSame($token, $changed);
+      $this->visitDoor('/go/' . $changed);
+      $this->assertSession()->statusCodeEquals(403);
+      $this->assertSession()->pageTextNotContains($project->getTitle());
+      $this->assertNotNull($this->doorLinks()->parse($changed), 'The changed ' . $fact . ' still parses.');
+    }
     $this->assertCount(0, $this->follows($project));
   }
 
@@ -618,7 +633,7 @@ class MailDoorTest extends ExistingSiteBase {
     $project = $this->createProject();
     $creative = $this->createCreative();
     $path = $this->door($project->getOwner(), $project, DoorTarget::Applicant, NULL, $creative->uuid());
-    $this->assertStringEndsWith('/' . $creative->uuid(), $path);
+    $this->assertDoor($path, $project->getOwner()->id(), NULL, DoorTarget::Applicant, $creative->uuid());
 
     $this->visitDoor($path);
 

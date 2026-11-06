@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\mailer\ExistingSite;
 
+use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
@@ -299,7 +300,7 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
     $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
     foreach ($this->interceptedMails as $mail) {
       $recipient = $recipients[$mail['to'][0]];
-      $this->assertSame(1, preg_match('#/door/' . $recipient->id() . '/[0-9a-f-]{36}/feedback/#', $mail['html']), 'Door of the recipient: ' . $mail['to'][0]);
+      $this->assertDoor($mail['html'], $recipient->id(), NULL, DoorTarget::Feedback, '', 'Door of the recipient: ' . $mail['to'][0]);
       $this->assertStringNotContainsString('/feedback/creative/', $mail['html']);
       $this->assertStringNotContainsString('/feedback/organization/', $mail['html']);
     }
@@ -311,12 +312,12 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
     $organization_body = $entries['mailer.project_transition.complete_organization'][0]->get('body')->value;
     $this->assertStringContainsString($a->getName() . ', ' . $b->getName(), $organization_body);
     $this->assertStringContainsString('[Link entfernt]', $organization_body);
-    $this->assertStringNotContainsString('/door/', $organization_body);
+    $this->assertStringNotContainsString('/go/', $organization_body);
     $this->assertCount(2, $entries['mailer.project_transition.complete_creative']);
     foreach ($entries['mailer.project_transition.complete_creative'] as $entry) {
       $body = $entry->get('body')->value;
       $this->assertStringContainsString('[Link entfernt]', $body);
-      $this->assertStringNotContainsString('/door/', $body);
+      $this->assertStringNotContainsString('/go/', $body);
       $this->assertStringContainsString('results/' . $project->uuid(), $body);
     }
   }

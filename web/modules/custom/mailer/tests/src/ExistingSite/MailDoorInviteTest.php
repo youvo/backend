@@ -12,6 +12,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
+use Drupal\Tests\mailer\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\Tests\youvo\Traits\RequestTrait;
 use Drupal\user\UserInterface;
@@ -27,6 +28,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
 #[Group('mailer')]
 class MailDoorInviteTest extends ExistingSiteBase {
 
+  use DoorTokenTrait;
   use MailInterceptTrait;
   use RequestTrait;
 
@@ -249,8 +251,6 @@ class MailDoorInviteTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->interceptedMails);
     $this->assertSame([$organization->getEmail()], $this->interceptedMails[0]['to']);
-    $this->assertStringContainsString('/door/' . $organization->id() . '/', $this->interceptedMails[0]['html']);
-    $this->assertMatchesRegularExpression('#/door/' . $organization->id() . '/[0-9a-f-]{36}/draft/#', $this->interceptedMails[0]['html']);
     $this->assertStringNotContainsString('/invite/', $this->interceptedMails[0]['html']);
 
     $ids = $this->container->get('entity_type.manager')->getStorage('correspondence')->getQuery()
@@ -261,9 +261,10 @@ class MailDoorInviteTest extends ExistingSiteBase {
     $this->assertCount(1, $ids);
     $entry = Correspondence::load(reset($ids));
     $this->correspondences[] = $entry->uuid();
+    $this->assertDoor($this->interceptedMails[0]['html'], $organization->id(), $entry->uuid(), DoorTarget::Draft);
     $body = $entry->get('body')->value;
     $this->assertStringContainsString('[Link entfernt]', $body);
-    $this->assertStringNotContainsString('/door/', $body);
+    $this->assertStringNotContainsString('/go/', $body);
   }
 
   /**

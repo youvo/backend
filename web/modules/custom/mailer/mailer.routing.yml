@@ -1,18 +1,13 @@
 mailer.door:
-  path: '/door/{uid}/{correspondence}/{target}/{timestamp}/{hash}/{subject}'
+  path: '/go/{token}'
   defaults:
     _form: '\Drupal\mailer\Form\DoorForm'
     _title: 'youvo'
-    subject: ''
   requirements:
     # The door verifies the signature.
     _access: 'TRUE'
-    # The signed data joins these parts with ':', so none may contain one.
-    uid: '\d+'
-    correspondence: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-    target: 'draft|applicants|edit|complete|applicant|feedback'
-    timestamp: '\d+'
-    subject: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    # Base64url without padding: 42 bytes, or 58 with a subject.
+    token: '[A-Za-z0-9_-]{56}|[A-Za-z0-9_-]{78}'
   options:
     no_cache: TRUE
     _maintenance_access: TRUE
