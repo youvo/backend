@@ -38,6 +38,7 @@ class PasswordResetFlowTest extends ExistingSiteBase {
    * Tests that an organization sets the password and goes to the hub.
    */
   public function testOrganizationSetsPassword(): void {
+
     $organization = Organization::create([
       'name' => $this->randomMachineName(),
       'mail' => strtolower($this->randomMachineName()) . '@example.org',
