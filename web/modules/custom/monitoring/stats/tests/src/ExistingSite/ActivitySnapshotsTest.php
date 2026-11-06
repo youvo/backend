@@ -97,28 +97,51 @@ class ActivitySnapshotsTest extends StatsTestBase {
   }
 
   /**
-   * Tests the active users per bucket.
+   * Tests the active users per bucket of each granularity.
    */
   public function testSeries(): void {
 
+    // The counts of the day, week, month and year up to each day.
     $rows = [
-      '2018-01-15' => [3, 10],
-      '2018-01-31' => [5, 12],
-      '2018-02-10' => [2, 9],
+      // A Monday in W03.
+      '2018-01-15' => [3, 10, 20, 20],
+      // A Wednesday in W05.
+      '2018-01-31' => [5, 12, 30, 30],
+      // A Saturday in W06.
+      '2018-02-10' => [2, 9, 15, 40],
     ];
-    foreach ($rows as $day => [$active_1d, $active_30d]) {
+    foreach ($rows as $day => $counts) {
       $this->touchDay($day);
-      $this->snapshots->write($day, 'creative', $active_1d, $active_30d);
+      $this->snapshots->write($day, 'creative', array_combine(ActivitySnapshots::COLUMNS, $counts));
     }
     $timezone = $this->timezone();
-    $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => '2018'], $timezone, new \DateTimeImmutable('now', $timezone));
+    $now = new \DateTimeImmutable('now', $timezone);
+    $series = fn(array $query): array => $this->snapshots->series(StatsPeriod::fromQuery($query, $timezone, $now))['creative'];
 
-    $series = $this->snapshots->series($period)['creative'];
+    // A year by month takes the month count of the last day of each month.
+    $year = $series(['period' => 'year', 'year' => '2018']);
+    $this->assertCount(12, $year);
+    $this->assertSame(30, $year['2018-01']);
+    $this->assertSame(15, $year['2018-02']);
+    $this->assertNull($year['2018-03']);
 
-    $this->assertCount(12, $series);
-    $this->assertSame(12, $series['2018-01']);
-    $this->assertSame(9, $series['2018-02']);
-    $this->assertNull($series['2018-03']);
+    // All time by year takes the year count.
+    $this->assertSame(40, $series(['period' => 'all'])['2018'] ?? NULL);
+
+    // A quarter by week takes the week count.
+    $quarter = $series(['period' => 'quarter', 'year' => '2018', 'quarter' => '1']);
+    $this->assertSame(10, $quarter['2018-W03']);
+    $this->assertNull($quarter['2018-W04']);
+    $this->assertSame(12, $quarter['2018-W05']);
+    $this->assertSame(9, $quarter['2018-W06']);
+
+    // A short range by day takes the day count.
+    $days = $series(['period' => 'custom', 'from' => '2018-01-10', 'to' => '2018-02-09']);
+    $this->assertCount(31, $days);
+    $this->assertSame(3, $days['2018-01-15']);
+    $this->assertSame(5, $days['2018-01-31']);
+    $this->assertNull($days['2018-01-16']);
+    $this->assertArrayNotHasKey('2018-02-10', $days);
   }
 
 }

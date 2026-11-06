@@ -31,6 +31,19 @@ class ActivitySnapshots {
   ];
 
   /**
+   * The columns of the active users, keyed by the granularity reading them.
+   *
+   * They count the users active since the start of the day, the ISO week, the
+   * month and the year, up to the end of the day.
+   */
+  const array COLUMNS = [
+    'day' => 'active_day',
+    'week' => 'active_week',
+    'month' => 'active_month',
+    'year' => 'active_year',
+  ];
+
+  /**
    * The state key of the last recorded day.
    */
   const string STATE_LAST_DAY = 'stats.activity_last_day';
@@ -86,6 +99,12 @@ class ActivitySnapshots {
   /**
    * Writes the snapshot of yesterday once per local calendar day.
    *
+   * The users table keeps only the last access of each user, so a user counts
+   * as active since a start if the last access is not before it. That
+   * includes users whose only visit since was today, before cron ran: a small
+   * overcount. A day on which cron does not run after midnight is skipped for
+   * good, as users.access cannot be read back for past days.
+   *
    * @return bool
    *   FALSE when yesterday is already stored.
    */
@@ -98,10 +117,21 @@ class ActivitySnapshots {
       return FALSE;
     }
 
-    $active_1d = $this->countActive($start->getTimestamp());
-    $active_30d = $this->countActive($start->modify('-29 days')->getTimestamp());
+    $year = (int) $start->format('Y');
+    $starts = [
+      'active_day' => $start,
+      'active_week' => $start->modify('-' . ((int) $start->format('N') - 1) . ' days')->setTime(0, 0),
+      'active_month' => $start->setDate($year, (int) $start->format('n'), 1)->setTime(0, 0),
+      'active_year' => $start->setDate($year, 1, 1)->setTime(0, 0),
+    ];
+    $counts = [];
+    foreach ($starts as $column => $since) {
+      foreach ($this->countActive($since->getTimestamp()) as $role => $count) {
+        $counts[$role][$column] = $count;
+      }
+    }
     foreach (static::ROLES as $role) {
-      $this->write($day, $role, $active_1d[$role], $active_30d[$role]);
+      $this->write($day, $role, $counts[$role]);
     }
     $this->state->set(static::STATE_LAST_DAY, $day);
     return TRUE;
@@ -109,27 +139,44 @@ class ActivitySnapshots {
 
   /**
    * Writes the row of a day and role, replacing an existing one.
+   *
+   * @param string $day
+   *   The day, Y-m-d.
+   * @param string $role
+   *   The activity role.
+   * @param array{active_day: int, active_week: int, active_month: int, active_year: int} $counts
+   *   The active users since the start of the day, week, month and year.
    */
-  public function write(string $day, string $role, int $active1d, int $active30d): void {
+  public function write(string $day, string $role, array $counts): void {
+    $fields = [];
+    foreach (static::COLUMNS as $column) {
+      $fields[$column] = $counts[$column];
+    }
     $this->database->merge('stats_activity')
       ->keys(['day' => $day, 'role' => $role])
-      ->fields(['active_1d' => $active1d, 'active_30d' => $active30d])
+      ->fields($fields)
       ->execute();
   }
 
   /**
-   * Gets the users active in the last 30 days per role and bucket.
+   * Gets the active users per role and bucket.
    *
-   * A bucket holds the active_30d of its last stored day, NULL without one.
+   * A bucket holds the value of its last stored day in the column of the
+   * granularity: the users active on a day, in a week, a month or a year up
+   * to that day. Buckets without a stored day, as those in the future, hold
+   * NULL. A bucket clipped by the period, such as the first month of a range
+   * starting mid-month, still counts from the start of its week, month or
+   * year: a slight overcount at the edges.
    *
    * @return array<string, array<string, ?int>>
    *   The values keyed by role, then bucket.
    */
   public function series(StatsPeriod $period): array {
 
+    $column = static::COLUMNS[$period->granularity()->value];
     $series = array_fill_keys(static::ROLES, $period->emptyBuckets(NULL));
     $rows = $this->database->select('stats_activity', 'a')
-      ->fields('a', ['day', 'role', 'active_30d'])
+      ->fields('a', ['day', 'role', $column])
       ->condition('a.day', $period->from()->format('Y-m-d'), '>=')
       ->condition('a.day', $period->to()->format('Y-m-d'), '<')
       ->condition('a.role', static::ROLES, 'IN')
@@ -140,7 +187,7 @@ class ActivitySnapshots {
     foreach ($rows as $row) {
       $bucket = $period->bucketOf((new \DateTimeImmutable($row->day, $timezone))->getTimestamp());
       if ($bucket !== NULL) {
-        $series[$row->role][$bucket] = (int) $row->active_30d;
+        $series[$row->role][$bucket] = (int) $row->{$column};
       }
     }
     return $series;

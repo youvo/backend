@@ -80,8 +80,8 @@ class StatsCommands extends DrushCommands {
         if (isset($stored[$day])) {
           continue;
         }
-        foreach ($roles as $role => $row) {
-          $this->activitySnapshots->write($day, $role, $row['active_1d'], $row['active_30d']);
+        foreach ($roles as $role => $counts) {
+          $this->activitySnapshots->write($day, $role, $counts);
           $written++;
         }
         $days++;

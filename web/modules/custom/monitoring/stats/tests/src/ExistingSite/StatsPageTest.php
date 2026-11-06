@@ -4,6 +4,7 @@ namespace Drupal\Tests\stats\ExistingSite;
 
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\projects\Entity\Project;
+use Drupal\stats\Activity\ActivitySnapshots;
 use Drupal\stats\Controller\StatsController;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request;
@@ -347,29 +348,43 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * The activity chart shows the active creatives of the last day per month.
+   * The activity chart shows the active users per bucket.
    */
   public function testActivityChart(): void {
 
     $rows = [
-      '2018-01-15' => [3, 10],
-      '2018-01-31' => [5, 12],
-      '2018-02-10' => [2, 9],
+      '2018-01-15' => [3, 10, 20, 20],
+      '2018-01-31' => [5, 12, 30, 30],
+      '2018-02-10' => [2, 9, 15, 40],
     ];
-    foreach ($rows as $day => [$active_1d, $active_30d]) {
+    foreach ($rows as $day => $counts) {
       $this->touchDay($day);
-      $this->container->get('stats.activity_snapshots')->write($day, 'creative', $active_1d, $active_30d);
+      $this->container->get('stats.activity_snapshots')->write($day, 'creative', array_combine(ActivitySnapshots::COLUMNS, $counts));
     }
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
+    // A year shows the active users per month.
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => 2018]]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSame(['12', '9'], array_slice($this->chartColumn('stats-activity', 'Creatives'), 0, 2));
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per month');
+    $this->assertSame(['30', '15', ''], array_slice($this->chartColumn('stats-activity', 'Creatives'), 0, 3));
 
-    // The tiles show the last snapshot of the period.
-    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-label', 'Active creatives');
-    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-value', '9');
+    // The tiles show the last bucket with a snapshot and name it.
+    $tile = '.stats-tile[data-tile="active-creatives"]';
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-label', 'Active creatives');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '15');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in Feb 2018');
     $this->assertSession()->elementExists('css', '.stats-tile[data-tile="active-organizations"]');
+
+    // A quarter shows weeks, a short range days.
+    $this->drupalGet('stats', ['query' => ['period' => 'quarter', 'year' => 2018, 'quarter' => 1]]);
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per week');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '9');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in W06');
+    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => '2018-01-10', 'to' => '2018-02-09']]);
+    $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per day');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '5');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited on 31.01.');
   }
 
   /**
@@ -396,7 +411,7 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementExists('css', '#stats-activation');
     $this->assertSession()->elementNotExists('css', '#stats-activity');
     $this->assertSession()->elementNotExists('css', '[data-tile="active-creatives"], [data-tile="active-organizations"]');
-    $this->assertSession()->pageTextNotContains('Active users, last 30 days');
+    $this->assertSession()->pageTextNotContains('Active users per month');
   }
 
   /**

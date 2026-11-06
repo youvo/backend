@@ -17,6 +17,7 @@ use Drupal\stats\Stats\FeedbackStats;
 use Drupal\stats\Stats\ProjectStats;
 use Drupal\stats\StatsCalculator;
 use Drupal\stats\StatsCharts;
+use Drupal\stats\StatsGranularity;
 use Drupal\stats\StatsPeriod;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -259,18 +260,31 @@ class StatsController implements ContainerInjectionInterface {
     // snapshot hold NULL and leave a gap in the line; a snapshot of 0 users
     // is data.
     $activity = $this->activitySnapshots->series($period);
-    $creatives = $this->last($activity['creative']);
-    $organizations = $this->last($activity['organization']);
+    $creatives = $this->lastBucket($activity['creative']);
+    $organizations = $this->lastBucket($activity['organization']);
     if ($creatives !== NULL || $organizations !== NULL) {
-      $activity_chart = StatsCharts::line('stats-activity', $this->t('Active users, last 30 days'), $labels, [
+      [$title, $description] = match ($period->granularity()) {
+        StatsGranularity::Day => [$this->t('Active users per day'), $this->t('Users who visited on each day')],
+        StatsGranularity::Week => [$this->t('Active users per week'), $this->t('Users who visited in each week')],
+        StatsGranularity::Month => [$this->t('Active users per month'), $this->t('Users who visited in each month')],
+        StatsGranularity::Year => [$this->t('Active users per year'), $this->t('Users who visited in each year')],
+      };
+      $activity_chart = StatsCharts::line('stats-activity', $title, $labels, [
         (string) $this->t('Creatives') => $activity['creative'],
         (string) $this->t('Organizations') => $activity['organization'],
       ]);
-      $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $this->t('Users who visited in the 30 days up to each point'));
-      $cards['tiles'] = StatsCharts::tiles([
-        StatsCharts::tile('active-creatives', $this->t('Active creatives'), $creatives, $this->t('Visited in the 30 days up to the last snapshot')),
-        StatsCharts::tile('active-organizations', $this->t('Active organizations'), $organizations, $this->t('Visited in the 30 days up to the last snapshot')),
-      ]);
+      $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $description);
+      // The tiles show the last bucket with a snapshot.
+      $tiles = [];
+      foreach (['creative' => $creatives, 'organization' => $organizations] as $role => $bucket) {
+        $tiles[] = StatsCharts::tile(
+          'active-' . $role . 's',
+          $role === 'creative' ? $this->t('Active creatives') : $this->t('Active organizations'),
+          $bucket !== NULL ? $activity[$role][$bucket] : NULL,
+          $bucket !== NULL ? $this->visitedIn($period, $bucket) : NULL,
+        );
+      }
+      $cards['tiles'] = StatsCharts::tiles($tiles);
     }
 
     return StatsCharts::section('creatives', $this->t('Creatives'), $cards);
@@ -373,6 +387,36 @@ class StatsController implements ContainerInjectionInterface {
       }
     }
     return NULL;
+  }
+
+  /**
+   * Gets the key of the last bucket with a value that is not NULL.
+   *
+   * @param array<int|string, ?int> $values
+   *   The values keyed by bucket.
+   */
+  protected function lastBucket(array $values): ?string {
+    foreach (array_reverse($values, TRUE) as $bucket => $value) {
+      if ($value !== NULL) {
+        return (string) $bucket;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Gets the hint of an activity tile that names its bucket.
+   *
+   * Days read "05.11.", ISO weeks "W45", months "Nov 2026" and years "2026".
+   */
+  protected function visitedIn(StatsPeriod $period, string $bucket): string|\Stringable {
+    $start = (new \DateTimeImmutable('@' . $period->buckets()[$bucket][0]))->setTimezone($period->from()->getTimezone());
+    return match ($period->granularity()) {
+      StatsGranularity::Day => $this->t('Visited on @day', ['@day' => $start->format('d.m.')]),
+      StatsGranularity::Week => $this->t('Visited in @week', ['@week' => $start->format('\WW')]),
+      StatsGranularity::Month => $this->t('Visited in @month', ['@month' => $start->format('M Y')]),
+      StatsGranularity::Year => $this->t('Visited in @year', ['@year' => $start->format('Y')]),
+    };
   }
 
   /**

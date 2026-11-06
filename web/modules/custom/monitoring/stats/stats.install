@@ -10,7 +10,7 @@
  */
 function stats_schema(): array {
   $schema['stats_activity'] = [
-    'description' => 'Daily snapshots of active users per role.',
+    'description' => 'Daily snapshots of active users per role, in the site timezone.',
     'fields' => [
       'day' => [
         'description' => 'The local day as Y-m-d.',
@@ -24,15 +24,29 @@ function stats_schema(): array {
         'length' => 32,
         'not null' => TRUE,
       ],
-      'active_1d' => [
+      'active_day' => [
         'description' => 'The users of the role active on the day.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ],
-      'active_30d' => [
-        'description' => 'The users of the role active in the 30 days up to the day.',
+      'active_week' => [
+        'description' => 'The users of the role active in the ISO week of the day, from its Monday up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_month' => [
+        'description' => 'The users of the role active in the month of the day, from its 1st up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_year' => [
+        'description' => 'The users of the role active in the year of the day, from 1 January up to the day.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,

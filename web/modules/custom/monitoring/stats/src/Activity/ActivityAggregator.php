@@ -8,17 +8,20 @@ namespace Drupal\stats\Activity;
 class ActivityAggregator {
 
   /**
-   * Aggregates visits into daily and 30-day active users per role.
+   * Aggregates visits into the active users per role and day.
    *
-   * Each role gets a row for every day from its own first visit day to the
-   * last visit day of all visits, including days without visits.
+   * Each day counts the distinct users of a role who visited on the day, in
+   * its ISO week up to the day (from Monday), in its month up to the day
+   * (from the 1st) and in its year up to the day (from 1 January). Each role
+   * gets a row for every day from its own first visit day to the last visit
+   * day of all visits, including days without visits.
    *
    * @param iterable<array{0: int, 1: string, 2: int}> $visits
    *   The visits as [uid, role, timestamp], in any order.
    * @param \DateTimeZone $timezone
    *   The timezone of the days.
    *
-   * @return array<string, array<string, array{active_1d: int, active_30d: int}>>
+   * @return array<string, array<string, array{active_day: int, active_week: int, active_month: int, active_year: int}>>
    *   The rows keyed by day (Y-m-d), then role.
    */
   public static function aggregate(iterable $visits, \DateTimeZone $timezone): array {
@@ -34,29 +37,38 @@ class ActivityAggregator {
       }
     }
 
-    // Walk each role's days with a 30-day window of visit days per user. Days
-    // are calendar dates, so they are counted in UTC to skip DST shifts.
+    // Walk each role's days and collect the visitors since the start of the
+    // week, month and year. Days are calendar dates, so they are walked in
+    // UTC to skip DST shifts.
     $utc = new \DateTimeZone('UTC');
     $rows = [];
     foreach ($visitors as $role => $days) {
       ksort($days);
-      $window = [];
+      $week = [];
+      $month = [];
+      $year = [];
       $date = new \DateTimeImmutable(array_key_first($days), $utc);
       $end = new \DateTimeImmutable($last_day, $utc);
       while ($date <= $end) {
         $day = $date->format('Y-m-d');
-        foreach ($days[$day] ?? [] as $uid => $visited) {
-          $window[$uid] = ($window[$uid] ?? 0) + 1;
+        if ($date->format('N') === '1') {
+          $week = [];
         }
-        $dropped = $date->modify('-30 days')->format('Y-m-d');
-        foreach ($days[$dropped] ?? [] as $uid => $visited) {
-          if (--$window[$uid] === 0) {
-            unset($window[$uid]);
+        if ($date->format('j') === '1') {
+          $month = [];
+          if ($date->format('n') === '1') {
+            $year = [];
           }
         }
+        $visited = $days[$day] ?? [];
+        $week += $visited;
+        $month += $visited;
+        $year += $visited;
         $rows[$day][$role] = [
-          'active_1d' => count($days[$day] ?? []),
-          'active_30d' => count($window),
+          'active_day' => count($visited),
+          'active_week' => count($week),
+          'active_month' => count($month),
+          'active_year' => count($year),
         ];
         $date = $date->modify('+1 day');
       }

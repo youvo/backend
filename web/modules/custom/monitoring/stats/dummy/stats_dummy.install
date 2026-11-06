@@ -39,8 +39,8 @@ function stats_dummy_generate(): void {
     if ($day >= $today) {
       continue;
     }
-    foreach ($roles as $role => $row) {
-      $snapshots->write($day, $role, $row['active_1d'], $row['active_30d']);
+    foreach ($roles as $role => $counts) {
+      $snapshots->write($day, $role, $counts);
     }
   }
 
