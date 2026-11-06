@@ -131,12 +131,6 @@
  echo "Settings permissions updated ..."
  cd ../../..
 
- # Wait for containers to be accessible.
- sleep 5
-
- # Enable xdebug.
- ddev xdebug enable
-
  # Bye bye.
  DURATION=$((SECONDS - START_TIME))
  echo "Installation duration: $DURATION seconds."

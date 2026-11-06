@@ -99,7 +99,8 @@ class DoorLinkTags extends EntityAutocompleteTagify {
     }
 
     $tags = is_string($input) ? json_decode($input, TRUE) : NULL;
-    $id = is_array($tags) && is_array($tags[0] ?? NULL) ? (string) ($tags[0]['entity_id'] ?? '') : '';
+    $raw = is_array($tags) && is_array($tags[0] ?? NULL) ? ($tags[0]['entity_id'] ?? '') : '';
+    $id = is_scalar($raw) ? (string) $raw : '';
     if (!ctype_digit($id) || (int) $id <= 0) {
       return '';
     }

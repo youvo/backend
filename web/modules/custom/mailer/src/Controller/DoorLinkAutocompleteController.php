@@ -10,6 +10,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectLifecycle;
+use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -196,9 +197,11 @@ class DoorLinkAutocompleteController implements ContainerInjectionInterface {
       return $project->getApplicants();
     }
 
-    $owner = $project->getOwner();
+    // The owner may have been deleted.
+    $owner = $project->get('uid')->entity;
+    $people = $owner instanceof UserInterface ? [$owner->id() => $owner] : [];
     // The later lists do not replace the people found before.
-    return [$owner->id() => $owner] + $project->getApplicants() + $project->getParticipants('Creative');
+    return $people + $project->getApplicants() + $project->getParticipants('Creative');
   }
 
 }
