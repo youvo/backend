@@ -34,12 +34,14 @@ class ActivitySnapshots {
    * The columns of the active users, keyed by the granularity reading them.
    *
    * They count the users active since the start of the day, the ISO week, the
-   * month and the year, up to the end of the day.
+   * month, the quarter and the year, up to the end of the day. No granularity
+   * reads the quarter; the tiles of a quarter do.
    */
   const array COLUMNS = [
     'day' => 'active_day',
     'week' => 'active_week',
     'month' => 'active_month',
+    'quarter' => 'active_quarter',
     'year' => 'active_year',
   ];
 
@@ -118,10 +120,12 @@ class ActivitySnapshots {
     }
 
     $year = (int) $start->format('Y');
+    $month = (int) $start->format('n');
     $starts = [
       'active_day' => $start,
       'active_week' => $start->modify('-' . ((int) $start->format('N') - 1) . ' days')->setTime(0, 0),
-      'active_month' => $start->setDate($year, (int) $start->format('n'), 1)->setTime(0, 0),
+      'active_month' => $start->setDate($year, $month, 1)->setTime(0, 0),
+      'active_quarter' => $start->setDate($year, $month - ($month - 1) % 3, 1)->setTime(0, 0),
       'active_year' => $start->setDate($year, 1, 1)->setTime(0, 0),
     ];
     $counts = [];
@@ -144,8 +148,9 @@ class ActivitySnapshots {
    *   The day, Y-m-d.
    * @param string $role
    *   The activity role.
-   * @param array{active_day: int, active_week: int, active_month: int, active_year: int} $counts
-   *   The active users since the start of the day, week, month and year.
+   * @param array{active_day: int, active_week: int, active_month: int, active_quarter: int, active_year: int} $counts
+   *   The active users since the start of the day, week, month, quarter and
+   *   year.
    */
   public function write(string $day, string $role, array $counts): void {
     $fields = [];

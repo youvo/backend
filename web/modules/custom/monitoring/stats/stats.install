@@ -47,6 +47,13 @@ function stats_schema(): array {
         'not null' => TRUE,
         'default' => 0,
       ],
+      'active_quarter' => [
+        'description' => 'The users of the role active in the quarter of the day, from its first day up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
       'active_year' => [
         'description' => 'The users of the role active in the year of the day, from 1 January up to the day.',
         'type' => 'int',

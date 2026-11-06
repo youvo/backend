@@ -12,7 +12,8 @@ class ActivityAggregator {
    *
    * Each day counts the distinct users of a role who visited on the day, in
    * its ISO week up to the day (from Monday), in its month up to the day
-   * (from the 1st) and in its year up to the day (from 1 January). Each role
+   * (from the 1st), in its quarter up to the day (from the 1st of January,
+   * April, July or October) and in its year up to the day. Each role
    * gets a row for every day from its own first visit day to the last visit
    * day of all visits, including days without visits.
    *
@@ -21,7 +22,7 @@ class ActivityAggregator {
    * @param \DateTimeZone $timezone
    *   The timezone of the days.
    *
-   * @return array<string, array<string, array{active_day: int, active_week: int, active_month: int, active_year: int}>>
+   * @return array<string, array<string, array{active_day: int, active_week: int, active_month: int, active_quarter: int, active_year: int}>>
    *   The rows keyed by day (Y-m-d), then role.
    */
   public static function aggregate(iterable $visits, \DateTimeZone $timezone): array {
@@ -38,14 +39,15 @@ class ActivityAggregator {
     }
 
     // Walk each role's days and collect the visitors since the start of the
-    // week, month and year. Days are calendar dates, so they are walked in
-    // UTC to skip DST shifts.
+    // week, month, quarter and year. Days are calendar dates, so they are
+    // walked in UTC to skip DST shifts.
     $utc = new \DateTimeZone('UTC');
     $rows = [];
     foreach ($visitors as $role => $days) {
       ksort($days);
       $week = [];
       $month = [];
+      $quarter = [];
       $year = [];
       $date = new \DateTimeImmutable(array_key_first($days), $utc);
       $end = new \DateTimeImmutable($last_day, $utc);
@@ -56,18 +58,24 @@ class ActivityAggregator {
         }
         if ($date->format('j') === '1') {
           $month = [];
-          if ($date->format('n') === '1') {
+          $month_number = (int) $date->format('n');
+          if ($month_number % 3 === 1) {
+            $quarter = [];
+          }
+          if ($month_number === 1) {
             $year = [];
           }
         }
         $visited = $days[$day] ?? [];
         $week += $visited;
         $month += $visited;
+        $quarter += $visited;
         $year += $visited;
         $rows[$day][$role] = [
           'active_day' => count($visited),
           'active_week' => count($week),
           'active_month' => count($month),
+          'active_quarter' => count($quarter),
           'active_year' => count($year),
         ];
         $date = $date->modify('+1 day');

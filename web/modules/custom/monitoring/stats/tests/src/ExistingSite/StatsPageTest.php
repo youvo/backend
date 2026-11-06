@@ -394,9 +394,9 @@ class StatsPageTest extends StatsTestBase {
   public function testActivityChart(): void {
 
     $rows = [
-      '2018-01-15' => [3, 10, 20, 20],
-      '2018-01-31' => [5, 12, 30, 30],
-      '2018-02-10' => [2, 9, 15, 40],
+      '2018-01-15' => [3, 10, 20, 20, 20],
+      '2018-01-31' => [5, 12, 30, 30, 30],
+      '2018-02-10' => [2, 9, 15, 35, 40],
     ];
     foreach ($rows as $day => $counts) {
       $this->touchDay($day);
@@ -439,7 +439,7 @@ class StatsPageTest extends StatsTestBase {
     $now = new \DateTimeImmutable('now', $this->timezone());
     $today = $now->format('Y-m-d');
     $this->touchDay($today);
-    $counts = array_combine(ActivitySnapshots::COLUMNS, [1, 2, 3, 4]);
+    $counts = array_combine(ActivitySnapshots::COLUMNS, [1, 2, 3, 4, 5]);
     $this->container->get('stats.activity_snapshots')->write($today, 'creative', $counts);
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 

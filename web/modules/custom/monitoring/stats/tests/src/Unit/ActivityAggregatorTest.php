@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
 class ActivityAggregatorTest extends UnitTestCase {
 
   /**
-   * Tests the day, week, month and year counts across the boundaries.
+   * Tests the day, week, month, quarter and year counts across boundaries.
    */
   public function testAggregate(): void {
 
@@ -34,45 +34,52 @@ class ActivityAggregatorTest extends UnitTestCase {
       [5, 'creative', $local('2021-03-27 23:30')],
       [5, 'creative', $local('2021-03-28 23:30')],
       [6, 'creative', $local('2021-03-29 00:30')],
+      // A new quarter on Thursday 2021-04-01.
+      [8, 'creative', $local('2021-04-01 12:00')],
       [7, 'organization', $local('2021-01-03 12:00')],
     ];
 
     $rows = ActivityAggregator::aggregate($visits, $timezone);
-    $row = fn (int $day, int $week, int $month, int $year): array => [
+    $row = fn (int $day, int $week, int $month, int $quarter, int $year): array => [
       'active_day' => $day,
       'active_week' => $week,
       'active_month' => $month,
+      'active_quarter' => $quarter,
       'active_year' => $year,
     ];
 
     $expected = [
-      '2020-12-28' => $row(1, 1, 1, 1),
-      '2020-12-29' => $row(0, 1, 1, 1),
-      '2020-12-31' => $row(1, 2, 2, 2),
-      // The week goes on, the month and the year start again.
-      '2021-01-01' => $row(1, 3, 1, 1),
-      '2021-01-02' => $row(1, 3, 2, 2),
-      '2021-01-03' => $row(0, 3, 2, 2),
+      '2020-12-28' => $row(1, 1, 1, 1, 1),
+      '2020-12-29' => $row(0, 1, 1, 1, 1),
+      '2020-12-31' => $row(1, 2, 2, 2, 2),
+      // The week goes on, the month, the quarter and the year start again.
+      '2021-01-01' => $row(1, 3, 1, 1, 1),
+      '2021-01-02' => $row(1, 3, 2, 2, 2),
+      '2021-01-03' => $row(0, 3, 2, 2, 2),
       // A new week.
-      '2021-01-04' => $row(1, 1, 3, 3),
-      '2021-01-31' => $row(0, 0, 3, 3),
-      // A new month on a Monday.
-      '2021-02-01' => $row(0, 0, 0, 3),
-      '2021-03-27' => $row(1, 1, 1, 4),
-      '2021-03-28' => $row(1, 1, 1, 4),
-      '2021-03-29' => $row(1, 1, 2, 5),
+      '2021-01-04' => $row(1, 1, 3, 3, 3),
+      '2021-01-31' => $row(0, 0, 3, 3, 3),
+      // A new month on a Monday, in the same quarter.
+      '2021-02-01' => $row(0, 0, 0, 3, 3),
+      '2021-03-27' => $row(1, 1, 1, 4, 4),
+      '2021-03-28' => $row(1, 1, 1, 4, 4),
+      '2021-03-29' => $row(1, 1, 2, 5, 5),
+      '2021-03-31' => $row(0, 1, 2, 5, 5),
+      // A new quarter: the week and the year go on.
+      '2021-04-01' => $row(1, 2, 1, 1, 6),
     ];
     foreach ($expected as $day => $counts) {
       $this->assertSame($counts, $rows[$day]['creative'], $day);
     }
-    $this->assertCount(92, $rows);
-    $this->assertSame('2021-03-29', array_key_last($rows));
+    $this->assertCount(95, $rows);
+    $this->assertSame('2021-04-01', array_key_last($rows));
 
     // A role starts with its first visit.
     $this->assertArrayNotHasKey('organization', $rows['2021-01-02']);
-    $this->assertSame($row(1, 1, 1, 1), $rows['2021-01-03']['organization']);
-    $this->assertSame($row(0, 0, 1, 1), $rows['2021-01-04']['organization']);
-    $this->assertSame($row(0, 0, 0, 1), $rows['2021-03-29']['organization']);
+    $this->assertSame($row(1, 1, 1, 1, 1), $rows['2021-01-03']['organization']);
+    $this->assertSame($row(0, 0, 1, 1, 1), $rows['2021-01-04']['organization']);
+    $this->assertSame($row(0, 0, 0, 1, 1), $rows['2021-03-29']['organization']);
+    $this->assertSame($row(0, 0, 0, 0, 1), $rows['2021-04-01']['organization']);
   }
 
 }

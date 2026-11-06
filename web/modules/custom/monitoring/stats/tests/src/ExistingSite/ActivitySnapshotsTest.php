@@ -101,14 +101,14 @@ class ActivitySnapshotsTest extends StatsTestBase {
    */
   public function testSeries(): void {
 
-    // The counts of the day, week, month and year up to each day.
+    // The counts of the day, week, month, quarter and year up to each day.
     $rows = [
       // A Monday in W03.
-      '2018-01-15' => [3, 10, 20, 20],
+      '2018-01-15' => [3, 10, 20, 20, 20],
       // A Wednesday in W05.
-      '2018-01-31' => [5, 12, 30, 30],
+      '2018-01-31' => [5, 12, 30, 30, 30],
       // A Saturday in W06.
-      '2018-02-10' => [2, 9, 15, 40],
+      '2018-02-10' => [2, 9, 15, 35, 40],
     ];
     foreach ($rows as $day => $counts) {
       $this->touchDay($day);
