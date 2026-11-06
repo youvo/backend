@@ -246,8 +246,6 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame(['period' => 'quarter', 'year' => '2026', 'quarter' => '4'], $switch($current, 'quarter'));
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch($current, 'month'));
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch(['period' => 'all'], 'month'));
-    $future = ['period' => 'month', 'year' => '2026', 'month' => '12'];
-    $this->assertSame(['period' => 'year', 'year' => '2026'], $switch($future, 'year'));
     $current_quarter = ['period' => 'quarter', 'year' => '2026', 'quarter' => '4'];
     $this->assertSame(['period' => 'month', 'year' => '2026', 'month' => '11'], $switch($current_quarter, 'month'));
     $this->assertSame(['period' => 'all'], $switch($quarter, 'all'));
@@ -258,9 +256,8 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame($range, $switch($range, 'custom'));
     $this->assertSame(['period' => 'quarter', 'year' => '2025', 'quarter' => '2'], $switch($range, 'quarter'));
     $this->assertSame(['period' => 'custom', 'from' => '2014-01-01', 'to' => '2026-11-05'], $switch(['period' => 'all'], 'custom'));
-    // A running or future period runs until today.
+    // A running period runs until today.
     $this->assertSame(['period' => 'custom', 'from' => '2026-01-01', 'to' => '2026-11-05'], $switch($current, 'custom'));
-    $this->assertSame(['period' => 'custom', 'from' => '2026-11-05', 'to' => '2026-11-05'], $switch($future, 'custom'));
     $custom = $this->period(['period' => 'quarter', 'year' => '2024', 'quarter' => '2'])->withGranularity('custom', $this->now());
     $this->assertSame(StatsGranularity::Week, $custom->granularity());
   }
@@ -356,6 +353,11 @@ class StatsPeriodTest extends UnitTestCase {
       ['period' => 'custom', 'from' => '2013-12-31', 'to' => '2014-01-10'],
       ['period' => 'custom', 'from' => '2026-12-01', 'to' => '2027-01-01'],
       ['from' => '2013-01-01', 'to' => '2013-12-31'],
+      // No period starts after today.
+      ['period' => 'month', 'year' => '2026', 'month' => '12'],
+      ['period' => 'quarter', 'year' => '2027', 'quarter' => '1'],
+      ['period' => 'custom', 'from' => '2026-11-06', 'to' => '2026-11-10'],
+      ['from' => '2026-12-01', 'to' => '2026-12-31'],
     ];
     foreach ($invalid as $query) {
       $period = $this->period($query);

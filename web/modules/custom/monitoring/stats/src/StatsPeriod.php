@@ -63,8 +63,8 @@ class StatsPeriod {
    * from/to (Y-m-d, to inclusive). Without a period, a valid from and to
    * select a custom period; one that covers exactly a calendar year, quarter
    * or month yields that preset. An explicit custom period stays custom, so
-   * the range form stays open. Anything invalid, or no period at all, yields
-   * the all time period.
+   * the range form stays open. Anything invalid, a period starting after
+   * today, or no period at all yields the all time period.
    */
   public static function fromQuery(array $query, \DateTimeZone $timezone, \DateTimeImmutable $now): static {
     $now = $now->setTimezone($timezone);
@@ -87,7 +87,7 @@ class StatsPeriod {
     if ($period === static::CUSTOM) {
       $from = static::parseDate($query['from'] ?? NULL, $timezone);
       $last = static::parseDate($query['to'] ?? NULL, $timezone);
-      if (!$from || !$last || $last < $from || $from < static::midnight(static::ALL_START, $timezone) || (int) $last->format('Y') > $current_year) {
+      if (!$from || !$last || $last < $from || $from < static::midnight(static::ALL_START, $timezone) || $from > $now || (int) $last->format('Y') > $current_year) {
         return $default;
       }
       $to = $last->modify('+1 day');
@@ -120,14 +120,16 @@ class StatsPeriod {
       if ($quarter === NULL) {
         return $default;
       }
-      return static::forQuarter(static::midnight(sprintf('%04d-%02d-01', $year, ($quarter - 1) * 3 + 1), $timezone));
+      $from = static::midnight(sprintf('%04d-%02d-01', $year, ($quarter - 1) * 3 + 1), $timezone);
+      return $from > $now ? $default : static::forQuarter($from);
     }
     if ($period === static::MONTH) {
       $month = static::parseInt($query['month'] ?? $now->format('n'), 1, 12);
       if ($month === NULL) {
         return $default;
       }
-      return static::forMonth(static::midnight(sprintf('%04d-%02d-01', $year, $month), $timezone));
+      $from = static::midnight(sprintf('%04d-%02d-01', $year, $month), $timezone);
+      return $from > $now ? $default : static::forMonth($from);
     }
     return $default;
   }
