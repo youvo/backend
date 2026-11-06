@@ -382,7 +382,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $url = $this->generate($project, $prospect, DoorTarget::Draft);
 
     $this->assertSession()->pageTextContains('Zeigt das Passwortformular');
-    $this->assertSession()->pageTextContains('Befördert die Organisation und setzt ihr Passwort');
+    $this->assertSession()->pageTextContains('Befördert die Organisation, setzt ihr Passwort, meldet sie an und schreibt einen Folge-Eintrag.');
     $this->drupalLogout();
     $this->drupalGet((string) parse_url($url, PHP_URL_PATH));
     $this->assertSession()->statusCodeEquals(200);

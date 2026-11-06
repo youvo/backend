@@ -125,7 +125,7 @@ class DoorLinkGenerator {
     $lines = [];
     if ($verdict->password) {
       $lines[] = 'Zeigt das Passwortformular.';
-      $lines[] = 'Befördert die Organisation und setzt ihr Passwort.';
+      $lines[] = 'Befördert die Organisation, setzt ihr Passwort, meldet sie an und schreibt einen Folge-Eintrag.';
     }
     elseif ($verdict->login) {
       $lines[] = 'Meldet an und schreibt einen Folge-Eintrag.';
