@@ -77,14 +77,33 @@
   gap: var(--gin-spacing-s);
   color: var(--yv-text);
 
-  // Core's form actions and form items add their own margins.
+  // Core's form actions and form items add their own margins. The grid gap
+  // spaces the card's parts; the button gets a little more.
   // stylelint-disable-next-line selector-class-pattern
   .form-actions {
-    margin: var(--gin-spacing-xs) 0 0;
+    margin: var(--gin-spacing-s) 0 0;
   }
 
   .form-item {
-    margin-block: 0 var(--gin-spacing-s);
+    margin-block: 0;
+  }
+
+  // The two password fields, once core shows the second one.
+  // stylelint-disable-next-line selector-class-pattern
+  .password-confirm:not(.is-initial) .password-confirm__password {
+    margin-block-end: var(--gin-spacing-s);
+  }
+
+  // Core hides the match message while the confirmation is empty, but keeps
+  // its space.
+  // stylelint-disable-next-line selector-class-pattern
+  .is-confirm-empty .password-match-message {
+    display: none;
+  }
+
+  // stylelint-disable-next-line selector-class-pattern
+  .password-match-message {
+    margin-block-end: 0;
   }
 
   // Gin styles the submit button through its ID with an ID-level
