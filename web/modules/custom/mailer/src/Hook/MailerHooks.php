@@ -25,6 +25,20 @@ class MailerHooks {
   }
 
   /**
+   * Implements hook_gin_ignore_sticky_form_actions().
+   *
+   * The door keeps its button below the text: Gin would move it into the
+   * sticky bar, which visitors without the admin toolbar never see.
+   *
+   * @return string[]
+   *   The ids of the forms.
+   */
+  #[Hook('gin_ignore_sticky_form_actions')]
+  public function ginIgnoreStickyFormActions(): array {
+    return ['mailer_door_form'];
+  }
+
+  /**
    * Implements hook_preprocess_HOOK() for mail_door.
    *
    * Passes the texts of the door form to the template.
