@@ -91,12 +91,12 @@ class StatsPageTest extends StatsTestBase {
   }
 
   /**
-   * Periods overlapping 2014 or 2015 warn about their data, all time not.
+   * Periods overlapping 2014 or 2015 note their imprecise data, all time not.
    */
   public function testImpreciseDataWarning(): void {
 
     $this->drupalLogin($this->createCreative('creative', 'manager'));
-    $warning = '.stats-page .messages--warning';
+    $warning = '.stats-period .stats-note';
     $text = 'The data for 2014 and 2015 may be imprecise.';
     $shown = [
       ['period' => 'year', 'year' => 2015],
@@ -105,6 +105,7 @@ class StatsPageTest extends StatsTestBase {
     foreach ($shown as $query) {
       $this->drupalGet('stats', ['query' => $query]);
       $this->assertSession()->elementTextContains('css', $warning, $text);
+      $this->assertSession()->elementNotExists('css', '.stats-page .messages, .stats-note button');
     }
     $hidden = [
       ['period' => 'year', 'year' => 2016],
@@ -282,9 +283,12 @@ class StatsPageTest extends StatsTestBase {
     $this->submitForm(['from' => '2013-12-31', 'to' => '2014-01-10'], 'Apply');
     $this->assertSession()->pageTextContains('The start date must not be before 01.01.2014, as there is no data before.');
     // A range running past today, as the next step of a custom range, shows
-    // today in the form.
+    // today in the form. The range ends on the last day of the current year,
+    // as a later year is no valid range, and so is today on 31 December.
     $tomorrow = (new \DateTimeImmutable('tomorrow', $this->timezone()))->format('Y-m-d');
-    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => $today, 'to' => $tomorrow]]);
+    $year = substr($today, 0, 4);
+    $query = ['period' => 'custom', 'from' => $year . '-01-01', 'to' => $year . '-12-31'];
+    $this->drupalGet('stats', ['query' => $query]);
     $this->assertSame($today, $this->assertSession()->fieldExists('to')->getValue());
     $this->submitForm(['from' => '2014-01-01', 'to' => $tomorrow], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be after today.');
@@ -409,6 +413,9 @@ class StatsPageTest extends StatsTestBase {
     // The tiles show the last bucket with a snapshot and name it.
     $tile = '.stats-tile[data-tile="active-creatives"]';
     $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-label', 'Active creatives');
+    // A past bucket is complete: no dashed segment.
+    $definition = json_decode($this->assertSession()->elementExists('css', '#stats-activity')->getAttribute('data-chart'), TRUE);
+    $this->assertArrayNotHasKey('statsRunningIndex', $definition['data']['datasets'][0]);
     $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '15');
     $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in Feb 2018');
     $this->assertSession()->elementExists('css', '.stats-tile[data-tile="active-organizations"]');
@@ -422,6 +429,24 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per day');
     $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '5');
     $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited on 31.01.');
+  }
+
+  /**
+   * The running bucket of the activity chart is marked as incomplete.
+   */
+  public function testActivityRunningBucket(): void {
+
+    $now = new \DateTimeImmutable('now', $this->timezone());
+    $today = $now->format('Y-m-d');
+    $this->touchDay($today);
+    $counts = array_combine(ActivitySnapshots::COLUMNS, [1, 2, 3, 4]);
+    $this->container->get('stats.activity_snapshots')->write($today, 'creative', $counts);
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => $now->format('Y')]]);
+    $definition = json_decode($this->assertSession()->elementExists('css', '#stats-activity')->getAttribute('data-chart'), TRUE);
+    $this->assertSame((int) $now->format('n') - 1, $definition['data']['datasets'][0]['statsRunningIndex']);
+    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-description', 'Visited in ' . $now->format('M Y') . ' so far');
   }
 
   /**

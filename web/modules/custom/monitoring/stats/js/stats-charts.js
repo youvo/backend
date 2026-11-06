@@ -204,6 +204,15 @@
             return isolated ? 3 : 0;
           };
         }
+        if (type === 'line' && Number.isInteger(dataset.statsRunningIndex)) {
+          // The running bucket is incomplete: the segment into it is dashed.
+          dataset.segment = {
+            borderDash: (context) =>
+              context.p1DataIndex === dataset.statsRunningIndex
+                ? [4, 4]
+                : undefined,
+          };
+        }
         if (type === 'line' && datasets.length > 1) {
           // Several areas would blend into a haze: lines only.
           dataset.fill = false;
@@ -422,6 +431,20 @@
     // Horizontal bars look up the hovered index along the y axis.
     if (options.indexAxis === 'y') {
       options.interaction = { ...options.interaction, axis: 'y' };
+    }
+    // The tooltip of a running bucket says that its value is not final.
+    if (config.data?.datasets.some((d) => Number.isInteger(d.statsRunningIndex))) {
+      options.plugins.tooltip = {
+        ...options.plugins.tooltip,
+        callbacks: {
+          label(context) {
+            const label = `${context.dataset.label}: ${context.formattedValue}`;
+            return context.dataIndex === context.dataset.statsRunningIndex
+              ? Drupal.t('@label (so far)', { '@label': label })
+              : label;
+          },
+        },
+      };
     }
     // Without data, show a note instead of an empty grid, line or ring.
     if (config.data && isEmpty(config.data)) {

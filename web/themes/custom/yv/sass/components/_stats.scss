@@ -137,6 +137,24 @@
   display: block;
 }
 
+// A calm note under the period bar: a left accent in Gin's warning color, a
+// small icon and muted text. It cannot be dismissed.
+.stats-note {
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+  padding: var(--gin-spacing-xxs) var(--gin-spacing-s);
+  border-inline-start: 3px solid var(--gin-color-warning);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+}
+
+.stats-note-icon {
+  flex: none;
+  color: var(--gin-color-warning);
+}
+
 // The dates and the button in one row, aligned at the bottom of the fields.
 // Drupal's form classes are outside our naming pattern.
 // stylelint-disable selector-class-pattern

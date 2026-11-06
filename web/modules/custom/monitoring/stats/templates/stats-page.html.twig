@@ -7,8 +7,8 @@
  * - period_bar: The heading, the type segments and the steps to the previous
  *   and next period, a step without url disabled.
  * - range_form: The form of a custom date range, for custom periods only.
- * - warning: The status messages warning about the data of the period, if
- *   any.
+ * - warning: The note about the imprecise data of the period with its text,
+ *   empty if there is none.
  * - sections: The render array of the chart sections.
  */
 #}
@@ -34,9 +34,14 @@
     </div>
 
     {{ range_form }}
-  </nav>
 
-  {{ warning }}
+    {% if warning.text %}
+      <p class="stats-note">
+        <svg class="stats-note-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 2 1.5 13.5h13L8 2zM8 6.5v3.25M8 11.75v.01" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>{{ warning.text }}</span>
+      </p>
+    {% endif %}
+  </nav>
 
   {{ sections }}
 </div>

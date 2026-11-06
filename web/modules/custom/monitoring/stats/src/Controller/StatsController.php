@@ -77,7 +77,7 @@ class StatsController implements ContainerInjectionInterface {
         'overview' => $this->overviewSection($period, $now),
         'projects' => $this->projectsSection($period),
         'applications' => $this->applicationsSection($period),
-        'creatives' => $this->creativesSection($period),
+        'creatives' => $this->creativesSection($period, $now),
         'organizations' => $this->organizationsSection($period),
         'feedback' => $this->feedbackSection($period),
       ],
@@ -100,24 +100,20 @@ class StatsController implements ContainerInjectionInterface {
   }
 
   /**
-   * Builds the warning about the imprecise data of 2014 and 2015.
+   * Builds the note about the imprecise data of 2014 and 2015.
    *
    * All time covers these years too but shows no warning, as its years
    * since 2016 dominate.
    *
    * @return array<string, mixed>
-   *   The status messages render array, empty for other periods.
+   *   The note variables, empty for other periods.
    */
   protected function warning(StatsPeriod $period): array {
     $timezone = $period->from()->getTimezone();
     if ($period->type() === StatsPeriod::ALL || $period->from() >= new \DateTimeImmutable('2016-01-01', $timezone)) {
       return [];
     }
-    return [
-      '#theme' => 'status_messages',
-      '#message_list' => ['warning' => [$this->t('The data for 2014 and 2015 may be imprecise.')]],
-      '#status_headings' => ['warning' => $this->t('Warning message')],
-    ];
+    return ['text' => $this->t('The data for 2014 and 2015 may be imprecise.')];
   }
 
   /**
@@ -230,8 +226,8 @@ class StatsController implements ContainerInjectionInterface {
       (string) $this->t('Distinct applicants') => $applications['active_per_bucket'],
     ]);
     $tiles = [
-      StatsCharts::tile('active-applicants', $this->t('Active applicants'), $applications['active'], $this->t('Creatives who applied at least once in the period')),
-      StatsCharts::tile('first-time-applicants', $this->t('First-time applicants'), $applications['first_time'], $this->t('Creatives whose first application falls in the period')),
+      StatsCharts::tile('active-applicants', $this->t('Applicants'), $applications['active'], $this->t('Creatives who applied at least once in the period')),
+      StatsCharts::tile('first-time-applicants', $this->t('First-time'), $applications['first_time'], $this->t('Creatives whose first application falls in the period')),
       StatsCharts::tile('engaged-creatives', $this->t('Engaged'), $engaged, $this->t('Creatives mediated to a project in the period')),
       StatsCharts::tile('came-back', $this->t('Came back'), $returned, $this->t('Applicants not chosen in the period who applied again later'), TRUE),
     ];
@@ -245,10 +241,13 @@ class StatsController implements ContainerInjectionInterface {
   /**
    * Builds the creatives section: activation, first application, activity.
    *
+   * The bucket containing the current time is incomplete, so the activity
+   * chart draws the line into it dashed and the tiles say "so far".
+   *
    * @return array<string, mixed>
    *   The section render array.
    */
-  protected function creativesSection(StatsPeriod $period): array {
+  protected function creativesSection(StatsPeriod $period, \DateTimeImmutable $now): array {
 
     $labels = $period->bucketLabels();
     $activation = $this->activityStats->activation($period);
@@ -285,6 +284,7 @@ class StatsController implements ContainerInjectionInterface {
     $activity = $this->activitySnapshots->series($period);
     $creatives = $this->lastBucket($activity['creative']);
     $organizations = $this->lastBucket($activity['organization']);
+    $running = $period->bucketOf($now->getTimestamp());
     if ($creatives !== NULL || $organizations !== NULL) {
       [$title, $description] = match ($period->granularity()) {
         StatsGranularity::Day => [$this->t('Active users per day'), $this->t('Users who visited on each day')],
@@ -296,15 +296,22 @@ class StatsController implements ContainerInjectionInterface {
         (string) $this->t('Creatives') => $activity['creative'],
         (string) $this->t('Organizations') => $activity['organization'],
       ]);
+      // The running bucket is marked on the series that has a value there.
+      $running_index = $running !== NULL ? array_search($running, array_keys($period->buckets()), FALSE) : FALSE;
+      foreach (['creative', 'organization'] as $index => $role) {
+        if ($running_index !== FALSE && ($activity[$role][$running] ?? NULL) !== NULL) {
+          $activity_chart['series_' . $index]['#raw_options']['statsRunningIndex'] = $running_index;
+        }
+      }
       $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $description);
       // The tiles show the last bucket with a snapshot.
       $tiles = [];
       foreach (['creative' => $creatives, 'organization' => $organizations] as $role => $bucket) {
         $tiles[] = StatsCharts::tile(
           'active-' . $role . 's',
-          $role === 'creative' ? $this->t('Active creatives') : $this->t('Active organizations'),
+          $role === 'creative' ? $this->t('Active creatives') : $this->t('Active orgs'),
           $bucket !== NULL ? $activity[$role][$bucket] : NULL,
-          $bucket !== NULL ? $this->visitedIn($period, $bucket) : NULL,
+          $bucket !== NULL ? $this->visitedIn($period, $bucket, $bucket === $running) : NULL,
         );
       }
       $cards['tiles'] = StatsCharts::tiles($tiles);
@@ -431,9 +438,18 @@ class StatsController implements ContainerInjectionInterface {
    * Gets the hint of an activity tile that names its bucket.
    *
    * Days read "05.11.", ISO weeks "W45", months "Nov 2026" and years "2026".
+   * The running bucket adds "so far", as it is not complete yet.
    */
-  protected function visitedIn(StatsPeriod $period, string $bucket): string|\Stringable {
+  protected function visitedIn(StatsPeriod $period, string $bucket, bool $running = FALSE): string|\Stringable {
     $start = (new \DateTimeImmutable('@' . $period->buckets()[$bucket][0]))->setTimezone($period->from()->getTimezone());
+    if ($running) {
+      return match ($period->granularity()) {
+        StatsGranularity::Day => $this->t('Visited on @day so far', ['@day' => $start->format('d.m.')]),
+        StatsGranularity::Week => $this->t('Visited in @week so far', ['@week' => $start->format('\WW')]),
+        StatsGranularity::Month => $this->t('Visited in @month so far', ['@month' => $start->format('M Y')]),
+        StatsGranularity::Year => $this->t('Visited in @year so far', ['@year' => $start->format('Y')]),
+      };
+    }
     return match ($period->granularity()) {
       StatsGranularity::Day => $this->t('Visited on @day', ['@day' => $start->format('d.m.')]),
       StatsGranularity::Week => $this->t('Visited in @week', ['@week' => $start->format('\WW')]),
