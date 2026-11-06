@@ -16,3 +16,13 @@ mailer.door:
   options:
     no_cache: TRUE
     _maintenance_access: TRUE
+
+mailer.door_links:
+  path: '/admin/door-links'
+  defaults:
+    _form: '\Drupal\mailer\Form\DoorLinkForm'
+    _title: 'Türlinks erzeugen'
+  requirements:
+    _permission: 'create mail door links'
+  options:
+    _admin_route: TRUE

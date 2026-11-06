@@ -64,6 +64,8 @@ services:
     autowire: true
     arguments:
       $hubUrls: '@mailer.hub_urls'
+  Drupal\mailer\Door\DoorLinkGenerator:
+    autowire: true
   mailer.variables:
     class: Drupal\mailer\MailVariables
     arguments: ['@config.factory']
