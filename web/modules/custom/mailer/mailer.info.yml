@@ -9,8 +9,10 @@ dependencies:
   - correspondence:correspondence
   - creatives:creatives
   - organizations:organizations
+  - password_policy:password_policy
   - projects:projects
   - symfony_mailer:mailer_policy
   - symfony_mailer:mailer_transport
   - symfony_mailer:symfony_mailer
+  - tagify:tagify
   - youvo:youvo

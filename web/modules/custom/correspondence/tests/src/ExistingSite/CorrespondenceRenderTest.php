@@ -70,6 +70,33 @@ class CorrespondenceRenderTest extends ProjectResourceTestBase {
   }
 
   /**
+   * Link only entries are not marked as not delivered.
+   */
+  public function testLinkOnlyEntry(): void {
+
+    $project = $this->createProject(ProjectState::Draft);
+    $values = [
+      'type' => 'mail',
+      'project' => $project->id(),
+      'subject' => 'S',
+      'body' => ['value' => '<p>Hi</p>', 'format' => 'email_html'],
+      'subtype' => 'x',
+      'origin' => 'automatic',
+    ];
+
+    $link = $this->createEntry(['result' => 'link'] + $values);
+    $this->assertCount(0, $link->validate()->getByField('result'));
+    $html = $this->renderEntry($link);
+    $this->assertStringContainsString('Link only', $html);
+    $this->assertStringNotContainsString('Not delivered', $html);
+
+    $failed = $this->createEntry(['result' => 'failed'] + $values);
+    $html = $this->renderEntry($failed);
+    $this->assertStringContainsString('Not delivered', $html);
+    $this->assertStringNotContainsString('Link only', $html);
+  }
+
+  /**
    * Creates a saved entry.
    */
   protected function createEntry(array $values): CorrespondenceInterface {

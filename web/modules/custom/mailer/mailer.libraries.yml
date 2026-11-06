@@ -1,0 +1,7 @@
+door_link_tags:
+  js:
+    js/door-link-tags.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - tagify/default

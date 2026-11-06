@@ -31,21 +31,15 @@ interface ProjectActionMailerInterface extends ComponentMailerInterface {
   /**
    * Notifies the organization that a project was created for it.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   * @param string $link
-   *   The link to complete the project.
+   * The mail carries a door to the draft.
    */
-  public function notify(ProjectInterface $project, string $link): bool;
+  public function notify(ProjectInterface $project): bool;
 
   /**
    * Invites the organization to complete a project.
    *
-   * @param \Drupal\projects\ProjectInterface $project
-   *   The project.
-   * @param string $link
-   *   The one-time link of the invitation.
+   * The mail carries a door to the draft, where the prospect sets its password.
    */
-  public function invite(ProjectInterface $project, string $link): bool;
+  public function invite(ProjectInterface $project): bool;
 
 }

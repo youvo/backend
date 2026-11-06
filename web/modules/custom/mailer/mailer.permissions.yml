@@ -1,3 +1,7 @@
 send project mails:
   title: 'Send project mails'
   description: 'Send reminder mails to the organization of a project the user manages.'
+create mail door links:
+  title: 'Create mail door links'
+  description: 'Make working door links without sending a mail. A link can log its recipient in.'
+  restrict access: true

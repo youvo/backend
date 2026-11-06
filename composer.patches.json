@@ -39,6 +39,9 @@
             "Custom: Limit validation error for type form element in AJAX callback": "patches/multivalue_form_element/custom-limit-validation-error-for-type.patch",
             "Custom: Modify input for checkbox in multivalue form element to correctly retain values after reordering": "patches/multivalue_form_element/custom-populate-checkbox-input.patch"
         },
+        "drupal/password_policy": {
+            "Custom: Skip the form display on install while config is syncing": "patches/password_policy/custom-skip-form-display-while-syncing.patch"
+        },
         "drupal/openapi": {
             "Issue #: PHP 8.4: Implicitly nullable parameter declarations deprecated": "patches/openapi/openapi-mr22.patch"
         },

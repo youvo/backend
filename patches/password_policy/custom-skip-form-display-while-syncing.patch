@@ -1,0 +1,16 @@
+--- a/password_policy.install
++++ b/password_policy.install
+@@ -20,6 +20,13 @@
+   $timestamp = \Drupal::service("date.formatter")->format(\Drupal::time()->getRequestTime(), "custom", DateTimeItemInterface::DATETIME_STORAGE_FORMAT, DateTimeItemInterface::STORAGE_TIMEZONE);
+   \Drupal::state()->set('password_policy.install_time', $timestamp);
+ 
++  // A config sync, e.g. an install from existing configuration, brings its
++  // own form display. Creating one here would fail while the user bundles
++  // provided by other modules are not imported yet.
++  if (\Drupal::isConfigSyncing()) {
++    return;
++  }
++
+   // Rebuild user entity form display for new fields.
+   $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
+   /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $user_form_display */

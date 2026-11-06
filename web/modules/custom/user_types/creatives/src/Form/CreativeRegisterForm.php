@@ -13,6 +13,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
+use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\user\OneTimeAuthentication;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -43,6 +44,7 @@ final class CreativeRegisterForm extends FormBase {
     protected TimeInterface $time,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected OneTimeAuthentication $oneTimeAuthentication,
+    protected PasswordPolicyValidatorInterface $passwordPolicyValidator,
   ) {}
 
   /**
@@ -58,6 +60,7 @@ final class CreativeRegisterForm extends FormBase {
       $container->get('datetime.time'),
       $container->get('entity_type.manager'),
       $container->get(OneTimeAuthentication::class),
+      $container->get('password_policy.validator'),
     );
   }
 
@@ -150,6 +153,21 @@ final class CreativeRegisterForm extends FormBase {
     $form['#theme'] = 'creative_register_password_form';
 
     return $form;
+  }
+
+  /**
+   * Checks the new password against the password policies.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
+    $password = (string) $form_state->getValue('password');
+    $creative = $form_state->getValue('user');
+    if ($password === '' || !$creative instanceof UserInterface) {
+      return;
+    }
+    $report = $this->passwordPolicyValidator->validatePassword($password, $creative);
+    if ($report->isInvalid()) {
+      $form_state->setErrorByName('password', $report->getErrors());
+    }
   }
 
   /**

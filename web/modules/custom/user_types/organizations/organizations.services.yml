@@ -1,7 +1,0 @@
-services:
-  organizations.project_notify.event_subscriber:
-    class: Drupal\organizations\EventSubscriber\OrganizationsProjectNotifySubscriber
-    arguments:
-      [ '@config.factory', '@language_manager', '@datetime.time', '@Drupal\user\OneTimeAuthentication' ]
-    tags:
-      - { name: event_subscriber }

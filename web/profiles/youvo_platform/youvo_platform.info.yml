@@ -36,6 +36,9 @@ install:
   - jsonapi_include
   - mail_login
   - multivalue_form_element
+  - password_policy
+  - password_policy_length
+  - password_policy_username
   - consumers
   - consumer_image_styles
   - entity

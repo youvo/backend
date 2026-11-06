@@ -2,10 +2,13 @@
 
 namespace Drupal\mailer\Mailer;
 
+use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
+use Drupal\mailer\Door\DoorLinks;
+use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\MailVariables;
 use Drupal\projects\ProjectInterface;
 use Drupal\symfony_mailer\Attribute\MailerInfo;
@@ -58,6 +61,8 @@ class ProjectActionMailer extends YouvoMailerBase implements ProjectActionMailer
     LoggerInterface $logger,
     ConfigFactoryInterface $configFactory,
     protected MailVariables $mailVariables,
+    protected DoorLinks $doorLinks,
+    protected UuidInterface $uuid,
   ) {
     parent::__construct($mailer, $mailerLookup, $baseTag, $recorder, $logger, $configFactory);
   }
@@ -80,11 +85,16 @@ class ProjectActionMailer extends YouvoMailerBase implements ProjectActionMailer
 
     // The message is user input and rendered escaped by the policy.
     // The phone number replaces the empty default of the creative variables.
+    // The organization gets a door to the applicant, which is never stored.
+    $to = $this->ownerEmail($project);
+    $uuid = $this->uuid->generate();
+    $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Applicant, (string) $applicant->uuid());
     $email = $this->projectEmail('apply_organization', $project, array_replace($base, $creative, [
       'message' => $message,
       'creative_phone' => $phone,
+      'creative_link' => $door,
     ]));
-    $success = $this->deliver($email, $project, 'apply_organization', $this->ownerEmail($project));
+    $success = $this->deliver($email, $project, 'apply_organization', $to, [$door], 'automatic', NULL, $uuid);
 
     $email = $this->projectEmail('apply_creative', $project, $base + $creative);
     return $this->deliver($email, $project, 'apply_creative', $applicant->getEmail()) && $success;
@@ -93,24 +103,29 @@ class ProjectActionMailer extends YouvoMailerBase implements ProjectActionMailer
   /**
    * {@inheritdoc}
    */
-  public function notify(ProjectInterface $project, string $link): bool {
-    return $this->sendWithLink($project, 'notify_organization', $link);
+  public function notify(ProjectInterface $project): bool {
+    return $this->sendWithDraftDoor($project, 'notify_organization');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invite(ProjectInterface $project, string $link): bool {
-    return $this->sendWithLink($project, 'invite_organization', $link);
+  public function invite(ProjectInterface $project): bool {
+    return $this->sendWithDraftDoor($project, 'invite_organization');
   }
 
   /**
-   * Sends a mail to the organization that carries a link.
+   * Sends a mail to the organization that carries a door to the draft.
+   *
+   * A prospect sets its password on the door.
    */
-  protected function sendWithLink(ProjectInterface $project, string $subtype, string $link): bool {
-    $email = $this->projectEmail($subtype, $project, $this->mailVariables->project($project) + ['link' => $link]);
-    // The link can be a one-time login link: it is never stored.
-    return $this->deliver($email, $project, $subtype, $this->ownerEmail($project), [$link]);
+  protected function sendWithDraftDoor(ProjectInterface $project, string $subtype): bool {
+    $to = $this->ownerEmail($project);
+    $uuid = $this->uuid->generate();
+    $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Draft);
+    $email = $this->projectEmail($subtype, $project, $this->mailVariables->project($project) + ['link' => $door]);
+    // The door can log the organization in: it is never stored.
+    return $this->deliver($email, $project, $subtype, $to, [$door], 'automatic', NULL, $uuid);
   }
 
 }

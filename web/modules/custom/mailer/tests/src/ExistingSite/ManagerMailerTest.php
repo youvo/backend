@@ -105,8 +105,7 @@ class ManagerMailerTest extends MailerExistingSiteTestBase {
     $html = $this->interceptedMails[0]['html'];
     $this->assertStringContainsString('Eigener Text', $html);
     $this->assertStringNotContainsString('Du hast auf youvo', $html, 'The policy text must be replaced.');
-    $hub = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('hub_url'), '/');
-    $this->assertStringContainsString('<a href="' . $hub . '/draft/' . $project->uuid() . '">', $html, 'The token is resolved to the hub link and linked.');
+    $this->assertMatchesRegularExpression('#<a href="[^"]*/door/' . $project->getOwner()->id() . '/[^"]+/draft/[^"]+">#', $html, 'The token is resolved to the door and linked.');
     $this->assertStringNotContainsString('[mail:', $html);
     $this->assertStringContainsString('<html', $html, 'The mail wrapper around the body is kept.');
     // Manager mails are not marked as automatic.
@@ -176,6 +175,41 @@ class ManagerMailerTest extends MailerExistingSiteTestBase {
     $subject = (string) $entries[0]->get('subject')->value;
     $this->assertLessThanOrEqual(255, mb_strlen($subject));
     $this->assertStringStartsWith('Lang Lang', $subject);
+  }
+
+  /**
+   * A reminder links a door that is not recorded.
+   *
+   * The door carries the UUID of the correspondence entry.
+   */
+  public function testReminderCarriesDoor(): void {
+
+    $project = $this->createMailableProject(ProjectState::Open);
+    $owner = $project->getOwner();
+    $this->assertTrue($this->mailer()->send($project, 'reminder_open', 'Betreff', "Text\n\n[mail:project_link]", $owner->getManager()));
+
+    $entries = $this->loadEntries($project);
+    $this->assertCount(1, $entries);
+    $html = $this->interceptedMails[0]['html'];
+    $this->assertStringContainsString('/door/' . $owner->id() . '/' . $entries[0]->uuid() . '/applicants/', $html);
+    $body = $entries[0]->get('body')->value;
+    $this->assertStringContainsString('[Link entfernt]', $body);
+    $this->assertStringNotContainsString('/door/', $body);
+  }
+
+  /**
+   * A decline keeps the plain hub link, which is recorded.
+   */
+  public function testDeclineKeepsPlainLink(): void {
+
+    $project = $this->createMailableProject(ProjectState::Draft);
+    $this->assertTrue($this->mailer()->send($project, 'decline_custom', 'Betreff', "Text\n\n[mail:project_link]", $project->getOwner()->getManager()));
+
+    $link = $this->container->get('mailer.hub_urls')->project($project);
+    $html = $this->interceptedMails[0]['html'];
+    $this->assertStringContainsString('<a href="' . $link . '">', $html);
+    $this->assertStringNotContainsString('/door/', $html);
+    $this->assertStringContainsString($link, $this->loadEntries($project)[0]->get('body')->value);
   }
 
 }

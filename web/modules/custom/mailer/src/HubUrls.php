@@ -16,12 +16,23 @@ class HubUrls {
   public function __construct(protected ConfigFactoryInterface $configFactory) {}
 
   /**
+   * Gets the hub base URL without a trailing slash.
+   *
+   * With the local OAuth setting, the hub runs on the developer machine.
+   */
+  public function base(): string {
+    if ($this->configFactory->get('oauth_grant.settings')->get('local')) {
+      return 'http://localhost:3000';
+    }
+    return rtrim((string) $this->configFactory->get('youvo.settings')->get('hub_url'), '/');
+  }
+
+  /**
    * Gets the link organizations use to open this project.
    */
   public function project(ProjectInterface $project): string {
-    $base = rtrim((string) $this->configFactory->get('youvo.settings')->get('hub_url'), '/');
     $path = $project->lifecycle()->isDraft() ? '/draft/' : '/projects/';
-    return $base . $path . $project->uuid();
+    return $this->base() . $path . $project->uuid();
   }
 
 }

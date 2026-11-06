@@ -1,0 +1,36 @@
+mailer.door:
+  path: '/door/{uid}/{correspondence}/{target}/{timestamp}/{hash}/{subject}'
+  defaults:
+    _form: '\Drupal\mailer\Form\DoorForm'
+    _title: 'youvo'
+    subject: ''
+  requirements:
+    # The door verifies the signature.
+    _access: 'TRUE'
+    # The signed data joins these parts with ':', so none may contain one.
+    uid: '\d+'
+    correspondence: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    target: 'draft|applicants|edit|complete|applicant|feedback'
+    timestamp: '\d+'
+    subject: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+  options:
+    no_cache: TRUE
+    _maintenance_access: TRUE
+
+mailer.door_links:
+  path: '/admin/door-links'
+  defaults:
+    _form: '\Drupal\mailer\Form\DoorLinkForm'
+    _title: 'Türlinks erzeugen'
+  requirements:
+    _permission: 'create mail door links'
+  options:
+    _admin_route: TRUE
+
+mailer.door_links_autocomplete:
+  path: '/admin/door-links/autocomplete/{kind}'
+  defaults:
+    _controller: '\Drupal\mailer\Controller\DoorLinkAutocompleteController::handle'
+  requirements:
+    _permission: 'create mail door links'
+    kind: 'project|recipient|subject'

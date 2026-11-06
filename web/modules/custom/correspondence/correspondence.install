@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Correspondence module.
+ */
+
+use Drupal\Core\Field\BaseFieldDefinition;
+
+/**
+ * Adds the link result for door links made without a mail.
+ */
+function correspondence_update_11001(): void {
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  $result = $update_manager->getFieldStorageDefinition('result', 'correspondence');
+  if ($result instanceof BaseFieldDefinition) {
+    $result->setSetting('allowed_values', ['sent' => 'Sent', 'failed' => 'Failed', 'link' => 'Link only']);
+    $update_manager->updateFieldStorageDefinition($result);
+  }
+}

@@ -17,10 +17,10 @@ class MailerProjectInviteSubscriber implements EventSubscriberInterface {
   public function __construct(protected ProjectActionMailerInterface $mailer) {}
 
   /**
-   * Sends the invite mail with the link set by the event subscribers before.
+   * Sends the invite mail, which carries a door to the draft.
    */
   public function mail(ProjectInviteEvent $event): void {
-    $this->mailer->invite($event->getProject(), $event->getLink());
+    $this->mailer->invite($event->getProject());
   }
 
   /**

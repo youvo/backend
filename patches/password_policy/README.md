@@ -1,0 +1,3 @@
+The patch keeps password_policy_install() from creating the user form display while config is syncing.
+
+An install from existing configuration installs all modules first and imports their configuration afterwards. Password Policy has weight 10, so it is installed after user_bundle, which turns users into bundles of the `user_type` entity. Its install hook then saves a `user.user.default` form display before the `user_bundle.user_type.user` bundle is imported, and saving fails with "Missing bundle entity, entity type user_type, entity id user". The imported configuration contains the form display with the password fields, so the hook can skip it during a sync.
