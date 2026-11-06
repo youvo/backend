@@ -68,14 +68,14 @@ class DoorLinkForm extends FormBase {
     ];
 
     $form['project'] = [
-      '#type' => 'entity_autocomplete',
-      '#target_type' => 'project',
+      '#type' => 'door_link_tags',
+      '#kind' => 'project',
       '#title' => $this->t('Projekt'),
       '#required' => TRUE,
     ];
     $form['recipient'] = [
-      '#type' => 'entity_autocomplete',
-      '#target_type' => 'user',
+      '#type' => 'door_link_tags',
+      '#kind' => 'recipient',
       '#title' => $this->t('Empfänger'),
       '#required' => TRUE,
     ];
@@ -90,8 +90,8 @@ class DoorLinkForm extends FormBase {
       '#required' => TRUE,
     ];
     $form['subject'] = [
-      '#type' => 'entity_autocomplete',
-      '#target_type' => 'user',
+      '#type' => 'door_link_tags',
+      '#kind' => 'subject',
       '#title' => $this->t('Bewerbung (Kreative)'),
       '#states' => [
         'visible' => [

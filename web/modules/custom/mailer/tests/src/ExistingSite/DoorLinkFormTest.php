@@ -170,10 +170,15 @@ class DoorLinkFormTest extends ExistingSiteBase {
   }
 
   /**
-   * Gets the autocomplete input of an entity.
+   * Gets the Tagify input of an entity, as the widget posts it.
    */
   protected function autocomplete(ProjectInterface|UserInterface $entity): string {
-    return $entity->label() . ' (' . $entity->id() . ')';
+    return (string) json_encode([[
+      'value' => (string) $entity->id(),
+      'entity_id' => (string) $entity->id(),
+      'label' => $entity->label(),
+    ],
+    ]);
   }
 
   /**

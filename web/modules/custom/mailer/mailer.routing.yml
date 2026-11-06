@@ -26,3 +26,11 @@ mailer.door_links:
     _permission: 'create mail door links'
   options:
     _admin_route: TRUE
+
+mailer.door_links_autocomplete:
+  path: '/admin/door-links/autocomplete/{kind}'
+  defaults:
+    _controller: '\Drupal\mailer\Controller\DoorLinkAutocompleteController::handle'
+  requirements:
+    _permission: 'create mail door links'
+    kind: 'project|recipient|subject'
