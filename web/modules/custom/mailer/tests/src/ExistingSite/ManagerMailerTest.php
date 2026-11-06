@@ -200,18 +200,52 @@ class ManagerMailerTest extends MailerExistingSiteTestBase {
   }
 
   /**
-   * A decline keeps the plain hub link, which is recorded.
+   * A decline resolves its plain hub links and removes the project link.
    */
-  public function testDeclineKeepsPlainLink(): void {
+  public function testDeclineLinks(): void {
 
-    $project = $this->createMailableProject(ProjectState::Draft);
-    $this->assertTrue($this->mailer()->send($project, 'decline_custom', 'Betreff', "Text\n\n[mail:project_link]", $project->getOwner()->getManager()));
+    $project = $this->createMailableProject(ProjectState::Pending);
+    $body = "Text\n\n[mail:faq_link]\n\n[mail:rules_link]\n\n[mail:new_project_link]\n\nProjekt: [mail:project_link]";
+    $this->assertTrue($this->mailer()->send($project, 'decline_custom', 'Betreff', $body, $project->getOwner()->getManager()));
 
-    $link = $this->container->get('mailer_door.hub_urls')->project($project);
+    $hub = $this->container->get('mailer_door.hub_urls')->base();
     $html = $this->interceptedMails[0]['html'];
-    $this->assertStringContainsString('<a href="' . $link . '">', $html);
+    foreach (['/support/faq', '/support/rules', '/proposal'] as $path) {
+      $this->assertStringContainsString('<a href="' . $hub . $path . '">', $html, $path);
+    }
+    $this->assertStringNotContainsString($this->container->get('mailer_door.hub_urls')->project($project), $html, 'The project link is not allowed in a decline.');
     $this->assertStringNotContainsString('/go/', $html);
-    $this->assertStringContainsString($link, $this->loadEntries($project)[0]->get('body')->value);
+    $this->assertStringNotContainsString('[mail:', $html);
+    $this->assertStringContainsString($hub . '/support/rules', $this->loadEntries($project)[0]->get('body')->value);
+  }
+
+  /**
+   * An archive links a new draft and nothing else.
+   */
+  public function testArchiveLinks(): void {
+    $project = $this->createMailableProject(ProjectState::Open);
+    $body = "Text\n\n[mail:new_draft_link]\n\n[mail:new_project_link] [mail:project_link] [mail:faq_link]";
+    $this->assertTrue($this->mailer()->send($project, 'archive_external', 'Betreff', $body, $project->getOwner()->getManager()));
+    $hubUrls = $this->container->get('mailer_door.hub_urls');
+    $html = $this->interceptedMails[0]['html'];
+    $this->assertStringContainsString('<a href="' . $hubUrls->base() . '/draft/new">', $html);
+    // The links of other subtypes are removed.
+    foreach ([$hubUrls->proposal(), $hubUrls->project($project), $hubUrls->faq()] as $link) {
+      $this->assertStringNotContainsString($link, $html);
+    }
+    $this->assertStringNotContainsString('/go/', $html);
+    $this->assertStringNotContainsString('[mail:', $html);
+  }
+
+  /**
+   * The religious decline links the rules as a token, no hardcoded website.
+   */
+  public function testDeclineReligiousPreview(): void {
+    $project = $this->createMailableProject(ProjectState::Pending);
+    $preview = $this->mailer()->preview($project, 'decline_religious');
+    $this->assertNotNull($preview);
+    $this->assertStringContainsString('[mail:rules_link]', $preview->body);
+    $this->assertStringNotContainsString('youvo.org/hilfe', $preview->body);
   }
 
 }

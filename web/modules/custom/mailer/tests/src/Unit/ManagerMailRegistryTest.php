@@ -3,6 +3,7 @@
 namespace Drupal\Tests\mailer\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\mailer\Mailer\ManagerMailer;
 use Drupal\mailer\Manager\ManagerMailDefinition;
 use Drupal\mailer\Manager\ManagerMailRegistry;
 use Drupal\projects\ProjectArchiveReason;
@@ -10,6 +11,7 @@ use Drupal\projects\ProjectDeclineReason;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
 use Drupal\projects\Service\ProjectLifecycleInterface;
+use Drupal\symfony_mailer\Attribute\MailerInfo;
 use Drupal\Tests\UnitTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -128,6 +130,33 @@ class ManagerMailRegistryTest extends UnitTestCase {
       $this->assertSame($reason, ManagerMailRegistry::archiveReason(ManagerMailRegistry::archiveSubtype($reason)));
     }
     $this->assertNull(ManagerMailRegistry::archiveReason('decline_custom'));
+  }
+
+  /**
+   * Every subtype of the manager mailer has its late tokens, none is missing.
+   */
+  public function testLateTokenNames(): void {
+
+    $attributes = (new \ReflectionClass(ManagerMailer::class))->getAttributes(MailerInfo::class);
+    $subtypes = array_keys($attributes[0]->getArguments()['sub_defs']);
+    $this->assertCount(16, $subtypes);
+
+    $expected = [
+      'reminder' => ['project_link'],
+      'decline' => ['faq_link', 'rules_link', 'new_project_link'],
+      'archive' => ['new_draft_link'],
+    ];
+    foreach ($subtypes as $subtype) {
+      $this->assertSame($expected[strstr($subtype, '_', TRUE)], ManagerMailRegistry::lateTokenNames($subtype), $subtype);
+    }
+    foreach (ProjectDeclineReason::cases() as $reason) {
+      $this->assertContains(ManagerMailRegistry::declineSubtype($reason), $subtypes);
+    }
+    foreach (ProjectArchiveReason::cases() as $reason) {
+      $this->assertContains(ManagerMailRegistry::archiveSubtype($reason), $subtypes);
+    }
+    $this->assertSame([], ManagerMailRegistry::lateTokenNames('unknown'));
+    $this->assertSame([], ManagerMailRegistry::lateTokenNames('decline_unknown'));
   }
 
 }

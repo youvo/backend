@@ -110,6 +110,9 @@ class ContextPaneMailViewTest extends ManagerExistingSiteTestBase {
     $html = $this->mailPane(static::REMINDER);
     $this->assertStringContainsString('manager-pane-form', $html);
     $this->assertStringContainsString('[mail:project_link]', $html);
+    // A reminder offers only the project link as placeholder.
+    preg_match_all('/data-token="\[mail:([a-z_]+)\]"/', $html, $matches);
+    $this->assertSame(['project_link'], $matches[1]);
     $this->assertStringContainsString(htmlspecialchars($this->project->getTitle(), ENT_QUOTES), $html);
     // The type of the open form is marked in the list of types.
     $this->assertMatchesRegularExpression('/<a[^>]*aria-current="true"[^>]*data-pane-params="subtype=reminder_draft"|<a[^>]*data-pane-params="subtype=reminder_draft"[^>]*aria-current="true"/', $html);

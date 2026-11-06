@@ -47,4 +47,32 @@ class HubUrls {
     return $this->base() . $path . $project->uuid();
   }
 
+  /**
+   * Gets the link to the FAQ in the hub.
+   */
+  public function faq(): string {
+    return $this->base() . '/support/faq';
+  }
+
+  /**
+   * Gets the link to the rules for organizations in the hub.
+   */
+  public function rules(): string {
+    return $this->base() . '/support/rules';
+  }
+
+  /**
+   * Gets the link to the public proposal page of the hub.
+   */
+  public function proposal(): string {
+    return $this->base() . '/proposal';
+  }
+
+  /**
+   * Gets the link that starts a new draft in the hub.
+   */
+  public function newDraft(): string {
+    return $this->base() . '/draft/new';
+  }
+
 }

@@ -10,5 +10,5 @@ configuration:
     value: 'Dein Projekt auf youvo.org'
   email_body:
     content:
-      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag. Leider findet sich in unserer Community erfahrungsgemäß niemand, der die passenden Fähigkeiten mitbringt um Euer Projekt umzusetzen. Aber vielleicht braucht Ihr in Zukunft mal Unterstützung aus den Bereichen Design, Digitalisierung, Fotografie oder Onlinekommunikation? Dann reicht gern einen neuen Projektvorschlag bei uns ein. Wir wünschen Euch viel Erfolg bei Eurem Vorhaben!</p><p>Liebe Grüße<br>{{ manager }}</p>'
+      value: '<p>Hallo {{ contact }},</p><p>vielen Dank für Deinen Projektvorschlag. Leider findet sich in unserer Community erfahrungsgemäß niemand, der die passenden Fähigkeiten mitbringt um Euer Projekt umzusetzen. Aber vielleicht braucht Ihr in Zukunft mal Unterstützung aus den Bereichen Design, Digitalisierung, Fotografie oder Onlinekommunikation? Dann reicht gern einen neuen Projektvorschlag bei uns ein:</p><p>{{ new_project_link }}</p><p>Wir wünschen Euch viel Erfolg bei Eurem Vorhaben!</p><p>Liebe Grüße<br>{{ manager }}</p>'
       format: email_html

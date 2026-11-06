@@ -61,6 +61,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
     'organization_email' => new TranslatableMarkup("Organization email"),
     'organization_phone' => new TranslatableMarkup("Organization phone"),
     'project_link' => new TranslatableMarkup("Link to the project in the hub"),
+    'faq_link' => new TranslatableMarkup("Link to the FAQ in the hub"),
+    'rules_link' => new TranslatableMarkup("Link to the rules in the hub"),
+    'new_project_link' => new TranslatableMarkup("Link to the public proposal page in the hub"),
+    'new_draft_link' => new TranslatableMarkup("Link to a new draft in the hub"),
     'applicants_count' => new TranslatableMarkup("Number of applicants"),
   ],
 )]
@@ -107,15 +111,34 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
    * @param \Drupal\projects\ProjectInterface $project
    *   The project.
    * @param bool $preview
-   *   TRUE keeps the link as a late token the manager can see.
+   *   TRUE keeps the links as late tokens the manager can see.
    *
    * @return array<string, string>
    *   The variables.
    */
   protected function variables(ProjectInterface $project, bool $preview): array {
-    return $this->mailVariables->project($project) + [
-      'project_link' => $preview ? LateTokens::token('project_link') : $this->hubUrls->project($project),
+    $links = $this->links($project);
+    if ($preview) {
+      $links = array_combine(array_keys($links), array_map(LateTokens::token(...), array_keys($links)));
+    }
+    return $this->mailVariables->project($project) + $links + [
       'applicants_count' => (string) count($project->getApplicants()),
+    ];
+  }
+
+  /**
+   * Gets the plain links of the late tokens, keyed by token name.
+   *
+   * @return array<string, string>
+   *   The links.
+   */
+  protected function links(ProjectInterface $project): array {
+    return [
+      'project_link' => $this->hubUrls->project($project),
+      'faq_link' => $this->hubUrls->faq(),
+      'rules_link' => $this->hubUrls->rules(),
+      'new_project_link' => $this->hubUrls->proposal(),
+      'new_draft_link' => $this->hubUrls->newDraft(),
     ];
   }
 
@@ -188,12 +211,13 @@ class ManagerMailer extends YouvoMailerBase implements ManagerMailerInterface {
       $link = $this->doorLinks->build($project->getOwner(), $uuid, $target);
       $secrets = [$link];
     }
-    $values = ['project_link' => $link];
+    $values = ['project_link' => $link] + $this->links($project);
     $success = TRUE;
     foreach ([$this->ownerEmail($project)] as $to) {
-      // Late tokens are resolved on the plain text, then everything is
-      // escaped and converted to HTML: the manager cannot introduce markup.
-      $body = $this->plainText->toHtml($this->lateTokens->replace($bodyText, $values));
+      // Late tokens are resolved on the plain text, only those of the subtype,
+      // then everything is escaped and converted to HTML: the manager cannot
+      // introduce markup.
+      $body = $this->plainText->toHtml($this->lateTokens->replace($bodyText, $subtype, $values));
       $email = $this->projectEmail($subtype, $project, FALSE);
       // BUILD phase, after ReplacementEmailProcessor (900): the edited text
       // replaces the rendered policy text and is never parsed as Twig. Added
