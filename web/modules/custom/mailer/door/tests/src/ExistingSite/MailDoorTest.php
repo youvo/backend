@@ -244,6 +244,17 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Counts the sessions of an account.
+   */
+  protected function sessions(UserInterface $account): int {
+    return (int) $this->container->get('database')->select('sessions', 's')
+      ->condition('uid', $account->id())
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+  }
+
+  /**
    * Gets the redirect target of the last response.
    */
   protected function location(): ?string {
@@ -601,6 +612,29 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
+   * Tests that the feedback door of the owner logs in and opens the hub form.
+   */
+  public function testFeedbackDoorOfOrganization(): void {
+
+    $project = $this->createProject(ProjectState::Completed);
+    $organization = $project->getOwner();
+    $path = $this->door($organization, $project, DoorTarget::Feedback);
+
+    $this->visitDoor($path);
+    $this->assertSession()->pageTextContains('Wie war euer Projekt?');
+    $this->assertSession()->pageTextContains('Ihr werdet dabei angemeldet.');
+    $this->press();
+
+    $follows = $this->follows($project);
+    $this->assertCount(1, $follows);
+    $this->assertSame('feedback', $follows[0]->getMisc()['target']);
+    $this->assertSame((int) $organization->id(), (int) $follows[0]->getOwnerId());
+    $this->assertGreaterThan(0, $this->lastLogin($organization));
+    $this->assertGreaterThan(0, $this->sessions($organization));
+    $this->assertHubLogin('/projects/' . $project->uuid() . '/feedback', TRUE);
+  }
+
+  /**
    * Tests that a participant follows a feedback door without login.
    */
   public function testFeedbackDoorOfParticipant(): void {
@@ -622,7 +656,7 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
-   * Tests that a feedback door never logs in and sends to the feedback page.
+   * Tests that a creative's feedback door never logs in and opens the website.
    */
   public function testFeedbackDoorNeverLogsIn(): void {
 
@@ -637,7 +671,7 @@ class MailDoorTest extends ExistingSiteBase {
     $this->assertCount(1, $follows);
     $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
     $this->assertSame(0, $this->lastLogin($creative));
-    $this->assertFalse($this->drupalUserIsLoggedIn($creative));
+    $this->assertSame(0, $this->sessions($creative));
     $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
     $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
   }

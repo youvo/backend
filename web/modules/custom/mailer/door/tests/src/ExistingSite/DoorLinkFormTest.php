@@ -501,8 +501,10 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertCount(2, $rows);
     $this->assertStringContainsString($project->getOwner()->getDisplayName(), $rows[0]->getText());
     $this->assertStringContainsString(DoorTarget::Feedback->heading(), $rows[0]->getText());
+    $this->assertStringContainsString('Meldet an und schreibt einen Folge-Eintrag.', $rows[0]->getText());
     $this->assertStringContainsString($creative->getDisplayName(), $rows[1]->getText());
     $this->assertStringContainsString(DoorTarget::Feedback->heading(), $rows[1]->getText());
+    $this->assertStringContainsString('Meldet nicht an (Feedback liegt auf der Website) und schreibt einen Folge-Eintrag.', $rows[1]->getText());
   }
 
   /**

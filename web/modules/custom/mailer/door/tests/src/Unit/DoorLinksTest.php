@@ -272,6 +272,33 @@ class DoorLinksTest extends UnitTestCase {
   }
 
   /**
+   * A feedback door logs in the owning organization, never a creative.
+   *
+   * Both belong to the project and would follow, so only the target decides.
+   */
+  public function testFeedbackLogsInOrganizationsOnly(): void {
+
+    $links = $this->links();
+    $organization = $this->createMock(Organization::class);
+    $organization->method('id')->willReturn(7);
+    $organization->method('hasPermission')->willReturn(FALSE);
+    $creative = $this->createMock(Creative::class);
+    $creative->method('id')->willReturn(8);
+    $creative->method('hasPermission')->willReturn(FALSE);
+    $project = $this->project(FALSE, 7, [8 => $creative]);
+
+    $verdict = $links->verdict($organization, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
+    $this->assertTrue($verdict->belongs);
+    $this->assertTrue($verdict->follow);
+    $this->assertTrue($verdict->login);
+
+    $verdict = $links->verdict($creative, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
+    $this->assertTrue($verdict->belongs);
+    $this->assertTrue($verdict->follow);
+    $this->assertFalse($verdict->login);
+  }
+
+  /**
    * Targets resolve from the project state, the recipient and the settings.
    */
   public function testTargetUrls(): void {
@@ -287,12 +314,14 @@ class DoorLinksTest extends UnitTestCase {
     $this->assertSame('https://hub.example.org/users/creative-uuid', $links->targetUrl(DoorTarget::Applicant, $submitted, $recipient, 'creative-uuid'));
     $organization = $this->createMock(Organization::class);
     $creative = $this->createMock(Creative::class);
-    $this->assertSame('https://youvo.example.org/feedback/organization/abc', $links->targetUrl(DoorTarget::Feedback, $submitted, $organization, ''));
+    $this->assertSame('https://hub.example.org/projects/abc/feedback', $links->targetUrl(DoorTarget::Feedback, $submitted, $organization, ''));
+    $this->assertSame('/projects/abc/feedback', $this->redirectOf($links->loginUrl($links->targetUrl(DoorTarget::Feedback, $submitted, $organization, '')), 'https://hub.example.org/auth/login'));
     $this->assertSame('https://youvo.example.org/feedback/creative/abc', $links->targetUrl(DoorTarget::Feedback, $submitted, $creative, ''));
     $this->assertSame('https://hub.example.org/auth/login', $links->loginUrl());
 
     $local = $this->links(TRUE);
     $this->assertSame('http://localhost:3000/draft/abc', $local->targetUrl(DoorTarget::Draft, $draft, $recipient, ''));
+    $this->assertSame('http://localhost:3000/projects/abc/feedback', $local->targetUrl(DoorTarget::Feedback, $submitted, $organization, ''));
     $this->assertSame('http://localhost:3000/users/creative-uuid', $local->targetUrl(DoorTarget::Applicant, $submitted, $recipient, 'creative-uuid'));
     $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl());
   }
@@ -417,13 +446,22 @@ class DoorLinksTest extends UnitTestCase {
 
   /**
    * Creates a project mock with the UUID abc.
+   *
+   * @param bool $draft
+   *   Whether the project is a draft.
+   * @param int $owner
+   *   The uid of the owner.
+   * @param \Drupal\creatives\Entity\Creative[] $participants
+   *   The participating creatives, keyed by uid.
    */
-  protected function project(bool $draft): ProjectInterface {
+  protected function project(bool $draft, int $owner = 0, array $participants = []): ProjectInterface {
     $lifecycle = $this->createMock(ProjectLifecycleInterface::class);
     $lifecycle->method('isDraft')->willReturn($draft);
     $project = $this->createMock(ProjectInterface::class);
     $project->method('lifecycle')->willReturn($lifecycle);
     $project->method('uuid')->willReturn('abc');
+    $project->method('getOwnerId')->willReturn($owner);
+    $project->method('getParticipants')->willReturn($participants);
     return $project;
   }
 

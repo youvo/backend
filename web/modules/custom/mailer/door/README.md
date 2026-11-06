@@ -35,7 +35,7 @@ flowchart TD
     belongs -- no --> target
     belongs -- yes --> other{Someone else signed in?}
     other -- yes --> target
-    other -- no --> login{Login allowed?}
+    other -- no --> login{"Login allowed? Feedback only for organizations"}
     login -- yes --> loginFollow[Log in and follow]
     loginFollow --> hub
     login -- no --> follow[Follow]
@@ -59,9 +59,10 @@ flowchart TD
   and no follow log, the target opens.
 - **Login allowed**: the recipient is no staff and no prospect, nobody is
   signed in, the door is newer than the last login, the target logs in, and
-  the press comes from this site.
-- **Follow** without login: staff, `Feedback` doors, older doors, a
-  recipient who is already signed in, and a cross-site press of a login door.
+  the press comes from this site. Every target logs in, `Feedback` only for
+  organizations, whose feedback form is on the hub.
+- **Follow** without login: staff, `Feedback` doors of creatives, older doors,
+  a recipient who is already signed in, and a cross-site press of a login door.
 - A follow log is written once per mail and target.
 
 ## The token
@@ -96,7 +97,7 @@ The payload is packed into bytes, followed by a MAC:
 | `Edit`       | 3    | hub `/projects/{project}`                           | `mailer.manager.reminder_open_noone`                             | yes     |
 | `Complete`   | 4    | hub `/projects/{project}`                           | `mailer.manager.reminder_ongoing`                                | yes     |
 | `Applicant`  | 5    | hub `/users/{creative}`                             | `mailer.project_action.apply_organization`                       | yes     |
-| `Feedback`   | 6    | website `/feedback/{organization\|creative}/{project}` | `mailer.project_transition.complete_organization`, `mailer.project_transition.complete_creative` | no |
+| `Feedback`   | 6    | organizations: hub `/projects/{project}/feedback`; creatives: website `/feedback/creative/{project}` | `mailer.project_transition.complete_organization`, `mailer.project_transition.complete_creative` | organizations only |
 
 The codes are fixed per case, so reordering the cases keeps issued doors.
 
@@ -107,9 +108,10 @@ submit.
 
 - **Login** when the door is not expired, the project belongs to the recipient
   (owner, or a participating creative for `Feedback`), nobody is signed in,
-  the target logs in, the recipient is no staff (`access site`), and the door
-  is not older than the recipient's last login. So a login spends all older
-  doors of that account. Then it redirects to the hub login (`loginUrl()`),
+  the target logs in for the recipient (`logsIn()`: every target, `Feedback`
+  only for organizations), the recipient is no staff (`access site`), and the
+  door is not older than the recipient's last login. So a login spends all
+  older doors of that account. Then it redirects to the hub login (`loginUrl()`),
   which opens the target; without a login it redirects to the target.
 - **Prospects** never log in by the plain button. Where a door would log a
   prospect in, and it is a `Draft` door to a project still in draft, it shows
@@ -156,7 +158,7 @@ project, recipient and target.
 | File                                       | Role                                            |
 |--------------------------------------------|-------------------------------------------------|
 | `src/DoorLinks.php`                        | builds, parses, verifies; verdict and target URLs |
-| `src/DoorTarget.php`                       | targets with code, heading and `logsIn()`       |
+| `src/DoorTarget.php`                       | targets with code, heading and `logsIn()` per recipient |
 | `src/DoorToken.php`, `src/DoorVerdict.php` | the parsed facts and the verdict                |
 | `src/HubUrls.php`                          | hub base URL and project links, also used by `mailer` |
 | `src/DoorLinkGenerator.php`                | links without a mail: record, suggestions, outcome |

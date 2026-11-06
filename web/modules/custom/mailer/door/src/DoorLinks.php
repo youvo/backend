@@ -267,7 +267,7 @@ class DoorLinks {
     $login = !$expired
       && $belongs
       && !$signed_in
-      && $target->logsIn()
+      && $target->logsIn($recipient)
       && $this->allowsLogin($recipient, $timestamp);
 
     // A prospect has no password. It is logged in only after it set one on a
@@ -303,7 +303,9 @@ class DoorLinks {
       DoorTarget::Draft => $this->hubUrls->project($project),
       DoorTarget::Applicants, DoorTarget::Edit, DoorTarget::Complete => $base . '/projects/' . $project->uuid(),
       DoorTarget::Applicant => $base . '/users/' . $subject,
-      DoorTarget::Feedback => $this->feedbackUrl($project, $recipient),
+      DoorTarget::Feedback => $recipient instanceof Organization
+        ? $base . '/projects/' . $project->uuid() . '/feedback'
+        : $this->feedbackUrl($project),
     };
   }
 
@@ -366,12 +368,11 @@ class DoorLinks {
   }
 
   /**
-   * Gets the website feedback form for the recipient type.
+   * Gets the website feedback form of creatives.
    */
-  protected function feedbackUrl(ProjectInterface $project, UserInterface $recipient): string {
+  protected function feedbackUrl(ProjectInterface $project): string {
     $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
-    $type = $recipient instanceof Organization ? 'organization' : 'creative';
-    return $website_url . '/feedback/' . $type . '/' . $project->uuid();
+    return $website_url . '/feedback/creative/' . $project->uuid();
   }
 
 }
