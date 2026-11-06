@@ -171,6 +171,7 @@ class DoorForm extends FormBase {
         '#type' => 'password_confirm',
         '#required' => TRUE,
         '#size' => 25,
+        '#after_build' => [[static::class, 'germanPasswordTitles']],
       ];
     }
 
@@ -261,6 +262,17 @@ class DoorForm extends FormBase {
     }
 
     $form_state->setResponse(new TrustedRedirectResponse($this->doorLinks->targetUrl($target, $project, $recipient, $door['subject'])));
+  }
+
+  /**
+   * Names the two password fields in German, as the rest of the door.
+   *
+   * The site has no translations, so core's titles would stay English.
+   */
+  public static function germanPasswordTitles(array $element): array {
+    $element['pass1']['#title'] = 'Passwort';
+    $element['pass2']['#title'] = 'Passwort wiederholen';
+    return $element;
   }
 
   /**

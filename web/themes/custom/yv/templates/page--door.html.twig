@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * The page behind a link in a mail (/door/…).
+ *
+ * Looks like the mail it came from: the turquoise band with the logo, then
+ * one card. No admin chrome: the visitor is usually not signed in.
+ *
+ * Available variables: see Gin's page.html.twig.
+ */
+#}
+<div class="door-page">
+  <header class="door-page-band">
+    <img class="door-page-logo" src="{{ base_path }}assets/logo_email_v2.png" alt="youvo – You create. You volunteer." width="245" height="76">
+  </header>
+  <main class="door-page-main">
+    {{ page.highlighted }}
+    {{ page.content }}
+  </main>
+  <footer class="door-page-footer">youvo e.V. · You create. You volunteer.</footer>
+</div>

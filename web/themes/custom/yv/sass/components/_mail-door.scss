@@ -1,11 +1,65 @@
 // =============================================================================
-// MAIL DOOR (DoorForm)
+// MAIL DOOR (DoorForm, page--door.html.twig)
 // =============================================================================
-// The page behind a link in a mail: one card with the heading, the project
-// and the button, centered on wider screens.
+// The page behind a link in a mail looks like the mail: the turquoise band
+// with the logo, one card that overlaps it, and the orange button of the
+// website. Its text is dark: white on the orange reaches only 2.2:1.
 
+@use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
+
+.door-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    $color-turquoise 0,
+    $color-turquoise to-rem(200),
+    var(--gin-bg-app) to-rem(200)
+  );
+}
+
+.door-page-band {
+  display: flex;
+  justify-content: center;
+  padding: var(--gin-spacing-l) var(--gin-spacing-m) var(--gin-spacing-m);
+}
+
+.door-page-logo {
+  display: block;
+  width: to-rem(200);
+  height: auto;
+
+  @media (min-width: $breakpoint-medium) {
+    width: to-rem(245);
+  }
+}
+
+.door-page-main {
+  flex: 1;
+  width: 100%;
+  max-width: to-rem(480);
+  margin-inline: auto;
+  padding: 0 var(--gin-spacing-m) var(--gin-spacing-l);
+}
+
+// Gin draws the form around the door as a card of its own; the door is the
+// card. Gin's rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id
+:is(#extra-specificity-hack, .door-page) .door-page-main .block-system-main-block > form {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.door-page-footer {
+  padding: var(--gin-spacing-m);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  text-align: center;
+}
 
 .mail-door {
   @include card;
@@ -13,38 +67,71 @@
 
   display: grid;
   gap: var(--gin-spacing-s);
-  max-width: 32rem;
-  margin-inline: auto;
   color: var(--yv-text);
 
-  // Core's form actions add their own margins.
+  // Core's form actions and form items add their own margins.
   // stylelint-disable-next-line selector-class-pattern
   .form-actions {
     margin: var(--gin-spacing-xs) 0 0;
   }
 
-  .button {
+  .form-item {
+    margin-block: 0 var(--gin-spacing-s);
+  }
+
+  // Gin styles the submit button through its ID with an ID-level
+  // specificity hack, so the button needs two IDs' worth.
+  // stylelint-disable-next-line selector-max-id
+  :is(#extra-specificity-hack, .door-page) & :is(#extra-specificity-hack, .form-submit) {
     width: 100%;
     margin: 0;
+    padding-block: var(--gin-spacing-s);
 
-    @media (min-width: $breakpoint-medium) {
-      width: auto;
+    // Gin sets the button border as important.
+    border: 0 !important;
+    border-bottom: to-rem(3) solid $color-orange-dark !important;
+    border-radius: to-rem(6);
+    background: $color-orange;
+    box-shadow: none;
+    color: $color-black;
+    font-size: var(--gin-font-size-m);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    &:hover,
+    &:focus {
+      background: $color-orange-dark;
+      color: $color-black;
+    }
+
+    &:focus-visible {
+      outline: to-rem(3) solid $color-blue;
+      outline-offset: to-rem(2);
     }
   }
 }
 
-.mail-door-heading {
-  @include page-title;
-}
-
 .mail-door-context {
   margin: 0;
+
+  // Darkened to pass 4.5:1 on white.
+  color: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+  font-size: var(--gin-font-size-s);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mail-door-heading {
+  margin: 0;
   color: var(--yv-ink);
-  font-weight: 600;
+  font-size: to-rem(28);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .mail-door-note {
   margin: 0;
   color: var(--yv-muted);
-  font-size: var(--gin-font-size-s);
 }
