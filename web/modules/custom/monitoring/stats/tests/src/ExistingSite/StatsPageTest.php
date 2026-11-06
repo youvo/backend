@@ -58,6 +58,9 @@ class StatsPageTest extends StatsTestBase {
     $disabled = $this->assertSession()->elementExists('css', '.stats-stepper [data-step="next"][aria-disabled="true"]');
     $this->assertFalse($disabled->hasAttribute('href'));
     $this->assertSession()->elementExists('css', '.stats-stepper a[data-step="previous"][href]');
+    // Its custom range ends today, the latest day of the range form.
+    $custom = $this->assertSession()->elementExists('css', 'a.stats-segment[data-segment="custom"]');
+    $this->assertSame($now->format('Y-m-d'), $this->linkQuery($custom->getAttribute('href'))['to']);
 
     // The first periods of 2014 have a disabled previous step.
     $first = [
@@ -267,6 +270,7 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->pageTextContains('Enter an end date.');
     $this->submitForm(['from' => '2018-05-01', 'to' => '2018-04-01'], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be before the start date.');
+    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2018 – 30.06.2018');
 
     // The days lie between 2014 and today.
     $today = (new \DateTimeImmutable('now', $this->timezone()))->format('Y-m-d');
@@ -277,10 +281,13 @@ class StatsPageTest extends StatsTestBase {
     }
     $this->submitForm(['from' => '2013-12-31', 'to' => '2014-01-10'], 'Apply');
     $this->assertSession()->pageTextContains('The start date must not be before 01.01.2014, as there is no data before.');
+    // A range running past today, as the next step of a custom range, shows
+    // today in the form.
     $tomorrow = (new \DateTimeImmutable('tomorrow', $this->timezone()))->format('Y-m-d');
+    $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => $today, 'to' => $tomorrow]]);
+    $this->assertSame($today, $this->assertSession()->fieldExists('to')->getValue());
     $this->submitForm(['from' => '2014-01-01', 'to' => $tomorrow], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be after today.');
-    $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2018 – 30.06.2018');
   }
 
   /**

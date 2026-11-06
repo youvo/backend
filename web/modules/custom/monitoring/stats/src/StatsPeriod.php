@@ -136,8 +136,8 @@ class StatsPeriod {
    * Gets the period of the same kind around the period being viewed.
    *
    * The new period contains the anchor: the last day of this period, or today
-   * if this period has not ended. A custom period keeps the days of this one,
-   * all time running until today.
+   * if this period has not ended. A custom period keeps the days of this one
+   * up to today, as the range form accepts no later day.
    *
    * @param string $type
    *   One of all, year, quarter, month and custom.
@@ -156,9 +156,7 @@ class StatsPeriod {
       static::YEAR => static::forYear($year, $timezone),
       static::QUARTER => static::forQuarter($anchor->setDate($year, $month - ($month - 1) % 3, 1)),
       static::MONTH => static::forMonth($anchor->setDate($year, $month, 1)),
-      static::CUSTOM => $this->type === static::ALL
-        ? static::forRange($this->from, $today->modify('+1 day'))
-        : static::forRange($this->from, $this->to),
+      static::CUSTOM => static::forRange(min($this->from, $today), min($this->to, $today->modify('+1 day'))),
       default => static::forAll($timezone, $now),
     };
   }

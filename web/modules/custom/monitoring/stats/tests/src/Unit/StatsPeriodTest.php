@@ -258,6 +258,9 @@ class StatsPeriodTest extends UnitTestCase {
     $this->assertSame($range, $switch($range, 'custom'));
     $this->assertSame(['period' => 'quarter', 'year' => '2025', 'quarter' => '2'], $switch($range, 'quarter'));
     $this->assertSame(['period' => 'custom', 'from' => '2014-01-01', 'to' => '2026-11-05'], $switch(['period' => 'all'], 'custom'));
+    // A running or future period runs until today.
+    $this->assertSame(['period' => 'custom', 'from' => '2026-01-01', 'to' => '2026-11-05'], $switch($current, 'custom'));
+    $this->assertSame(['period' => 'custom', 'from' => '2026-11-05', 'to' => '2026-11-05'], $switch($future, 'custom'));
     $custom = $this->period(['period' => 'quarter', 'year' => '2024', 'quarter' => '2'])->withGranularity('custom', $this->now());
     $this->assertSame(StatsGranularity::Week, $custom->granularity());
   }

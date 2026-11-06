@@ -46,6 +46,10 @@ class StatsRangeForm extends FormBase {
     // is a placeholder anyway.
     $form['#cache']['max-age'] = Cache::PERMANENT;
     $form_state->set('today', $today);
+    // A running period, as the next step of a custom range, ends after today.
+    if ($today !== '' && $to > $today) {
+      $to = $today;
+    }
     // The days run from the start of the old Logbuch to today.
     $limits = ['min' => StatsPeriod::ALL_START, 'max' => $today];
     $form['from'] = [
