@@ -393,15 +393,7 @@ class StatsPageTest extends StatsTestBase {
    */
   public function testActivityChart(): void {
 
-    $rows = [
-      '2018-01-15' => [3, 10, 20, 20, 20],
-      '2018-01-31' => [5, 12, 30, 30, 30],
-      '2018-02-10' => [2, 9, 15, 35, 40],
-    ];
-    foreach ($rows as $day => $counts) {
-      $this->touchDay($day);
-      $this->container->get('stats.activity_snapshots')->write($day, 'creative', array_combine(ActivitySnapshots::COLUMNS, $counts));
-    }
+    $this->writeActivityRows();
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
     // A year shows the active users per month.
@@ -409,26 +401,80 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per month');
     $this->assertSame(['30', '15', ''], array_slice($this->chartColumn('stats-activity', 'Creatives'), 0, 3));
-
-    // The tiles show the last bucket with a snapshot and name it.
-    $tile = '.stats-tile[data-tile="active-creatives"]';
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-label', 'Active creatives');
     // A past bucket is complete: no dashed segment.
     $definition = json_decode($this->assertSession()->elementExists('css', '#stats-activity')->getAttribute('data-chart'), TRUE);
     $this->assertArrayNotHasKey('statsRunningIndex', $definition['data']['datasets'][0]);
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '15');
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in Feb 2018');
-    $this->assertSession()->elementExists('css', '.stats-tile[data-tile="active-organizations"]');
 
     // A quarter shows weeks, a short range days.
     $this->drupalGet('stats', ['query' => ['period' => 'quarter', 'year' => 2018, 'quarter' => 1]]);
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per week');
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '9');
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in W06');
     $this->drupalGet('stats', ['query' => ['period' => 'custom', 'from' => '2018-01-10', 'to' => '2018-02-09']]);
     $this->assertSession()->elementTextEquals('css', '.stats-card[aria-labelledby="stats-activity-title"] .stats-card-title', 'Active users per day');
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '5');
-    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited on 31.01.');
+  }
+
+  /**
+   * The active user tiles count the users active in the period.
+   */
+  public function testActivityTiles(): void {
+
+    $this->writeActivityRows();
+    $snapshots = $this->container->get('stats.activity_snapshots');
+    $since = (new \DateTimeImmutable('2014-01-01', $this->timezone()))->getTimestamp();
+    $before = $snapshots->countActive($since);
+
+    // Of these, only the creative and the organization since 2014 count.
+    $this->createCreative()->setLastAccessTime($since)->save();
+    $this->createCreative()->setLastAccessTime($since - 1)->save();
+    $this->createCreative('creative', 'supervisor')->setLastAccessTime($since)->save();
+    $this->createOrganizationUser('organization')->setLastAccessTime($since + 86400)->save();
+    $this->createOrganizationUser('prospect')->setLastAccessTime($since + 86400)->save();
+    $this->drupalLogin($this->createCreative('creative', 'manager'));
+
+    // The query, then the creatives and the organizations as value and hint.
+    $all = 'Visited since 2014';
+    $cases = [
+      [['period' => 'all'], [$before['creative'] + 1, $all], [$before['organization'] + 1, $all]],
+      [['period' => 'year', 'year' => 2018], [40, 'Visited in 2018'], [6, 'Visited in 2018']],
+      [['period' => 'quarter', 'year' => 2018, 'quarter' => 1], [35, 'Visited in Q1 2018'], [4, 'Visited in Q1 2018']],
+      [['period' => 'month', 'year' => 2018, 'month' => 1], [30, 'Visited in Jan 2018'], [NULL, NULL]],
+      [['period' => 'month', 'year' => 2018, 'month' => 2], [15, 'Visited in Feb 2018'], [3, 'Visited in Feb 2018']],
+      // A custom range shows its last bucket with a snapshot.
+      [['period' => 'custom', 'from' => '2018-01-10', 'to' => '2018-02-09'], [5, 'Visited on 31.01.'], [NULL, NULL]],
+    ];
+    foreach ($cases as [$query, $creatives, $organizations]) {
+      $this->drupalGet('stats', ['query' => $query]);
+      $message = json_encode($query);
+      foreach (['creatives' => $creatives, 'organizations' => $organizations] as $key => [$value, $hint]) {
+        $tile = '.stats-tile[data-tile="active-' . $key . '"]';
+        $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-label', ucfirst($key));
+        $this->assertSame($value === NULL ? '–' : (string) $value, $this->assertSession()->elementExists('css', $tile . ' .stats-tile-value')->getText(), $message . ' ' . $key);
+        if ($hint === NULL) {
+          $this->assertSession()->elementNotExists('css', $tile . ' .stats-tile-description');
+        }
+        else {
+          $this->assertSame($hint, $this->assertSession()->elementExists('css', $tile . ' .stats-tile-description')->getText(), $message . ' ' . $key);
+        }
+      }
+    }
+  }
+
+  /**
+   * Writes the activity rows of early 2018, which tearDown() restores.
+   */
+  protected function writeActivityRows(): void {
+
+    // The counts of the day, week, month, quarter and year up to each day.
+    $rows = [
+      '2018-01-15' => ['creative', [3, 10, 20, 22, 24]],
+      '2018-01-31' => ['creative', [5, 12, 30, 32, 34]],
+      '2018-02-10' => ['creative', [2, 9, 15, 35, 40]],
+      '2018-02-11' => ['organization', [1, 2, 3, 4, 6]],
+    ];
+    $snapshots = $this->container->get('stats.activity_snapshots');
+    foreach ($rows as $day => [$role, $counts]) {
+      $this->touchDay($day);
+      $snapshots->write($day, $role, array_combine(ActivitySnapshots::COLUMNS, $counts));
+    }
   }
 
   /**
@@ -443,10 +489,16 @@ class StatsPageTest extends StatsTestBase {
     $this->container->get('stats.activity_snapshots')->write($today, 'creative', $counts);
     $this->drupalLogin($this->createCreative('creative', 'manager'));
 
+    $tile = '.stats-tile[data-tile="active-creatives"]';
     $this->drupalGet('stats', ['query' => ['period' => 'year', 'year' => $now->format('Y')]]);
     $definition = json_decode($this->assertSession()->elementExists('css', '#stats-activity')->getAttribute('data-chart'), TRUE);
     $this->assertSame((int) $now->format('n') - 1, $definition['data']['datasets'][0]['statsRunningIndex']);
-    $this->assertSession()->elementTextEquals('css', '.stats-tile[data-tile="active-creatives"] .stats-tile-description', 'Visited in ' . $now->format('M Y') . ' so far');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '5');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in ' . $now->format('Y') . ' so far');
+
+    $this->drupalGet('stats', ['query' => ['period' => 'month']]);
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-value', '3');
+    $this->assertSession()->elementTextEquals('css', $tile . ' .stats-tile-description', 'Visited in ' . $now->format('M Y') . ' so far');
   }
 
   /**

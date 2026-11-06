@@ -242,7 +242,7 @@ class StatsController implements ContainerInjectionInterface {
    * Builds the creatives section: activation, first application, activity.
    *
    * The bucket containing the current time is incomplete, so the activity
-   * chart draws the line into it dashed and the tiles say "so far".
+   * chart draws the line into it dashed.
    *
    * @return array<string, mixed>
    *   The section render array.
@@ -282,10 +282,8 @@ class StatsController implements ContainerInjectionInterface {
     // snapshot hold NULL and leave a gap in the line; a snapshot of 0 users
     // is data.
     $activity = $this->activitySnapshots->series($period);
-    $creatives = $this->lastBucket($activity['creative']);
-    $organizations = $this->lastBucket($activity['organization']);
     $running = $period->bucketOf($now->getTimestamp());
-    if ($creatives !== NULL || $organizations !== NULL) {
+    if ($this->lastBucket($activity['creative']) !== NULL || $this->lastBucket($activity['organization']) !== NULL) {
       [$title, $description] = match ($period->granularity()) {
         StatsGranularity::Day => [$this->t('Active users per day'), $this->t('Users who visited on each day')],
         StatsGranularity::Week => [$this->t('Active users per week'), $this->t('Users who visited in each week')],
@@ -304,20 +302,70 @@ class StatsController implements ContainerInjectionInterface {
         }
       }
       $cards['activity'] = StatsCharts::card($activity_chart, wide: TRUE, description: $description);
-      // The tiles show the last bucket with a snapshot.
-      $tiles = [];
-      foreach (['creative' => $creatives, 'organization' => $organizations] as $role => $bucket) {
-        $tiles[] = StatsCharts::tile(
-          'active-' . $role . 's',
-          $role === 'creative' ? $this->t('Active creatives') : $this->t('Active orgs'),
-          $bucket !== NULL ? $activity[$role][$bucket] : NULL,
-          $bucket !== NULL ? $this->visitedIn($period, $bucket, $bucket === $running) : NULL,
-        );
-      }
-      $cards['tiles'] = StatsCharts::tiles($tiles);
+      $cards['tiles'] = StatsCharts::tiles($this->activityTiles($period, $now, $activity));
     }
 
     return StatsCharts::section('creatives', $this->t('Creatives'), $cards);
+  }
+
+  /**
+   * Builds the tiles of the active creatives and organizations.
+   *
+   * The tiles follow the period. All time counts the users who visited since
+   * 2014 from the users table. A year, quarter or month takes the users
+   * active in it from the snapshot of its last stored day, "so far" while it
+   * runs. A custom range shows its last bucket with a snapshot.
+   *
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param \DateTimeImmutable $now
+   *   The current time.
+   * @param array<string, array<string, ?int>> $activity
+   *   The active users per role and bucket.
+   *
+   * @return array<int, array<string, mixed>>
+   *   The tiles.
+   */
+  protected function activityTiles(StatsPeriod $period, \DateTimeImmutable $now, array $activity): array {
+
+    $roles = ['creative', 'organization'];
+    $values = [];
+    $hints = [];
+    if ($period->type() === StatsPeriod::ALL) {
+      $counts = $this->activitySnapshots->countActive($period->from()->getTimestamp());
+      foreach ($roles as $role) {
+        $values[$role] = $counts[$role];
+        $hints[$role] = $this->t('Visited since @year', ['@year' => $period->from()->format('Y')]);
+      }
+    }
+    elseif ($period->type() === StatsPeriod::CUSTOM) {
+      $running = $period->bucketOf($now->getTimestamp());
+      foreach ($roles as $role) {
+        $bucket = $this->lastBucket($activity[$role]);
+        $values[$role] = $bucket !== NULL ? $activity[$role][$bucket] : NULL;
+        $hints[$role] = $bucket !== NULL ? $this->visitedIn($period, $bucket, $bucket === $running) : NULL;
+      }
+    }
+    else {
+      [$column, $label] = match ($period->type()) {
+        StatsPeriod::YEAR => ['active_year', $period->label()],
+        StatsPeriod::QUARTER => ['active_quarter', $period->label()],
+        default => ['active_month', $period->from()->format('M Y')],
+      };
+      $last = $this->activitySnapshots->lastInPeriod($period, $column);
+      $hint = $period->contains($now->getTimestamp())
+        ? $this->t('Visited in @period so far', ['@period' => $label])
+        : $this->t('Visited in @period', ['@period' => $label]);
+      foreach ($roles as $role) {
+        $values[$role] = $last[$role];
+        $hints[$role] = $last[$role] !== NULL ? $hint : NULL;
+      }
+    }
+
+    return [
+      StatsCharts::tile('active-creatives', $this->t('Creatives'), $values['creative'], $hints['creative']),
+      StatsCharts::tile('active-organizations', $this->t('Organizations'), $values['organization'], $hints['organization']),
+    ];
   }
 
   /**

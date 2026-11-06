@@ -199,6 +199,38 @@ class ActivitySnapshots {
   }
 
   /**
+   * Gets a column of the last stored day of a period per role.
+   *
+   * The year, quarter and month columns of the last day of such a period
+   * count the users active in it, up to that day.
+   *
+   * @param \Drupal\stats\StatsPeriod $period
+   *   The period.
+   * @param string $column
+   *   One of the COLUMNS.
+   *
+   * @return array<string, ?int>
+   *   The values keyed by role, NULL for a role without a stored day in the
+   *   period.
+   */
+  public function lastInPeriod(StatsPeriod $period, string $column): array {
+    $values = [];
+    foreach (static::ROLES as $role) {
+      $value = $this->database->select('stats_activity', 'a')
+        ->fields('a', [$column])
+        ->condition('a.day', $period->from()->format('Y-m-d'), '>=')
+        ->condition('a.day', $period->to()->format('Y-m-d'), '<')
+        ->condition('a.role', $role)
+        ->orderBy('a.day', 'DESC')
+        ->range(0, 1)
+        ->execute()
+        ->fetchField();
+      $values[$role] = $value === FALSE ? NULL : (int) $value;
+    }
+    return $values;
+  }
+
+  /**
    * Gets the site timezone.
    */
   public function timezone(): \DateTimeZone {
