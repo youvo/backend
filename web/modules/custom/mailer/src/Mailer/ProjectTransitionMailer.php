@@ -172,7 +172,8 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
       $door = $this->doorLinks->build($participant, $uuid, DoorTarget::Feedback);
       $email = $this->projectEmail('complete_creative', $project, $this->mailVariables->creative($participant) + $base + [
         'feedback_link' => $door,
-        'results_link' => $website_url . '/results/' . $project->uuid(),
+        // The results are shown on the project page of the website.
+        'results_link' => $website_url . '/projects/' . $project->uuid(),
       ]);
       $success = $this->deliver($email, $project, 'complete_creative', $participant->getEmail(), [$door], 'automatic', NULL, $uuid) && $success;
     }

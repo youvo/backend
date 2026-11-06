@@ -305,7 +305,7 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
       $this->assertStringNotContainsString('/feedback/organization/', $mail['html']);
     }
     // The results link stays plain.
-    $this->assertStringContainsString($website_url . '/results/' . $project->uuid(), $this->interceptedMails[1]['html']);
+    $this->assertStringContainsString($website_url . '/projects/' . $project->uuid(), $this->interceptedMails[1]['html']);
 
     $this->assertCount(3, $this->loadEntries($project));
     $entries = $this->loadEntriesBySubtype($project);
@@ -318,7 +318,7 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
       $body = $entry->get('body')->value;
       $this->assertStringContainsString('[Link entfernt]', $body);
       $this->assertStringNotContainsString('/go/', $body);
-      $this->assertStringContainsString('results/' . $project->uuid(), $body);
+      $this->assertStringContainsString('/projects/' . $project->uuid(), $body);
     }
   }
 

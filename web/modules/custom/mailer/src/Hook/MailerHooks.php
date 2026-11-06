@@ -3,6 +3,7 @@
 namespace Drupal\mailer\Hook;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Render\Markup;
 use Drupal\mailer\PreviewText;
@@ -12,16 +13,22 @@ use Drupal\mailer\PreviewText;
  */
 class MailerHooks {
 
+  public function __construct(
+    protected ConfigFactoryInterface $configFactory,
+  ) {}
+
   /**
    * Implements hook_preprocess_HOOK() for email_wrap__mailer.
    *
    * Sets the inbox preview text. Trailing invisible characters keep the body
-   * start from repeating after it in the preview.
+   * start from repeating after it in the preview. The logo and the footer link
+   * to the website: the backend's front page is for staff only.
    */
   #[Hook('preprocess_email_wrap__mailer')]
   public function preprocessEmailWrap(array &$variables): void {
     $text = $variables['is_html'] ? PreviewText::fromHtml((string) $variables['body']) : '';
     $variables['preview'] = $text === '' ? '' : Markup::create(Html::escape($text) . str_repeat('&nbsp;&zwnj;', 80));
+    $variables['website_url'] = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
   }
 
 }
