@@ -275,7 +275,8 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementTextContains('css', '.stats-period-heading', '01.04.2018 – 30.06.2018');
 
     // The days lie between 2014 and today.
-    $today = (new \DateTimeImmutable('now', $this->timezone()))->format('Y-m-d');
+    $now = new \DateTimeImmutable('now', $this->timezone());
+    $today = $now->format('Y-m-d');
     foreach (['from', 'to'] as $name) {
       $field = $this->assertSession()->fieldExists($name);
       $this->assertSame('2014-01-01', $field->getAttribute('min'));
@@ -286,11 +287,15 @@ class StatsPageTest extends StatsTestBase {
     // A range running past today, as the next step of a custom range, shows
     // today in the form. The range ends on the last day of the current year,
     // as a later year is no valid range, and so is today on 31 December.
-    $tomorrow = (new \DateTimeImmutable('tomorrow', $this->timezone()))->format('Y-m-d');
-    $year = substr($today, 0, 4);
+    $year = $now->format('Y');
     $query = ['period' => 'custom', 'from' => $year . '-01-01', 'to' => $year . '-12-31'];
     $this->drupalGet('stats', ['query' => $query]);
     $this->assertSame($today, $this->assertSession()->fieldExists('to')->getValue());
+    // On 31 December tomorrow lies in the next year, which no range accepts.
+    if ($today === $year . '-12-31') {
+      return;
+    }
+    $tomorrow = $now->modify('+1 day')->format('Y-m-d');
     $this->submitForm(['from' => '2014-01-01', 'to' => $tomorrow], 'Apply');
     $this->assertSession()->pageTextContains('The end date must not be after today.');
   }
