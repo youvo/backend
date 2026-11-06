@@ -45,6 +45,11 @@ gi:
 fis:
 	@vendor/bin/drush image:flush --all
 
+## test-mails	:	Send all transactional mails to Mailpit (DDEV).
+.PHONY: test-mails
+test-mails:
+	@ddev drush php:script scripts/send-test-mails.php
+
 ## install	:	(Re-)install Drupal.
 .PHONY: install
 install:
