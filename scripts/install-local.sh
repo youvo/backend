@@ -56,11 +56,22 @@
  # The existing-config install imports the empty OAuth key paths and relay
  # settings from config/sync over the values the install hooks set, so they are
  # overridden here. The simple_oauth keys use the paths inside the DDEV
- # container, the relay settings come from config/.env.oauth_remote.local.
+ # container, the relay settings come from config/.env.oauth_remote.local and
+ # are optional with DEVELOPMENT=1, which turns the relay off.
  printf "\$config['simple_oauth.settings']['public_key'] = '/var/www/html/config/certs/public.key';\n" >> settings.php
  printf "\$config['simple_oauth.settings']['private_key'] = '/var/www/html/config/certs/private.key';\n" >> settings.php
- printf "\$config['oauth_grant_remote.settings']['jwt_key_path'] = '%s';\n" "${JWT_KEY_PATH:?Set JWT_KEY_PATH in config/.env.oauth_remote.local.}" >> settings.php
- printf "\$config['oauth_grant_remote.settings']['auth_relay_url'] = '%s';\n" "${AUTH_RELAY_URL:?Set AUTH_RELAY_URL in config/.env.oauth_remote.local.}" >> settings.php
+ # With DEVELOPMENT=1 the auth relay is off, so its settings are optional.
+ if [[ "${DEVELOPMENT:-0}" == "1" || "${DEVELOPMENT:-0}" == "true" ]]; then
+ 	if [[ -n "${JWT_KEY_PATH:-}" ]]; then
+ 		printf "\$config['oauth_grant_remote.settings']['jwt_key_path'] = '%s';\n" "$JWT_KEY_PATH" >> settings.php
+ 	fi
+ 	if [[ -n "${AUTH_RELAY_URL:-}" ]]; then
+ 		printf "\$config['oauth_grant_remote.settings']['auth_relay_url'] = '%s';\n" "$AUTH_RELAY_URL" >> settings.php
+ 	fi
+ else
+ 	printf "\$config['oauth_grant_remote.settings']['jwt_key_path'] = '%s';\n" "${JWT_KEY_PATH:?Set JWT_KEY_PATH in config/.env.oauth_remote.local.}" >> settings.php
+ 	printf "\$config['oauth_grant_remote.settings']['auth_relay_url'] = '%s';\n" "${AUTH_RELAY_URL:?Set AUTH_RELAY_URL in config/.env.oauth_remote.local.}" >> settings.php
+ fi
  echo "Settings reset ..."
 
  # Reset files folder. The public files path is web/files.
