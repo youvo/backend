@@ -19,22 +19,24 @@ class HubUrlsTest extends UnitTestCase {
   /**
    * Drafts link to the draft page, other states to the project page.
    *
-   * A trailing slash of the configured hub URL is ignored.
+   * A trailing slash of the configured hub and app URLs is ignored.
    */
   public function testProjectLink(): void {
     $hub_urls = $this->hubUrls(FALSE);
     $this->assertSame('https://hub.example.org', $hub_urls->base());
     $this->assertSame('https://hub.example.org/draft/abc', $hub_urls->project($this->project(TRUE)));
     $this->assertSame('https://hub.example.org/projects/abc', $hub_urls->project($this->project(FALSE)));
+    $this->assertSame('https://app.example.org', $hub_urls->appBase());
   }
 
   /**
-   * The local OAuth setting points the hub to the developer machine.
+   * The local OAuth setting points the frontends to the developer machine.
    */
   public function testLocalBase(): void {
     $hub_urls = $this->hubUrls(TRUE);
     $this->assertSame('http://localhost:3000', $hub_urls->base());
     $this->assertSame('http://localhost:3000/projects/abc', $hub_urls->project($this->project(FALSE)));
+    $this->assertSame('http://localhost:3000', $hub_urls->appBase());
   }
 
   /**
@@ -42,7 +44,7 @@ class HubUrlsTest extends UnitTestCase {
    */
   protected function hubUrls(bool $local): HubUrls {
     return new HubUrls($this->getConfigFactoryStub([
-      'youvo.settings' => ['hub_url' => 'https://hub.example.org/'],
+      'youvo.settings' => ['hub_url' => 'https://hub.example.org/', 'app_url' => 'https://app.example.org/'],
       'oauth_grant.settings' => ['local' => $local],
     ]));
   }

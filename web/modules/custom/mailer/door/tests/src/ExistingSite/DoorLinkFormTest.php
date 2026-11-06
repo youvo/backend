@@ -6,7 +6,6 @@ use Behat\Mink\Driver\BrowserKitDriver;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\Log;
-use Drupal\mailer_door\DoorLinks;
 use Drupal\mailer_door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
@@ -265,7 +264,8 @@ class DoorLinkFormTest extends ExistingSiteBase {
    */
   protected function assertHubLogin(string $path, bool $logged_in): void {
     $location = (string) $this->location();
-    $this->assertSame($this->container->get(DoorLinks::class)->loginUrl(), strtok($location, '?'));
+    $login = $this->container->get('mailer_door.hub_urls')->base() . $this->container->get('config.factory')->get('oauth_grant.settings')->get('auth_success_redirect');
+    $this->assertSame($login, strtok($location, '?'));
     $this->assertSame(1, substr_count($location, 'redirect='));
     parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
     $expected = ['redirect' => $path];
@@ -504,7 +504,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertStringContainsString('Meldet an und schreibt einen Folge-Eintrag.', $rows[0]->getText());
     $this->assertStringContainsString($creative->getDisplayName(), $rows[1]->getText());
     $this->assertStringContainsString(DoorTarget::Feedback->heading(), $rows[1]->getText());
-    $this->assertStringContainsString('Meldet nicht an (Feedback liegt auf der Website) und schreibt einen Folge-Eintrag.', $rows[1]->getText());
+    $this->assertStringContainsString('Meldet an und schreibt einen Folge-Eintrag.', $rows[1]->getText());
   }
 
   /**

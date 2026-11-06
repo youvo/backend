@@ -6,7 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\projects\ProjectInterface;
 
 /**
- * Builds links into the hub (organizations frontend).
+ * Builds links into the hub (organizations) and the app (creatives).
  */
 class HubUrls {
 
@@ -25,6 +25,18 @@ class HubUrls {
       return 'http://localhost:3000';
     }
     return rtrim((string) $this->configFactory->get('youvo.settings')->get('hub_url'), '/');
+  }
+
+  /**
+   * Gets the app base URL without a trailing slash.
+   *
+   * With the local OAuth setting, the app runs on the developer machine.
+   */
+  public function appBase(): string {
+    if ($this->configFactory->get('oauth_grant.settings')->get('local')) {
+      return 'http://localhost:3000';
+    }
+    return rtrim((string) $this->configFactory->get('youvo.settings')->get('app_url'), '/');
   }
 
   /**

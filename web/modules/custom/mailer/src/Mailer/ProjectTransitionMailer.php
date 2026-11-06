@@ -153,7 +153,8 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
 
     // Each recipient gets a feedback door of their own, which is never stored.
-    // The door of the organization logs in, those of the creatives do not.
+    // The door of the organization leads to the hub, those of the creatives
+    // to the app. Each may log its recipient in.
     $to = $this->ownerEmail($project);
     $uuid = $this->uuid->generate();
     $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Feedback);

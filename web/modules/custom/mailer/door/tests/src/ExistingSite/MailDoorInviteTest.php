@@ -274,7 +274,8 @@ class MailDoorInviteTest extends ExistingSiteBase {
    */
   protected function assertHubLogin(string $path, bool $logged_in): void {
     $location = (string) $this->getSession()->getResponseHeader('Location');
-    $this->assertSame($this->doorLinks()->loginUrl(), strtok($location, '?'));
+    $login = $this->container->get('mailer_door.hub_urls')->base() . $this->container->get('config.factory')->get('oauth_grant.settings')->get('auth_success_redirect');
+    $this->assertSame($login, strtok($location, '?'));
     $this->assertSame(1, substr_count($location, 'redirect='));
     parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
     $expected = ['redirect' => $path];

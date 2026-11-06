@@ -267,7 +267,6 @@ class DoorLinks {
     $login = !$expired
       && $belongs
       && !$signed_in
-      && $target->logsIn($recipient)
       && $this->allowsLogin($recipient, $timestamp);
 
     // A prospect has no password. It is logged in only after it set one on a
@@ -295,7 +294,8 @@ class DoorLinks {
   /**
    * Resolves where a door leads, from the current project state.
    *
-   * The subject is the creative UUID for the applicant target.
+   * The subject is the creative UUID for the applicant target. Feedback leads
+   * organizations to the hub and creatives to the app.
    */
   public function targetUrl(DoorTarget $target, ProjectInterface $project, UserInterface $recipient, string $subject): string {
     $base = $this->hubUrls->base();
@@ -303,24 +303,25 @@ class DoorLinks {
       DoorTarget::Draft => $this->hubUrls->project($project),
       DoorTarget::Applicants, DoorTarget::Edit, DoorTarget::Complete => $base . '/projects/' . $project->uuid(),
       DoorTarget::Applicant => $base . '/users/' . $subject,
-      DoorTarget::Feedback => $recipient instanceof Organization
-        ? $base . '/projects/' . $project->uuid() . '/feedback'
-        : $this->feedbackUrl($project),
+      DoorTarget::Feedback => ($recipient instanceof Organization ? $base : $this->hubUrls->appBase())
+        . '/projects/' . $project->uuid() . '/feedback',
     };
   }
 
   /**
-   * Gets the hub login to open after a door logged the recipient in.
+   * Gets the frontend login to open after a door logged the recipient in.
    *
-   * A target on the hub is passed as the redirect path of the login, so the
-   * hub opens it after signing in. Only the path goes along: the hub resolves
+   * Organizations sign in to the hub, everybody else to the app. A target on
+   * that frontend is passed as the redirect path of the login, so the frontend
+   * opens it after signing in. Only the path goes along: the frontend resolves
    * it against its own host, so the login redirects nowhere else. Any other
-   * target is left out, and the hub opens its start page.
+   * target is left out, and the frontend opens its start page.
    */
-  public function loginUrl(?string $target = NULL): string {
+  public function loginUrl(UserInterface $recipient, ?string $target = NULL): string {
 
-    $url = $this->hubUrls->base() . $this->configFactory->get('oauth_grant.settings')->get('auth_success_redirect');
-    $path = $target !== NULL ? $this->hubPath($target) : NULL;
+    $base = $recipient instanceof Organization ? $this->hubUrls->base() : $this->hubUrls->appBase();
+    $url = $base . $this->configFactory->get('oauth_grant.settings')->get('auth_success_redirect');
+    $path = $target !== NULL ? $this->frontendPath($base, $target) : NULL;
     if ($path === NULL) {
       return $url;
     }
@@ -335,22 +336,21 @@ class DoorLinks {
   }
 
   /**
-   * Gets the path and query of a target on the hub.
+   * Gets the path and query of a target on the frontend with the given base.
    *
    * @return string|null
-   *   The path with its query, or NULL when the target is not on the hub.
+   *   The path with its query, or NULL when the target is not on the frontend.
    */
-  protected function hubPath(string $target): ?string {
+  protected function frontendPath(string $base, string $target): ?string {
 
     // The base must end where the target's path begins, so that a look-alike
     // host such as hub.example.org.evil or localhost:30000 does not pass.
-    $base = $this->hubUrls->base();
     $rest = str_starts_with($target, $base) ? substr($target, strlen($base)) : NULL;
     if ($rest === NULL || ($rest !== '' && $rest[0] !== '/')) {
       return NULL;
     }
 
-    // The full path, also when the hub base has a path of its own.
+    // The full path, also when the base has a path of its own.
     $parts = parse_url($target);
     if ($parts === FALSE) {
       return NULL;
@@ -365,14 +365,6 @@ class DoorLinks {
       return NULL;
     }
     return $path;
-  }
-
-  /**
-   * Gets the website feedback form of creatives.
-   */
-  protected function feedbackUrl(ProjectInterface $project): string {
-    $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
-    return $website_url . '/feedback/creative/' . $project->uuid();
   }
 
 }

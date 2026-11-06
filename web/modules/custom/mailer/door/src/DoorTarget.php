@@ -2,9 +2,6 @@
 
 namespace Drupal\mailer_door;
 
-use Drupal\organizations\Entity\Organization;
-use Drupal\user\UserInterface;
-
 /**
  * The places a mail door leads to.
  */
@@ -57,16 +54,6 @@ enum DoorTarget: string {
       DoorTarget::Applicant => 'Neue Bewerbung für euer Projekt',
       DoorTarget::Feedback => 'Wie war euer Projekt?',
     };
-  }
-
-  /**
-   * Whether pressing the door button may log the recipient in.
-   *
-   * Feedback of organizations lives on the hub. Feedback of creatives lives on
-   * the website, which does not share the hub login.
-   */
-  public function logsIn(UserInterface $recipient): bool {
-    return $this !== DoorTarget::Feedback || $recipient instanceof Organization;
   }
 
 }

@@ -263,12 +263,26 @@ class MailDoorTest extends ExistingSiteBase {
 
   /**
    * Asserts that the last response leads to the hub login with a target path.
+   */
+  protected function assertHubLogin(string $path, bool $logged_in): void {
+    $this->assertFrontendLogin($this->container->get('mailer_door.hub_urls')->base(), $path, $logged_in);
+  }
+
+  /**
+   * Asserts that the last response leads to the app login with a target path.
+   */
+  protected function assertAppLogin(string $path, bool $logged_in): void {
+    $this->assertFrontendLogin($this->container->get('mailer_door.hub_urls')->appBase(), $path, $logged_in);
+  }
+
+  /**
+   * Asserts that the last response leads to a frontend login with a path.
    *
    * After a login core appends check_logged_in to the redirect.
    */
-  protected function assertHubLogin(string $path, bool $logged_in): void {
+  protected function assertFrontendLogin(string $base, string $path, bool $logged_in): void {
     $location = (string) $this->location();
-    $this->assertSame($this->doorLinks()->loginUrl(), strtok($location, '?'));
+    $this->assertSame($base . $this->container->get('config.factory')->get('oauth_grant.settings')->get('auth_success_redirect'), strtok($location, '?'));
     $this->assertSame(1, substr_count($location, 'redirect='));
     parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
     $expected = ['redirect' => $path];
@@ -635,7 +649,7 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
-   * Tests that a participant follows a feedback door without login.
+   * Tests that a participant's feedback door logs in and opens the app form.
    */
   public function testFeedbackDoorOfParticipant(): void {
 
@@ -646,34 +660,16 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->visitDoor($path);
     $this->assertSession()->pageTextContains('Wie war euer Projekt?');
-    $this->assertSession()->pageTextNotContains('Ihr werdet dabei angemeldet.');
+    $this->assertSession()->pageTextContains('Ihr werdet dabei angemeldet.');
     $this->press();
-
-    $this->assertCount(1, $this->follows($project));
-    $this->assertSame(0, $this->lastLogin($creative));
-    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
-    $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
-  }
-
-  /**
-   * Tests that a creative's feedback door never logs in and opens the website.
-   */
-  public function testFeedbackDoorNeverLogsIn(): void {
-
-    $project = $this->createProject(ProjectState::Completed);
-    $creative = $this->createCreative();
-    $project->appendParticipant($creative)->save();
-    $path = $this->door($creative, $project, DoorTarget::Feedback);
-
-    $this->pressDoor($path);
 
     $follows = $this->follows($project);
     $this->assertCount(1, $follows);
+    $this->assertSame('feedback', $follows[0]->getMisc()['target']);
     $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
-    $this->assertSame(0, $this->lastLogin($creative));
-    $this->assertSame(0, $this->sessions($creative));
-    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
-    $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
+    $this->assertGreaterThan(0, $this->lastLogin($creative));
+    $this->assertGreaterThan(0, $this->sessions($creative));
+    $this->assertAppLogin('/projects/' . $project->uuid() . '/feedback', TRUE);
   }
 
   /**
@@ -694,8 +690,8 @@ class MailDoorTest extends ExistingSiteBase {
     $this->assertCount(1, $follows);
     $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
     $this->assertSame(0, $this->lastLogin($creative));
-    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
-    $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
+    $this->assertSame(0, $this->sessions($creative));
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->appBase() . '/projects/' . $project->uuid() . '/feedback', $this->location());
   }
 
   /**

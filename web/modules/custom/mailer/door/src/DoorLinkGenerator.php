@@ -137,9 +137,6 @@ class DoorLinkGenerator {
     elseif ($verdict->spent) {
       $lines[] = 'Meldet nicht an (Entwurfslink verbraucht) und schreibt einen Folge-Eintrag.';
     }
-    elseif (!$target->logsIn($recipient)) {
-      $lines[] = 'Meldet nicht an (Feedback liegt auf der Website) und schreibt einen Folge-Eintrag.';
-    }
     elseif ($verdict->staff) {
       $lines[] = 'Meldet nicht an (' . $name . ' ist Team) und schreibt einen Folge-Eintrag.';
     }

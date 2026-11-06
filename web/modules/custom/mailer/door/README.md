@@ -6,7 +6,7 @@ mails; this module builds, verifies and opens them.
 ## What a door is
 
 A door is `/go/{token}` (route `mailer_door.go`), placed in a mail in front of
-a target on the hub or the website.
+a target on the hub (organizations) or the app (creatives).
 
 - Opening the door does nothing: mail scanners open links. The page shows a
   heading, the project title and a button.
@@ -25,7 +25,7 @@ flowchart TD
     press --> password{Password form?}
     password -- yes --> form[Prospect sets a password]
     form --> promote[Promote, set password, log in, follow]
-    promote --> hub[Hub login, then the target]
+    promote --> frontendLogin["Frontend login (hub or app), then the target"]
     password -- no --> spent{"Other Draft door of a prospect?"}
     spent -- yes --> spentFollow[Follow if valid, belongs and nobody else signed in]
     spentFollow --> hubLogin[Hub login, then the target]
@@ -35,9 +35,9 @@ flowchart TD
     belongs -- no --> target
     belongs -- yes --> other{Someone else signed in?}
     other -- yes --> target
-    other -- no --> login{"Login allowed? Feedback only for organizations"}
+    other -- no --> login{"Login allowed?"}
     login -- yes --> loginFollow[Log in and follow]
-    loginFollow --> hub
+    loginFollow --> frontendLogin
     login -- no --> follow[Follow]
     follow --> target
 ```
@@ -58,11 +58,12 @@ flowchart TD
 - **Expired**, **not on the project**, **someone else signed in**: no login
   and no follow log, the target opens.
 - **Login allowed**: the recipient is no staff and no prospect, nobody is
-  signed in, the door is newer than the last login, the target logs in, and
-  the press comes from this site. Every target logs in, `Feedback` only for
-  organizations, whose feedback form is on the hub.
-- **Follow** without login: staff, `Feedback` doors of creatives, older doors,
-  a recipient who is already signed in, and a cross-site press of a login door.
+  signed in, the door is newer than the last login, and the press comes from
+  this site. Every target logs in. The login goes through the recipient's
+  frontend: the hub for organizations, the app for creatives.
+- **Follow** without login: staff, for example a manager who takes part in a
+  project, older doors, a recipient who is already signed in, and a cross-site
+  press of a login door.
 - A follow log is written once per mail and target.
 
 ## The token
@@ -97,7 +98,7 @@ The payload is packed into bytes, followed by a MAC:
 | `Edit`       | 3    | hub `/projects/{project}`                           | `mailer.manager.reminder_open_noone`                             | yes     |
 | `Complete`   | 4    | hub `/projects/{project}`                           | `mailer.manager.reminder_ongoing`                                | yes     |
 | `Applicant`  | 5    | hub `/users/{creative}`                             | `mailer.project_action.apply_organization`                       | yes     |
-| `Feedback`   | 6    | organizations: hub `/projects/{project}/feedback`; creatives: website `/feedback/creative/{project}` | `mailer.project_transition.complete_organization`, `mailer.project_transition.complete_creative` | organizations only |
+| `Feedback`   | 6    | organizations: hub `/projects/{project}/feedback`; creatives: app `/projects/{project}/feedback` | `mailer.project_transition.complete_organization`, `mailer.project_transition.complete_creative` | yes |
 
 The codes are fixed per case, so reordering the cases keeps issued doors.
 
@@ -108,11 +109,11 @@ submit.
 
 - **Login** when the door is not expired, the project belongs to the recipient
   (owner, or a participating creative for `Feedback`), nobody is signed in,
-  the target logs in for the recipient (`logsIn()`: every target, `Feedback`
-  only for organizations), the recipient is no staff (`access site`), and the
-  door is not older than the recipient's last login. So a login spends all
-  older doors of that account. Then it redirects to the hub login (`loginUrl()`),
-  which opens the target; without a login it redirects to the target.
+  the recipient is no staff (`access site`), and the door is not older than
+  the recipient's last login. So a login spends all older doors of that
+  account. Then it redirects to the login of the recipient's frontend
+  (`loginUrl()`), which opens the target; without a login it redirects to the
+  target.
 - **Prospects** never log in by the plain button. Where a door would log a
   prospect in, and it is a `Draft` door to a project still in draft, it shows
   a password form instead. The password
@@ -120,11 +121,14 @@ submit.
   prospect to an organization, sets the password and logs it in.
 - **Spent draft doors**: any other `Draft` door of a prospect leads to the hub
   login (`loginUrl()`), where the prospect signs in and lands on the target.
-- **Hub login**: `loginUrl()` is the hub base plus
-  `oauth_grant.settings:auth_success_redirect`. For a target on the hub it adds
-  `redirect=<path>`, the target's path and query without scheme and host. The
-  hub keeps it in its session and opens it after the OAuth callback, resolved
-  against its own host, so it cannot redirect elsewhere. After a login core
+- **Frontend login**: `loginUrl()` is the base of the recipient's frontend
+  plus `oauth_grant.settings:auth_success_redirect`: the hub
+  (`youvo.settings:hub_url`) for organizations, the app
+  (`youvo.settings:app_url`) for everybody else. For a target on that frontend
+  it adds `redirect=<path>`, the target's path and query without scheme and
+  host; any other target is left out. The frontend keeps it in its session and
+  opens it after the OAuth callback, resolved against its own host, so it
+  cannot redirect elsewhere. After a login core
   appends `check_logged_in=1`.
 - **Follow log**: when the door is not expired, the project belongs to the
   recipient, and nobody else is signed in. Staff get it too, for example a
@@ -158,9 +162,9 @@ project, recipient and target.
 | File                                       | Role                                            |
 |--------------------------------------------|-------------------------------------------------|
 | `src/DoorLinks.php`                        | builds, parses, verifies; verdict and target URLs |
-| `src/DoorTarget.php`                       | targets with code, heading and `logsIn()` per recipient |
+| `src/DoorTarget.php`                       | targets with code and heading                   |
 | `src/DoorToken.php`, `src/DoorVerdict.php` | the parsed facts and the verdict                |
-| `src/HubUrls.php`                          | hub base URL and project links, also used by `mailer` |
+| `src/HubUrls.php`                          | hub and app base URLs and project links, also used by `mailer` |
 | `src/DoorLinkGenerator.php`                | links without a mail: record, suggestions, outcome |
 | `src/Form/DoorForm.php`                    | the door page and its button                    |
 | `src/Form/DoorLinkForm.php`                | `/admin/door-links`                             |
@@ -176,7 +180,7 @@ The yv theme styles the page: `templates/page--mailer-door.html.twig` and
 | File                                         | Covers                                          |
 |----------------------------------------------|-------------------------------------------------|
 | `tests/src/Unit/DoorLinksTest.php`           | token format, tampering, MAC over the uid, expiry, login rule, target and login URLs |
-| `tests/src/Unit/HubUrlsTest.php`             | hub links                                       |
+| `tests/src/Unit/HubUrlsTest.php`             | hub and app links                               |
 | `tests/src/ExistingSite/MailDoorTest.php`    | the door page: login, follow, rejections, same-site checks, feedback |
 | `tests/src/ExistingSite/MailDoorInviteTest.php` | prospect invitation and password form        |
 | `tests/src/ExistingSite/DoorLinkFormTest.php` | `/admin/door-links` against the real door      |

@@ -272,29 +272,29 @@ class DoorLinksTest extends UnitTestCase {
   }
 
   /**
-   * A feedback door logs in the owning organization, never a creative.
+   * A feedback door logs in the owning organization and a creative, no staff.
    *
-   * Both belong to the project and would follow, so only the target decides.
+   * All of them belong to the project and follow.
    */
-  public function testFeedbackLogsInOrganizationsOnly(): void {
+  public function testFeedbackLogsInBothRecipients(): void {
 
     $links = $this->links();
-    $organization = $this->createMock(Organization::class);
-    $organization->method('id')->willReturn(7);
-    $organization->method('hasPermission')->willReturn(FALSE);
-    $creative = $this->createMock(Creative::class);
-    $creative->method('id')->willReturn(8);
-    $creative->method('hasPermission')->willReturn(FALSE);
-    $project = $this->project(FALSE, 7, [8 => $creative]);
+    $organization = $this->organization();
+    $creative = $this->creative();
+    $manager = $this->creative(9, TRUE);
+    $project = $this->project(FALSE, 7, [8 => $creative, 9 => $manager]);
 
-    $verdict = $links->verdict($organization, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
+    foreach ([$organization, $creative] as $recipient) {
+      $verdict = $links->verdict($recipient, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
+      $this->assertTrue($verdict->belongs);
+      $this->assertTrue($verdict->follow);
+      $this->assertTrue($verdict->login);
+    }
+
+    $verdict = $links->verdict($manager, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
     $this->assertTrue($verdict->belongs);
     $this->assertTrue($verdict->follow);
-    $this->assertTrue($verdict->login);
-
-    $verdict = $links->verdict($creative, $project, DoorTarget::Feedback, static::NOW - 100, NULL);
-    $this->assertTrue($verdict->belongs);
-    $this->assertTrue($verdict->follow);
+    $this->assertTrue($verdict->staff);
     $this->assertFalse($verdict->login);
   }
 
@@ -312,34 +312,46 @@ class DoorLinksTest extends UnitTestCase {
       $this->assertSame('https://hub.example.org/projects/abc', $links->targetUrl($target, $submitted, $recipient, ''));
     }
     $this->assertSame('https://hub.example.org/users/creative-uuid', $links->targetUrl(DoorTarget::Applicant, $submitted, $recipient, 'creative-uuid'));
-    $organization = $this->createMock(Organization::class);
-    $creative = $this->createMock(Creative::class);
-    $this->assertSame('https://hub.example.org/projects/abc/feedback', $links->targetUrl(DoorTarget::Feedback, $submitted, $organization, ''));
-    $this->assertSame('/projects/abc/feedback', $this->redirectOf($links->loginUrl($links->targetUrl(DoorTarget::Feedback, $submitted, $organization, '')), 'https://hub.example.org/auth/login'));
-    $this->assertSame('https://youvo.example.org/feedback/creative/abc', $links->targetUrl(DoorTarget::Feedback, $submitted, $creative, ''));
-    $this->assertSame('https://hub.example.org/auth/login', $links->loginUrl());
+    $this->assertSame('https://hub.example.org/projects/abc/feedback', $links->targetUrl(DoorTarget::Feedback, $submitted, $this->organization(), ''));
+    $this->assertSame('https://app.example.org/projects/abc/feedback', $links->targetUrl(DoorTarget::Feedback, $submitted, $this->creative(), ''));
 
     $local = $this->links(TRUE);
     $this->assertSame('http://localhost:3000/draft/abc', $local->targetUrl(DoorTarget::Draft, $draft, $recipient, ''));
-    $this->assertSame('http://localhost:3000/projects/abc/feedback', $local->targetUrl(DoorTarget::Feedback, $submitted, $organization, ''));
+    $this->assertSame('http://localhost:3000/projects/abc/feedback', $local->targetUrl(DoorTarget::Feedback, $submitted, $this->organization(), ''));
+    $this->assertSame('http://localhost:3000/projects/abc/feedback', $local->targetUrl(DoorTarget::Feedback, $submitted, $this->creative(), ''));
     $this->assertSame('http://localhost:3000/users/creative-uuid', $local->targetUrl(DoorTarget::Applicant, $submitted, $recipient, 'creative-uuid'));
-    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl());
   }
 
   /**
-   * A hub target goes to the login as its path, any other target is dropped.
+   * A target on the recipient's frontend goes to its login as the path.
+   *
+   * Organizations sign in to the hub, creatives to the app. Any other target
+   * is dropped.
    */
-  public function testLoginUrlCarriesHubPath(): void {
+  public function testLoginUrlCarriesFrontendPath(): void {
 
     $links = $this->links();
-    $url = $links->loginUrl('https://hub.example.org/projects/abc');
-    $this->assertSame('/projects/abc', $this->redirectOf($url, 'https://hub.example.org/auth/login'));
-    $this->assertSame('/draft/abc?tab=1', $this->redirectOf($links->loginUrl('https://hub.example.org/draft/abc?tab=1#top'), 'https://hub.example.org/auth/login'));
-    $this->assertSame('/', $this->redirectOf($links->loginUrl('https://hub.example.org'), 'https://hub.example.org/auth/login'));
+    $organization = $this->organization();
+    $creative = $this->creative();
+    $submitted = $this->project(FALSE);
 
-    // Website targets, look-alike hosts, other schemes and no target.
+    // The feedback targets of both recipients.
+    $this->assertSame('/projects/abc/feedback', $this->redirectOf($links->loginUrl($organization, $links->targetUrl(DoorTarget::Feedback, $submitted, $organization, '')), 'https://hub.example.org/auth/login'));
+    $this->assertSame('/projects/abc/feedback', $this->redirectOf($links->loginUrl($creative, $links->targetUrl(DoorTarget::Feedback, $submitted, $creative, '')), 'https://app.example.org/auth/login'));
+
+    // Hub targets of organizations.
+    $this->assertSame('/projects/abc', $this->redirectOf($links->loginUrl($organization, 'https://hub.example.org/projects/abc'), 'https://hub.example.org/auth/login'));
+    $this->assertSame('/draft/abc?tab=1', $this->redirectOf($links->loginUrl($organization, 'https://hub.example.org/draft/abc?tab=1#top'), 'https://hub.example.org/auth/login'));
+    $this->assertSame('/', $this->redirectOf($links->loginUrl($organization, 'https://hub.example.org'), 'https://hub.example.org/auth/login'));
+
+    // App targets of creatives.
+    $this->assertSame('/projects/abc', $this->redirectOf($links->loginUrl($creative, 'https://app.example.org/projects/abc'), 'https://app.example.org/auth/login'));
+    $this->assertSame('/projects/abc?tab=1', $this->redirectOf($links->loginUrl($creative, 'https://app.example.org/projects/abc?tab=1#top'), 'https://app.example.org/auth/login'));
+
+    // Targets outside the hub, look-alike hosts, other schemes and no target.
     foreach ([
       NULL,
+      'https://app.example.org/projects/abc/feedback',
       'https://youvo.example.org/feedback/organization/abc',
       'https://hub.example.org.evil.example/projects/abc',
       'https://hub.example.orgx/projects/abc',
@@ -347,23 +359,42 @@ class DoorLinksTest extends UnitTestCase {
       'https://hub.example.org@evil.example/projects/abc',
       'https://hub.example.org//evil.example/projects',
     ] as $target) {
-      $this->assertSame('https://hub.example.org/auth/login', $links->loginUrl($target), (string) $target);
+      $this->assertSame('https://hub.example.org/auth/login', $links->loginUrl($organization, $target), (string) $target);
     }
 
-    // The local hub, and a look-alike port.
-    $local = $this->links(TRUE);
-    $this->assertSame('/users/abc', $this->redirectOf($local->loginUrl('http://localhost:3000/users/abc'), 'http://localhost:3000/auth/login'));
-    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl('http://localhost:30000/users/abc'));
+    // Targets outside the app, look-alike hosts, other schemes and no target.
+    foreach ([
+      NULL,
+      'https://hub.example.org/projects/abc/feedback',
+      'https://youvo.example.org/feedback/creative/abc',
+      'https://app.example.org.evil.example/projects/abc',
+      'https://app.example.orgx/projects/abc',
+      'http://app.example.org/projects/abc',
+      'https://app.example.org@evil.example/projects/abc',
+      'https://app.example.org//evil.example/projects',
+    ] as $target) {
+      $this->assertSame('https://app.example.org/auth/login', $links->loginUrl($creative, $target), (string) $target);
+    }
 
-    // A hub base with a path keeps it in the redirect path.
-    $nested = $this->links(hub_url: 'https://example.org/hub/');
-    $this->assertSame('/hub/projects/abc', $this->redirectOf($nested->loginUrl('https://example.org/hub/projects/abc'), 'https://example.org/hub/auth/login'));
-    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl('https://example.org/hubx/projects/abc'));
-    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl('https://example.org/projects/abc'));
+    // The local frontend, and a look-alike port.
+    $local = $this->links(TRUE);
+    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl($organization));
+    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl($creative));
+    $this->assertSame('/users/abc', $this->redirectOf($local->loginUrl($organization, 'http://localhost:3000/users/abc'), 'http://localhost:3000/auth/login'));
+    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl($organization, 'http://localhost:30000/users/abc'));
+    $this->assertSame('http://localhost:3000/auth/login', $local->loginUrl($creative, 'http://localhost:30000/projects/abc/feedback'));
+
+    // A base with a path keeps it in the redirect path.
+    $nested = $this->links(hub_url: 'https://example.org/hub/', app_url: 'https://example.org/app/');
+    $this->assertSame('/hub/projects/abc', $this->redirectOf($nested->loginUrl($organization, 'https://example.org/hub/projects/abc'), 'https://example.org/hub/auth/login'));
+    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl($organization, 'https://example.org/hubx/projects/abc'));
+    $this->assertSame('https://example.org/hub/auth/login', $nested->loginUrl($organization, 'https://example.org/projects/abc'));
+    $this->assertSame('/app/projects/abc', $this->redirectOf($nested->loginUrl($creative, 'https://example.org/app/projects/abc'), 'https://example.org/app/auth/login'));
+    $this->assertSame('https://example.org/app/auth/login', $nested->loginUrl($creative, 'https://example.org/hub/projects/abc'));
 
     // A query of the login is kept.
     $query = $this->links(login: '/auth/login?source=door');
-    $url = $query->loginUrl('https://hub.example.org/projects/abc');
+    $url = $query->loginUrl($organization, 'https://hub.example.org/projects/abc');
     $this->assertSame('/projects/abc', $this->redirectOf($url, 'https://hub.example.org/auth/login'));
     parse_str((string) parse_url($url, PHP_URL_QUERY), $parameters);
     $this->assertSame('door', $parameters['source']);
@@ -415,11 +446,11 @@ class DoorLinksTest extends UnitTestCase {
   /**
    * Creates the door links service with stubbed config and clock.
    */
-  protected function links(bool $local = FALSE, string $hub_url = 'https://hub.example.org/', string $login = '/auth/login'): DoorLinks {
+  protected function links(bool $local = FALSE, string $hub_url = 'https://hub.example.org/', string $login = '/auth/login', string $app_url = 'https://app.example.org/'): DoorLinks {
     $config_factory = $this->getConfigFactoryStub([
       'youvo.settings' => [
         'hub_url' => $hub_url,
-        'website_url' => 'https://youvo.example.org/',
+        'app_url' => $app_url,
       ],
       'oauth_grant.settings' => [
         'local' => $local,
@@ -442,6 +473,26 @@ class DoorLinksTest extends UnitTestCase {
     $recipient->method('getLastLoginTime')->willReturn($last_login);
     $recipient->method('hasPermission')->willReturnCallback(fn (string $permission) => $staff && $permission === 'access site');
     return $recipient;
+  }
+
+  /**
+   * Creates an organization mock with the uid 7.
+   */
+  protected function organization(): Organization {
+    $organization = $this->createMock(Organization::class);
+    $organization->method('id')->willReturn(7);
+    $organization->method('hasPermission')->willReturn(FALSE);
+    return $organization;
+  }
+
+  /**
+   * Creates a creative mock, staff when it may access the site.
+   */
+  protected function creative(int $uid = 8, bool $staff = FALSE): Creative {
+    $creative = $this->createMock(Creative::class);
+    $creative->method('id')->willReturn($uid);
+    $creative->method('hasPermission')->willReturnCallback(fn (string $permission) => $staff && $permission === 'access site');
+    return $creative;
   }
 
   /**
