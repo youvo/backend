@@ -382,7 +382,7 @@ class StatsController implements ContainerInjectionInterface {
    *   The period.
    * @param \DateTimeImmutable $now
    *   The current time.
-   * @param array<string, int> $values
+   * @param array<string, ?int> $values
    *   The values keyed by bucket.
    *
    * @return array<string, ?int>

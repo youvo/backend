@@ -116,7 +116,7 @@ class ProjectStatsTest extends StatsTestBase {
     $period = StatsPeriod::fromQuery(['period' => 'year', 'year' => $now->format('Y')], $timezone, $now);
     $states = $this->projectStats->statesAtBucketEnds($period, $now->getTimestamp());
 
-    // The current and the later months count the current states.
+    // The current month counts the current states, the later months none.
     $calculator = $this->container->get('stats.calculator');
     $current = [
       'open' => $calculator->countOpenProjects(),
@@ -126,8 +126,11 @@ class ProjectStatsTest extends StatsTestBase {
     ];
     foreach ($states as $state => $values) {
       foreach ($values as $bucket => $value) {
-        if ($bucket >= $now->format('Y-m')) {
+        if ($bucket === $now->format('Y-m')) {
           $this->assertSame($current[$state], $value, $state . ' ' . $bucket);
+        }
+        if ($bucket > $now->format('Y-m')) {
+          $this->assertNull($value, $state . ' ' . $bucket);
         }
       }
     }

@@ -226,14 +226,15 @@ class ProjectStats {
    *
    * A project is in the state its last history item before the bucket end
    * went to, by timestamp and then by delta. Archived projects count too.
-   * The buckets that have not ended count the current states.
+   * The current bucket counts the current states, the buckets starting after
+   * the current time are NULL.
    *
    * @param \Drupal\stats\StatsPeriod $period
    *   The period.
    * @param int $now
    *   The current time.
    *
-   * @return array{open: array<string, int>, ongoing: array<string, int>, completed: array<string, int>, mediated: array<string, int>}
+   * @return array{open: array<string, ?int>, ongoing: array<string, ?int>, completed: array<string, ?int>, mediated: array<string, ?int>}
    *   The counts per bucket, mediated being ongoing plus completed.
    */
   public function statesAtBucketEnds(StatsPeriod $period, int $now): array {
@@ -273,16 +274,16 @@ class ProjectStats {
 
     if (count($ends) < count($buckets)) {
       $current = $this->currentStateCounts();
-      foreach (array_keys(array_diff_key($buckets, $ends)) as $bucket) {
+      foreach (array_diff_key($buckets, $ends) as $bucket => [$start]) {
         foreach (array_keys($states) as $state) {
-          $states[$state][$bucket] = $current[$state] ?? 0;
+          $states[$state][$bucket] = $start <= $now ? $current[$state] ?? 0 : NULL;
         }
       }
     }
 
     $mediated = [];
     foreach ($states[ProjectState::Ongoing->value] as $bucket => $ongoing) {
-      $mediated[$bucket] = $ongoing + $states[ProjectState::Completed->value][$bucket];
+      $mediated[$bucket] = $ongoing === NULL ? NULL : $ongoing + $states[ProjectState::Completed->value][$bucket];
     }
 
     return [
