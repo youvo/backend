@@ -192,6 +192,18 @@
           color = tokens.grey;
         }
         dataset.borderColor = color;
+        if (type === 'line') {
+          // A value between gaps draws no line, so it shows as a point.
+          dataset.pointRadius = (context) => {
+            const values = context.dataset.data;
+            const i = context.dataIndex;
+            const isolated =
+              values[i] !== null &&
+              (values[i - 1] ?? null) === null &&
+              (values[i + 1] ?? null) === null;
+            return isolated ? 3 : 0;
+          };
+        }
         if (type === 'line' && datasets.length > 1) {
           // Several areas would blend into a haze: lines only.
           dataset.fill = false;
