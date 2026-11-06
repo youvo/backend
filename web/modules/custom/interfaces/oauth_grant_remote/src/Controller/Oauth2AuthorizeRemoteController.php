@@ -12,6 +12,7 @@ use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
+use Drupal\oauth_grant\Consumers;
 use Drupal\simple_oauth\Controller\Oauth2AuthorizeController;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -103,9 +104,15 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
         return OAuthServerException::serverError('Invalid Client.')
           ->generateHttpResponse(new Response());
       }
+      // Consumers have no roles since simple_oauth 6, so the consumers of
+      // organizations are known by their UUID.
       /** @var \Drupal\consumers\Entity\Consumer $consumer */
       $consumer = reset($consumers);
-      if (in_array('organization', array_column($consumer->get('roles')->getValue(), 'target_id'), TRUE)) {
+      $organization_consumers = [
+        Consumers::KNOWN['ORGANIZATION'][0],
+        Consumers::KNOWN['ORGANIZATION_LOCAL'][0],
+      ];
+      if (in_array($consumer->uuid(), $organization_consumers, TRUE)) {
         return parent::authorize($request);
       }
     }
