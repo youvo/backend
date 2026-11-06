@@ -53,7 +53,7 @@ class ConsumerPermissionsAccess implements ContainerInjectionInterface {
       }
 
       /** @var \Drupal\consumers\Entity\Consumer $client */
-      $permission = ConsumerPermissions::PREFIX . $client->id();
+      $permission = ConsumerPermissions::PREFIX . $client->uuid();
       if (!$account->getAccount()->hasPermission($permission)) {
         return AccessResult::forbidden();
       }

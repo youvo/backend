@@ -30,8 +30,8 @@ weight: 3
 is_admin: null
 permissions:
   - 'access user profiles'
-  - 'authorize with client 2'
-  - 'authorize with client 3'
+  - 'authorize with client 7f56f1d5-154f-42c1-b591-45e4e2fd235e'
+  - 'authorize with client dd9ace1c-8879-45ae-b137-9cc06b4b5821'
   - 'create terms in tags'
   - 'general creative access'
   - 'grant simple_oauth codes'

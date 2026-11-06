@@ -10,6 +10,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\consumers\Entity\Consumer;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Utility\Error;
+use Drupal\oauth_grant\Consumers;
 
 /**
  * Implements hook_install().
@@ -66,13 +67,7 @@ function oauth_grant_install(): void {
 
     // Add consumers for creatives and organizations. The scopes are provided
     // as configuration by the creatives and organizations modules.
-    $consumers = [
-      'CREATIVE_LOCAL' => ['dd9ace1c-8879-45ae-b137-9cc06b4b5821', 'Creatives (local)', FALSE],
-      'CREATIVE' => ['7f56f1d5-154f-42c1-b591-45e4e2fd235e', 'Creatives', TRUE],
-      'ORGANIZATION_LOCAL' => ['ff5a1e31-557c-4c17-a7f5-a4a342d3cc19', 'Organizations (local)', TRUE],
-      'ORGANIZATION' => ['63b60b9e-dbbc-4214-a520-f8cf4cab65da', 'Organizations', TRUE],
-    ];
-    foreach ($consumers as $key => [$uuid, $label, $is_default]) {
+    foreach (Consumers::KNOWN as $key => [$uuid, $label, $is_default]) {
       if (!isset($consumer_uuids['UUID_' . $key], $consumer_redirects['REDIRECT_' . $key], $consumer_secrets['SECRET_' . $key])) {
         continue;
       }
