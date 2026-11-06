@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "29cfc14dc6ab461adf2627911907e6ef",
+    "content-hash": "c71a4464d3831d7530bf237826f99bb5",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -5750,7 +5750,8 @@
             "version": "4.5.1",
             "dist": {
                 "type": "tar",
-                "url": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz"
+                "url": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz",
+                "shasum": "19dd1a9a386a3f6397691672231cb5fc9c052c35"
             },
             "type": "drupal-library"
         },
@@ -5759,7 +5760,8 @@
             "version": "3.0.0",
             "dist": {
                 "type": "tar",
-                "url": "https://registry.npmjs.org/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz"
+                "url": "https://registry.npmjs.org/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz",
+                "shasum": "c25f63c7f317c1f96f9a7c44bd45eeedb8a478e5"
             },
             "type": "drupal-library"
         },
@@ -5768,7 +5770,8 @@
             "version": "3.1.0",
             "dist": {
                 "type": "tar",
-                "url": "https://registry.npmjs.org/chartjs-plugin-annotation/-/chartjs-plugin-annotation-3.1.0.tgz"
+                "url": "https://registry.npmjs.org/chartjs-plugin-annotation/-/chartjs-plugin-annotation-3.1.0.tgz",
+                "shasum": "0b3910862bde232344bbb6cf998633f71db7b093"
             },
             "type": "drupal-library"
         },
@@ -5777,7 +5780,8 @@
             "version": "2.0.0",
             "dist": {
                 "type": "tar",
-                "url": "https://registry.npmjs.org/chartjs-plugin-datalabels/-/chartjs-plugin-datalabels-2.0.0.tgz"
+                "url": "https://registry.npmjs.org/chartjs-plugin-datalabels/-/chartjs-plugin-datalabels-2.0.0.tgz",
+                "shasum": "caacefb26803d968785071eab012dde8746c5939"
             },
             "type": "drupal-library"
         },
