@@ -67,7 +67,7 @@ class Correspondence extends ContentEntityBase implements CorrespondenceInterfac
       ->setDefaultValue('automatic');
     $fields['result'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Result'))
-      ->setSetting('allowed_values', ['sent' => 'Sent', 'failed' => 'Failed'])
+      ->setSetting('allowed_values', ['sent' => 'Sent', 'failed' => 'Failed', 'link' => 'Link only'])
       ->setDefaultValue('sent');
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'));

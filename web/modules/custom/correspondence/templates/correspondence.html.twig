@@ -10,6 +10,7 @@
  * - info: The date tooltip.
  * - subject: The subject or note title (escaped plain text).
  * - failed: Whether the mail was not delivered.
+ * - link_only: Whether the entry holds a door link made without a mail.
  * - body_html: The filtered mail body (safe markup).
  * - body_text: The plain text note body.
  */
@@ -29,7 +30,7 @@
   {% if type == 'mail' %}
     <details class="logbook-timeline-details">
       <summary class="logbook-timeline-text logbook-timeline-summary">
-        {{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'Not delivered'|t }}</span>{% endif %}
+        {{ subject }}{% if failed %} <span class="logbook-timeline-failed">{{ 'Not delivered'|t }}</span>{% endif %}{% if link_only %} <span class="logbook-timeline-link-only">{{ 'Link only'|t }}</span>{% endif %}
         <span class="logbook-timeline-toggle" role="img" aria-label="{{ 'Show message'|t }}" title="{{ 'Show message'|t }}"></span>
       </summary>
       <div class="logbook-timeline-message">{{ body_html }}</div>

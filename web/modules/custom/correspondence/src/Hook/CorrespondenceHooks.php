@@ -49,7 +49,9 @@ class CorrespondenceHooks {
     $variables['date'] = $this->dateFormatter->format($time, 'html_date');
     $variables['info'] = $this->dateFormatter->format($time, 'short');
     $variables['subject'] = (string) $entry->get('subject')->value;
-    $variables['failed'] = !$is_note && !$entry->isSent();
+    $result = $entry->get('result')->value;
+    $variables['failed'] = !$is_note && $result === 'failed';
+    $variables['link_only'] = !$is_note && $result === 'link';
 
     $body = (string) $entry->get('body')->value;
     if ($is_note) {
