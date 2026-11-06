@@ -17,6 +17,7 @@ use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
+use Drupal\user_types\PasswordChecklist;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -52,6 +53,7 @@ class DoorForm extends FormBase {
     protected TimeInterface $time,
     protected LoggerInterface $logger,
     protected PasswordPolicyValidatorInterface $passwordPolicyValidator,
+    protected PasswordChecklist $passwordChecklist,
   ) {}
 
   /**
@@ -68,6 +70,7 @@ class DoorForm extends FormBase {
       $container->get('datetime.time'),
       $container->get('logger.channel.mailer_door'),
       $container->get('password_policy.validator'),
+      $container->get(PasswordChecklist::class),
     );
   }
 
@@ -163,24 +166,12 @@ class DoorForm extends FormBase {
         '#type' => 'password_confirm',
         '#required' => TRUE,
         '#size' => 25,
-        '#after_build' => [[static::class, 'germanPasswordTitles']],
+        '#after_build' => [[PasswordChecklist::class, 'germanPasswordTitles']],
       ];
 
-      // The rules as a checklist. Without JavaScript it is a plain list; the
-      // script ticks the rules off while typing and holds the button back.
-      $rules = $this->passwordRules();
-      $form['password_rules'] = [
-        '#theme' => 'item_list',
-        '#items' => array_map(static fn (array $rule) => [
-          '#markup' => $rule['label'],
-          '#wrapper_attributes' => ['data-rule' => $rule['id']],
-        ], $rules),
-        '#attributes' => ['class' => ['mail-door-rules'], 'id' => 'mail-door-rules'],
-        '#attached' => [
-          'library' => ['mailer_door/door_password'],
-          'drupalSettings' => ['mailerDoorPassword' => ['rules' => $rules]],
-        ],
-      ];
+      // The prospect becomes an organization with this password, see
+      // validateForm().
+      $form['password_rules'] = $this->passwordChecklist->build('organization');
     }
 
     $form['actions'] = [
@@ -273,62 +264,6 @@ class DoorForm extends FormBase {
     }
 
     $form_state->setResponse(new TrustedRedirectResponse($target_url));
-  }
-
-  /**
-   * Names the two password fields in German, as the rest of the door.
-   *
-   * The site has no translations, so core's titles would stay English.
-   */
-  public static function germanPasswordTitles(array $element): array {
-    $element['pass1']['#title'] = 'Passwort';
-    $element['pass2']['#title'] = 'Passwort wiederholen';
-    return $element;
-  }
-
-  /**
-   * Lists the password rules of organizations for the door's checklist.
-   *
-   * The prospect becomes an organization with this password, see
-   * validateForm(). The server still checks every rule; rules without a
-   * German text here are only left out of the list.
-   *
-   * @return array<int, array<string, int|string>>
-   *   The rules, each with an id and a label, and the values the script
-   *   checks.
-   */
-  protected function passwordRules(): array {
-
-    $rules = [];
-    $policies = $this->entityTypeManager->getStorage('password_policy')->loadMultiple();
-    foreach ($policies as $policy) {
-      /** @var \Drupal\password_policy\PasswordPolicyInterface $policy */
-      if (!in_array('organization', $policy->getRoles(), TRUE)) {
-        continue;
-      }
-      foreach ($policy->getConstraints() as $constraint) {
-        $length = (int) ($constraint['character_length'] ?? 0);
-        if ($constraint['id'] === 'password_length' && $constraint['character_operation'] === 'minimum') {
-          $min = max($length, $rules['length_min']['min'] ?? 0);
-          $rules['length_min'] = [
-            'id' => 'length_min',
-            'label' => sprintf('Mindestens %d Zeichen', $min),
-            'min' => $min,
-          ];
-        }
-        elseif ($constraint['id'] === 'password_length' && $constraint['character_operation'] === 'maximum') {
-          $max = min($length, $rules['length_max']['max'] ?? PHP_INT_MAX);
-          $rules['length_max'] = [
-            'id' => 'length_max',
-            'label' => sprintf('Höchstens %d Zeichen', $max),
-            'max' => $max,
-          ];
-        }
-      }
-    }
-    $rules['match'] = ['id' => 'match', 'label' => 'Beide Passwörter stimmen überein'];
-
-    return array_values($rules);
   }
 
   /**

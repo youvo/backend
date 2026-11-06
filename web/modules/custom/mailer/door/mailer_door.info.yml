@@ -13,4 +13,5 @@ dependencies:
   - password_policy:password_policy
   - projects:projects
   - tagify:tagify
+  - user_types:user_types
   - youvo:youvo

@@ -169,11 +169,18 @@ project, recipient and target.
 | `src/Form/DoorForm.php`                    | the door page and its button                    |
 | `src/Form/DoorLinkForm.php`                | `/admin/door-links`                             |
 | `src/Controller/DoorLinkAutocompleteController.php`, `src/Element/DoorLinkTags.php` | the Tagify fields of that form |
-| `src/Hook/MailerDoorHooks.php`             | theme hook, page suggestion `page__mailer_door`, body class `mail-door-body` |
-| `templates/mail-door.html.twig`, `js/`     | the door card, the password checklist, the tag fields |
+| `src/Hook/MailerDoorHooks.php`             | theme hook `mail_door`, Gin's sticky actions off |
+| `templates/mail-door.html.twig`, `js/`     | the door card, the tag fields                   |
 
-The yv theme styles the page: `templates/page--mailer-door.html.twig` and
-`sass/components/_mail-door.scss`.
+The password form's checklist is shared with the creative registration:
+`PasswordChecklist` in `user_types` lists the rules of a role's password
+policies (`organization` here) and attaches `user_types/password_checklist`
+(`js/password-checklist.js`), which ticks them off and holds the button back.
+
+The yv theme styles the page as one of its public pages, with the login and
+password pages: `yv_public_page_routes()` in `yv.theme` picks the routes,
+`templates/page--public.html.twig` is the layout (the door draws its own card)
+and `sass/components/_public-page.scss` the styles.
 
 ## Tests
 

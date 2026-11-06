@@ -341,7 +341,7 @@ class MailDoorInviteTest extends ExistingSiteBase {
 
     $project = $this->createProject();
     $this->visitDoor($this->door($project));
-    $this->assertSession()->elementTextContains('css', '.mail-door-rules', 'Mindestens 10 Zeichen');
+    $this->assertSession()->elementTextContains('css', '.password-checklist', 'Mindestens 10 Zeichen');
     $this->submitPassword('Kurz-1');
 
     $this->assertSession()->statusCodeEquals(200);

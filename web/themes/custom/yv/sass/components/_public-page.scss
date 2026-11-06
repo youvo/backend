@@ -1,25 +1,26 @@
 // =============================================================================
-// MAIL DOOR (DoorForm, page--mailer-door.html.twig)
+// PUBLIC PAGES (page--public.html.twig)
 // =============================================================================
-// The page behind a link in a mail looks like the mail: the turquoise band
-// with the logo, one card that overlaps it, and the orange button of the
-// website, with white text as there.
+// The pages visitors meet without the admin toolbar, the login, password
+// reset, registration and the page behind a link in a mail, look like the
+// mails: the turquoise band with the logo, one card that overlaps it, and the
+// orange button of the website, with white text as there.
 
 @use "../abstracts/functions.scss" as *;
 @use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
 
 // The website's teal, darkened to pass 4.5:1 on white.
-$door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+$public-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
 
 // Gin starts the page 1px down, which leaves a light line above the band.
 // Gin's rule carries an ID-level specificity hack.
 // stylelint-disable-next-line selector-max-id, selector-class-pattern
-:is(#extra-specificity-hack, .mail-door-body) .page-wrapper.dialog-off-canvas-main-canvas {
+:is(#extra-specificity-hack, .public-page-body) .page-wrapper.dialog-off-canvas-main-canvas {
   margin-block-start: 0;
 }
 
-.door-page {
+.public-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -31,11 +32,11 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   );
 }
 
-.door-page-band {
+.public-page-band {
   padding: var(--gin-spacing-l) var(--gin-spacing-m) var(--gin-spacing-m);
 }
 
-.door-page-logo {
+.public-page-logo {
   display: block;
   margin-inline: auto;
   width: to-rem(200);
@@ -46,7 +47,7 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   }
 }
 
-.door-page-main {
+.public-page-main {
   box-sizing: border-box;
   flex: 1;
   width: 100%;
@@ -55,23 +56,24 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   padding: 0 var(--gin-spacing-m) var(--gin-spacing-l);
 }
 
-// Gin draws the form around the door as a card of its own; the door is the
-// card. Gin's rule carries an ID-level specificity hack.
+// Gin draws the form as a card of its own; the page has its own card. Gin's rule carries an ID-level specificity hack.
 // stylelint-disable-next-line selector-max-id
-:is(#extra-specificity-hack, .door-page) .door-page-main .block-system-main-block > form {
+:is(#extra-specificity-hack, .public-page) .public-page-main .block-system-main-block > form {
   padding: 0;
   background: none;
   box-shadow: none;
 }
 
-.door-page-footer {
+.public-page-footer {
   padding: var(--gin-spacing-m);
   color: var(--yv-muted);
   font-size: var(--gin-font-size-xs);
   text-align: center;
 }
 
-.mail-door {
+// The card: the mail door draws it inside its form, the other pages around
+// their heading and form, see public_page_card in the page template.
+.public-page-card {
   @include card;
   @include card-padding;
 
@@ -108,7 +110,7 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   // Gin styles the submit button through its ID with an ID-level
   // specificity hack, so the button needs two IDs' worth.
   // stylelint-disable-next-line selector-max-id
-  :is(#extra-specificity-hack, .door-page) & :is(#extra-specificity-hack, .form-submit) {
+  :is(#extra-specificity-hack, .public-page) & :is(#extra-specificity-hack, .form-submit) {
     width: 100%;
     margin: 0;
     padding-block: var(--gin-spacing-s);
@@ -148,9 +150,9 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   }
 }
 
-// The password rules, ticked off by the script while typing. Within the door,
-// to win over Claro's `.item-list ul` indent.
-.mail-door .mail-door-rules {
+// The password rules, ticked off by user_types' password-checklist.js while
+// typing. Within the card, to win over Claro's `.item-list ul` indent.
+.public-page-card .password-checklist {
   display: grid;
   gap: var(--gin-spacing-xxs);
   margin: 0;
@@ -181,31 +183,31 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
     }
 
     &[data-met] {
-      color: $door-teal;
+      color: $public-teal;
 
       &::before {
         content: "✓";
         border-color: transparent;
-        background: $door-teal;
+        background: $public-teal;
         color: $color-white;
       }
     }
   }
 }
 
-.mail-door-context {
+.public-page-context {
   margin: 0;
 
   // A project title is a name: no hyphens in it.
   hyphens: manual;
-  color: $door-teal;
+  color: $public-teal;
   font-size: var(--gin-font-size-s);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.mail-door-heading {
+.public-page-heading {
   margin: 0;
   color: var(--yv-ink);
   font-size: to-rem(28);
@@ -213,7 +215,65 @@ $door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
   line-height: 1.2;
 }
 
-.mail-door-note {
+.public-page-note {
   margin: 0;
   color: var(--yv-muted);
+}
+
+// The pages whose card the page template draws: their heading and form look
+// like the door's. Only these, so the door keeps its look.
+.public-page-card[data-card="page"] {
+  // stylelint-disable-next-line selector-class-pattern
+  .block-page-title-block {
+    margin: 0;
+  }
+
+  // Gin's heading of the page.
+  // stylelint-disable-next-line selector-class-pattern
+  .public-page-heading.page-title {
+    margin: 0;
+    color: var(--yv-ink);
+    font-size: to-rem(28);
+    font-weight: 700;
+    line-height: 1.2;
+
+    // Gin cuts a long heading off with an ellipsis, and sets it tighter and
+    // narrower than the door's heading.
+    display: block;
+    overflow: visible;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    letter-spacing: -0.025em;
+    white-space: normal;
+  }
+
+  // Core's descriptions below the fields.
+  // stylelint-disable-next-line selector-class-pattern
+  .form-item__description {
+    color: var(--yv-muted);
+  }
+}
+
+// Their form spaces its parts as the door's card does. Gin draws the form as
+// a card with a border; its rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id
+:is(#extra-specificity-hack, .public-page-card[data-card="page"]) .block-system-main-block > form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-s);
+  border: 0;
+  border-radius: 0;
+}
+
+// A small link to the neighbouring page, such as „Passwort vergessen?“.
+.public-page-link {
+  margin: 0;
+  font-size: var(--gin-font-size-s);
+  text-align: center;
+
+  a {
+    color: $public-teal;
+    font-weight: 600;
+  }
 }

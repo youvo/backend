@@ -40,6 +40,56 @@ function yv_theme_suggestions_user_alter(array &$suggestions, array $variables):
 }
 
 /**
+ * Lists the routes of the public pages, see page--public.html.twig.
+ *
+ * Visitors meet these pages without the admin toolbar, mostly signed out, so
+ * they look like the mails instead of the backend.
+ *
+ * @return array<string, bool>
+ *   Whether the page template draws the card around the heading and the
+ *   content, keyed by route name. The mail door draws its own card.
+ */
+function yv_public_page_routes(): array {
+  return [
+    'user.login' => TRUE,
+    'user.pass' => TRUE,
+    'user.reset' => TRUE,
+    'user.reset.form' => TRUE,
+    'user.reset.login' => TRUE,
+    'creatives.register' => TRUE,
+    'creatives.register.form' => TRUE,
+    'mailer_door.go' => FALSE,
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for page.
+ */
+function yv_theme_suggestions_page_alter(array &$suggestions): void {
+  if (isset(yv_public_page_routes()[\Drupal::routeMatch()->getRouteName()])) {
+    $suggestions[] = 'page__public';
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for html.
+ *
+ * Marks the body of the public pages, for Gin's offset of the page.
+ */
+function yv_preprocess_html(array &$variables): void {
+  if (isset(yv_public_page_routes()[\Drupal::routeMatch()->getRouteName()])) {
+    $variables['attributes']['class'][] = 'public-page-body';
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page.
+ */
+function yv_preprocess_page(array &$variables): void {
+  $variables['public_page_card'] = yv_public_page_routes()[\Drupal::routeMatch()->getRouteName()] ?? FALSE;
+}
+
+/**
  * Implements hook_theme_suggestions_HOOK_alter().
  */
 function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables): void {
@@ -52,7 +102,8 @@ function yv_theme_suggestions_menu_alter(array &$suggestions, array $variables):
  * Implements hook_preprocess_HOOK() for page_title.
  *
  * The profiles of organizations and creatives, the feedback page and the
- * project page show their title themselves.
+ * project page show their title themselves. The public pages show it as the
+ * heading of their card.
  */
 function yv_preprocess_page_title(array &$variables): void {
   $route_match = \Drupal::routeMatch();
@@ -63,6 +114,10 @@ function yv_preprocess_page_title(array &$variables): void {
   }
   if (in_array($route_match->getRouteName(), ['entity.feedback.canonical', 'entity.project.canonical'], TRUE)) {
     $variables['title'] = '';
+  }
+  // The heading of the card of a public page.
+  if (yv_public_page_routes()[$route_match->getRouteName()] ?? FALSE) {
+    $variables['title_attributes']['class'][] = 'public-page-heading';
   }
 }
 

@@ -83,10 +83,14 @@ class PasswordPolicyTest extends ExistingSiteBase {
 
     $this->drupalGet('/register/' . $creative->id() . '/' . $timestamp . '/' . $hash);
     $this->assertSession()->fieldExists('password[pass1]');
+    $this->assertSession()->buttonExists('Passwort speichern und weiter');
+    $this->assertSession()->elementNotExists('css', '.gin-sticky-form-actions');
+    // The checklist lists the rules of the creative's password policy.
+    $this->assertSession()->elementTextContains('css', '.password-checklist', 'Mindestens 10 Zeichen');
     $page = $this->getSession()->getPage();
     $page->fillField('password[pass1]', static::SHORT);
     $page->fillField('password[pass2]', static::SHORT);
-    $page->pressButton('Set password');
+    $page->pressButton('Passwort speichern und weiter');
 
     $this->assertSession()->pageTextContains('at least 10 characters');
     $this->assertTrue($this->checkPassword($creative, 'password'));

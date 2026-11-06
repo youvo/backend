@@ -1,6 +1,8 @@
 /**
  * @file
- * Ticks off the password rules of the door while typing.
+ * Ticks off the password rules below a new password while typing.
+ *
+ * Used by the mail door and the creative registration, see PasswordChecklist.
  *
  * The button stays aria-disabled until every rule is met: it can still be
  * focused and points to the checklist, but does not submit. The server checks
@@ -25,9 +27,9 @@
     }
   }
 
-  Drupal.behaviors.mailerDoorPassword = {
+  Drupal.behaviors.passwordChecklist = {
     attach(context, settings) {
-      once('mailer-door-password', '.mail-door-rules', context).forEach(
+      once('password-checklist', '.password-checklist', context).forEach(
         (list) => {
           const form = list.closest('form');
           const password = form.querySelector('input[name="password[pass1]"]');
@@ -35,7 +37,7 @@
             'input[name="password[pass2]"]',
           );
           const submit = form.querySelector('.form-submit');
-          const rules = settings.mailerDoorPassword?.rules ?? [];
+          const rules = settings.passwordChecklist?.rules ?? [];
           if (!password || !confirmation || !submit) {
             return;
           }

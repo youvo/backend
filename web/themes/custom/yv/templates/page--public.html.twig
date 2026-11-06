@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * The public pages: login, password reset, registration and mail doors.
+ *
+ * Looks like the mails: the turquoise band with the logo, then one card. No
+ * admin chrome: the visitor is usually not signed in. yv.theme picks the
+ * routes, see yv_public_page_routes().
+ *
+ * Available variables: see Gin's page.html.twig, and:
+ * - public_page_card: Whether the page wraps its heading and content in the
+ *   card. The mail door draws its own card with its own heading.
+ */
+#}
+<div class="public-page">
+  <header class="public-page-band">
+    <img class="public-page-logo" src="{{ base_path }}assets/logo_email_v2.png" alt="youvo – You create. You volunteer." width="245" height="76">
+  </header>
+  <main class="public-page-main">
+    {{ page.highlighted }}
+    {% if public_page_card %}
+      <div class="public-page-card" data-card="page">
+        {{ page.header[active_admin_theme ~ '_page_title'] }}
+        {{ page.content }}
+      </div>
+    {% else %}
+      {{ page.content }}
+    {% endif %}
+  </main>
+  <footer class="public-page-footer">youvo e.V. · You create. You volunteer.</footer>
+</div>
