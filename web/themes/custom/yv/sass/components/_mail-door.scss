@@ -9,6 +9,9 @@
 @use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
 
+// The website's teal, darkened to pass 4.5:1 on white.
+$door-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+
 // Gin starts the page 1px down, which leaves a light line above the band.
 // Gin's rule carries an ID-level specificity hack.
 // stylelint-disable-next-line selector-max-id, selector-class-pattern
@@ -29,13 +32,12 @@
 }
 
 .door-page-band {
-  display: flex;
-  justify-content: center;
   padding: var(--gin-spacing-l) var(--gin-spacing-m) var(--gin-spacing-m);
 }
 
 .door-page-logo {
   display: block;
+  margin-inline: auto;
   width: to-rem(200);
   height: auto;
 
@@ -79,7 +81,6 @@
   // the card on narrow screens.
   grid-template-columns: minmax(0, 1fr);
   gap: var(--gin-spacing-s);
-  color: var(--yv-text);
 
   // Core's form actions and form items add their own margins. The grid gap
   // spaces the card's parts; the button gets a little more.
@@ -179,14 +180,13 @@
       line-height: 1;
     }
 
-    &.is-met {
-      // Darkened to pass 4.5:1 on white.
-      color: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+    &[data-met] {
+      color: $door-teal;
 
       &::before {
         content: "✓";
         border-color: transparent;
-        background: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+        background: $door-teal;
         color: $color-white;
       }
     }
@@ -198,9 +198,7 @@
 
   // A project title is a name: no hyphens in it.
   hyphens: manual;
-
-  // Darkened to pass 4.5:1 on white.
-  color: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+  color: $door-teal;
   font-size: var(--gin-font-size-s);
   font-weight: 700;
   letter-spacing: 0.04em;

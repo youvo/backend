@@ -62,7 +62,7 @@
                 met = false;
               }
               if (entry) {
-                entry.item.classList.toggle('is-met', result === true);
+                entry.item.toggleAttribute('data-met', result === true);
                 entry.status.textContent =
                   result === true ? '(erfüllt)' : '(noch nicht erfüllt)';
               }
