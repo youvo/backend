@@ -256,12 +256,20 @@ class StatsCharts {
    *   Whether to draw horizontal bars.
    * @param int|null $max
    *   The fixed maximum of the value axis, which then starts at 0.
+   * @param string[] $grey
+   *   The names of the series drawn in grey instead of a palette color.
    *
    * @return array<string, mixed>
    *   The chart render element.
    */
-  public static function bar(string $id, string|\Stringable $title, array $labels, array $series, bool $horizontal = FALSE, ?int $max = NULL): array {
+  public static function bar(string $id, string|\Stringable $title, array $labels, array $series, bool $horizontal = FALSE, ?int $max = NULL, array $grey = []): array {
     $chart = static::chart($id, $title, $horizontal ? 'bar' : 'column', $labels, $series);
+    // The script reads the color of a grey series from the theme.
+    foreach (array_keys($series) as $index => $name) {
+      if (in_array((string) $name, $grey, TRUE)) {
+        $chart['series_' . $index]['#raw_options']['statsColor'] = 'grey';
+      }
+    }
     if ($max !== NULL) {
       $chart['#raw_options']['options']['scales'][$horizontal ? 'x' : 'y'] += [
         'min' => 0,

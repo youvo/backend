@@ -46,6 +46,9 @@ body {
   @for $i from 1 through list.length($chart-colors) {
     --yv-chart-#{$i}: #{list.nth($chart-colors, $i)};
   }
+
+  // The chart series in the background, such as declined projects.
+  --yv-chart-grey: #{$color-grey-dark};
 }
 
 // Gin's dark mode class, outside our naming pattern.

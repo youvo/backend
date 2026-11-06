@@ -6,7 +6,8 @@
  * script builds the charts. It sets the Chart.js defaults from the theme
  * tokens, registers small plugins (hover line, doughnut total, empty state)
  * and colors the series from the palette tokens --yv-chart-1 … 13, so the
- * colors live only in the theme. The tokens are read again when Gin switches
+ * colors live only in the theme. A series marked statsColor: 'grey' takes
+ * --yv-chart-grey. The tokens are read again when Gin switches
  * to or from dark mode.
  */
 ((Drupal, Chart, once) => {
@@ -38,6 +39,7 @@
       text: get('--yv-text'),
       muted: get('--yv-muted'),
       accent: accent || palette[0],
+      grey: get('--yv-chart-grey'),
       surface: get('--yv-surface'),
       line: get('--yv-line'),
       outline: get('--yv-outline'),
@@ -173,7 +175,7 @@
    * Colors the datasets from the tokens before each update.
    *
    * A single series takes the accent, more series and the doughnut slices the
-   * palette in its order.
+   * palette in its order. A series marked grey takes the grey token.
    */
   const paint = {
     id: 'statsPaint',
@@ -185,7 +187,10 @@
           dataset.backgroundColor = dataset.data.map((_, i) => paletteColor(i));
           return;
         }
-        const color = datasets.length === 1 ? tokens.accent : paletteColor(index);
+        let color = datasets.length === 1 ? tokens.accent : paletteColor(index);
+        if (dataset.statsColor === 'grey' && tokens.grey) {
+          color = tokens.grey;
+        }
         dataset.borderColor = color;
         if (type === 'line' && datasets.length > 1) {
           // Several areas would blend into a haze: lines only.

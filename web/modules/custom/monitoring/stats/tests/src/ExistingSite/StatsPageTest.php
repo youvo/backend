@@ -306,6 +306,9 @@ class StatsPageTest extends StatsTestBase {
     $this->assertSession()->elementTextEquals('css', '.charts-figure[aria-label="Project flow"] table caption', 'Data table for Project flow');
     // The colors come from the theme, the month labels are short.
     $this->assertArrayNotHasKey('backgroundColor', $definition['data']['datasets'][0]);
+    // The declines are grey, the other series take the palette.
+    $grey = array_column(array_filter($definition['data']['datasets'], fn($dataset) => ($dataset['statsColor'] ?? NULL) === 'grey'), 'label');
+    $this->assertSame(['Declined'], array_values($grey));
     $this->assertSame(['Jan', 'Feb', 'Mar'], array_slice($definition['data']['labels'], 0, 3));
 
     // The tables are hidden for screen readers, without a button to show them.

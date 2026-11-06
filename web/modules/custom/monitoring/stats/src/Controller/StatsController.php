@@ -179,7 +179,8 @@ class StatsController implements ContainerInjectionInterface {
     foreach ($transitions as $transition => $name) {
       $series[(string) $name] = $flow[$transition];
     }
-    $flow_chart = StatsCharts::bar('stats-flow', $this->t('Project flow'), $period->bucketLabels(), $series);
+    // Declines leave the flow, so they stay in the background.
+    $flow_chart = StatsCharts::bar('stats-flow', $this->t('Project flow'), $period->bucketLabels(), $series, grey: [(string) $transitions[ProjectTransition::Decline->value]]);
 
     $cohort = $this->projectStats->cohort($period);
     $cohort_title = $this->t('Cohort: published in @period', ['@period' => $this->label($period)]);
