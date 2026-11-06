@@ -40,7 +40,7 @@ class AccountFormHooks {
    */
   #[Hook('gin_ignore_sticky_form_actions')]
   public function ginIgnoreStickyFormActions(): array {
-    return ['user_login_form', 'user_pass', 'user_pass_reset'];
+    return ['user_login_form', 'user_pass', 'user_pass_reset', 'user_types_password_reset'];
   }
 
   /**
@@ -97,7 +97,8 @@ class AccountFormHooks {
    * Implements hook_form_FORM_ID_alter() for user_pass_reset.
    *
    * The page of the link in the password mail. Its button logs in and leads
-   * to the account's edit form, where the new password is set.
+   * to the page where the new password is set: PasswordResetForm for
+   * organizations and creatives, the account's edit form for staff.
    */
   #[Hook('form_user_pass_reset_alter')]
   public function formUserPassResetAlter(array &$form, FormStateInterface $form_state): void {
@@ -136,7 +137,10 @@ class AccountFormHooks {
    * Replaces core's English confirmation of a password request.
    *
    * A submit handler of user_pass, after core's. Other messages stay as they
-   * are, in their order.
+   * are, in their order. Core then leads to the front page, the staff
+   * dashboard, which visitors may not open. They go back to the login, where
+   * the message shows the same for known and unknown addresses. Signed-in
+   * users may not open the login and keep core's redirect.
    */
   public static function germanPasswordMessage(array &$form, FormStateInterface $form_state): void {
     $messenger = \Drupal::messenger();
@@ -146,6 +150,9 @@ class AccountFormHooks {
       $messenger->addStatus((string) $message === $core
         ? t('Wenn %identifier zu einem Konto gehört, ist eine Mail mit einem Link für ein neues Passwort unterwegs.', ['%identifier' => $identifier])
         : $message);
+    }
+    if (\Drupal::currentUser()->isAnonymous()) {
+      $form_state->setRedirect('user.login');
     }
   }
 

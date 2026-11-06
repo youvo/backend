@@ -5,3 +5,7 @@ services:
       - { name: event_subscriber }
   Drupal\user_types\PasswordChecklist:
     autowire: true
+  Drupal\user_types\EventSubscriber\PasswordResetRedirectSubscriber:
+    autowire: true
+    tags:
+      - { name: event_subscriber }

@@ -64,7 +64,7 @@ class AccountPagesTest extends ExistingSiteBase {
   }
 
   /**
-   * Tests that the password page is German and confirms in German.
+   * Tests that the password page is German and confirms on the login page.
    */
   public function testPasswordPage(): void {
 
@@ -76,11 +76,24 @@ class AccountPagesTest extends ExistingSiteBase {
     $this->assertSession()->linkByHrefExists('/user/login');
     $this->assertNoStickyActions();
 
-    // An unknown address sends no mail, but gets the same answer.
-    $mail = strtolower($this->randomMachineName()) . '@example.com';
-    $this->submitForm(['E-Mail-Adresse' => $mail], 'Link senden');
-    $this->assertSession()->pageTextContains('Wenn ' . $mail . ' zu einem Konto gehört, ist eine Mail mit einem Link für ein neues Passwort unterwegs.');
-    $this->assertSession()->pageTextNotContains('If ' . $mail . ' is a valid account');
+    // A known and an unknown address get the same answer on the login page.
+    $creative = Creative::create([
+      'name' => $this->randomMachineName(),
+      'field_name' => $this->randomMachineName(),
+      'mail' => strtolower($this->randomMachineName()) . '@example.com',
+      'status' => 1,
+    ]);
+    $creative->addRole('creative');
+    $creative->save();
+    $this->markEntityForCleanup($creative);
+    foreach ([$creative->getEmail(), strtolower($this->randomMachineName()) . '@example.com'] as $mail) {
+      $this->drupalGet('/user/password');
+      $this->submitForm(['E-Mail-Adresse' => $mail], 'Link senden');
+      $this->assertSession()->addressEquals('/user/login');
+      $this->assertSession()->elementTextEquals('css', 'h1', 'Anmelden');
+      $this->assertSession()->pageTextContains('Wenn ' . $mail . ' zu einem Konto gehört, ist eine Mail mit einem Link für ein neues Passwort unterwegs.');
+      $this->assertSession()->pageTextNotContains('If ' . $mail . ' is a valid account');
+    }
   }
 
   /**
