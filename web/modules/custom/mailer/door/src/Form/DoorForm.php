@@ -37,7 +37,7 @@ class DoorForm extends FormBase {
   /**
    * The key/value collection of the followed doors.
    */
-  const string FOLLOW_COLLECTION = 'mailer.door_follow';
+  const string FOLLOW_COLLECTION = 'mailer_door.follow';
 
   /**
    * Constructs a DoorForm object.

@@ -67,7 +67,7 @@ class MailDoorTest extends ExistingSiteBase {
         $keys[] = $uuid . ':' . $target->value;
       }
     }
-    $this->container->get('keyvalue.expirable')->get('mailer.door_follow')->deleteMultiple($keys);
+    $this->container->get('keyvalue.expirable')->get('mailer_door.follow')->deleteMultiple($keys);
 
     // The logbook listeners stay, so every log of the projects is removed.
     if ($this->projects) {
@@ -412,7 +412,7 @@ class MailDoorTest extends ExistingSiteBase {
   }
 
   /**
-   * Tests that a door of staff neither logs in nor follows.
+   * Tests that a door of staff follows without login.
    */
   public function testStaffRecipient(): void {
 
@@ -424,7 +424,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->pressDoor($path);
 
-    $this->assertCount(0, $this->follows($project));
+    $this->assertCount(1, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
     $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
@@ -442,7 +442,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->pressDoor($path);
 
-    $this->assertCount(0, $this->follows($project));
+    $this->assertCount(1, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
   }
 
@@ -604,6 +604,28 @@ class MailDoorTest extends ExistingSiteBase {
     $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
     $this->assertSame(0, $this->lastLogin($creative));
     $this->assertFalse($this->drupalUserIsLoggedIn($creative));
+    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
+    $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
+  }
+
+  /**
+   * Tests that a participating manager follows a feedback door without login.
+   */
+  public function testFeedbackDoorOfParticipatingManager(): void {
+
+    $project = $this->createProject(ProjectState::Completed);
+    $creative = $this->createCreative();
+    $creative->addRole('manager');
+    $creative->save();
+    $project->appendParticipant($creative)->save();
+    $path = $this->door($creative, $project, DoorTarget::Feedback);
+
+    $this->pressDoor($path);
+
+    $follows = $this->follows($project);
+    $this->assertCount(1, $follows);
+    $this->assertSame((int) $creative->id(), (int) $follows[0]->getOwnerId());
+    $this->assertSame(0, $this->lastLogin($creative));
     $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
     $this->assertSame($website_url . '/feedback/creative/' . $project->uuid(), $this->location());
   }

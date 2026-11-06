@@ -53,7 +53,7 @@ class DoorLinkGenerator {
       'recipients' => json_encode([$recipient->getEmail()]),
       'subject' => Unicode::truncate('Link: ' . $target->heading(), 255, FALSE, TRUE),
       'body' => ['value' => '<p>Link ohne Mail erzeugt: [Link entfernt]</p>', 'format' => 'email_html'],
-      'subtype' => 'mailer.door.' . $target->value,
+      'subtype' => 'mailer_door.' . $target->value,
       'origin' => 'manager',
       'result' => 'link',
       'occurred' => $now,
@@ -134,14 +134,14 @@ class DoorLinkGenerator {
     elseif (!$verdict->belongs) {
       $lines[] = 'Meldet nicht an und schreibt keinen Folge-Eintrag: ' . $name . ' gehört nicht zum Projekt.';
     }
-    elseif ($verdict->staff) {
-      $lines[] = 'Meldet nicht an und schreibt keinen Folge-Eintrag: ' . $name . ' ist Team.';
-    }
     elseif ($verdict->spent) {
       $lines[] = 'Meldet nicht an (Entwurfslink verbraucht) und schreibt einen Folge-Eintrag.';
     }
     elseif ($target === DoorTarget::Feedback) {
       $lines[] = 'Meldet nicht an (Feedback liegt auf der Website) und schreibt einen Folge-Eintrag.';
+    }
+    elseif ($verdict->staff) {
+      $lines[] = 'Meldet nicht an (' . $name . ' ist Team) und schreibt einen Folge-Eintrag.';
     }
     else {
       $lines[] = 'Meldet nicht an und schreibt einen Folge-Eintrag.';

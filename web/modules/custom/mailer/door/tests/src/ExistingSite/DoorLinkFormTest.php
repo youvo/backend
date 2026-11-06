@@ -47,15 +47,6 @@ class DoorLinkFormTest extends ExistingSiteBase {
   protected array $projects = [];
 
   /**
-   * The projects taken over by a creative, each with its organization.
-   *
-   * Deleting a project needs an organization owner.
-   *
-   * @var array<int, array{0: \Drupal\projects\ProjectInterface, 1: \Drupal\organizations\Entity\Organization}>
-   */
-  protected array $takenOver = [];
-
-  /**
    * The administrator who makes the links.
    */
   protected UserInterface $admin;
@@ -74,10 +65,6 @@ class DoorLinkFormTest extends ExistingSiteBase {
    */
   protected function tearDown(): void {
 
-    foreach ($this->takenOver as [$project, $organization]) {
-      $project->setOwner($organization)->save();
-    }
-
     // The links come from the form, so their mail records are looked up.
     if ($this->projects) {
       $keys = [];
@@ -90,7 +77,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
           $keys[] = $entry->uuid() . ':' . $target->value;
         }
       }
-      $this->container->get('keyvalue.expirable')->get('mailer.door_follow')->deleteMultiple($keys);
+      $this->container->get('keyvalue.expirable')->get('mailer_door.follow')->deleteMultiple($keys);
 
       // The logbook listeners stay, so every log of the projects is removed.
       $ids = $this->container->get('entity_type.manager')->getStorage('log')->getQuery()
@@ -305,7 +292,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertCount(1, $entries);
     $entry = $entries[0];
     $this->assertSame('link', $entry->get('result')->value);
-    $this->assertSame('mailer.door.applicants', $entry->getSubtype());
+    $this->assertSame('mailer_door.applicants', $entry->getSubtype());
     $this->assertSame('manager', $entry->get('origin')->value);
     $this->assertSame((int) $this->admin->id(), (int) $entry->get('sender')->target_id);
     $this->assertGreaterThan(0, $entry->getOccurredTime());
@@ -336,23 +323,22 @@ class DoorLinkFormTest extends ExistingSiteBase {
    */
   public function testStaffPrediction(): void {
 
-    // A new project needs an organization, so the creative takes it over.
-    $owner = $this->createCreative();
+    // The follow log needs an organization as owner, so it gets the role.
+    $project = $this->createProject();
+    $owner = $project->getOwner();
     $owner->addRole('manager');
     $owner->save();
-    $project = $this->createProject();
-    $this->takenOver[] = [$project, $project->getOwner()];
-    $project->setOwner($owner)->save();
     $login = $this->lastLogin($owner);
 
     $url = $this->generate($project, $owner, DoorTarget::Applicants);
 
     $this->assertSession()->pageTextContains('Meldet nicht an');
     $this->assertSession()->pageTextContains('ist Team');
+    $this->assertSession()->pageTextContains('schreibt einen Folge-Eintrag');
     $this->pressLoggedOut($url);
     $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
     $this->assertSame($login, $this->lastLogin($owner));
-    $this->assertCount(0, $this->follows($project));
+    $this->assertCount(1, $this->follows($project));
   }
 
   /**

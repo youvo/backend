@@ -19,7 +19,8 @@ final class DoorVerdict {
    * @param bool $belongs
    *   Whether the project belongs to the recipient.
    * @param bool $staff
-   *   Whether the recipient may access the site.
+   *   Whether the recipient may access the site. Staff are never logged in,
+   *   but their follows are logged.
    * @param bool $prospect
    *   Whether the recipient is a prospect organization.
    * @param bool $login

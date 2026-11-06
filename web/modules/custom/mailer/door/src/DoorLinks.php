@@ -283,9 +283,10 @@ class DoorLinks {
     // leads to the hub login.
     $spent = $prospect && $target === DoorTarget::Draft && !$password;
 
+    // Staff follow like any recipient, for example a manager who takes part
+    // in a project, but are never logged in.
     $follow = !$expired
       && $belongs
-      && !$staff
       && !$other_signed_in;
 
     return new DoorVerdict(NULL, $expired, $belongs, $staff, $prospect, $login, $password, $spent, $follow, $other_signed_in);

@@ -75,7 +75,7 @@ class MailDoorInviteTest extends ExistingSiteBase {
         $keys[] = $uuid . ':' . $target->value;
       }
     }
-    $this->container->get('keyvalue.expirable')->get('mailer.door_follow')->deleteMultiple($keys);
+    $this->container->get('keyvalue.expirable')->get('mailer_door.follow')->deleteMultiple($keys);
 
     // The logbook listeners stay, so every log of the projects is removed.
     if ($this->projects) {

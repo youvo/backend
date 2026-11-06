@@ -13,6 +13,56 @@ a target on the hub or the website.
 - Pressing the button may log the recipient in, logs the follow, then
   redirects to the target.
 
+## User flow
+
+```mermaid
+flowchart TD
+    mail[Mail reaches the recipient] --> open["Recipient opens /go/{token}"]
+    open --> checks{"Token, recipient, record, project and MAC valid?"}
+    checks -- no --> denied[403]
+    checks -- yes --> page[Door page shows, nothing changes]
+    page --> press[Visitor presses the button]
+    press --> password{Password form?}
+    password -- yes --> form[Prospect sets a password]
+    form --> promote[Promote, set password, log in, follow]
+    promote --> hub[Hub page after login]
+    password -- no --> spent{"Other Draft door of a prospect?"}
+    spent -- yes --> spentFollow[Follow if valid, belongs and nobody else signed in]
+    spentFollow --> hubLogin[Hub login page]
+    spent -- no --> expired{Expired?}
+    expired -- yes --> target[Target]
+    expired -- no --> belongs{Belongs to the project?}
+    belongs -- no --> target
+    belongs -- yes --> other{Someone else signed in?}
+    other -- yes --> target
+    other -- no --> login{Login allowed?}
+    login -- yes --> loginFollow[Log in and follow]
+    loginFollow --> hub
+    login -- no --> follow[Follow]
+    follow --> target
+```
+
+- **403**: a malformed token, an unknown user, a missing correspondence record
+  or one that is no mail, a mail without project, a wrong MAC, an anonymous or
+  blocked recipient. The checks run again on the press.
+- **Door page**: opening only shows it, because mail scanners open links.
+- **Password form**: a prospect on a `Draft` door to a project still in
+  draft, when the door would otherwise log in: not expired, the project
+  belongs to it, nobody is signed in, the door is newer than its last login.
+  A cross-site post gets an error and changes nothing.
+- **Other Draft door of a prospect**: every other `Draft` door of a prospect
+  is spent and leads to the hub login page, also when it is expired, foreign
+  or someone else is signed in. It writes the follow log only when the door
+  is not expired, belongs, and nobody else is signed in.
+- **Expired**, **not on the project**, **someone else signed in**: no login
+  and no follow log, the target opens.
+- **Login allowed**: the recipient is no staff and no prospect, nobody is
+  signed in, the door is newer than the last login, the target logs in, and
+  the press comes from this site.
+- **Follow** without login: staff, `Feedback` doors, older doors, a
+  recipient who is already signed in, and a cross-site press of a login door.
+- A follow log is written once per mail and target.
+
 ## The token
 
 The payload is packed into bytes, followed by a MAC:
@@ -68,8 +118,9 @@ submit.
 - **Spent draft doors**: any other `Draft` door of a prospect leads to the hub
   page after login (`loginUrl()`), where the prospect signs in.
 - **Follow log**: when the door is not expired, the project belongs to the
-  recipient, the recipient is no staff, and nobody else is signed in. It is
-  written once per mail and target (key/value collection `mailer.door_follow`)
+  recipient, and nobody else is signed in. Staff get it too, for example a
+  manager who takes part in a project; they are only never logged in. It is
+  written once per mail and target (key/value collection `mailer_door.follow`)
   through a `ProjectFollowEvent`.
 - **Login CSRF**: the forms are anonymous and carry no form token. A login
   needs a same-site request: `Sec-Fetch-Site`, if sent, is `same-origin` or
@@ -90,7 +141,7 @@ project, recipient and target.
 - Each link comes with an outcome line from the same verdict as the door
   (`DoorLinkGenerator::outcome()`).
 - Each link gets a correspondence record like a sent mail, with `result`
-  `link` and subtype `mailer.door.{target}`, so the door logs in and writes
+  `link` and subtype `mailer_door.{target}`, so the door logs in and writes
   its follow log as usual. The link is shown once and never stored.
 
 ## Where things live
