@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * KPI tiles, each a card with its label above the value.
+ *
+ * Available variables:
+ * - tiles: The tiles, each with key, label, value and an optional
+ *   description, a short line under the label.
+ */
+#}
+<div class="stats-tiles">
+  {% for tile in tiles %}
+    <div class="stats-tile" data-tile="{{ tile.key }}">
+      <p class="stats-tile-label">{{ tile.label }}</p>
+      {% if tile.description %}
+        <p class="stats-tile-description">{{ tile.description }}</p>
+      {% endif %}
+      <p class="stats-tile-value">{{ tile.value }}</p>
+    </div>
+  {% endfor %}
+</div>

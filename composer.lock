@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2afcd18592ac0266d1f74ddf8a4493a6",
+    "content-hash": "c71a4464d3831d7530bf237826f99bb5",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1182,6 +1182,91 @@
                 "source": "https://github.com/dompdf/php-font-lib/tree/1.0.2"
             },
             "time": "2026-01-20T14:10:26+00:00"
+        },
+        {
+            "name": "drupal/charts",
+            "version": "5.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/charts.git",
+                "reference": "5.2.4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/charts-5.2.4.zip",
+                "reference": "5.2.4",
+                "shasum": "ca1652b3183576292b5fd5092a9e9e0754b59195"
+            },
+            "require": {
+                "drupal/core": "^10.3 || ^11 || ^12"
+            },
+            "require-dev": {
+                "drupal/charts_api_example": "*",
+                "drupal/charts_billboard": "*",
+                "drupal/charts_chartjs": "*",
+                "drupal/charts_google": "*",
+                "drupal/charts_highcharts": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "5.2.4",
+                    "datestamp": "1789402685",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Cothran (andileco)",
+                    "homepage": "https://www.drupal.org/u/andileco",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Nia Kathoni (nikathone)",
+                    "homepage": "https://www.drupal.org/u/nikathone",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Nate Lampton (quicksketch)",
+                    "homepage": "https://www.drupal.org/u/quicksketch",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "brmassa",
+                    "homepage": "https://www.drupal.org/u/brmassa",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Rafal W (kenorb)",
+                    "homepage": "https://www.drupal.org/u/kenorb",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Pierre Vriens (pierrevriens)",
+                    "homepage": "https://www.drupal.org/u/pierrevriens",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Majali (rashad612)",
+                    "homepage": "https://www.drupal.org/u/rashad612",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "A charting API for Drupal that provides chart elements and integration with Views",
+            "homepage": "https://drupal.org/project/charts",
+            "support": {
+                "source": "https://git.drupalcode.org/project/charts",
+                "issues": "https://www.drupal.org/project/issues/charts?version=all_5.1.*",
+                "docs": "https://www.drupal.org/docs/contributed-modules/charts"
+            },
+            "published-time": "2026-09-14T16:17:44+00:00"
         },
         {
             "name": "drupal/config_ignore",
@@ -5659,6 +5744,46 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.9.0"
             },
             "time": "2026-09-13T18:51:52+00:00"
+        },
+        {
+            "name": "npm-asset/chart.js",
+            "version": "4.5.1",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz",
+                "shasum": "19dd1a9a386a3f6397691672231cb5fc9c052c35"
+            },
+            "type": "drupal-library"
+        },
+        {
+            "name": "npm-asset/chartjs-adapter-date-fns",
+            "version": "3.0.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz",
+                "shasum": "c25f63c7f317c1f96f9a7c44bd45eeedb8a478e5"
+            },
+            "type": "drupal-library"
+        },
+        {
+            "name": "npm-asset/chartjs-plugin-annotation",
+            "version": "3.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/chartjs-plugin-annotation/-/chartjs-plugin-annotation-3.1.0.tgz",
+                "shasum": "0b3910862bde232344bbb6cf998633f71db7b093"
+            },
+            "type": "drupal-library"
+        },
+        {
+            "name": "npm-asset/chartjs-plugin-datalabels",
+            "version": "2.0.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/chartjs-plugin-datalabels/-/chartjs-plugin-datalabels-2.0.0.tgz",
+                "shasum": "caacefb26803d968785071eab012dde8746c5939"
+            },
+            "type": "drupal-library"
         },
         {
             "name": "paragonie/random_compat",

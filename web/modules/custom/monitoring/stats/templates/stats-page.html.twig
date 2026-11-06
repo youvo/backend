@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ * The stats page: period card and the sections of the charts.
+ *
+ * Available variables:
+ * - period_bar: The heading, the type segments and the steps to the previous
+ *   and next period, a step without url disabled.
+ * - range_form: The form of a custom date range, for custom periods only.
+ * - warning: The note about the imprecise data of the period with its text,
+ *   empty if there is none.
+ * - sections: The render array of the chart sections.
+ */
+#}
+{% import _self as stats %}
+<div class="stats-page">
+  <div class="stats-period">
+    <nav class="stats-period-nav" aria-label="{{ 'Period'|t }}">
+      <div class="stats-period-bar">
+        <ul class="stats-segments" data-focus-inset aria-label="{{ 'Period type'|t }}">
+          {% for segment in period_bar.segments %}
+            <li><a href="{{ segment.url }}" class="stats-segment" data-segment="{{ segment.type }}"{% if segment.active %} aria-current="page"{% endif %}>{{ segment.label }}</a></li>
+          {% endfor %}
+        </ul>
+
+        <div class="stats-stepper">
+          {% if period_bar.steps.previous %}
+            {{ stats.step('previous', period_bar.steps.previous) }}
+          {% endif %}
+          <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
+          {% if period_bar.steps.next %}
+            {{ stats.step('next', period_bar.steps.next) }}
+          {% endif %}
+        </div>
+      </div>
+
+      {{ range_form }}
+    </nav>
+
+    {% if warning.text %}
+      {# The warning icon of Gin's messages (media/icons/messages/warning.svg). #}
+      <p class="stats-note" role="note">
+        <svg class="stats-note-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></g></svg>
+        <span>{{ warning.text }}</span>
+      </p>
+    {% endif %}
+  </div>
+
+  {{ sections }}
+</div>
+
+{% macro step(direction, step) %}
+  {% set rel = direction == 'previous' ? 'prev' : 'next' %}
+  {% set icon %}
+    <svg class="stats-step-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="{{ direction == 'previous' ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5' }}" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  {% endset %}
+  {% if step.url %}
+    <a href="{{ step.url }}" class="stats-step" data-step="{{ direction }}" rel="{{ rel }}" aria-label="{{ step.label }}" title="{{ step.label }}">{{ icon }}</a>
+  {% else %}
+    <a class="stats-step" data-step="{{ direction }}" role="link" aria-disabled="true" aria-label="{{ step.label }}">{{ icon }}</a>
+  {% endif %}
+{% endmacro %}

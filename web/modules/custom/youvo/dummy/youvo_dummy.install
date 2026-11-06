@@ -71,8 +71,17 @@ function youvo_dummy_site_install_finished(): void {
     creatives_dummy_log_registrations();
     // Dated after the registrations.
     academy_dummy_generate_progress();
-    // Dated by the organizations' own logs, so it runs last.
+    // Dated by the organizations' own logs, so it runs after the logs.
     organizations_dummy_set_last_access();
+    // Simulated between the final registration and access times.
+    if ($module_handler->moduleExists('stats_dummy')) {
+      $start = microtime(TRUE);
+      $module_handler->loadInclude('stats_dummy', 'install');
+      stats_dummy_generate();
+      if (PHP_SAPI === 'cli') {
+        printf("  %s: %.1fs\n", 'stats', microtime(TRUE) - $start);
+      }
+    }
   }
   finally {
     // Restore overrides from settings.php.
@@ -90,6 +99,33 @@ function youvo_dummy_site_install_finished(): void {
       $GLOBALS['config'][$warmer_key] = $previous_warmer;
     }
     \Drupal::configFactory()->reset($warmer_key);
+  }
+}
+
+/**
+ * Runs a step that dispatches events without sending mails.
+ *
+ * For dummy steps run on an existing site, outside the install hook. Applies
+ * the same runtime override of the global mailer policy as the hook.
+ */
+function youvo_dummy_without_mails(callable $step): void {
+  $override_key = 'mailer_policy.mailer_policy._';
+  $previous = $GLOBALS['config'][$override_key] ?? NULL;
+  $GLOBALS['config'][$override_key]['configuration']['email_skip_sending'] = [
+    'message' => 'Dummy content is being generated.',
+  ];
+  youvo_dummy_reset_policy($override_key);
+  try {
+    $step();
+  }
+  finally {
+    if ($previous === NULL) {
+      unset($GLOBALS['config'][$override_key]);
+    }
+    else {
+      $GLOBALS['config'][$override_key] = $previous;
+    }
+    youvo_dummy_reset_policy($override_key);
   }
 }
 

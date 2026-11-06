@@ -4,6 +4,28 @@
 // One set of tokens on top of Gin's, shared by the components. On body, not
 // :root, because Gin sets its accent colors on body.
 
+@use "sass:list";
+@use "variables.scss" as *;
+
+// The series colors of the stats charts, which js/stats-charts.js of the
+// stats module reads as --yv-chart-1 … 13: the four hues, then their dark and
+// their light variants, then dark grey.
+$chart-colors: (
+  $color-blue,
+  $color-turquoise,
+  $color-orange,
+  $color-red,
+  $color-blue-dark,
+  $color-turquoise-dark,
+  $color-orange-dark,
+  $color-red-dark,
+  $color-blue-light,
+  $color-turquoise-light,
+  $color-orange-light,
+  $color-red-light,
+  $color-grey-dark
+);
+
 body {
   --yv-ink: var(--gin-color-title);
   --yv-text: var(--gin-color-text);
@@ -20,6 +42,17 @@ body {
   // The accent reaches only 3.8:1 on a chip; darkened, it passes 4.5:1 also
   // on hover. Gin's dark accent is light enough as it is.
   --yv-chip-text: color-mix(in srgb, var(--yv-accent) 80%, #000);
+
+  @for $i from 1 through list.length($chart-colors) {
+    --yv-chart-#{$i}: #{list.nth($chart-colors, $i)};
+  }
+
+  // The chart series in the background, such as declined projects.
+  --yv-chart-grey: #{$color-grey-dark};
+
+  // Gin's warning color for text and icons. Its plain warning color reaches
+  // only 2:1 on a light card, this one 5.2:1 (light) and 9.5:1 (dark).
+  --yv-warning: var(--gin-status-warning-text);
 }
 
 // Gin's dark mode class, outside our naming pattern.

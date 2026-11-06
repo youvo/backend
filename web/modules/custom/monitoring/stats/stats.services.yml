@@ -2,3 +2,23 @@ services:
   stats.calculator:
     class: Drupal\stats\StatsCalculator
     arguments: [ '@database' ]
+
+  stats.activity_snapshots:
+    class: Drupal\stats\Activity\ActivitySnapshots
+    arguments: [ '@database', '@datetime.time', '@config.factory', '@state' ]
+  Drupal\stats\Activity\ActivitySnapshots: '@stats.activity_snapshots'
+
+  stats.project_stats:
+    class: Drupal\stats\Stats\ProjectStats
+    arguments: [ '@database' ]
+  Drupal\stats\Stats\ProjectStats: '@stats.project_stats'
+
+  stats.activity_stats:
+    class: Drupal\stats\Stats\ActivityStats
+    arguments: [ '@database' ]
+  Drupal\stats\Stats\ActivityStats: '@stats.activity_stats'
+
+  stats.feedback_stats:
+    class: Drupal\stats\Stats\FeedbackStats
+    arguments: [ '@database', '@entity_field.manager' ]
+  Drupal\stats\Stats\FeedbackStats: '@stats.feedback_stats'

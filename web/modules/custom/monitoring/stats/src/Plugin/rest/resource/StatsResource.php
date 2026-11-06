@@ -28,7 +28,7 @@ class StatsResource extends ResourceBase {
   protected StatsCalculator $statsCalculator;
 
   /**
-   * {@inheritdoc}
+   * Creates the resource with the stats calculator.
    */
   public static function create(ContainerInterface $container, ...$defaults) {
     $instance = parent::create($container, ...$defaults);

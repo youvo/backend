@@ -33,6 +33,7 @@ dependencies:
     - organizations
     - projects
     - rest
+    - stats
     - system
     - user_types
 _core:
@@ -89,4 +90,5 @@ permissions:
   - 'view detectable log'
   - 'view hidden projects'
   - 'view observable log'
+  - 'view statistics'
   - 'view user email addresses'

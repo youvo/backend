@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Stats module.
+ */
+
+use Drupal\stats\Activity\ActivitySnapshots;
+
+/**
+ * Implements hook_schema().
+ */
+function stats_schema(): array {
+  $schema['stats_activity'] = [
+    'description' => 'Daily snapshots of active users per role, in the site timezone.',
+    'fields' => [
+      'day' => [
+        'description' => 'The local day as Y-m-d.',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ],
+      'role' => [
+        'description' => 'The activity role: creative, organization or prospect.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ],
+      'active_day' => [
+        'description' => 'The users of the role active on the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_week' => [
+        'description' => 'The users of the role active in the ISO week of the day, from its Monday up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_month' => [
+        'description' => 'The users of the role active in the month of the day, from its 1st up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_quarter' => [
+        'description' => 'The users of the role active in the quarter of the day, from its first day up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'active_year' => [
+        'description' => 'The users of the role active in the year of the day, from 1 January up to the day.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['day', 'role'],
+  ];
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function stats_uninstall(): void {
+  \Drupal::state()->delete(ActivitySnapshots::STATE_LAST_DAY);
+}
+
+/**
+ * Create the stats_activity table for daily active users.
+ */
+function stats_update_11001(): void {
+  $schema = \Drupal::database()->schema();
+  if (!$schema->tableExists('stats_activity')) {
+    $schema->createTable('stats_activity', stats_schema()['stats_activity']);
+  }
+}
+
+/**
+ * Install the charts modules the stats page depends on.
+ */
+function stats_update_11002(): void {
+  // The deployment imports the configuration only after the updates, so the
+  // dependencies of the module hold right after them.
+  \Drupal::service('module_installer')->install(['charts', 'charts_chartjs']);
+}

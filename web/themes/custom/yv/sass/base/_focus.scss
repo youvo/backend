@@ -13,3 +13,9 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+// A container that scrolls sideways clips the ring outside its links, so they
+// draw it inside. Such a container carries data-focus-inset.
+[data-focus-inset] :focus-visible {
+  box-shadow: inset 0 0 0 2px var(--gin-color-focus) !important;
+}

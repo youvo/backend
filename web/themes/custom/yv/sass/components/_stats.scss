@@ -1,0 +1,471 @@
+// =============================================================================
+// STATS (StatsController)
+// =============================================================================
+// The stats page: a card with the period, then sections of chart cards, the
+// overview first. All cards are Gin layer cards with a small label, as on the
+// feedback page.
+
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+// A figure of a fixed height, which ignores the aspect ratio and the room of
+// its card.
+@mixin stats-fixed-figure($height) {
+  flex: none;
+  height: $height;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+}
+
+.stats-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-l);
+  color: var(--yv-text);
+  hyphens: manual;
+}
+
+// The period card: its navigation, then a note on the data of the period.
+.stats-period {
+  @include card;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-m);
+  padding: var(--gin-spacing-s) var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    padding: var(--gin-spacing-m) var(--gin-spacing-l);
+  }
+}
+
+// The type segments and the stepper in one row, the range form of custom
+// periods below.
+.stats-period-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-m);
+}
+
+// On phones the segments take their own line, the stepper the next one.
+.stats-period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gin-spacing-xs) var(--gin-spacing-l);
+}
+
+// A segmented control: flat pills in one hairline frame, the current one a
+// chip in the single accent. It scrolls sideways on the narrowest phones,
+// with the focus ring inside (base/_focus.scss).
+.stats-segments {
+  display: flex;
+  flex: 0 1 auto;
+  gap: var(--gin-spacing-xxxs);
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: var(--gin-spacing-xxxs);
+  overflow-x: auto;
+  border: 1px solid var(--yv-outline);
+  border-radius: var(--gin-border-m);
+  list-style: none;
+  scrollbar-width: none;
+
+  li {
+    flex: none;
+  }
+}
+
+.stats-segment {
+  display: block;
+  padding: var(--gin-spacing-xxs) 0.375rem;
+  border-radius: var(--gin-border-s);
+  color: var(--yv-text);
+  font-size: var(--gin-font-size-s);
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--gin-transition-fast),
+    color var(--gin-transition-fast);
+
+  @media (min-width: $breakpoint-medium) {
+    padding-inline: var(--gin-spacing-s);
+  }
+
+  &[aria-current] {
+    background: var(--yv-chip);
+    color: var(--yv-chip-text);
+    font-weight: 600;
+  }
+
+  &:hover {
+    background: var(--yv-chip-hover);
+    color: var(--yv-chip-text);
+  }
+}
+
+// The stepper: the period as heading between round icon buttons.
+.stats-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-xxs);
+  min-width: 0;
+}
+
+.stats-step {
+  @include icon-size("small");
+
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--yv-text);
+  transition:
+    background-color var(--gin-transition-fast),
+    color var(--gin-transition-fast);
+
+  &:hover {
+    background: var(--yv-chip-hover);
+    color: var(--yv-chip-text);
+  }
+
+  // A step without a target, as beyond today.
+  &[aria-disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+.stats-step-icon {
+  display: block;
+}
+
+// A calm note under the period navigation: a left accent in the warning
+// color, Gin's warning icon and muted text. It cannot be dismissed.
+.stats-note {
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-xs);
+  margin: 0;
+  padding: var(--gin-spacing-xxs) var(--gin-spacing-s);
+  border-inline-start: 3px solid var(--yv-warning);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+}
+
+.stats-note-icon {
+  flex: none;
+  color: var(--yv-warning);
+}
+
+// The dates and the button in one row, aligned at the bottom of the fields.
+// Drupal's form classes are outside our naming pattern.
+// stylelint-disable selector-class-pattern
+.stats-range-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--gin-spacing-s) var(--gin-spacing-m);
+  padding-top: var(--gin-spacing-m);
+  border-top: 1px solid var(--yv-line);
+
+  @media (min-width: $breakpoint-medium) {
+    flex-wrap: nowrap;
+  }
+
+  .form-item,
+  .form-actions {
+    margin: 0;
+  }
+
+  .form-actions .button {
+    margin: 0;
+  }
+}
+
+// stylelint-enable selector-class-pattern
+
+// The period heading and the section titles, as Gin's headings: larger and
+// in normal case, above the small uppercase labels of the cards.
+.stats-period-heading,
+.stats-section-title {
+  @include page-title;
+
+  font-size: var(--gin-font-size-xl);
+  font-weight: 600;
+
+  @media (min-width: $breakpoint-medium) {
+    font-size: var(--gin-font-size-h3);
+  }
+}
+
+.stats-period-heading {
+  min-width: 0;
+  padding: 0 var(--gin-spacing-xxs);
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: $breakpoint-medium) {
+    white-space: nowrap;
+  }
+}
+
+// A section: its header over a grid of cards. Wide cards span two columns,
+// tall cards two rows.
+.stats-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-m);
+
+  @media (min-width: $breakpoint-medium) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: $breakpoint-wide) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  // A section of two halves, as the feedback of both sides.
+  &[data-columns="2"] {
+    @media (min-width: $breakpoint-wide) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+.stats-section + .stats-section {
+  margin-top: var(--gin-spacing-m);
+}
+
+// The header of a section: its title and a muted hint below.
+.stats-section-header {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--gin-spacing-xxs);
+}
+
+// The overview keeps two columns on phones, with lower charts, so its six
+// cards take three rows.
+.stats-overview {
+  @media (width < $breakpoint-medium) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gin-spacing-s);
+
+    .stats-card {
+      gap: var(--gin-spacing-xs);
+      padding: var(--gin-spacing-s);
+    }
+  }
+}
+
+// KPI tiles in a section fill one grid cell, two by two, the label above a
+// large value, calm as Gin's cards.
+.stats-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: var(--gin-spacing-m);
+}
+
+.stats-tile {
+  @include card;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--gin-spacing-xxs);
+  padding: var(--gin-spacing-m);
+}
+
+.stats-card {
+  @include card;
+  @include card-padding;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--gin-spacing-s);
+  min-width: 0;
+
+  @media (min-width: $breakpoint-medium) {
+    &[data-wide] {
+      grid-column: span 2;
+    }
+
+    &[data-tall] {
+      grid-row: span 2;
+    }
+  }
+
+  // Chart.js fills the figure (the script turns off its aspect ratio), so the
+  // figure sets the size: twice as wide as high, on narrow screens at least
+  // 13.75rem and in wide cards at most 20rem. It grows into a card stretched
+  // by its row. Its size ignores the canvas inside, which Chart.js sizes to
+  // it, so the two never push each other.
+  .charts-figure {
+    position: relative;
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 13.75rem;
+    aspect-ratio: 2;
+    contain: size;
+
+    @media (min-width: $breakpoint-medium) {
+      min-height: 0;
+    }
+  }
+
+  &[data-wide] .charts-figure {
+    max-height: 20rem;
+  }
+
+  // A tall card spans two rows and its chart fills it: the cards beside it
+  // set the height. On phones it keeps room for the plot over its legend.
+  &[data-tall] .charts-figure {
+    min-height: 18rem;
+
+    @media (min-width: $breakpoint-medium) {
+      flex: 1 1 0;
+      min-height: 16rem;
+      max-height: none;
+      aspect-ratio: auto;
+    }
+  }
+
+  // Horizontal bars: 2rem a row and room for the axis labels. The card keeps
+  // its height instead of stretching to its row, which would only move the
+  // bars apart.
+  &[data-kind="hbar"] {
+    align-self: start;
+
+    .charts-figure {
+      @include stats-fixed-figure(calc((var(--stats-rows) + 1) * 2rem));
+    }
+  }
+
+  // A doughnut with its legend under the ring, or beside it in a wide card.
+  &[data-kind="doughnut"] .charts-figure {
+    @include stats-fixed-figure(20rem);
+
+    flex: 1 0 auto;
+  }
+
+  // A tall doughnut keeps the size of the others, centered in the two rows
+  // of the cards beside it.
+  &[data-tall][data-kind="doughnut"] .charts-figure {
+    @media (min-width: $breakpoint-medium) {
+      flex: none;
+      margin-block: auto;
+    }
+  }
+
+  // A chart without data shows a note only and needs no more room for it.
+  &[data-empty] {
+    align-self: start;
+
+    .charts-figure {
+      @include stats-fixed-figure(8rem);
+    }
+  }
+
+  // A tall card without data still fills its two rows, the note centered.
+  &[data-tall][data-empty] {
+    align-self: stretch;
+
+    .charts-figure {
+      flex: 1 0 auto;
+    }
+  }
+
+  // A small chart of a fixed low height under its value, also without data,
+  // so the overview cards stay alike.
+  &[data-compact] {
+    align-self: stretch;
+
+    .charts-figure {
+      @include stats-fixed-figure(5.5rem);
+
+      @media (min-width: $breakpoint-medium) {
+        height: 8.5rem;
+      }
+    }
+  }
+}
+
+// The horizontal bars of a two-column section stretch to one height; their
+// charts take the room, so no gap opens above the footnote.
+[data-columns="2"] > .stats-card[data-kind="hbar"] {
+  align-self: stretch;
+
+  .charts-figure {
+    flex: 1 0 auto;
+  }
+}
+
+// The title of a card and its description, close together.
+.stats-card-header {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+}
+
+.stats-card-title,
+.stats-tile-label {
+  @include section-label;
+
+  margin: 0;
+}
+
+// The number of a card: the total of an overview card or a tile value.
+.stats-card-value,
+.stats-tile-value {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: var(--gin-font-size-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+
+  @media (min-width: $breakpoint-medium) {
+    font-size: var(--gin-font-size-h3);
+  }
+}
+
+// The value sits at the bottom, so the values of a row line up under
+// descriptions of different lengths.
+.stats-tile-value {
+  margin-top: auto;
+  padding-top: var(--gin-spacing-xxs);
+}
+
+// A short muted line that explains a section, a metric or a value.
+.stats-section-hint,
+.stats-card-description,
+.stats-tile-description,
+.stats-card-foot-description {
+  margin: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xxs);
+  line-height: 1.4;
+}
+
+// The hint belongs to the large section title.
+.stats-section-hint {
+  font-size: var(--gin-font-size-xs);
+}
+
+// The values under a chart, their descriptions in a smaller line below.
+.stats-card-foot {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+
+  p {
+    margin: 0;
+  }
+}
+
+.stats-card-foot-value {
+  color: var(--yv-ink);
+}

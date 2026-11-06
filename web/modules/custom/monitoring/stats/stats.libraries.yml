@@ -1,0 +1,9 @@
+# The look of the stats charts. Not deferred, so it runs after Chart.js and
+# before the deferred charts_chartjs script builds the charts.
+charts:
+  js:
+    js/stats-charts.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - charts_chartjs/charts_chartjs

@@ -7,6 +7,8 @@ module:
   block: 0
   blocker_mode: 0
   breakpoint: 0
+  charts: 0
+  charts_chartjs: 0
   child_entities: 0
   config: 0
   config_ignore: 0
