@@ -171,7 +171,8 @@ class DoorForm extends FormBase {
         '#type' => 'password_confirm',
         '#required' => TRUE,
         '#size' => 25,
-        '#after_build' => [[static::class, 'germanPasswordTitles']],
+        '#password_hint' => $this->passwordHint(),
+        '#after_build' => [[static::class, 'passwordFieldTexts']],
       ];
     }
 
@@ -265,14 +266,47 @@ class DoorForm extends FormBase {
   }
 
   /**
-   * Names the two password fields in German, as the rest of the door.
+   * Names the two password fields in German and adds the password rules.
    *
    * The site has no translations, so core's titles would stay English.
    */
-  public static function germanPasswordTitles(array $element): array {
+  public static function passwordFieldTexts(array $element): array {
     $element['pass1']['#title'] = 'Passwort';
+    $element['pass1']['#description'] = $element['#password_hint'];
     $element['pass2']['#title'] = 'Passwort wiederholen';
     return $element;
+  }
+
+  /**
+   * Describes the password policies of organizations.
+   *
+   * For example „Mindestens 10 Zeichen, ohne eure E-Mail-Adresse.“ The
+   * prospect becomes an organization with this password, see validateForm().
+   * The account name of an organization is its mail address. Rules without a
+   * German text here are left out of the hint, but are still checked.
+   */
+  protected function passwordHint(): string {
+
+    $rules = [];
+    $policies = $this->entityTypeManager->getStorage('password_policy')->loadMultiple();
+    foreach ($policies as $policy) {
+      /** @var \Drupal\password_policy\PasswordPolicyInterface $policy */
+      if (!in_array('organization', $policy->getRoles(), TRUE)) {
+        continue;
+      }
+      foreach ($policy->getConstraints() as $constraint) {
+        $rule = match ($constraint['id']) {
+          'password_length' => sprintf('%s %d Zeichen', $constraint['character_operation'] === 'minimum' ? 'mindestens' : 'höchstens', $constraint['character_length']),
+          'password_username' => 'ohne eure E-Mail-Adresse',
+          default => NULL,
+        };
+        if ($rule !== NULL) {
+          $rules[$rule] = $rule;
+        }
+      }
+    }
+
+    return $rules ? ucfirst(implode(', ', $rules)) . '.' : '';
   }
 
   /**
