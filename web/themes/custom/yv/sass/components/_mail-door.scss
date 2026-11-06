@@ -9,6 +9,13 @@
 @use "../abstracts/mixins.scss" as *;
 @use "../abstracts/variables.scss" as *;
 
+// Gin starts the page 1px down, which leaves a light line above the band.
+// Gin's rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id, selector-class-pattern
+:is(#extra-specificity-hack, .path-door) .page-wrapper.dialog-off-canvas-main-canvas {
+  margin-block-start: 0;
+}
+
 .door-page {
   display: flex;
   flex-direction: column;
