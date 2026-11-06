@@ -121,8 +121,8 @@ class StatsController implements ContainerInjectionInterface {
    *
    * Each card shows a small chart of the total at the end of each bucket and
    * the last of those totals as its value. A period that has not ended yet
-   * shows the current totals in its current bucket. Its later buckets stay
-   * empty, and a period entirely in the future shows the current totals.
+   * shows the current totals in its current bucket, and its later buckets
+   * stay empty. A card without any value falls back to the current total.
    *
    * @return array<string, mixed>
    *   The section render array.

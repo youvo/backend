@@ -29,8 +29,7 @@ class StatsCharts {
    * @param string|\Stringable|null $description
    *   A short line under the title that explains the chart.
    * @param string|\Stringable|null $value
-   *   A large value over the chart. The card then shows a chart without data
-   *   not at all.
+   *   A large value over the chart. A chart without data is then left out.
    *
    * @return array<string, mixed>
    *   The card render array.

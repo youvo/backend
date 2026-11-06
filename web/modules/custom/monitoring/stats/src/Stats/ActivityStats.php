@@ -13,8 +13,8 @@ use Drupal\stats\StatsPeriod;
  *
  * The applicant of a project_apply log and the creatives of a
  * project_mediate log are its log__creatives. Log methods read the logs they
- * need before the period, and apply the windows in PHP. Archived logs count
- * too, except for the return after a rejection.
+ * need up to the period end, and apply the windows in PHP. Archived logs
+ * count too, except for the return after a rejection.
  */
 class ActivityStats {
 
@@ -212,10 +212,12 @@ class ActivityStats {
   /**
    * Counts the users registered before each bucket end.
    *
-   * The users count as the totals of StatsCalculator count them: creatives
-   * who have logged in, and organizations with the organization role, so
-   * prospects are left out. The registrations and activation chart counts
-   * all new creatives in activation() instead.
+   * The users count like the totals of StatsCalculator: creatives who have
+   * logged in, and organizations with the organization role, so prospects
+   * are left out. Unlike StatsCalculator, only default translations of real
+   * users and roles not marked deleted count, so its fallback totals can
+   * differ slightly. The registrations and activation chart counts all new
+   * creatives in activation() instead.
    *
    * @return array{creatives: array<string, int>, organizations: array<string, int>}
    *   The running totals per bucket.
