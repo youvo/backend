@@ -461,9 +461,16 @@ function projects_dummy_archive_projects(): void {
       $time = random_int(min($last + 3600, $current_time - 60), $current_time - 60);
 
       $owner = $project->getOwner();
-      $manager = $owner instanceof Organization && $owner->hasManager()
-        ? (int) $owner->getManager()->id()
-        : $manager_ids[random_int(0, count($manager_ids) - 1)];
+      if ($owner instanceof Organization && $owner->hasManager()) {
+        $manager = (int) $owner->getManager()->id();
+      }
+      elseif ($manager_ids) {
+        $manager = $manager_ids[random_int(0, count($manager_ids) - 1)];
+      }
+      else {
+        // Without any manager, nobody archives the project.
+        continue;
+      }
 
       $event = new ProjectArchiveEvent($project, $time);
       $event->setReason($reason);
