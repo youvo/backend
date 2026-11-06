@@ -4,43 +4,13 @@
  *
  * The button stays aria-disabled until every rule is met: it can still be
  * focused and points to the checklist, but does not submit. The server checks
- * the rules again, so a browser without this script, or without Web Crypto
- * for the mail address rule, can still submit.
+ * the rules again, so a browser without this script can still submit.
  */
 ((Drupal, once) => {
-  const encoder = new TextEncoder();
-
-  /**
-   * Hashes a text with SHA-256, as hex.
-   */
-  async function sha256(text) {
-    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(text));
-    return [...new Uint8Array(digest)]
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  /**
-   * Checks whether the password contains the hashed mail address.
-   *
-   * Compares every slice of the address' length, case-insensitive.
-   */
-  async function containsName(password, rule) {
-    const lower = password.toLowerCase();
-    for (let i = 0; i + rule.length <= lower.length; i++) {
-      // Each slice needs its own hash; the loop stops at the first match.
-      // eslint-disable-next-line no-await-in-loop
-      if ((await sha256(rule.salt + lower.slice(i, i + rule.length))) === rule.hash) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
    * Checks one rule: TRUE or FALSE, or NULL if it cannot be checked here.
    */
-  async function check(rule, password, confirmation) {
+  function check(rule, password, confirmation) {
     // Characters as the server counts them, not UTF-16 units.
     const length = [...password].length;
     switch (rule.id) {
@@ -48,11 +18,6 @@
         return length >= rule.min;
       case 'length_max':
         return length > 0 && length <= rule.max;
-      case 'username':
-        if (!window.crypto?.subtle) {
-          return null;
-        }
-        return length > 0 && !(await containsName(password, rule));
       case 'match':
         return length > 0 && password === confirmation;
       default:
@@ -88,22 +53,10 @@
           });
           submit.setAttribute('aria-describedby', list.id);
 
-          // Only the latest check may update the list: hashing is async.
-          let run = 0;
-          const update = async () => {
-            run += 1;
-            const current = run;
-            const results = await Promise.all(
-              rules.map((rule) =>
-                check(rule, password.value, confirmation.value),
-              ),
-            );
-            if (current !== run) {
-              return;
-            }
+          const update = () => {
             let met = true;
-            rules.forEach((rule, index) => {
-              const result = results[index];
+            rules.forEach((rule) => {
+              const result = check(rule, password.value, confirmation.value);
               const entry = statuses.get(rule.id);
               if (result === false) {
                 met = false;

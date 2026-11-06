@@ -3,7 +3,6 @@
 namespace Drupal\mailer\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
@@ -177,7 +176,7 @@ class DoorForm extends FormBase {
 
       // The rules as a checklist. Without JavaScript it is a plain list; the
       // script ticks the rules off while typing and holds the button back.
-      $rules = $this->passwordRules($recipient);
+      $rules = $this->passwordRules();
       $form['password_rules'] = [
         '#theme' => 'item_list',
         '#items' => array_map(static fn (array $rule) => [
@@ -299,15 +298,11 @@ class DoorForm extends FormBase {
    * validateForm(). The server still checks every rule; rules without a
    * German text here are only left out of the list.
    *
-   * The account name of an organization is its mail address. The page must
-   * not show it, so the script gets a salted hash and compares it with every
-   * slice of the password, case-insensitive like the policy.
-   *
    * @return array<int, array<string, int|string>>
    *   The rules, each with an id and a label, and the values the script
    *   checks.
    */
-  protected function passwordRules(UserInterface $recipient): array {
+  protected function passwordRules(): array {
 
     $rules = [];
     $policies = $this->entityTypeManager->getStorage('password_policy')->loadMultiple();
@@ -332,17 +327,6 @@ class DoorForm extends FormBase {
             'id' => 'length_max',
             'label' => sprintf('Höchstens %d Zeichen', $max),
             'max' => $max,
-          ];
-        }
-        elseif ($constraint['id'] === 'password_username' && !empty($constraint['disallow_username'])) {
-          $name = mb_strtolower($recipient->getAccountName());
-          $salt = Crypt::randomBytesBase64(16);
-          $rules['username'] = [
-            'id' => 'username',
-            'label' => 'Ohne eure E-Mail-Adresse',
-            'salt' => $salt,
-            'hash' => hash('sha256', $salt . $name),
-            'length' => mb_strlen($name),
           ];
         }
       }
