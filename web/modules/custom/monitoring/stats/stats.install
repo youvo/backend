@@ -5,6 +5,8 @@
  * Install, update and uninstall functions for the Stats module.
  */
 
+use Drupal\stats\Activity\ActivitySnapshots;
+
 /**
  * Implements hook_schema().
  */
@@ -59,6 +61,13 @@ function stats_schema(): array {
 }
 
 /**
+ * Implements hook_uninstall().
+ */
+function stats_uninstall(): void {
+  \Drupal::state()->delete(ActivitySnapshots::STATE_LAST_DAY);
+}
+
+/**
  * Create the stats_activity table for daily active users.
  */
 function stats_update_11001(): void {
@@ -66,4 +75,13 @@ function stats_update_11001(): void {
   if (!$schema->tableExists('stats_activity')) {
     $schema->createTable('stats_activity', stats_schema()['stats_activity']);
   }
+}
+
+/**
+ * Install the charts modules the stats page depends on.
+ */
+function stats_update_11002(): void {
+  // The deployment imports the configuration only after the updates, so the
+  // dependencies of the module hold right after them.
+  \Drupal::service('module_installer')->install(['charts', 'charts_chartjs']);
 }
