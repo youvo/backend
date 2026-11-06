@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Tests\mailer\Unit;
+namespace Drupal\Tests\mailer_door\Unit;
 
-use Drupal\mailer\HubUrls;
+use Drupal\mailer_door\HubUrls;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\Service\ProjectLifecycleInterface;
 use Drupal\Tests\UnitTestCase;
@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests the hub URL helper.
  */
 #[CoversClass(HubUrls::class)]
-#[Group('mailer')]
+#[Group('mailer_door')]
 class HubUrlsTest extends UnitTestCase {
 
   /**

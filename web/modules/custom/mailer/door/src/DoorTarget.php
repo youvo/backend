@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Door;
+namespace Drupal\mailer_door;
 
 /**
  * The places a mail door leads to.

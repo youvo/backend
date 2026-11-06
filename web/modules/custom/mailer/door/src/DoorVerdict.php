@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Door;
+namespace Drupal\mailer_door;
 
 /**
  * What a door does for a recipient and a visitor.

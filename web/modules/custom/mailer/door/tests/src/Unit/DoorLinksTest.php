@@ -1,15 +1,15 @@
 <?php
 
-namespace Drupal\Tests\mailer\Unit;
+namespace Drupal\Tests\mailer_door\Unit;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\creatives\Entity\Creative;
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
-use Drupal\mailer\HubUrls;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
+use Drupal\mailer_door\HubUrls;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\Service\ProjectLifecycleInterface;
@@ -22,7 +22,7 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests the signed mail door links.
  */
 #[CoversClass(DoorLinks::class)]
-#[Group('mailer')]
+#[Group('mailer_door')]
 class DoorLinksTest extends UnitTestCase {
 
   /**
@@ -77,7 +77,7 @@ class DoorLinksTest extends UnitTestCase {
 
     // The timestamp defaults to the request time.
     $url = $links->build($recipient, static::CORRESPONDENCE, DoorTarget::Draft);
-    $this->assertStringStartsWith('https://backend.example.org/mailer.door/', $url);
+    $this->assertStringStartsWith('https://backend.example.org/mailer_door.go/', $url);
     $token = $this->token($url);
     $this->assertSame(56, strlen($token));
     $door = $links->parse($token);
@@ -198,6 +198,51 @@ class DoorLinksTest extends UnitTestCase {
     $this->assertTrue($links->verify($this->recipient(), $door));
     $this->assertFalse($links->verify($this->recipient(password: 'new-hash'), $door));
     $this->assertFalse($links->verify($this->recipient(8), $door));
+  }
+
+  /**
+   * The MAC covers the uid: another uid fails with the same password hash.
+   *
+   * The uid of the token matches the recipient, so only the MAC rejects it.
+   */
+  public function testMacCoversUid(): void {
+    $links = $this->links();
+    $token = $this->token($links->build($this->recipient(), static::CORRESPONDENCE, DoorTarget::Draft));
+    $bytes = $this->decode($token);
+    $tampered = $this->encode(substr_replace($bytes, pack('N', 8), DoorLinks::UID_OFFSET, 4));
+    $door = $links->parse($tampered);
+    $this->assertNotNull($door);
+    $this->assertSame(8, $door->uid);
+    $this->assertSame(substr($bytes, -DoorLinks::MAC_LENGTH), $door->mac);
+    $other = $this->recipient(8);
+    $this->assertSame(8, (int) $other->id());
+    $this->assertSame($this->recipient()->getPassword(), $other->getPassword());
+    $this->assertFalse($links->verify($other, $door));
+  }
+
+  /**
+   * A door needs a uid and a timestamp that fit into 32 bits.
+   */
+  public function testBuildRejectsNumbersBeyond32Bits(): void {
+    $links = $this->links();
+    $rejected = 0;
+    $cases = [
+      [-1, static::NOW],
+      [0x100000000, static::NOW],
+      [7, -1],
+      [7, 0x100000000],
+    ];
+    foreach ($cases as [$uid, $timestamp]) {
+      try {
+        $links->build($this->recipient($uid), static::CORRESPONDENCE, DoorTarget::Draft, '', $timestamp);
+        $this->fail('A door was built for uid ' . $uid . ' at ' . $timestamp);
+      }
+      catch (\InvalidArgumentException) {
+        $rejected++;
+      }
+    }
+    $this->assertSame(4, $rejected);
+    $this->assertNotNull($links->parse($this->token($links->build($this->recipient(0xFFFFFFFF), static::CORRESPONDENCE, DoorTarget::Draft, '', 0xFFFFFFFF))));
   }
 
   /**

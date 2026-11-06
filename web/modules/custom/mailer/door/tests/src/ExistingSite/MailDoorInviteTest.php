@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\Tests\mailer\ExistingSite;
+namespace Drupal\Tests\mailer_door\ExistingSite;
 
 use Behat\Mink\Driver\BrowserKitDriver;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\Log;
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\mailer\Traits\DoorTokenTrait;
+use Drupal\Tests\mailer_door\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\Tests\youvo\Traits\RequestTrait;
 use Drupal\user\UserInterface;
@@ -25,7 +25,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
  *
  * Keeps the logbook listeners, because the door writes project_follow logs.
  */
-#[Group('mailer')]
+#[Group('mailer_door')]
 class MailDoorInviteTest extends ExistingSiteBase {
 
   use DoorTokenTrait;

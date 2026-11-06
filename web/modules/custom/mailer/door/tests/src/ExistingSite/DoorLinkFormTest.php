@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\Tests\mailer\ExistingSite;
+namespace Drupal\Tests\mailer_door\ExistingSite;
 
 use Behat\Mink\Driver\BrowserKitDriver;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\Log;
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\mailer\Traits\DoorTokenTrait;
+use Drupal\Tests\mailer_door\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -23,7 +23,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
  *
  * Keeps the logbook listeners, because the door writes project_follow logs.
  */
-#[Group('mailer')]
+#[Group('mailer_door')]
 class DoorLinkFormTest extends ExistingSiteBase {
 
   use DoorTokenTrait;
@@ -350,7 +350,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertSession()->pageTextContains('Meldet nicht an');
     $this->assertSession()->pageTextContains('ist Team');
     $this->pressLoggedOut($url);
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
     $this->assertSame($login, $this->lastLogin($owner));
     $this->assertCount(0, $this->follows($project));
   }

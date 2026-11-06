@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Door;
+namespace Drupal\mailer_door;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -8,7 +8,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\creatives\Entity\Creative;
-use Drupal\mailer\HubUrls;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
@@ -35,9 +34,31 @@ class DoorLinks {
   const int VERSION = 1;
 
   /**
-   * The length of the payload without a subject, in bytes.
+   * The offset of the uid in the payload, after the version byte.
    */
-  const int PAYLOAD_LENGTH = 26;
+  const int UID_OFFSET = 1;
+
+  /**
+   * The offset of the correspondence UUID in the payload, after the uid.
+   */
+  const int CORRESPONDENCE_OFFSET = self::UID_OFFSET + 4;
+
+  /**
+   * The length of a UUID in the payload, in bytes.
+   */
+  const int UUID_LENGTH = 16;
+
+  /**
+   * The offset of the target code in the payload, after the correspondence.
+   */
+  const int TARGET_OFFSET = self::CORRESPONDENCE_OFFSET + self::UUID_LENGTH;
+
+  /**
+   * The length of the payload without a subject, in bytes.
+   *
+   * The target code and the timestamp end it; a subject UUID may follow.
+   */
+  const int PAYLOAD_LENGTH = self::TARGET_OFFSET + 5;
 
   /**
    * The length of the MAC, in bytes (128 bits).
@@ -57,12 +78,13 @@ class DoorLinks {
    * Builds the absolute URL of a door.
    *
    * @throws \InvalidArgumentException
-   *   When the correspondence or a given subject is no lowercase UUID.
+   *   When the correspondence or a given subject is no lowercase UUID, or the
+   *   uid or the timestamp does not fit into 32 bits.
    */
   public function build(UserInterface $recipient, string $correspondence, DoorTarget $target, string $subject = '', ?int $timestamp = NULL): string {
     $timestamp ??= $this->time->getRequestTime();
     $payload = $this->payload((int) $recipient->id(), $correspondence, $target, $timestamp, $subject);
-    return Url::fromRoute('mailer.door', [
+    return Url::fromRoute('mailer_door.go', [
       'token' => $this->encode($payload . $this->mac($recipient, $payload)),
     ], ['absolute' => TRUE])->toString();
   }
@@ -72,24 +94,26 @@ class DoorLinks {
    *
    * The token is not verified yet, see verify().
    *
-   * @return \Drupal\mailer\Door\DoorToken|null
+   * @return \Drupal\mailer_door\DoorToken|null
    *   The facts, or NULL if the token is malformed.
    */
   public function parse(string $token): ?DoorToken {
 
+    $short = static::PAYLOAD_LENGTH + static::MAC_LENGTH;
+    $long = $short + static::UUID_LENGTH;
     $length = strlen($token);
-    if ($length !== 56 && $length !== 78) {
+    if ($length !== $this->encodedLength($short) && $length !== $this->encodedLength($long)) {
       return NULL;
     }
     $bytes = $this->decode($token);
-    if ($bytes === NULL || (strlen($bytes) !== static::PAYLOAD_LENGTH + static::MAC_LENGTH && strlen($bytes) !== static::PAYLOAD_LENGTH + 16 + static::MAC_LENGTH)) {
+    if ($bytes === NULL || (strlen($bytes) !== $short && strlen($bytes) !== $long)) {
       return NULL;
     }
 
     $payload = substr($bytes, 0, -static::MAC_LENGTH);
     $mac = substr($bytes, -static::MAC_LENGTH);
     $head = unpack('Cversion/Nuid', $payload);
-    $tail = unpack('Ccode/Ntimestamp', $payload, 21);
+    $tail = unpack('Ccode/Ntimestamp', $payload, static::TARGET_OFFSET);
     if ($head === FALSE || $tail === FALSE || $head['version'] !== static::VERSION) {
       return NULL;
     }
@@ -98,8 +122,9 @@ class DoorLinks {
       return NULL;
     }
 
-    $subject = strlen($payload) > static::PAYLOAD_LENGTH ? $this->bytesToUuid(substr($payload, static::PAYLOAD_LENGTH, 16)) : '';
-    return new DoorToken($head['uid'], $this->bytesToUuid(substr($payload, 5, 16)), $target, $tail['timestamp'], $subject, $payload, $mac);
+    $subject = strlen($payload) > static::PAYLOAD_LENGTH ? $this->bytesToUuid(substr($payload, static::PAYLOAD_LENGTH, static::UUID_LENGTH)) : '';
+    $correspondence = $this->bytesToUuid(substr($payload, static::CORRESPONDENCE_OFFSET, static::UUID_LENGTH));
+    return new DoorToken($head['uid'], $correspondence, $target, $tail['timestamp'], $subject, $payload, $mac);
   }
 
   /**
@@ -116,10 +141,17 @@ class DoorLinks {
    * Packs the signed facts of a door.
    *
    * @throws \InvalidArgumentException
-   *   When the correspondence or a given subject is no lowercase UUID.
+   *   When the correspondence or a given subject is no lowercase UUID, or the
+   *   uid or the timestamp does not fit into 32 bits.
    */
   protected function payload(int $uid, string $correspondence, DoorTarget $target, int $timestamp, string $subject): string {
-    $payload = pack('CNa16CN', static::VERSION, $uid, $this->uuidToBytes($correspondence), $target->code(), $timestamp);
+
+    // Packing would cut larger numbers silently.
+    if ($uid < 0 || $uid > 0xFFFFFFFF || $timestamp < 0 || $timestamp > 0xFFFFFFFF) {
+      throw new \InvalidArgumentException('A door needs a uid and a timestamp of 32 bits.');
+    }
+
+    $payload = pack('CNa' . static::UUID_LENGTH . 'CN', static::VERSION, $uid, $this->uuidToBytes($correspondence), $target->code(), $timestamp);
     if ($subject !== '') {
       $payload .= $this->uuidToBytes($subject);
     }
@@ -131,6 +163,13 @@ class DoorLinks {
    */
   protected function mac(UserInterface $recipient, string $payload): string {
     return substr(hash_hmac('sha256', $payload, Settings::getHashSalt() . $recipient->getPassword(), TRUE), 0, static::MAC_LENGTH);
+  }
+
+  /**
+   * Gets the length of bytes encoded as base64url without padding.
+   */
+  protected function encodedLength(int $bytes): int {
+    return intdiv(4 * $bytes + 2, 3);
   }
 
   /**

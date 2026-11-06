@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Door;
+namespace Drupal\mailer_door;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Unicode;
@@ -68,7 +68,7 @@ class DoorLinkGenerator {
    * The owner is read from the field, because a project of a creative has no
    * owner for getOwner().
    *
-   * @return array<int, array{recipient: \Drupal\user\UserInterface, target: \Drupal\mailer\Door\DoorTarget, subject: string}>
+   * @return array<int, array{recipient: \Drupal\user\UserInterface, target: \Drupal\mailer_door\DoorTarget, subject: string}>
    *   The suggestions.
    */
   public function suggestions(ProjectInterface $project): array {

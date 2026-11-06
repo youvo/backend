@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\mailer\ExistingSite;
 
-use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;

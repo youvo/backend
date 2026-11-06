@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\mailer\Element;
+namespace Drupal\mailer_door\Element;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Attribute\FormElement;
 use Drupal\Core\Url;
-use Drupal\mailer\Controller\DoorLinkAutocompleteController;
+use Drupal\mailer_door\Controller\DoorLinkAutocompleteController;
 use Drupal\tagify\Element\EntityAutocompleteTagify;
 
 /**
@@ -71,7 +71,7 @@ class DoorLinkTags extends EntityAutocompleteTagify {
    * Points the widget at the door link autocomplete of its kind.
    */
   public static function processDoorLinkTags(array &$element, FormStateInterface $form_state, array &$complete_form): array {
-    $url = Url::fromRoute('mailer.door_links_autocomplete', ['kind' => $element['#kind']])->toString();
+    $url = Url::fromRoute('mailer_door.links_autocomplete', ['kind' => $element['#kind']])->toString();
     $element['#attributes']['data-autocomplete-url'] = $url;
     // The script adds the chosen project to this URL.
     $element['#attributes']['data-door-link-url'] = $url;
@@ -80,7 +80,7 @@ class DoorLinkTags extends EntityAutocompleteTagify {
       'limit_tag' => 'Höchstens so viele Einträge:',
       'no_matching_suggestions' => 'Keine Vorschläge für:',
     ];
-    $element['#attached']['library'][] = 'mailer/door_link_tags';
+    $element['#attached']['library'][] = 'mailer_door/door_link_tags';
     return $element;
   }
 

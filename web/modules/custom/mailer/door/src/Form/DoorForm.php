@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Form;
+namespace Drupal\mailer_door\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -12,7 +12,7 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\correspondence\CorrespondenceInterface;
-use Drupal\mailer\Door\DoorLinks;
+use Drupal\mailer_door\DoorLinks;
 use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\projects\Event\ProjectFollowEvent;
 use Drupal\projects\ProjectInterface;
@@ -66,7 +66,7 @@ class DoorForm extends FormBase {
       $container->get('keyvalue.expirable'),
       $container->get('event_dispatcher'),
       $container->get('datetime.time'),
-      $container->get('logger.channel.mailer'),
+      $container->get('logger.channel.mailer_door'),
       $container->get('password_policy.validator'),
     );
   }
@@ -177,7 +177,7 @@ class DoorForm extends FormBase {
         ], $rules),
         '#attributes' => ['class' => ['mail-door-rules'], 'id' => 'mail-door-rules'],
         '#attached' => [
-          'library' => ['mailer/door_password'],
+          'library' => ['mailer_door/door_password'],
           'drupalSettings' => ['mailerDoorPassword' => ['rules' => $rules]],
         ],
       ];
@@ -232,7 +232,7 @@ class DoorForm extends FormBase {
     $project = $door['project'];
     /** @var \Drupal\correspondence\CorrespondenceInterface $entry */
     $entry = $door['entry'];
-    /** @var \Drupal\mailer\Door\DoorTarget $target */
+    /** @var \Drupal\mailer_door\DoorTarget $target */
     $target = $door['target'];
 
     // The new password also spends the door, whose signature includes it.

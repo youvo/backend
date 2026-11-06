@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\mailer\Form;
+namespace Drupal\mailer_door\Form;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\creatives\Entity\Creative;
-use Drupal\mailer\Door\DoorLinkGenerator;
-use Drupal\mailer\Door\DoorTarget;
+use Drupal\mailer_door\DoorLinkGenerator;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\projects\ProjectInterface;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;

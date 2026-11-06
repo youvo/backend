@@ -7,7 +7,7 @@ use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\mailer\Traits\DoorTokenTrait;
+use Drupal\Tests\mailer_door\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use weitzman\DrupalTestTraits\ExistingSiteBase;
 

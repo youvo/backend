@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\mailer\ExistingSite;
 
-use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\Mailer\ManagerMailerInterface;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\projects\ProjectState;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -207,7 +207,7 @@ class ManagerMailerTest extends MailerExistingSiteTestBase {
     $project = $this->createMailableProject(ProjectState::Draft);
     $this->assertTrue($this->mailer()->send($project, 'decline_custom', 'Betreff', "Text\n\n[mail:project_link]", $project->getOwner()->getManager()));
 
-    $link = $this->container->get('mailer.hub_urls')->project($project);
+    $link = $this->container->get('mailer_door.hub_urls')->project($project);
     $html = $this->interceptedMails[0]['html'];
     $this->assertStringContainsString('<a href="' . $link . '">', $html);
     $this->assertStringNotContainsString('/go/', $html);

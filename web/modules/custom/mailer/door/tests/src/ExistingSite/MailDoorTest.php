@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\Tests\mailer\ExistingSite;
+namespace Drupal\Tests\mailer_door\ExistingSite;
 
 use Behat\Mink\Driver\BrowserKitDriver;
 use Drupal\correspondence\Entity\Correspondence;
 use Drupal\creatives\Entity\Creative;
 use Drupal\logbook\Entity\Log;
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\Entity\Project;
 use Drupal\projects\ProjectInterface;
 use Drupal\projects\ProjectState;
-use Drupal\Tests\mailer\Traits\DoorTokenTrait;
+use Drupal\Tests\mailer_door\Traits\DoorTokenTrait;
 use Drupal\Tests\youvo\Traits\MailInterceptTrait;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -23,7 +23,7 @@ use weitzman\DrupalTestTraits\ExistingSiteBase;
  *
  * Keeps the logbook listeners, because the door writes project_follow logs.
  */
-#[Group('mailer')]
+#[Group('mailer_door')]
 class MailDoorTest extends ExistingSiteBase {
 
   use DoorTokenTrait;
@@ -308,7 +308,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->follows($project));
     $this->assertSame($login, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -326,7 +326,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->follows($project));
     $this->assertSame($login, $this->lastLogin($organization), 'The door does not log in.');
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -343,7 +343,7 @@ class MailDoorTest extends ExistingSiteBase {
     $this->pressDoor($path);
 
     $this->assertCount(1, $this->follows($project));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -362,7 +362,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(0, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -426,7 +426,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(0, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -465,7 +465,7 @@ class MailDoorTest extends ExistingSiteBase {
     $this->assertCount(0, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
     $this->assertTrue($this->drupalUserIsLoggedIn($other));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -484,7 +484,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(2, $this->follows($project));
     $this->assertSame($login, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -503,7 +503,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**
@@ -547,7 +547,7 @@ class MailDoorTest extends ExistingSiteBase {
 
     $this->assertCount(1, $this->follows($project));
     $this->assertSame(0, $this->lastLogin($organization));
-    $this->assertSame($this->container->get('mailer.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
+    $this->assertSame($this->container->get('mailer_door.hub_urls')->base() . '/projects/' . $project->uuid(), $this->location());
   }
 
   /**

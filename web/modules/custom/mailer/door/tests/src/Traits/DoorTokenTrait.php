@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\mailer\Traits;
+namespace Drupal\Tests\mailer_door\Traits;
 
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
-use Drupal\mailer\Door\DoorToken;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
+use Drupal\mailer_door\DoorToken;
 
 /**
  * Reads and tampers with the door tokens of mails and URLs.

@@ -48,6 +48,7 @@ module:
   logbook: 0
   mail_login: 0
   mailer: 0
+  mailer_door: 0
   mailer_policy: 0
   mailer_transport: 0
   manager: 0

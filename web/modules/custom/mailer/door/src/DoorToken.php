@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Door;
+namespace Drupal\mailer_door;
 
 /**
  * The signed facts of a door, parsed from its token.
@@ -17,7 +17,7 @@ final readonly class DoorToken {
    *   The user ID of the recipient.
    * @param string $correspondence
    *   The UUID of the correspondence entry of the mail.
-   * @param \Drupal\mailer\Door\DoorTarget $target
+   * @param \Drupal\mailer_door\DoorTarget $target
    *   Where the door leads.
    * @param int $timestamp
    *   When the door was made.

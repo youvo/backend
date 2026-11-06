@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\mailer\ExistingSite;
 
-use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\Mailer\ProjectActionMailerInterface;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\projects\Event\ProjectApplyEvent;
 use Drupal\projects\Event\ProjectInviteEvent;
 use Drupal\projects\Event\ProjectNotifyEvent;

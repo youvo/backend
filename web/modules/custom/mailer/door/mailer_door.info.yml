@@ -1,0 +1,15 @@
+name: Mailer Door
+type: module
+description: Signed links in mails that lead to the hub or the website and may log their recipient in.
+package: youvo
+
+core_version_requirement: ^10.3 || ^11
+
+dependencies:
+  - correspondence:correspondence
+  - creatives:creatives
+  - organizations:organizations
+  - password_policy:password_policy
+  - projects:projects
+  - tagify:tagify
+  - youvo:youvo

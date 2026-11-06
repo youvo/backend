@@ -57,15 +57,6 @@ services:
   mailer.correspondence_recorder:
     class: Drupal\mailer\CorrespondenceRecorder
     arguments: ['@entity_type.manager', '@logger.channel.mailer', '@datetime.time']
-  mailer.hub_urls:
-    class: Drupal\mailer\HubUrls
-    arguments: ['@config.factory']
-  Drupal\mailer\Door\DoorLinks:
-    autowire: true
-    arguments:
-      $hubUrls: '@mailer.hub_urls'
-  Drupal\mailer\Door\DoorLinkGenerator:
-    autowire: true
   mailer.variables:
     class: Drupal\mailer\MailVariables
     arguments: ['@config.factory']
@@ -77,7 +68,7 @@ services:
       $logger: '@logger.channel.mailer'
       $mailVariables: '@mailer.variables'
       $configFactory: '@config.factory'
-      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $doorLinks: '@Drupal\mailer_door\DoorLinks'
       $uuid: '@uuid'
   Drupal\mailer\Mailer\ProjectActionMailerInterface:
     class: Drupal\mailer\Mailer\ProjectActionMailer
@@ -87,7 +78,7 @@ services:
       $logger: '@logger.channel.mailer'
       $configFactory: '@config.factory'
       $mailVariables: '@mailer.variables'
-      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $doorLinks: '@Drupal\mailer_door\DoorLinks'
       $uuid: '@uuid'
   Drupal\mailer\Mailer\YouvoUserMailerInterface:
     class: Drupal\mailer\Mailer\YouvoUserMailer
@@ -104,11 +95,11 @@ services:
       $logger: '@logger.channel.mailer'
       $configFactory: '@config.factory'
       $mailVariables: '@mailer.variables'
-      $hubUrls: '@mailer.hub_urls'
+      $hubUrls: '@mailer_door.hub_urls'
       $registry: '@mailer.manager_mail_registry'
       $lateTokens: '@mailer.late_tokens'
       $plainText: '@mailer.plain_text_body'
-      $doorLinks: '@Drupal\mailer\Door\DoorLinks'
+      $doorLinks: '@Drupal\mailer_door\DoorLinks'
       $uuid: '@uuid'
       $eventDispatcher: '@event_dispatcher'
   logger.channel.mailer:

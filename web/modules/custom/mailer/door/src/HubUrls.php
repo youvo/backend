@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer;
+namespace Drupal\mailer_door;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\projects\ProjectInterface;

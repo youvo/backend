@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mailer\Controller;
+namespace Drupal\mailer_door\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;

@@ -1,31 +1,31 @@
-mailer.door:
+mailer_door.go:
   path: '/go/{token}'
   defaults:
-    _form: '\Drupal\mailer\Form\DoorForm'
+    _form: '\Drupal\mailer_door\Form\DoorForm'
     _title: 'youvo'
   requirements:
     # The door verifies the signature.
     _access: 'TRUE'
     # Base64url without padding: 42 bytes, or 58 with a subject.
-    token: '[A-Za-z0-9_-]{56}|[A-Za-z0-9_-]{78}'
+    token: '[A-Za-z0-9_-]{56}(?:[A-Za-z0-9_-]{22})?'
   options:
     no_cache: TRUE
     _maintenance_access: TRUE
 
-mailer.door_links:
+mailer_door.links:
   path: '/admin/door-links'
   defaults:
-    _form: '\Drupal\mailer\Form\DoorLinkForm'
+    _form: '\Drupal\mailer_door\Form\DoorLinkForm'
     _title: 'Türlinks erzeugen'
   requirements:
     _permission: 'create mail door links'
   options:
     _admin_route: TRUE
 
-mailer.door_links_autocomplete:
+mailer_door.links_autocomplete:
   path: '/admin/door-links/autocomplete/{kind}'
   defaults:
-    _controller: '\Drupal\mailer\Controller\DoorLinkAutocompleteController::handle'
+    _controller: '\Drupal\mailer_door\Controller\DoorLinkAutocompleteController::handle'
   requirements:
     _permission: 'create mail door links'
     kind: 'project|recipient|subject'

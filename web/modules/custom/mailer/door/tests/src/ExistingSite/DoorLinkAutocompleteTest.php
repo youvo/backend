@@ -1,16 +1,17 @@
 <?php
 
-namespace Drupal\Tests\mailer\ExistingSite;
+namespace Drupal\Tests\mailer_door\ExistingSite;
 
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectState;
+use Drupal\Tests\mailer\ExistingSite\MailerExistingSiteTestBase;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the suggestions of the door link form.
  */
-#[Group('mailer')]
+#[Group('mailer_door')]
 class DoorLinkAutocompleteTest extends MailerExistingSiteTestBase {
 
   /**
