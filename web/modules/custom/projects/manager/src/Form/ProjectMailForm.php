@@ -110,7 +110,8 @@ class ProjectMailForm extends FormBase {
         '#value' => $this->t('Insert placeholder'),
       ],
     ];
-    foreach ($this->lateTokens->names() as $name) {
+    // Only the placeholders that the mail of this subtype resolves.
+    foreach ($this->lateTokens->names($subtype) as $name) {
       $form['tokens'][$name] = [
         '#type' => 'html_tag',
         '#tag' => 'button',

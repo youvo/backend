@@ -1,0 +1,5 @@
+mailer_door.dashboard.door_links:
+  title: Door Links
+  route_name: mailer_door.links
+  menu_name: dashboard-configuration
+  weight: 3

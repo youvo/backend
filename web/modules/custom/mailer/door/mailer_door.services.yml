@@ -1,0 +1,13 @@
+services:
+  mailer_door.hub_urls:
+    class: Drupal\mailer_door\HubUrls
+    arguments: ['@config.factory']
+  Drupal\mailer_door\DoorLinks:
+    autowire: true
+    arguments:
+      $hubUrls: '@mailer_door.hub_urls'
+  Drupal\mailer_door\DoorLinkGenerator:
+    autowire: true
+  logger.channel.mailer_door:
+    parent: logger.channel_base
+    arguments: [ 'mailer_door' ]

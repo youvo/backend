@@ -56,7 +56,7 @@ class BlockerMode implements BlockerModeInterface {
       $allowed_routes[] = 'user.login';
       $allowed_routes[] = 'user.logout';
       // The mail door verifies its own signature.
-      $allowed_routes[] = 'mailer.door';
+      $allowed_routes[] = 'mailer_door.go';
       if (in_array($route_name, $allowed_routes, TRUE)) {
         return FALSE;
       }

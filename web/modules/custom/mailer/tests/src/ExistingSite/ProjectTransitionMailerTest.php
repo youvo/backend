@@ -3,6 +3,7 @@
 namespace Drupal\Tests\mailer\ExistingSite;
 
 use Drupal\mailer\Mailer\ProjectTransitionMailerInterface;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\projects\Event\ProjectMediateEvent;
 use Drupal\projects\Event\ProjectPublishEvent;
 use Drupal\projects\Event\ProjectSubmitEvent;
@@ -299,25 +300,25 @@ class ProjectTransitionMailerTest extends MailerExistingSiteTestBase {
     $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
     foreach ($this->interceptedMails as $mail) {
       $recipient = $recipients[$mail['to'][0]];
-      $this->assertSame(1, preg_match('#/door/' . $recipient->id() . '/[0-9a-f-]{36}/feedback/#', $mail['html']), 'Door of the recipient: ' . $mail['to'][0]);
+      $this->assertDoor($mail['html'], $recipient->id(), NULL, DoorTarget::Feedback, '', 'Door of the recipient: ' . $mail['to'][0]);
       $this->assertStringNotContainsString('/feedback/creative/', $mail['html']);
       $this->assertStringNotContainsString('/feedback/organization/', $mail['html']);
     }
     // The results link stays plain.
-    $this->assertStringContainsString($website_url . '/results/' . $project->uuid(), $this->interceptedMails[1]['html']);
+    $this->assertStringContainsString($website_url . '/projects/' . $project->uuid(), $this->interceptedMails[1]['html']);
 
     $this->assertCount(3, $this->loadEntries($project));
     $entries = $this->loadEntriesBySubtype($project);
     $organization_body = $entries['mailer.project_transition.complete_organization'][0]->get('body')->value;
     $this->assertStringContainsString($a->getName() . ', ' . $b->getName(), $organization_body);
     $this->assertStringContainsString('[Link entfernt]', $organization_body);
-    $this->assertStringNotContainsString('/door/', $organization_body);
+    $this->assertStringNotContainsString('/go/', $organization_body);
     $this->assertCount(2, $entries['mailer.project_transition.complete_creative']);
     foreach ($entries['mailer.project_transition.complete_creative'] as $entry) {
       $body = $entry->get('body')->value;
       $this->assertStringContainsString('[Link entfernt]', $body);
-      $this->assertStringNotContainsString('/door/', $body);
-      $this->assertStringContainsString('results/' . $project->uuid(), $body);
+      $this->assertStringNotContainsString('/go/', $body);
+      $this->assertStringContainsString('/projects/' . $project->uuid(), $body);
     }
   }
 

@@ -74,7 +74,7 @@ class ConsumerPermissionsAuthDecorator implements UserAuthInterface, UserAuthent
 
       // Check whether account has permission to authenticate with client.
       /** @var \Drupal\consumers\Entity\Consumer $client */
-      $permission = ConsumerPermissions::PREFIX . $client->id();
+      $permission = ConsumerPermissions::PREFIX . $client->uuid();
       /** @var \Drupal\user\UserInterface $account */
       if ($account->hasPermission($permission)) {
         return $this->userAuth->authenticate($username, $password);

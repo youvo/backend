@@ -98,6 +98,25 @@ class ManagerMailRegistry {
   }
 
   /**
+   * Gets the late tokens a mail of the subtype may use.
+   *
+   * Reminders link the project (a door); declines the FAQ, the rules and the
+   * public proposal page; archives a new draft, as archived organizations can
+   * still log in.
+   *
+   * @return string[]
+   *   The token names; none for an unknown subtype.
+   */
+  public static function lateTokenNames(string $subtype): array {
+    return match (TRUE) {
+      static::declineReason($subtype) !== NULL => ['faq_link', 'rules_link', 'new_project_link'],
+      static::archiveReason($subtype) !== NULL => ['new_draft_link'],
+      str_starts_with($subtype, 'reminder_') => ['project_link'],
+      default => [],
+    };
+  }
+
+  /**
    * Gets the lifecycle state of a project.
    */
   public function stateOf(ProjectInterface $project): ProjectState {

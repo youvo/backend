@@ -16,6 +16,7 @@ use Drupal\creatives\Entity\Creative;
 use Drupal\password_policy\PasswordPolicyValidatorInterface;
 use Drupal\user\OneTimeAuthentication;
 use Drupal\user\UserInterface;
+use Drupal\user_types\PasswordChecklist;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -45,6 +46,7 @@ final class CreativeRegisterForm extends FormBase {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected OneTimeAuthentication $oneTimeAuthentication,
     protected PasswordPolicyValidatorInterface $passwordPolicyValidator,
+    protected PasswordChecklist $passwordChecklist,
   ) {}
 
   /**
@@ -61,6 +63,7 @@ final class CreativeRegisterForm extends FormBase {
       $container->get('entity_type.manager'),
       $container->get(OneTimeAuthentication::class),
       $container->get('password_policy.validator'),
+      $container->get(PasswordChecklist::class),
     );
   }
 
@@ -115,7 +118,7 @@ final class CreativeRegisterForm extends FormBase {
       $user->getLastAccessedTime() > 0) {
       // @todo Adjust message.
       $this->messenger()
-        ->addError($this->t('You have tried to use an registration link that has expired. Please contact hello@youvo.org.'));
+        ->addError($this->t('Der Link zur Registrierung ist abgelaufen. Schreib uns bitte an hello@youvo.org.'));
       return $this->redirect('<front>');
     }
 
@@ -134,19 +137,28 @@ final class CreativeRegisterForm extends FormBase {
       '#value' => $user,
     ];
 
-    $form['#title'] = $this->t('Welcome');
+    // The texts follow the mail door's welcome of new organizations.
+    $form['#title'] = $this->t('Willkommen bei youvo');
+
+    $form['note'] = [
+      '#prefix' => '<p class="public-page-note">',
+      '#markup' => $this->t('Leg ein Passwort für dein Konto fest. Du wirst dabei angemeldet.'),
+      '#suffix' => '</p>',
+    ];
 
     $form['password'] = [
       '#type' => 'password_confirm',
       '#size' => 25,
-      '#description' => $this->t('To change the current user password, enter the new password in both fields.'),
+      '#after_build' => [[PasswordChecklist::class, 'germanPasswordTitles']],
     ];
+
+    $form['password_rules'] = $this->passwordChecklist->build('creative');
 
     $form['actions'] = [
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Set password'),
+        '#value' => $this->t('Passwort speichern und weiter'),
       ],
     ];
 
@@ -207,9 +219,10 @@ final class CreativeRegisterForm extends FormBase {
       }
       $response = new TrustedRedirectResponse($redirect_url);
       $form_state->setResponse($response);
+      return $response;
     }
 
-    $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Please contact hello@youvo.org.'));
+    $this->messenger()->addError($this->t('Der Link wurde schon benutzt oder ist nicht mehr gültig. Schreib uns bitte an hello@youvo.org.'));
     return $this->redirect('user.pass');
   }
 

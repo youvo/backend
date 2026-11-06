@@ -24,7 +24,7 @@
   <mj-body background-color="#f4f8ff">
     <mj-section full-width="full-width" background-color="#3ec4c2" padding="28px 20px 0 20px">
       <mj-column>
-        <mj-text padding="0 32px 20px 32px" line-height="0"><a href="{{ url('<front>') }}" target="_blank" style="color:#2a2a2a;"><img class="yv-logo" src="{{ url('<front>') }}assets/logo_email_v2.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:100%;max-width:245px;height:auto;color:#2a2a2a;" /></a></mj-text>
+        <mj-text padding="0 32px 20px 32px" line-height="0"><a href="{{ website_url }}" target="_blank" style="color:#2a2a2a;"><img class="yv-logo" src="{{ url('<front>') }}assets/logo_email_v2.png" alt="youvo – You create. You volunteer." width="245" height="76" style="display:block;border:0;width:100%;max-width:245px;height:auto;color:#2a2a2a;" /></a></mj-text>
         <mj-spacer height="24px" container-background-color="#ffffff" />
       </mj-column>
     </mj-section>
@@ -35,7 +35,7 @@
     </mj-section>
     <mj-section padding="24px 12px 32px 12px">
       <mj-column>
-        <mj-text align="center" font-size="12px" line-height="20px" color="#2a2a2a">youvo e.V. · <a href="{{ url('<front>') }}" style="color:#15508e;text-decoration:underline;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#2a2a2a">youvo e.V. · <a href="{{ website_url }}" style="color:#15508e;text-decoration:underline;">youvo.org</a><br />Du erhältst diese E-Mail, weil Du auf youvo.org registriert bist oder an einem Projekt beteiligt bist.</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

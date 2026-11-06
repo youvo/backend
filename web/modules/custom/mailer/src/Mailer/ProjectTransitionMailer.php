@@ -7,9 +7,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\creatives\Entity\Creative;
 use Drupal\mailer\CorrespondenceRecorder;
-use Drupal\mailer\Door\DoorLinks;
-use Drupal\mailer\Door\DoorTarget;
 use Drupal\mailer\MailVariables;
+use Drupal\mailer_door\DoorLinks;
+use Drupal\mailer_door\DoorTarget;
 use Drupal\organizations\Entity\Organization;
 use Drupal\projects\ProjectInterface;
 use Drupal\symfony_mailer\Attribute\MailerInfo;
@@ -152,8 +152,9 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
     $participants = $project->getParticipants('Creative');
     $website_url = rtrim((string) $this->configFactory->get('youvo.settings')->get('website_url'), '/');
 
-    // Each recipient gets a feedback door of their own. It never logs in, but
-    // it is still never stored.
+    // Each recipient gets a feedback door of their own, which is never stored.
+    // The door of the organization leads to the hub, those of the creatives
+    // to the app. Each may log its recipient in.
     $to = $this->ownerEmail($project);
     $uuid = $this->uuid->generate();
     $door = $to === NULL ? '' : $this->doorLinks->build($project->getOwner(), $uuid, DoorTarget::Feedback);
@@ -171,7 +172,8 @@ class ProjectTransitionMailer extends YouvoMailerBase implements ProjectTransiti
       $door = $this->doorLinks->build($participant, $uuid, DoorTarget::Feedback);
       $email = $this->projectEmail('complete_creative', $project, $this->mailVariables->creative($participant) + $base + [
         'feedback_link' => $door,
-        'results_link' => $website_url . '/results/' . $project->uuid(),
+        // The results are shown on the project page of the website.
+        'results_link' => $website_url . '/projects/' . $project->uuid(),
       ]);
       $success = $this->deliver($email, $project, 'complete_creative', $participant->getEmail(), [$door], 'automatic', NULL, $uuid) && $success;
     }

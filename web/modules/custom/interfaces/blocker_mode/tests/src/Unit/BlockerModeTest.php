@@ -78,7 +78,7 @@ class BlockerModeTest extends UnitTestCase {
   public static function appliesProvider(): array {
     return [
       'login' => ['user.login', FALSE],
-      'mail door' => ['mailer.door', FALSE],
+      'mail door' => ['mailer_door.go', FALSE],
       'logbook' => ['logbook.page', TRUE],
     ];
   }

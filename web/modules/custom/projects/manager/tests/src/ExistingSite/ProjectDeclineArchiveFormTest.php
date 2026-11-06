@@ -80,6 +80,17 @@ class ProjectDeclineArchiveFormTest extends ManagerExistingSiteTestBase {
   }
 
   /**
+   * Gets the token names of the placeholder buttons in the HTML.
+   *
+   * @return string[]
+   *   The names in button order.
+   */
+  protected function placeholders(string $html): array {
+    preg_match_all('/data-token="\[mail:([a-z_]+)\]"/', $html, $matches);
+    return $matches[1];
+  }
+
+  /**
    * Asserts that the project is unchanged and nothing was sent.
    */
   protected function assertNothingHappened(ProjectInterface $project, string $state, bool $archived, string $label): void {
@@ -187,6 +198,8 @@ class ProjectDeclineArchiveFormTest extends ManagerExistingSiteTestBase {
     $this->assertSame(9, preg_match_all('/data-pane-view="decline"/', $html));
     $this->assertMatchesRegularExpression('/<a[^>]*aria-current="true"[^>]*data-pane-params="reason=custom"|<a[^>]*data-pane-params="reason=custom"[^>]*aria-current="true"/', $html);
     $this->assertSame(1, preg_match_all('/aria-current="true"/', $html));
+    // A decline offers the FAQ, the rules and the proposal page.
+    $this->assertSame(['faq_link', 'rules_link', 'new_project_link'], $this->placeholders($html));
 
     // An unknown reason gives an empty pane.
     $html = $this->pane($project, ['type' => 'transition', 'view' => 'decline', 'reason' => 'unknown']);
@@ -244,6 +257,8 @@ class ProjectDeclineArchiveFormTest extends ManagerExistingSiteTestBase {
     $this->assertStringContainsString('data-rest-action="archive"', $html);
     $this->assertStringContainsString('data-reason="external"', $html);
     $this->assertSame(3, preg_match_all('/data-pane-view="archive"/', $html));
+    // An archive offers only a new draft.
+    $this->assertSame(['new_draft_link'], $this->placeholders($html));
     $this->pane($project, $query, $this->editorPost($html, 'Archive and send'));
     $this->assertNothingHappened($project, ProjectState::Completed->value, FALSE, 'archive');
   }

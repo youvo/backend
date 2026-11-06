@@ -1,0 +1,7 @@
+password_checklist:
+  js:
+    js/password-checklist.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - core/once

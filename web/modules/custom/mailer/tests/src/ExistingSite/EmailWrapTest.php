@@ -25,6 +25,10 @@ class EmailWrapTest extends MailerExistingSiteTestBase {
     $this->assertStringContainsString('mj-column', $html);
     $this->assertStringContainsString('alt="youvo', $html);
     $this->assertMatchesRegularExpression('#src="https?://[^"]+/assets/logo_email_v2\.png"#', $html);
+    // The logo and the footer link to the website, not to the staff-only
+    // backend.
+    $website_url = rtrim((string) $this->container->get('config.factory')->get('youvo.settings')->get('website_url'), '/');
+    $this->assertSame(2, substr_count($html, 'href="' . $website_url . '"'));
     $this->assertStringContainsString('lang="de"', $html);
     // The policy text appears after the header, inside the wrapper body.
     $header = strpos($html, 'alt="youvo');

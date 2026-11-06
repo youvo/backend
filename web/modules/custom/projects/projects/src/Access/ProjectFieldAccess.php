@@ -301,6 +301,15 @@ class ProjectFieldAccess extends FieldAccess {
       return AccessResult::neutral()->cachePerPermissions();
     }
 
+    // Creatives may filter by their own applications and participations for
+    // their dashboard. The membership filter subscriber refuses any filter or
+    // sort on these fields that is not for the creative themselves.
+    if (in_array($field->getName(), [self::APPLICANTS_FIELD, self::PARTICIPANTS_FIELD], TRUE) &&
+      $account->hasPermission('general creative access')
+    ) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+
     // Applicants, participants and results depend on the project.
     return AccessResult::forbidden()->cachePerPermissions();
   }

@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the mailer module.
+ */
+
+/**
+ * Installs the mail door module, which now holds the mail doors.
+ */
+function mailer_update_11001(): void {
+  \Drupal::service('module_installer')->install(['mailer_door']);
+}

@@ -1,0 +1,11 @@
+user_types.password_reset:
+  path: '/user/reset/password'
+  defaults:
+    _form: '\Drupal\user_types\Form\PasswordResetForm'
+    _title: 'Neues Passwort festlegen'
+  requirements:
+    # The form requires the pass_reset_<uid> token of core's one-time login
+    # and leads to a new link without it.
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE

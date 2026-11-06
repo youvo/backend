@@ -1,0 +1,279 @@
+// =============================================================================
+// PUBLIC PAGES (page--public.html.twig)
+// =============================================================================
+// The pages visitors meet without the admin toolbar, the login, password
+// reset, registration and the page behind a link in a mail, look like the
+// mails: the turquoise band with the logo, one card that overlaps it, and the
+// orange button of the website, with white text as there.
+
+@use "../abstracts/functions.scss" as *;
+@use "../abstracts/mixins.scss" as *;
+@use "../abstracts/variables.scss" as *;
+
+// The website's teal, darkened to pass 4.5:1 on white.
+$public-teal: color-mix(in srgb, #{$color-turquoise-dark} 75%, #000);
+
+// Gin starts the page 1px down, which leaves a light line above the band.
+// Gin's rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id, selector-class-pattern
+:is(#extra-specificity-hack, .public-page-body) .page-wrapper.dialog-off-canvas-main-canvas {
+  margin-block-start: 0;
+}
+
+.public-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    $color-turquoise 0,
+    $color-turquoise to-rem(200),
+    var(--gin-bg-app) to-rem(200)
+  );
+}
+
+.public-page-band {
+  padding: var(--gin-spacing-l) var(--gin-spacing-m) var(--gin-spacing-m);
+}
+
+.public-page-logo {
+  display: block;
+  margin-inline: auto;
+  width: to-rem(200);
+  height: auto;
+
+  @media (min-width: $breakpoint-medium) {
+    width: to-rem(245);
+  }
+}
+
+.public-page-main {
+  box-sizing: border-box;
+  flex: 1;
+  width: 100%;
+  max-width: to-rem(480);
+  margin-inline: auto;
+  padding: 0 var(--gin-spacing-m) var(--gin-spacing-l);
+}
+
+// Gin draws the form as a card of its own; the page has its own card. Gin's rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id
+:is(#extra-specificity-hack, .public-page) .public-page-main .block-system-main-block > form {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.public-page-footer {
+  padding: var(--gin-spacing-m);
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-xs);
+  text-align: center;
+}
+
+// The card: the mail door draws it inside its form, the other pages around
+// their heading and form, see public_page_card in the page template.
+.public-page-card {
+  @include card;
+  @include card-padding;
+
+  display: grid;
+
+  // The password fields have a size, which would widen an auto column past
+  // the card on narrow screens.
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-s);
+
+  // Core's form actions and form items add their own margins. The grid gap
+  // spaces the card's parts; the button gets a little more.
+  // stylelint-disable-next-line selector-class-pattern
+  .form-actions {
+    margin: var(--gin-spacing-s) 0 0;
+  }
+
+  .form-item {
+    margin-block: 0;
+  }
+
+  // The two password fields, once core shows the second one.
+  // stylelint-disable-next-line selector-class-pattern
+  .password-confirm:not(.is-initial) .password-confirm__password {
+    margin-block-end: var(--gin-spacing-s);
+  }
+
+  // The checklist below the fields says whether the passwords match.
+  // stylelint-disable-next-line selector-class-pattern
+  .password-match-message {
+    display: none;
+  }
+
+  // Gin styles the submit button through its ID with an ID-level
+  // specificity hack, so the button needs two IDs' worth.
+  // stylelint-disable-next-line selector-max-id
+  :is(#extra-specificity-hack, .public-page) & :is(#extra-specificity-hack, .form-submit) {
+    width: 100%;
+    margin: 0;
+    padding-block: var(--gin-spacing-s);
+
+    // Gin sets the button border as important.
+    border: 0 !important;
+    border-bottom: to-rem(3) solid $color-orange-dark !important;
+    border-radius: to-rem(6);
+    background: $color-orange;
+    box-shadow: none;
+    color: $color-white;
+    font-size: var(--gin-font-size-m);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    // A long label wraps instead of being cut off on narrow screens.
+    white-space: normal;
+
+    &:hover,
+    &:focus {
+      background: $color-orange-dark;
+      color: $color-white;
+    }
+
+    // Held back by the checklist script until every rule is met.
+    &[aria-disabled="true"] {
+      background: $color-orange;
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    &:focus-visible {
+      outline: to-rem(3) solid $color-blue;
+      outline-offset: to-rem(2);
+    }
+  }
+}
+
+// The password rules, ticked off by user_types' password-checklist.js while
+// typing. Within the card, to win over Claro's `.item-list ul` indent.
+.public-page-card .password-checklist {
+  display: grid;
+  gap: var(--gin-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  color: var(--yv-muted);
+  font-size: var(--gin-font-size-s);
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: var(--gin-spacing-xs);
+    align-items: center;
+    margin: 0;
+
+    &::before {
+      content: "";
+      display: grid;
+      flex: none;
+      place-items: center;
+      box-sizing: border-box;
+      width: to-rem(16);
+      height: to-rem(16);
+      border: to-rem(2) solid currentcolor;
+      border-radius: 50%;
+      font-size: to-rem(10);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    &[data-met] {
+      color: $public-teal;
+
+      &::before {
+        content: "✓";
+        border-color: transparent;
+        background: $public-teal;
+        color: $color-white;
+      }
+    }
+  }
+}
+
+.public-page-context {
+  margin: 0;
+
+  // A project title is a name: no hyphens in it.
+  hyphens: manual;
+  color: $public-teal;
+  font-size: var(--gin-font-size-s);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-page-heading {
+  margin: 0;
+  color: var(--yv-ink);
+  font-size: to-rem(28);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.public-page-note {
+  margin: 0;
+  color: var(--yv-muted);
+}
+
+// The pages whose card the page template draws: their heading and form look
+// like the door's. Only these, so the door keeps its look.
+.public-page-card[data-card="page"] {
+  // stylelint-disable-next-line selector-class-pattern
+  .block-page-title-block {
+    margin: 0;
+  }
+
+  // Gin's heading of the page.
+  // stylelint-disable-next-line selector-class-pattern
+  .public-page-heading.page-title {
+    margin: 0;
+    color: var(--yv-ink);
+    font-size: to-rem(28);
+    font-weight: 700;
+    line-height: 1.2;
+
+    // Gin cuts a long heading off with an ellipsis, and sets it tighter and
+    // narrower than the door's heading.
+    display: block;
+    overflow: visible;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    letter-spacing: -0.025em;
+    white-space: normal;
+  }
+
+  // Core's descriptions below the fields.
+  // stylelint-disable-next-line selector-class-pattern
+  .form-item__description {
+    color: var(--yv-muted);
+  }
+}
+
+// Their form spaces its parts as the door's card does. Gin draws the form as
+// a card with a border; its rule carries an ID-level specificity hack.
+// stylelint-disable-next-line selector-max-id
+:is(#extra-specificity-hack, .public-page-card[data-card="page"]) .block-system-main-block > form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gin-spacing-s);
+  border: 0;
+  border-radius: 0;
+}
+
+// A small link to the neighbouring page, such as „Passwort vergessen?“.
+.public-page-link {
+  margin: 0;
+  font-size: var(--gin-font-size-s);
+  text-align: center;
+
+  a {
+    color: $public-teal;
+    font-weight: 600;
+  }
+}

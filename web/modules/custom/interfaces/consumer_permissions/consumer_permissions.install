@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the consumer_permissions module.
+ */
+
+use Drupal\consumer_permissions\ConsumerPermissions;
+use Drupal\user\Entity\Role;
+
+/**
+ * Names the consumer permissions after the consumer UUID instead of its ID.
+ */
+function consumer_permissions_update_11001(): string {
+
+  $uuids = [];
+  $consumers = \Drupal::entityTypeManager()->getStorage('consumer')->loadMultiple();
+  foreach ($consumers as $consumer) {
+    $uuids[$consumer->id()] = $consumer->uuid();
+  }
+
+  // Grants of consumers that do not exist are dropped.
+  $changes = [];
+  foreach (Role::loadMultiple() as $role) {
+    $changed = FALSE;
+    foreach ($role->getPermissions() as $permission) {
+      if (!preg_match('/^' . preg_quote(ConsumerPermissions::PREFIX, '/') . '(\d+)$/', $permission, $matches)) {
+        continue;
+      }
+      $role->revokePermission($permission);
+      if (isset($uuids[$matches[1]])) {
+        $role->grantPermission(ConsumerPermissions::PREFIX . $uuids[$matches[1]]);
+      }
+      $changed = TRUE;
+    }
+    if ($changed) {
+      $role->save();
+      $changes[] = $role->id() . ': ' . implode(', ', array_filter($role->getPermissions(), fn ($permission) => str_starts_with($permission, ConsumerPermissions::PREFIX)));
+    }
+  }
+
+  return $changes ? 'Renamed consumer permissions. ' . implode('; ', $changes) : 'No consumer permissions to rename.';
+}
