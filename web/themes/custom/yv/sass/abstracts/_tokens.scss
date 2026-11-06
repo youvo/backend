@@ -49,6 +49,10 @@ body {
 
   // The chart series in the background, such as declined projects.
   --yv-chart-grey: #{$color-grey-dark};
+
+  // Gin's warning color for text and icons. Its plain warning color reaches
+  // only 2:1 on a light card, this one 5.2:1 (light) and 9.5:1 (dark).
+  --yv-warning: var(--gin-status-warning-text);
 }
 
 // Gin's dark mode class, outside our naming pattern.

@@ -12,36 +12,39 @@
  * - sections: The render array of the chart sections.
  */
 #}
+{% import _self as stats %}
 <div class="stats-page">
-  <nav class="stats-period" aria-label="{{ 'Period'|t }}">
-    <div class="stats-period-bar">
-      <ul class="stats-segments" data-focus-inset aria-label="{{ 'Period type'|t }}">
-        {% for segment in period_bar.segments %}
-          <li><a href="{{ segment.url }}" class="stats-segment" data-segment="{{ segment.type }}"{% if segment.active %} aria-current="page"{% endif %}>{{ segment.label }}</a></li>
-        {% endfor %}
-      </ul>
+  <div class="stats-period">
+    <nav class="stats-period-nav" aria-label="{{ 'Period'|t }}">
+      <div class="stats-period-bar">
+        <ul class="stats-segments" data-focus-inset aria-label="{{ 'Period type'|t }}">
+          {% for segment in period_bar.segments %}
+            <li><a href="{{ segment.url }}" class="stats-segment" data-segment="{{ segment.type }}"{% if segment.active %} aria-current="page"{% endif %}>{{ segment.label }}</a></li>
+          {% endfor %}
+        </ul>
 
-      {% import _self as stats %}
-      <div class="stats-stepper">
-        {% if period_bar.steps.previous %}
-          {{ stats.step('previous', period_bar.steps.previous) }}
-        {% endif %}
-        <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
-        {% if period_bar.steps.next %}
-          {{ stats.step('next', period_bar.steps.next) }}
-        {% endif %}
+        <div class="stats-stepper">
+          {% if period_bar.steps.previous %}
+            {{ stats.step('previous', period_bar.steps.previous) }}
+          {% endif %}
+          <h2 class="stats-period-heading">{{ period_bar.heading }}</h2>
+          {% if period_bar.steps.next %}
+            {{ stats.step('next', period_bar.steps.next) }}
+          {% endif %}
+        </div>
       </div>
-    </div>
 
-    {{ range_form }}
+      {{ range_form }}
+    </nav>
 
     {% if warning.text %}
-      <p class="stats-note">
-        <svg class="stats-note-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 2 1.5 13.5h13L8 2zM8 6.5v3.25M8 11.75v.01" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {# The warning icon of Gin's messages (media/icons/messages/warning.svg). #}
+      <p class="stats-note" role="note">
+        <svg class="stats-note-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></g></svg>
         <span>{{ warning.text }}</span>
       </p>
     {% endif %}
-  </nav>
+  </div>
 
   {{ sections }}
 </div>

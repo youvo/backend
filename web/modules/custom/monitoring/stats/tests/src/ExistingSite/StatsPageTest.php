@@ -96,7 +96,8 @@ class StatsPageTest extends StatsTestBase {
   public function testImpreciseDataWarning(): void {
 
     $this->drupalLogin($this->createCreative('creative', 'manager'));
-    $warning = '.stats-period .stats-note';
+    // A note in the period card, outside its navigation.
+    $warning = '.stats-period > .stats-note[role="note"]';
     $text = 'The data for 2014 and 2015 may be imprecise.';
     $shown = [
       ['period' => 'year', 'year' => 2015],
@@ -105,7 +106,7 @@ class StatsPageTest extends StatsTestBase {
     foreach ($shown as $query) {
       $this->drupalGet('stats', ['query' => $query]);
       $this->assertSession()->elementTextContains('css', $warning, $text);
-      $this->assertSession()->elementNotExists('css', '.stats-page .messages, .stats-note button');
+      $this->assertSession()->elementNotExists('css', '.stats-page .messages, .stats-note button, nav .stats-note');
     }
     $hidden = [
       ['period' => 'year', 'year' => 2016],
