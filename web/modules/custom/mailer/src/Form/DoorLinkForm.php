@@ -147,10 +147,19 @@ class DoorLinkForm extends FormBase {
       '#type' => 'table',
       '#header' => [$this->t('Empfänger'), $this->t('Ziel'), $this->t('Ergebnis'), ''],
     ];
+    // The applicant rows differ only in the creative, so it is named.
+    $applicants = [];
+    foreach ($project->getApplicants() as $applicant) {
+      $applicants[$applicant->uuid()] = $applicant->getDisplayName();
+    }
     foreach ($suggestions as $delta => $suggestion) {
+      $target = $suggestion['target']->heading();
+      if ($suggestion['target'] === DoorTarget::Applicant) {
+        $target = 'Bewerbung: ' . ($applicants[$suggestion['subject']] ?? $suggestion['subject']);
+      }
       $element['list'][$delta] = [
         'recipient' => ['#plain_text' => $suggestion['recipient']->getDisplayName()],
-        'target' => ['#plain_text' => $suggestion['target']->heading()],
+        'target' => ['#plain_text' => $target],
         'outcome' => ['#plain_text' => $this->generator->outcome($project, $suggestion['recipient'], $suggestion['target'], $suggestion['subject'])],
         'generate' => [
           '#type' => 'submit',

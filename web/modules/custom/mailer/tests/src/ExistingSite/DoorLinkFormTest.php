@@ -59,7 +59,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
   protected UserInterface $admin;
 
   /**
-   * {@inheritdoc}
+   * Intercepts mails and creates the administrator.
    */
   protected function setUp(): void {
     parent::setUp();
@@ -68,7 +68,7 @@ class DoorLinkFormTest extends ExistingSiteBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Removes the follow keys and logs of the created projects.
    */
   protected function tearDown(): void {
 
@@ -425,6 +425,18 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $this->assertSession()->fieldNotExists('Link');
     $this->assertCount(0, $this->correspondences($project));
 
+    // An organization is no creative.
+    $this->submitForm([
+      'project' => $this->autocomplete($project),
+      'recipient' => $this->autocomplete($owner),
+      'target' => DoorTarget::Applicant->value,
+      'subject' => $this->autocomplete($this->createOrganization()),
+    ], 'Link erzeugen');
+    $this->assertSession()->pageTextContains('Wähle die Kreative oder den Kreativen der Bewerbung.');
+    $this->assertSession()->elementExists('css', 'input[name="subject"].error');
+    $this->assertSession()->fieldNotExists('Link');
+    $this->assertCount(0, $this->correspondences($project));
+
     $creative = $this->createCreative();
     $url = $this->generate($project, $owner, DoorTarget::Applicant, $creative);
 
@@ -451,9 +463,9 @@ class DoorLinkFormTest extends ExistingSiteBase {
     $owner = $project->getOwner()->getDisplayName();
     $this->assertStringContainsString($owner, $rows[0]->getText());
     $this->assertStringContainsString(DoorTarget::Applicants->heading(), $rows[0]->getText());
-    foreach ([1, 2] as $delta) {
+    foreach ([1 => $first, 2 => $second] as $delta => $applicant) {
       $this->assertStringContainsString($owner, $rows[$delta]->getText());
-      $this->assertStringContainsString(DoorTarget::Applicant->heading(), $rows[$delta]->getText());
+      $this->assertStringContainsString('Bewerbung: ' . $applicant->getDisplayName(), $rows[$delta]->getText());
     }
     $this->assertSession()->fieldNotExists('Link');
 
