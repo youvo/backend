@@ -12,7 +12,6 @@ use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Session\SessionManager;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
-use Drupal\oauth_grant\Consumers;
 use Drupal\simple_oauth\Controller\Oauth2AuthorizeController;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -87,34 +86,10 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
    */
   public function authorize(Request $request): mixed {
 
-    // Experimental development shortcut. If there is a local session, we
-    // continue with the authorization directly. This way the session is not
-    // cross-validated with the auth relay.
-    if ($this->config('oauth_grant_remote.settings')->get('development') &&
-      !$this->currentUser()->isAnonymous()) {
-      return parent::authorize($request);
-    }
-
-    // Allow organizations to login on development environment.
+    // Development environments do not use the auth relay at all: the
+    // authorization runs on this site, and anonymous users get its login form.
     if ($this->config('oauth_grant_remote.settings')->get('development')) {
-      $client_uuid = $request->query->get('client_id');
-      $consumer_storage = $this->entityTypeManager()->getStorage('consumer');
-      $consumers = $consumer_storage->loadByProperties(['client_id' => $client_uuid]);
-      if (empty($consumers)) {
-        return OAuthServerException::serverError('Invalid Client.')
-          ->generateHttpResponse(new Response());
-      }
-      // Consumers have no roles since simple_oauth 6, so the consumers of
-      // organizations are known by their UUID.
-      /** @var \Drupal\consumers\Entity\Consumer $consumer */
-      $consumer = reset($consumers);
-      $organization_consumers = [
-        Consumers::KNOWN['ORGANIZATION'][0],
-        Consumers::KNOWN['ORGANIZATION_LOCAL'][0],
-      ];
-      if (in_array($consumer->uuid(), $organization_consumers, TRUE)) {
-        return parent::authorize($request);
-      }
+      return parent::authorize($request);
     }
 
     // Check configuration.
@@ -358,16 +333,8 @@ class Oauth2AuthorizeRemoteController extends Oauth2AuthorizeController {
       'query' => UrlHelper::parse('/?' . $request->getQueryString())['query'],
     ]);
 
-    // Determine whether this is a development environment.
-    if (
-      !empty($this->config('oauth_grant_remote.settings')->get('development')) &&
-      (int) $this->config('oauth_grant_remote.settings')->get('development')
-    ) {
-      $query['dev'] = 1;
-    }
-
     // Compile redirect url.
-    $query['relay'] = $destination->toString(TRUE)->getGeneratedUrl();
+    $query = ['relay' => $destination->toString(TRUE)->getGeneratedUrl()];
     $redirect_url = Url::fromUri($auth_relay_server . '/user/login', [
       'query' => $query,
     ]);

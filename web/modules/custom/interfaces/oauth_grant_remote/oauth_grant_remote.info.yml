@@ -8,7 +8,6 @@ core_version_requirement: ^10.3 || ^11
 dependencies:
   - consumers:consumers
   - drupal:rest
-  - oauth_grant:oauth_grant
   - simple_oauth:simple_oauth
   - youvo:youvo
 

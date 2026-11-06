@@ -74,6 +74,7 @@ class OauthGrantRemoteSettingsForm extends ConfigFormBase {
     $form['development'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Development Environment?'),
+      '#description' => $this->t('Skips the Auth Relay: users log in on this site.'),
       '#default_value' => $config->get('development'),
       '#required' => FALSE,
     ];
