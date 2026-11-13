@@ -18,6 +18,19 @@
  cd www/$SITE_FOLDER
  set -a; source config/.env.development; set +a
 
+ # The OAuth install hooks read config/.env.consumers.development and
+ # config/.env.oauth_remote.development, see the README. The simple_oauth keys
+ # are git-ignored and have to be generated once, see config/certs/README.md.
+ for REQUIRED_FILE in config/.env.consumers.development config/.env.oauth_remote.development config/certs/public.key config/certs/private.key; do
+ 	if ! test -r "$REQUIRED_FILE"; then
+ 		echo "$REQUIRED_FILE is missing."
+ 		exit 1
+ 	fi
+ done
+ set -a; source config/.env.oauth_remote.development; set +a
+ # The physical path, since PHP resolves the ~/www symlink.
+ CERTS_PATH="$(pwd -P)/config/certs"
+
  # Reject web requests until the script ends, see settings.php below. Requests
  # during site:install cache outdated field storage definitions, which the
  # installer never clears, since it only uses in-memory caches.
@@ -48,6 +61,23 @@
  printf "\$config['youvo.settings']['hub_url'] = '%s';\n" "${HUB_URL:?Set HUB_URL in config/.env.development.}" >> settings.php
  printf "\$config['youvo.settings']['app_url'] = '%s';\n" "${APP_URL:?Set APP_URL in config/.env.development.}" >> settings.php
  printf "\$config['youvo.settings']['website_url'] = '%s';\n" "${WEBSITE_URL:?Set WEBSITE_URL in config/.env.development.}" >> settings.php
+ # The existing-config install imports the empty OAuth key paths and relay
+ # settings from config/sync over the values the install hooks set, so they are
+ # overridden here. The relay settings are optional with DEVELOPMENT=1, which
+ # turns the relay off.
+ printf "\$config['simple_oauth.settings']['public_key'] = '%s';\n" "$CERTS_PATH/public.key" >> settings.php
+ printf "\$config['simple_oauth.settings']['private_key'] = '%s';\n" "$CERTS_PATH/private.key" >> settings.php
+ if [[ "${DEVELOPMENT:-0}" == "1" || "${DEVELOPMENT:-0}" == "true" ]]; then
+ 	if [[ -n "${JWT_KEY_PATH:-}" ]]; then
+ 		printf "\$config['oauth_grant_remote.settings']['jwt_key_path'] = '%s';\n" "$JWT_KEY_PATH" >> settings.php
+ 	fi
+ 	if [[ -n "${AUTH_RELAY_URL:-}" ]]; then
+ 		printf "\$config['oauth_grant_remote.settings']['auth_relay_url'] = '%s';\n" "$AUTH_RELAY_URL" >> settings.php
+ 	fi
+ else
+ 	printf "\$config['oauth_grant_remote.settings']['jwt_key_path'] = '%s';\n" "${JWT_KEY_PATH:?Set JWT_KEY_PATH in config/.env.oauth_remote.development.}" >> settings.php
+ 	printf "\$config['oauth_grant_remote.settings']['auth_relay_url'] = '%s';\n" "${AUTH_RELAY_URL:?Set AUTH_RELAY_URL in config/.env.oauth_remote.development.}" >> settings.php
+ fi
  cat >> settings.php <<'EOF'
 // Reject web requests while scripts/install-development.sh runs.
 if (PHP_SAPI !== 'cli' && file_exists(__DIR__ . '/installing')) {

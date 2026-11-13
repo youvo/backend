@@ -7,6 +7,14 @@
  set -a; source config/.env.ci; set +a
  echo "Variables loaded ..."
 
+ # The simple_oauth keys are git-ignored, so CI generates throwaway ones.
+ CERTS_PATH="$(pwd -P)/config/certs"
+ if ! test -r "$CERTS_PATH/private.key"; then
+ 	openssl genrsa -out "$CERTS_PATH/private.key" 2048 2> /dev/null
+ 	openssl rsa -in "$CERTS_PATH/private.key" -pubout -out "$CERTS_PATH/public.key" 2> /dev/null
+ 	chmod 0600 "$CERTS_PATH/private.key"
+ fi
+
  # Reset settings.
  cd web/sites || exit
  chmod -R 0755 default
@@ -25,6 +33,11 @@
  printf "\$config['youvo.settings']['hub_url'] = '%s';\n" "${HUB_URL:?Set HUB_URL in config/.env.ci.}" >> settings.php
  printf "\$config['youvo.settings']['app_url'] = '%s';\n" "${APP_URL:?Set APP_URL in config/.env.ci.}" >> settings.php
  printf "\$config['youvo.settings']['website_url'] = '%s';\n" "${WEBSITE_URL:?Set WEBSITE_URL in config/.env.ci.}" >> settings.php
+ # The existing-config install imports the empty OAuth key paths from
+ # config/sync over the values the install hook sets, so they are overridden
+ # here. The auth relay stays off, as config/sync sets development to 1.
+ printf "\$config['simple_oauth.settings']['public_key'] = '%s';\n" "$CERTS_PATH/public.key" >> settings.php
+ printf "\$config['simple_oauth.settings']['private_key'] = '%s';\n" "$CERTS_PATH/private.key" >> settings.php
  echo "Settings reset ..."
 
  # Install Drupal.
