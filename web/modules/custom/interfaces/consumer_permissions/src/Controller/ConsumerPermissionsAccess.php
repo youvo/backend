@@ -42,7 +42,7 @@ class ConsumerPermissionsAccess implements ContainerInjectionInterface {
     // If the client can not be loaded or the user does not have the
     // permission to authenticate with the client access is forbidden.
     if ($account->isAuthenticated()) {
-      $client_uuid = $this->requestStack->getCurrentRequest()->get('client_id');
+      $client_uuid = $this->requestStack->getCurrentRequest()->query->get('client_id');
       $clients = $this->entityTypeManager
         ->getStorage('consumer')
         ->loadByProperties(['client_id' => $client_uuid]);

@@ -75,7 +75,7 @@ class LectureListBuilder extends EntityListBuilder implements FormInterface {
   public function buildForm(array $form, FormStateInterface $form_state): array {
 
     // Get query parameter.
-    $query_parameter_cr = $this->requestStack->getCurrentRequest()->get('cr');
+    $query_parameter_cr = $this->requestStack->getCurrentRequest()->query->get('cr');
 
     // Attach js to hide 'show row weights' buttons.
     $form['#attached']['library'][] = 'academy/hideweightbutton';

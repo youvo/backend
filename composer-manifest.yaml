@@ -8,7 +8,7 @@ packages:
     colinodell/psr-testlogger: v1.3.1
     composer/ca-bundle: 1.6.1
     composer/class-map-generator: 1.9.0
-    composer/composer: 2.11.1
+    composer/composer: 2.11.2
     composer/installers: v1.12.0
     composer/metadata-minifier: 1.0.1
     composer/pcre: 3.4.0
@@ -20,15 +20,16 @@ packages:
     consolidation/filter-via-dot-access-data: 2.0.3
     consolidation/log: 3.1.3
     consolidation/output-formatters: 4.7.2
-    consolidation/robo: 5.1.1
+    consolidation/robo: 5.2.3
+    consolidation/self-update: 3.2.1
     consolidation/site-alias: 4.1.3
     consolidation/site-process: 6.1.0
     cweagans/composer-patches: 1.7.3
     dealerdirect/phpcodesniffer-composer-installer: v0.7.2
     defuse/php-encryption: v2.4.0
     dflydev/dot-access-data: v3.0.3
-    doctrine/deprecations: 1.1.6
-    doctrine/instantiator: 2.1.0
+    doctrine/deprecations: 1.2.0
+    doctrine/instantiator: 2.2.0
     doctrine/lexer: 3.0.3
     dompdf/php-font-lib: 1.0.2
     drupal/admin_toolbar: 3.6.3
@@ -38,12 +39,12 @@ packages:
     drupal/config_split: 2.0.2
     drupal/consumer_image_styles: 4.0.10
     drupal/consumers: 1.24.0
-    drupal/core: 11.4.11
-    drupal/core-composer-scaffold: 11.4.11
-    drupal/core-dev: 11.4.11
-    drupal/core-project-message: 11.4.11
-    drupal/core-recommended: 11.4.11
-    drupal/core-vendor-hardening: 11.4.11
+    drupal/core: 11.4.13
+    drupal/core-composer-scaffold: 11.4.13
+    drupal/core-dev: 11.4.13
+    drupal/core-project-message: 11.4.13
+    drupal/core-recommended: 11.4.13
+    drupal/core-vendor-hardening: 11.4.13
     drupal/dashboard: 2.2.1
     drupal/diff: 2.1.1
     drupal/entity: 1.8.0
@@ -81,7 +82,7 @@ packages:
     drupal/user_bundle: 1.5.0
     drupal/views_autocomplete_filters: 2.0.4
     drupal/warmer: 2.0.14
-    drush/drush: 13.8.0
+    drush/drush: 13.8.1
     e0ipso/shaper: 1.2.7
     egulias/email-validator: 4.0.4
     ezyang/htmlpurifier: v4.19.1
@@ -92,14 +93,15 @@ packages:
     google/protobuf: v5.36.2
     grasmash/expander: 3.0.1
     grasmash/yaml-cli: 3.2.1
-    guzzlehttp/guzzle: 7.16.1
+    guzzlehttp/guzzle: 7.16.3
     guzzlehttp/promises: 2.6.0
-    guzzlehttp/psr7: 2.13.2
+    guzzlehttp/psr7: 2.13.4
     html2text/html2text: 4.3.2
     jangregor/phpstan-prophecy: 2.3.0
     joachim-n/composer-manifest: 1.1.7
     justinrainbow/json-schema: 6.8.2
-    laravel/prompts: v0.3.26
+    kevinrob/guzzle-cache-middleware: 6.0.0
+    laravel/prompts: v0.3.27
     lcobucci/clock: 3.7.0
     lcobucci/jwt: 5.6.1
     league/container: 4.2.5
@@ -110,10 +112,10 @@ packages:
     lullabot/mink-selenium2-driver: v1.7.4
     lullabot/php-webdriver: v2.0.7
     marc-mabe/php-enum: v4.7.2
-    masterminds/html5: 2.10.1
+    masterminds/html5: 2.12.0
     mck89/peast: v1.17.7
     mglaman/composer-drupal-lenient: 2.0.0
-    mglaman/phpstan-drupal: 2.2.2
+    mglaman/phpstan-drupal: 2.4.0
     micheh/phpcs-gitlab: 2.1.0
     mikey179/vfsstream: v1.6.12
     mkalkbrenner/php-htmldiff-advanced: 0.0.8
@@ -128,7 +130,7 @@ packages:
     open-telemetry/context: 1.6.0
     open-telemetry/exporter-otlp: 1.5.0
     open-telemetry/gen-otlp-protobuf: 1.11.1
-    open-telemetry/sdk: 1.16.0
+    open-telemetry/sdk: 1.16.1
     open-telemetry/sem-conv: 1.45.0
     paragonie/random_compat: v9.99.100
     pear/archive_tar: 1.6.1
@@ -155,15 +157,16 @@ packages:
     phpspec/prophecy-phpunit: v2.5.0
     phpstan/extension-installer: 1.4.3
     phpstan/phpdoc-parser: 2.4.1
-    phpstan/phpstan: 2.3.5
+    phpstan/phpstan: 2.3.6
     phpstan/phpstan-deprecation-rules: 2.0.5
-    phpstan/phpstan-phpunit: 2.1.1
+    phpstan/phpstan-phpunit: 2.1.2
     phpunit/php-code-coverage: 11.0.12
     phpunit/php-file-iterator: 5.1.1
     phpunit/php-invoker: 5.0.1
     phpunit/php-text-template: 4.0.1
     phpunit/php-timer: 7.0.1
-    phpunit/phpunit: 11.5.57
+    phpunit/phpunit: 11.5.58
+    psr/cache: 3.0.0
     psr/clock: 1.0.0
     psr/container: 2.0.2
     psr/event-dispatcher: 1.0.0
@@ -176,10 +179,10 @@ packages:
     psy/psysh: v0.12.24
     ralouphie/getallheaders: 3.0.3
     ramsey/collection: 2.1.1
-    ramsey/uuid: 4.9.4
+    ramsey/uuid: 4.10.0
     react/promise: v3.3.0
     revolt/event-loop: v1.0.9
-    roave/security-advisories: 'dev-latest:7597e92ed82e9670032e3d6c3459d00ba6052821'
+    roave/security-advisories: 'dev-latest:9f18043008504f654d3723c95346357a3af11deb'
     sebastian/cli-parser: 3.0.2
     sebastian/code-unit: 3.0.3
     sebastian/code-unit-reverse-lookup: 4.0.1
@@ -204,6 +207,8 @@ packages:
     staabm/side-effects-detector: 1.0.5
     steverhoades/oauth2-openid-connect-server: v3.0.1
     symfony/browser-kit: v7.4.23
+    symfony/cache: v8.0.15
+    symfony/cache-contracts: v3.8.1
     symfony/console: v7.4.23
     symfony/css-selector: v7.4.22
     symfony/dependency-injection: v7.4.23
@@ -230,7 +235,7 @@ packages:
     symfony/polyfill-php81: v1.38.1
     symfony/polyfill-php83: v1.43.0
     symfony/polyfill-php84: v1.43.0
-    symfony/polyfill-php85: v1.43.0
+    symfony/polyfill-php85: v1.44.0
     symfony/polyfill-php86: v1.43.0
     symfony/process: v7.4.22
     symfony/psr-http-message-bridge: v7.4.21
@@ -251,5 +256,5 @@ packages:
     twig/twig: v3.30.0
     vipnytt/sitemapparser: v1.3.2
     webflo/drupal-finder: 1.3.1
-    webmozart/assert: 2.5.0
+    webmozart/assert: 2.5.1
     weitzman/drupal-test-traits: 2.7.2
